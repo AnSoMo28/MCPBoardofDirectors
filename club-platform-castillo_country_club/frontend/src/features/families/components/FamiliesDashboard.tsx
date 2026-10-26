@@ -146,7 +146,7 @@ const ICON_MAP: Record<string, React.ComponentType<React.ComponentPropsWithoutRe
 // §5  Component
 // ═══════════════════════════════════════════════════════════
 
-export function FamiliesDashboard({ familyId, onNavigateFamily, onOpenFamily }: FamiliesDashboardProps) {
+export function FamiliesDashboard({ familyId, onNavigateFamily }: FamiliesDashboardProps) {
   // ── Reduced motion ──
   const [reducedMotion, setReducedMotion] = useState(() =>
     typeof window !== "undefined"

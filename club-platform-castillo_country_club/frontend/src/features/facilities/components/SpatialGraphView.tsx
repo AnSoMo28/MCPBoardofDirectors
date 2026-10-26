@@ -188,8 +188,6 @@ function computeNodeRadius(node: SpatialNode, allNodes: SpatialNode[]): number {
 
 function getParticlesForEdge(
   edge: SpatialEdge,
-  _fromPos: NodePosition,
-  _toPos: NodePosition,
   reducedMotion: boolean,
 ): React.ReactNode[] {
   if (reducedMotion) return [];
@@ -290,9 +288,15 @@ export interface SpatialGraphViewProps {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════
 
-export function SpatialGraphView({ graph, personalities, comfortScores, ambientMode = "calm", selectedFacilityId, onSelectFacility }: SpatialGraphViewProps) {
+export function SpatialGraphView({
+  graph,
+  comfortScores,
+  ambientMode = "calm",
+  selectedFacilityId,
+  onSelectFacility,
+}: SpatialGraphViewProps) {
   const prefersReduced = useReducedMotion();
-  useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // ── Existing state ──
   const [tooltipNode, setTooltipNode] = useState<SpatialNode | null>(null);
@@ -797,7 +801,7 @@ export function SpatialGraphView({ graph, personalities, comfortScores, ambientM
                     strokeWidth={strokeWidth}
                     stroke={edgeColor}
                   />
-                  {getParticlesForEdge(edge, fromPos, toPos, prefersReduced)}
+                  {getParticlesForEdge(edge, prefersReduced)}
                 </g>
               );
             })}

@@ -127,7 +127,7 @@ interface EngagementGravityWellProps {
  * When gravity weakens, families drift. When exit velocity exceeds
  * the escape threshold, departure becomes inevitable.
  */
-export function EngagementGravityWell({ gravitational, aggregateGravity, topAtRiskFamilies }: EngagementGravityWellProps) {
+export function EngagementGravityWell({ gravitational, aggregateGravity }: EngagementGravityWellProps) {
   const [hoveredRing, setHoveredRing] = useState<string | null>(null);
 
   // Escape zone radius

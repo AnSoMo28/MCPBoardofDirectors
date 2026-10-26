@@ -28,7 +28,7 @@ interface MemberIntelligenceStreamProps {
  * Children are StreamSection components rendered in tabOrder.
  * Visual flow adapts to dashboard mode.
  */
-export function MemberIntelligenceStream({ mode, tabOrder, activeFocus, children }: MemberIntelligenceStreamProps) {
+export function MemberIntelligenceStream({ mode, tabOrder, children }: MemberIntelligenceStreamProps) {
   return (
     <div
       className="glass-m360-stream"

@@ -153,7 +153,7 @@ interface AgeGroupAdvisorBannerProps {
  * tidal alerts, lens switching, ripple wave, and aging-out
  * corridor into a single cohesive cockpit.
  */
-export function AgeGroupAdvisorBanner({ insights, topInsights, hasHighSeverity, onExecute, ripples, agingOutRisks, seasonalContext, insightBrackets, insightTiers, advisorVitals }: AgeGroupAdvisorBannerProps) {
+export function AgeGroupAdvisorBanner({ insights, topInsights, hasHighSeverity, onExecute, ripples, agingOutRisks, seasonalContext, insightBrackets, advisorVitals }: AgeGroupAdvisorBannerProps) {
   const [activeLayer, setActiveLayer] = useState<AgeGroupLayer | null>(
     null,
   );

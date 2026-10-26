@@ -27,7 +27,7 @@ import type {
 } from "../types";
 
 import {
-  deriveSilenceLevel
+  deriveSilenceLevel,
 } from "../types";
 
 import {
@@ -61,8 +61,15 @@ interface GravityObservatoryProps {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════
 
-export function GravityObservatory({ silence, fatigue, disengagementRisk, history = [], socialConnectionsCount = 0, socialInfluenceScore = 0 }: GravityObservatoryProps) {
+export function GravityObservatory({
+  silence,
+  disengagementRisk,
+  history = [],
+  socialConnectionsCount = 0,
+  socialInfluenceScore = 0,
+}: GravityObservatoryProps) {
   // ── Derived data ──────────────────────────────────────
+  const silenceDays = silence?.current_silence_days ?? 0;
   const silenceLevel = silence
     ? deriveSilenceLevel(silence.current_silence_days)
     : "normal";
@@ -83,6 +90,7 @@ export function GravityObservatory({ silence, fatigue, disengagementRisk, histor
   const escapeVelocity = Math.round(disengagementRisk * 100);
 
   // Distance from center: inverse of retention (100 = at center, 0 = escaped)
+
   // Timeline
   const timeline: SilenceTimeline | null = useMemo(() => {
     if (history.length === 0) return null;
