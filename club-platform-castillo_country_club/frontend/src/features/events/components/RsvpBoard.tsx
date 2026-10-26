@@ -93,13 +93,6 @@ const STATUS_DISPLAYS: readonly StatusDisplay[] = [
   { key: "waitlisted", label: "En espera", icon: Hourglass, badgeVariant: "info", colorVar: "var(--color-teal-400)" },
   { key: "declined", label: "Declinados", icon: UserX, badgeVariant: "error", colorVar: "var(--color-rose-400)" },
 ] as const;
-
-/** Status → icon component. */
-const STATUS_ICONS: Record<string, typeof UserCheck> = {
-  confirmed: UserCheck,
-  declined: UserX,
-};
-
 /** Status → left border CSS class. */
 const STATUS_BORDER_CLASS: Record<string, string> = {
   confirmed: "rsvpb-row--confirmed",

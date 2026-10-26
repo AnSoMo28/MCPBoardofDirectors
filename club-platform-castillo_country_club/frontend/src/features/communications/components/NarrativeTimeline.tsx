@@ -33,7 +33,6 @@ import {
 } from "../types";
 
 import type {
-  ContinuityContext,
   NarrativeBriefing,
 } from "../lib/narrativeEngine";
 

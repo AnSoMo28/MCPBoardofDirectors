@@ -14,10 +14,6 @@
  */
 
 import { useState, useCallback } from 'react';
-
-import type {
-  CulturalGenreExtended
-} from '../types';
 import type {
   EnrichedProposal,
   ProposalChange,

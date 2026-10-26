@@ -102,13 +102,7 @@ export interface MemoryJournalViewProps {
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════
 
-export function MemoryJournalView({
-  narratives,
-  memories,
-  facilities,
-  ambientMode = "calm",
-  onQueryMemory,
-}: MemoryJournalViewProps) {
+export function MemoryJournalView({ narratives, facilities, ambientMode = "calm", onQueryMemory }: MemoryJournalViewProps) {
   const prefersReduced = useReducedMotion();
 
   const [activeFacility, setActiveFacility] = useState<string | null>(

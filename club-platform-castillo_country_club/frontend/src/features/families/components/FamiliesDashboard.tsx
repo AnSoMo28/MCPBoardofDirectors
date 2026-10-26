@@ -52,12 +52,6 @@ import { DashboardCanvas } from "./DashboardCanvas";
 
 import "../family-atoms.css";
 import "./FamiliesDashboard.css";
-import type {
-  FamilyHealthScore,
-  EngagementTemperature,
-  FamilyPulseVital
-} from "../ai-types";
-
 // ═══════════════════════════════════════════════════════════
 // §1  Types
 // ════════════════════════════════════════════════
@@ -114,9 +108,9 @@ function springStep(
 function urgencyToTarget(
   urgency: number,
   index: number,
-  total: number,
+  _total: number,
   containerW: number,
-  containerH: number,
+  _containerH: number,
 ): { tx: number; ty: number; tz: number; ts: number } {
   // High urgency → top-left, high z, larger scale
   // Low urgency → bottom-right, low z, smaller scale
@@ -152,12 +146,7 @@ const ICON_MAP: Record<string, React.ComponentType<React.ComponentPropsWithoutRe
 // §5  Component
 // ═══════════════════════════════════════════════════════════
 
-export function FamiliesDashboard({
-  familyId,
-  onNavigateFamily,
-  onOpenFamily,
-  allFamilyIds,
-}: FamiliesDashboardProps) {
+export function FamiliesDashboard({ familyId, onNavigateFamily, onOpenFamily }: FamiliesDashboardProps) {
   // ── Reduced motion ──
   const [reducedMotion, setReducedMotion] = useState(() =>
     typeof window !== "undefined"

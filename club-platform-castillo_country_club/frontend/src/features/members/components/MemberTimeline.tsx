@@ -24,7 +24,6 @@ import type {
 } from "../types";
 
 import {
-  MEMBER_STATE_DISPLAY,
   ACTIVITY_DOMAIN_DISPLAY,
   JOURNEY_STAGE_DISPLAY,
 } from "../types";

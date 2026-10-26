@@ -29,7 +29,6 @@ import type {
 } from "../types";
 
 import {
-  NARRATIVE_PHASE_CONFIG,
   STORY_HEALTH_CONFIG
 } from "../types";
 

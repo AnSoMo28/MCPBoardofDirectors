@@ -4416,7 +4416,7 @@ export function createMockGetModelHealth(
 }
 
 export function createMockChatClubManager(
-  params?: Record<string, unknown>
+  _params?: Record<string, unknown>
 ) {
   return {
     status: "success",

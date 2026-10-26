@@ -225,8 +225,8 @@ export function findOptimalSlots(
 
     // Desirability score (lower crowd = better, higher revenue delta = better)
     // Weight: 60% comfort (inverse crowd) + 40% revenue
-    const comfortScore = Math.max(0, 100 - crowdPct);
-    const revenueScore = clamp(50 + revenueDelta / 100, 0, 100);
+    Math.max(0, 100 - crowdPct);
+    clamp(50 + revenueDelta / 100, 0, 100);
     // Build reason
     let reason = "";
     if (crowdPct < 30) reason = `${startTime}: baja ocupación (${crowdPct}%)`;

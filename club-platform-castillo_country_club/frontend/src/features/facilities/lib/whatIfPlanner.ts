@@ -145,7 +145,7 @@ function computeCascadeEffects(
   action: WhatIfAction,
   graph: SpatialGraph,
   revenueModels: Record<string, RevenueModel>,
-  comfortScores: Record<string, ComfortScore>,
+  _comfortScores: Record<string, ComfortScore>,
 ): CascadeEffect[] {
   const effects: CascadeEffect[] = [];
   const targetId = action.target_facility_id;
@@ -525,7 +525,7 @@ export function generateWhatIfScenario(
   graph: SpatialGraph,
   revenueModels: Record<string, RevenueModel>,
   comfortScores: Record<string, ComfortScore>,
-  occupancyPredictions: Record<string, OccupancyPrediction>,
+  _occupancyPredictions: Record<string, OccupancyPrediction>,
 ): WhatIfScenario {
   const targetId = action.target_facility_id;
   const targetNode = graph.nodes.find((n) => n.facility_id === targetId);

@@ -26,8 +26,7 @@ import type {
 
 import {
   getChannelLabel,
-  deriveFatigueLevel,
-  FATIGUE_LEVEL_CONFIG,
+  deriveFatigueLevel
 } from "../types";
 
 import {

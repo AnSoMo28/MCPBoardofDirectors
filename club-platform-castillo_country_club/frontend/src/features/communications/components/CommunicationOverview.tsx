@@ -49,7 +49,6 @@ import type {
 import {
   calculateCommunicationHealth,
   formatCommunicationDate,
-  INSIGHT_CATEGORY_CONFIG,
   INSIGHT_PRIORITY_CONFIG,
 } from "../types";
 
@@ -76,15 +75,6 @@ const CHANNEL_LABEL_MAP: Record<string, string> = {
   whatsapp: "WhatsApp",
   in_app: "In-App",
 };
-
-const CHANNEL_COLOR_TOKENS: Record<string, string> = {
-  email: "var(--color-teal-400)",
-  push: "var(--color-gold-400)",
-  sms: "var(--color-emerald-400)",
-  whatsapp: "var(--color-amber-400)",
-  in_app: "var(--color-silver-400)",
-};
-
 const FACTOR_LABELS: Record<string, string> = {
   delivery: "Entrega",
   diversity: "Diversidad",

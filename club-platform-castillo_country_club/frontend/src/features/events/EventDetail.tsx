@@ -137,7 +137,7 @@ const DETAIL_TABS: Array<DetailTab & { id: DetailTabId }> = [
  */
 export function EventDetail() {
   const navigate = useNavigate();
-  const { id, event, isLoading, isError, error, confirmedAttendees, activeTab, tabDirection, handleTabChange, handleBack, handleEdit, handlePublish, handleCancel, handleClone, handleReport, handleInvite, isUpdating, isCloning, isReporting } = useEventDetail();
+  const { event, isLoading, isError, error, confirmedAttendees, activeTab, tabDirection, handleTabChange, handleBack, handleEdit, handlePublish, handleCancel, handleClone, handleReport, handleInvite, isUpdating, isCloning, isReporting } = useEventDetail();
 
   /* ── §2.1 Derived data ── */
 

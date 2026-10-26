@@ -22,9 +22,6 @@ import type {
   EngagementDashboardFamily,
 } from "../types";
 import {
-  GRAVITATIONAL_CONSTANTS,
-} from "../types";
-import {
   classifyGravitationalState,
   computeDaysToEscape,
   getGravityStateColor,
@@ -130,12 +127,7 @@ interface EngagementGravityWellProps {
  * When gravity weakens, families drift. When exit velocity exceeds
  * the escape threshold, departure becomes inevitable.
  */
-export function EngagementGravityWell({
-  gravitational,
-  aggregateGravity,
-  topAtRiskFamilies,
-  onFamilyClick,
-}: EngagementGravityWellProps) {
+export function EngagementGravityWell({ gravitational, aggregateGravity, topAtRiskFamilies }: EngagementGravityWellProps) {
   const [hoveredRing, setHoveredRing] = useState<string | null>(null);
 
   // Escape zone radius

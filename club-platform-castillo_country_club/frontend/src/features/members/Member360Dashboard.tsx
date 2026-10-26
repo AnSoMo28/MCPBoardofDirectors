@@ -595,7 +595,7 @@ function Member360Detail({ memberId }: { memberId: string }) {
 // PORTRAIT ORB — SVG orbital rings + central temperature orb
 // ═══════════════════════════════════════════════════════════════════════
 
-function PortraitOrb({ temperature, vitalSigns, portraitRings, memberName }: {
+function PortraitOrb({ temperature, portraitRings, memberName }: {
   temperature: import("./types").MemberTemperature;
   vitalSigns: import("./types").VitalSign[];
   portraitRings: import("./lib/memberSignals").PortraitRingProps[];

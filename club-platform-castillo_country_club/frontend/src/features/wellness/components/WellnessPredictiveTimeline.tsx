@@ -4,7 +4,6 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { cn } from "@/shared/lib/utils";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import type { WellnessPredictions, WellnessMode } from "../types";
 import "./WellnessPredictiveTimeline.css";
 

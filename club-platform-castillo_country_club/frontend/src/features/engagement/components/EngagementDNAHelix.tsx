@@ -17,11 +17,7 @@
 import { useMemo, useState } from "react";
 import type {
   EngagementDNAMutation,
-  ActivityDomain,
   EngagementDashboardFamily,
-} from "../types";
-import {
-  ACTIVITY_DOMAIN_DISPLAY,
 } from "../types";
 import {
   classifyMutationSeverity,
@@ -36,7 +32,6 @@ import "./EngagementDNAHelix.css";
 const SVG_WIDTH = 500;
 const SVG_HEIGHT = 360;
 const HELIX_PADDING_X = 50;
-const HELIX_PADDING_Y = 40;
 const HELIX_USABLE_WIDTH = SVG_WIDTH - HELIX_PADDING_X * 2;
 const HELIX_AMPLITUDE = 50;
 const HELIX_CENTER_Y = SVG_HEIGHT / 2;

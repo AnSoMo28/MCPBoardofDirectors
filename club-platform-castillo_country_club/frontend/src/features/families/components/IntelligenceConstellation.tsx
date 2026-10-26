@@ -71,11 +71,6 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useMemo } from "react";
-import {
-  Brain, TrendingUp, Users, Calendar, Target, Sparkles,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
 import type {
   DimensionScore,
   IntelligenceCorrelation,

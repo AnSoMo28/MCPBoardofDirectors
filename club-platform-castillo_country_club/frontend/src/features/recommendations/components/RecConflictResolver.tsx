@@ -108,14 +108,7 @@ interface BranchCardProps {
   onSelect?: (resolutionId: string) => void;
 }
 
-function BranchCard({
-  resolution,
-  index,
-  totalBranches,
-  isRecommended,
-  reducedMotion,
-  onSelect,
-}: BranchCardProps) {
+function BranchCard({ resolution, index, isRecommended, reducedMotion, onSelect }: BranchCardProps) {
   const delayMs = reducedMotion ? 0 : index * 120;
   const BranchIcon = getResolutionIcon(resolution.option_label);
   return (

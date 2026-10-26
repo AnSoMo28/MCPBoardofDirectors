@@ -30,7 +30,6 @@ import type {
   NotificationChannel,
   ResonantTone,
   MessageLength,
-  SentimentLevel,
   EmotionalZone,
 } from "../types";
 

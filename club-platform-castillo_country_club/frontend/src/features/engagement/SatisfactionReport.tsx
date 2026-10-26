@@ -54,13 +54,6 @@ import "./SatisfactionReport.css";
 // ══════════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════════
-
-const SENTIMENT_ICONS: Record<string, LucideIcon> = {
-  positive: Smile,
-  neutral: Meh,
-  negative: Frown,
-};
-
 const INSIGHT_TYPE_CONFIG: Record<
   string,
   { Icon: LucideIcon; label: string; color: string; bgColor: string }

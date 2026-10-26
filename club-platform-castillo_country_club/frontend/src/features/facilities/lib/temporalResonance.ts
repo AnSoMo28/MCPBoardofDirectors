@@ -571,8 +571,6 @@ export function detectResonancePatterns(
       );
 
       // Build a representative ripple for this pattern
-      const representativeRipple = groupRipples[0];
-
       // Compute average hidden costs
       const avgCascadeSeverity = Math.round(
         groupRipples.reduce((s, r) => s + r.cascade_severity, 0) /

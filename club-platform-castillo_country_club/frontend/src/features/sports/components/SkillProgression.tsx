@@ -177,7 +177,7 @@ function buildProgressionNarrative(
 
 // ── §5.1 TrajectoryChart ─────────────────────────────────
 
-function TrajectoryChart({ trajectory, predictedTrajectory, plateauZones, reducedMotion }: {
+function TrajectoryChart({ trajectory, predictedTrajectory, plateauZones }: {
   trajectory: SkillTrajectoryPoint[];
   predictedTrajectory: SkillTrajectoryPoint[];
   plateauZones: Array<{ startIndex: number; endIndex: number }>;

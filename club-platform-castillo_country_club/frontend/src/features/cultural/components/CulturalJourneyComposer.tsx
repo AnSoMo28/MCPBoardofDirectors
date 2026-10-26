@@ -24,7 +24,6 @@ import type {
   CulturalJourney,
   CulturalDNA
 } from '../types';
-import { JOURNEY_HORIZON_CONFIG } from '../config';
 import './CulturalJourneyComposer.css';
 
 // ══════════════════════════════════════════════════════════

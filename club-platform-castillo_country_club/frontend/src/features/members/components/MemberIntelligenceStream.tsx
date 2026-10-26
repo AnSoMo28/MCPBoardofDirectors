@@ -12,7 +12,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 import type { ReactNode } from "react";
-import type { DashboardMode, MemberState } from "../types";
+import type { DashboardMode } from "../types";
 import type { FocusPanelId } from "../hooks/useMember360Dashboard";
 
 interface MemberIntelligenceStreamProps {
@@ -28,13 +28,7 @@ interface MemberIntelligenceStreamProps {
  * Children are StreamSection components rendered in tabOrder.
  * Visual flow adapts to dashboard mode.
  */
-export function MemberIntelligenceStream({
-  mode,
-  tabOrder,
-  activeFocus,
-  onFocusChange,
-  children,
-}: MemberIntelligenceStreamProps) {
+export function MemberIntelligenceStream({ mode, tabOrder, activeFocus, children }: MemberIntelligenceStreamProps) {
   return (
     <div
       className="glass-m360-stream"

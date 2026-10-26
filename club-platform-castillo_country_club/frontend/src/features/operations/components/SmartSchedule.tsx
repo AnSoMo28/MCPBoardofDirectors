@@ -20,7 +20,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   CalendarClock, RefreshCw, AlertTriangle, Lightbulb,
   Users, Building2, Sparkles, ChevronDown, ChevronUp,
-  Clock, Zap, BarChart3, CheckCircle2,
+  Clock, Zap, CheckCircle2,
   Wrench,
   Brain, ArrowRight, Trophy, AlertCircle,
 } from "lucide-react";

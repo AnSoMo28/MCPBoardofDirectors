@@ -112,18 +112,9 @@ export interface WhatIfPlannerPanelProps {
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════
 
-export function WhatIfPlannerPanel({
-  autoScenarios,
-  facilities,
-  graph,
-  revenueModels,
-  comfortScores,
-  ambientMode = "calm",
-  onExecuteScenario,
-  onDismissScenario,
-}: WhatIfPlannerPanelProps) {
+export function WhatIfPlannerPanel({ autoScenarios, facilities, graph, revenueModels, ambientMode = "calm", onExecuteScenario, onDismissScenario }: WhatIfPlannerPanelProps) {
   const prefersReduced = useReducedMotion();
-  const [visibleCount, setVisibleCount] = useState(MAX_VISIBLE);
+  useState(MAX_VISIBLE);
 
   const handleExecute = useCallback(
     (scenario: WhatIfScenario) => {

@@ -23,8 +23,7 @@ import type { AdvisorCommand } from "@/shared/types/ai-intelligence";
 import { generateInsightId } from "@/shared/types/ai-intelligence";
 
 import {
-  buildAdvisorCommand,
-  FACILITIES_ADVISOR_THRESHOLDS,
+  buildAdvisorCommand
 } from "../../config";
 // ═══════════════════════════════════════════════════════════════
 // ACTION BUILDER — Config-derived
