@@ -1,0 +1,522 @@
+# CHECKPOINT — Fases 11-12 Completadas — Communication Intelligence + Guest Management
+
+**Fecha:** Mayo 2025
+**Sesiones completadas:** 1 (esta sesión — Fases 11 y 12 completas)
+**Archivos creados:** 10 nuevos + 8 modificados
+**Líneas nuevas:** ~5,180
+**Tools MCP registradas:** 14 nuevas (6 communication + 6 guest_management + 2 AI mock-only)
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend Nuevos (10)
+
+```
+src/features/communications/
+├── CommunicationDashboard.tsx              ← ~90 líneas
+│   Hub padre con DetailTabs (5 tabs: Pulso, Centro, Tablón, Analytics, Herramientas)
+│   Lazy loading, HerramientasPanel con sub-tabs (Programar, Preferencias)
+│   Tools: — (hub únicamente)
+│
+└── components/
+    ├── CommunicationOverview.tsx           ← ~680 líneas
+    │   Health Score gauge SVG 360°, Pulse Strip 5 KPIs
+    │   8 computed insights determinísticos
+    │   Channel Health Matrix (5 canales), Communication Timeline (30 días)
+    │   Upcoming Pipeline (5 items), Quick Actions (4 botones)
+    │   Tools: get_communication_analytics (auto), get_notification_history (auto),
+    │          schedule_notification list (auto)
+    │
+    ├── CommunicationAnalytics.tsx          ← ~530 líneas
+    │   Period selector, 5 KPI cards, AI insights on-demand
+    │   Daily volume area chart, hourly distribution bar chart
+    │   Channel breakdown horizontal bar, type breakdown progress bars
+    │   Status funnel horizontal bars
+    │   Tools: get_communication_analytics (auto), communication_insights (on-demand AI)
+    │
+    ├── CommunicationPreferences.tsx        ← ~350 líneas
+    │   Member search, channel toggles (5), frequency selects (3)
+    │   Quiet hours time inputs, create/update mutations
+    │   Tools: manage_communication_preferences (CRUD)
+    │
+    └── ScheduleComposer.tsx               ← ~530 líneas
+        Template selector + preview, recipient CSV con contador
+        Channel selector visual, Smart Time Picker (traffic light score 0-100)
+        Suggested slots (top 3 horas del historial)
+        Tools: schedule_notification create (mutation),
+               manage_notification_templates list (auto),
+               get_communication_analytics (auto — para smart time)
+
+src/features/guests/
+├── GuestManagementDashboard.tsx            ← ~90 líneas
+│   Hub padre con DetailTabs (4 tabs: Analytics, Invitados, Eventos, Trials)
+│   Lazy loading, breadcrumbs
+│   Tools: — (hub únicamente)
+│
+└── components/
+    ├── GuestAnalytics.tsx                  ← ~560 líneas
+    │   4 KPI cards, 5 quick insights determinísticos
+    │   AI insights on-demand (8 insights costarricenses)
+    │   5 charts: privileges horizontal bar, weekly pattern,
+    │   events by type, trial status bars, top host families ranking
+    │   Tools: get_guest_analytics (auto), guest_management_insights (on-demand AI)
+    │
+    ├── GuestRegistry.tsx                   ← ~430 líneas
+    │   Registration form (family/host/name/contact/date/purpose/privileges/notes)
+    │   Guest limit indicator (semáforo 0/1/2/3/4)
+    │   Guest list con filtros, privilege chips, expandible privilege manager inline
+    │   Tools: register_guest CRUD (list/create/check_in/cancel),
+    │          manage_guest_privileges (assign/revoke inline)
+    │
+    ├── PrivateEventPlanner.tsx             ← ~470 líneas
+    │   Create modal (14 fields, 3 service toggles)
+    │   Pipeline stepper visual (7 pasos: Inquiry→Quoted→Approved→Contracted→
+    │   Deposit Paid→Confirmed→Completed)
+    │   Advance status action, event list con badges
+    │   Tools: plan_private_event CRUD (list/create HITL/update_status)
+    │
+    └── TrialMembershipManager.tsx          ← ~400 líneas
+        Stats row (activos/por expirar/convertidos/conversión)
+        Create form (guest info/trial type/dates/privileges)
+        Countdown badge (semáforo días restantes), expiring soon alert
+        Status flow actions (aprobar→activar→convertir)
+        Tools: manage_trial_memberships CRUD (list/create HITL/update_status)
+```
+
+### Archivos Modificados (8)
+
+| # | Archivo | Qué se cambió | Por qué |
+|---|---------|---------------|---------|
+| 1 | `communications/types.ts` | +160 líneas append | Enums, interfaces, config maps para analytics + preferences + insights |
+| 2 | `shared/mocks/contracts.ts` | +155 líneas append | 8 response types: preferences, communication_insights, register_guest, plan_private_event, manage_trial_memberships, manage_guest_privileges, get_guest_analytics, guest_management_insights |
+| 3 | `shared/mocks/factories.ts` | +440 líneas append | 8 factories con data realista costarricense |
+| 4 | `shared/mocks/mock-registry.ts` | +15 líneas append | 8 entries: 2 en communication + 6 en guest_management |
+| 5 | `guests/types.ts` | +290 líneas append | 6 enum types, 3 entity interfaces, 8 config maps para guest management |
+| 6 | `shared/mocks/contracts.ts` | (ya contado arriba) | Fase 12 additions |
+| 7 | `shared/mocks/factories.ts` | (ya contado arriba) | Fase 12 additions |
+| 8 | `shared/mocks/mock-registry.ts` | (ya contado arriba) | Fase 12 additions |
+
+### Mock System
+
+**Contracts nuevos (8 total):**
+
+| Tool | Server | Contract shape |
+|------|--------|----------------|
+| `manage_communication_preferences` | communication | `{status, message?, preferences?}` |
+| `communication_insights` | communication | `{status, message, insights[], summary, generated_at}` |
+| `register_guest` | guest_management | `{status, message, guest?, guests?, request_id?, current_guests?, limit?}` |
+| `plan_private_event` | guest_management | `{status, message, event?, events?, request_id?, details?}` |
+| `manage_trial_memberships` | guest_management | `{status, message, trial_membership?, trial_memberships?, request_id?, details?}` |
+| `manage_guest_privileges` | guest_management | `{status, message, privileges?, guest_id?, guest_name?, guest?}` |
+| `get_guest_analytics` | guest_management | `{status, message, analytics{...15 fields}}` |
+| `guest_management_insights` | guest_management | `{status, message, insights[], summary, generated_at}` |
+
+**Factories nuevas (8):**
+
+| Factory | Data realista |
+|---------|--------------|
+| `createMockPreferencesResponse` | 5 channels toggles, 3 frequencies, quiet hours |
+| `createMockCommunicationInsightsResponse` | 7 insights (timing, risk×2, channel×2, content, audience) |
+| `createMockRegisterGuestResponse` | 5 invitados costarricenses, CRUD-aware |
+| `createMockPrivateEventResponse` | 4 eventos (boda ₡8.5M, bautizo, quinceañera, corporativo TechCR) |
+| `createMockTrialMembershipsResponse` | 5 trials (2 activos, 1 aprobado, 1 convertido, 1 expirado) |
+| `createMockGuestPrivilegesResponse` | 8 tipos de privilegios |
+| `createMockGuestAnalyticsResponse` | 47 invitados, 4 eventos, 5 trials, métricas completas |
+| `createMockGuestManagementInsightsResponse` | 8 insights (conversión, eventos, privilegios, riesgo, frecuencia, oportunidad) |
+
+**Registry keys nuevas (8):**
+
+| Server | Keys |
+|--------|------|
+| `communication` | `manage_communication_preferences`, `communication_insights` |
+| `guest_management` | `register_guest`, `plan_private_event`, `manage_trial_memberships`, `manage_guest_privileges`, `get_guest_analytics`, `guest_management_insights` |
+
+### Tools MCP Registradas
+
+| # | Tool | Server | Backend | Mock | Tipo | Aprobación |
+|---|------|--------|---------|------|------|------------|
+| 1 | `get_communication_analytics` | communication | ✅ | ✅ (ya existía) | Auto-load | AUTO |
+| 2 | `manage_communication_preferences` | communication | ✅ | ✅ NUEVA | CRUD | AUTO |
+| 3 | `communication_insights` | communication | ⬜ mock-only | ✅ NUEVA | On-demand AI | AUTO |
+| 4 | `register_guest` | guest_management | ✅ | ✅ NUEVA | CRUD + escalación | SEMI→HITL |
+| 5 | `plan_private_event` | guest_management | ✅ | ✅ NUEVA | CRUD | HITL |
+| 6 | `manage_trial_memberships` | guest_management | ✅ | ✅ NUEVA | CRUD | HITL |
+| 7 | `manage_guest_privileges` | guest_management | ✅ | ✅ NUEVA | CRUD inline | AUTO |
+| 8 | `get_guest_analytics` | guest_management | ✅ | ✅ NUEVA | Auto-load | AUTO |
+| 9 | `guest_management_insights` | guest_management | ⬜ mock-only | ✅ NUEVA | On-demand AI | AUTO |
+
+**Tools existentes que ya tenían frontend (NO se tocaron):**
+
+| # | Tool | Server | Componente existente |
+|---|------|--------|---------------------|
+| 1 | `broadcast_club_announcement` | communication | CommunicationCenter.tsx → ComunicarPanel |
+| 2 | `manage_emergency_broadcast` | communication | CommunicationCenter.tsx → EmergencyModal |
+| 3 | `send_personalized_notification` | communication | CommunicationCenter.tsx → PersonalizedModal |
+| 4 | `manage_notification_templates` | communication | CommunicationCenter.tsx → PlantillasPanel |
+| 5 | `schedule_notification` | communication | CommunicationCenter.tsx → ProgramadosPanel |
+| 6 | `get_notification_history` | communication | CommunicationCenter.tsx → HistorialPanel |
+| 7 | `send_board_package` | communication | CommunicationCenter.tsx → BoardPackageModal |
+| 8 | `list_announcements` | communication | AnnouncementBoard.tsx |
+| 9 | `update_announcement_status` | communication | AnnouncementBoard.tsx |
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+### Hallazgos de Fase 11 (Communication)
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | CommunicationCenter.tsx ya implementa 8/11 tools embebidas en 4 tabs + 4 modals. Es robusto (~900 líneas). NO se modifica | ALTA | Documentado, decisión: no tocar |
+| 2 | AnnouncementBoard.tsx ya implementa 3 tools (list_announcements, update_announcement_status, get_communication_analytics). NO se modifica | ALTA | Documentado |
+| 3 | EmergencyBroadcast.tsx es standalone. NO se integra en CommunicationDashboard | MEDIA | Confirmado por usuario |
+| 4 | `communication_insights` NO existe en backend. Es mock-only para AI on-demand | BAJA | Factory implementada con 7 insights realistas |
+| 5 | Mismatch: frontend types.ts usa `published`/`archived` vs backend `sent`/`cancelled` para AnnouncementStatus | MEDIA | Documentado, no se corrige — componentes existentes usan su propio contrato |
+| 6 | Mismatch: frontend `events` (plural) vs backend `event` (singular) para AnnouncementType | BAJA | Documentado, no se corrige |
+| 7 | Mismatch: frontend EmergencyChannel incluye `pa_system`/`app_banner` que no existen en backend | BAJA | Documentado |
+| 8 | Mismatch: frontend CommunicationTemplate usa `subject_template` vs backend `subject` | BAJA | Documentado |
+| 9 | `schedule_notification` params se pasan como `k=v,k=v` CSV, no como JSON | BAJA | Documentado en ScheduleComposer |
+| 10 | `get_communication_analytics` calcula métricas determinísticamente del historial real (no es AI) | BAJA | Documentado |
+| 11 | `_empty_analytics()` helper devuelve hourly_distribution con 24 entries siempre | BAJA | Documentado |
+
+### Hallazgos de Fase 12 (Guest Management)
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 12 | Dos servers diferentes: `guests` (operacional) vs `guest_management` (gestión). GuestList.tsx y GuestRegistration.tsx hablan con `guests` | ALTA | Documentado, separación limpia |
+| 13 | `_GUEST_LIMIT = 4` está hardcoded en el agente. Frontend debe mostrar visualmente | MEDIA | Implementado con GuestLimitBar semáforo |
+| 14 | `register_guest` tiene escalación condicional: ≤4 guests/día = AUTO, >4 = HITL. Similar a `send_personalized_notification` >100 | MEDIA | Implementado con HITL notice banner |
+| 15 | `execute_private_event` y `execute_trial_membership` confirman automáticamente tras HITL (status→approved). El frontend refleja esto | BAJA | Documentado |
+| 16 | Guest entity backend (`guest_name` campo único) vs frontend (`first_name` + `last_name`) — models diferentes | ALTA | Documentado, no se corrige — componentes existentes usan su modelo |
+| 17 | TrialMembershipType backend (`day_pass`, `week_trial`, `month_trial`) vs frontend (`week`, `two_weeks`, `month`) | MEDIA | Documentado, mis componentes usan backend values |
+| 18 | GuestPrivilegeType tiene 8 tipos. `manage_guest_privileges` tiene actions list/get/assign/revoke | BAJA | Implementado inline en GuestRegistry |
+| 19 | `plan_private_event` tiene 7 status en pipeline + 6 booleanos de servicio | BAJA | Pipeline stepper implementado |
+
+### Correcciones durante sesión
+
+No hubo correcciones. Los 4 archivos existentes fueron confirmados como completos por el usuario antes de generar código nuevo.
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón CRUD con HITL (establecido Fase 10, replicado Fase 11-12)
+
+Cuando un agente tiene tools con `action` parameter (list/get/create/update_status):
+
+```
+1. List (auto-load)     → useMCPQuery con staleTime, action="list"
+2. Get (on-demand)      → useMCPQuery con enabled condicional, action="get"
+3. Create (mutation)    → useMCPMutation, action="create"
+                         → backend retorna pending_approval
+                         → Toast informativo
+                         → ApprovalQueue muestra el item
+4. Update status        → useMCPMutation, action="update_status"
+```
+
+**Aplicado en Fase 11:** `manage_notification_templates` (ya existía en CommunicationCenter), `schedule_notification` (ya existía).
+**Aplicado en Fase 12:** `plan_private_event`, `manage_trial_memberships`, `register_guest` (con escalación condicional).
+
+### Patrón AI de 3 Niveles (establecido Fase 9, confirmado Fase 11-12)
+
+| Nivel | Patrón | Ejemplos Fase 11 | Ejemplos Fase 12 |
+|-------|--------|------------------|------------------|
+| 1. Datos (auto-load) | `useMCPQuery` con `staleTime` | `get_communication_analytics`, `get_notification_history`, `schedule_notification` list | `get_guest_analytics`, `register_guest` list, `plan_private_event` list |
+| 2. Inteligencia (on-demand) | `useMCPQuery` con `enabled: shouldFetch` + botón | `communication_insights` (botón "Generar Análisis AI") | `guest_management_insights` (botón "Generar Análisis Guest AI") |
+| 3. Two-phase | Dos triggers separados | No aplicó | No aplicó |
+
+### Patrón de Hub con DetailTabs + Lazy Loading (NUEVO — establecido Fase 11)
+
+Cuando un módulo tiene múltiples vistas/componentes:
+
+```
+Dashboard.tsx (hub padre)
+├── DetailTabs con tabs[]
+├── lazy(() => import("./ComponentA"))
+├── lazy(() => import("./ComponentB"))
+├── Suspense con Skeleton fallback
+└── Breadcrumbs absolutos (/admin/xxx)
+```
+
+**Aplicado en Fase 11:** CommunicationDashboard (5 tabs con lazy loading).
+**Aplicado en Fase 12:** GuestManagementDashboard (4 tabs con lazy loading).
+
+**Cuándo se usa:** Siempre que hay 3+ vistas de un módulo que se integran en un dashboard padre.
+
+### Patrón de Sub-tabs para Herramientas (establecido Fase 10, replicado Fase 11)
+
+Cuando un módulo tiene herramientas de administración (HITL) separadas de dashboards de visualización:
+
+```
+DetailTabs (vistas principales)
+  └── Tab "Herramientas"
+        └── Sub-tab bar (toggle local con buttons)
+              ├── Programar → ScheduleComposer
+              └── Preferencias → CommunicationPreferences
+```
+
+**Razón:** 2 items → toggle simple. DetailTabs es para 3+ secciones con ARIA.
+
+### Patrón de Insights Computados + AI On-Demand (NUEVO — establecido Fase 11)
+
+Cada módulo con analytics tiene DOS capas de inteligencia:
+
+**Capa 1 — Determinística (siempre visible):**
+- Quick insights computados de los datos existentes (analytics, history, etc.)
+- Se renderizan inmediatamente sin llamada al backend
+- Ejemplos: "Familia top anfitriona", "Día pico de visitas", "Mejor horario de envío"
+
+**Capa 2 — AI On-Demand (requiere botón):**
+- Botón prominente "Generar Análisis AI" con styling gold
+- `enabled: shouldFetch` en useMCPQuery
+- Mock-only tools (`communication_insights`, `guest_management_insights`)
+- Insights con categorías, prioridades, confidence bars, recomendaciones
+- Botón "Regenerar" para refrescar
+
+**Cuándo se aplica:** Siempre en módulos con analytics. La capa determinística da contexto rápido, la AI da profundidad.
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón |
+|---|---------|----------------------|-------|
+| 1 | CommunicationDashboard con 5 tabs (no 7) | 7 tabs (Pulso, Centro, Tablón, Analytics, Programar, Preferencias, Emergencia) | "Herramientas" agrupa Programar + Preferencias. EmergencyBroadcast excluido — es standalone, accesible desde CommunicationCenter |
+| 2 | ScheduleComposer como tab propio (no modal) | Modal accesible desde Overview/ProgramadosPanel | Tiene espacio para smart time picker, template preview, suggested slots sin restricciones de modal |
+| 3 | CommunicationOverview con insights determinísticos + AI en CommunicationAnalytics | Todo en un componente | Separación de responsabilidades: Overview = pulse rápido determinístico, Analytics = deep analysis on-demand |
+| 4 | onNavigate callback pattern para Overview → tabs | Navigation store o direct imports | Desacoplamiento total — Overview no necesita conocer la estructura del dashboard |
+| 5 | GuestRegistry con privilege manager inline expandible | Componente separado de privilegios | Contextual — el admin gestiona privilegios sin perder la vista de la lista |
+| 6 | PrivateEventPlanner con create en modal (no inline) | Form inline expandible | 14 fields necesitan espacio. Modal con scroll evita que la lista desaparezca |
+| 7 | Pipeline stepper visual (7 pasos con checkmarks) | Badge de status simple | Storytelling visual del progreso del evento — más intuitivo que un label |
+| 8 | Trial countdown badge con semáforo | Número simple con label | Urgencia visual: rojo (0 días), ámbar (1-3), normal (4+). Inspirado en GuestList.tsx |
+| 9 | Guest limit indicator (semáforo 0-4) en form de registro | Text warning solamente | UX inmediata: el usuario ve el estado del límite antes de enviar |
+| 10 | GuestManagementDashboard NO incluye GuestList.tsx ni GuestRegistration.tsx | Integrar todo en un hub | Dos servers diferentes (`guests` vs `guest_management`), dos audiencias (recepción vs admin). Separación limpia |
+| 11 | EmergencyBroadcast excluido del CommunicationDashboard | Tab o link | Es standalone, accesible desde CommunicationCenter (EmergencyModal). Confirmado por usuario |
+| 12 | Factory data costarricense: nombres ticos, montos en colones, venues del club | Data genérica en USD | Castillo Country Club en Costa Rica — los datos deben reflejar la realidad del club |
+| 13 | Toggle nativo HTML con role="switch" para CommunicationPreferences | Toggle custom component | No existe Toggle shared. Implementación accesible simple con role="switch" + aria-checked |
+| 14 | `communication_insights` y `guest_management_insights` como tools mock-only | Endpoint real de AI | Backend NO implementa AI insights aún. Se mockean con data realista. Cuando backend las implemente → quitar del registry |
+| 15 | Smart Time Picker con score 0-100 y ring SVG | Select de horarios sugeridos sin scoring | Feedback visual inmediato de calidad del horario. Más intuitivo que un número |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| 1 | Infraestructura | ✅ |
+| 2 | Global tokens | ✅ |
+| 3 | Formularios | ✅ |
+| 4 | Lists | ✅ |
+| 5 | Detail pages | ✅ |
+| 6 | Dashboards densos + AI | ✅ |
+| 7 | Reports, mi-club, settings, finance | ✅ |
+| 8 | Dashboard sub-componentes | 🔄 5/12 done |
+| 9 | Wellness + Satisfaction | ✅ |
+| 10 | Proactive Recommendations | ✅ |
+| **11** | **Communication Enhancement** | **✅ COMPLETADA** |
+| **12** | **Guest Management + Trial Memberships** | **✅ COMPLETADA** |
+| 13 | Finance Enhancement + HITL Complete | ⬜ SIGUIENTE |
+| 14 | Print/PDF + Export | ⬜ |
+| 15 | Integration Testing + QA | ⬜ |
+| 16 | Mock → Backend Migration | ⬜ |
+
+---
+
+## 6. PRÓXIMA FASE — Fase 13: Finance Enhancement + HITL Complete
+
+**Agente:** FinanceAgent (server: `finance`)
+**Archivo backend a leer:**
+```
+backend/src/club_mcp/agents/finance.py
+backend/src/club_mcp/models/finance.py
+```
+
+**Frontend existente:**
+```
+src/features/finance/types.ts
+src/features/finance/FinancialDashboard.tsx
+src/features/finance/FamilyAccount.tsx
+```
+
+**Pendientes conocidos que viven en Fase 13:**
+- #1: FinancialDashboard métricas que no aparecen (MEDIA)
+- #3: ApprovalQueue 2 tipos nuevos (optimize_pricing, suggest_new_activities) (MEDIA)
+- #5: Tier mismatch backend↔frontend (MEDIA)
+- #11-13: FamilyAccount issues (tab bar, filter select, Table raw) (BAJA)
+
+**Bloques propuestos (tentativo — requiere leer agente):**
+
+| Bloque | Contenido | Dependencia |
+|--------|-----------|-------------|
+| B1 | Types + mocks + analytics dashboard de finanzas | Lee agente |
+| B2 | Herramientas de gestión financiera | B1 |
+| B3 | ApprovalQueue updates + FamilyAccount fixes + verificación | B1+B2 |
+
+**ApprovalQueue impact:** Sí — los 2 tipos nuevos (`optimize_pricing`, `suggest_new_activities`) de Fase 10 necesitan ser integrados en ApprovalQueue.tsx.
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Archivo | Fase sugerida |
+|---|-------|-----------|---------|---------------|
+| 1 | FinancialDashboard: métricas que no aparecen | MEDIA | `features/finance/FinancialDashboard.tsx` | 13 |
+| 2 | AIChatWidget: posición movida de derecha a izquierda sobre sidebar | MEDIA | `shared/components/chat/AIChatWidget.tsx` | 15 |
+| 3 | ApprovalQueue: 2 tipos nuevos (optimize_pricing, suggest_new_activities) | MEDIA | `features/approvals/ApprovalQueue.tsx` | 13 |
+| 4 | Dashboard sub-componentes: 7/12 pendientes (violations reglas) | MEDIA | `features/dashboard/components/` | 8 |
+| 5 | Tier mismatch backend "basic"/"premium"/"vip" vs frontend "platino"/"oro"/"plata"/"bronce" | MEDIA | `features/families/types.ts` | 13 |
+| 6 | MembershipDonut: tooltip con backdrop-filter (Regla #2) | MEDIA | `features/dashboard/components/MembershipDonut.tsx` | 8 |
+| 7 | AgeBalanceWidget: mock group colors no son tokens Silver Tide (Regla #1) | MEDIA | `features/dashboard/components/AgeBalanceWidget.tsx` | 8 |
+| 8 | Sub-componentes dashboard: hex hardcodeados en vez de chartTheme (Regla #3) | MEDIA | `features/dashboard/components/*` | 8 |
+| 9 | HitlQueue: botones raw en vez de Button shared (Regla #17) | MEDIA | `features/dashboard/components/HitlQueue.tsx` | 8 |
+| 10 | MembershipDonut: falta useReducedMotion() (Regla #18) | BAJA | `features/dashboard/components/MembershipDonut.tsx` | 8 |
+| 11 | FamilyAccount: tab bar local en vez de DetailTabs (Regla #13) | BAJA | `features/finance/FamilyAccount.tsx` | 13 |
+| 12 | FamilyAccount: filter select raw en vez de FilterDropdown (Regla #14) | BAJA | `features/finance/FamilyAccount.tsx` | 13 |
+| 13 | FamilyAccount: Table raw en vez de Table compartido | BAJA | `features/finance/FamilyAccount.tsx` | 13 |
+| 14 | SettingsPage: notificaciones store local no sync con backend | BAJA | `features/settings/SettingsPage.tsx` | 15 |
+| 15 | SettingsPage: versión frontend hardcoded "1.0.0-beta" | BAJA | `features/settings/SettingsPage.tsx` | 15 |
+| 16 | RiskHeatmap: emojis como icons en vez de Lucide | BAJA | `features/reports/RiskHeatmap.tsx` | 15 |
+| 17 | MyReservations: tipos inline no compartidos | BAJA | `features/mi-club/MyReservations.tsx` | 15 |
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección 7 (Estado del Sprint) — REEMPLAZAR:
+
+```
+| Fase | Contenido                                        | Estado            |
+|------|--------------------------------------------------|-------------------|
+| 1-7  | Infraestructura, tokens, forms, lists, details   | ✅                |
+| 8    | Dashboard sub-componentes                        | 🔄 5/12 done      |
+| 9    | Wellness + Satisfaction                          | ✅                |
+| 10   | Proactive Recommendations                        | ✅ COMPLETADA     |
+| 11   | Communication Enhancement                        | ✅ COMPLETADA     |
+| 12   | Guest Management + Trial Memberships             | ✅ COMPLETADA     |
+| 13   | Finance Enhancement + HITL Complete              | ⬜ SIGUIENTE      |
+| 14   | Print/PDF + Export                               | ⬜                |
+| 15   | Integration Testing + QA                         | ⬜                |
+| 16   | Mock → Backend Migration                         | ⬜                |
+```
+
+### Sección 8 (Pendientes) — Agregar:
+
+```
+| 18 | communication_insights: tool mock-only, no existe en backend   | BAJA   | shared/mocks/     | 16              |
+| 19 | guest_management_insights: tool mock-only, no existe en backend | BAJA  | shared/mocks/     | 16              |
+| 20 | EmergencyBroadcast.tsx excluido de CommunicationDashboard       | BAJA  | communications/   | — (decisión)    |
+| 21 | GuestList.tsx y GuestRegistration.tsx viven en server "guests" separado de "guest_management" | BAJA | features/guests/ | — (arquitectura) |
+```
+
+### Sección 4 (Patrones) — Agregar "Patrón Hub con DetailTabs + Lazy Loading" y "Patrón de Insights Computados + AI On-Demand":
+
+```
+| Nivel | Patrón | Ejemplo |
+|-------|--------|---------|
+| Hub | DetailTabs + lazy() + Suspense | CommunicationDashboard, GuestManagementDashboard |
+| Insights | Quick deterministic + AI on-demand button | CommunicationAnalytics, GuestAnalytics |
+```
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+### Fase 11 — Communication (5 archivos nuevos + 4 modificados)
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| #1 NUNCA colores hardcoded | ✅ | Todos los colores via tokens. CHART_PALETTE para Recharts SVG |
+| #2 NUNCA backdrop-filter en datos | ✅ | 0 instancias de backdrop-filter/blur |
+| #3 Recharts de chartTheme | ✅ | CHART, CHART_PALETTE, TOOLTIP_STYLE, AXIS_TICK importados y usados |
+| #4 Changelog | ✅ | B1: 6 archivos, B2: 2 archivos, B3: 1 archivo |
+| #5 Código completo | ✅ | 5 archivos nuevos completos, 4 extendidos |
+| #6 ResponsiveContainer | ✅ | Todos los charts wrapped |
+| #7 CHART constants | ✅ | CHART.gridStroke en CartesianGrid |
+| #8 formatNumber/formatCurrency | ✅ | KPI cards en Analytics, Overview |
+| #9 TOOLTIP_STYLE sin blur | ✅ | contentStyle={TOOLTIP_STYLE} en todos |
+| #10 AXIS_TICK | ✅ | {...AXIS_TICK} en XAxis/YAxis |
+| #11 focus-visible | ✅ | Todos los inputs, buttons, selects, toggles |
+| #12 Touch targets ≥44px | ✅ | min-h-[48px] inputs, min-h-[44px] selects, min-h-[40px] chips |
+| #13 DetailTabs shared | ✅ | CommunicationDashboard con 5 tabs |
+| #14 FilterDropdown | ✅ | N/A — selects nativos para 1 filtro simple |
+| #15 Toast | ✅ | showToast en todas las mutations |
+| #16 Breadcrumbs | ✅ | /admin → /admin/communications |
+| #17 Button shared | ✅ | Todos los botones via Button component |
+| #18 useReducedMotion | ✅ | useMotion() helper en todos los componentes |
+| #19 AI on-demand | ✅ | enabled: shouldFetch + botón |
+| #20 useBreakpoint | ✅ | isMobile para charts, timelines, limits |
+| #21 Responsive | ✅ | Grid responsive, cards en mobile |
+| #22 cn() | ✅ | cn() en conditional classes |
+
+### Fase 12 — Guest Management (5 archivos nuevos + 4 modificados)
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| #1 NUNCA colores hardcoded | ✅ | PRIVILEGE_CONFIG, TRIAL_STATUS_CONFIG_BACKEND, etc. CHART_PALETTE para charts |
+| #2 NUNCA backdrop-filter en datos | ✅ | 0 instancias |
+| #3 Recharts de chartTheme | ✅ | CHART, CHART_PALETTE, TOOLTIP_STYLE, AXIS_TICK en GuestAnalytics |
+| #4 Changelog | ✅ | B1: 5 archivos, B2: 3 archivos, B3: 1 archivo |
+| #5 Código completo | ✅ | 5 archivos nuevos completos, 4 extendidos |
+| #6 ResponsiveContainer | ✅ | 3 charts en GuestAnalytics |
+| #7 CHART constants | ✅ | CHART.gridStroke |
+| #8 formatNumber/formatCurrency | ✅ | KPI cards + event budget |
+| #9 TOOLTIP_STYLE | ✅ | Todos los charts |
+| #10 AXIS_TICK | ✅ | Todos los axis |
+| #11 focus-visible | ✅ | Todos los forms, toggles, buttons |
+| #12 Touch targets | ✅ | min-h-[48px] inputs, min-h-[40px] chips |
+| #13 DetailTabs | ✅ | GuestManagementDashboard con 4 tabs |
+| #14 FilterDropdown | ✅ | GuestRegistry: select nativo para 1 filtro |
+| #15 Toast | ✅ | Todas las mutations |
+| #16 Breadcrumbs | ✅ | /admin → /admin/guests |
+| #17 Button shared | ✅ | Todos los botones |
+| #18 useReducedMotion | ✅ | useMotion() en todos |
+| #19 AI on-demand | ✅ | GuestAnalytics AI insights con botón |
+| #20 useBreakpoint | ✅ | PipelineStepper label truncation |
+| #21 Responsive | ✅ | Grid responsive en todos |
+| #22 cn() | ✅ | cn() en conditional classes |
+
+**0 violaciones pendientes en Fases 11 y 12.**
+
+---
+
+## 10. QUICK START PARA NUEVO CHAT
+
+```
+1. Pegar CLAUDE_CONTEXT_MINI.md
+2. Pegar este CHECKPOINT (Fases 11-12 completas)
+3. Pedir: "Pasame el agente de FinanceAgent y los modelos relacionados"
+   → Pegar: backend/src/club_mcp/agents/finance.py
+   → Pegar: backend/src/club_mcp/models/finance.py
+4. Pedir: "Pasame los archivos frontend existentes de finance"
+   → Pegar: src/features/finance/types.ts
+   → Pegar: src/features/finance/FinancialDashboard.tsx
+   → Pegar: src/features/finance/FamilyAccount.tsx
+5. Pedir: "Definime los bloques de Fase 13"
+6. Pedir: "Genera Bloque 1"
+```
+
+---
+
+## 11. DECISION LOG
+
+| # | Fecha | Decisión | Razón | Impacto |
+|---|-------|---------|-------|---------|
+| 1 | Mayo 2025 | CommunicationCenter.tsx NO se modifica — ya implementa 8/11 tools | Es robusto, ~900 líneas, bien construido. Hacerlo más grande no es conveniente | Solo se crean componentes nuevos (Analytics, Preferences, ScheduleComposer, Overview) |
+| 2 | Mayo 2025 | EmergencyBroadcast.tsx excluido de CommunicationDashboard | Es standalone, accesible desde CommunicationCenter EmergencyModal. Confirmado por usuario | No se incluye como tab en el dashboard |
+| 3 | Mayo 2025 | CommunicationDashboard con 5 tabs (no 7) | "Herramientas" agrupa Programar + Preferencias con sub-tabs. Más limpio | Patrón replicable para futuros dashboards con tools agrupadas |
+| 4 | Mayo 2025 | ScheduleComposer como tab propio (no modal) | Espacio para smart time picker, template preview, suggested slots | UX superior a modal constrainado |
+| 5 | Mayo 2025 | Dos servers separados para guests: `guests` (operacional) y `guest_management` (gestión) | GuestList y GuestRegistration son herramientas de recepción. GuestManagementDashboard es para admin | No hay redundancia. Dos rutas diferentes |
+| 6 | Mayo 2025 | GuestManagementDashboard NO incluye GuestList/Registration | Dos servidores, dos audiencias, dos contextos diferentes | Separación limpia entre operacional y gestión |
+| 7 | Mayo 2025 | Patrón de insights: determinístico + AI on-demand en todos los analytics | Determinístico = siempre visible, rápido. AI = profundidad bajo demanda | Se replica en Fase 13 (Finance) y todas las futuras |
+| 8 | Mayo 2025 | Privilege manager inline expandible (no componente separado) | Contextual — el admin gestiona privilegios sin perder la vista de la lista | Se aplica a GuestRegistry |
+| 9 | Mayo 2025 | Pipeline stepper visual para eventos privados (7 pasos) | Storytelling visual del progreso. Más intuitivo que badge de status | Se puede replicar para otros pipelines (approval, etc.) |
+| 10 | Mayo 2025 | Guest limit indicator con semáforo (verde/amarillo/rojo) | UX inmediata antes de enviar. Universal | Se replica para cualquier feature con límites |
+| 11 | Mayo 2025 | Factory data costarricense: nombres ticos, montos en colones (₡), venues reales | Castillo Country Club en Costa Rica — los datos deben reflejar la realidad | Todas las factories futuras usan data local |
+| 12 | Mayo 2025 | `communication_insights` y `guest_management_insights` como tools mock-only | Backend NO implementa AI insights aún | Se quitan del registry cuando backend las implemente (Fase 16) |
+| 13 | Mayo 2025 | Quick insights determinísticos como sección separada de AI insights | Lo determinístico va primero (siempre visible). Lo AI va después (on-demand) | Patrón fijo para todos los analytics futuros |
+| 14 | Mayo 2025 | Smart Time Picker con score ring SVG (no select nativo) | Feedback visual inmediato de calidad del horario. Más intuitivo | Se puede replicar para scheduling en otros módulos |
+
+---
+
+Gracias por esta sesión doble. Fase 11 quedó como una plataforma de inteligencia comunicacional completa: health score, timeline, channel matrix, smart scheduling, AI insights, y un hub de 5 tabs con lazy loading. Fase 12 quedó como un ecosistema de gestión de invitados: analytics con AI, registro con privilege manager inline, eventos con pipeline visual de 7 pasos, y trials con countdown y flujo de conversión. Nos vemos en Fase 13 — Finance Enhancement.

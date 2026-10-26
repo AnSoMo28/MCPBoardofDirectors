@@ -1,0 +1,568 @@
+# CHECKPOINT — Fase 23 EN PROGRESO (fixes pendientes) — Wellness Advisor + Adaptive Thresholds
+
+**Fecha:** Junio 2026
+**Sesiones completadas:** 1 (esta sesión)
+**Archivos creados:** 5 nuevos + 5 modificados
+**Líneas nuevas:** ~1,200
+**Tools MCP nuevas:** 0 (ya existían en mock)
+**Tools MCP totales registradas:** ~135+
+**Advisor rules nuevas:** 15 (Wellness)
+**Advisor rules totales:** 80 (18 Financial + 15 Event + 25 Global + 7 Recommendations + 15 Wellness)
+
+---
+
+## 0. ROL SUPER ENRIQUECIDO — REGLA DE ORO
+
+Soy el **Principal AI Systems Architect** del Castillo Country Club. No soy un generador de código. Soy un partner técnico senior multi-experto con libertad propositiva total que combina **9 disciplinas** para convertir esta plataforma en la herramienta de gestión de clubes privados más inteligente de Costa Rica.
+
+**Las 9 disciplinas:** FullStack Engineering, UI/UX Architecture, Product Strategy, Private Club Operations (CR), AI/ML Architecture, Financial Intelligence, Marketing Intelligence, ML & Gen AI, AI Experience Design.
+
+**Proceso mental (10 pasos):** Leer código → Auditar reglas → Nivel inteligencia → Nivel posible → Advisor Architecture → Pendientes → Proponer ANTES → Completo o quirúrgico → Nivel 2026-2027 → Descubrimiento
+
+**Regla de oro (INVIOLABLE):** Yo propongo y analizo ANTES de escribir código. El usuario aprueba antes de generar. Changelog detallado al final de cada bloque. Formato de edición: Bloque A (código actual exacto) → Bloque B (líneas nuevas para copiar y pegar). Nunca mezclar. Siempre cuestiono lo que propongo.
+
+**Postura operativa:** Ver bug → auditar patrón. Ver tool sin UI → proponer integración. Recibir componente → analizar contra 22+ reglas. Proponer feature → algo que el usuario no sabía que necesitaba. Integrar AI → Intelligence Engine de 5 niveles. Documentar → changelog detallado + verificación.
+
+**Formato de entrega:**
+```
+BLOQUE A: [código actual EXACTO]
+BLOQUE B: [código NUEVO]
+CHANGELOG: [qué, por qué, impacto]
+```
+
+---
+
+## 1. LO QUE ESTAMOS CONSTRUYENDO
+
+**Castillo AI Platform** es un **Sistema de Decisión Inteligente** para clubes privados de Costa Rica. 5 capas de inteligencia: Datos → Contexto → Inteligencia Client-Side (0ms, 0 tokens) → Cross-Agent Intelligence → Acción Inteligente (11 acciones, one-click execute).
+
+La arquitectura Advisor es el corazón: hooks client-side que consumen cache de React Query, computan reglas determinísticas, y producen insights con acciones ejecutables. 5 Advisors: Financial (18 rules), Event (15 rules), Recommendations (7 rules), Global (25 rules), **Wellness (15 rules — NUEVO F23)**.
+
+---
+
+## 2. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend (Nuevos)
+
+| # | Ruta | Líneas | Contenido | Tools MCP que consume |
+|---|------|--------|-----------|----------------------|
+| 1 | `shared/lib/adaptiveThresholds.ts` | ~210 | Adaptive Thresholds Engine: `computeThreshold()`, `getCurrentSeason()`, `WELLNESS_THRESHOLDS` (9 factory functions) | Ninguna (pure computation) |
+| 2 | `features/wellness/lib/wellnessPersonas.ts` | ~300 | Wellness Personas Engine: 8 perfiles (athlete, zen_seeker, social_butterfly, weekend_warrior, recoverer, explorer, dormant, newcomer), `classifyWellnessPersona()` | Ninguna (pure computation) |
+| 3 | `features/wellness/hooks/useWellnessAdvisor.ts` | ~310 | 15 reglas en 3 capas (macro 1-5, micro 6-11, fusion 12-15) con adaptive thresholds | `wellness_report`, `wellness_profile_get`, `wellness_recommendations` (cache) |
+| 4 | `features/wellness/components/WellnessAdvisorBanner.tsx` | ~250 | Banner siguiendo patrón P14: insights cards + "Análisis Profundo" + reactions + actions | `advisor_intelligence.generate_insight_narrative` (on-demand) |
+| 5 | `features/wellness/components/WellnessGoals.tsx` | ~180 | Goal tracking con progress bars, filter tabs, CRUD display | `wellness_recommendations` (mock data) |
+
+### Archivos Frontend (Modificados)
+
+| # | Ruta | Acción | Qué se cambió | Por qué |
+|---|------|--------|---------------|---------|
+| 1 | `features/wellness/types.ts` | ENHANCE | +65 líneas: `WellnessAdvisorLayer`, `WellnessAdvisorAction`, `WellnessAdvisorInsight`, `WellnessPersonaId`, `WellnessPersona` | Source of truth para Advisor + Personas |
+| 2 | `shared/lib/reactionTemplate.ts` | QUIRÚRGICO | +22 líneas: template de reacciones para dominio `wellness` (schedule_class, goal_set, profile_update) | Integrar wellness en Reaction System |
+| 3 | `features/wellness/WellnessDashboard.tsx` | REWRITE | Selector de familias + Advisor integration + Advisor Action Modal + `enabled: !!familyId` en queries + `export default` | ADMIN sin family_id necesita selector |
+| 4 | `app/router.tsx` | QUIRÚRGICO | +1 lazy import (WellnessDashboard con `.then()` para named→default) + ruta `admin/wellness` | Registrar ruta de Wellness |
+| 5 | `shared/components/layout/Sidebar.tsx` | QUIRÚRGICO | +1 nav item: Wellness (Activity icon, roles: ["ADMIN"]) | Link en sidebar |
+
+### Archivos con Fixes Pre-existentes
+
+| # | Ruta | Fix | Origen |
+|---|------|-----|--------|
+| 1 | `features/wellness/WellnessDashboard.tsx` | `showToast` import: `@/shared/components/ui/showToast` → `@/shared/components/ui/Toast` | Bug pre-existente, descubierto al registrar ruta |
+| 2 | `features/wellness/components/WellnessAIAdvisor.tsx` | `showToast` import: igual que arriba | Bug pre-existente |
+
+### Mock System
+
+| Tool | Server | Contract | Factory | Registry | Backend |
+|------|--------|----------|---------|----------|---------|
+| `wellness_report` | `wellness` | ✅ existe | ✅ FIX: wrapper `data` + `activity_type` fields + valores realistas | ✅ existe | ✅ existe |
+
+### Tools MCP auditadas/conectadas en esta sesión
+
+| # | Tool | Server | Backend real | Mock | Tipo | Aprobación | Destino frontend |
+|---|------|--------|-------------|------|------|-----------|-----------------|
+| 1 | `wellness_profile_get` | `wellness` | ✅ | ✅ | datos | AUTO | WellnessDashboard |
+| 2 | `wellness_profile_update` | `wellness` | ✅ | ✅ | mutation | SEMI | Advisor action |
+| 3 | `wellness_activity_log` | `wellness` | ✅ | ✅ | mutation | AUTO | — |
+| 4 | `wellness_goal_set` | `wellness` | ✅ | ✅ | mutation | SEMI | Advisor action |
+| 5 | `wellness_recommendations` | `wellness` | ✅ | ✅ | inteligencia | AUTO | WellnessDashboard |
+| 6 | `wellness_schedule_class` | `wellness` | ✅ | ✅ | mutation | HITL | Advisor action |
+| 7 | `wellness_report` | `wellness` | ✅ | ✅ FIXED | datos | AUTO | WellnessDashboard |
+| 8 | `wellness_predict` | `wellness` | ⬜ | ✅ | inteligencia | AUTO | WellnessAIAdvisor |
+| 9 | `wellness_anomalies` | `wellness` | ⬜ | ✅ | inteligencia | AUTO | WellnessRiskRadar |
+| 10 | `wellness_correlate` | `wellness` | ⬜ | ✅ | inteligencia | AUTO | WellnessBusinessInsights |
+| 11 | `wellness_insights` | `wellness` | ⬜ | ✅ | inteligencia | AUTO | WellnessAIAdvisor |
+| 12 | `list_families` | `families` | ✅ | ✅ | datos | AUTO | FamilySelector (NUEVO) |
+
+---
+
+## 3. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | `showToast` import path incorrecto: `@/shared/components/ui/showToast` no existe, es `@/shared/components/ui/Toast` — en WellnessDashboard Y WellnessAIAdvisor | ALTA | ✅ Resuelto |
+| 2 | `WellnessGoals.tsx` importado en WellnessDashboard pero NUNCA fue creado — archivo fantasma | ALTA | ✅ Resuelto (creado) |
+| 3 | `AIInsightNarrative` es `export default`, no named export — WellnessAdvisorBanner usaba `import { AIInsightNarrative }` | ALTA | ✅ Resuelto |
+| 4 | `AIInsightNarrative` tiene ARQUITECTURA PROPIA: hace su propio `useAdvisorNarrative` internamente. Banner intentaba manejar el query por separado — incompatible | ALTA | ✅ Resuelto (Banner reescrito) |
+| 5 | `WellnessDashboard` tiene named export (`export function`), `lazy()` en router espera default | MEDIA | ✅ Resuelto (`.then(m => ({ default: m.WellnessDashboard }))`) + `export default` al final |
+| 6 | `DetailTabs` espera `icon: LucideIcon` (componente), WellnessDashboard pasaba JSX elements (`<LayoutDashboard className="..." />`) | ALTA | ⬜ PENDIENTE — aplicar fix |
+| 7 | `DetailTabs` usa prop `active`, WellnessDashboard usaba `activeTab` | MEDIA | ⬜ PENDIENTE — aplicar fix |
+| 8 | `wellness_report` factory no tenía wrapper `data` — `reportResp?.data` era `undefined` | ALTA | ✅ Resuelto |
+| 9 | `wellness_report` factory usaba `activity` field en vez de `activity_type` (no matchea `ActivityBreakdownItem`) | MEDIA | ✅ Resuelto |
+| 10 | `wellness_report` factory tenía valores agregados imposibles para 1 familia (2,847 actividades) | BAJA | ✅ Resuelto (18 actividades realistas) |
+| 11 | Wellness no tenía ruta en router.tsx ni link en Sidebar.tsx — nunca fue accesible | ALTA | ✅ Resuelto |
+| 12 | ADMIN no tiene `family_id` en su perfil — WellnessDashboard mostraba EmptyState | MEDIA | ✅ Resuelto (FamilySelector) |
+| 13 | `getWellnessLevel` función duplicada: existe en `types.ts` Y se redefine inline en `WellnessAIAdvisor.tsx` | BAJA | ⬜ Pendiente F25 |
+| 14 | `compactCurrency` y `getCurrentSeason` siguen triplicados (Financial, Global, ahora shared) | BAJA | ⬜ Pendiente F25 |
+
+---
+
+## 4. PATRONES ESTABLECIDOS / ACTUALIZADOS
+
+### Patrón NUEVO: Adaptive Thresholds Engine (F23)
+
+**Concepto:** Thresholds que se adaptan a contexto (temporada CR, fitness level) en vez de magic numbers hardcoded.
+
+**Niveles:**
+```
+Nivel 0: computeThreshold(config, fitnessLevel?) → AdaptiveThresholdResult
+Nivel 1: WELLNESS_THRESHOLDS.* (factory functions pre-built)
+```
+
+**Fórmula:** `effective = (base + seasonalDelta) × fitnessMultiplier`
+
+**Ejemplo:**
+```typescript
+const threshold = WELLNESS_THRESHOLDS.healthScoreCritical("beginner");
+// base=40, seasonal=0 (transition), fitness×0.85 (beginner)
+// effective = (40 + 0) × 0.85 = 34
+```
+
+**Cuándo se aplica:** Cualquier regla Advisor que compare un valor contra un threshold
+**Fases futuras donde se replica:** F25 (migrar Financial/Event/Global Advisors)
+**Archivos donde ya está implementado:** `shared/lib/adaptiveThresholds.ts`, `features/wellness/hooks/useWellnessAdvisor.ts`
+
+### Patrón NUEVO: Wellness Personas Engine (F23)
+
+**Concepto:** Clasificación determinística de socios en 8 perfiles de bienestar basada en activity patterns.
+
+**Perfiles:** athlete, zen_seeker, social_butterfly, weekend_warrior, recoverer, explorer, dormant, newcomer
+
+**Cuándo se aplica:** Regla 15 del Wellness Advisor (fusion layer)
+**Archivos donde ya está implementado:** `features/wellness/lib/wellnessPersonas.ts`, `features/wellness/hooks/useWellnessAdvisor.ts`
+
+### Patrón NUEVO: Family Selector para Domain Dashboards (F23)
+
+**Concepto:** Para dominios donde ADMIN no tiene `family_id`, componente selector reutilizable con búsqueda y lista de familias.
+
+**Cuándo se aplica:** Cuando un dashboard es por-familia pero el ADMIN no tiene familia asignada
+**Archivos donde ya está implementado:** `features/wellness/WellnessDashboard.tsx` (inline, refactorizar a shared en F25)
+
+### Patrones que aplicaron sin cambios:
+- **P14: Advisor Banner Pattern** — WellnessAdvisorBanner
+- **P13: Transform Helpers** — types.ts
+- **P9: Defensive Data Rendering** — WellnessAdvisorBanner, WellnessDashboard
+
+---
+
+## 5. ADVISOR ARCHITECTURE UPDATE
+
+### Advisor nuevo:
+
+| Fase | Advisor | Reglas | Capas | Actions | AI Features | Estado |
+|------|---------|--------|-------|---------|-------------|--------|
+| F23 | useWellnessAdvisor | 15 | 3 (macro/micro/fusion) | 3 | Narrative (via AIInsightNarrative) | ✅ |
+
+### Reglas del Wellness Advisor:
+
+**Macro (1-5) — Score & Profile Intelligence:**
+1. `wellness_health_critical` — composite < adaptive threshold (HIGH)
+2. `dimension_dragging` — una dimensión < 25, composite > 50 (MEDIUM)
+3. `fitness_mismatch_underutilized/overexertion` — profile vs actual pattern (MEDIUM)
+4. `trend_declining` — trend dimension < 35, prevReport exists (HIGH)
+5. `health_conditions_no_adaptation` — health_conditions sin spa/yoga/meditation (HIGH)
+
+**Micro (6-11) — Activity & Engagement Intelligence:**
+6. `activity_drought` — streak=0 + total<2 (HIGH, with action)
+7. `monotony_risk` — top activity > 75% del total (MEDIUM)
+8. `social_isolation` — 0 actividades sociales en N total (MEDIUM, with action)
+9. `goal_stagnation` — high-priority recs ignoradas + low activity (MEDIUM)
+10. `streak_broken` — prev streak ≥ 7, current streak = 0 (HIGH, with action)
+11. `overtraining_signal` — total > adaptive threshold por fitness level (MEDIUM)
+
+**Fusion (12-15) — Cross-Domain & Persona Intelligence:**
+12. `compound_churn_risk` — composite < compoundRisk threshold + trend < 0 (HIGH)
+13. `premium_candidate` — composite > 75 + intermediate/advanced + streak ≥ 7 (MEDIUM)
+14. `recommendations_gap` — ≥3 recs + total activity 2-5 (MEDIUM)
+15. `persona_*` — WellnessPersona classification (HIGH if dormant, LOW otherwise)
+
+### Acciones Advisor:
+
+| Insight ID | Tool MCP | Server | Approval | Params |
+|-----------|----------|--------|----------|--------|
+| `health_conditions_no_adaptation` | `wellness_profile_update` | `wellness` | SEMI | `{family_id, notes}` |
+| `activity_drought` | `wellness_schedule_class` | `wellness` | HITL | `{family_id, activity_type: "yoga"}` |
+| `social_isolation` | `wellness_schedule_class` | `wellness` | HITL | `{family_id, activity_type: "group_class"}` |
+| `streak_broken` | `wellness_goal_set` | `wellness` | SEMI | `{family_id, goal_type: "fitness", title, target_value: 3}` |
+
+---
+
+## 6. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón | Impacto |
+|---|---------|----------------------|-------|---------|
+| 1 | Adaptive thresholds como factory functions en shared | Thresholds en cada Advisor hook | Centralizado, reutilizable, un solo lugar para cambiar | F25: migrar Financial/Event/Global |
+| 2 | WellnessPersonas como engine separado en `lib/` | Inline en el hook | Reutilizable por Recommendations, Communications | Futuro: cross-domain targeting |
+| 3 | FamilySelector inline en WellnessDashboard | Componente shared | Solo Wellness lo necesita por ahora | F25: refactorizar a shared si más dominios lo necesitan |
+| 4 | AIInsightNarrative maneja su propio fetch | Banner maneja el query | Ese es el diseño existente del componente, no lo rompo | Banner simplificado |
+| 5 | `export default` en WellnessDashboard + `.then()` en lazy import | Solo named export | `lazy()` necesita default export, patrón establecido en el proyecto | — |
+| 6 | Wellness Advisor no tiene capas de 5 como Global | 3 capas (macro/micro/fusion) como Financial/Event | Dominio single-domain, no cross-agent. Fusion ya hace cross-domain implícito | — |
+| 7 | Mock `wellness_report` con datos realistas (18 actividades) | Valores agregados masivos (2,847) | 2,847 actividades para 1 familia es irrompable, score engine daba resultados erróneos | — |
+| 8 | ADMIN ve selector de familias | ADMIN hardcodea fam-001 | Selector real es mejor UX, prepara para multi-familia | — |
+
+---
+
+## 7. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F5 | Infraestructura, tokens, forms, lists, details | ✅ |
+| F6 | Dashboards densos + AI | ✅ |
+| F7 | Reports, mi-club, settings, finance | ✅ |
+| F8 | Dashboard sub-componentes (5/12 done) | 🔄 |
+| F9 | Wellness + Satisfaction | ✅ |
+| F10 | Proactive Recommendations | ✅ |
+| F11 | Communication Enhancement | ✅ |
+| F12 | Guest Management + Trial Memberships | ✅ |
+| F13 | Finance Enhancement + HITL Complete | ✅ |
+| F14 | Intelligence Features | ✅ |
+| F15 | Integration Testing + QA | ✅ |
+| F15ext-B | DailyBriefing enhancement | ✅ |
+| F15ext-C | ComplianceCheck enhancement | ✅ |
+| F15ext-S | SmartSchedule rewrite | ✅ |
+| F16 | ExecutiveDashboard Enhancement | ✅ |
+| F17 | RecommendationsDashboard — 7 rules Advisor | ✅ |
+| F18 | FinancialDashboard — 18 rules Advisor | ✅ |
+| F19 | EventOrchestrator — 15 rules Advisor | ✅ |
+| F20 | Global Cross-Agent — 25 rules Advisor | ✅ |
+| F21 | AI Intelligence Engine — 5 AI tools | ✅ |
+| F22 | Advisor Evolution — Reaction + Pre-fetch | ✅ |
+| **F23** | **Adaptive Thresholds + Wellness Advisor — 15 rules + Family Selector** | **🔄 EN PROGRESO (fixes pendientes)** |
+| F24 | Board Brief Engagement Tracking + Advanced Intelligence | ⬜ |
+| F25 | Polish batch (formatNumber centralization, code splitting, performance) | ⬜ |
+| F26 | Mock → Backend Migration | ⬜ |
+| F27 | Multi-language support (i18n) | ⬜ |
+| F28 | E2E testing + Accessibility audit (WCAG 2.1 AA) | ⬜ |
+| F29 | Production deployment pipeline (CI/CD, monitoring) | ⬜ |
+
+---
+
+## 8. PRÓXIMOS PASOS — Cerrar F23
+
+### Fixes pendientes (2 — aplicar antes de cerrar F23):
+
+**Fix 1 — DetailTabs icon type (WellnessDashboard.tsx):**
+
+**BLOQUE A:**
+```typescript
+  const tabs = [
+    { id: 'overview', label: 'Resumen', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: 'trends', label: 'Tendencias', icon: <TrendingUp className="w-4 h-4" /> },
+    { id: 'alerts', label: 'Alertas', icon: <ShieldAlert className="w-4 h-4" /> },
+    { id: 'advisor', label: 'IA Advisor', icon: <Sparkles className="w-4 h-4" /> },
+    { id: 'goals', label: 'Metas', icon: <Target className="w-4 h-4" /> },
+    { id: 'family', label: 'Familia', icon: <Users className="w-4 h-4" /> },
+    { id: 'business', label: 'Negocio', icon: <BarChart3 className="w-4 h-4" /> },
+  ];
+```
+
+**BLOQUE B:**
+```typescript
+  const tabs = [
+    { id: 'overview', label: 'Resumen', icon: LayoutDashboard },
+    { id: 'trends', label: 'Tendencias', icon: TrendingUp },
+    { id: 'alerts', label: 'Alertas', icon: ShieldAlert },
+    { id: 'advisor', label: 'IA Advisor', icon: Sparkles },
+    { id: 'goals', label: 'Metas', icon: Target },
+    { id: 'family', label: 'Familia', icon: Users },
+    { id: 'business', label: 'Negocio', icon: BarChart3 },
+  ];
+```
+
+**Fix 2 — DetailTabs prop name (WellnessDashboard.tsx):**
+
+**BLOQUE A:**
+```typescript
+      <DetailTabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+      />
+```
+
+**BLOQUE B:**
+```typescript
+      <DetailTabs
+        tabs={tabs}
+        active={activeTab}
+        onChange={setActiveTab}
+      />
+```
+
+Después de aplicar ambos fixes → F23 cerrada.
+
+### F24 — Board Brief Engagement Tracking + Advanced Intelligence
+
+**Objetivo:** Tracking de engagement con board briefs, métricas de uso de Advisor tools, optimización de reglas basada en datos.
+
+**Archivos a leer:**
+```
+1. frontend/src/shared/components/ai/AIBoardBriefViewer.tsx
+2. backend/src/club_mcp/agents/advisor_intelligence.py
+3. frontend/src/features/dashboard/components/GlobalAdvisorBanner.tsx
+```
+
+---
+
+## 9. AGENTES AUDITADOS — LISTA ACTUALIZADA
+
+| # | Agente | Server | Tools totales | HITL | AUTO | SEMI | Inteligencia | Fase auditado | Frontend conectado | Estado |
+|---|--------|--------|--------------|------|------|------|-------------|---------------|-------------------|--------|
+| 1 | `executive_dashboard` | `executive_dashboard` | 8 | 2 | 6 | — | `detect_anomalies`, `generate_ai_analysis` | F16 | ExecutiveDashboard ✅ | ✅ |
+| 2 | `finance` | `finance` | 17 | 3 | 3 | 2 | `generate_ai_analysis` (9 dim) | F18 | FinancialDashboard ✅ | ✅ |
+| 3 | `event_orchestrator` | `events` | 16 | 3 | 4 | 2 | `event_get_analytics` | F19 | EventCalendar ✅ | ✅ |
+| 4 | `proactive_recommendation` | `proactive_recommendation` | 8 | 2 | 6 | — | 6 tools | F17 | RecommendationsDashboard ✅ | ✅ |
+| 5 | `advisor_intelligence` | `advisor_intelligence` | 5 | 0 | 5 | — | 5 AI tools | F21 | ExecutiveDashboard ✅ | ✅ |
+| 6 | `compliance` | `compliance` | 7 | 1 | 5 | 1 | `generate_compliance_insights` | F15ext-C | ComplianceCheck ✅ | ✅ |
+| 7 | `facility_management` | `facility_management` | 7 | 2 | 5 | — | — | F15ext-S | SmartSchedule ✅ | ✅ |
+| 8 | `daily_briefing` | `daily_briefing` | 7 | 1 | 6 | — | `generate_daily_briefing` | F15ext-B | DailyBriefing ✅ | ✅ |
+| 9 | `smart_schedule` | `smart_schedule` | 8 | 2 | 6 | — | 2 tools | F15ext-S | SmartSchedule ✅ | ✅ |
+| 10 | `wellness` | `wellness` | 11 | 1 | 8 | 2 | `wellness_predict`, `wellness_anomalies`, `wellness_correlate`, `wellness_insights` | **F23** | WellnessDashboard ✅ + WellnessAdvisorBanner ✅ + WellnessGoals ✅ | ✅ |
+| 11 | `communication` | `communication` | 13 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 12 | `guest_management` | `guest_management` | 6 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 13 | `member_engagement` | `member_engagement` | 5 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 14 | `satisfaction` | `satisfaction` | 1 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 15 | `family_profile` | `families` | 11 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 16 | `sports_recreation` | `sports_recreation` | — | — | — | — | — | — | — | ⬜ |
+| 17 | `cultural_social` | `cultural_social` | — | — | — | — | — | — | — | ⬜ |
+| 18 | `document_intelligence` | `document_intelligence` | — | — | — | — | — | — | — | ⬜ |
+| 19 | `age_group` / `age_group_activity` | `age_group` | — | — | — | — | — | — | — | ⬜ |
+
+**Totales:** 10 agents completamente auditados (~76+ tools), 5 parcialmente, 4 sin auditar. ~135+ tools MCP.
+
+---
+
+## 10. PENDIENTES ACUMULADOS (CONSOLIDADO)
+
+| # | Issue | Severidad | Archivo(s) | Fase sugerida | Origen |
+|---|-------|-----------|-----------|---------------|--------|
+| 1 | `compactCurrency` duplicado en 3+ archivos — centralizar en `shared/lib/utils.ts` | BAJA | Múltiples | F25 | F18 |
+| 2 | `getCurrentSeason` centralizado en `adaptiveThresholds.ts` pero Financial/Global siguen con versión propia | BAJA | `useFinancialAdvisor.ts`, `useGlobalAdvisor.ts` | F25 | F18/F20/F23 |
+| 3 | `IMPACT_CONFIG` duplicado en banners — consolidar en shared | BAJA | Múltiples banners | F25 | F18 |
+| 4 | `font-ui` sin prefijo completo `font-[family-name:var(--font-ui)]` — ~50 instancias | MEDIA | Múltiples | F25 | F15 |
+| 5 | `font-mono` sin prefijo — ~30 instancias | MEDIA | Múltiples | F25 | F15 |
+| 6 | `toLocaleString("es-CR")` en vez de `formatNumber()` — ~8 instancias | MEDIA | Múltiples | F25 | F15 |
+| 7 | Keyframes `slideDown`/`fadeUp` duplicados | BAJA | Sub-componentes | F25 | F15 |
+| 8 | 5 sub-componentes finance no integrados como on-demand (DecisionCockpit, MemberProfitabilityMatrix, NarrativeEngine, SeasonalCalendar, StressTestPanel) | MEDIA | Finance | Verificar F22 | F22 |
+| 9 | `personalize_communication` tool sin componente UI dedicado | MEDIA | Communications | Futuro | F17 |
+| 10 | `get_financial_summary` mock-only — no existe en backend | MEDIA | Finance | F26 | F18 |
+| 11 | Navigation fields inconsistentes entre Advisors (targetTab vs targetView vs actionLabel/actionRoute) — unificar | MEDIA | Todos los advisors | F25 | F18 |
+| 12 | Global Advisor TODO placeholders para cache connections | MEDIA | Global Advisor | F24 | F20 |
+| 13 | `TierEconomics` importado pero no calculado en agente finance | MEDIA | Finance | F26 | F18 |
+| 14 | Event Advisor: 4 AI mock tools sin UI dedicada | MEDIA | Events | Futuro | F19 |
+| 15 | Dashboard sub-componentes: 7/12 pendientes | MEDIA | Dashboard | F8 | F6 |
+| 16 | Empty State Audit — 9 módulos sin verificar | MEDIA | Múltiples | F25 | F15 |
+| 17 | StaleDataBanner no integrado en todos los módulos | BAJA | Múltiples | F25 | F15 |
+| 18 | Web Vitals endpoint — `reportVital()` es stub | BAJA | Backend | Futuro | F15 |
+| 19 | Notification prefs sync — no sincroniza con backend | BAJA | Settings | Futuro | F15 |
+| 20 | `getWellnessLevel` duplicada: `types.ts` + inline en `WellnessAIAdvisor.tsx` | BAJA | Wellness | F25 | F23 (NUEVO) |
+| 21 | FamilySelector inline en WellnessDashboard — refactorizar a shared si más dominios lo necesitan | BAJA | Wellness | F25 | F23 (NUEVO) |
+
+---
+
+## 11. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos nuevos:
+
+| Regla | adaptiveThresholds | wellnessPersonas | useWellnessAdvisor | WellnessAdvisorBanner | WellnessGoals |
+|-------|-------------------|-----------------|-------------------|----------------------|---------------|
+| #1 Tokens | ✅ N/A (TS puro) | ✅ N/A | ✅ N/A | ✅ CSS vars | ✅ CSS vars |
+| #2 No blur | ✅ N/A | ✅ N/A | ✅ N/A | ✅ | ✅ |
+| #11 Focus-visible | ✅ N/A | ✅ N/A | ✅ N/A | ✅ | ✅ |
+| #14 EmptyState | ✅ N/A | ✅ N/A | ✅ no_data insight | ✅ | ✅ |
+| #17 Button shared | ✅ N/A | ✅ N/A | ✅ N/A | ✅ | ✅ |
+| #18 ReducedMotion | ✅ N/A | ✅ N/A | ✅ N/A | ✅ N/A | ✅ N/A |
+| #19 AI on-demand | ✅ N/A | ✅ N/A | ✅ N/A | ✅ on-click | ✅ N/A |
+| #22 cn() | ✅ N/A | ✅ N/A | ✅ N/A | ✅ | ✅ |
+
+### Resumen:
+**Violaciones a corregir AHORA:** 0
+**Violaciones ya flagged como pendientes:** 6 (items 4-6, 16, 20, 21 en pendientes)
+**Reglas sin violaciones:** 18/24
+
+---
+
+## 12. ACTUALIZACIONES PARA CLAUDE_CONTEXT.md
+
+### Sección 6 (Design System) — ACTUALIZAR font tokens:
+```css
+/* ── Typography ──────────────────────────────────────────── */
+--font-display: "Cormorant Garamond", Georgia, serif;  /* NUEVO (antes Playfair Display) */
+--font-body: "Source Serif 4", Georgia, serif;          /* NUEVO (antes sin body font) */
+--font-ui: "DM Sans", system-ui, sans-serif;            /* igual */
+--font-mono: "DM Mono", "Courier New", monospace;       /* igual */
+```
+
+### Sección 7 (Reglas) — Sin cambios necesarios
+
+### Sección 9 (MCP Agent Map) — ACTUALIZAR wellness:
+```markdown
+| 10 | `wellness` | `wellness` | 11 | 1 | 8 | 2 | `wellness_predict`, `wellness_anomalies`, `wellness_correlate`, `wellness_insights` | F23 | WellnessDashboard ✅ + WellnessAdvisorBanner ✅ | ✅ |
+```
+
+### Sección 10 (Advisor Architecture) — ACTUALIZAR:
+```markdown
+| F23 | useWellnessAdvisor | 15 | 3 (macro/micro/fusion) | 3 | Narrative (AIInsightNarrative) + Adaptive Thresholds + Wellness Personas |
+```
+
+### Sección 13 (Estado de fases) — ACTUALIZAR F23:
+```markdown
+| F23 | Adaptive Thresholds + Wellness Advisor + Family Selector | 🔄 95% — 2 fixes pendientes (DetailTabs) |
+```
+
+### Sección 14 (Pendientes) — ACTUALIZAR:
+Agregar items #20 y #21 del checkpoint.
+
+### Sección 16 (Agent Backend Tools) — ACTUALIZAR wellness:
+WellnessAgent tiene 7 tools backend (NO 11). Las 4 adicionales son mock-only: `wellness_predict`, `wellness_anomalies`, `wellness_correlate`, `wellness_insights`.
+
+---
+
+## 13. QUICK START PARA NUEVO CHAP
+
+### Paso 1 — Pegar contexto (en orden):
+```
+1. CLAUDE_CONTEXT.md (siempre primero)
+2. Este checkpoint
+```
+
+### Paso 2 — Confirmar rol:
+```
+"Confirmá que entendés tu rol como Principal AI Systems Architect (sección 2 de CLAUDE_CONTEXT.md) 
+y las 22+ reglas (sección 7). Después decí 'Listo'."
+```
+
+### Paso 3 — Cerrar F23 (2 fixes pendientes):
+```
+"Aplicá estos 2 fixes en WellnessDashboard.tsx para cerrar F23:
+
+Fix 1 — tabs icon: pasar componente (LayoutDashboard) en vez de JSX (<LayoutDashboard />)
+Fix 2 — DetailTabs prop: 'active' en vez de 'activeTab'"
+```
+
+### Paso 4 — Verificar:
+```
+"Entrá a /admin/wellness, seleccioná una familia, verificá que el Advisor Banner funcione"
+```
+
+### Paso 5 — Pasar a F24:
+```
+"Pasame estos archivos para F24:
+1. frontend/src/shared/components/ai/AIBoardBriefViewer.tsx
+2. backend/src/club_mcp/agents/advisor_intelligence.py
+3. frontend/src/features/dashboard/components/GlobalAdvisorBanner.tsx"
+```
+
+---
+
+## 14. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto |
+|-------|---------|-------|---------|
+| Junio 2026 | Adaptive Thresholds como engine centralizado en shared | Elimina 17+ magic numbers, reutilizable por todos los Advisors | F25: migrar Financial/Event/Global |
+| Junio 2026 | Wellness Personas como engine separado | Cross-domain targeting, reutilizable por Communications/Recommendations | Futuro: personalización automática |
+| Junio 2026 | FamilySelector inline en WellnessDashboard | Solo Wellness lo necesita, no generalizar prematuramente | F25: refactorizar si más dominios lo necesitan |
+| Junio 2026 | No destruir WellnessAIAdvisor existente | Ya tiene 450+ líneas con 2-phase on-demand, health gauge, key findings, predictions | Se eleva con Advisor hook, no se reemplaza |
+| Junio 2026 | AIInsightNarrative como componente self-contained | Ese es su diseño existente, Banner se adapta | Banner simplificado (no maneja fetch) |
+| Junio 2026 | Wellness Advisor 3 capas (no 5 como Global) | Dominio single-domain, fusion hace cross-domain implícito | Consistencia con Financial/Event |
+| Junio 2026 | Mock wellness_report con datos realistas | 2,847 actividades para 1 familia es irrompible | Score engine funciona correctamente |
+| Junio 2026 | Wellness como primer dominio cross-domain | Wellness naturalmente impacta retención, revenue, events, satisfaction simultáneamente | Diferenciador vs software tradicional |
+| Junio 2026 | Usuario RECHAZÓ propuesta de hardcodear fam-001 como fallback | "Hagamoslo de una vez el selector de familias" — mejor UX | Selector real implementado |
+| Junio 2026 | DetailTabs espera componente no JSX | Error de diseño: tabs de WellnessDashboard pasaban JSX elements | ⬜ FIX PENDIENTE — aplicar en próximo paso |
+
+---
+
+## 15. FASES RESTANTES (PLAN MAESTRO)
+
+| # | Fase | Contenido | Prioridad | Depende de | Estado |
+|---|------|-----------|-----------|-----------|--------|
+| **F23** | **Adaptive Thresholds + Wellness Advisor** | **15 rules + Family Selector + Adaptive Engine** | **ALTA** | **F22** | **🔄 95%** |
+| F24 | Board Brief Engagement Tracking + Advanced Intelligence | Engagement metrics para AI tools, optimización de reglas | MEDIA | F23 | ⬜ |
+| F25 | Polish batch | formatNumber centralization, code splitting, performance, `compactCurrency` dedup, `IMPACT_CONFIG` dedup, font prefix fix, Empty State Audit | MEDIA | F23 | ⬜ |
+| F26 | Mock → Backend Migration | Migrar tools mock-only a backend real | ALTA | Todas | ⬜ |
+| F27 | Multi-language support (i18n) | Español/Inglés | BAJA | F26 | ⬜ |
+| F28 | E2E testing + Accessibility audit (WCAG 2.1 AA) | Playwright + axe-core | ALTA | F27 | ⬜ |
+| F29 | Production deployment pipeline (CI/CD, monitoring) | Docker + GitHub Actions + Sentry | ALTA | F28 | ⬜ |
+
+---
+
+## 16. AGENTES BACKEND — TOOLS DETALLADAS
+
+### wellness.py — 7 tools backend (auditado F23)
+
+| Tool | Approval | Tipo | Descripción |
+|------|----------|------|-------------|
+| `wellness_profile_get` | AUTO | datos | Obtener perfil de bienestar de una familia |
+| `wellness_profile_update` | SEMI | mutation | Crear o actualizar perfil (fitness_level, health_conditions, allergies, dietary, preferred_activities) |
+| `wellness_activity_log` | AUTO | mutation | Registrar actividad (type, duration, calories, distance) |
+| `wellness_goal_set` | SEMI | mutation | Establecer objetivo (goal_type, title, target_value, unit, target_date) |
+| `wellness_recommendations` | AUTO | inteligencia | Recomendaciones personalizadas basadas en perfil |
+| `wellness_schedule_class` | HITL | mutation | Agendar clase o cita (class_id, date, time) — requiere approval |
+| `wellness_report` | AUTO | report | Reporte de bienestar (period, activities, breakdown, goals_summary, streak) |
+
+### Mock-only tools (4):
+
+| Tool | Backend | Mock | Tipos definidos |
+|------|---------|------|-----------------|
+| `wellness_predict` | ⬜ | ✅ | `WellnessPredictResponse` — engagement 30/60/90d, risk_factors, interventions |
+| `wellness_anomalies` | ⬜ | ✅ | `WellnessAnomaliesResponse` — 6 anomaly types, alerts |
+| `wellness_correlate` | ⬜ | ✅ | `WellnessCorrelateResponse` — correlations, segment_insights, activity_value_ranking |
+| `wellness_insights` | ⬜ | ✅ | `WellnessInsightsResponse` — health_score, executive_summary, key_findings, trend_analysis, critical_insights, predictions |
+
+---
+
+## 17. MOCK REGISTRY — ACTUALIZACIÓN
+
+### wellness (11 tools)
+
+| # | Tool | Backend real | Mock | Tipo | Approval |
+|---|------|-------------|------|------|----------|
+| 1 | `wellness_report` | ✅ | ✅ FIXED | datos | AUTO |
+| 2 | `wellness_profile_get` | ✅ | ✅ | datos | AUTO |
+| 3 | `wellness_profile_update` | ✅ | ✅ | mutation | SEMI |
+| 4 | `wellness_activity_log` | ✅ | ✅ | mutation | AUTO |
+| 5 | `wellness_goal_set` | ✅ | ✅ | mutation | SEMI |
+| 6 | `wellness_recommendations` | ✅ | ✅ | inteligencia | AUTO |
+| 7 | `wellness_schedule_class` | ✅ | ✅ | mutation | HITL |
+| 8 | `wellness_predict` | ⬜ | ✅ | inteligencia | AUTO |
+| 9 | `wellness_anomalies` | ⬜ | ✅ | inteligencia | AUTO |
+| 10 | `wellness_correlate` | ⬜ | ✅ | inteligencia | AUTO |
+| 11 | `wellness_insights` | ⬜ | ✅ | inteligencia | AUTO |
+
+**Fix aplicado a `wellness_report` factory:**
+- Wrapper `{status, message, data, period}` en vez de flat
+- `activity` → `activity_type` (matchea `ActivityBreakdownItem`)
+- Added `total_minutes` y `total_calories` por actividad
+- Valores realistas: 18 actividades (no 2,847)
+- Added `group_class` para Social Score engine
+
+---
+
+## 18. TYPES ALIGNMENT
+
+| Enum/Interface | Backend (Python) | Frontend (types.ts) | Match |
+|---------------|------------------|---------------------|-------|
+| `ActivityType` | `gym, yoga, pilates, swimming, tennis, spa, personal_training, group_class, meditation, other` | Igual | ✅ |
+| `ClassLevel` | `beginner, intermediate, advanced, all_levels` | Igual | ✅ |
+| `GoalStatus` | `active, completed, paused, abandoned` | Igual | ✅ |
+| `WellnessGoalType` | `fitness, nutrition, mental_health, weight, flexibility, endurance, strength, custom` | Igual | ✅ |
+| `AppointmentStatus` | `scheduled, confirmed, completed, cancelled, no_show` | Igual | ✅ |
+| `ActivityBreakdownItem` | `activity_type, count, total_minutes, total_calories, percentage` | Igual | ✅ (FIXED en factory) |

@@ -1,0 +1,285 @@
+CHECKPOINT — Castillo Country Club
+Fecha: Mayo 2025 | Fase actual: 11D
+
+
+
+1. Estado del proyecto
+
+Stack
+React 19 + TypeScript
+React Router v7 (createBrowserRouter)
+TanStack Query (@tanstack/react-query)
+Zustand (auth, theme, sidebar)
+Framer Motion
+Lucide React
+Tailwind CSS 4 (@theme directive)
+Backend MCP en Python/FastAPI — Puerto 8001
+Vite proxy: /api → localhost:8001
+
+Estructura de archivos
+
+text
+text
+src/
+├── app/
+│   ├── App.tsx                          ✅ Silver Tide
+│   ├── providers.tsx                    ✅
+│   └── router.tsx                       ✅ Actualizado (ErrorBoundaries + rutas reales)
+│
+├── stores/
+│   ├── auth.store.ts                    ✅ Alineado con backend real
+│   ├── theme.store.ts                   ✅ Silver Tide
+│   └── sidebar.store.ts                ✅
+│
+├── shared/
+│   ├── components/
+│   │   ├── ui/
+│   │   │   ├── Badge.tsx               ✅
+│   │   │   ├── Button.tsx              ✅
+│   │   │   ├── Card.tsx                ✅ (glass-card CSS)
+│   │   │   ├── EmptyState.tsx          ✅
+│   │   │   ├── FrostedGlassCard.tsx    ✅ (Canvas frost — hero cards)
+│   │   │   ├── Input.tsx               ✅
+│   │   │   ├── Modal.tsx               ✅
+│   │   │   ├── Skeleton.tsx            ✅
+│   │   │   ├── Table.tsx               ✅
+│   │   │   ├── Toast.tsx               ✅
+│   │   │   └── index.ts               ✅
+│   │   ├── layout/
+│   │   │   ├── DashboardLayout.tsx     ✅ (WebGL + vignette + noise)
+│   │   │   ├── Header.tsx              ✅
+│   │   │   ├── Sidebar.tsx             ✅
+│   │   │   ├── PageContainer.tsx       ✅
+│   │   │   ├── StatCard.tsx            ✅ (glass-card)
+│   │   │   ├── WebGLBackground.tsx     ✅
+│   │   │   └── CursorEffect.tsx        ✅
+│   │   ├── auth/
+│   │   │   └── PermissionGate.tsx      ✅
+│   │   ├── chat/
+│   │   │   └── AIChatWidget.tsx        ✅
+│   │   ├── error/
+│   │   │   ├── ErrorBoundary.tsx       ✅ NUEVO
+│   │   │   └── NotFoundPage.tsx        ✅ NUEVO
+│   │   └── feedback/
+│   │       └── Placeholder.tsx          ✅
+│   ├── hooks/
+│   │   └── useMCPQuery.ts              ✅
+│   └── lib/
+│       ├── utils.ts                     ✅
+│       └── api.ts                       ✅
+│
+├── features/
+│   ├── auth/
+│   │   └── LoginPage.tsx               ⬜ NO MIGRADA (no se toca)
+│   ├── dashboard/
+│   │   ├── ExecutiveDashboard.tsx       ✅
+│   │   └── components/
+│   │       ├── KPICards.tsx             ✅ (usa StatCard)
+│   │       ├── RevenueChart.tsx         ✅ (glass-card)
+│   │       ├── MembershipDonut.tsx      ✅
+│   │       ├── TopActivities.tsx        ✅
+│   │       ├── AnomalyFeed.tsx          ✅
+│   │       ├── HitlQueue.tsx            ✅
+│   │       ├── AgeBalanceWidget.tsx     ✅
+│   │       ├── QuickActions.tsx         ✅
+│   │       ├── PeriodSelector.tsx       ✅
+│   │       ├── YearOverYearToggle.tsx   ✅
+│   │       └── PrintView.tsx            ✅
+│   ├── families/
+│   │   ├── types.ts                     ✅
+│   │   ├── FamilyList.tsx               ✅ REHECHO (dropdowns + sort + superficies)
+│   │   ├── FamilyDetail.tsx             ✅
+│   │   ├── FamilyForm.tsx               ✅
+│   │   └── components/
+│   │       └── MemberCard.tsx           ✅
+│   ├── facilities/
+│   │   ├── types.ts                     ✅
+│   │   ├── FacilityMap.tsx              ✅ Superficies corregidas
+│   │   ├── FacilityDetail.tsx           ✅
+│   │   └── ReservationCalendar.tsx      ✅
+│   ├── events/
+│   │   ├── types.ts                     ✅ COLORES SILVER TIDE
+│   │   ├── EventCalendar.tsx            ✅ REHECHO (quick-add panel + superficies)
+│   │   ├── EventDetail.tsx              ✅
+│   │   └── EventForm.tsx                ✅
+│   ├── finance/
+│   │   ├── types.ts                     ✅
+│   │   ├── FinancialDashboard.tsx       ✅
+│   │   └── FamilyAccount.tsx            ✅
+│   ├── guests/
+│   │   ├── types.ts                     ✅
+│   │   ├── GuestRegistration.tsx        ✅
+│   │   └── GuestList.tsx                ✅ (usa Card)
+│   ├── communications/
+│   │   ├── types.ts                     ✅
+│   │   ├── CommunicationCenter.tsx      ✅ (usa Card)
+│   │   ├── AnnouncementBoard.tsx        ✅
+│   │   └── EmergencyBroadcast.tsx       ✅
+│   ├── engagement/
+│   │   ├── types.ts                     ✅
+│   │   ├── EngagementDashboard.tsx      ✅
+│   │   ├── ReactivationCampaigns.tsx    ✅
+│   │   ├── SatisfactionSurvey.tsx       ✅
+│   │   └── SatisfactionReport.tsx       ✅
+│   ├── documents/
+│   │   ├── types.ts                     ✅ COLORES SILVER TIDE
+│   │   ├── DocumentRepository.tsx       ✅ REHECHO (multi-select dropdown)
+│   │   └── KnowledgeQuery.tsx           ✅
+│   ├── reports/
+│   │   ├── types.ts                     ✅
+│   │   ├── BoardReportViewer.tsx        ✅
+│   │   └── RiskHeatmap.tsx              ✅
+│   ├── settings/
+│   │   └── SettingsPage.tsx             ✅ NUEVO
+│   ├── approvals/
+│   │   ├── types.ts                     ✅ NUEVO
+│   │   └── ApprovalQueue.tsx            ✅ NUEVO
+│   └── mi-club/
+│       ├── MiClubLanding.tsx            ✅ NUEVO
+│       └── MyReservations.tsx           ✅ NUEVO
+│
+└── styles/
+    └── globals.css                      ✅ Silver Tide design system
+
+
+2. Design System — Silver Tide
+
+Regla de oro
+NUNCA colores hardcoded. Todos los colores deben usar tokens del @theme en globals.css. Los maps de config (*_CONFIG) usan siempre var(--color-xxx).
+
+
+Token map
+
+Categoría	Tokens disponibles
+Superficies	--color-abyss, --color-surface-0/1/2/3
+Texto	--color-silver-100 a --color-silver-600
+Gold (marca)	--color-gold-50 a --color-gold-700
+Teal (info/datos)	--color-teal-100 a --color-teal-600
+Emerald (éxito)	--color-emerald-100/300/400/500
+Amber (warning)	--color-amber-300/400/500
+Rose (error)	--color-rose-100/300/400/500
+Terracotta (warm)	--color-terracotta-300/400/500
+Sage (verde elegante)	--color-sage-100 a --color-sage-600
+Shadows	--shadow-soft/card/elevated/gold/teal/rose
+Radius	--radius-sm/md/lg/xl/2xl
+Glass tokens	--glass-bg/border y variantes
+Chart palette	--chart-primary/secondary/tertiary/warm/neutral/highlight
+Semantic bg	--color-emerald-bg/amber-bg/rose-bg/teal-bg/critical-bg
+
+Patrón de colores en config maps
+tsx
+tsx
+// Correcto
+{ color: "var(--color-gold-400)", bgColor: "color-mix(in srgb, var(--color-gold-400) 12%, transparent)" }
+
+// INCORRECTO — nunca
+{ color: "#C9A96E", bgColor: "rgba(201, 169, 110, 0.12)" }
+
+3 niveles de superficie
+
+Nivel	Implementación	Uso
+Hero	FrostedGlassCard (canvas)	Portadas visuales, instalaciones, perfiles destacados. Altura fija 252px, frost único por tarjeta.
+Data Card	<Card> → .glass-card CSS	Items individuales en listas. Glass treatment con rain effect.
+Data Container	bg-[var(--color-surface-2)] + border-white/[0.06] + shadow-[var(--shadow-card)]	Wrappers: tablas, grids, secciones. Sólido, sin backdrop-filter.
+
+Problema conocido: backdrop-filter + WebGL
+backdrop-filter en glass-card y stat-surface puede interferir con el WebGL background, causando transparencias no deseadas. Solución: usar superficies sólidas (bg-surface-2) para containers data-dense. El glass CSS funciona bien para cards individuales.
+
+
+
+3. Sprint Tracker completo
+
+Fase 1: Silver Tide Migration — CERRADA ✅
+Sprints 8E-1 a 8E-15. Migración masiva de ~40 archivos.
+
+
+Fase 2: Visual QA & Surface Fixes — CERRADA ✅
+Sprint	Contenido	Estado
+9A	Surface audit	✅
+9B	FamilyList — dropdowns + sort + superficies	✅
+9C	FacilityMap — superficies sólidas	✅
+9D	EventCalendar — superficies sólidas	✅
+9E	Documents — multi-select dropdown + colores Silver Tide	✅
+9F	EventCalendar quick-add + types.ts colores Silver Tide	✅
+
+Fase 3: Foundation — CERRADA ✅
+Sprint	Contenido	Estado
+10A	Error Boundaries (global + route + NotFoundPage)	✅
+10B	Auth flow — store alineado con backend real (login, refresh, role normalization)	✅
+
+Fase 4: Features — EN PROGRESO
+Sprint	Contenido	Estado
+11A	Settings page (perfil, tema, notificaciones, sistema)	✅
+11B	Mi Club portal (landing + MyReservations)	✅
+11C	Aprobaciones HITL (ApprovalQueue + types)	✅
+11D	Mantenimiento — /operaciones/mantenimiento	⬜ SIGUIENTE
+11E	Estrategia — /junta/estrategia	⬜ (deferido, baja prioridad)
+
+Fase 5: Aurora Effects — PENDIENTE
+Sprint	Contenido	Estado
+11F	Aurora Glow System — Hover glow en botones (emerald) + glow por tipo de actividad en cards	⬜
+
+Paleta Aurora mapeada (Silver Tide tokens):
+
+
+Actividad	Token	Color
+Piscina / Acuáticas	var(--color-teal-400)	#2A9AB5
+Pista de hielo	var(--color-teal-200)	#7ACCE0
+Aire libre / Naturaleza	var(--color-emerald-400)	#3DAA70
+Deportes / Competencia	var(--color-gold-400)	#C9A96E
+Eventos sociales / Fiestas	var(--color-gold-300)	#D4B96A
+Cultural	var(--color-terracotta-400)	#D47A5A
+Gastronómico	var(--color-amber-400)	#D4A840
+Infantil / Kids	var(--color-sage-400)	#5B8A6A
+Corporativo / Reuniones	var(--color-silver-300)	#B8C0CC
+Wellness / Spa	var(--color-emerald-300)	#6DD4A0
+Privado / Exclusivo	var(--color-gold-200)	#E8D49A
+Temporada	var(--color-gold-400)	#C9A96E
+
+Fase 6: Responsive — PENDIENTE
+Sprint	Contenido	Estado
+12A	Responsive audit completo — Todos los módulos en mobile/tablet/desktop. Se descubrió que el responsive está roto en mobile.	⬜
+
+
+4. Decisiones arquitectónicas clave
+
+Decisión	Detalle
+DevBypass	App.tsx tiene devBypass() activo. Para quitarlo, eliminar el useEffect que llama devBypass().
+Auth backend	Puerto 8001. Vite proxy redirige /api/*. Login devuelve { tokens: { access_token, refresh_token }, user: {...} }. Roles lowercase del backend → uppercase en frontend.
+PermissionGate	Se usa con roles en el router. ADMIN tiene acceso total vía hasPermission().
+FrostedGlassCard	Solo para hero/visual cards (canvas frost, 252px fijo). No para data-dense.
+glass-card CSS	Para data cards individuales. Funciona bien contra superficies sólidas.
+bg-surface-2 sólido	Para containers (tablas, grids). Sin backdrop-filter.
+Nombres de ruta	/admin/* para staff/admin/junta. /mi-club/* para socios. /operaciones/* para staff. /junta/* para junta.
+LoginPage	Excluida del trabajo. No se migra.
+
+
+5. Archivos del backend relevantes
+
+Archivo	Qué contiene
+api/routes/auth.py	Login, refresh, me endpoints
+auth/jwt_service.py	JWT creation/verification (HS256, 15min access, 7d refresh)
+auth/models.py	User model, UserRole enum (lowercase: socio, staff, admin, junta)
+auth/rbac.py	Permission enum, ROLE_PERMISSIONS matrix, TOOL_PERMISSION_MAP
+auth/seed_users.py	Demo users for development
+hitl/approval_types.py	ApprovalRequest, ApprovalStatus, ApprovalLevel
+hitl/approval_engine.py	ApprovalEngine — create, approve, reject, expire
+
+
+6. Problemas conocidos pendientes
+
+Problema	Sprint	Notas
+Responsive roto en mobile	12A	Descubrimos que en vista teléfono se rompe todo. Prioridad alta.
+backdrop-filter + WebGL	—	En containers data-dense, usar superficies sólidas.
+devBypass activo	10B	Quitar de App.tsx cuando auth real funcione.
+LoginPage sin migrar	—	Excluida intencionalmente.
+Estrategia placeholder	11E	Deferido a Fase 2.
+
+
+7. Archivos que faltan pasar (para sprints pendientes)
+
+Sprint	Archivo backend necesario
+11D (Mantenimiento)	models/facility_management.py
+11F (Aurora Glow)	Ninguno — es CSS/JS puro
+12A (Responsive)	Ninguno — es CSS/JS puro
+

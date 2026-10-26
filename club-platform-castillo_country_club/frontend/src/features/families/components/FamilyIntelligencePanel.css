@@ -1,0 +1,1581 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/FamilyIntelligencePanel.css
+   Phase 34+ Migration — "The Intelligence Theatre"
+   Level 6+ Agency · Production Grade
+
+   SIGNATURE VISUAL ELEMENTS:
+   1. Urgency atmosphere wash (::after on root) — color by urgency
+   2. Briefing panel with constellation integration
+   3. Insight strip with urgency-colored left border + glow
+   4. Action chain vertical timeline with priority dots + connectors
+   5. Detail cards with domain-colored icons + dynamic stagger
+   6. AI insight boxes with gold/teal label accents
+   7. Memory delta indicators with positive/negative coloring
+   8. Social interest tags
+   9. Activate button with Brain breathing animation
+
+   CSS STANDARD: 13 Dimensions Applied
+     D1  Glass morphism (inset highlight, urgency wash)
+     D2  Stagger (10 section groups + dynamic card stagger)
+     D3  Cubic-bezier easing on entrance
+     D4  Mono for data/scores, UI for body, mono-uppercased for labels
+     D5  Urgency-driven dynamic colors via data-attributes
+     D6  Pseudo-element depth (urgency wash, chain dot glow)
+     D7  Hover on activate, toggle, chain steps, cards
+     D8  Dense but readable (12-14px content, 6-10px gaps)
+     D9  Responsive (detail grid collapses, briefing stacks)
+     D10 aria-expanded, role, keyboard accessible
+     D11 Light mode complete
+     D12 Reduced motion + print
+     D13 fm-intel* namespaced keyframes (12 total)
+
+   Keyframes: fm-intelSlideUp, fm-intelBarGrow, fm-intelPulse,
+              fm-intelScan, fm-intelChainReveal, fm-intelGlow,
+              fm-intelBreathe, fm-intelFadeIn, fm-intelShimmer,
+              fm-intelChainDot, fm-intelUrgencyGlow, fm-intelFloat
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Intelligence Theatre
+   D1-01: Translucent gradient
+   D1-07: Inset top highlight (::before)
+   D6: Urgency atmosphere wash (::after)
+   D8: Gap 12px between sections
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-intel {
+  position: relative;
+  padding: 18px 20px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    168deg,
+    rgba(180, 190, 210, 0.035) 0%,
+    rgba(12, 16, 24, 0.97) 40%,
+    rgba(8, 12, 18, 0.98) 100%
+  );
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 0;
+  animation: fm-intelSlideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* D1-07: Inset top highlight */
+.fm-intel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.07) 30%,
+    rgba(255, 255, 255, 0.03) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* D6: Urgency atmosphere wash */
+.fm-intel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.fm-intel[data-urgency="critical"]::after {
+  background: radial-gradient(
+    ellipse at 20% 0%,
+    color-mix(in srgb, var(--color-rose-400) 5%, transparent) 0%,
+    transparent 50%
+  );
+  opacity: 1;
+}
+
+.fm-intel[data-urgency="high"]::after {
+  background: radial-gradient(
+    ellipse at 20% 0%,
+    color-mix(in srgb, var(--color-amber-400) 4%, transparent) 0%,
+    transparent 50%
+  );
+  opacity: 1;
+}
+
+.fm-intel[data-urgency="medium"]::after {
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    color-mix(in srgb, var(--color-teal-400) 2%, transparent) 0%,
+    transparent 60%
+  );
+  opacity: 1;
+}
+
+/* D1-06: Content above pseudo-elements */
+.fm-intel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Activate Button (idle state)
+   D7: Hover + focus-visible
+   D6: Brain icon breathing (::after on icon)
+   D2-07: Stagger delay 0.1s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-intel__activate {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 20px;
+  border-radius: var(--radius-md, 10px);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.012);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  opacity: 0;
+  animation: fm-intelSlideUp 0.25s ease 0.1s forwards;
+  transition: background 0.2s ease, border-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.fm-intel__activate:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 4%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+
+.fm-intel__activate:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.fm-intel__activate-icon {
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+  animation: fm-intelBreathe 3s ease-in-out infinite;
+}
+
+.fm-intel__activate-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fm-intel__activate-title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.fm-intel__activate-hint {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  letter-spacing: 0.04em;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Memory Badge
+   D4-05: Mono 9px
+   D5: Positive/negative via data-attribute
+   D2-07: Stagger delay 0s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-intel__memory {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  opacity: 0;
+  animation: fm-intelSlideUp 0.25s ease 0s forwards;
+  flex-wrap: wrap;
+}
+
+.fm-intel__memory-icon {
+  flex-shrink: 0;
+  color: var(--color-silver-600);
+}
+
+.fm-intel__memory-delta[data-positive="true"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-intel__memory-delta[data-positive="false"] {
+  color: var(--color-rose-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Briefing — Constellation + Narrative
+   D1: Glass depth
+   D5: Urgency via data-attribute (border-left)
+   D2-07: Stagger delay 0.05s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-intel__briefing {
+  padding: 16px;
+  border-radius: var(--radius-md, 10px);
+  border-left: 3px solid rgba(201, 169, 110, 0.2);
+  background: rgba(255, 255, 255, 0.012);
+  opacity: 0;
+  animation: fm-intelSlideUp 0.25s ease 0.05s forwards;
+}
+
+.fm-intel__briefing[data-urgency="critical"] {
+  border-left-color: color-mix(in srgb, var(--color-rose-400) 35%, transparent);
+}
+
+.fm-intel__briefing[data-urgency="high"] {
+  border-left-color: color-mix(in srgb, var(--color-amber-400) 35%, transparent);
+}
+
+.fm-intel__briefing[data-urgency="medium"] {
+  border-left-color: color-mix(in srgb, var(--color-teal-400) 30%, transparent);
+}
+
+.fm-intel__briefing-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.fm-intel__briefing-narrative {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fm-intel__briefing-headline {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-silver-100);
+  margin: 0;
+}
+
+.fm-intel__briefing-text {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--color-silver-300);
+  margin: 0;
+}
+
+.fm-intel__briefing-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  opacity: 0;
+  animation: fm-intelSlideUp 0.2s ease 0.2s forwards;
+}
+
+.fm-intel__briefing-confidence {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  letter-spacing: 0.04em;
+}
+
+.fm-intel__briefing-urgency {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--intel-urgency-color, var(--color-silver-400));
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Insight Strip — Key Finding + Action
+   D5: Urgency via data-attribute (border + glow)
+   D6: Glow effect on critical/high
+   D2-07: Stagger delay 0.25s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-intel__insight-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.012);
+  opacity: 0;
+  animation: fm-intelSlideUp 0.25s ease 0.25s forwards;
+}
+
+.fm-intel__insight-strip[data-urgency="critical"] {
+  border-left: 3px solid var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 3%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-rose-400) 6%, transparent);
+}
+
+.fm-intel__insight-strip[data-urgency="high"] {
+  border-left: 3px solid var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 3%, transparent);
+}
+
+.fm-intel__insight-strip[data-urgency="medium"] {
+  border-left: 3px solid var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 2%, transparent);
+}
+
+.fm-intel__insight-strip[data-urgency="low"],
+.fm-intel__insight-strip[data-urgency="good"] {
+  border-left: 3px solid var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 2%, transparent);
+}
+
+.fm-intel__insight-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.fm-intel__insight-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--intel-icon-color, var(--color-silver-400));
+}
+
+.fm-intel__insight-icon--gold {
+  color: var(--color-gold-400);
+}
+
+.fm-intel__insight-strip-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--intel-label-color, var(--color-silver-400));
+  margin: 0 0 3px;
+  line-height: 1;
+}
+
+.fm-intel__insight-strip-label--gold {
+  color: var(--color-gold-400);
+}
+
+.fm-intel__insight-strip-text {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-silver-300);
+  margin: 0;
+}
+
+.fm-intel__insight-outcome {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-emerald-400);
+  margin: 2px 0 0;
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Action Chain — Predictive Timeline
+   D6: Timeline dots (priority-colored) + connectors
+   D7: Hover on steps
+   D2: Step stagger via nth-child
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-intel__chain {
+  padding: 14px 16px;
+  border-radius: var(--radius-md, 10px);
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  opacity: 0;
+  animation: fm-intelSlideUp 0.25s ease 0.3s forwards;
+}
+
+.fm-intel__chain-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.fm-intel__chain-header-icon {
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+}
+
+.fm-intel__chain-header-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-silver-400);
+}
+
+.fm-intel__chain-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.fm-intel__chain-step {
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  animation: fm-intelChainReveal 0.3s ease forwards;
+  padding: 4px 0;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+/* D2: Step stagger via nth-child */
+.fm-intel__chain-step:nth-child(1) { animation-delay: 0.35s; }
+.fm-intel__chain-step:nth-child(2) { animation-delay: 0.41s; }
+.fm-intel__chain-step:nth-child(3) { animation-delay: 0.47s; }
+.fm-intel__chain-step:nth-child(4) { animation-delay: 0.53s; }
+.fm-intel__chain-step:nth-child(5) { animation-delay: 0.59s; }
+.fm-intel__chain-step:nth-child(6) { animation-delay: 0.65s; }
+
+.fm-intel__chain-step:hover {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.fm-intel__chain-timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 12px;
+}
+
+.fm-intel__chain-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--color-silver-500);
+}
+
+.fm-intel__chain-dot[data-priority="critical"] {
+  background: var(--color-rose-400);
+  box-shadow: 0 0 6px var(--color-rose-400);
+  animation: fm-intelChainDot 2s ease-in-out infinite;
+}
+
+.fm-intel__chain-dot[data-priority="high"] {
+  background: var(--color-amber-400);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--color-amber-400) 40%, transparent);
+}
+
+.fm-intel__chain-dot[data-priority="medium"] {
+  background: var(--color-teal-400);
+}
+
+.fm-intel__chain-dot[data-priority="low"] {
+  background: var(--color-silver-500);
+}
+
+.fm-intel__chain-connector {
+  width: 1px;
+  flex: 1;
+  min-height: 12px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.fm-intel__chain-content {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 10px;
+}
+
+.fm-intel__chain-timing {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-gold-400);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 2px;
+  line-height: 1;
+}
+
+.fm-intel__chain-action {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0 0 3px;
+  line-height: 1.3;
+}
+
+.fm-intel__chain-impact {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-emerald-400);
+  margin: 0 0 3px;
+  line-height: 1.3;
+}
+
+.fm-intel__chain-context {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Outcome ── */
+
+.fm-intel__outcome {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.fm-intel__outcome-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-400);
+  margin: 0 0 8px;
+  line-height: 1;
+}
+
+.fm-intel__outcome-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fm-intel__outcome-metric {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.fm-intel__outcome-metric-name {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-300);
+}
+
+.fm-intel__outcome-current {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-500);
+}
+
+.fm-intel__outcome-arrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-600);
+}
+
+.fm-intel__outcome-predicted {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-emerald-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Peer Insight
+   D2-07: Stagger delay 0.35s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-intel__peer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm, 6px);
+  border-left: 2px solid color-mix(in srgb, var(--color-teal-400) 30%, transparent);
+  background: color-mix(in srgb, var(--color-teal-400) 2%, transparent);
+  opacity: 0;
+  animation: fm-intelSlideUp 0.25s ease 0.35s forwards;
+}
+
+.fm-intel__peer-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-teal-400);
+}
+
+.fm-intel__peer-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-teal-400);
+  margin: 0 0 3px;
+  line-height: 1;
+}
+
+.fm-intel__peer-text {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-silver-300);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Controls
+   D2-07: Stagger delay 0.4s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-intel__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  animation: fm-intelSlideUp 0.25s ease 0.4s forwards;
+}
+
+.fm-intel__progress {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Details Toggle + Container
+   D7: Hover + focus-visible
+   D3: Cubic-bezier on container expand
+   D2-07: Stagger delay 0.45s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-intel__details-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.015);
+  color: var(--color-silver-400);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  font: inherit;
+  opacity: 0;
+  animation: fm-intelSlideUp 0.25s ease 0.45s forwards;
+  transition: background 0.2s ease, border-color 0.2s ease,
+              color 0.2s ease;
+}
+
+.fm-intel__details-toggle:hover {
+  background: rgba(255, 255, 255, 0.025);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: var(--color-silver-200);
+}
+
+.fm-intel__details-toggle:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.fm-intel__details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 0.3s ease;
+}
+
+.fm-intel__details[data-open="true"] {
+  max-height: 5000px;
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Detail Cards
+   D2: Dynamic stagger via --card-index
+   D5: Domain-colored icons via --dim-color
+   D6: Border-left accent
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-intel__detail-card {
+  padding: 14px 16px;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 3px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.01);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0;
+  animation: fm-intelSlideUp 0.25s ease forwards;
+  animation-delay: calc(var(--card-index, 0) * 60ms + 0.1s);
+}
+
+.fm-intel__detail-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fm-intel__detail-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fm-intel__detail-card-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--dim-color, var(--color-silver-400));
+}
+
+.fm-intel__detail-card-title {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+  line-height: 1;
+}
+
+.fm-intel__detail-card-scores {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fm-intel__detail-card-score {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dim-color, var(--color-silver-400));
+}
+
+.fm-intel__detail-card-delta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
+.fm-intel__detail-card-delta[data-positive="true"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-intel__detail-card-delta[data-positive="false"] {
+  color: var(--color-rose-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Detail Sub-components
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Shared: AI Insight Box ── */
+
+.fm-intel__insight-box {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--color-silver-300);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.012);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.fm-intel__insight-label {
+  font-weight: 700;
+  color: var(--color-gold-400);
+}
+
+.fm-intel__insight-label--teal {
+  color: var(--color-teal-400);
+}
+
+/* ── Churn Detail ── */
+
+.fm-intel__churn {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fm-intel__churn-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fm-intel__churn-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fm-intel__churn-confidence {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  line-height: 1;
+}
+
+.fm-intel__factors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fm-intel__factor {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fm-intel__factor-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fm-intel__factor-name {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-200);
+}
+
+.fm-intel__factor-impact {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.fm-intel__factor-impact[data-positive="true"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-intel__factor-impact[data-positive="false"] {
+  color: var(--color-rose-400);
+}
+
+.fm-intel__factor-bar-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.fm-intel__factor-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--bar-width, 0%);
+  opacity: 0;
+  animation: fm-intelBarGrow 0.5s ease 0.3s forwards;
+}
+
+.fm-intel__factor-bar-fill[data-positive="true"] {
+  background: var(--color-emerald-400);
+}
+
+.fm-intel__factor-bar-fill[data-positive="false"] {
+  background: var(--color-rose-400);
+}
+
+/* ── Activities Detail ── */
+
+.fm-intel__activities {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fm-intel__activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fm-intel__activity-card {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.012);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.fm-intel__activity-card:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.fm-intel__activity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.fm-intel__activity-name {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.fm-intel__activity-score {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-emerald-400);
+}
+
+.fm-intel__activity-reason {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.fm-intel__activity-target {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  margin: 3px 0 0;
+  line-height: 1.3;
+}
+
+/* ── Social Detail ── */
+
+.fm-intel__social-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fm-intel__social-card {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.012);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.fm-intel__social-card:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.fm-intel__social-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fm-intel__social-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--avatar-bg, var(--color-silver-400));
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.fm-intel__social-name {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-intel__social-score {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-emerald-400);
+  flex-shrink: 0;
+}
+
+.fm-intel__social-reason {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.fm-intel__social-interests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.fm-intel__social-interest-tag {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+  color: var(--color-teal-400);
+  letter-spacing: 0.03em;
+}
+
+/* ── Engagement Detail ── */
+
+.fm-intel__engagement {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fm-intel__engagement-gauges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.fm-intel__engagement-arrow {
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+}
+
+.fm-intel__engagement-timeframe {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  text-align: center;
+  margin: 0;
+  line-height: 1;
+}
+
+.fm-intel__engagement-roi {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-emerald-400);
+  text-align: center;
+  margin: 0;
+  line-height: 1;
+}
+
+/* ── Lifecycle Detail ── */
+
+.fm-intel__lifecycle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fm-intel__lifecycle-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fm-intel__lifecycle-days {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-400);
+}
+
+.fm-intel__lifecycle-bar-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.fm-intel__lifecycle-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--bar-width, 0%);
+  background: var(--bar-color, var(--color-silver-400));
+  opacity: 0;
+  animation: fm-intelBarGrow 0.5s ease 0.3s forwards;
+}
+
+.fm-intel__lifecycle-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fm-intel__lifecycle-actions-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+  line-height: 1;
+}
+
+.fm-intel__lifecycle-action-item {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-300);
+  margin: 0;
+  padding-left: 10px;
+  line-height: 1.4;
+  position: relative;
+}
+
+.fm-intel__lifecycle-action-item::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--color-teal-400);
+}
+
+/* ── Intelligence Overview Detail ── */
+
+.fm-intel__overview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fm-intel__overview-gauge {
+  display: flex;
+  justify-content: center;
+}
+
+.fm-intel__domain-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.fm-intel__domain-cell {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.012);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.fm-intel__domain-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.fm-intel__domain-name {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-silver-300);
+}
+
+.fm-intel__domain-score {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--domain-color, var(--color-silver-400));
+}
+
+.fm-intel__domain-bar-track {
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.fm-intel__domain-bar-fill {
+  height: 100%;
+  border-radius: 1px;
+  width: var(--bar-width, 0%);
+  background: var(--domain-color, var(--color-silver-400));
+  opacity: 0;
+  animation: fm-intelBarGrow 0.5s ease 0.3s forwards;
+}
+
+.fm-intel__overview-trend {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  text-align: center;
+  margin: 0;
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Keyframes — fm-intel* namespaced
+   D13-01: All at end (before @media)
+   D13-02: All namespaced
+   Total: 12 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-intelSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fm-intelBarGrow {
+  from { opacity: 0; width: 0; }
+  to   { opacity: 1; width: var(--bar-width, 100%); }
+}
+
+@keyframes fm-intelPulse {
+  0%, 100% { box-shadow: 0 0 4px currentColor; }
+  50%      { box-shadow: 0 0 10px currentColor, 0 0 20px color-mix(in srgb, currentColor 30%, transparent); }
+}
+
+@keyframes fm-intelScan {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes fm-intelChainReveal {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fm-intelGlow {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.8; }
+}
+
+@keyframes fm-intelBreathe {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes fm-intelFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fm-intelShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fm-intelChainDot {
+  0%, 100% { box-shadow: 0 0 3px var(--color-rose-400); }
+  50%      { box-shadow: 0 0 8px var(--color-rose-400), 0 0 16px color-mix(in srgb, var(--color-rose-400) 25%, transparent); }
+}
+
+@keyframes fm-intelUrgencyGlow {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.6; }
+}
+
+@keyframes fm-intelFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Light Mode
+   D11: Complete
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-intel {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.light .fm-intel::before,
+.light .fm-intel::after {
+  display: none;
+}
+
+.light .fm-intel__activate {
+  border-color: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.light .fm-intel__activate:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  box-shadow: none;
+}
+
+.light .fm-intel__memory {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-intel__briefing {
+  background: rgba(0, 0, 0, 0.01);
+  border-left-color: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+
+.light .fm-intel__insight-strip {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.04);
+  box-shadow: none;
+}
+
+.light .fm-intel__chain {
+  background: rgba(0, 0, 0, 0.008);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-intel__peer {
+  background: rgba(0, 0, 0, 0.008);
+  border-left-color: color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+}
+
+.light .fm-intel__details-toggle {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-intel__details-toggle:hover {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .fm-intel__detail-card {
+  background: rgba(0, 0, 0, 0.008);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-intel__insight-box {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-intel__activity-card,
+.light .fm-intel__social-card {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-intel__activity-card:hover,
+.light .fm-intel__social-card:hover {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-intel__domain-cell {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-intel__outcome-metric {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-intel__factor-bar-track,
+.light .fm-intel__lifecycle-bar-track,
+.light .fm-intel__domain-bar-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-intel__chain-connector {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-intel__social-interest-tag {
+  background: color-mix(in srgb, var(--color-teal-400) 8%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Reduced Motion
+   D12-05: opacity: 1 on all stagger
+   D12-06: All animations disabled
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-intel,
+  .fm-intel__activate,
+  .fm-intel__memory,
+  .fm-intel__briefing,
+  .fm-intel__briefing-meta,
+  .fm-intel__insight-strip,
+  .fm-intel__chain,
+  .fm-intel__chain-step,
+  .fm-intel__peer,
+  .fm-intel__controls,
+  .fm-intel__details-toggle,
+  .fm-intel__detail-card {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .fm-intel__factor-bar-fill,
+  .fm-intel__lifecycle-bar-fill,
+  .fm-intel__domain-bar-fill {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-intel__activate-icon {
+    animation: none;
+  }
+
+  .fm-intel__chain-dot[data-priority="critical"] {
+    animation: none;
+    box-shadow: 0 0 4px var(--color-rose-400);
+  }
+
+  .fm-intel__details {
+    transition: none;
+  }
+
+  .fm-intel__detail-card,
+  .fm-intel__activity-card,
+  .fm-intel__social-card,
+  .fm-intel__details-toggle,
+  .fm-intel__chain-step {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §14  Responsive
+   D9: Detail grid collapses, briefing stacks
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .fm-intel {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .fm-intel__briefing-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .fm-intel__domain-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fm-intel__engagement-gauges {
+    gap: 8px;
+  }
+
+  .fm-intel__outcome-metrics {
+    flex-direction: column;
+  }
+
+  .fm-intel__churn-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §15  Print
+   D12-01: break-inside avoid
+   D12-02: White bg
+   D12-03: No pseudo-elements, no animations
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-intel {
+    break-inside: avoid;
+    background: white;
+    border: 1px solid #ccc;
+    backdrop-filter: none;
+    opacity: 1;
+    animation: none;
+    box-shadow: none;
+  }
+
+  .fm-intel::before,
+  .fm-intel::after {
+    display: none;
+  }
+
+  .fm-intel__activate,
+  .fm-intel__controls,
+  .fm-intel__details-toggle {
+    display: none;
+  }
+
+  .fm-intel__details {
+    max-height: none;
+    opacity: 1;
+    overflow: visible;
+  }
+
+  .fm-intel__detail-card,
+  .fm-intel__chain-step,
+  .fm-intel__memory,
+  .fm-intel__briefing,
+  .fm-intel__insight-strip,
+  .fm-intel__chain,
+  .fm-intel__peer {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-intel__factor-bar-fill,
+  .fm-intel__lifecycle-bar-fill,
+  .fm-intel__domain-bar-fill {
+    animation: none;
+    opacity: 1;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-intel__chain-dot,
+  .fm-intel__social-avatar {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

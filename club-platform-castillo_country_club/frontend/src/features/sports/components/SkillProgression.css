@@ -1,0 +1,517 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/SkillProgression.css
+   §B3.14 — Skill Progression V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  plateau zone gentle pulse
+   2. REACCIÓN:     hover on sport cards + chart dots
+   3. MEMORIA:      trajectory curve, scores, session counts
+   4. INTENCIÓN:    predicted trajectory, breakthrough probability
+   5. SINIESTRÍA:   trend colors, event markers, plateau zones
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-prog {
+  --spt-sp-accent: var(--color-teal-400, #2a9ab5);
+  --spt-sp-surface: var(--color-surface-1, #1a1a1a);
+  --spt-sp-border: rgba(255, 255, 255, 0.06);
+  --spt-sp-text: var(--color-silver-100, #f0ece4);
+  --spt-sp-text-muted: var(--color-silver-400, #8a8580);
+  --spt-sp-text-dim: var(--color-silver-500, #7a7570);
+}
+
+/* ── §0.1 — Mode (LP 6: Empatía) ──────────────────────── */
+
+.spt-prog[data-mode="calm"]    { --spt-sp-accent: var(--color-teal-400, #2a9ab5); }
+.spt-prog[data-mode="alert"]   { --spt-sp-accent: var(--color-amber-400, #d4a017); }
+.spt-prog[data-mode="critical"]{ --spt-sp-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-prog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.spt-prog__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.spt-prog__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.1rem;
+  color: var(--spt-sp-text);
+  margin: 0;
+}
+
+.spt-prog__level {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+.spt-prog__level[data-level="novice"]       { background: rgba(138,133,128,0.15); color: var(--color-silver-400); }
+.spt-prog__level[data-level="apprentice"]    { background: rgba(42,154,181,0.15); color: var(--color-teal-400); }
+.spt-prog__level[data-level="practitioner"]  { background: rgba(61,170,112,0.15); color: var(--color-emerald-400); }
+.spt-prog__level[data-level="expert"]        { background: rgba(212,160,23,0.15); color: var(--color-amber-400); }
+.spt-prog__level[data-level="master"]        { background: rgba(212,175,55,0.15); color: var(--color-gold-400); }
+.spt-prog__level[data-level="legend"]        { background: rgba(229,77,77,0.15); color: var(--color-rose-400); }
+
+.spt-prog__trend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+.spt-prog__trend-badge[data-trend="improving"] { background: rgba(61,170,112,0.12); color: var(--color-emerald-400); }
+.spt-prog__trend-badge[data-trend="declining"]  { background: rgba(229,77,77,0.12); color: var(--color-rose-400); }
+.spt-prog__trend-badge[data-trend="stable"]     { background: rgba(138,133,128,0.1); color: var(--spt-sp-text-dim); }
+
+.spt-prog__trend-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* ── §2 — Sport Filter (LP 2: Reacción) ────────────────── */
+
+.spt-prog__filter {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.spt-prog__filter-btn {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--spt-sp-border);
+  border-radius: 5px;
+  background: transparent;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--spt-sp-text-dim);
+  cursor: pointer;
+  min-height: 28px;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.spt-prog__filter-btn:hover {
+  color: var(--spt-sp-text-muted);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.spt-prog__filter-btn[data-active="true"] {
+  background: rgba(42, 154, 181, 0.1);
+  color: var(--spt-sp-accent);
+  border-color: var(--spt-sp-accent);
+}
+
+.spt-prog__filter-btn:focus-visible {
+  outline: 2px solid var(--spt-sp-accent);
+  outline-offset: 2px;
+}
+
+/* ── §3 — Summary Stats ────────────────────────────────── */
+
+.spt-prog__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--spt-sp-text-muted);
+}
+
+.spt-prog__summary-item strong {
+  color: var(--spt-sp-text);
+}
+
+.spt-prog__summary-item--highlight {
+  color: var(--color-gold-400, #d4af37);
+}
+
+.spt-prog__summary-item--highlight strong {
+  color: var(--color-gold-400, #d4af37);
+}
+
+/* ── §4 — Chart Container ──────────────────────────────── */
+
+.spt-prog__chart-container {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--spt-sp-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.spt-prog__chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── §5 — SVG Chart Elements ───────────────────────────── */
+
+/* Grid lines */
+.spt-prog__grid-line {
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 0.5;
+}
+
+.spt-prog__y-label {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.5rem;
+  fill: var(--spt-sp-text-dim);
+}
+
+.spt-prog__x-label {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.5rem;
+  fill: var(--spt-sp-text-dim);
+}
+
+/* Divider line: historical | predicted */
+.spt-prog__divider {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 0.5;
+  stroke-dasharray: 4 4;
+}
+
+/* Plateau zones (LP 5: Siniestría) */
+.spt-prog__plateau-zone {
+  fill: rgba(212, 160, 23, 0.06);
+  stroke: none;
+}
+
+/* Trajectory lines */
+.spt-prog__line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.spt-prog__line--historical {
+  stroke: var(--spt-sp-accent);
+  transition: stroke 0.4s ease;
+}
+
+.spt-prog__line--predicted {
+  stroke: var(--spt-sp-accent);
+  stroke-dasharray: 6 4;
+  opacity: 0.5;
+  transition: stroke 0.4s ease;
+}
+
+/* Data dots */
+.spt-prog__dot {
+  fill: var(--spt-sp-accent);
+  transition: fill 0.4s ease;
+  cursor: pointer;
+}
+
+.spt-prog__dot:hover {
+  transform-origin: center;
+  r: 6;
+}
+
+.spt-prog__dot--predicted {
+  fill: var(--spt-sp-accent);
+  opacity: 0.4;
+}
+
+.spt-prog__dot[data-event="breakthrough"]    { fill: var(--color-gold-400, #d4af37); }
+.spt-prog__dot[data-event="plateau_start"]   { fill: var(--color-amber-400, #d4a017); }
+.spt-prog__dot[data-event="plateau_end"]     { fill: var(--color-emerald-400, #3daa70); }
+.spt-prog__dot[data-event="injury"]          { fill: var(--color-rose-400, #e54d4d); }
+.spt-prog__dot[data-event="coaching_start"]  { fill: var(--color-teal-400, #2a9ab5); }
+.spt-prog__dot[data-event="competition"]     { fill: var(--color-violet-400, #8b5cf6); }
+
+/* Event annotations */
+.spt-prog__event-line {
+  stroke-width: 0.5;
+  opacity: 0.5;
+}
+
+.spt-prog__event-label {
+  font-family: var(--font-body, "DM Sans", sans-serif);
+  font-size: 0.45rem;
+  font-weight: 600;
+}
+
+/* ── §6 — Chart Legend ──────────────────────────────────── */
+
+.spt-prog__chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-sp-border);
+}
+
+.spt-prog__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6rem;
+  color: var(--spt-sp-text-dim);
+}
+
+.spt-prog__legend-line {
+  display: inline-block;
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.spt-prog__legend-line--historical {
+  background: var(--spt-sp-accent);
+}
+
+.spt-prog__legend-line--predicted {
+  background: var(--spt-sp-accent);
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--spt-sp-accent) 0,
+    var(--spt-sp-accent) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.spt-prog__legend-line--plateau {
+  background: rgba(212, 160, 23, 0.2);
+  height: 8px;
+  width: 16px;
+  border-radius: 2px;
+}
+
+/* ── §7 — Sport Breakdown Cards (LP 2: Reacción) ──────── */
+
+.spt-prog__sports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.spt-prog__sport-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--spt-sp-surface);
+  border: 1px solid var(--spt-sp-border);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+}
+
+.spt-prog__sport-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.spt-prog__sport-card:focus-visible {
+  outline: 2px solid var(--spt-sp-accent);
+  outline-offset: 2px;
+}
+
+/* Trend border (LP 5: Siniestría) */
+.spt-prog__sport-card[data-trend="improving"] {
+  border-left: 3px solid var(--color-emerald-400, #3daa70);
+}
+
+.spt-prog__sport-card[data-trend="declining"] {
+  border-left: 3px solid var(--color-rose-400, #e54d4d);
+}
+
+.spt-prog__sport-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spt-prog__sport-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.spt-prog__sport-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.spt-prog__sport-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--spt-sp-text);
+  margin: 0;
+}
+
+.spt-prog__sport-level {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.05rem 0.3rem;
+  border-radius: 2px;
+}
+
+.spt-prog__sport-level[data-level="novice"]       { background: rgba(138,133,128,0.12); color: var(--color-silver-400); }
+.spt-prog__sport-level[data-level="apprentice"]    { background: rgba(42,154,181,0.12); color: var(--color-teal-400); }
+.spt-prog__sport-level[data-level="practitioner"]  { background: rgba(61,170,112,0.12); color: var(--color-emerald-400); }
+.spt-prog__sport-level[data-level="expert"]        { background: rgba(212,160,23,0.12); color: var(--color-amber-400); }
+.spt-prog__sport-level[data-level="master"]        { background: rgba(212,175,55,0.12); color: var(--color-gold-400); }
+.spt-prog__sport-level[data-level="legend"]        { background: rgba(229,77,77,0.12); color: var(--color-rose-400); }
+
+.spt-prog__sport-trend {
+  flex-shrink: 0;
+}
+
+.spt-prog__sport-trend[data-trend="improving"] { color: var(--color-emerald-400); }
+.spt-prog__sport-trend[data-trend="declining"]  { color: var(--color-rose-400); }
+.spt-prog__sport-trend[data-trend="stable"]     { color: var(--spt-sp-text-dim); }
+
+.spt-prog__sport-stats {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.spt-prog__sport-stat {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.65rem;
+  color: var(--spt-sp-text-muted);
+}
+
+.spt-prog__sport-stat[data-trend="improving"] { color: var(--color-emerald-400); }
+.spt-prog__sport-stat[data-trend="declining"]  { color: var(--color-rose-400); }
+
+.spt-prog__sport-discipline {
+  font-size: 0.65rem;
+  color: var(--spt-sp-text-dim);
+  margin: 0;
+}
+
+/* ── §8 — Footer: Narrative (LP 7) ─────────────────────── */
+
+.spt-prog__footer {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-sp-border);
+}
+
+.spt-prog__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-sp-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-sp-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §9 — Light Mode ───────────────────────────────────── */
+
+.light .spt-prog {
+  --spt-sp-surface: rgba(255, 255, 255, 0.7);
+  --spt-sp-border: rgba(0, 0, 0, 0.08);
+  --spt-sp-text: #1a1a1a;
+  --spt-sp-text-muted: #6b7280;
+  --spt-sp-text-dim: #9ca3af;
+}
+
+.light .spt-prog__chart-container {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .spt-prog__grid-line {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-prog__sport-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-prog__filter-btn {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .spt-prog__filter-btn:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+/* ── §10 — Reduced Motion ──────────────────────────────── */
+
+.spt-prog[data-prefers-reduced="true"] .spt-prog__sport-card:hover {
+  transform: none;
+}
+
+/* ── §11 — Responsive ──────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .spt-prog__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .spt-prog__sports-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .spt-prog__filter {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.25rem;
+  }
+}
+
+/* ── §12 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-prog {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .spt-prog__chart-container {
+    background: #fff;
+    border: 1px solid #ddd;
+  }
+
+  .spt-prog__sport-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .spt-prog__filter {
+    display: none;
+  }
+}

@@ -1,0 +1,367 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/SportsHealthScore.css
+   §B4.2 — Sports Health Score V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  ring gauge animation on mount
+   2. REACCIÓN:     hover on factor bars
+   3. MEMORIA:      score, level, factor values persist
+   4. INTENCIÓN:    trend indicator, alerts list
+   5. SINIESTRÍA:   health-level colors, factor-level colors
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-health {
+  --spt-h-accent: var(--color-teal-400, #2a9ab5);
+  --spt-h-surface: var(--color-surface-1, #1a1a1a);
+  --spt-h-border: rgba(255, 255, 255, 0.06);
+  --spt-h-text: var(--color-silver-100, #f0ece4);
+  --spt-h-text-muted: var(--color-silver-400, #8a8580);
+  --spt-h-text-dim: var(--color-silver-500, #7a7570);
+
+  background: var(--spt-h-surface);
+  border: 1px solid var(--spt-h-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+/* ── §0.1 — Health Level accent (LP 5: Siniestría) ────── */
+
+.spt-health[data-health-level="excellent"] { --spt-h-accent: var(--color-emerald-400, #3daa70); }
+.spt-health[data-health-level="good"]      { --spt-h-accent: var(--color-teal-400, #2a9ab5); }
+.spt-health[data-health-level="fair"]      { --spt-h-accent: var(--color-amber-400, #d4a017); }
+.spt-health[data-health-level="poor"]      { --spt-h-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §0.2 — Mode (LP 6: Empatía) ──────────────────────── */
+
+.spt-health[data-mode="calm"]    { /* uses health-level accent */ }
+.spt-health[data-mode="alert"]   { --spt-h-accent: var(--color-amber-400, #d4a017); }
+.spt-health[data-mode="critical"]{ --spt-h-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Gauge Area ───────────────────────────────────── */
+
+.spt-health__gauge-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* ── §2 — Ring Gauge ───────────────────────────────────── */
+
+.spt-health__ring-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+.spt-health__ring-svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.spt-health__ring-bg {
+  stroke: rgba(255, 255, 255, 0.04);
+  opacity: 0.6;
+}
+
+.spt-health__ring-fg {
+  transition: stroke-dashoffset 1.5s var(--ease-apple);
+}
+
+.spt-health__ring-fg[data-reduced="true"] {
+  transition: none;
+}
+
+/* ── §3 — Ring Center Text ──────────────────────────────── */
+
+.spt-health__ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.spt-health__ring-score {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: color 0.4s ease;
+}
+
+.spt-health__ring-score[data-health-level="excellent"] { color: var(--color-emerald-400); }
+.spt-health__ring-score[data-health-level="good"]      { color: var(--color-teal-400); }
+.spt-health__ring-score[data-health-level="fair"]      { color: var(--color-amber-400); }
+.spt-health__ring-score[data-health-level="poor"]      { color: var(--color-rose-400); }
+
+.spt-health__ring-max {
+  font-size: 0.75rem;
+  color: var(--spt-h-text-muted);
+}
+
+.spt-health__ring-level {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  transition: color 0.4s ease;
+}
+
+.spt-health__ring-level[data-health-level="excellent"] { color: var(--color-emerald-400); }
+.spt-health__ring-level[data-health-level="good"]      { color: var(--color-teal-400); }
+.spt-health__ring-level[data-health-level="fair"]      { color: var(--color-amber-400); }
+.spt-health__ring-level[data-health-level="poor"]      { color: var(--color-rose-400); }
+
+/* ── §4 — Trend Indicator (LP 4: Intención) ────────────── */
+
+.spt-health__trend {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.spt-health__trend-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: color 0.4s ease;
+}
+
+.spt-health__trend[data-trend="improving"] { color: var(--color-emerald-400); }
+.spt-health__trend[data-trend="declining"]  { color: var(--color-rose-400); }
+.spt-health__trend[data-trend="stable"]     { color: var(--spt-h-text-dim); }
+
+.spt-health__trend-label {
+  font-size: 0.75rem;
+  color: var(--spt-h-text-muted);
+}
+
+/* ── §5 — Factor Bars (LP 5: Siniestría) ───────────────── */
+
+.spt-health__factors {
+  margin-bottom: 0.75rem;
+}
+
+.spt-health__factors-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--spt-h-text-muted);
+  margin-bottom: 0.65rem;
+}
+
+.spt-health__factor {
+  margin-bottom: 0.6rem;
+  animation: spt-h-factor-enter 0.4s ease both;
+  animation-delay: calc(var(--stagger-i, 0) * 80ms);
+}
+
+@keyframes spt-h-factor-enter {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-health__factor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.spt-health__factor-name {
+  font-size: 0.75rem;
+  color: var(--spt-h-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 65%;
+}
+
+.spt-health__factor-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  font-weight: 600;
+  transition: color 0.4s ease;
+}
+
+.spt-health__factor-value[data-factor-level="excellent"] { color: var(--color-emerald-400); }
+.spt-health__factor-value[data-factor-level="good"]      { color: var(--color-teal-400); }
+.spt-health__factor-value[data-factor-level="fair"]      { color: var(--color-amber-400); }
+.spt-health__factor-value[data-factor-level="poor"]      { color: var(--color-rose-400); }
+
+.spt-health__factor-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.spt-health__factor-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s var(--ease-apple);
+}
+
+.spt-health__factor-fill[data-reduced="true"] {
+  transition: none;
+}
+
+.spt-health__factor-fill[data-factor-level="excellent"] { background: var(--color-emerald-400); }
+.spt-health__factor-fill[data-factor-level="good"]      { background: var(--color-teal-400); }
+.spt-health__factor-fill[data-factor-level="fair"]      { background: var(--color-amber-400); }
+.spt-health__factor-fill[data-factor-level="poor"]      { background: var(--color-rose-400); }
+
+/* ── §6 — Alerts (LP 4: Intención + 5: Siniestría) ────── */
+
+.spt-health__alerts {
+  padding: 0.65rem 0.85rem;
+  background: rgba(212, 160, 23, 0.04);
+  border: 1px solid rgba(212, 160, 23, 0.12);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.spt-health__alerts-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-amber-400, #d4a017);
+  margin: 0 0 0.5rem;
+}
+
+.spt-health__alerts-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.spt-health__alerts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.spt-health__alert {
+  font-size: 0.75rem;
+  color: var(--spt-h-text-muted);
+  line-height: 1.5;
+  padding-left: 0.65rem;
+  position: relative;
+}
+
+.spt-health__alert::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--color-amber-400, #d4a017);
+}
+
+.spt-health__alert--more {
+  color: var(--spt-h-text-dim);
+  font-style: italic;
+}
+
+/* ── §7 — Footer: Narrative (LP 7) ─────────────────────── */
+
+.spt-health__footer {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-h-border);
+}
+
+.spt-health__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-h-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-h-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §8 — Light Mode ───────────────────────────────────── */
+
+.light .spt-health {
+  --spt-h-surface: rgba(255, 255, 255, 0.7);
+  --spt-h-border: rgba(0, 0, 0, 0.08);
+  --spt-h-text: #1a1a1a;
+  --spt-h-text-muted: #6b7280;
+  --spt-h-text-dim: #9ca3af;
+}
+
+.light .spt-health__ring-bg {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-health__factor-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-health__alerts {
+  background: rgba(212, 160, 23, 0.03);
+  border-color: rgba(212, 160, 23, 0.1);
+}
+
+/* ── §9 — Reduced Motion ───────────────────────────────── */
+
+.spt-health[data-prefers-reduced="true"] .spt-health__ring-fg {
+  transition: none;
+}
+
+.spt-health[data-prefers-reduced="true"] .spt-health__factor-fill {
+  transition: none;
+}
+
+.spt-health[data-prefers-reduced="true"] .spt-health__factor {
+  animation: none;
+}
+
+/* ── §10 — Responsive ──────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .spt-health__ring-container {
+    width: 130px;
+    height: 130px;
+  }
+
+  .spt-health__ring-score {
+    font-size: 1.5rem;
+  }
+}
+
+/* ── §11 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-health {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .spt-health__ring-fg {
+    transition: none;
+  }
+
+  .spt-health__factor-fill {
+    transition: none;
+  }
+
+  .spt-health__factor {
+    animation: none;
+  }
+}

@@ -1,0 +1,590 @@
+# CHECKPOINT — Fase 25 COMPLETADA — Polish Batch + Advisor Intelligence Enhancement
+
+**Fecha:** Junio 2026
+**Sesiones completadas:** 4+ (histórico) / 1 (esta sesión — larga, multi-fase)
+**Archivos creados:** 2 nuevos + ~12 modificados (F24 + F25 combinados)
+**Líneas nuevas:** ~500
+**Tools MCP nuevas:** 0 (todas ya existían)
+**Tools MCP totales registradas:** ~135+
+**Advisor rules nuevas:** 0 (F24 fue polish/enhancement, no reglas nuevas)
+**Advisor rules totales:** 80 (18 Financial + 15 Event + 25 Global + 7 Recommendations + 15 Wellness)
+
+---
+
+## 0. ROL SUPER ENRIQUECIDO — REGLA DE ORO
+
+Soy el **Principal AI Systems Architect** del Castillo Country Club. No soy un generador de código. Soy un partner técnico senior multi-experto con libertad propositiva total que combina **9 disciplinas** para convertir esta plataforma en la herramienta de gestión de clubes privados más inteligente de Costa Rica.
+
+**Las 9 disciplinas:**
+1. FullStack Engineering
+2. UI/UX Architecture
+3. Product Strategy
+4. Private Club Operations (CR)
+5. AI/ML Architecture
+6. Financial Intelligence
+7. Marketing Intelligence
+8. ML & Gen AI
+9. AI Experience Design
+
+**Proceso mental (10 pasos):**
+1. ¿Qué dice el código actual? → Leer archivo real
+2. ¿Qué viola de las 22+ reglas? → Auditar línea por línea
+3. ¿Qué nivel de inteligencia tiene? → ¿Solo datos? ¿Contexto? ¿IA?
+4. ¿Qué nivel PODRÍA tener? → Proponer upgrade si aplica
+5. ¿Cómo encaja en la arquitectura Advisor? → Decisiones compatibles con F20+
+6. ¿Qué pendientes acumulados resuelve? → Cerrar issues del checkpoint
+7. ¿Propongo ANTES de codificar? → El usuario aprueba
+8. ¿Genero código completo o quirúrgico? → Regla #5: >30% rewrite, ≤15 líneas quirúrgico
+9. ¿Esto es nivel 2026-2027? → Si no lo es, replantear
+10. ¿El usuario sabía que esto existía? → Si no, proponerlo
+
+**Regla de oro (INVIOLABLE):** Yo propongo y analizo ANTES de escribir código. El usuario aprueba antes de generar. Changelog detallado al final de cada bloque. Formato de edición: Bloque A (código actual exacto) → Bloque B (líneas nuevas para copiar y pegar). Nunca mezclar. Siempre cuestiono lo que propongo — el cuestionamiento va dirigido a la mejora.
+
+**Postura operativa:** Ver bug → auditar patrón. Ver tool sin UI → proponer integración. Recibir componente → analizar contra 22+ reglas. Proponer feature → algo que el usuario no sabía que necesitaba. Integrar AI → Intelligence Engine de 5 niveles. Documentar → changelog detallado + verificación.
+
+### REGLA DE FORMATO NUEVA (ACTUALIZACIÓN — establecida en esta sesión):
+
+1. **BLOQUE A** = líneas EXACTAS que se reemplazan (copiar del archivo actual)
+2. **BLOQUE B** = líneas NUEVAS que las reemplazan (copiar y pegar)
+3. **Si es INSERTAR** (no reemplazar): decir "después de la línea X, antes de la línea Y" con las líneas literales de referencia
+4. **NUNCA** decir "agregar X al existente" — siempre reemplazar el bloque completo
+5. **NUNCA** instrucciones conceptuales — siempre código exacto
+6. **Si es REWRITE (>30%)**: entregar el archivo completo, no bloque por bloque
+
+---
+
+## 1. LO QUE ESTAMOS CONSTRUYENDO (recordatorio)
+
+**Castillo AI Platform** es un **Sistema de Decisión Inteligente** para clubes privados de Costa Rica. No es un dashboard. No es un ERP. No es un CRM. Es una plataforma que piensa, propone, predice, contextualiza, planifica, ejecuta y aprende.
+
+Las 5 capas de inteligencia:
+1. **CAPA 1 — DATOS** ✅ — Queries, KPIs, charts, tablas. "¿Qué está pasando?"
+2. **CAPA 2 — CONTEXTO** ✅ — Auto-load, staleTime, on-demand, types 1:1, freshness. "¿Qué necesito ver ahora?"
+3. **CAPA 3 — INTELIGENCIA CLIENT-SIDE** ✅ — 80 reglas determinísticas, 0 tokens, 0ms. "¿Qué debería hacer?"
+4. **CAPA 4 — CROSS-AGENT** ✅ — Global Advisor 25 rules, Systemic Risk Score, benchmarks CR. "¿Qué no estoy viendo?"
+5. **CAPA 5 — ACCIÓN INTELIGENTE** ✅ — 11 acciones, AI Narrative, Simulation, Board Brief, Chat, Reactions, Pre-fetch. "Ejecutá esto."
+
+La arquitectura Advisor es el corazón: 5 Advisors (Financial 18, Event 15, Recommendations 7, Global 25, Wellness 15) = 80 reglas + 5 AI tools + 11 acciones ejecutables + reaction feedback + predictive pre-fetch.
+
+---
+
+## 2. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend (Nuevos)
+
+| # | Ruta | Líneas | Contenido | Tools MCP que consume |
+|---|------|--------|-----------|----------------------|
+| 1 | `shared/lib/ui/advisorConfig.ts` | ~40 | IMPACT_CONFIG centralizado para todos los Advisor banners | Ninguna |
+| 2 | `shared/lib/analytics.ts` | ~80 | Lightweight event tracking (localStorage). `trackEvent()`, `getAnalyticsEvents()`, `getAnalyticsSummary()`, `clearAnalytics()` | Ninguna |
+
+### Archivos Frontend (Modificados)
+
+| # | Ruta | Acción | Qué se cambió | Por qué |
+|---|------|--------|---------------|---------|
+| 1 | `shared/components/ai/AIBoardBriefViewer.tsx` | QUIRÚRGICO | +Talking Points section en UI (entre Key Points y Q&A). +tracking: opened, pdf_exported, qa_expanded/collapsed. Q&A `<button>` → `<Button>` de shared (regla #17). Duplicados de atributos corregidos. | F24 Bloque 1+4+5 |
+| 2 | `shared/components/ai/AISimulationPanel.tsx` | REWRITE | Dynamic proposedChanges (auto re-simulate). Timeframe selector (week/month/quarter). Re-simulate button con cache invalidation. Barrel import → directo. | F24 Bloque 2 |
+| 3 | `features/dashboard/components/GlobalAdvisorBanner.tsx` | QUIRÚRGICO | `sage-400` → `violet-400` (Innovation layer). Simulation usa `generateProposedChanges()` context-aware. IMPACT_CONFIG importa de shared. | F24 Bloque 2+5, F25 Fix 6 |
+| 4 | `features/dashboard/ExecutiveDashboard.tsx` | QUIRÚRGICO | Added `handleAdvisorChatAction()` — Advisor Chat suggested actions ahora se ejecutan via action bridge en vez de solo showToast. Fixed broken `handleAdvisorExecute(action.label)` callback. | F24 Bloque 3 |
+| 5 | `shared/lib/utils.ts` | QUIRÚRGICO | +`compactCurrency()` centralizado (₡45.2M format) | F25 Fix 2 |
+| 6 | `shared/lib/adaptiveThresholds.ts` | QUIRÚRGICO | `SEASON_CONFIG` definido inline (elimina dependency inversion shared→finance). Import de `@/features/finance/types` eliminado. | F25 Fix 3 |
+| 7 | `features/wellness/types.ts` | QUIRÚRGICO | `'swimming'` removido de `SOCIAL_ACTIVITY_TYPES` (score engine y Advisor rule 8 ahora alineados) | F25 Fix 4 |
+| 8 | `features/wellness/components/WellnessAIAdvisor.tsx` | QUIRÚRGICO | `getLevelFromScore` inline eliminada — delega a `getWellnessLevel()` de types.ts. +import de `getWellnessLevel`. `font-body` → `font-[family-name:var(--font-ui)]` (8 instancias) | F25 Fix 5+1 |
+| 9 | `features/wellness/components/WellnessAdvisorBanner.tsx` | QUIRÚRGICO | IMPACT_CONFIG importa de shared en vez de local. Labels: Crítico/Atención/Info → Alto/Medio/Bajo para consistencia. | F25 Fix 6 |
+| 10 | `features/wellness/components/WellnessGoals.tsx` | QUIRÚRGICO | `font-body` → `font-[family-name:var(--font-ui)]` (1 instancia) | F25 Fix 1 |
+| 11 | `shared/components/ai/AIInsightNarrative.tsx` | SIN CAMBIOS | Auditado, verificado correcto | Verificación F23 |
+| 12 | `shared/hooks/useAdvisorNarrative.ts` | SIN CAMBIOS | Auditado, verificado correcto | Verificación F23 |
+
+### Tools MCP auditadas/conectadas en esta sesión (verificación, no nuevas)
+
+| # | Tool | Server | Backend real | Mock | Estado verificación |
+|---|------|--------|-------------|------|-------------------|
+| 1 | `generate_insight_narrative` | `advisor_intelligence` | ✅ | ✅ | ✅ Verificado |
+| 2 | `generate_action_plan` | `advisor_intelligence` | ✅ | ✅ | ✅ Verificado |
+| 3 | `simulate_scenario` | `advisor_intelligence` | ✅ | ✅ | ✅ Verificado |
+| 4 | `generate_board_brief` | `advisor_intelligence` | ✅ | ✅ | ✅ Verificado |
+| 5 | `ask_advisor` | `advisor_intelligence` | ✅ | ✅ | ✅ Verificado (incluye conversation_history) |
+| 6 | `wellness_profile_get` | `wellness` | ✅ | ✅ | ✅ Verificado |
+| 7 | `wellness_report` | `wellness` | ✅ | ✅ (fixed F23) | ✅ Verificado |
+| 8 | `wellness_recommendations` | `wellness` | ✅ | ✅ | ✅ Verificado |
+
+---
+
+## 3. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | F23 DetailTabs fixes ya estaban aplicados (icon type + prop name) | INFO | ✅ Confirmado |
+| 2 | `WellnessGoals.tsx` hardcodeado a `[]` — componente no funcional | ALTA | ⬜ Pendiente F26 (necesita backend `wellness_goal_list` tool) |
+| 3 | `swimming` inconsistente: `ACTIVITY_TYPE_CONFIG.social=false` pero `SOCIAL_ACTIVITY_TYPES` lo incluía | MEDIA | ✅ Resuelto (F25 Fix 4) |
+| 4 | `font-body` no existe en Silver Tide — ~11 instancias | MEDIA | ✅ Resuelto (F25 Fix 1) |
+| 5 | `SEASON_CONFIG` dependency inversion (shared → finance) | MEDIA | ✅ Resuelto (F25 Fix 3) |
+| 6 | `getWellnessLevel` duplicada en types.ts + WellnessAIAdvisor inline | BAJA | ✅ Resuelto (F25 Fix 5) |
+| 7 | `IMPACT_CONFIG` duplicado en 3 banners | BAJA | ✅ Resuelto (F25 Fix 6) |
+| 8 | `compactCurrency` duplicado en 3+ archivos | BAJA | ✅ Centralizado (F25 Fix 2). Pendiente: eliminar definiciones locales |
+| 9 | `CHART_PALETTE.sage` y `CHART_PALETTE.terracotta` SÍ existen en chartTheme.ts | INFO | ✅ Verificado. Sin fix necesario |
+| 10 | Advisor Chat `onAdvisorAction` callback roto — pasaba `action.label` (string) como insightId a `handleAdvisorExecute` | **ALTA** | ✅ Resuelto (F24 Bloque 3) |
+| 11 | `AIBoardBriefViewer` talking_points solo en PDF, no en UI | MEDIA | ✅ Resuelto (F24 Bloque 1) |
+| 12 | `AISimulationPanel` proposedChanges hardcodeados en GlobalAdvisorBanner | MEDIA | ✅ Resuelto (F24 Bloque 2) |
+| 13 | `var(--color-sage-400)` no existe en Silver Tide CSS tokens (existe como hex en chartTheme) | MEDIA | ✅ Resuelto → `violet-400` (F24 Bloque 5) |
+| 14 | Q&A toggle en AIBoardBriefViewer era `<button>` raw (regla #17) | MEDIA | ✅ Resuelto → `<Button>` de shared (F24 Bloque 5) |
+| 15 | Barrel import `@/shared/components/ui` en vez de directo en AISimulationPanel | BAJA | ✅ Resuelto (F24 Bloque 2) |
+| 16 | Duplicación de atributos `type="button"` y `onClick` en Q&A toggle por instrucción ambigua | BAJA | ✅ Resuelto (fix inmediato) |
+| 17 | `compactCurrency` local definitions siguen existiendo en Financial/Global Advisors | BAJA | ⬜ Pendiente — buscar y reemplazar por import |
+| 18 | `usePrefetchTopNarratives` depende de `insights.length` no contenido | INFO | ✅ Aceptado — correcto para caso de uso |
+| 19 | `ask_advisor` conversation_history ya implementado en backend Y frontend (F22a) | INFO | ✅ Verificado — feature no estaba dormido como se creía |
+| 20 | Advisor Chat `suggestedAction` solo muestra showToast cuando no hay `onAdvisorAction` callback | INFO | ✅ Correcto — ExecutiveDashboard ahora pasa el callback real |
+
+---
+
+## 4. PATRONES ESTABLECIDOS / ACTUALIZADOS
+
+### Patrón NUEVO: Analytics Event Tracking (F24)
+
+**Concepto:** Lightweight client-side event tracking para AI tools. localStorage-based, preparado para backend endpoint.
+
+**API:**
+```typescript
+trackEvent("board_brief", "pdf_exported")
+trackEvent("advisor_narrative", "expanded", "revenue_concentration_001")
+getAnalyticsSummary() // → { "board_brief:opened": 5, ... }
+```
+
+**Cuándo se aplica:** Cualquier componente AI que necesitemos medir engagement.
+**Fases futuras donde se replica:** F26+ (backend endpoint), F24+ (otros AI tools)
+**Archivos donde ya está implementado:** `shared/lib/analytics.ts`, `shared/components/ai/AIBoardBriefViewer.tsx`
+
+### Patrón NUEVO: Dynamic Simulation Context (F24)
+
+**Concepto:** Proposed changes para simulation se generan automáticamente basados en los insights activos del Advisor, en vez de hardcodearse.
+
+**Implementación:** `generateProposedChanges()` en `GlobalAdvisorBanner.tsx` — 5 keyword clusters: revenue/margin, churn/retention, events, wellness, fallback genérico.
+
+**Cuándo se aplica:** Cuando un Advisor Banner tiene Simulation Panel
+**Archivos:** `features/dashboard/components/GlobalAdvisorBanner.tsx`
+
+### Patrón NUEVO: Advisor Chat Action Bridge (F24)
+
+**Concepto:** Advisor Chat suggested actions se ejecutan via el mismo action bridge que las acciones de los Banners. Routing por `server + tool` con fallback a `callMCPTool` genérico.
+
+**Cuándo se aplica:** Cuando el Advisor sugiere una acción en modo conversacional
+**Archivos:** `features/dashboard/ExecutiveDashboard.tsx`
+
+### Patrón NUEVO: Shared Advisor UI Config (F25)
+
+**Concepto:** IMPACT_CONFIG y otros configs compartidos entre Advisor banners centralizados en `shared/lib/ui/advisorConfig.ts`.
+
+**Cuándo se aplica:** Todos los Advisor banners
+**Archivos:** `shared/lib/ui/advisorConfig.ts`, `GlobalAdvisorBanner.tsx`, `WellnessAdvisorBanner.tsx`
+
+### Patrones que aplicaron sin cambios:
+- P14: Advisor Banner Pattern
+- P16: Predictive Pre-fetch
+- P17: Button Swap Protocol
+- P13: Transform Helpers
+- P9: Defensive Data Rendering
+
+---
+
+## 5. ADVISOR ARCHITECTURE UPDATE
+
+Sin cambios esta sesión — no se agregaron reglas nuevas ni Advisors nuevos.
+
+La verificación confirmó que los 5 Advisors y 80 reglas están completos y funcionales.
+
+---
+
+## 6. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón | Impacto |
+|---|---------|----------------------|-------|---------|
+| 1 | Talking Points visibles en UI además de PDF | Solo en PDF | ADMIN lee briefs en browser, no solo exporta | UX improvement |
+| 2 | `generateProposedChanges()` basado en keywords de insights | proposedChanges como parte de insight data | No requiere cambiar Advisor hooks. Más flexible. | Simulation context-aware sin cambios en hook |
+| 3 | IMPACT_CONFIG labels genéricos (Alto/Medio/Bajo) | Labels específicos por dominio (Crítico/Atención/Info) | Consistencia cross-banner es más importante que labels específicos | Wellness banner pierde labels específicos |
+| 4 | `SEASON_CONFIG` inline en adaptiveThresholds | Mover a archivo shared separado | Solo se usa en adaptiveThresholds. No justifica archivo propio. | Elimina dependency inversion |
+| 5 | Swimming como NON-social | Swimming como social | En CR, natación es actividad individual (lap swimming). Consistent con `ACTIVITY_TYPE_CONFIG.swimming.social=false` | Score engine y Advisor rule 8 ahora alineados |
+| 6 | `compactCurrency` como función exportada | No centralizar (dejar duplicados) | 3+ definiciones locales causan drift | Importar de shared/lib/utils en F25+ |
+| 7 | Analytics localStorage-based | Backend endpoint inmediato | Más rápido de implementar. Preparado para backend (F26+) | Tracking existe hoy, backend viene después |
+| 8 | `handleAdvisorChatAction` busca matching insight por server+tool | No vincular chat actions con reaction system | Reacciones del Advisor Chat se ven en el banner también | Feedback loop completo |
+| 9 | Bloque 3 original (Conversation History) fue eliminado del plan | Implementar de nuevo | Ya existía desde F22a — verificación descubrió que el feature no estaba dormido | Ahorro de tokens/tiempo |
+| 10 | Advisor Chat button raw → no se hizo swap aquí | Button swap en toggle/close/send | Toggle es FAB flotante (excepción aceptable), close ya tiene patrón en otros widgets | Pendiente para F25 polish futuro |
+| 11 | Usuario RECHAZÓ instrucciones ambiguas ("agregar al existente") | Seguir con instrucciones vagas | Causó duplicación de atributos. Nueva regla: siempre reemplazar bloque completo | **Regla de formato establecida** (ver sección 0) |
+| 12 | REWRITE de AISimulationPanel fue entregado como archivo completo | Bloque por bloque | Usuario indicó: rewrite = rewrite completo, no perder tokens bloque por bloque | **Regla de formato establecida** |
+| 13 | `font-body` eliminado de todo el proyecto | Definir `--font-body` como token | Silver Tide no define body font como CSS variable. `font-ui` (DM Sans) es el correcto para body text | 11 instancias corregidas |
+| 14 | Wellness Advisor Banner IMPACT_CONFIG labels cambiados | Mantener labels específicos | Usuario no objetó el cambio a genéricos | Consistencia cross-banner |
+
+---
+
+## 7. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F5 | Infraestructura, tokens, forms, lists, details | ✅ |
+| F6 | Dashboards densos + AI | ✅ |
+| F7 | Reports, mi-club, settings, finance | ✅ |
+| F8 | Dashboard sub-componentes (5/12 done) | 🔄 |
+| F9 | Wellness + Satisfaction | ✅ |
+| F10 | Proactive Recommendations | ✅ |
+| F11 | Communication Enhancement | ✅ |
+| F12 | Guest Management + Trial Memberships | ✅ |
+| F13 | Finance Enhancement + HITL Complete | ✅ |
+| F14 | Intelligence Features | ✅ |
+| F15 | Integration Testing + QA | ✅ |
+| F15ext-B | DailyBriefing enhancement | ✅ |
+| F15ext-C | ComplianceCheck enhancement | ✅ |
+| F15ext-S | SmartSchedule rewrite | ✅ |
+| F16 | ExecutiveDashboard Enhancement | ✅ |
+| F17 | RecommendationsDashboard — 7 rules Advisor | ✅ |
+| F18 | FinancialDashboard — 18 rules Advisor | ✅ |
+| F19 | EventOrchestrator — 15 rules Advisor | ✅ |
+| F20 | Global Cross-Agent — 25 rules Advisor | ✅ |
+| F21 | AI Intelligence Engine — 5 AI tools | ✅ |
+| F22 | Advisor Evolution — Reaction + Pre-fetch | ✅ |
+| F23 | Adaptive Thresholds + Wellness Advisor + Family Selector | ✅ |
+| F24 | Advisor Intelligence Enhancement (Talking Points + Simulation Dynamic + Action Bridge + Tracking + Cleanup) | ✅ |
+| F25 | Polish batch (font-body, compactCurrency, SEASON_CONFIG, swimming, getWellnessLevel, IMPACT_CONFIG) | ✅ |
+| **F26** | **Mock → Backend Migration** | **⬜ SIGUIENTE** |
+| F27 | Multi-language support (i18n) | ⬜ |
+| F28 | E2E testing + Accessibility audit (WCAG 2.1 AA) | ⬜ |
+| F29 | CI/CD + Production deployment | ⬜ |
+
+---
+
+## 8. PRÓXIMA FASE — Desglose detallado
+
+### F26a: Mock → Backend Migration (3 tools)
+
+**Objetivo:** Migrar `wellness_predict`, `wellness_anomalies`, y `get_financial_summary` de mock-only a backend real con repository pattern + Pydantic models.
+
+**Agentes backend a leer:**
+```
+1. backend/src/club_mcp/agents/wellness.py
+2. backend/src/club_mcp/models/wellness.py
+3. backend/src/club_mcp/db/repositories/wellness_repo.py
+4. backend/src/club_mcp/agents/finance.py
+5. backend/src/club_mcp/models/finance.py
+6. backend/src/club_mcp/db/repositories/finance_repo.py
+7. frontend/src/shared/mocks/factories.ts
+```
+
+**Tools MCP a migrar:**
+
+| # | Tool | Server | Backend actual | Mock actual | Tipo | Approval | Destino frontend |
+|---|------|--------|---------------|-------------|------|----------|-----------------|
+| 1 | `wellness_predict` | wellness | ⬜ NO existe | ✅ existe | inteligencia | AUTO | WellnessAIAdvisor |
+| 2 | `wellness_anomalies` | wellness | ⬜ NO existe | ✅ existe | inteligencia | AUTO | WellnessRiskRadar |
+| 3 | `get_financial_summary` | finance | ⬜ NO existe | ✅ existe | datos | AUTO | FinancialDashboard |
+
+**Bloques propuestos:**
+
+| # | Bloque | Archivos a crear/modificar | Contenido | Dependencias |
+|---|--------|---------------------------|-----------|-------------|
+| B1 | Wellness Models | `models/wellness.py` | Pydantic models para WellnessPredictResponse, WellnessAnomaliesResponse | Wellness models existentes |
+| B2 | Wellness Agent | `agents/wellness.py` | 2 tools nuevas: `wellness_predict`, `wellness_anomalies` con @MCPTool decorator | B1 |
+| B3 | Finance Model | `models/finance.py` | Pydantic model para FinancialSummaryResponse | Finance models existentes |
+| B4 | Finance Agent | `agents/finance.py` | 1 tool nueva: `get_financial_summary` con @MCPTool decorator | B3 |
+| B5 | Mock Alignment | `mocks/factories.ts` + `contracts.ts` | Verificar que mock responses matchean los nuevos Pydantic models exactamente | B1-B4 |
+
+**ApprovalQueue impact:** Las 3 tools son AUTO — no se agregan a approval queue.
+
+**Archivos que el usuario debe pegar en el próximo chat:**
+```
+1. Este checkpoint
+2. CLAUDE_CONTEXT.md
+3. backend/src/club_mcp/agents/wellness.py
+4. backend/src/club_mcp/models/wellness.py
+5. backend/src/club_mcp/db/repositories/wellness_repo.py
+6. backend/src/club_mcp/agents/finance.py
+7. backend/src/club_mcp/models/finance.py
+8. backend/src/club_mcp/db/repositories/finance_repo.py
+9. frontend/src/shared/mocks/factories.ts
+```
+
+---
+
+## 9. AGENTES AUDITADOS — LISTA ACTUALIZADA
+
+| # | Agente | Server | Tools totales | HITL | AUTO | SEMI | Inteligencia | Fase auditado | Frontend conectado | Estado |
+|---|--------|--------|--------------|------|------|------|-------------|---------------|-------------------|--------|
+| 1 | `executive_dashboard` | `executive_dashboard` | 8 | 2 | 6 | — | `detect_anomalies`, `generate_ai_analysis` | F16 | ExecutiveDashboard ✅ | ✅ |
+| 2 | `finance` | `finance` | 17 (8 backend + 9 mock-only) | 3 | 3 | 2 | `generate_ai_analysis` (9 dim) | F18 | FinancialDashboard ✅ | ✅ (get_financial_summary pendiente migrar) |
+| 3 | `event_orchestrator` | `events` | 16 (9 backend + 7 mock-only) | 3 | 4 | 2 | `event_get_analytics` | F19 | EventCalendar ✅ | ✅ |
+| 4 | `proactive_recommendation` | `proactive_recommendation` | 8 | 2 | 6 | — | 6 tools | F17 | RecommendationsDashboard ✅ | ✅ |
+| 5 | `advisor_intelligence` | `advisor_intelligence` | 5 | 0 | 5 | — | 5 AI tools | F21 | ExecutiveDashboard ✅ + AIChatWidget ✅ | ✅ |
+| 6 | `compliance` | `compliance` | 7 | 1 | 5 | 1 | `generate_compliance_insights` | F15ext-C | ComplianceCheck ✅ | ✅ |
+| 7 | `facility_management` | `facility_management` | 7 | 2 | 5 | — | — | F15ext-S | SmartSchedule ✅ | ✅ |
+| 8 | `daily_briefing` | `daily_briefing` | 7 | 1 | 6 | — | `generate_daily_briefing` | F15ext-B | DailyBriefing ✅ | ✅ |
+| 9 | `smart_schedule` | `smart_schedule` | 8 | 2 | 6 | — | 2 tools | F15ext-S | SmartSchedule ✅ | ✅ |
+| 10 | `wellness` | `wellness` | 11 (7 backend + 4 mock-only) | 1 | 8 | 2 | `wellness_predict`⬜, `wellness_anomalies`⬜, `wellness_correlate`⬜, `wellness_insights`⬜ | F23+F24 | WellnessDashboard ✅ + WellnessAdvisorBanner ✅ + WellnessAIAdvisor ✅ | ✅ (2 tools pendientes migrar en F26a) |
+| 11 | `communication` | `communication` | 13 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 12 | `guest_management` | `guest_management` | 6 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 13 | `member_engagement` | `member_engagement` | 5 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 14 | `satisfaction` | `satisfaction` | 1 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 15 | `family_profile` | `families` | 11 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 16 | `sports_recreation` | `sports_recreation` | — | — | — | — | — | — | — | ⬜ |
+| 17 | `cultural_social` | `cultural_social` | — | — | — | — | — | — | — | ⬜ |
+| 18 | `document_intelligence` | `document_intelligence` | — | — | — | — | — | — | — | ⬜ |
+| 19 | `age_group` / `age_group_activity` | `age_group` | — | — | — | — | — | — | — | ⬜ |
+
+**Totales:** 10 agents completamente auditados (~76+ tools), 5 parcialmente, 4 sin auditar. ~135+ tools MCP.
+
+---
+
+## 10. PENDIENTES ACUMULADOS (CONSOLIDADO)
+
+| # | Issue | Severidad | Archivo(s) | Fase sugerida | Origen |
+|---|-------|-----------|-----------|---------------|--------|
+| 1 | `WellnessGoals.tsx` hardcodeado a `[]` — componente no funcional | ALTA | `features/wellness/components/WellnessGoals.tsx` | F26 | F23 |
+| 2 | `compactCurrency` local definitions siguen existiendo en Financial/Global Advisors — importar de shared | BAJA | `useFinancialAdvisor.ts`, `useGlobalAdvisor.ts`, otros | F25 cleanup | F18/F20/F25 |
+| 3 | `font-ui` sin prefijo completo `font-[family-name:var(--font-ui)]` — ~50 instancias restantes | MEDIA | Múltiples | F25 | F15 |
+| 4 | `font-mono` sin prefijo — ~30 instancias | MEDIA | Múltiples | F25 | F15 |
+| 5 | `toLocaleString("es-CR")` en vez de `formatNumber()` — ~8 instancias | MEDIA | Múltiples | F25 | F15 |
+| 6 | Keyframes `slideDown`/`fadeUp` duplicados en sub-componentes | BAJA | Sub-componentes | F25 | F15 |
+| 7 | 5 sub-componentes finance no integrados como on-demand (DecisionCockpit, MemberProfitabilityMatrix, NarrativeEngine, SeasonalCalendar, StressTestPanel) | MEDIA | Finance | Verificar F22 | F22 |
+| 8 | `personalize_communication` tool sin componente UI dedicado | MEDIA | Communications | Futuro | F17 |
+| 9 | Navigation fields inconsistentes entre Advisors (targetTab vs targetView vs actionLabel/actionRoute) | MEDIA | Todos los advisors | F25 | F18 |
+| 10 | Global Advisor TODO placeholders para cache connections (aiReport, calendarDays) | MEDIA | Global Advisor | F24 | F20 |
+| 11 | `TierEconomics` importado pero no calculado en agente finance | MEDIA | Finance | F26 | F18 |
+| 12 | Event Advisor: 4 AI mock tools sin UI dedicada (predict, optimize, conflict, engagement) | MEDIA | Events | Futuro | F19 |
+| 13 | Dashboard sub-componentes: 7/12 pendientes | MEDIA | Dashboard | F8 | F6 |
+| 14 | Empty State Audit — 9 módulos sin verificar | MEDIA | Múltiples | F25 | F15 |
+| 15 | StaleDataBanner no integrado en todos los módulos | BAJA | Múltiples | F25 | F15 |
+| 16 | Web Vitals endpoint — `reportVital()` es stub | BAJA | Backend | Futuro | F15 |
+| 17 | Notification prefs sync — no sincroniza con backend | BAJA | Settings | Futuro | F15 |
+| 18 | FamilySelector inline en WellnessDashboard — refactorizar a shared si más dominios lo necesitan | BAJA | Wellness | F25 | F23 |
+| 19 | AIChatWidget tiene 4 raw `<button>` (toggle, close, suggestions, send) — regla #17 | MEDIA | `shared/components/chat/AIChatWidget.tsx` | F25 | F24 |
+| 20 | AVAILABLE_TOOLS_DESCRIPTION hardcodeada en advisor_intelligence.py — auto-generate de agents registrados | MEDIA | `advisor_intelligence.py` | F25 | F24 |
+| 21 | Advisor Chat suggested_action solo showToast cuando no hay `onAdvisorAction` — gap menor | BAJA | `AIChatWidget.tsx` | F25 | F24 |
+| 22 | `wellness_goal_list` tool no existe en backend ni mock — WellnessGoals no puede mostrar goals | ALTA | Backend + Mock | F26 | F23 |
+| 23 | AISimulationPanel — simulation panel no tiene forma de customizar proposed changes por usuario | BAJA | `AISimulationPanel.tsx` | Futuro | F24 |
+| 24 | `advisorConfig.ts` IMPACT_CONFIG labels genéricos — Wellness banner pierde labels específicos (Crítico/Atención/Info) | BAJA | `WellnessAdvisorBanner.tsx` | F25 | F25 |
+
+---
+
+## 11. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos nuevos:
+
+| Regla | advisorConfig.ts | analytics.ts |
+|-------|-----------------|-------------|
+| #1 Tokens | ✅ N/A (TS puro) | ✅ N/A |
+| #2 No blur | ✅ N/A | ✅ N/A |
+| #17 Button | ✅ N/A | ✅ N/A |
+
+### Archivos modificados:
+
+| Regla | AIBoardBriefViewer | AISimulationPanel | GlobalAdvisorBanner | ExecutiveDashboard |
+|-------|-------------------|-------------------|--------------------|--------------------|
+| #1 Tokens | ✅ | ✅ | ✅ | ✅ |
+| #17 Button | ✅ (fix) | ✅ (fix barrel) | ✅ | ✅ |
+| #19 On-demand | ✅ | ✅ | ✅ | ✅ |
+| #15 showToast | N/A | N/A | N/A | ✅ |
+| #8 Formatters | N/A | ✅ (formatCurrency) | N/A | ✅ |
+| #22 cn() | ✅ | ✅ | ✅ | ✅ |
+
+### Resumen:
+**Violaciones a corregir AHORA:** 0
+**Violaciones ya flagged como pendientes:** items #3, #4, #5, #14, #19 en pendientes
+**Reglas sin violaciones:** 20/24
+
+---
+
+## 12. ACTUALIZACIONES PARA CLAUDE_CONTEXT.md
+
+### Sección 6 (Design System) — ACTUALIZAR:
+```css
+/* ── Typography ── */
+--font-ui: "DM Sans", system-ui, sans-serif;
+--font-display: "Cormorant Garamond", Georgia, serif;  /* ACTUALIZADO (antes Playfair Display) */
+--font-mono: "DM Mono", "Courier New", monospace;
+/* NOTA: --font-body NO existe. Usar --font-ui para body text. */
+```
+
+### Sección 7 (Reglas) — AGREGAR regla #25:
+```markdown
+| #25 | **Formato de entrega**: BLOQUE A = líneas EXACTAS a reemplazar. BLOQUE B = líneas nuevas. Si es INSERT: "después de X, antes de Y". NUNCA "agregar al existente". REWRITE = archivo completo. | Bloque A → Bloque B sin mezclar |
+```
+
+### Sección 11 (Patrones) — AGREGAR:
+```markdown
+### P17: Advisor Chat Action Bridge (F24)
+Advisor Chat suggested actions se ejecutan via action bridge. Routing por server+tool. Fallback a callMCPTool genérico. Reaction system integrado.
+
+### P18: Dynamic Simulation Context (F24)
+Proposed changes para simulation se generan de insights activos via generateProposedChanges(). 5 keyword clusters con fallback genérico.
+
+### P19: Analytics Event Tracking (F24)
+trackEvent() localStorage-based. Max 200 events. Prepared for backend POST (F26+).
+
+### P20: Shared Advisor UI Config (F25)
+IMPACT_CONFIG centralizado en shared/lib/ui/advisorConfig.ts. Todos los banners importan de shared.
+```
+
+### Sección 13 (Estado de fases) — ACTUALIZAR:
+```markdown
+| F24 | Advisor Intelligence Enhancement (Talking Points + Simulation Dynamic + Action Bridge + Tracking + Cleanup) | ✅ |
+| F25 | Polish batch (font-body, compactCurrency, SEASON_CONFIG, swimming, getWellnessLevel, IMPACT_CONFIG) | ✅ |
+| **F26** | **Mock → Backend Migration** | **⬜ SIGUIENTE** |
+```
+
+### Sección 14 (Pendientes) — Consolidar con la lista de sección 10 de este checkpoint.
+
+---
+
+## 13. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto (en orden):
+```
+1. CLAUDE_CONTEXT.md (siempre primero)
+2. Este checkpoint
+```
+
+### Paso 2 — Confirmar rol:
+```
+"Confirmá que entendés tu rol como Principal AI Systems Architect (sección 2 de CLAUDE_CONTEXT.md)
+y las 22+ reglas (sección 7). Después decí 'Listo'."
+```
+
+### Paso 3 — Pedir archivos para F26a:
+```
+"Pasame estos archivos para F26a — Mock → Backend Migration (3 tools):
+1. backend/src/club_mcp/agents/wellness.py
+2. backend/src/club_mcp/models/wellness.py
+3. backend/src/club_mcp/db/repositories/wellness_repo.py
+4. backend/src/club_mcp/agents/finance.py
+5. backend/src/club_mcp/models/finance.py
+6. backend/src/club_mcp/db/repositories/finance_repo.py
+7. frontend/src/shared/mocks/factories.ts"
+```
+
+### Paso 4 — Pedir auditoría:
+```
+"Auditá wellness.py y finance.py para identificar dónde agregar wellness_predict, wellness_anomalies y get_financial_summary"
+```
+
+### Paso 5 — Pedir propuesta:
+```
+"Proponé la arquitectura de F26a con los bloques de código"
+```
+
+### Paso 6 — Aprobar + generar:
+```
+"Aprobado — generá los bloques. Recordá: BLOQUE A = exacto, BLOQUE B = nuevo. REWRITE = archivo completo."
+```
+
+---
+
+## 14. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto en trabajo futuro |
+|-------|---------|-------|--------------------------|
+| Junio 2026 | F23 cerrada sin cambios (fixes ya aplicados) | Verificación confirmó DetailTabs fixes ya hechos | Siempre verificar antes de re-hacer |
+| Junio 2026 | WellnessGoals como gap documentado, no fix inmediato | Necesita backend tool `wellness_goal_list` | F26 requiere backend migration |
+| Junio 2026 | Bloque 3 original (Conversation History) eliminado | Ya existía desde F22a — verificación lo descubrió | Auditar features existentes antes de proponer nuevas |
+| Junio 2026 | F24 = Opción C (polish Advisor + tracking + bridge) | Combinó gaps visibles + feature dormido + analytics | Usuario siempre quiere "un paso más adelante" |
+| Junio 2026 | IMPACT_CONFIG labels: genéricos sobre específicos | Consistencia cross-banner > labels por dominio | Si se necesita revertir, WellnessAdvisorBanner tiene config propio |
+| Junio 2026 | swimming NO es social | En CR natación es actividad individual | Score engine y Advisor rule 8 alineados |
+| Junio 2026 | SEASON_CONFIG inline en adaptiveThresholds | Eliminar dependency inversion sin crear archivo nuevo | Re-export desde aquí si otros lo necesitan |
+| Junio 2026 | REGLA DE FORMATO establecida | Instrucciones ambiguas causaron duplicación de atributos | BLOQUE A exacto → BLOQUE B nuevo. NUNCA "agregar al existente". REWRITE = archivo completo |
+| Junio 2026 | REWRITE = archivo completo, no bloque por bloque | Usuario indicó que perder tokens y tiempo bloque por bloque es ineficiente | Para >30% cambios, entregar archivo completo |
+| Junio 2026 | F26 scoped a 3 tools (F26a) | No migrar todo de una vez. Priorizar por impacto y complejidad | F26b = wellness_correlate + wellness_insights (más complejos) |
+| Junio 2026 | Usuario siempre quiere ir "un paso más adelante" | Propuestas proactivas son core del rol | Cuestionar todo, proponer mejoras, ir más allá |
+
+---
+
+## 15. FASES RESTANTES (PLAN MAESTRO)
+
+| # | Fase | Contenido | Prioridad | Depende de | Estado |
+|---|------|-----------|-----------|-----------|--------|
+| **F26** | **Mock → Backend Migration** | **Migrar tools mock-only a backend real** | **ALTA** | **F25** | **⬜ SIGUIENTE** |
+| F26a | | wellness_predict + wellness_anomalies + get_financial_summary | ALTA | F25 | ⬜ |
+| F26b | | wellness_correlate + wellness_insights | ALTA | F26a | ⬜ |
+| F27 | Multi-language support (i18n) | Español/Inglés | BAJA | F26 | ⬜ |
+| F28 | E2E testing + Accessibility audit (WCAG 2.1 AA) | Playwright + axe-core | ALTA | F27 | ⬜ |
+| F29 | CI/CD + Production deployment | Docker + GitHub Actions + Sentry | ALTA | F28 | ⬜ |
+
+---
+
+## 16. AGENTES BACKEND — TOOLS DETALLADAS
+
+### advisor_intelligence.py — 5 tools (auditado F21, verificado F24)
+
+| Tool | Approval | Backend | Descripción |
+|------|----------|---------|-------------|
+| `generate_insight_narrative` | AUTO | ✅ (Claude) | Análisis narrativo profundo para un insight |
+| `generate_action_plan` | AUTO | ✅ (Claude) | Plan ejecutivo priorizado de insights |
+| `simulate_scenario` | AUTO | ✅ (Claude) | 3 escenarios optimista/base/pesimista |
+| `generate_board_brief` | AUTO | ✅ (Claude) | Briefing ejecutivo para Junta Directiva |
+| `ask_advisor` | AUTO | ✅ (Claude) | Conversación con context + conversation_history + evidence + related_insights |
+
+### wellness.py — 7 tools backend (auditado F23, verificado F24) + 4 mock-only
+
+| Tool | Approval | Tipo | Backend | Mock | Destino |
+|------|----------|------|---------|------|---------|
+| `wellness_profile_get` | AUTO | datos | ✅ | ✅ | WellnessDashboard |
+| `wellness_profile_update` | SEMI | mutation | ✅ | ✅ | Advisor action |
+| `wellness_activity_log` | AUTO | mutation | ✅ | ✅ | — |
+| `wellness_goal_set` | SEMI | mutation | ✅ | ✅ | Advisor action |
+| `wellness_recommendations` | AUTO | inteligencia | ✅ | ✅ | WellnessDashboard |
+| `wellness_schedule_class` | HITL | mutation | ✅ | ✅ | Advisor action |
+| `wellness_report` | AUTO | report | ✅ | ✅ (fixed F23) | WellnessDashboard |
+| `wellness_predict` | AUTO | inteligencia | **⬜ F26a** | ✅ | WellnessAIAdvisor |
+| `wellness_anomalies` | AUTO | inteligencia | **⬜ F26a** | ✅ | WellnessRiskRadar |
+| `wellness_correlate` | AUTO | inteligencia | **⬜ F26b** | ✅ | WellnessBusinessInsights |
+| `wellness_insights` | AUTO | inteligencia | **⬜ F26b** | ✅ | WellnessAIAdvisor |
+
+---
+
+## 17. MOCK REGISTRY — ACTUALIZACIÓN
+
+Sin cambios esta sesión — todos los mocks ya existían. Solo se verificaron.
+
+---
+
+## 18. TYPES ALIGNMENT
+
+Sin cambios esta sesión — solo se verificaron los existentes. Todos alineados.
+
+---
+
+## INNOVACIONES PROPUESTAS (Roadmap 2026-2027)
+
+| # | Innovación | Concepto | Fase sugerida | Impacto |
+|---|-----------|---------|---------------|---------|
+| 1 | Advisor Auto-Calibration | Trackea qué insights se ejecutan vs ignoran, recalibra thresholds | F25-26 | ALTO |
+| 2 | Cross-Domain Wellness Impact | Correlaciona wellness engagement con churn, revenue, events | F24-25 | ALTO |
+| 3 | Advisor Digest Email | Weekly email con top-3 insights + board brief + acciones pendientes | F26 | MEDIO |
+| 4 | Advisor Benchmark Network | Benchmarks competitivos anónimos entre clubes usando la plataforma | F27-28 | ALTO |
+| 5 | Predictive Event Demand | Predicción de demanda de eventos con 30 días de anticipación | F25 | MEDIO |
+
+---
+
+## QUICK REFERENCE — Estructura del proyecto (resumen)
+
+```
+frontend/src/
+├── features/           # 17 módulos feature
+│   ├── wellness/       # F23 — Advisor + Personas + Goals + FamilySelector
+│   ├── dashboard/      # F20 — Global Advisor + Action Bridge + Chat
+│   ├── finance/        # F18 — Financial Advisor (18 rules)
+│   ├── events/         # F19 — Event Advisor (15 rules)
+│   ├── recommendations/# F17 — Recommendation Advisor (7 rules)
+│   └── ... (12 más)
+├── shared/
+│   ├── components/ai/  # AIBoardBriefViewer, AIDecisionPanel, AIInsightNarrative, AISimulationPanel
+│   ├── components/chat/# AIChatWidget (Advisor mode)
+│   ├── hooks/          # useMCPQuery, useAdvisorNarrative, useBreakpoint, useReducedMotion, ...
+│   ├── lib/            # api.ts, chartTheme.ts, utils.ts, adaptiveThresholds.ts, analytics.ts, reactionTemplate.ts
+│   ├── lib/ui/         # advisorConfig.ts (NUEVO F25)
+│   └── mocks/          # contracts.ts, factories.ts, mock-registry.ts
+└── stores/             # auth, sidebar, theme (Zustand)
+
+backend/src/club_mcp/
+├── agents/             # 18 MCP agents (10 auditados)
+├── ai/                 # claude_service.py + prompts.py
+├── models/             # 18 Pydantic models
+├── db/repositories/    # 16 repos
+├── hitl/               # approval_engine + approval_types + notifier
+└── api/routes/         # agents, auth, chat, health
+```
+
+**80 Advisor rules + 5 AI tools + 11 executable actions + reaction feedback + predictive pre-fetch + conversational chat + analytics tracking + adaptive thresholds + wellness personas + dynamic simulation context + shared advisor config.**

@@ -1,0 +1,256 @@
+/**
+ * FormField.css
+ * src/shared/components/ui/FormField.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-field (wrapper), .ui-field-input (standalone input), .ui-field-select (select)
+ * @keyframes   0
+ * @signature   Form field wrapper with validation states +
+ *              standalone glass input surface for raw <input>/<select>
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  Standalone input: backdrop-filter + -webkit + translucent
+ * D2 Stagger  ✗  Single field (not applicable)
+ * D3 Easing   ✓  Apple easing, specific properties
+ * D4 Typo     ✓  UI font label (12px), mono error, compact hint
+ * D5 Color    ✓  color-mix() for focus/error rings, tokens only
+ * D6 Pseudo   ✓  ::after chevron on select
+ * D7 Interact ✓  hover, focus-visible, disabled on standalone input
+ * D8 Density  ✓  48px min-height, tight label/hint spacing
+ * D9 Response ✓  Full-width intrinsic
+ * D10 A11y    ✓  data-testid, aria-label, role="alert"
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  0 keyframes
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  WRAPPER — .ui-field (D8)
+   Flex column with tight coupling between label and input.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  LABEL (D4)
+   UI font, 12px, secondary text color.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-field__label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  line-height: 1;
+  margin: 0;
+}
+
+.ui-field__required {
+  color: var(--color-rose-400);
+  margin-left: 3px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  HINT (D4, D8)
+   Compact muted text below field.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-field__hint {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-500);
+  line-height: 1.4;
+  margin: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  ERROR (D4, D5)
+   Rose-colored with icon. Semantic role="alert".
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-field__error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-rose-400);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.ui-field__error svg {
+  flex-shrink: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  STANDALONE INPUT — .ui-field-input (D1, D3, D5, D7, D8)
+   Glass surface for raw <input> and <select> elements.
+   Replaces the old `inputClass` Tailwind string constant.
+   Used when consumers need a styled input WITHOUT the full
+   Input.tsx component (label, validation, counter, etc.).
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-field-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 10px);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-silver-200);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  outline: none;
+  /* D3: Specific properties — NEVER "all" */
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.ui-field-input::placeholder {
+  color: var(--color-silver-500);
+}
+
+/* D7: Hover */
+.ui-field-input:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* D7: Focus — gold ring via color-mix */
+.ui-field-input:focus-visible {
+  border-color: rgba(201, 169, 110, 0.35);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* D7: Disabled */
+.ui-field-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  SELECT — .ui-field-select (D6)
+   Extends .ui-field-input with custom chevron via ::after.
+   Replaces the old `selectClass` Tailwind string constant.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-field-select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 40px;
+  /* Chevron rendered via wrapper pseudo-element */
+}
+
+/* D6: Chevron — positioned absolutely */
+.ui-field-select {
+  position: relative;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238A95A5' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-field__label {
+  color: var(--color-silver-800);
+}
+
+.light .ui-field__hint {
+  color: var(--color-silver-400);
+}
+
+.light .ui-field__error {
+  color: var(--color-rose-500);
+}
+
+.light .ui-field-input {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.10);
+  color: var(--color-silver-800);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.light .ui-field-input::placeholder {
+  color: var(--color-silver-400);
+}
+
+.light .ui-field-input:hover {
+  border-color: rgba(0, 0, 0, 0.18);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .ui-field-input:focus-visible {
+  border-color: rgba(201, 169, 110, 0.5);
+  background: white;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+
+.light .ui-field-select {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234A5568' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-field-input {
+    transition: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .ui-field-input {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-field-input {
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: #1a1a1a !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+
+  .ui-field-select {
+    background-image: none !important;
+  }
+}

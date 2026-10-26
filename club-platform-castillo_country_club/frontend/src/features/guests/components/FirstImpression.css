@@ -1,0 +1,280 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/FirstImpression.css
+   Phase 34 "The Gateway" — Signature: First Impression
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-impression
+   Glass: .glass-gst-impression
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+.glass-gst-impression {
+  --glass-gst-impression-version: 1;
+}
+
+:root {
+  --gst-impression-bg: rgba(18, 18, 26, 0.5);
+  --gst-impression-border: rgba(255, 255, 255, 0.06);
+  --gst-impression-text-primary: #f0ece4;
+  --gst-impression-text-muted: #7a7570;
+  --gst-impression-radius: 16px;
+  --gst-impression-bar-height: 8px;
+  --gst-impression-bar-track: rgba(255, 255, 255, 0.04);
+  --gst-impression-alert-bg: rgba(231, 76, 60, 0.08);
+  --gst-impression-alert-border: rgba(231, 76, 60, 0.25);
+}
+
+/* ── Base ── */
+.gst-impression {
+  position: relative;
+  background: var(--gst-impression-bg);
+  border: 1px solid var(--gst-impression-border);
+  border-radius: var(--gst-impression-radius);
+  padding: 24px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  opacity: 0;
+  animation: gst-impression-fadeIn 0.5s ease 0.3s forwards;
+}
+
+.gst-impression[data-state="empty"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  animation: none;
+  opacity: 1;
+}
+
+.gst-impression__empty-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 15px;
+  color: var(--gst-impression-text-muted);
+  margin: 0;
+}
+
+/* ── Alert Banner ── */
+.gst-impression__alert {
+  margin: -24px -24px 20px -24px;
+  padding: 14px 24px;
+  background: var(--gst-impression-alert-bg);
+  border-bottom: 1px solid var(--gst-impression-alert-border);
+  opacity: 0;
+  animation: gst-impression-alert-in 0.3s ease 0.4s forwards;
+}
+
+.gst-impression__alert-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gst-impression__alert-message {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 13px;
+  color: var(--gst-severity-high);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.gst-impression__alert-action {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--gst-severity-high);
+  background: rgba(231, 76, 60, 0.1);
+  color: var(--gst-severity-high);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+  outline: none;
+}
+
+.gst-impression__alert-action:hover {
+  background: rgba(231, 76, 60, 0.18);
+}
+
+.gst-impression__alert-action:focus-visible {
+  outline: 2px solid var(--gst-severity-high);
+  outline-offset: 2px;
+}
+
+/* ── Header / Overall Score ── */
+.gst-impression__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.gst-impression__overall {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gst-impression__overall-score {
+  font-family: var(--font-display, "Italiana");
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--gst-accent);
+}
+
+.gst-impression[data-level="exceptional"] .gst-impression__overall-score {
+  color: var(--gst-severity-low);
+}
+
+.gst-impression[data-level="good"] .gst-impression__overall-score {
+  color: var(--gst-accent);
+}
+
+.gst-impression[data-level="moderate"] .gst-impression__overall-score {
+  color: var(--gst-severity-medium);
+}
+
+.gst-impression[data-level="poor"],
+.gst-impression[data-level="critical"] .gst-impression__overall-score {
+  color: var(--gst-severity-high);
+}
+
+.gst-impression__overall-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gst-impression-text-muted);
+}
+
+/* ── Axes ── */
+.gst-impression__axes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.gst-impression__axis-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.gst-impression__axis-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--gst-impression-text-primary);
+}
+
+.gst-impression__axis-value {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gst-impression-text-muted);
+}
+
+.gst-impression__axis-track {
+  height: var(--gst-impression-bar-height);
+  background: var(--gst-impression-bar-track);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: help;
+}
+
+.gst-impression__axis-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gst-impression__axis-fill[data-level="exceptional"] {
+  background: linear-gradient(90deg, rgba(78, 205, 196, 0.7), rgba(78, 205, 196, 0.4));
+}
+
+.gst-impression__axis-fill[data-level="good"] {
+  background: linear-gradient(90deg, rgba(212, 168, 83, 0.7), rgba(212, 168, 83, 0.4));
+}
+
+.gst-impression__axis-fill[data-level="moderate"] {
+  background: linear-gradient(90deg, rgba(245, 166, 35, 0.7), rgba(245, 166, 35, 0.4));
+}
+
+.gst-impression__axis-fill[data-level="poor"] {
+  background: linear-gradient(90deg, rgba(144, 164, 174, 0.6), rgba(144, 164, 174, 0.3));
+}
+
+.gst-impression__axis-fill[data-level="critical"] {
+  background: linear-gradient(90deg, rgba(231, 76, 60, 0.6), rgba(231, 76, 60, 0.3));
+}
+
+/* ── Animations ── */
+@keyframes gst-impression-fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gst-impression-alert-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-impression {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-impression__alert {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-impression__axis-fill {
+  transition: none;
+}
+
+/* ── Light Mode ── */
+.light .gst-impression {
+  --gst-impression-bg: rgba(255, 255, 255, 0.85);
+  --gst-impression-border: rgba(0, 0, 0, 0.08);
+  --gst-impression-text-primary: #1a1a2e;
+  --gst-impression-text-muted: #6b6b78;
+  --gst-impression-bar-track: rgba(0, 0, 0, 0.04);
+  --gst-impression-alert-bg: rgba(231, 76, 60, 0.06);
+  --gst-impression-alert-border: rgba(231, 76, 60, 0.15);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-impression {
+    padding: 16px;
+  }
+
+  .gst-impression__overall-score {
+    font-size: 36px;
+  }
+
+  .gst-impression__alert-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-impression {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+  }
+
+  .gst-impression__axis-fill {
+    background: #ddd !important;
+  }
+}

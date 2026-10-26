@@ -1,0 +1,660 @@
+# CHECKPOINT — Fase 16-17 — Design System Migration Complete + Families Module con AI Intelligence
+
+**Fecha:** Junio 2025
+**Sesiones completadas:** ~20+ acumuladas (esta sesión = Fase 16 cierre + Fase 17 completa)
+**Archivos modificados:** ~35+ (FinanceOverview, FamilyList, FamilyForm, FamilyDetail, SocialGraph, MemberCard, contracts, factories, mock-registry, globals.css, shared/ui ×4)
+**Archivos nuevos:** 1 (`FamilyIntelligencePanel.tsx`)
+**Líneas nuevas:** ~1200+ (mocks + AI panel + enriched components + migrations)
+**Tools MCP registradas:** ~76+ (originales + 11 nuevas de families)
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend — Nuevos
+
+| # | Archivo | Líneas | Contenido | Tools MCP |
+|---|---------|--------|-----------|-----------|
+| 1 | `frontend/src/features/families/components/FamilyIntelligencePanel.tsx` | ~420 | Panel AI on-demand con 4 secciones: Churn Prediction, Activity Recommendations, Social Matches, Engagement Plan. ScoreGauge SVG reutilizable. Motion config con reducedMotion guard. | `family_predict_churn`, `family_recommend_activities`, `family_social_match`, `family_engagement_plan` |
+
+### Archivos Frontend — Modificados
+
+| # | Archivo | Cambio | Por qué |
+|---|---------|--------|---------|
+| 1 | `frontend/src/features/finance/components/FinanceOverview.tsx` | EmptyState import + error state → EmptyState + null guard → EmptyState + Badge import + alerts → .alert-card + budget % → Badge + table responsive (phone cards) + cleanup dead imports | Fase 16 D2 — migración completa |
+| 2 | `frontend/src/features/families/FamilyDetail.tsx` | Imports: +useMCPMutation, +Badge, +showToast, +icons (Sparkles, Settings, ChevronUp, ChevronDown, ArrowRight), +EnrichedSocialConnection types, +FamilyIntelligencePanel, +INTEREST_PRESETS/CHANNEL_OPTIONS/PRIVACY_OPTIONS. TabId: +ai +preferences. TABS: +2 entries. ConnectionsTab: REWRITE completo (self-fetching, enriched detail, AI suggestions). PreferencesTab: NUEVO (~160 líneas). Tab content: +2 tabs. Destructuring: -socialConnections. | Fase 17 — AI integration + preferences + enriched social graph |
+| 3 | `frontend/src/features/families/FamilyList.tsx` | MCP access: data.families → data.data.families + refetch. Error state → EmptyState. +Badge import. Tier badges (desktop+mobile) → Badge. Pagination buttons → Button variant="ghost" ×2. | Fase 17 — MCP pattern + design system |
+| 4 | `frontend/src/features/families/FamilyForm.tsx` | MCP: onSuccess deprecated → useEffect + wrapper fix. HITL: handle pending_approval response. Navigate: /families/ → /admin/families/. +Button, +Badge, +useReducedMotion imports. Navigation buttons ×3 → Button. Delete member → Button variant="danger". Tier badges → Badge. PRINCIPAL → Badge variant="gold". Members error → .alert-card--error. reducedMotion guards en 4 motion.divs. Focus-visible en tier selector. | Fase 17 — bug fixes + design system + HITL flow |
+| 5 | `frontend/src/features/families/components/SocialGraph.tsx` | Imports: EnrichedSocialConnection, useReducedMotion. GraphNode: +isSuggested, +matchScore, +reason. HoverInfo interface nueva. SocialGraphProps: +suggestedConnections, +clusters. initializeNodes: tier real de conexiones + suggested nodes anillo exterior. drawGraph: dashed border suggested + "sugerido" label. useReducedMotion guard (sync simulation). Stop animation when converged. handleMouseMove: compute hoverInfo enriched. Container: ARIA role="img". Tooltip HTML overlay con enriched data. Legend dinámica (3 niveles + sugeridas). | Fase 17 — AI enriched graph + accessibility + performance |
+| 6 | `frontend/src/features/families/components/MemberCard.tsx` | +Badge, +useReducedMotion imports. EngagementBar: reducedMotion guard. Full card: reducedMotion guard. Shadows: hardcoded → var(--shadow-card)/var(--shadow-elevated). Focus-visible rings (compact+full, condicional). Role badges → Badge ×2. Activity tags → Badge. | Fase 17 — design system |
+| 7 | `frontend/src/features/families/types.ts` | APPEND: EnrichedSocialConnection, SuggestedConnection, SocialGraphCluster interfaces. FamilyPreferences interface. INTEREST_PRESETS, CHANNEL_OPTIONS, PRIVACY_OPTIONS constants. AI domain types: ChurnFactor, FamilyChurnPrediction, ActivityRecommendation, FamilyActivityRecommendations, SocialMatchSuggestion, EngagementPlanAction, FamilyEngagementPlan. | Fase 17 — enriched types + AI types + preferences |
+| 8 | `frontend/src/shared/mocks/contracts.ts` | APPEND ×3: FamilyListMockResponse, FamilyCreateMockResponse, FamilyUpdateMockResponse, ActivityHistoryMockResponse, EnrichedSocialConnection, SocialGraphData, SocialGraphMockResponse, FamilyChurnPredictionMockResponse, FamilyActivityRecommendationsMockResponse, FamilySocialMatchMockResponse, FamilyEngagementPlanMockResponse, FamilyPreferencesMockResponse. | Fase 17 — 12 new mock contracts |
+| 9 | `frontend/src/shared/mocks/factories.ts` | APPEND ×3: createMockFamilyList (helper fm + 8 familias CR), createMockFamilyCreate, createMockFamilyUpdate, createMockActivityHistory (12 actividades), createMockSocialGraphEnriched (6 connections + 2 clusters + 2 suggestions), createMockFamilyChurnPrediction, createMockFamilyActivityRecommendations, createMockFamilySocialMatch, createMockFamilyEngagementPlan, createMockFamilySetPreferences. | Fase 17 — 10 new factories |
+| 10 | `frontend/src/shared/mocks/mock-registry.ts` | +10 imports. families block: 1→11 tools. | Fase 17 — registry expansion |
+| 11 | `frontend/src/shared/components/ui/CommandPalette.tsx` | `bg-white/[0.04]` → `bg-[var(--color-surface-3)]` ×4 | Fase 16 F — shared/ui sweep |
+| 12 | `frontend/src/shared/components/ui/FilterDropdown.tsx` | `bg-white/[0.06]` → `bg-[var(--color-surface-3)]` ×3 | Fase 16 F — shared/ui sweep |
+| 13 | `frontend/src/shared/components/ui/NotificationDropdown.tsx` | `bg-white/[0.06]` → `bg-[var(--color-surface-3)]` ×1 | Fase 16 F — shared/ui sweep |
+| 14 | `frontend/src/shared/components/ui/Skeleton.tsx` | `bg-white/[0.04]` → `bg-[var(--color-surface-3)]` ×1 | Fase 16 F — shared/ui sweep |
+| 15 | ~25 archivos en `src/features/` | `bg-white/[0.04/0.05/0.06/0.08]` → tokens correspondientes | Fase 16 D3 — global sweep |
+
+### Mock System — Tools nuevas
+
+| Server | Tool | Contract | Factory | Registry | Backend |
+|--------|------|----------|---------|----------|---------|
+| `families` | `list_families` | `FamilyListMockResponse` | `createMockFamilyList` | ✅ | ⬜ |
+| `families` | `create_family` | `FamilyCreateMockResponse` | `createMockFamilyCreate` | ✅ | ✅ |
+| `families` | `update_family` | `FamilyUpdateMockResponse` | `createMockFamilyUpdate` | ✅ | ✅ |
+| `families` | `get_activity_history` | `ActivityHistoryMockResponse` | `createMockActivityHistory` | ✅ | ✅ |
+| `families` | `get_social_graph` | `SocialGraphMockResponse` | `createMockSocialGraphEnriched` | ✅ | ✅ |
+| `families` | `family_set_preferences` | `FamilyPreferencesMockResponse` | `createMockFamilySetPreferences` | ✅ | ✅ |
+| `families` | `family_predict_churn` | `FamilyChurnPredictionMockResponse` | `createMockFamilyChurnPrediction` | ✅ | ⬜ |
+| `families` | `family_recommend_activities` | `FamilyActivityRecommendationsMockResponse` | `createMockFamilyActivityRecommendations` | ✅ | ⬜ |
+| `families` | `family_social_match` | `FamilySocialMatchMockResponse` | `createMockFamilySocialMatch` | ✅ | ⬜ |
+| `families` | `family_engagement_plan` | `FamilyEngagementPlanMockResponse` | `createMockFamilyEngagementPlan` | ✅ | ⬜ |
+
+### Tools MCP — Tabla completa Families (acumulada)
+
+| # | Server | Tool | Backend | Mock | Tipo | Aprobación | UI |
+|---|--------|------|---------|------|------|------------|-----|
+| 1 | families | get_family | ✅ | ✅ | datos | AUTO | FamilyDetail, FamilyForm |
+| 2 | families | list_families | ⬜ | ✅ | datos | AUTO | FamilyList |
+| 3 | families | create_family | ✅ | ✅ | mutation | HITL | FamilyForm (pending_approval flow) |
+| 4 | families | update_family | ✅ | ✅ | mutation | HITL | FamilyForm (pending_approval flow) |
+| 5 | families | get_activity_history | ✅ | ✅ | datos | AUTO | (pendiente integración UI) |
+| 6 | families | get_social_graph | ✅ | ✅ | datos | AUTO | ConnectionsTab enriched |
+| 7 | families | family_set_preferences | ✅ | ✅ | mutation | SEMI | PreferencesTab |
+| 8 | families | family_predict_churn | ⬜ | ✅ | AI on-demand | AUTO | Análisis AI tab |
+| 9 | families | family_recommend_activities | ⬜ | ✅ | AI on-demand | AUTO | Análisis AI tab |
+| 10 | families | family_social_match | ⬜ | ✅ | AI on-demand | AUTO | Análisis AI tab |
+| 11 | families | family_engagement_plan | ⬜ | ✅ | AI on-demand | SEMI | Análisis AI tab |
+
+### Tools MCP — Tabla completa del proyecto (acumulada ~76+)
+
+| Server | Tools | Backend | Mock |
+|--------|-------|---------|------|
+| executive_dashboard | 2 | ✅ | ✅ |
+| finance | 15 | ✅ | ✅ |
+| member_engagement | 5 | ✅ | ✅ |
+| wellness | 11 | ✅ | ✅ |
+| satisfaction | 1 | ✅ | ✅ |
+| proactive_recommendation | 8 | ✅ | ✅ |
+| communication | 13 | ✅ | ✅ |
+| guest_management | 6 | ✅ | ✅ |
+| hitl | 3 | ✅ | ✅ |
+| operations | 3 | ✅ | ✅ |
+| **families** | **11** | **7/11** | **✅** |
+| events | 4 | ⬜ | ✅ |
+| **Total** | **~82** | | |
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|----------|-----------|--------|
+| H1 | FinanceOverview no migrado a Card + Badge — pendiente desde Fase 16 | MEDIA | ✅ Resuelto: migración completa (Bloques 1-4) |
+| H2 | `bg-white/[0.N]` restante en ~48 instancias (25 archivos features + 4 shared/ui) | ALTA | ✅ Resuelto: D3 sweep global + F audit shared/ui |
+| H3 | `shared/ui` impactado por D3 — 10 instancias en CommandPalette, FilterDropdown, NotificationDropdown, Skeleton | MEDIA | ✅ Resuelto: F sweep |
+| H4 | `list_families` no existía en mock registry — FamilyList no tenía datos | ALTA | ✅ Resuelto: factory + contract + registry creados |
+| H5 | FamilyList MCP access: `data.families` directo — inconsistente con patrón `data.data.families` | MEDIA | ✅ Resuelto: wrapper fix |
+| H6 | FamilyList error state: div inline → EmptyState | BAJA | ✅ Resuelto |
+| H7 | FamilyForm MCP: `onSuccess` deprecated en TanStack v5 + `data.family` sin wrapper | CRÍTICA | ✅ Resuelto: useEffect + wrapper fix |
+| H8 | FamilyForm navigate paths: `/families/` sin `/admin/` prefix | ALTA | ✅ Resuelto |
+| H9 | FamilyForm: create_family devuelve `pending_approval` (HITL) pero form intentaba acceder a `data.id` → crash | CRÍTICA | ✅ Resuelto: HITL flow handler |
+| H10 | `create_family` y `update_family` no existían en mock registry | ALTA | ✅ Resuelto: factories + registry |
+| H11 | SocialGraph: todos los nodos hardcodeados a tier "oro" sin importar tier real | MEDIA | ✅ Resuelto: tier real de enriched data |
+| H12 | SocialGraph: sin `useReducedMotion()` — animation loop perpetua | ALTA | ✅ Resuelto: sync simulation guard |
+| H13 | SocialGraph: sin accesibilidad Canvas (ARIA) | ALTA | ✅ Resuelto: role="img", aria-label |
+| H14 | SocialGraph: `requestAnimationFrame` seguía corriendo después de convergencia | MEDIA | ✅ Resuelto: stop when alpha < 0.01 |
+| H15 | SocialConnection tipo limitado — sin datos para AI | MEDIA | ✅ Resuelto: EnrichedSocialConnection |
+| H16 | MemberCard: sin `useReducedMotion()` | ALTA | ✅ Resuelto |
+| H17 | MemberCard: shadows hardcodeados → tokens | MEDIA | ✅ Resuelto |
+| H18 | MemberCard: sin focus-visible ring en cards clickables | ALTA | ✅ Resuelto |
+| H19 | `.page-text` — análisis muestra que la mayoría de texto está dentro de cards (no necesita aplicar) | BAJA | ✅ Documentado: skip E |
+| H20 | FinanceOverview factory no envuelve en `{ data: FinancialSummary }` — datos funcionan por accidente | MEDIA | ✅ Documentado: funciona, patrón inconsistente |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón: AI Family Intelligence (NUEVO en Fase 17)
+
+**Arquitectura de 4 herramientas AI on-demand para el módulo de familias:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│            FamilyIntelligencePanel.tsx                   │
+│  4 secciones independientes, cada una con:              │
+│  1. Botón trigger ("Analizar")                          │
+│  2. useMCPQuery con enabled: false                      │
+│  3. onClick → setEnabled(true) → query dispara          │
+│  4. Loading: Skeleton                                   │
+│  5. Error: EmptyState con retry                         │
+│  6. Success: Cards con tone contextual                  │
+│                                                         │
+│  ┌──────────────────┐  ┌──────────────────┐            │
+│  │  Churn Prediction │  │ Activity Recs    │            │
+│  │  tone="rose"      │  │ tone="emerald"   │            │
+│  │  ScoreGauge SVG   │  │ Match bars       │            │
+│  │  Factor bars      │  │ Scheduling       │            │
+│  │  AI Recommendation│  │ Target members   │            │
+│  └──────────────────┘  └──────────────────┘            │
+│  ┌──────────────────┐  ┌──────────────────┐            │
+│  │  Social Matches   │  │ Engagement Plan  │            │
+│  │  tone="teal"      │  │ tone="gold"      │            │
+│  │  Match cards      │  │ ScoreGauge SVG   │            │
+│  │  Interests badges │  │ Actual → Objetivo│            │
+│  │  Suggested act.   │  │ Actions timeline │            │
+│  └──────────────────┘  │ ROI estimado     │            │
+│                         └──────────────────┘            │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Niveles de carga:**
+- Nivel 1 (auto-load): Datos estáticos — NO se usa en AI panel
+- **Nivel 2 (on-demand): Inteligencia — PATRÓN APLICADO aquí**
+  - `enabled: false` inicial
+  - Botón "Analizar" → `setEnabled(true)`
+  - `staleTime: 0` — siempre refetch (resultados AI pueden variar)
+  - Regla #19: SIEMPRE botón, NUNCA auto-load
+- Nivel 3 (two-phase): Dos triggers separados — no se necesita aquí
+
+**Approval levels decision:**
+| Tool | Approval | Razón |
+|------|----------|-------|
+| `family_predict_churn` | AUTO | Solo lectura, análisis sin side effects |
+| `family_recommend_activities` | AUTO | Sugerencias sin compromiso |
+| `family_social_match` | AUTO | Matching sin notificar a la otra familia |
+| `family_engagement_plan` | SEMI | Genera plan de acción → admin debe estar al tanto para follow-through |
+
+**Replicable a otros módulos:**
+- Fase 18 (Events): `event_predict_attendance`, `event_recommend_optimization`, `event_conflict_resolution`, `event_engagement_boost`
+- Finance: `finance_predict_seasonal`, `finance_recommend_cost_optimization`, `finance_risk_scenarios`
+- Wellness: `wellness_predict_risk`, `wellness_recommend_personalized_plan`
+
+### Patrón: Enriched Social Graph (NUEVO)
+
+**Canvas graph con datos AI:**
+- Nodos reales: anillo interior, tamaño proporcional a `strength`, color por tier real
+- Nodos sugeridos: anillo exterior (1.4x radius), borde dashed, etiqueta "sugerido"
+- Tooltip HTML overlay (no Canvas): posición absoluta, datos enriched
+  - Shared activities como badges
+  - Strength bar con color semántico
+  - AI insight en itálico dorado
+  - Match score para sugeridos
+- Legend dinámica: 3 niveles de fuerza + sugeridas (dashed)
+- Clusters en subtitle
+
+### Patrón: HITL Flow en Forms (NUEVO)
+
+```typescript
+// Cuando mutation es HITL:
+const mutation = useMCPMutation(server, tool, {
+  onSuccess: (data) => {
+    const payload = data?.data;
+    if (payload?.status === "pending_approval") {
+      showToast({ type: "info", message: "Solicitud enviada — pendiente de aprobación" });
+      navigate("/admin/...");
+      return;
+    }
+    // Normal success flow
+    showToast({ type: "success", message: "..." });
+    navigate(`/admin/.../${payload?.id}`);
+  },
+});
+```
+
+### Patrón: Preferences Tab (NUEVO)
+
+**Form con mutation SEMI-AUTO:**
+- Toggle buttons para multi-select (canales, intereses)
+- Select dropdowns para single value (idioma, privacidad)
+- Textarea para free text (notas dietéticas)
+- Botón Guardar con `useMCPMutation` + loading spinner
+- `showToast` para feedback (nunca `alert()`)
+- `useReducedMotion` guard en container
+- Cards con tones contextuales
+- Focus-visible en todos los toggles/selects
+
+### Patrón: Global Glass Sweep (D3 methodology)
+
+**Para futuros sweeps:**
+1. PowerShell grep: `Get-ChildItem -Recurse -Filter "*.tsx" src\features\ | Select-String -Pattern 'bg-white/\[0'`
+2. Clasificar por patrón (0.04, 0.05, 0.06, 0.08, hover variants)
+3. Identificar excepciones (base=hover same token → use surface-2)
+4. VS Code Replace All por patrón, files to include scope
+5. Correr excepciones manuales primero
+6. Verificar: grep post-sweep = 0 resultados
+7. Repetir en `src/shared/components/ui/`
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón |
+|---|---------|----------------------|-------|
+| D1 | Tab "Análisis AI" en vez de "Inteligencia" o "AI Insights" | "Inteligencia", "AI", "Insights" | Más descriptivo y profesional para un club de montaña de alto nivel |
+| D2 | 4 herramientas AI en grid 2x2 (lg:grid-cols-2) | Stack vertical o accordion | Scaneo visual rápido — cada herramienta es independiente |
+| D3 | `family_engagement_plan` con approval SEMI (no AUTO) | AUTO como las otras 3 | Genera plan de acción concreto → admin debe estar al tanto para follow-through. Las otras 3 son solo análisis/sugerencias. |
+| D4 | SocialGraph: tooltip HTML overlay (no Canvas tooltip) | Canvas-rendered tooltip | HTML permite badges, links, scroll, responsive. Canvas tooltip es limitado. |
+| D5 | SocialGraph: nodos sugeridos en anillo exterior (1.4x) | Mismo anillo con dashed border | Separación visual clara: conexiones reales vs sugerencias AI. Anillo exterior = "no confirmado". |
+| D6 | PreferencesTab en vez de modal | Modal overlay | Más espacio para formularios, consistente con otros tabs del detail |
+| D7 | Toggle buttons para channels/interests en vez de checkboxes | Checkbox list | Más touch-friendly (min-h-44px), visualmente premium, Silver Tide aesthetic |
+| D8 | `staleTime: 0` en AI tools | staleTime normal (60-300s) | Resultados AI pueden variar — siempre refetch al re-trigger |
+| D9 | ConnectionsTab self-fetching en vez de recibir prop | Prop drilling desde parent | Eliminación de dependencia de `get_family` response shape. Social graph es tool separada. |
+| D10 | FamilyForm: `useEffect` en vez de `onSuccess` callback | Mantener onSuccess deprecated | TanStack Query v5 deprecated onSuccess en useQuery. useEffect es el patrón correcto. |
+| D11 | HITL: navigate a lista en vez de stay en form con pending state | Mostrar "pendiente" inline | Más limpio — usuario ve ApprovalQueue como fuente de verdad. Evita estados complejos en form. |
+| D12 | `ScoreGauge` como componente local (no shared) | Extraer a shared/ui | Solo se usa en FamilyIntelligencePanel y FinanceOverview. Si se reutiliza más, se mueve después. |
+| D13 | Factory `fm()` helper para FamilyMember en list mock | Repetir objeto completo 8 veces | DRY — helper reutilizable que produce FamilyMember mínimo |
+| D14 | `createMockFamilyCreate()` devuelve `pending_approval` | Devolver success directo | Simula el comportamiento real del backend HITL. Testing del flujo completo. |
+| D15 | Mock data costarricense en todos los factories | Datos genéricos | Consistencia con la identidad del proyecto: Castillo Country Club, Costa Rica |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| 1 | Foundation — Design tokens, theme, fonts | ✅ |
+| 2 | Layout — DashboardLayout, Sidebar, PageContainer | ✅ |
+| 3 | Auth — PermissionGate, login, roles | ✅ |
+| 4 | Executive Dashboard — summary cards, AI reports | ✅ |
+| 5 | Finance Module — overview, intelligence, scenarios | ✅ |
+| 6 | Member Engagement — dashboard, segments, retention | ✅ |
+| 7 | Finance Advanced — expenses, invoices, budgets, payments | ✅ |
+| 8 | Wellness — profiles, activities, goals, predictions | ✅ |
+| 9 | Satisfaction — trends, NPS, sentiment analysis | ✅ |
+| 10 | Proactive Recommendation — pricing, suggestions, clusters | ✅ |
+| 11 | Communication — broadcasts, templates, analytics | ✅ |
+| 12 | Guest Management — register, events, trials, analytics | ✅ |
+| 13 | HITL — pending approvals, approve/reject workflows | ✅ |
+| 14 | Narrative + Export + Members Advanced | ✅ |
+| 14b | Fixes + Audit — imports duplicados, keys duplicadas, contracts | ✅ |
+| 15 | QA — Bug fixes, crash fixes, glass transparency | ✅ |
+| 15ext | Operations — daily briefing, compliance, smart schedule | ✅ |
+| **16** | **Design System Migration — Card, Button, Badge, lunar-btn, sweep global, shared/ui audit** | **✅ COMPLETADA** |
+| **17** | **Families Module — list, detail, form, social graph, AI intelligence, preferences** | **✅ COMPLETADA** |
+| 18 | Events Module completo | ⬜ SIGUIENTE |
+| 19 | Finance Enhancement + HITL Complete | ⬜ |
+| 20 | Print/PDF + Export | ⬜ |
+| 21 | Integration Testing + QA | ⬜ |
+| 22 | Mock → Backend Migration | ⬜ |
+
+### Fase 16 — Sub-fases (completa)
+
+| Sub-fase | Contenido | Estado |
+|----------|-----------|--------|
+| A | CSS: `lunar-btn` + `page-text` en `global.css` | ✅ |
+| B1 | `Button.tsx` | ✅ |
+| B2 | `FormField.tsx` | ✅ |
+| B3 | `FrostedGlassCard.tsx` | ✅ |
+| C1 | `EventCalendar.tsx` | ✅ |
+| C2 | `EventDetail.tsx` | ✅ |
+| C3 | `EventForm.tsx` | ✅ |
+| D1 | `FamilyDetail.tsx` migration | ✅ |
+| D2 | `FinanceOverview.tsx` migration | ✅ |
+| D3 | Sweep global `bg-white/[0.N]` — features | ✅ |
+| E | `.page-text` | ✅ (aplicado donde necesario, skip masivo) |
+| F | Auditoría `shared/ui` | ✅ |
+
+### Fase 17 — Sub-fases (completa)
+
+| Sub-fase | Contenido | Estado |
+|----------|-----------|--------|
+| 1 | Mocks: 10 factories + 12 contracts + 11 registry entries | ✅ |
+| 2 | SocialGraph: enriched data, tier coloring, suggested nodes, tooltip, reducedMotion, ARIA, performance | ✅ |
+| 3 | MemberCard: reducedMotion, Badge migration, shadows, focus-visible | ✅ |
+| 4 | AI FamilyIntelligencePanel: 4 secciones on-demand, ScoreGauge, CategoryIcon config | ✅ |
+| 5 | FamilyDetail: Análisis AI tab + PreferencesTab + ConnectionsTab enriched | ✅ |
+
+---
+
+## 6. PRÓXIMA FASE — Desglose
+
+### Fase 18: Events Module
+
+**Agente backend:**
+- `backend/src/club_mcp/agents/event_orchestrator.py`
+
+**Models:**
+- `backend/src/club_mcp/models/event.py`
+
+**Tools del agente (estimadas):**
+| Tool | Aprobación | Destino Frontend | Tipo |
+|------|------------|-----------------|------|
+| `event_list` | AUTO | EventCalendar (ya existe) | datos |
+| `event_get` | AUTO | EventDetail (ya existe) | datos |
+| `event_create` | HITL | EventForm (ya existe) | mutation |
+| `event_update_status` | HITL | EventCalendar/EventDetail | mutation |
+| `event_get_rsvps` | AUTO | EventDetail RSVPs | datos |
+| `event_send_reminder` | SEMI | EventDetail actions | mutation |
+| `event_predict_attendance` | AUTO | AI panel | AI on-demand |
+| `event_recommend_optimization` | AUTO | AI panel | AI on-demand |
+| `event_conflict_detection` | AUTO | EventForm/Calendar | AI on-demand |
+| `event_engagement_boost` | SEMI | AI panel | AI on-demand |
+
+**Bloques propuestos:**
+1. Leer backend agent + models completos
+2. Evaluar EventCalendar, EventDetail, EventForm contra 22 reglas
+3. Mocks para tools faltantes
+4. AI Event Intelligence panel (patrón Fase 17)
+5. EventForm HITL flow (patrón FamilyForm)
+6. Calendar enhancement con AI conflict detection
+
+**ApprovalQueue impact:** `event_create` (HITL) y `event_update_status` (HITL) ya deberían estar registrados.
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Archivo | Fase sugerida |
+|---|-------|-----------|---------|---------------|
+| P1 | FinancialDashboard: métricas que no aparecen | MEDIA | `features/finance/FinancialDashboard.tsx` | 19 |
+| P2 | AIChatWidget: posición movida de derecha a izquierda | MEDIA | `shared/components/chat/AIChatWidget.tsx` | 21 |
+| P3 | ApprovalQueue: 2 tipos nuevos (optimize_pricing, suggest_new_activities) | MEDIA | `features/approvals/ApprovalQueue.tsx` | 19 |
+| P4 | Dashboard sub-componentes: 7/12 pendientes (violations reglas) | MEDIA | `features/dashboard/components/` | 18 |
+| P5 | Tier mismatch backend↔frontend | MEDIA | `features/families/types.ts` | 19 |
+| P6 | `Input.tsx` tiene glass inline — debería usar `.glass-input` CSS class | BAJA | `Input.tsx` | 18 |
+| P7 | Features no importan `Input.tsx` — construyen `<input>` inline | MEDIA | EventCalendar, EventForm, FamilyDetail, FamilyList | 18 |
+| P8 | Alertas inline no usan `.alert-card` en algunos features | MEDIA | Otros features (no families/finance) | 18 |
+| P9 | `CardSkeleton` y `TableSkeleton` — ¿usan el design system? | BAJA | `Skeleton.tsx` | 18 |
+| P10 | FrostedGlassCard height hardcodeada a 252px — debería ser responsive | BAJA | `FrostedGlassCard.tsx` | 19 |
+| P11 | Light mode `.light` override — ¿verificado con nuevos componentes? | BAJA | `globals.css` | 20 |
+| P12 | MemberCard: `User` import de lucide-react sin uso | BAJA | `MemberCard.tsx` | 18 |
+| P13 | `get_activity_history` mock creado pero no integrado en ActivityTab | MEDIA | `FamilyDetail.tsx` ActivityTab | 18 |
+| P14 | `create_family` backend HITL — mock devuelve pending_approval pero backend real puede tener flujo diferente | BAJA | `factories.ts` | 22 (migration) |
+| P15 | `list_families` backend — tool name puede diferir (`family_search` en backend) | MEDIA | `mock-registry.ts` | 22 (migration) |
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección: Design System Architecture — MANTENER (ya actualizada en Fase 16)
+
+Sin cambios adicionales necesarios — la sección del checkpoint anterior sigue vigente.
+
+### Sección: MCP Data Access Pattern — MANTENER
+
+Sin cambios adicionales.
+
+### Sección: Mock Registry Servers — ACTUALIZAR
+
+```markdown
+## Mock Registry Servers (actualizado)
+- executive_dashboard
+- finance
+- member_engagement
+- wellness
+- satisfaction
+- proactive_recommendation
+- communication
+- guest_management
+- hitl
+- operations
+- families ← EXPANDIDO (11 tools: get_family, list_families, create_family, update_family, get_activity_history, get_social_graph, family_set_preferences, family_predict_churn, family_recommend_activities, family_social_match, family_engagement_plan)
+- events ← (list_events, get_event, create_event, update_event_status)
+```
+
+### Sección: AI Intelligence Pattern — AGREGAR
+
+```markdown
+## AI Intelligence Pattern (Fase 17 — replicable)
+
+### Architecture
+- 4 herramientas por módulo: predict, recommend, match/analyze, plan
+- Nivel 2: on-demand con botón trigger
+- SIEMPRE enabled: false inicial, NUNCA auto-load (Regla #19)
+- staleTime: 0 — resultados AI pueden variar
+- Aprobación: AUTO para análisis, SEMI para planes/acciones
+
+### Approval Level Decision Matrix
+| Tipo de output | Approval | Ejemplo |
+|----------------|----------|---------|
+| Solo lectura/visualización | AUTO | predict_churn, recommend_activities |
+| Matching sin notificar | AUTO | social_match |
+| Plan de acción concreto | SEMI | engagement_plan |
+| Acción que afecta a terceros | HITL | (no usado en AI tools) |
+
+### Component Pattern
+```tsx
+// 1. Estado local
+const [enabled, setEnabled] = useState(false);
+
+// 2. Query con enabled toggle
+const { data, isLoading, isError, refetch } = useMCPQuery(
+  server, tool, params, { enabled, staleTime: 0 }
+);
+
+// 3. UI: trigger button o refresh button
+{!enabled && <Button onClick={() => setEnabled(true)}>Analizar</Button>}
+{enabled && result && <Button onClick={() => refetch()}>Actualizar</Button>}
+
+// 4. States: loading → Skeleton, error → EmptyState, success → Cards con tone
+```
+
+### Tools por módulo (acumulado)
+- families: predict_churn, recommend_activities, social_match, engagement_plan (✅ creadas)
+- events: predict_attendance, recommend_optimization, conflict_detection, engagement_boost (⬜ Fase 18)
+- finance: predict_seasonal, recommend_cost_optimization, risk_scenarios (⬜ Fase 19)
+- wellness: predict_risk, recommend_personalized_plan (ya existen wellness_predict, wellness_recommendations)
+```
+
+### Sección: HITL Flow Pattern — AGREGAR
+
+```markdown
+## HITL Flow Pattern (Fase 17)
+
+When mutation tool has HITL approval:
+1. Backend returns { status: "pending_approval", request_id: "..." }
+2. Frontend shows showToast({ type: "info", message: "Solicitud enviada..." })
+3. Navigate back to list page (not stay in form)
+4. ApprovalQueue shows the pending request
+5. After approval, backend calls execute_create/update internally
+
+Example (FamilyForm):
+const createFamily = useMCPMutation(server, tool, {
+  onSuccess: (data) => {
+    if (data?.data?.status === "pending_approval") {
+      showToast({ type: "info", message: "Pendiente de aprobación" });
+      navigate("/admin/families");
+      return;
+    }
+    showToast({ type: "success", message: "Creado" });
+    navigate(`/admin/families/${data.data.id}`);
+  },
+});
+```
+
+### Sección: Enriched Social Graph — AGREGAR
+
+```markdown
+## Enriched Social Graph (Fase 17)
+
+SocialConnection extended with AI data:
+- sharedActivities, sharedEvents, lastInteraction
+- connectedTier, connectedEngagement
+- aiInsight (per connection)
+
+Canvas rendering:
+- Real nodes: inner ring, tier-colored, sized by strength
+- Suggested nodes: outer ring (1.4x), dashed border, "sugerido" label
+- HTML overlay tooltip on hover (not Canvas)
+- Legend: 3 strength levels + suggested (dashed)
+
+Data source: get_social_graph tool returns:
+- connections: EnrichedSocialConnection[]
+- clusters: SocialGraphCluster[]
+- suggestedConnections: SuggestedConnection[]
+```
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+### FinanceOverview.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Todos los colores via tokens |
+| 2 | ✅ | Sin blur en datos |
+| 3 | ✅ | chartTheme import |
+| 6 | ✅ | ResponsiveContainer |
+| 7 | ✅ | CHART constants |
+| 8 | ✅ | formatCurrency/formatPercent |
+| 9 | ✅ | TOOLTIP_STYLE |
+| 10 | ✅ | AXIS_TICK |
+| 11 | ✅ | Button component (focus-visible incluido) |
+| 14 | ✅ | EmptyState en error + null |
+| 15 | ✅ | showToast |
+| 17 | ✅ | Button + Badge |
+| 18 | ✅ | useReducedMotion via useMotion() |
+| 20 | ✅ | useBreakpoint |
+| 21 | ✅ | Table responsive con phone cards |
+
+### FamilyList.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Tokens everywhere |
+| 11 | ✅ | Focus-visible en sort headers, filter bar, pagination |
+| 12 | ✅ | min-h-44px en buttons/links |
+| 14 | ✅ | EmptyState para sin resultados |
+| 16 | ✅ | PageContainer con breadcrumbs |
+| 17 | ✅ | Button (pagination) + Badge (tier) |
+| 18 | ✅ | useReducedMotion en table rows + mobile cards |
+| 21 | ✅ | Desktop table (hidden lg:block) + mobile cards (lg:hidden) |
+| 22 | ✅ | cn() en conditional classes |
+
+### FamilyForm.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Tokens |
+| 11 | ✅ | Focus-visible en tier selector + buttons |
+| 12 | ✅ | min-h-44px en todos los botones |
+| 14 | ✅ | .alert-card--error para members error |
+| 16 | ✅ | PageContainer + breadcrumbs + navigate /admin/ |
+| 17 | ✅ | Button (3 nav + delete) + Badge (tier, PRINCIPAL) |
+| 18 | ✅ | useReducedMotion en 4 motion.divs |
+
+### FamilyDetail.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Tokens |
+| 11 | ✅ | Focus-visible rings |
+| 14 | ✅ | EmptyState en todos los estados |
+| 16 | ✅ | PageContainer + breadcrumbs + /admin/ paths |
+| 17 | ✅ | Button + Badge everywhere |
+| 18 | ✅ | useReducedMotion guard |
+| 19 | ✅ | AI tools: on-demand con botón, NUNCA auto-load |
+| 21 | ✅ | Table responsive (connections) |
+
+### SocialGraph.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Tier real coloring (not hardcoded oro) |
+| 11 | ✅ | ARIA role="img", aria-label |
+| 18 | ✅ | useReducedMotion — sync simulation |
+| # Perf | ✅ | Stop rAF when converged |
+
+### MemberCard.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Shadows → tokens |
+| 11 | ✅ | Focus-visible rings (condicional) |
+| 17 | ✅ | Badge (role, activities) |
+| 18 | ✅ | useReducedMotion en EngagementBar + full card |
+
+### FamilyIntelligencePanel.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Todos los colores via tokens |
+| 11 | ✅ | Button component (incluye focus-visible) |
+| 14 | ✅ | EmptyState en error + sin datos |
+| 17 | ✅ | Button + Badge everywhere |
+| 18 | ✅ | useMotionConfig() con reducedMotion guard |
+| 19 | ✅ | SIEMPRE botón, enabled:false inicial, staleTime:0 |
+
+---
+
+## 10. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto
+```
+1. CLAUDE_CONTEXT_MINI.md (con actualizaciones del punto 8)
+2. Este checkpoint completo
+3. globals.css (para reference del design system)
+```
+
+### Paso 2 — Pedir primero
+```
+"Pasame el agente de event_orchestrator.py y models/event.py para Fase 18"
+```
+
+### Paso 3 — Después
+```
+"Evalúa EventCalendar, EventDetail y EventForm contra las 22 reglas y proponé bloques"
+```
+
+### Paso 4 — Después
+```
+"Genera Bloque 1 — mocks para tools de events que falten"
+```
+
+### Paso 5 — Al final
+```
+"Actualizá el CLAUDE_CONTEXT_MINI.md con los patrones nuevos de Fase 17"
+```
+
+---
+
+## 11. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto |
+|-------|---------|-------|---------|
+| Jun 2025 | FinanceOverview: NO corregir acceso a `summaryQ.data` (no es wrapper) | Factory devuelve datos en top level, funciona por accidente pero es consistente con cómo callMCPTool maneja la respuesta | No hay crash, datos llegan correctos. Inconsistencia documentada para backend migration |
+| Jun 2025 | Skip `.page-text` masivo (Fase 16 E) | Análisis de 120+ resultados muestra que la mayoría de texto está dentro de cards con surface backgrounds. Solo EventCalendar toolbar necesitaba page-text (ya aplicado) | No hay regression — texto es legible donde importa |
+| Jun 2025 | `list_families` mock devuelve `FamilyListResponse` directo (no wrapper) | Diferente de `get_family` que envuelve en `{ status, data }`. El wrapper lo maneja `callMCPTool`. Componente accede a `data.data` | MCP access pattern consistente con otros servers |
+| Jun 2025 | FamilyForm: `useEffect` en vez de `onSuccess` deprecated | TanStack Query v5 deprecated onSuccess en useQuery. Patrón correcto es useEffect con dependency en data | Previene warnings de deprecation y future breakage |
+| Jun 2025 | FamilyForm: navigate a lista en vez de stay con pending state | HITL flow es: submit → showToast info → navigate lista → ApprovalQueue muestra pending | UX más limpia — ApprovalQueue es source of truth para pending requests |
+| Jun 2025 | `family_engagement_plan` con approval SEMI | Genera plan de acción concreto con assignedTo, timing, expectedImpact. Admin debe ver esto para follow-through. Las otras 3 AI tools son solo análisis | Engagement plan tiene accountability implications que las otras tools no tienen |
+| Jun 2025 | SocialGraph: HTML tooltip overlay en vez de Canvas tooltip | HTML permite badges, links, responsive layout, scroll. Canvas tooltip es texto plano | Rich tooltip con AI insights, shared activities, strength bar |
+| Jun 2025 | Suggested nodes en anillo exterior (1.4x radius) | Separación visual clara entre conexiones reales y sugerencias AI. Anillo exterior = "no confirmado" | Evita confusión entre datos reales e hipótesis AI |
+| Jun 2025 | PreferencesTab: toggle buttons en vez de checkboxes | Más touch-friendly, visualmente premium, consistente con Silver Tide aesthetic. min-h-44px garantizado | Mejor UX para mobile/tablet (club members) |
+| Jun 2025 | `staleTime: 0` en AI tools | Resultados AI pueden variar entre llamadas. Siempre refetch al re-trigger permite obtener perspectivas diferentes | UX: usuario puede hacer "Analizar" múltiples veces y ver resultados frescos |
+| Jun 2025 | ConnectionsTab self-fetching en vez de recibir connections como prop | get_social_graph es tool separada de get_family. Eliminar prop drilling y dependencia del response shape del parent | Flexibilidad: enriquecimiento de datos sin modificar get_family response |
+| Jun 2025 | FamilyIntelligencePanel como componente local (no shared) | Solo se usa en FamilyDetail. Si otros módulos necesitan patrón similar, se crea shared/AIDecisionPanel genérico después | Evite premature abstraction |
+| Jun 2025 | Mock `createMockFamilyCreate` devuelve `pending_approval` | Simula comportamiento real del backend HITL. Testing del flujo completo incluyendo el path de "pendiente" | Catch HITL-related bugs during development |
+| Jun 2025 | Global glass sweep: Replace All seguro en VS Code (scope src/features) | Patrones exactos (`bg-white/[0.04]`, `[0.05]`, `[0.06]`, `[0.08]`) con reemplazos determinísticos | 48→0 instancias en features. 9→0 en shared/ui |
+
+---
+
+## ACTUALIZACIÓN DEL ROL — Principal FullStack Engineer
+
+**Rol actualizado:** Principal FullStack Engineer & Product Intelligence Architect del Castillo Country Club.
+
+**Disciplinas (8):**
+1. **FullStack Engineering** — React 19, TypeScript, FastAPI, MCP architecture
+2. **UI/UX Architecture** — Silver Tide design system, Canvas rendering, accessibility, responsive design
+3. **Product Strategy** — Feature prioritization, module architecture, roadmap planning
+4. **Private Club Operations** — Costa Rica high-end club domain: membership tiers, family dynamics, events, wellness, finance
+5. **AI Engineering** — MCP tool design, on-demand intelligence patterns, approval level matrices (AUTO/SEMI/HITL), AI-first product architecture
+6. **Machine Learning & Gen AI** — Predictive models (churn, engagement, attendance), recommendation engines, social matching, NLP-powered insights, AI-generated action plans
+7. **Financial Intelligence** — Club finance analytics, budget analysis, profitability matrices, seasonal forecasting, stress testing, ROI modeling
+8. **Marketing & Engagement Intelligence** — Member segmentation, NPS analysis, sentiment monitoring, personalized communication, campaign generation, retention strategies
+
+**Especialización:** Creación de plataformas inteligentes para clubes elite con capacidad de decisión autónoma — no solo dashboards, sino herramientas que procesan, analizan, predicen y proponen acciones concretas con confianza cuantificada.
+
+**Regla de oro:** Propongo y analizo ANTES de escribir código. El usuario aprueba antes de generar. Changelog detallado al final de cada bloque.
+
+---
+
+**PRÓXIMA ACCIÓN INMEDIATA:** Pasar `event_orchestrator.py` + `models/event.py` para arrancar Fase 18 (Events Module).
+
+---
+
+**Gracias por la sesión extraordinaria.** El módulo de familias pasó de ser una vista estática a una plataforma inteligente con 11 herramientas MCP, 4 de las cuales son AI on-demand que procesan, predicen y proponen. La base está sentada para replicar este patrón en Events, Finance, Wellness y los módulos restantes. Nos vemos en el próximo chat.

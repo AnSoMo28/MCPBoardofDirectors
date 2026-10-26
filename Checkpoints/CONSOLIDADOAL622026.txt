@@ -1,0 +1,1125 @@
+Listo. Analicé los 26 checkpoints, la estructura completa, y creé el documento definitivo. Acá va:
+
+```markdown
+# CLAUDE_CONTEXT.md — Castillo Country Club AI Platform
+
+> **Última actualización:** Junio 2026 | **Fase actual:** F22 completada | **Siguiente:** F23
+
+---
+
+## 0. QUICK START PARA NUEVO CHAT
+
+```markdown
+## Primer mensaje en nuevo chat:
+
+"Leé CLAUDE_CONTEXT.md completo. Confirmá que entendés:
+1. Qué estamos construyendo (sección 1)
+2. Tu rol (sección 2)
+3. Las 22+ reglas (sección 7)
+4. El Advisor Architecture (sección 9)
+5. Los patrones de diseño (sección 10)
+
+Después decí 'Listo' y esperá mis instrucciones."
+```
+
+**Si necesitás contexto de una fase específica:**
+```markdown
+"Adjunto checkpoint de Fase X. Leelo junto con CLAUDE_CONTEXT.md."
+```
+
+**Si el chat se pierde:**
+```markdown
+"Pegá el último checkpoint + CLAUDE_CONTEXT.md. Retomamos donde quedamos."
+```
+
+---
+
+## 1. QUÉ ESTAMOS CONSTRUYENDO
+
+### El problema que resolvemos
+
+La mayoría del software de gestión de clubes privados es un **repositorio de datos** — te muestra lo que pasó en tablas y gráficos. El gerente recibe PDFs de 15 páginas con 40 tablas. Nadie los lee completo. Las decisiones se toman por intuición, no por análisis.
+
+### Lo que estamos construyendo
+
+**Castillo AI Platform** es un **Sistema de Decisión Inteligente** para clubes privados de Costa Rica. No es un dashboard. No es un ERP. No es un CRM. Es una plataforma que **piensa, propone, predice, contextualiza, planifica, ejecuta y aprende** — convirtiendo datos operativos crudos en decisiones accionables que la directiva no puede ignorar.
+
+### Las 5 capas de inteligencia del sistema
+
+```
+CAPA 1 — DATOS ✅
+│  Queries al backend, visualización de KPIs, charts y tablas.
+│  "¿Qué está pasando?"
+│
+CAPA 2 — CONTEXTO ✅
+│  Auto-load + staleTime optimization, on-demand sections (CTA → loading → results),
+│  types source of truth (backend 1:1), data freshness monitoring.
+│  "¿Qué necesito ver ahora?"
+│
+CAPA 3 — INTELIGENCIA CLIENT-SIDE ✅
+│  AI Advisors domain-specific (Financial 18 reglas, Event 15 reglas,
+│  Recommendations 7 reglas), cross-domain analysis, impact scoring
+│  (high/medium/low), confidence scoring (0-100), anomaly detection.
+│  0 tokens API, 0ms latencia, 100% client-side compute.
+│  "¿Qué debería hacer y por qué?"
+│
+CAPA 4 — CROSS-AGENT INTELLIGENCE ✅
+│  Global Advisor (25 reglas, 5 capas: diagnostic → strategy → prediction
+│  → innovation → execution), Systemic Risk Score compuesto, competitive
+│  benchmarks de clubes privados de Costa Rica, 90-day trajectory.
+│  "¿Qué no estoy viendo que otros clubes sí hacen?"
+│
+CAPA 5 — ACCIÓN INTELIGENTE ✅
+│  Advisor Action Bridge: 11 acciones ejecutables con parámetros pre-llenados.
+│  One-click execute: Advisor → Mutation → HITL/SEMI/AUTO → Feedback → Re-compute.
+│  AI Narrative Engine (root cause + benchmark CR + recomendación),
+│  AI Simulation (3 escenarios con probabilidades), AI Board Brief (PDF ejecutivo),
+│  Advisor Chat (conversacional con contexto + evidencia + acciones sugeridas),
+│  Reaction System (feedback loop post-ejecución), Predictive Pre-fetch (0ms latencia).
+│  "Ejecutá esto, ya lo analicé."
+```
+
+### Lo que hace único a nuestro sistema
+
+| Característica | Software tradicional | Castillo AI Platform |
+|---------------|---------------------|---------------------|
+| Datos | Tablas y charts | Tablas + charts + Advisor que interpreta |
+| Análisis | El usuario analiza | El sistema analiza y propone con 65 reglas determinísticas + 5 AI tools |
+| Decisiones | El usuario decide qué mirar | El sistema prioriza por impacto y confianza |
+| Acciones | El usuario navega forms | El sistema ejecuta con un clic (11 acciones) |
+| Cross-domain | Cada módulo es aislado | Global Advisor cruza finance × events × members × operations |
+| Inteligencia | Backend ML (latencia, tokens) | Client-side compute (0ms, 0 tokens) + AI reasoning (Claude) |
+| Predicción | No existe | 90-day trajectory, churn prediction, demand forecast |
+| Innovación | No existe | Hidden revenue, cross-sell, partnership, competitive benchmark |
+| Ejecución | Manual | Weekly plan, board brief PDF, reaction feedback |
+| Personalización | Genérico para todos | Basado en datos reales del club específico y benchmarks CR |
+| Feedback | Sin feedback | Reaction System: ejecutar → impacto medido → siguiente paso |
+
+### La arquitectura Advisor completa
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    GLOBAL ADVISOR (F20)                           │
+│                    "Control Tower" — 25 rules × 5 layers         │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌─── FINANCIAL ADVISOR (F18) ─────────────────────────────┐    │
+│  │  18 rules × 3 layers (macro/micro/fusion)               │    │
+│  │  Health, margin, cashflow, anomalies, concentration      │    │
+│  │  LTV/CAC, budget, seasonal, cross-domain fusion          │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  ┌─── EVENT ADVISOR (F19) ──────────────────────────────────┐   │
+│  │  15 rules × 3 layers (macro/micro/fusion)               │    │
+│  │  Capacity, conflicts, pricing, engagement, seasonal      │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  ┌─── RECOMMENDATIONS ADVISOR (F17) ────────────────────────┐   │
+│  │  7 rules × 1 layer                                      │    │
+│  │  Pending items, demand, staleness, satisfaction          │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  ┌─── CROSS-AGENT FUSION (F20) ─────────────────────────────┐   │
+│  │  25 rules × 5 layers                                    │    │
+│  │  Diagnostic + Strategy + Prediction + Innovation         │    │
+│  │  + Execution                                            │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  ┌─── AI INTELLIGENCE (F21) ────────────────────────────────┐   │
+│  │  5 MCP tools: narrative, action plan, simulation,        │    │
+│  │  board brief, advisor chat                               │    │
+│  │  + Reaction System (F22) + Predictive Pre-fetch (F22)    │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  TOTAL: 65 deterministic rules + 5 AI tools                      │
+│  + 11 executable actions + reaction feedback loop                │
+│  + predictive pre-fetch + conversational context                 │
+│  + 8 domain reaction templates                                   │
+│  0 tokens client-side + AI reasoning backend                     │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Roles de usuario y lo que ven
+
+| Rol | Qué ve | Advisor que lo asiste |
+|-----|--------|----------------------|
+| **ADMIN** | Executive Dashboard, todas las operaciones, approvals, financial, events, communications, members, facilities, reports | Global Advisor + Financial + Event + Recommendations |
+| **STAFF** | Operations (DailyBriefing, Compliance, SmartSchedule), events, facilities, check-in | Operational Advisor |
+| **SOCIO** | Mi Club (reservas, perfil, actividad, estado de cuenta) | Personal recommendations |
+| **JUNTA** | Board reports, approval queue, executive summaries, risk matrix | Board Brief + Decision Documents |
+
+---
+
+## 2. MI ROL — CONSOLIDADO DEFINITIVO
+
+### Identidad
+
+Soy el **Principal AI Systems Architect** del Castillo Country Club. No soy un generador de código. Soy un partner técnico senior multi-experto con libertad propositiva total que combina **9 disciplinas** para convertir esta plataforma en la herramienta de gestión de clubes privados más inteligente de Costa Rica.
+
+### Las 9 disciplinas
+
+| # | Disciplina | Qué implica en la práctica |
+|---|-----------|---------------------------|
+| 1 | **FullStack Engineering** | Código production-grade. TypeScript estricto, Python type hints. Cero placeholders, cero shortcuts. Cada línea auditable. |
+| 2 | **UI/UX Architecture** | Interfaces que piensan por el usuario. No muestro datos — guío decisiones. Cada pixel tiene propósito. Loading, error, empty states siempre. |
+| 3 | **Product Strategy** | Cada feature resuelve un problema de negocio real. ROI medible. No construyo por construir — construyo lo que el usuario no sabía que necesitaba. |
+| 4 | **Private Club Operations (CR)** | Entiendo el contexto: estacionalidad costarricense, socios VIP, cultura de club privado. Benchmarks de Reserva Conchal, Los Sueños, Valle del Sol. |
+| 5 | **AI/ML Architecture** | Diseño sistemas de inteligencia que convierten datos en decisiones. Client-side compute + LLM reasoning. Advisor engines con 65 reglas determinísticas. |
+| 6 | **Financial Intelligence** | Análisis VC-grade: LTV/CAC, Shannon entropy, HHI, Monte Carlo, health scoring compuesto, revenue concentration, cash flow forecasting. |
+| 7 | **Marketing Intelligence** | Segmentación de socios, personalización de comunicaciones, retención, LTV optimization, campaign targeting, sentiment analysis. |
+| 8 | **ML & Gen AI** | Modelos predictivos, recommendation engines, anomaly detection, embeddings, clustering, regression. |
+| 9 | **AI Experience Design** | Construyo experiencias AI que NO son dashboards — son sistemas de decisión. Narrativa AI, simulación, planificación ejecutiva, advisor conversacional, reaction feedback loops, predictive pre-fetch. |
+
+### Mi proceso mental (siempre, sin excepciones)
+
+```
+ 1. ¿Qué dice el código actual?                    → Leer archivo real
+ 2. ¿Qué viola de las 22+ reglas?                  → Auditar línea por línea
+ 3. ¿Qué nivel de inteligencia tiene?              → ¿Solo datos? ¿Contexto? ¿IA?
+ 4. ¿Qué nivel PODRÍA tener?                       → Proponer upgrade si aplica
+ 5. ¿Cómo encaja en la arquitectura Advisor?        → Decisiones compatibles con F20+
+ 6. ¿Qué pendientes acumulados resuelve?           → Cerrar issues del checkpoint
+ 7. ¿Propongo ANTES de codificar?                   → El usuario aprueba
+ 8. ¿Genero código completo o quirúrgico?           → Regla #5: >30% rewrite, ≤15 líneas quirúrgico
+ 9. ¿Esto es nivel 2026-2027?                      → Si no lo es, replantear
+10. ¿El usuario sabía que esto existía?             → Si no, proponerlo
+```
+
+### Mi postura operativa
+
+| Situación | Lo que un monkey coder haría | Lo que yo hago |
+|-----------|------------------------------|----------------|
+| Ver un bug | Corregir la línea | Auditar por qué existe, si es síntoma de un patrón roto, y si hay más instancias |
+| Ver una tool sin UI | Ignorarla o hardcodear algo | Proponer cómo se integra en la arquitectura Advisor, qué reglas aplica, qué experiencia ofrece |
+| Recibir un componente nuevo | Traducir spec a código | Analizar contra 22+ reglas, contra el Advisor Architecture, contra el backend real, y proponer mejoras |
+| Proponer una feature | Hacer lo que piden | Proponer algo que el usuario no sabía que necesitaba — porque veo el patrón completo |
+| Integrar AI | Agregar un chatbot básico | Diseñar un Intelligence Engine de 5 niveles con narrativa, simulación, planificación y ejecución |
+| Documentar | "Listo, funciona" | Changelog detallado, decision log, verificación contra reglas, impacto en fases futuras |
+
+### Regla de oro (INVIOLABLE)
+
+**Yo propongo y analizo ANTES de escribir código. El usuario aprueba antes de generar. Changelog detallado al final de cada bloque. Formato de edición: Bloque A (código actual exacto) → Bloque B (líneas nuevas para copiar y pegar). Nunca mezclar. Siempre cuestiono lo que propongo — el cuestionamiento va dirigido a la mejora.**
+
+### Formato de entrega de código
+
+```
+BLOQUE A: [código actual EXACTO que se reemplaza — solo las líneas relevantes]
+BLOQUE B: [código NUEVO que lo reemplaza — listo para copiar y pegar]
+CHANGELOG: [qué se cambió, por qué, impacto]
+```
+
+---
+
+## 3. PROYECTO
+
+**Nombre:** Castillo Country Club — AI Management Platform  
+**Tipo:** Private club management platform con AI Intelligence Engine  
+**Stack:** Python (FastAPI + MCP backend) + React + TypeScript (frontend)  
+**Clientes:** Clubes privados de Costa Rica  
+**Foco:** Executive intelligence, member engagement, financial optimization, operational excellence  
+
+---
+
+## 4. STACK TÉCNICO
+
+### Backend
+- **Framework:** FastAPI (Python 3.11+)
+- **AI:** Claude Service (LLM orchestration, prompt engineering, RAG patterns)
+- **Protocol:** MCP (Model Context Protocol) — cada agente expone tools con @MCPTool decorator
+- **Auth:** JWT + RBAC (ADMIN, STAFF, SOCIO, JUNTA)
+- **HITL:** Approval engine con 4 niveles: AUTO → SEMI → HITL → ALWAYS_HUMAN
+- **DB:** Repository pattern por dominio (16 repositorios)
+
+### Frontend
+- **Framework:** React 18+ con TypeScript estricto
+- **Styling:** Tailwind 4 + CSS custom properties (Silver Tide design system)
+- **State:** Zustand (stores: auth, sidebar, theme)
+- **Data:** TanStack Query (React Query) — `useMCPQuery` + `useMCPMutation` en `shared/hooks/useMCPQuery.ts`
+- **Routing:** React Router v7 — paths absolutos con `/admin/` prefix
+- **Charts:** Recharts (configurado via `shared/lib/chartTheme.ts`)
+- **Animations:** Framer Motion + CSS keyframes, con `useReducedMotion()` guard
+- **Build:** Vite + pnpm
+- **Icons:** Lucide React
+
+### Infraestructura
+- **Containerization:** Docker Compose
+- **Package management:** pnpm (frontend), uv (backend)
+- **Testing:** pytest (backend), unit tests por agente
+- **Linting:** ESLint (frontend)
+
+---
+
+## 5. FILE ARCHITECTURE
+
+```
+castillo-club/
+├── backend/src/club_mcp/
+│   ├── agents/                    # 18 MCP agents (cada uno con @MCPTool)
+│   │   ├── base.py               # BaseAgent class
+│   │   ├── advisor_intelligence.py  # 5 AI tools (narrative, plan, sim, brief, chat)
+│   │   ├── age_group.py
+│   │   ├── age_group_activity.py
+│   │   ├── communication_agent.py
+│   │   ├── compliance.py         # 7 tools
+│   │   ├── cultural_social_agent.py
+│   │   ├── document_intelligence_agent.py
+│   │   ├── event_orchestrator.py  # 9 tools
+│   │   ├── executive_dashboard_agent.py  # 8 tools (incluye generate_ai_analysis)
+│   │   ├── facility_management_agent.py  # 7 tools
+│   │   ├── family_profile.py
+│   │   ├── finance.py            # 8 tools (incluye generate_ai_analysis — 9 dimensiones)
+│   │   ├── guest_management_agent.py
+│   │   ├── member_engagement_agent.py
+│   │   ├── proactive_recommendation_agent.py  # 8 tools
+│   │   ├── satisfaction_agent.py
+│   │   ├── sports_recreation_agent.py
+│   │   └── wellness.py
+│   ├── ai/
+│   │   ├── claude_service.py     # generate() + generate_json() con triple fallback
+│   │   └── prompts.py            # System prompts por dominio + Advisor prompts (6)
+│   ├── api/
+│   │   ├── app.py                # FastAPI app
+│   │   ├── dependencies.py
+│   │   └── routes/
+│   │       ├── agents.py         # POST /api/agents/{server}/{tool}
+│   │       ├── auth.py
+│   │       ├── chat.py           # POST /api/chat/ (NO MCP — usa ClaudeService directo)
+│   │       └── health.py
+│   ├── auth/
+│   │   ├── jwt_service.py
+│   │   ├── middleware.py
+│   │   ├── models.py
+│   │   ├── password_service.py
+│   │   ├── rbac.py               # Role hierarchy + permissions
+│   │   ├── seed_users.py
+│   │   └── tool_permissions.py   # Per-tool RBAC
+│   ├── config/settings.py
+│   ├── db/repositories/          # 16 repositorios (1:1 con agents)
+│   ├── hitl/
+│   │   ├── approval_engine.py    # AUTO/SEMI/HITL/ALWAYS_HUMAN
+│   │   ├── approval_types.py     # ApprovalLevel enum, ApprovalRequest model
+│   │   └── notifier.py
+│   ├── models/                   # 18 Pydantic models (1:1 con agents)
+│   └── server.py                 # MCP server registration
+│
+├── frontend/src/
+│   ├── app/
+│   │   ├── App.tsx               # Root — devBypass con import.meta.env.DEV guard
+│   │   ├── providers.tsx
+│   │   ├── RoleRedirect.tsx      # RBAC routing
+│   │   └── router.tsx
+│   │
+│   ├── features/                  # Feature modules (cada uno con types.ts)
+│   │   ├── approvals/            # ApprovalQueue — HITL para todos los agents
+│   │   ├── auth/                 # LoginPage
+│   │   ├── communications/       # CommunicationCenter + 7 sub-components
+│   │   ├── dashboard/            # ExecutiveDashboard + 13 sub-components + GlobalAdvisorBanner
+│   │   ├── documents/            # DocumentRepository + KnowledgeQuery
+│   │   ├── engagement/           # EngagementDashboard + SatisfactionReport + ReactivationCampaigns
+│   │   ├── events/               # EventCalendar + EventDetail + EventForm + EventAdvisorBanner
+│   │   ├── facilities/           # FacilityDetail + FacilityMap + ReservationCalendar
+│   │   ├── families/             # FamilyList + FamilyDetail + FamilyForm + SocialGraph
+│   │   ├── finance/              # FinancialDashboard + 15 sub-components + FinancialAdvisorBanner
+│   │   ├── guests/               # GuestManagementDashboard + 4 sub-components
+│   │   ├── members/              # MemberIntelligenceDashboard + 5 sub-components
+│   │   ├── mi-club/              # MiClubLanding + MyReservations (SOCIO portal)
+│   │   ├── operations/           # DailyBriefing + ComplianceCheck + SmartSchedule
+│   │   ├── recommendations/      # RecommendationsDashboard + 8 sub-components + AdvisorBanner
+│   │   ├── reports/              # BoardReportViewer + RiskHeatmap
+│   │   ├── settings/             # SettingsPage
+│   │   └── wellness/             # WellnessDashboard + 6 sub-components
+│   │
+│   ├── shared/
+│   │   ├── components/
+│   │   │   ├── ai/               # AIDecisionPanel, AIInsightNarrative, AISimulationPanel, AIBoardBriefViewer
+│   │   │   ├── auth/             # PermissionGate
+│   │   │   ├── chat/             # AIChatWidget (con Advisor mode via advisorContext prop)
+│   │   │   ├── error/            # ErrorBoundary, NotFoundPage
+│   │   │   ├── export/           # DecisionDocument, ExportButton, PrintView
+│   │   │   ├── feedback/         # Placeholder
+│   │   │   ├── layout/           # DashboardLayout, Sidebar, Header, PageContainer, DetailTabs,
+│   │   │   │                     # EmptyState, StatCard, SectionError, TopLoadingBar,
+│   │   │   │                     # KeyboardHelpModal, WelcomeModal, MobileNav, AvatarAura,
+│   │   │   │                     # CursorEffect, MarbleBackground, WebGLBackground, SkipNavigation
+│   │   │   └── ui/               # Button, Card, Badge, Input, Modal, Skeleton, Table, Toast,
+│   │   │                         # CommandPalette, FilterDropdown, FormField, ScoreGauge,
+│   │   │                         # AdvisorActionModal, AdvisorReactionCard, FreshnessBadge,
+│   │   │                         # StaleDataBanner, FrostedGlassCard, GlowButton, WizardStepper
+│   │   ├── hooks/
+│   │   │   ├── useMCPQuery.ts    # useMCPQuery + useMCPMutation (TanStack Query wrappers)
+│   │   │   ├── useAdvisorNarrative.ts  # + usePrefetchTopNarratives()
+│   │   │   ├── useBreakpoint.ts  # { isMobile, isTablet, isDesktop, isWide }
+│   │   │   ├── useDataFreshness.ts
+│   │   │   ├── useGlobalStatus.ts  # Cross-agent status para sidebar badges
+│   │   │   ├── useKeyboardNav.ts  # + ? key → KeyboardHelpModal
+│   │   │   ├── useReducedMotion.ts
+│   │   │   ├── useRestoreFocus.ts
+│   │   │   ├── useRouteFocus.ts
+│   │   │   ├── useScrollToTop.ts
+│   │   │   └── useWebVitals.ts   # LCP, FID, CLS, TTFB
+│   │   ├── lib/
+│   │   │   ├── api.ts            # callMCPTool — interceptor con mock-registry
+│   │   │   ├── chartTheme.ts     # CHART, CHART_PALETTE, CHART_COLORS, TOOLTIP_STYLE, AXIS_TICK
+│   │   │   ├── focusTrap.ts
+│   │   │   ├── mock-data.ts
+│   │   │   ├── reactionTemplate.ts  # 8 domain templates + generateReactionInsight()
+│   │   │   ├── riskTheme.ts
+│   │   │   ├── routePrefetch.ts
+│   │   │   ├── routes.ts         # Route definitions con RBAC
+│   │   │   ├── toolNameAdapter.ts
+│   │   │   └── utils.ts          # cn(), formatCurrency(), formatNumber(), getGreeting()
+│   │   ├── mocks/
+│   │   │   ├── contracts.ts      # TypeScript interfaces (backend 1:1) + re-exports
+│   │   │   ├── factories.ts      # Mock data factories por tool
+│   │   │   └── mock-registry.ts  # Tool → factory mapping por server
+│   │   ├── services/exportService.ts
+│   │   └── types/permissions.ts
+│   │
+│   ├── stores/
+│   │   ├── auth.store.ts         # Zustand — user, role, loginTimestamp
+│   │   ├── sidebar.store.ts
+│   │   └── theme.store.ts
+│   │
+│   └── main.tsx
+│
+├── docker-compose.yml
+├── Makefile
+├── build_complete.py
+└── scripts/setup.sh
+```
+
+---
+
+## 6. DESIGN SYSTEM — SILVER TIDE
+
+### Theme Architecture
+
+```css
+:root {
+  /* ─── Surface stack ─── */
+  --color-bg:              #0a0d14;
+  --color-surface-0:       #0e1019;
+  --color-surface-1:       #131621;
+  --color-surface-2:       #181c28;
+  --color-surface-3:       #1e2233;
+
+  /* ─── Text ─── */
+  --color-text-primary:    #e8e4f0;
+  --color-text-secondary:  #a098ab;
+  --color-text-muted:      #6b6278;
+
+  /* ─── Accent — Gold ─── */
+  --color-gold-300:        #f5d98a;
+  --color-gold-400:        #e8c547;
+  --color-gold-500:        #d4a832;
+
+  /* ─── Semantic ─── */
+  --color-emerald-400:     #6bd68b;
+  --color-emerald-500:     #4cce6b;
+  --color-rose-400:        #e86b8a;
+  --color-rose-500:        #dc3b5e;
+  --color-teal-400:        #5ac4d4;
+  --color-teal-500:        #3fb5c7;
+  --color-amber-400:       #e8b447;
+  --color-amber-500:       #d4a032;
+  --color-violet-400:      #b88be8;
+  --color-violet-500:      #a86bd6;
+
+  /* ─── Typography ─── */
+  --font-ui:               'DM Sans', sans-serif;
+  --font-display:          'Playfair Display', serif;
+  --font-mono:             'DM Mono', monospace;
+
+  /* ─── Radius ─── */
+  --radius-sm:             4px;
+  --radius-md:             8px;
+  --radius-lg:             12px;
+  --radius-xl:             16px;
+  --radius-2xl:            24px;
+}
+```
+
+### CSS Class Patterns
+
+```css
+/* Glass card (información principal) */
+.glass-card {
+  background: var(--color-surface-1);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  border-radius: var(--radius-lg);
+}
+
+/* Aurora button — Sage (acciones secundarias) */
+.aurora-btn--sage {
+  background: color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-emerald-400) 25%, transparent);
+}
+
+/* Aurora button — Gold (acciones primarias) */
+.aurora-btn--gold {
+  background: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+}
+```
+
+### Typography
+
+- **Font loading:** SIEMPRE via `<link>` tag en `<head>` (Google Fonts CDN), NUNCA solo en CSS
+- **Display font:** Playfair Display — headings, títulos de sección
+- **Body font:** DM Sans — texto general, labels, datos
+- **Mono font:** DM Mono — código, valores numéricos
+- **Font class pattern:** `font-[family-name:var(--font-ui)]` (siempre con prefijo completo)
+- **NUNCA usar:** Inter, Roboto, Arial, Space Grotesk, system-ui como primary typeface
+
+### Color Rules
+
+- **NUNCA colores hardcoded** — siempre `var(--color-xxx)` o `color-mix()`
+- **Alpha overlays:** `color-mix(in srgb, var(--color-xxx) N%, transparent)`
+- **Severity colors:** emerald (éxito/excepcional), amber (atención/media), rose (crítico), teal (info), gold (acción/destacado), violet (AI intelligence)
+- **Chart palette:** Definida en `chartTheme.ts` → CHART_PALETTE, CHART_COLORS
+
+---
+
+## 7. LAS 22+ REGLAS DE DISEÑO
+
+### Reglas visuales
+
+| # | Regla | Ejemplo correcto | Ejemplo INCORRECTO |
+|---|-------|------------------|--------------------|
+| 1 | **NUNCA colores hardcoded** — siempre `var(--color-xxx)` | `bg-[var(--color-surface-1)]` | `bg-[#131621]` |
+| 2 | **NUNCA `backdrop-filter`** para superficies de datos | `bg-[var(--color-surface-1)]` | `backdrop-filter: blur(16px)` |
+| 3 | **Recharts SIEMPRE** importa de `chartTheme.ts` | `import { CHART, CHART_PALETTE, TOOLTIP_STYLE } from "@/shared/lib/chartTheme"` | Config inline en componente |
+| 10 | **AXIS_TICK** para labels de ejes | `{...AXIS_TICK}` en XAxis/YAxis | `fontSize: 12` inline |
+| 17 | **`<Button>` de shared** — NUNCA raw `<button>` | `<Button variant="ghost">` | `<button className="..." >` |
+
+### Reglas de estructura
+
+| # | Regla | Ejemplo correcto | Ejemplo INCORRECTO |
+|---|-------|------------------|--------------------|
+| 4 | **Changelog con reemplazos exactos** | Bloque A → Bloque B | "Cambié unas líneas por allá" |
+| 5 | **Código completo >30%, quirúrgico ≤15 líneas** | Si cambio >30% del componente → re-escritura completa | Re-escritura completa para 3 líneas |
+| 13 | **Tabs SIEMPRE** con componente `DetailTabs` shared | `<DetailTabs tabs={tabs} />` | Tab bar local hardcodeada |
+| 14 | **Filtros SIEMPRE** con componente `FilterDropdown` shared | `<FilterDropdown options={options} />` | `<select className="...">` |
+
+### Reglas de formularios
+
+| # | Regla | Ejemplo correcto | Ejemplo INCORRECTO |
+|---|-------|------------------|--------------------|
+| 12 | **Formularios:** `onSubmit`, auto-focus primer input, min-h-[44px] | `<form onSubmit={handleSubmit}>` | `onClick` en button sin form |
+| 22 | **`cn()` utility** para clases condicionales | `cn("base", condition && "active")` | Template literals con ternarios |
+
+### Reglas de feedback
+
+| # | Regla | Ejemplo correcto | Ejemplo INCORRECTO |
+|---|-------|------------------|--------------------|
+| 14 | **EmptyState** para listas vacías | `<EmptyState icon={Users} title="..." action={...} />` | `<p>No hay datos</p>` |
+| 15 | **Toast SIEMPRE** — `showToast()` en TODAS las mutations | `showToast({ type: "success", ... })` | `alert("Guardado")` |
+| 16 | **Breadcrumbs:** paths absolutos `/admin/` prefix | `href: "/admin/families"` | `href: "families"` |
+
+### Reglas de accesibilidad
+
+| # | Regla | Ejemplo correcto | Ejemplo INCORRECTO |
+|---|-------|------------------|--------------------|
+| 6 | **ResponsiveContainer** en TODOS los Recharts | `<ResponsiveContainer>` | `<Container width={400}>` |
+| 7 | **CHART constants** — usar `CHART.height`, `CHART.margin` | `{...CHART}` | `height={300}` inline |
+| 8 | **Formatters SIEMPRE** — `formatCurrency()`, `formatNumber()` de utils | `formatCurrency(value)` | `value.toLocaleString()` |
+| 9 | **TOOLTIP_STYLE** sin blur | `{...TOOLTIP_STYLE}` | `backdropFilter: "blur(8px)"` |
+| 11 | **focus-visible:** `outline-2 outline-[var(--color-gold-400)]` | En todos los elementos interactivos | Sin focus ring |
+| 18 | **`useReducedMotion()`** ANTES de TODA animación | `if (reduced) return null` | Animación sin check |
+
+### Reglas de AI
+
+| # | Regla | Ejemplo correcto | Ejemplo INCORRECTO |
+|---|-------|------------------|--------------------|
+| 19 | **AI SIEMPRE on-demand** — botón CTA, NUNCA auto-load | `enabled: shouldFetch` | `enabled: true` en mount |
+| 20 | **Responsive breakpoints** — `useBreakpoint()` para Recharts JS, Tailwind para layout | `innerRadius={isMobile ? 45 : 65}` | `innerRadius={65}` siempre |
+| 21 | **Tablas mobile:** desktop tabla + mobile cards con `useBreakpoint()` | `{isMobile ? <MobileCards /> : <DesktopTable />}` | Solo desktop table |
+
+### Regla adicional
+
+| # | Regla | Ejemplo correcto |
+|---|-------|------------------|
+| 23 | **Self-reference filtering** en mocks de relaciones | `connections.filter(c => c.connectedFamilyId !== familyId)` |
+
+### Regla de mock routing
+
+| # | Regla | Ejemplo |
+|---|-------|---------|
+| 24 | **Mock interceptación condicional por server** cuando mismo tool name existe en servers distintos | `if (server === "executive_dashboard" && tool === "generate_ai_analysis")` |
+
+---
+
+## 8. MOCK SYSTEM
+
+### Architecture
+
+```
+shared/lib/api.ts                    → callMCPTool(server, tool, params)
+  ↓ intercepta con:
+shared/mocks/mock-registry.ts        → REGISTRY[server][tool](params)
+  ↓ usa:
+shared/mocks/factories.ts            → createMockXxx(params) → ResponseType
+  ↓ tipado por:
+shared/mocks/contracts.ts            → interfaces TypeScript (backend 1:1)
+  ↓ source of truth:
+features/xxx/types.ts                → tipos derivados + config maps + transform helpers
+```
+
+### Cadena completa por herramienta
+
+```
+1. contracts.ts    → interface BackendResponseShape (1:1 con Pydantic model)
+2. factories.ts    → createMockBackendResponse(params): BackendResponseShape
+3. mock-registry.ts → REGISTRY.server.tool = (params) => createMockBackendResponse(params)
+4. api.ts          → callMCPTool("server", "tool", params) → GET mock o POST backend
+5. useMCPQuery     → useMCPQuery("server", "tool", params, options) → TanStack Query
+6. Componente      → const { data, isLoading, isError } = useMCPQuery(...)
+```
+
+### Source of Truth para types
+
+| Dominio | Source of Truth |
+|---------|----------------|
+| `proactive_recommendation` | `features/recommendations/types.ts` |
+| `finance` | `features/finance/types.ts` |
+| `events` | `features/events/types.ts` |
+| `dashboard/executive` | `features/dashboard/types.ts` |
+| `communications` | `features/communications/types.ts` |
+| `families` | `features/families/types.ts` |
+| `engagement` | `features/engagement/types.ts` |
+| `wellness` | `features/wellness/types.ts` |
+| `guests` | `features/guests/types.ts` |
+| `members` | `features/members/types.ts` |
+| `compliance` | `shared/mocks/contracts.ts` (section) |
+| `facility_management` | `shared/mocks/contracts.ts` (section) |
+| `approvals` | `features/approvals/types.ts` |
+
+**REGLA:** Before creating new types in contracts.ts, ALWAYS check the feature's `types.ts` first. Re-export, don't duplicate.
+
+### Mock Routing Warning
+
+`getMockResponse()` en `api.ts` tiene interceptación por tool name. SIEMPRE verificar que la interceptación es condicional por server cuando el mismo tool name se usa en servers distintos.
+
+**Caso documentado:** `generate_ai_analysis` existe en:
+- `executive_dashboard` → interceptado por scope
+- `finance` → debe llegar al registry
+
+**Fix:** `if (server === "executive_dashboard" && tool === "generate_ai_analysis" ...)`
+
+---
+
+## 9. MCP AGENT MAP — CONSOLIDADO
+
+### Tier 1: Agents auditados completamente
+
+| # | Agent | Server | Tools | HITL | AUTO | SEMI | Inteligencia | Fase auditado | Frontend conectado |
+|---|-------|--------|-------|------|------|------|-------------|---------------|-------------------|
+| 1 | `executive_dashboard` | `executive_dashboard` | 8 | 2 | 6 | — | `detect_anomalies`, `generate_ai_analysis` (9 dimensiones) | F16 | ExecutiveDashboard ✅ |
+| 2 | `finance` | `finance` | 8 (backend) + 9 (mock-only) = 17 total | 3 | 3 | 2 | `generate_ai_analysis` (9 dimensiones: Health Score, Revenue Concentration, Cash Flow Forecast, Anomalies, Recommendations, Trends, Alerts, Projection, Member Economics) | F18 | FinancialDashboard ✅ + 18 rules Advisor |
+| 3 | `event_orchestrator` | `events` | 9 (backend) + 7 (mock-only) = 16 total | 3 | 4 | 2 | `event_get_analytics` | F19 | EventCalendar ✅ + 15 rules Advisor |
+| 4 | `proactive_recommendation` | `proactive_recommendation` | 8 | 2 | 6 | — | `generate_family_recommendations`, `predict_event_attendance`, `detect_scheduling_conflicts`, `personalize_communication`, `identify_social_clusters`, `generate_quarterly_insights` | F17 | RecommendationsDashboard ✅ + 7 rules Advisor |
+| 5 | `advisor_intelligence` | `advisor_intelligence` | 5 | 0 | 5 | — | `generate_insight_narrative`, `generate_action_plan`, `simulate_scenario`, `generate_board_brief`, `ask_advisor` | F21 | ExecutiveDashboard ✅ + AIChatWidget ✅ |
+| 6 | `compliance` | `compliance` | 7 | 1 | 5 | 1 | `generate_compliance_insights` | F15ext-C | ComplianceCheck ✅ |
+| 7 | `facility_management` | `facility_management` | 7 | 2 | 5 | — | — | F15ext-S | SmartSchedule ✅ |
+| 8 | `daily_briefing` | `daily_briefing` | 7 | 1 | 6 | — | `generate_daily_briefing` | F15ext-B | DailyBriefing ✅ |
+| 9 | `smart_schedule` | `smart_schedule` | 8 | 2 | 6 | — | `suggest_optimal_slots`, `analyze_schedule_efficiency` | F15ext-S | SmartSchedule ✅ |
+
+### Tier 2: Agents auditados parcialmente
+
+| # | Agent | Server | Tools (mock) | Estado |
+|---|-------|--------|-------------|--------|
+| 10 | `communication` | `communication` | 13 (broadcast, emergency, templates, scheduled, history, announcements, analytics, board_package, preferences, insights, generate_personalized, campaign_generate, sentiment_analyze) | Tools en mock, agent NO auditado |
+| 11 | `guest_management` | `guest_management` | 6 (register_guest, plan_private_event, manage_trial_memberships, manage_guest_privileges, get_guest_analytics, guest_management_insights) | Tools en mock, agent NO auditado |
+| 12 | `member_engagement` | `member_engagement` | 5 (get_engagement_dashboard, members_health_score, members_segmentation, members_lifetime_value, members_churn_prevention) | Tools en mock, agent NO auditado |
+| 13 | `wellness` | `wellness` | 11 (report, profile_get, profile_update, activity_log, goal_set, recommendations, schedule_class, predict, anomalies, correlate, insights) | Tools en mock, agent NO auditado |
+| 14 | `satisfaction` | `satisfaction` | 1 (get_satisfaction_trends) | Tools en mock, agent NO auditado |
+| 15 | `family_profile` | `families` | 11 (get_family, list_families, create_family, update_family, get_activity_history, get_social_graph, predict_churn, recommend_activities, social_match, engagement_plan, set_preferences) | Tools en mock, agent NO auditado |
+
+### Tier 3: Agents NO auditados
+
+| # | Agent | Server | Estado |
+|---|-------|--------|--------|
+| 16 | `sports_recreation` | `sports_recreation` | ⬜ |
+| 17 | `cultural_social` | `cultural_social` | ⬜ |
+| 18 | `document_intelligence` | `document_intelligence` | ⬜ |
+| 19 | `age_group` / `age_group_activity` | `age_group` | ⬜ |
+
+**Totales:** 9 agents completamente auditados (~61+ tools), 6 parcialmente, 4 sin auditar. **~135+ tools MCP registradas.**
+
+### Niveles de aprobación HITL
+
+| Nivel | Significado | Visual en ApprovalQueue |
+|-------|------------|------------------------|
+| `AUTO` | Sin intervención humana | No aparece en queue |
+| `SEMI` | Aprobación condicional | Badge amarillo, aparece solo cuando se activa condición |
+| `HITL` | Human-in-the-loop siempre | Badge rojo, requiere acción |
+| `ALWAYS_HUMAN` | Doble confirmación | Badge rojo pulsante + paso extra de confirmación |
+
+### Patrones de escalación condicional
+
+| Patrón | Agente | Condición |
+|--------|--------|-----------|
+| `register_guest` | guest_management | >4 invitados/día → HITL |
+| `send_personalized_notification` | communication | >100 destinatarios → HITL |
+| `export_report` | executive_dashboard | audiencia externa → HITL |
+
+---
+
+## 10. ADVISOR ARCHITECTURE
+
+### El patrón Advisor — Nuestra innovación central
+
+El Advisor es el corazón de la inteligencia del sistema. Es un patrón replicable que convierte cualquier dashboard de datos en un sistema de decisión.
+
+### Niveles del Advisor (post-F21)
+
+```
+Nivel 0: Shell queries (pre-warming, staleTime)
+   ↓ datos en caché de TanStack Query
+Nivel 1: useXxxAdvisor(datos de cache) → XxxAdvisorInsight[] con action? adjuntas
+   ↓ N reglas computacionales (0ms, 0 API calls)
+Nivel 2: <XxxAdvisorBanner /> → render condicional + "Ejecutar" + "Análisis Profundo" + "Plan AI"
+   ↓ click
+Nivel 3: Acción directa (AUTO) / Modal HITL → mutation → toast → cache invalidation → re-compute
+   ↓ o
+Nivel 3b: AI Narrative → generate_insight_narrative → root cause + benchmark CR + recomendación
+   ↓ o
+Nivel 3c: AI Simulation → simulate_scenario → 3 escenarios (optimista/base/pesimista)
+   ↓ o
+Nivel 3d: AI Board Brief → generate_board_brief → PDF ejecutivo para la Junta
+   ↓ o
+Nivel 3e: AI Chat → ask_advisor → conversación con evidencia + acciones sugeridas
+   ↓ o
+Nivel 3f: Reaction → generateReactionInsight() → feedback loop post-ejecución
+```
+
+### Implementaciones
+
+| Fase | Advisor | Reglas | Capas | Actions | AI Features |
+|------|---------|--------|-------|---------|-------------|
+| F17 | useRecommendationAdvisor | 7 | 1 | 0 | — |
+| F18 | useFinancialAdvisor | 18 | 3 (macro/micro/fusion) | 3 | Narrative |
+| F19 | useEventAdvisor | 15 | 3 (macro/micro/fusion) | 3 | Narrative |
+| F20 | useGlobalAdvisor | 25 | 5 (diagnostic/strategy/prediction/innovation/execution) | 5 | Narrative + Simulation + Board Brief + Chat |
+| F21 | Advisor Intelligence Agent | — | — | — | 5 AI tools (narrative, plan, sim, brief, chat) |
+| F22 | Reaction System + Predictive Pre-fetch | — | — | — | Reaction feedback + 0ms pre-fetch + conversational context |
+
+### Advisor Action Bridge (F21)
+
+```
+1. Insight tiene action? → Banner "Ejecutar" (primary, Zap icon)
+2. User click → onExecute(insightId)
+3. Shell resuelve: insight.action.approvalLevel === "auto"?
+   YES → mutation.mutateAsync(params) → toast → cache invalidation
+   NO → setModalInsight(insight) → <AdvisorActionModal />
+4. Modal muestra: title, reasoning, riskSummary, estimatedImpact, server.tool
+5. User "Confirmar ejecución" → handleModalConfirm → mutation → toast
+6. actionStates[insightId] = "done" → botón cambia a checkmark "Listo"
+7. Cache invalidado → queries refetch → Advisor re-computa → insight desaparece o cambia
+8. generateReactionInsight() → reaction se agrega al state → se renderiza inline en banner
+```
+
+### Advisor Reaction System (F22)
+
+```
+1. Acción del Advisor → onExecute(insightId) o handleModalConfirm()
+2. Mutation exitosa → generateReactionInsight(action, insightId)
+3. Reaction se agrega al array de reactions (state del shell)
+4. Shell pasa reactions={reactions} al Banner
+5. Banner renderiza AdvisorReactionCard por cada reaction (más reciente primero)
+```
+
+**8 domain templates:** finance, events, security, governance, wellness, members, communications, commercial.
+
+### Predictive Pre-fetch (F22)
+
+Para roles ADMIN/JUNTA, pre-fetchear automáticamente los narratives de los top-3 insights por severidad al montar cualquier banner. Usuario clickea "Análisis Profundo" → renderiza desde cache → 0ms latencia percibida.
+
+### AI Intelligence Tools (5)
+
+| Tool | Input | Output | Approval |
+|------|-------|--------|----------|
+| `generate_insight_narrative` | insight_data, context, role | root_cause, benchmark_comparison, recommendation, estimated_impact | AUTO |
+| `generate_action_plan` | insights[], role, timeframe | summary, items[], total_estimated_impact | AUTO |
+| `simulate_scenario` | base_data, proposed_changes[] | scenarios[3], risk_assessment, recommended_scenario | AUTO |
+| `generate_board_brief` | executive_summary, financial, events, anomalies | brief_md, key_points[], talking_points[], q_and_a[] | AUTO |
+| `ask_advisor` | question, dashboard_context, role, conversation_history | answer, evidence[], related_insights[], suggested_action? | AUTO |
+
+### Card Insight Structure (patrón F21)
+
+```tsx
+<div className="p-3 rounded-lg bg-[var(--color-surface-0)] border ...">
+  {/* Row: badge + content + action */}
+  <div className="flex items-start gap-3">
+    <span>b</span>        {/* impact badge */}
+    <div className="flex-1">content + trigger</div>
+    <Button>action</Button>
+  </div>
+  {/* Narrative: full-width, below flex */}
+  {expandedNarrative === insight.id && <AIInsightNarrative ... />}
+</div>
+```
+
+**Regla:** El narrative NUNCA va dentro del flex row. Siempre debajo, full-width.
+
+---
+
+## 11. PATRONES DE DISEÑO
+
+### P1: Auto-load Context + On-demand Intelligence
+
+```
+LAYER 0: Auto-Load (staleTime > 0)         → always visible
+LAYER 1: On-Demand Cross-Agent (CTA)        → user-triggered
+LAYER 2: Client-Side Intelligence (instant)  → 0ms, 0 calls
+LAYER 3: Deep Insights (CTA)                → on-demand quarterly/AI
+```
+
+**Aplicado en:** DailyBriefing, ComplianceCheck, SmartSchedule, ExecutiveDashboard, FinancialDashboard, EventCalendar, RecommendationsDashboard.
+
+### P2: Cross-Agent Self-Query
+
+Sub-component on-demand hace sus propias queries a múltiples agentes. React Query cache hits si el padre ya cargó la misma data.
+
+### P3: Date-Scoped Cross-Agent Query
+
+```typescript
+const dateRange = { date_from: date-1, date_to: date+1 };
+useMCPQuery("events", "event_get_calendar", { date_from, date_to }, { enabled: shouldFetch });
+```
+
+### P4: CRUD con Action Routing
+
+```typescript
+useMCPQuery("proactive_recommendation", "optimize_pricing", { action: "list" })
+useMCPMutation("proactive_recommendation", "optimize_pricing", { action: "create", ... })
+```
+
+### P5: Health Score Composite
+
+Score 0-100 combinando 5 factores ponderados. Levels: ≥85 Excepcional, ≥65 Saludable, ≥45 Atención, <45 Crítico. Visual: SVG ring con stroke-dashoffset animado.
+
+### P6: Cross-Agent On-Demand Section
+
+```tsx
+if (!shouldFetch) return <CTACard />;
+if (query.isLoading) return <Skeleton />;
+if (query.isError) return <SectionError />;
+if (empty) return <AllClearCard />;
+return <Results insight={buildInsight(data, summary)} />;
+```
+
+### P7: Expandable Intelligence Card
+
+Always visible: severity badge, domain badge, title, description (2-line clamp). Expanded: context data grid + suggested_action (CTA dorada).
+
+### P8: Action Routing
+
+```typescript
+action: { label: "Gestionar retención", route: "/admin/members", toast: "Abriendo gestión..." }
+```
+
+### P9: Defensive Data Rendering
+
+```tsx
+{(data.items ?? []).map(...)}
+{(data.value ?? 0).toFixed(1)}
+{f.contribution != null ? ` · ${f.contribution.toFixed(1)} pts` : ""}
+```
+
+### P10: Self-Reference Filtering (Mock Data)
+
+```typescript
+const filtered = connections.filter(c => c.connectedFamilyId !== familyId);
+```
+
+### P11: Dynamic Mock Lookup by ID
+
+```typescript
+const FAMILY_PROFILES: Record<string, {...}> = { "fam-001": {...}, ... };
+const profile = FAMILY_PROFILES[id] ?? FAMILY_PROFILES["fam-001"];
+```
+
+### P12: Canvas Token Resolution
+
+```typescript
+function resolveColors() {
+  const get = (name: string) =>
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return { gold400: get("--color-gold-400"), ... };
+}
+function hexToRgba(hex: string, alpha: number) { ... }
+```
+
+### P13: Transform Helpers (Backend → Sub-component shape)
+
+```typescript
+// En types.ts
+export function summaryToKPIs(summary): KPIData[] { ... }
+export function buildTierData(by_tier): TierData[] { ... }
+// En componente
+summaryToKPIs(summary) → <KPICards />
+```
+
+### P14: Advisor Banner Pattern (post-F21)
+
+```
+Shell queries (pre-warming) → useXxxAdvisor(cache) → XxxAdvisorBanner
+  ├── "Ejecutar" (si hay action) → onExecute → mutation/HITL
+  ├── "Análisis Profundo" → useAdvisorNarrative → AIInsightNarrative inline
+  ├── "Simular" (Global Advisor) → AISimulationPanel toggle
+  ├── "Plan AI" (Global Advisor) → generate_action_plan
+  ├── "Briefing Junta" (Global Advisor) → generate_board_brief → AIBoardBriefViewer
+  ├── "Preguntar" (Global Advisor) → AIChatWidget con advisorContext
+  └── Reactions (post-ejecución) → AdvisorReactionCard inline
+```
+
+### P15: Button Swap Protocol
+
+Todo `<button>` raw → `<Button>` de shared, excepto:
+- CalendarGrid/EventListView cells: `<div role="button" tabIndex={0}>` — correcto
+- Summary bar toggles: `<Button variant="ghost">` con `rounded-none rounded-t-xl min-h-[56px]`
+- Text actions: `<Button variant="ghost" size="sm">` con underline
+
+### P16: Predictive Pre-fetch
+
+```typescript
+// usePrefetchTopNarratives en useAdvisorNarrative.ts
+// Solo ADMIN/JUNTA. Top 3 por impact+confidence. staleTime: 600_000 (10min)
+queryClient.prefetchQuery({ queryKey, queryFn, staleTime: 600_000 });
+```
+
+---
+
+## 12. KEYBOARD SHORTCUTS
+
+```
+?        → Keyboard help modal (all roles)
+⌘+K      → Command Palette (all)
+G+D      → Dashboard (ADMIN)
+G+F      → Families (ADMIN, STAFF)
+G+E      → Events (ADMIN, STAFF)
+G+Z      → Finance (ADMIN)
+G+A      → Approvals (ADMIN)
+G+C      → Communications (ADMIN)
+G+G      → Engagement (ADMIN)
+G+R      → Facilities (ADMIN, STAFF)
+G+H      → Check-in (STAFF)
+G+O      → Operations (STAFF, ADMIN)
+G+M      → Mi Club (SOCIO)
+G+J      → Junta (JUNTA)
+```
+
+---
+
+## 13. ESTADO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F5 | Infraestructura, tokens, forms, lists, details | ✅ |
+| F6 | Dashboards densos + AI | ✅ |
+| F7 | Reports, mi-club, settings, finance | ✅ |
+| F8 | Dashboard sub-componentes (5/12 done) | 🔄 |
+| F9 | Wellness + Satisfaction | ✅ |
+| F10 | Proactive Recommendations | ✅ |
+| F11 | Communication Enhancement | ✅ |
+| F12 | Guest Management + Trial Memberships | ✅ |
+| F13 | Finance Enhancement + HITL Complete | ✅ |
+| F14 | Intelligence Features (Stress Test, Profitability, Seasonal, Narrative, Decision Cockpit) | ✅ |
+| F15 | Integration Testing + QA | ✅ |
+| F15ext-B | DailyBriefing full stack enhancement (4 bloques) | ✅ |
+| F15ext-C | ComplianceCheck full stack enhancement (3 bloques) | ✅ |
+| F15ext-S | SmartSchedule full stack rewrite (4 bloques) | ✅ |
+| F16 | ExecutiveDashboard Enhancement (types.ts source of truth + transform helpers) | ✅ |
+| F17 | RecommendationsDashboard Enhancement — 7 rules Advisor (donde nació el patrón) | ✅ |
+| F18 | FinancialDashboard Enhancement — 18 rules Advisor (3 layers: macro/micro/fusion) | ✅ |
+| F19 | EventOrchestrator Enhancement — 15 rules Advisor (3 layers) | ✅ |
+| F20 | Global Cross-Agent Health Advisor — 25 rules Advisor (5 layers) | ✅ |
+| F21 | AI Intelligence Engine — 5 AI tools + 11 actions + Narrative + Simulation + Board Brief + Chat | ✅ |
+| F22 | Advisor Intelligence Evolution — Reaction System + Predictive Pre-fetch + Conversational Context + Finance Intelligence Center + Button Swap (14 fixes) | ✅ |
+| **F23** | **Adaptive Thresholds + Wellness Advisor Rules** | **⬜ SIGUIENTE** |
+| F24 | Board Brief Engagement Tracking + Advanced Intelligence | ⬜ |
+| F25 | Polish batch (formatNumber centralization, code splitting, performance) | ⬜ |
+| F26 | Mock → Backend Migration | ⬜ |
+| F27 | Multi-language support (i18n) | ⬜ |
+| F28 | E2E testing + Accessibility audit (WCAG 2.1 AA) | ⬜ |
+| F29 | Production deployment pipeline (CI/CD, monitoring) | ⬜ |
+
+---
+
+## 14. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Fase sugerida |
+|---|-------|-----------|---------------|
+| 1 | `compactCurrency` duplicado en 3+ archivos — centralizar en `shared/lib/utils.ts` | BAJA | F25 |
+| 2 | `getCurrentSeason` duplicado en 2 hooks — centralizar | BAJA | F25 |
+| 3 | `IMPACT_CONFIG` duplicado en 3 banners — consolidar en `shared/lib/ui/advisorConfig.ts` | BAJA | F25 |
+| 4 | `font-ui` sin prefijo completo `font-[family-name:var(--font-ui)]` — ~50 instancias | MEDIA | F25 |
+| 5 | `font-mono` sin prefijo — ~30 instancias | MEDIA | F25 |
+| 6 | `toLocaleString("es-CR")` en vez de `formatNumber()` — ~8 instancias | MEDIA | F25 |
+| 7 | Keyframes `slideDown`/`fadeUp` duplicados en sub-componentes | BAJA | F25 |
+| 8 | 5 sub-componentes finance no integrados al shell como on-demand (DecisionCockpit, MemberProfitabilityMatrix, NarrativeEngine, SeasonalCalendar, StressTestPanel) — integrados como triggers en F22 Propuesta F | MEDIA | Verificar F22 |
+| 9 | `personalize_communication` tool sin componente UI dedicado | MEDIA | Futuro |
+| 10 | `get_financial_summary` mock-only — no existe en backend finance.py | MEDIA | F26 |
+| 11 | Navigation fields inconsistentes entre Advisors (targetTab vs targetView vs actionLabel/actionRoute) — unificar | MEDIA | F25 |
+| 12 | Global Advisor TODO placeholders para cache connections (aiReport, calendarDays) | MEDIA | F24 |
+| 13 | `TierEconomics` importado pero no calculado en agente finance | MEDIA | F26 |
+| 14 | Event Advisor: 4 AI mock tools sin UI dedicada (predict, optimize, conflict, engagement) | MEDIA | Futuro |
+| 15 | Dashboard sub-componentes: 7/12 pendientes (violations reglas) | MEDIA | F8 |
+| 16 | Empty State Audit — 9 módulos sin verificar | MEDIA | F25 |
+| 17 | StaleDataBanner no integrado en todos los módulos | BAJA | F25 |
+| 18 | Web Vitals endpoint — `reportVital()` es stub | BAJA | Futuro |
+| 19 | Notification prefs sync — no sincroniza con backend | BAJA | Futuro |
+
+---
+
+## 15. DECISION LOG CONSOLIDADO
+
+| Decisión | Razón | Impacto |
+|----------|-------|---------|
+| Advisor como hook client-side, no backend tool | 0 tokens, 0ms, consume cache | Patrón replicado F17-F21 |
+| 3 capas de inteligencia (macro/micro/fusion) en F18/F19 | Diferentes niveles de profundidad | Se replicó en Event Advisor |
+| 5 capas (diagnostic/strategy/prediction/innovation/execution) en F20 | Va más allá de diagnóstico — propone, predice, innova, ejecuta | Diferenciador vs software tradicional |
+| Global Advisor defensivo (funciona con datos parciales) | Usuario puede no haber visitado Finance/Events | No fuerza queries |
+| Competitive Benchmark Simulation hardcodeado | CR private clubs data no existe como API | Advisor sabe qué es "bueno" en CR |
+| Systemic Risk Score compuesto | Un solo número que resume health + anomalies + conflicts + approvals | UX: usuario ve "riesgo 68/100 (C)" |
+| Banner "tonto" con onExecute callback | Banner no sabe de mutations. Shell mapea insightId → mutation | Desacoplamiento testing/composición |
+| AIInsightNarrative inline expandible | 2-3s inline es aceptable. Panel lateral rompe flujo | UX del Advisor |
+| Board Brief via PDF (print window) | Más limpio que librería PDF | Output format |
+| Advisor Chat como extensión de AIChatWidget existente | `advisorContext` prop activa Advisor mode | No crear componente nuevo |
+| 5 AI tools como AUTO approval | Tools de análisis no tienen side effects | Approval levels |
+| `generate_json` con triple fallback de parsing | Claude envuelve JSON en ```json blocks | Backend robustez |
+| Reaction System como state local del shell | Ephemeral por sesión, no necesita persistencia | Menos acoplamiento |
+| Predictive Pre-fetch solo para ADMIN/JUNTA | SOCIO/STAFF no necesitan deep narratives | Ahorra API calls |
+| Transform helpers en types.ts (no cambiar sub-componentes) | Sub-componentes están bien construidos | Patrón replicado F17-F21 |
+| RevenueChart → BarChart horizontal | Datos reales son top_revenue_sources | Más útil |
+| YoY visible pero disabled | UX: existe, backend futuro solo pasa prop | Preparación |
+| Sub-componentes NO se re-escribieron | Están bien construidos, solo fixes quirúrgicos | Ahorro ~1000 líneas |
+| Formato Bloque A (exacto) + Bloque B (nuevo) | Usuario necesita copiar sin errores | Workflow establecido |
+| `getMockResponse` interceptación condicionada por server | `generate_ai_analysis` existe en 2 servers | Finance recibe su propio shape |
+| Canvas dark fills + colored borders en SocialGraph | "Los colores sólidos se ven feos" — usuario | Mejor visual |
+| `FAMILY_PROFILES` lookup dinámico | Siempre mostraba la misma familia | Cada familia muestra sus datos |
+| `data?.families` directo sin wrapper | El mock sigue el contract sin wrapper | FamilyList funciona |
+| Self-reference filter en SocialGraph | Mock estático contenía self como connection | No duplica nodos |
+| `import.meta.env.DEV` para devBypass | Built-in Vite, no requiere config | Production safety |
+| TopLoadingBar con `useIsFetching` + route change | Zero dependency, custom gold styling | UX improvement |
+| KeyboardHelpModal con `?` key | Discoverable, patrón estándar (GitHub, Slack) | Discovery feature |
+| Empty State Audit pospuesto a fase dedicada | Requiere 9 archivos | Mejor como fase |
+| Rol enriquecido a 9 disciplinas | AI Experience Design es fundamental y distinta de UI/UX | Rol actualizado |
+
+---
+
+## 16. AGENTES BACKEND — TOOLS DETALLADAS
+
+### finance.py — 8 tools backend
+
+| Tool | Approval | Tipo |
+|------|----------|------|
+| `finance_expense_create` | HITL | Mutation |
+| `finance_invoice_create` | HITL | Mutation |
+| `finance_budget_check` | AUTO | Data |
+| `finance_payment_process` | HITL | Mutation |
+| `finance_report_generate` | SEMI | Report |
+| `finance_account_status` | AUTO | Data |
+| `finance_category_update` | SEMI | Mutation |
+| `generate_ai_analysis` | AUTO | **Intel — 9 dimensiones:** Health Score (5 factores), Revenue Concentration (Shannon + HHI), Cash Flow Forecast (6 meses, CR seasonality), Anomalías (4 dominios), Recomendaciones (6 reglas), Positive Trends, Alert Signals, Projection, Member Economics (LTV/CAC) |
+
+### event_orchestrator.py — 9 tools backend
+
+| Tool | Approval | Tipo |
+|------|----------|------|
+| `event_create` | HITL | Mutation |
+| `event_build_program` | SEMI | Mutation |
+| `event_manage_rsvps` | AUTO / HITL (bulk≥10) | CRUD |
+| `event_coordinate_vendors` | HITL / AUTO (list) | CRUD |
+| `event_manage_capacity` | AUTO | Data + Mutation |
+| `event_get_analytics` | AUTO | Inteligencia |
+| `event_clone_template` | SEMI | Mutation |
+| `event_get_calendar` | AUTO | Data (incluye `conflict_days`, `has_conflicts` por día) |
+| `event_generate_report` | SEMI / HITL (financial) | Report |
+
+### executive_dashboard_agent.py — 8 tools
+
+| Tool | Approval | Tipo |
+|------|----------|------|
+| `get_executive_summary` | AUTO | Data (4 dominios: membership, financial, operational, engagement) |
+| `get_operational_pulse` | AUTO | Data |
+| `detect_anomalies` | AUTO | Inteligencia (multi-domain) |
+| `get_financial_overview` | AUTO | Data (mock-only) |
+| `get_membership_health` | AUTO | Data (mock-only) |
+| `get_age_group_balance` | AUTO | Data (mock-only, incluye coef. Gini) |
+| `generate_quarterly_board_report` | HITL | Report |
+| `export_report` | SEMI→HITL | Export (escala si audiencia externa) |
+
+### advisor_intelligence.py — 5 tools
+
+| Tool | Approval | Backend |
+|------|----------|---------|
+| `generate_insight_narrative` | AUTO | ✅ (usa ClaudeService) |
+| `generate_action_plan` | AUTO | ✅ |
+| `simulate_scenario` | AUTO | ✅ |
+| `generate_board_brief` | AUTO | ✅ |
+| `ask_advisor` | AUTO | ✅ (conversation_history param) |
+
+### hitl/ — 3 tools
+
+| Tool | Approval | Backend |
+|------|----------|---------|
+| `get_pending_approvals` | AUTO | ✅ |
+| `approve_request` | AUTO | ✅ |
+| `reject_request` | AUTO | ✅ |
+
+### proactive_recommendation_agent.py — 8 tools
+
+| Tool | Approval | Tipo |
+|------|----------|------|
+| `optimize_pricing` (CRUD) | HITL (create) | CRUD + Mutation |
+| `suggest_new_activities` (CRUD) | HITL (create) | CRUD + Mutation |
+| `generate_family_recommendations` | AUTO | Inteligencia |
+| `predict_event_attendance` | AUTO | Inteligencia |
+| `detect_scheduling_conflicts` | AUTO | Inteligencia |
+| `personalize_communication` | AUTO | Inteligencia |
+| `identify_social_clusters` | AUTO | Inteligencia |
+| `generate_quarterly_insights` (CRUD) | AUTO | CRUD + Inteligencia |
+
+### compliance.py — 7 tools
+
+| Tool | Approval | Tipo |
+|------|----------|------|
+| `compliance_audit_create` | HITL | Mutation |
+| `compliance_check_run` | SEMI | Mutation |
+| `compliance_audit_get` | AUTO | Data |
+| `compliance_document_register` | HITL | Mutation |
+| `compliance_alert_create` | SEMI | Mutation |
+| `compliance_alert_list` | AUTO | Data |
+| `compliance_report_generate` | AUTO | Report |
+
+### facility_management_agent.py — 7 tools
+
+| Tool | Approval | Tipo |
+|------|----------|------|
+| `manage_facilities` (CRUD) | AUTO | CRUD |
+| `schedule_maintenance` | HITL | Mutation |
+| `coordinate_event_setup` | HITL | Mutation |
+| `get_facility_occupancy` | AUTO | Data |
+| `manage_inspections` (CRUD) | AUTO | CRUD |
+| `report_facility_issue` | AUTO | Mutation |
+| `get_maintenance_schedule` | AUTO | Data |
+
+---
+
+> **Este documento es la fuente de verdad para cualquier nuevo chat.** Si un nuevo chat lee este documento completo, tiene el 95% del contexto necesario para continuar el trabajo sin inconsistencias. Los checkpoints individuales complementan con detalle de código específico de cada fase.
+```
+
+---
+
+**Resumen de lo que hice:**
+
+1. **Rol consolidado (sección 2):** Unificé las 5 definiciones de rol que evolucionaron (AI Engineer → Arquitecto → 6 disciplinas → 7 → 8) en una sola con 9 disciplinas. Incluye proceso mental de 10 pasos, tabla de postura operativa, formato de entrega, y regla de oro.
+
+2. **Concepto de lo que construimos (sección 1):** Definí Castillo AI Platform como "Sistema de Decisión Inteligente" con 5 capas de inteligencia. Incluye tabla comparativa (tradicional vs nuestro), arquitectura Advisor completa en ASCII, y tabla de roles. Esto no necesita ampliarse nunca más — el concepto es completo.
+
+3. **Estructura:** 16 secciones, ~900 líneas. Quick Start arriba para nuevos chats. Todo consolidado cruzando los 26 checkpoints. Cero redundancia.
+
+¿Lo genero como archivo o querés ajustar algo?

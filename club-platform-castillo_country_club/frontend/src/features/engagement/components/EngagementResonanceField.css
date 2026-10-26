@@ -1,0 +1,368 @@
+/* src/features/engagement/components/EngagementResonanceField.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Glass namespace: glass-eng-resonance                        */
+/* "The Resonance Field" — Event ripple visualization          */
+/* ═══════════════════════════════════════════════════════════ */
+
+[data-glass-eng-resonance] {
+  --local-surface: var(--color-surface-1, #1a1a1a);
+  --local-surface-hover: var(--color-surface-2, #222222);
+  --local-border: rgba(255, 255, 255, 0.06);
+  --local-text: var(--color-silver-200, #e0dcd4);
+  --local-text-muted: var(--color-silver-400, #8a8580);
+  --local-text-dim: var(--color-silver-500, #6a6560);
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
+
+.eng-resonance {
+  background: var(--local-surface);
+  border: 1px solid var(--local-border);
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  animation: eng-res-fadeUp 0.6s ease forwards;
+  animation-delay: 0.6s;
+}
+
+/* ── State accent ───────────────────────────────────────── */
+
+[data-glass-eng-resonance][data-status="amplified"] {
+  border-left: 3px solid var(--color-gold-400);
+}
+
+[data-glass-eng-resonance][data-status="active"] {
+  border-left: 3px solid var(--color-emerald-400);
+}
+
+[data-glass-eng-resonance][data-status="quiet"] {
+  border-left: 3px solid var(--color-silver-500);
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.eng-resonance__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--local-border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.eng-resonance__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--local-text);
+}
+
+.eng-resonance__header-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eng-resonance__stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  color: var(--local-text-muted);
+}
+
+/* ── SVG Canvas ─────────────────────────────────────────── */
+
+.eng-resonance__canvas {
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eng-resonance__canvas svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ── Ripple rings ───────────────────────────────────────── */
+
+.eng-resonance__ripple {
+  animation: eng-res-ripple-expand 3s ease-out infinite;
+  transform-origin: center;
+}
+
+/* ── Origin circle ──────────────────────────────────────── */
+
+.eng-resonance__origin {
+  transition: fill-opacity 0.3s ease, stroke-width 0.3s ease;
+}
+
+.eng-resonance__pattern:hover .eng-resonance__origin {
+  fill-opacity: 0.4;
+  stroke-width: 2;
+}
+
+/* ── Labels ─────────────────────────────────────────────── */
+
+.eng-resonance__origin-label,
+.eng-resonance__domain-label {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Family dots ────────────────────────────────────────── */
+
+.eng-resonance__family-dot {
+  animation: eng-res-dot-glow 3s ease-in-out infinite;
+}
+
+.eng-resonance__pattern:hover .eng-resonance__family-dot {
+  opacity: 0.9;
+}
+
+/* ── Legend ──────────────────────────────────────────────── */
+
+.eng-resonance__legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--local-border);
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.eng-resonance__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  color: var(--local-text-muted);
+}
+
+.eng-resonance__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.eng-resonance__legend-dot--active {
+  background: var(--color-emerald-400);
+}
+
+.eng-resonance__legend-dot--amplified {
+  background: var(--color-gold-400);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+}
+
+.eng-resonance__legend-dot--fading {
+  background: var(--color-amber-400);
+  opacity: 0.6;
+}
+
+.eng-resonance__legend-dot--persistent {
+  background: var(--color-gold-400);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+}
+
+.eng-resonance__legend-dot--active {
+  background: var(--color-emerald-400);
+}
+
+.eng-resonance__legend-dot--fading {
+  background: var(--color-amber-400);
+  opacity: 0.6;
+}
+
+.eng-resonance__legend-dot--ephemeral {
+  background: var(--color-silver-500);
+  opacity: 0.3;
+}
+
+/* ── Pattern list ───────────────────────────────────────── */
+
+.eng-resonance__list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eng-resonance__list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+}
+
+.eng-resonance__list-item:hover {
+  background: var(--local-surface-hover);
+  border-color: var(--local-border);
+}
+
+.eng-resonance__list-item:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.eng-resonance__list-status {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.eng-resonance__list-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.eng-resonance__list-type {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--local-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eng-resonance__list-meta {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 9px;
+  color: var(--local-text-dim);
+}
+
+.eng-resonance__list-sentiment {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.eng-resonance__list-intensity {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  color: var(--local-text-dim);
+  flex-shrink: 0;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ── Keyframes ──────────────────────────────────────────── */
+
+@keyframes eng-res-fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes eng-res-ripple-expand {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+}
+
+@keyframes eng-res-dot-glow {
+  0%, 100% {
+    opacity: 0.4;
+    r: 2;
+  }
+  50% {
+    opacity: 0.8;
+    r: 3;
+  }
+}
+
+/* ── Light Mode ─────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  [data-glass-eng-resonance] {
+    --local-surface: #ffffff;
+    --local-surface-hover: #f5f3f0;
+    --local-border: rgba(0, 0, 0, 0.08);
+    --local-text: #1a1a1a;
+    --local-text-muted: #5a5550;
+    --local-text-dim: #8a8580;
+  }
+}
+
+/* ── Reduced Motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .eng-resonance {
+    animation: none;
+    opacity: 1;
+  }
+
+  .eng-resonance__ripple {
+    animation: none;
+    opacity: 0.3;
+  }
+
+  .eng-resonance__family-dot {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .eng-resonance {
+    padding: 16px;
+  }
+
+  .eng-resonance__canvas {
+    min-height: 180px;
+  }
+
+  .eng-resonance__legend {
+    gap: 8px;
+  }
+
+  .eng-resonance__legend-item {
+    font-size: 9px;
+  }
+
+  .eng-resonance__list-item {
+    padding: 5px 8px;
+  }
+}

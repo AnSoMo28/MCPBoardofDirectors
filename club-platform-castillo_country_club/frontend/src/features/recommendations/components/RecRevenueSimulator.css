@@ -1,0 +1,582 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   RecRevenueSimulator — Glass namespace .glass-rrs
+   Keyframes prefix: rrs*
+
+   Interactive pricing slider with SVG demand curve.
+   Confidence band (Monte Carlo). Revenue projection cards.
+
+   Attributes: data-empty, data-active, data-positive, data-shift, data-risk
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ─────────────────────────────────────────────────────────────── */
+
+.glass-rrs {
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rrs-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+}
+
+.rrs-header-icon {
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+}
+
+.rrs-header-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rrs-header-strategy {
+  margin-left: auto;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-silver-300);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rrs-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.rrs-empty-icon {
+  color: var(--color-silver-600);
+  opacity: 0.4;
+}
+
+.rrs-empty-text {
+  font-size: 0.875rem;
+  color: var(--color-silver-500);
+  max-width: 320px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SERVICE SELECTOR — Pills
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rrs-selector {
+  display: flex;
+  gap: 0.375rem;
+  padding: 0.625rem 1rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.rrs-selector::-webkit-scrollbar {
+  display: none;
+}
+
+.rrs-selector-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-subtle);
+  background: transparent;
+  color: var(--color-silver-400);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.rrs-selector-pill:hover {
+  background: var(--color-surface-1);
+  color: var(--color-silver-200);
+  border-color: var(--color-border-default);
+}
+
+.rrs-selector-pill:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.rrs-selector-pill[data-active] {
+  background: rgba(232, 197, 71, 0.08);
+  color: var(--color-gold-400);
+  border-color: var(--color-gold-400);
+}
+
+.rrs-selector-name {
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.rrs-selector-price {
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.rrs-selector-pill[data-active] .rrs-selector-price {
+  color: var(--color-gold-400);
+  opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SVG CHART
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rrs-chart-container {
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.rrs-chart-svg {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+}
+
+.rrs-axis-label {
+  font-size: 9px;
+  fill: var(--color-silver-600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Demand curve ─────────────────────────────────────────────────────── */
+
+.rrs-curve {
+  stroke: var(--color-gold-400);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* ── Confidence band ──────────────────────────────────────────────────── */
+
+.rrs-band {
+  fill: var(--color-gold-400);
+  opacity: 0.08;
+}
+
+/* ── Current price marker ─────────────────────────────────────────────── */
+
+.rrs-current-line {
+  stroke: var(--color-silver-500);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.rrs-marker-label {
+  font-size: 9px;
+  fill: var(--color-silver-500);
+}
+
+/* ── Simulated price marker ───────────────────────────────────────────── */
+
+.rrs-sim-line {
+  stroke: var(--color-emerald-400);
+  stroke-width: 1.5;
+}
+
+.rrs-sim-label {
+  font-size: 10px;
+  fill: var(--color-emerald-400);
+  font-weight: 700;
+}
+
+/* ── Demand point ─────────────────────────────────────────────────────── */
+
+.rrs-demand-point {
+  fill: var(--color-emerald-400);
+  stroke: var(--color-surface-0);
+  stroke-width: 2;
+  transition: cx 0.15s ease, cy 0.15s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRICE SLIDER
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rrs-slider-section {
+  padding: 0 1rem 0.75rem;
+}
+
+.rrs-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.rrs-slider-min,
+.rrs-slider-max {
+  font-size: 0.5625rem;
+  color: var(--color-silver-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.rrs-slider-current {
+  font-size: 0.5625rem;
+  color: var(--color-silver-400);
+  font-weight: 600;
+}
+
+.rrs-slider {
+  width: 100%;
+  height: 6px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--color-surface-2);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  margin: 0.375rem 0;
+}
+
+.rrs-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-gold-400);
+  border: 2px solid var(--color-surface-0);
+  box-shadow: 0 0 8px rgba(232, 197, 71, 0.3);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.rrs-slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 14px rgba(232, 197, 71, 0.5);
+  transform: scale(1.1);
+}
+
+.rrs-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-gold-400);
+  border: 2px solid var(--color-surface-0);
+  box-shadow: 0 0 8px rgba(232, 197, 71, 0.3);
+  cursor: pointer;
+}
+
+.rrs-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(232, 197, 71, 0.3);
+}
+
+/* ── Readout ──────────────────────────────────────────────────────────── */
+
+.rrs-slider-readout {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 8px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.rrs-slider-readout svg {
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+}
+
+.rrs-readout-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-variant-numeric: tabular-nums;
+}
+
+.rrs-readout-change {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-rose-400);
+}
+
+.rrs-readout-change[data-positive] {
+  color: var(--color-emerald-400);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PROJECTION CARDS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rrs-projections {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  padding: 0 1rem 1rem;
+}
+
+.rrs-proj-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.625rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+}
+
+.rrs-proj-card--risk {
+  grid-column: 1 / -1;
+  border-color: rgba(244, 63, 94, 0.2);
+  background: rgba(244, 63, 94, 0.03);
+}
+
+.rrs-proj-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  flex-shrink: 0;
+  color: var(--color-silver-400);
+}
+
+.rrs-proj-icon-wrap[data-risk="high"] {
+  color: var(--color-rose-400);
+  border-color: rgba(244, 63, 94, 0.2);
+  background: rgba(244, 63, 94, 0.06);
+}
+
+.rrs-proj-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.rrs-proj-label {
+  display: block;
+  font-size: 0.625rem;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.125rem;
+}
+
+.rrs-proj-value {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  line-height: 1.3;
+}
+
+.rrs-proj-revenue {
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-rose-400);
+}
+
+.rrs-proj-revenue[data-positive] {
+  color: var(--color-emerald-400);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: light) {
+  .glass-rrs {
+    background: #ffffff;
+    border-color: #e8e5df;
+  }
+
+  .rrs-header {
+    background: #f8f7f4;
+    border-bottom-color: #e8e5df;
+  }
+
+  .rrs-header-title {
+    color: #1a1814;
+  }
+
+  .rrs-header-strategy {
+    background: #f0ece4;
+    border-color: #e8e5df;
+    color: #6b6560;
+  }
+
+  .rrs-empty-icon {
+    color: #d4d0c8;
+  }
+
+  .rrs-empty-text {
+    color: #8a8580;
+  }
+
+  .rrs-selector {
+    border-bottom-color: #e8e5df;
+  }
+
+  .rrs-selector-pill {
+    border-color: #e8e5df;
+    color: #6b6560;
+  }
+
+  .rrs-selector-pill:hover {
+    background: #f8f7f4;
+    border-color: #d4d0c8;
+    color: #4a4540;
+  }
+
+  .rrs-selector-pill[data-active] {
+    background: rgba(180, 150, 50, 0.08);
+    color: #b49632;
+    border-color: #b49632;
+  }
+
+  .rrs-selector-price {
+    color: #8a8580;
+  }
+
+  .rrs-selector-pill[data-active] .rrs-selector-price {
+    color: #b49632;
+  }
+
+  .rrs-axis-label {
+    fill: #b0a898;
+  }
+
+  .rrs-curve {
+    stroke: #b49632;
+  }
+
+  .rrs-band {
+    fill: #b49632;
+  }
+
+  .rrs-current-line {
+    stroke: #b0a898;
+  }
+
+  .rrs-marker-label {
+    fill: #8a8580;
+  }
+
+  .rrs-sim-line {
+    stroke: #059669;
+  }
+
+  .rrs-sim-label {
+    fill: #059669;
+  }
+
+  .rrs-demand-point {
+    fill: #059669;
+    stroke: #ffffff;
+  }
+
+  .rrs-slider {
+    background: #f0ece4;
+  }
+
+  .rrs-slider::-webkit-slider-thumb {
+    background: #b49632;
+    border-color: #ffffff;
+  }
+
+  .rrs-slider::-moz-range-thumb {
+    background: #b49632;
+    border-color: #ffffff;
+  }
+
+  .rrs-slider-readout {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+  }
+
+  .rrs-readout-price {
+    color: #1a1814;
+  }
+
+  .rrs-readout-change {
+    color: #e11148;
+  }
+
+  .rrs-readout-change[data-positive] {
+    color: #059669;
+  }
+
+  .rrs-proj-card {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+  }
+
+  .rrs-proj-card--risk {
+    border-color: rgba(225, 29, 72, 0.2);
+    background: rgba(225, 29, 72, 0.03);
+  }
+
+  .rrs-proj-icon-wrap {
+    background: #ffffff;
+    border-color: #e8e5df;
+  }
+
+  .rrs-proj-label {
+    color: #8a8580;
+  }
+
+  .rrs-proj-value {
+    color: #1a1814;
+  }
+
+  .rrs-proj-revenue {
+    color: #e11148;
+  }
+
+  .rrs-proj-revenue[data-positive] {
+    color: #059669;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .rrs-demand-point {
+    transition: none;
+  }
+
+  .rrs-slider::-webkit-slider-thumb {
+    transition: none;
+  }
+
+  .rrs-slider::-webkit-slider-thumb:hover {
+    transform: none;
+  }
+}

@@ -1,0 +1,167 @@
+/**
+ * FreshnessBadge.css
+ * src/shared/components/ui/FreshnessBadge.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-freshness
+ * @keyframes   3 (ui-freshness-pulse-fresh, ui-freshness-pulse-stale,
+ *                 ui-freshness-stale-glow)
+ * @signature   Mono data badge with live pulse dot (fresh) and
+ *              urgent warning glow (stale). Color driven by --badge-color.
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✗  Inline badge (not applicable)
+ * D2 Stagger  ✗  Single element (not applicable)
+ * D3 Easing   ✓  ease-in-out for pulse + glow
+ * D4 Typo     ✓  Mono font, 9px, weight 700 per D4-05
+ * D5 Color    ✓  --badge-color CSS var for dynamic color
+ * D6 Pseudo   ✗  Compact badge (not applicable)
+ * D7 Interact ✗  Display-only (not applicable)
+ * D8 Density  ✓  2px 6px padding, 6px dot, 9px text
+ * D9 Response ✗  Intrinsic sizing (not applicable)
+ * D10 A11y    ✓  data-testid, aria-hidden, title attribute
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  3 namespaced at end
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  ROOT — .ui-freshness (D4, D5, D8)
+   Compact mono pill. Color driven by --badge-color.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-freshness {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--badge-color);
+  background: color-mix(in srgb, var(--badge-color) 10%, transparent);
+  /* D3: Specific property */
+  transition: box-shadow 0.3s ease;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  STATUS DOT (D5)
+   6px circle. Color = --badge-color.
+   Pulse animation driven by freshness status.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-freshness__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--badge-color);
+  flex-shrink: 0;
+}
+
+/* Fresh: gentle alive pulse */
+.ui-freshness__dot--fresh {
+  animation: ui-freshness-pulse-fresh 2s ease-in-out infinite;
+}
+
+/* Stale: faster urgent blink */
+.ui-freshness__dot--stale {
+  animation: ui-freshness-pulse-stale 1.2s ease-in-out infinite;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  STALE BADGE — Warning glow (D5)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-freshness--stale {
+  animation: ui-freshness-stale-glow 2.5s ease-in-out infinite;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-freshness--stale {
+  animation: none;
+}
+
+.light .ui-freshness__dot--fresh {
+  animation-duration: 3s;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-freshness {
+    transition: none;
+  }
+
+  .ui-freshness__dot--fresh,
+  .ui-freshness__dot--stale {
+    animation: none;
+  }
+
+  .ui-freshness--stale {
+    animation: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-freshness {
+    border: 1px solid currentColor !important;
+    background: transparent !important;
+    animation: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .ui-freshness__dot--fresh,
+  .ui-freshness__dot--stale {
+    animation: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .ui-freshness--stale {
+    animation: none !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  KEYFRAMES (D13)
+   ALL at end, ALL ui-freshness-* namespaced. Count: 3.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Fresh dot — gentle alive pulse (scale + opacity) */
+@keyframes ui-freshness-pulse-fresh {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(0.8); }
+}
+
+/* Stale dot — faster urgent blink (opacity only) */
+@keyframes ui-freshness-pulse-stale {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+/* Stale badge — warning glow ring */
+@keyframes ui-freshness-stale-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--badge-color) 0%, transparent); }
+  50%      { box-shadow: 0 0 8px 2px color-mix(in srgb, var(--badge-color) 15%, transparent); }
+}

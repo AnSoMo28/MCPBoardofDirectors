@@ -1,0 +1,470 @@
+/**
+ * @component DecisionTimelineEntry (Fase 25)
+ * @namespace .glass-entry
+ * @depends globals.css (tokens)
+ * @note Timeline entry with outcome dot, connector, hover-expand detail,
+ *       confidence mini-bar, domain icon + color coding, metric delta.
+ * @import import './DecisionTimelineEntry.css';
+ */
+
+/* ═══════════════════════════════════════
+   Root
+   ═══════════════════════════════════════ */
+
+.glass-entry {
+  display: flex;
+  gap: 12px;
+  position: relative;
+  outline: none;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.glass-entry:focus-visible {
+  background: var(--glass-bg-hover);
+  box-shadow: inset 0 0 0 2px var(--color-gold-400, #c9a96e);
+}
+
+/* ═══════════════════════════════════════
+   Rail (dot + connector)
+   ═══════════════════════════════════════ */
+
+.glass-entry__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.glass-entry__dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: box-shadow 0.2s ease;
+}
+
+.glass-entry:hover .glass-entry__dot {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.06);
+}
+
+.glass-entry__dot svg {
+  width: 16px;
+  height: 16px;
+}
+
+.glass-entry__dot--success {
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--color-emerald-400, #34d399);
+}
+
+.glass-entry__dot--partial {
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--color-amber-400, #fbbf24);
+}
+
+.glass-entry__dot--failed {
+  background: rgba(251, 113, 133, 0.1);
+  color: var(--color-rose-400, #fb7185);
+}
+
+.glass-entry__dot--unknown {
+  background: rgba(160, 154, 146, 0.1);
+  color: var(--color-silver-400, #a09a92);
+}
+
+.glass-entry__connector {
+  width: 2px;
+  flex: 1;
+  min-height: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 1px;
+}
+
+/* ═══════════════════════════════════════
+   Content
+   ═══════════════════════════════════════ */
+
+.glass-entry__content {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 16px;
+}
+
+.glass-entry__content--bordered {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* ═══════════════════════════════════════
+   Header
+   ═══════════════════════════════════════ */
+
+.glass-entry__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.glass-entry__header-left {
+  min-width: 0;
+}
+
+.glass-entry__rule {
+  margin: 0;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-200, #d4cfc7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glass-entry__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+/* ── Impact badge ── */
+
+.glass-entry__impact-badge {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.glass-entry__impact-badge--high {
+  color: var(--color-rose-400, #fb7185);
+  background: rgba(251, 113, 133, 0.1);
+}
+
+.glass-entry__impact-badge--medium {
+  color: var(--color-amber-400, #fbbf24);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.glass-entry__impact-badge--low {
+  color: var(--color-silver-400, #a09a92);
+  background: rgba(160, 154, 146, 0.1);
+}
+
+/* ── Domain label ── */
+
+.glass-entry__domain {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  color: var(--color-silver-500, #7a7570);
+}
+
+.glass-entry__domain-icon {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Time ── */
+
+.glass-entry__time {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  color: var(--color-silver-500, #7a7570);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   Outcome Row
+   ═══════════════════════════════════════ */
+
+.glass-entry__outcome {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.glass-entry__outcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.glass-entry__outcome-badge svg {
+  width: 10px;
+  height: 10px;
+}
+
+.glass-entry__outcome-badge--success {
+  color: var(--color-emerald-400, #34d399);
+  background: rgba(52, 211, 153, 0.1);
+}
+
+.glass-entry__outcome-badge--partial {
+  color: var(--color-amber-400, #fbbf24);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.glass-entry__outcome-badge--failed {
+  color: var(--color-rose-400, #fb7185);
+  background: rgba(251, 113, 133, 0.1);
+}
+
+.glass-entry__outcome-badge--unknown {
+  color: var(--color-silver-400, #a09a92);
+  background: rgba(160, 154, 146, 0.1);
+}
+
+.glass-entry__confidence {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  color: var(--color-silver-500, #7a7570);
+}
+
+/* ═══════════════════════════════════════
+   Metric Delta
+   ═══════════════════════════════════════ */
+
+.glass-entry__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+}
+
+.glass-entry__delta svg {
+  width: 10px;
+  height: 10px;
+}
+
+.glass-entry__delta--positive {
+  color: var(--color-emerald-400, #34d399);
+}
+
+.glass-entry__delta--negative {
+  color: var(--color-rose-400, #fb7185);
+}
+
+/* ═══════════════════════════════════════
+   Hover Expand Detail
+   ═══════════════════════════════════════ */
+
+/* On hover-capable devices: expand on hover/focus */
+@media (hover: hover) {
+  .glass-entry__expand {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    padding-top: 0;
+    transition:
+      max-height 0.3s ease,
+      opacity 0.2s ease,
+      padding 0.3s ease;
+  }
+
+  .glass-entry:hover .glass-entry__expand,
+  .glass-entry:focus-within .glass-entry__expand {
+    max-height: 200px;
+    opacity: 1;
+    padding-top: 10px;
+  }
+}
+
+/* On touch devices: always visible */
+@media (hover: none) {
+  .glass-entry__expand {
+    padding-top: 10px;
+  }
+}
+
+/* ── Confidence mini-bar ── */
+
+.glass-entry__confidence-bar {
+  width: 100%;
+  max-width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.glass-entry__confidence-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+.glass-entry__confidence-fill--high {
+  background: var(--color-emerald-400, #34d399);
+}
+
+.glass-entry__confidence-fill--medium {
+  background: var(--color-amber-400, #fbbf24);
+}
+
+.glass-entry__confidence-fill--low {
+  background: var(--color-rose-400, #fb7185);
+}
+
+/* ── Feedback ── */
+
+.glass-entry__feedback {
+  margin: 0;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-silver-400, #a09a92);
+  line-height: 1.5;
+}
+
+/* ── Full timestamp ── */
+
+.glass-entry__full-time {
+  margin: 4px 0 0;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 9px;
+  color: var(--color-silver-500, #7a7570);
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-entry:focus-visible {
+  background: rgba(0, 0, 0, 0.02);
+  box-shadow: inset 0 0 0 2px #8b7340;
+}
+
+.light .glass-entry:hover .glass-entry__dot {
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-entry__dot--success {
+  background: rgba(5, 150, 105, 0.08);
+  color: #059669;
+}
+
+.light .glass-entry__dot--partial {
+  background: rgba(217, 119, 6, 0.08);
+  color: #d97706;
+}
+
+.light .glass-entry__dot--failed {
+  background: rgba(225, 29, 72, 0.08);
+  color: #e11d48;
+}
+
+.light .glass-entry__dot--unknown {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-entry__connector {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.light .glass-entry__content--bordered {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-entry__rule {
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .glass-entry__impact-badge--high {
+  color: #e11d48;
+  background: rgba(225, 29, 72, 0.06);
+}
+
+.light .glass-entry__impact-badge--medium {
+  color: #d97706;
+  background: rgba(217, 119, 6, 0.06);
+}
+
+.light .glass-entry__impact-badge--low {
+  color: var(--color-silver-500, #7a7570);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-entry__domain {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-entry__time {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-entry__outcome-badge--success {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.08);
+}
+
+.light .glass-entry__outcome-badge--partial {
+  color: #d97706;
+  background: rgba(217, 119, 6, 0.08);
+}
+
+.light .glass-entry__outcome-badge--failed {
+  color: #e11d48;
+  background: rgba(225, 29, 72, 0.08);
+}
+
+.light .glass-entry__outcome-badge--unknown {
+  color: var(--color-silver-500, #7a7570);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-entry__confidence {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-entry__delta--positive {
+  color: #059669;
+}
+
+.light .glass-entry__delta--negative {
+  color: #e11d48;
+}
+
+.light .glass-entry__confidence-bar {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-entry__confidence-fill--high {
+  background: #059669;
+}
+
+.light .glass-entry__confidence-fill--medium {
+  background: #d97706;
+}
+
+.light .glass-entry__confidence-fill--low {
+  background: #e11d48;
+}
+
+.light .glass-entry__feedback {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-entry__full-time {
+  color: var(--color-silver-500, #7a7570);
+}

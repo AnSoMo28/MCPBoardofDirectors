@@ -1,0 +1,659 @@
+# Fase 36: Cultural & Social Module — Propuesta de Diseño
+
+---
+
+## 1. Visión de Producto
+
+El Castillo Country Club no es un resort genérico. Es un club de campo premium en Costa Rica con identidad cultural fuerte. **El módulo Cultural & Social es el corazón de esa identidad.**
+
+No es "un calendario de eventos más." Es el motor que:
+- **Organiza la vida cultural del club** — galas, exposiciones, programas estacionales
+- **Gestiona el entretenimiento premium** — artistas, DJs, bandas, comediantes
+- **Representa la marca Castillo** — formalidad, elegancia, curaduría
+- **Protege al club con HITL** — presupuestos de gala y contratos de artistas requieren aprobación
+
+---
+
+## 2. Arquitectura del Módulo
+
+### 2.1 Estructura de archivos
+
+```
+features/cultural/
+├── types.ts
+├── CulturalDashboard.tsx          ← Hub con DetailTabs
+└── components/
+    ├── CulturalCalendar.tsx       ← Tab 1: Vista unificada
+    ├── GalasPanel.tsx             ← Tab 2: Galas y eventos formales
+    ├── ProgramsPanel.tsx          ← Tab 3: Programas culturales
+    ├── EntertainmentPanel.tsx     ← Tab 4: Actos de entretenimiento
+    ├── ExhibitionsPanel.tsx       ← Tab 5: Exposiciones de arte
+    ├── GalaFormModal.tsx          ← Modal HITL para crear gala
+    ├── EntertainmentFormModal.tsx ← Modal HITL para contratar artista
+    └── ProgramFormModal.tsx       ← Modal HITL para crear programa
+```
+
+### 2.2 Patrón de arquitectura
+
+Siguiendo el patrón establecido por OperationsDashboard y CommunicationCenter:
+
+```
+CulturalDashboard (hub)
+├── CulturalCalendar    → get_cultural_calendar (AUTO, staleTime 120s)
+├── GalasPanel         → manage_social_events filter type=gala (AUTO) + organize_formal_gala (HITL)
+├── ProgramsPanel      → manage_cultural_program (AUTO list + HITL create)
+├── EntertainmentPanel → manage_entertainment_acts (AUTO list/get + HITL create)
+└── ExhibitionsPanel   → manage_art_exhibitions (AUTO CRUD)
+```
+
+**Lazy loading** con `Suspense` — igual que OperationsDashboard.
+**Cada tab** se carga on-demand cuando el usuario hace click.
+
+### 2.3 MCP Tools mapping
+
+| Tool | Server | Approval | Frontend feature | Pattern |
+|------|--------|----------|-----------------|---------|
+| `organize_formal_gala` | `cultural_social` | 🔴 HITL | GalasPanel + GalaFormModal | Submit → pending_approval → ApprovalQueue |
+| `manage_entertainment_acts` | `cultural_social` | 🔴 HITL (create) / 🟢 AUTO (list, get, update_status) | EntertainmentPanel | List auto-load + create via modal HITL |
+| `manage_cultural_program` | `cultural_social` | 🔴 HITL (create) / 🟢 AUTO (list, get, update_status) | ProgramsPanel | List auto-load + create via modal HITL |
+| `manage_social_events` | `cultural_social` | 🟢 AUTO (full CRUD) | GalasPanel (eventos no-gala) | Auto-load, inline create/edit |
+| `manage_art_exhibitions` | `cultural_social` | 🟢 AUTO (full CRUD) | ExhibitionsPanel | Auto-load, inline create |
+| `get_cultural_calendar` | `cultural_social` | 🟢 AUTO | CulturalCalendar | Auto-load, staleTime 120s |
+
+---
+
+## 3. Diseño de cada Tab
+
+### Tab 1: Calendario Cultural (`CulturalCalendar`)
+
+**Tool:** `get_cultural_calendar` — AUTO, staleTime 120s
+
+**Concepto:** Vista unificada de TODO lo cultural y social del club en un rango de fechas. El backend ya agrega eventos sociales + exposiciones en un solo array ordenado por fecha.
+
+**Layout:**
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Calendario Cultural                    [Semana ▼]   │
+│  12 actividades programadas                           │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  ┌─ KPI Strip ──────────────────────────────────┐   │
+│  │  12 Total │ 3 Galas │ 5 Sociales │ 4 Expos   │   │
+│  └──────────────────────────────────────────────┘   │
+│                                                      │
+│  ┌─ Filter pills ───────────────────────────────┐   │
+│  │  [Todos] [Galas] [Sociales] [Exposiciones]    │   │
+│  └──────────────────────────────────────────────┘   │
+│                                                      │
+│  ┌─ Timeline ───────────────────────────────────┐   │
+│  │  📅 Viernes 15 Nov                            │   │
+│  │  ┌────────────────────────────────────────┐   │   │
+│  │  │ 🎭 Cena de Gala — Ballroom             │   │   │
+│  │  │    19:00-23:00 · Black Tie · 150 guests │   │   │
+│  │  └────────────────────────────────────────┘   │   │
+│  │  ┌────────────────────────────────────────┐   │   │
+│  │  │ 🖼️ "Colores de Costa Rica" — Lounge    │   │   │
+│  │  │    45 piezas · María Fernández          │   │   │
+│  │  └────────────────────────────────────────┘   │   │
+│  │                                               │   │
+│  │  📅 Sábado 16 Nov                             │   │
+│  │  ┌────────────────────────────────────────┐   │   │
+│  │  │ 🎵 Jazz Night — Terrace                │   │   │
+│  │  │    20:00-23:00 · Cocktail · 80 guests   │   │   │
+│  │  └────────────────────────────────────────┘   │   │
+│  └──────────────────────────────────────────────┘   │
+│                                                      │
+│  ┌─ AI Insight ─────────────────────────────────┐   │
+│  │  ✨ "Noviembre es el mes con más actividad    │   │
+│  │  cultural (8 eventos). Las galas de viernes   │   │
+│  │  tienen 92% de asistencia promedio."          │   │
+│  └──────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────┘
+```
+
+**Data flow:**
+```
+useMCPQuery("cultural_social", "get_cultural_calendar", { date_from, date_to })
+  → CalendarItem[] con tipo "event" | "exhibition"
+  → Group by date
+  → Render timeline
+```
+
+**Level 1 — Auto-load** (datos frescos, no requieren botón).
+
+---
+
+### Tab 2: Galas y Eventos (`GalasPanel`)
+
+**Tools:** `manage_social_events` (AUTO CRUD) + `organize_formal_gala` (HITL)
+
+**Concepto:** Gestión de eventos sociales y formales. Los eventos regulares se crean directamente. Las galas van por HITL con presupuesto, formalidad y catering.
+
+**Layout:**
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Galas y Eventos                  [+ Crear Evento]    │
+│                              [+ Organizar Gala 🎭]    │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  ┌─ Próximas Galas ────────────────────────────┐    │
+│  │  ┌──────────────────────────────────────┐    │    │
+│  │  │ 🎭 Noche de Gala Invernal            │    │    │
+│  │  │    Ballroom · 15 Nov · Black Tie      │    │    │
+│  │  │    150 invitados · ₡8,500,000         │    │    │
+│  │  │    [Ver detalle] [Editar]             │    │    │
+│  │  └──────────────────────────────────────┘    │    │
+│  │  ┌──────────────────────────────────────┐    │    │
+│  │  │ 🎭 Gala de Fin de Año                │    │    │
+│  │  │    Pool Area · 31 Dec · White Tie     │    │    │
+│  │  │    200 invitados · ₡12,000,000        │    │    │
+│  │  │    [Ver detalle] [Editar]             │    │    │
+│  │  └──────────────────────────────────────┘    │    │
+│  └─────────────────────────────────────────────┘    │
+│                                                      │
+│  ┌─ Eventos Sociales Regulares ───────────────┐    │
+│  │  ┌──────────────────────────────────────┐    │    │
+│  │  │ 🍷 Wine Tasting Friday               │    │    │
+│  │  │    Lounge · 22 Nov · 19:00            │    │    │
+│  │  │    Cocktail · 40 guests · ₡450,000    │    │    │
+│  │  │    [Editar] [Cancelar]                │    │    │
+│  │  └──────────────────────────────────────┘    │    │
+│  │  ┌──────────────────────────────────────┐    │    │
+│  │  │ 🎄 Holiday Brunch                    │    │    │
+│  │  │    Restaurant · 24 Dec · 10:00        │    │    │
+│  │  │    Casual · 80 guests · ₡600,000      │    │    │
+│  │  │    [Editar] [Cancelar]                │    │    │
+│  │  └──────────────────────────────────────┘    │    │
+│  └─────────────────────────────────────────────┘    │
+│                                                      │
+│  ┌─ AI Insight ─────────────────────────────────┐   │
+│  │  ✨ "Las cenas temáticas de viernes tienen    │   │
+│  │  35% más asistencia cuando se anuncian con    │   │
+│  │  10+ días de anticipación."                    │   │
+│  └──────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────┘
+```
+
+**HITL flow para Galas:**
+```
+Staff abre modal → completa formulario (venue, formalidad, budget, catering)
+  → Submit → useMCPMutation("cultural_social", "organize_formal_gala", {...})
+  → Backend crea approval request (HITL)
+  → Response: { status: "pending_approval", request_id: "..." }
+  → showToast({ type: "success", message: "Gala enviada a aprobación" })
+  → Aparece en ApprovalQueue
+  → Admin aprueba → execute_formal_gala se ejecuta → evento confirmado
+```
+
+**AUTO flow para Eventos Sociales:**
+```
+Staff abre modal → completa formulario
+  → Submit → useMCPMutation("cultural_social", "manage_social_events", { action: "create", ... })
+  → Backend crea directamente (AUTO)
+  → showToast({ type: "success", message: "Evento creado" })
+  → Refetch lista
+```
+
+---
+
+### Tab 3: Programas Culturales (`ProgramsPanel`)
+
+**Tool:** `manage_cultural_program` — AUTO (list, get, update_status) + HITL (create)
+
+**Concepto:** Series de actividades culturales por temporada. Talleres de arte, clases de música, charlas, ciclos de cine. Los programas tienen un ciclo de vida: draft → active → completed.
+
+**Layout:**
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Programas Culturales            [+ Nuevo Programa]   │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  ┌─ Filtros ────────────────────────────────────┐   │
+│  │  [Todos] [Música] [Arte] [Charlas] [Talleres] │   │
+│  └──────────────────────────────────────────────┘   │
+│                                                      │
+│  ┌─ Temporada Actual: Verano 2025 ──────────────┐   │
+│  │                                               │   │
+│  │  ┌────────────────────────────────────────┐   │   │
+│  │  │ 🎵 Serie Jazz en el Jardín             │   │   │
+│  │  │    Música · 15 Ene - 15 Mar 2025       │   │   │
+│  │  │    Coord: Sofía Montes · Max 60 personas│   │   │
+│  │  │    ₡2,500,000 · Activo                  │   │   │
+│  │  │    [Ver detalle] [Cambiar estado]       │   │   │
+│  │  └────────────────────────────────────────┘   │   │
+│  │                                               │   │
+│  │  ┌────────────────────────────────────────┐   │   │
+│  │  │ 🎨 Taller de Acuarela                  │   │   │
+│  │  │    Talleres · 1 Feb - 28 Feb 2025      │   │   │
+│  │  │    Coord: Ana Chen · Max 20 personas    │   │   │
+│  │  │    ₡800,000 · Completado                │   │   │
+│  │  │    [Ver detalle]                        │   │   │
+│  │  └────────────────────────────────────────┘   │   │
+│  └──────────────────────────────────────────────┘   │
+│                                                      │
+│  ┌─ AI Insight ─────────────────────────────────┐   │
+│  │  ✨ "Los programas musicales tienen 78% de    │   │
+│  │  ocupación promedio vs 45% de talleres.       │   │
+│  │  Considerá ampliar la serie de jazz."          │   │
+│  └──────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────┘
+```
+
+**HITL flow para crear programa:**
+```
+Staff abre modal → completa: nombre, categoría, temporada, fechas, coordinador, max_participantes, presupuesto
+  → Submit → useMCPMutation("cultural_social", "manage_cultural_program", { action: "create", ... })
+  → HITL → pending_approval → ApprovalQueue
+```
+
+---
+
+### Tab 4: Entretenimiento (`EntertainmentPanel`)
+
+**Tool:** `manage_entertainment_acts` — AUTO (list, get, update_status) + HITL (create)
+
+**Concepto:** Directorio de artistas y actos de entretenimiento. Bandas, DJs, comediantes, performers. Cada acto tiene un ciclo: inquiry → negotiating → contracted → completed.
+
+**Layout:**
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Entretenimiento              [+ Contratar Artista]   │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  ┌─ Filtros ────────────────────────────────────┐   │
+│  │  [Todos] [Bandas] [DJs] [Comediantes] [Otro]  │   │
+│  └──────────────────────────────────────────────┘   │
+│                                                      │
+│  ┌─ KPIs ──────────────────────────────────────┐    │
+│  │  12 Total │ 5 Contratados │ 3 Negociando     │    │
+│  │  ₡4,200,000 Total presupuesto                 │    │
+│  └─────────────────────────────────────────────┘    │
+│                                                      │
+│  ┌─ Actos ─────────────────────────────────────┐    │
+│  │  ┌────────────────────────────────────────┐  │    │
+│  │  │ 🎸 Los Soneros de Pacífico             │  │    │
+│  │  │    Banda en vivo · Salsa/Cumbia         │  │    │
+│  │  │    120 min · ₡1,500,000                │  │    │
+│  │  │    Contacto: Carlos Mora · 8888-1234   │  │    │
+│  │  │    Status: [Contratado ✅]              │  │    │
+│  │  │    [Ver detalle] [Cambiar estado]       │  │    │
+│  │  └────────────────────────────────────────┘  │    │
+│  │  ┌────────────────────────────────────────┐  │    │
+│  │  │ 🎧 DJ Sofía Vibe                      │  │    │
+│  │  │    DJ Set · Electronic/Lounge           │  │    │
+│  │  │    180 min · ₡800,000                  │  │    │
+│  │  │    Contacto: Manager · 8765-4321       │  │    │
+│  │  │    Status: [Negociando 🟡]             │  │    │
+│  │  │    [Ver detalle] [Cambiar estado]       │  │    │
+│  │  └────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────┘    │
+│                                                      │
+│  ┌─ AI Suggestion (on-demand, Rule #19) ───────┐   │
+│  │  [🔍 Analizar patrones de entretenimiento]    │   │
+│  └──────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────┘
+```
+
+**HITL flow para contratar artista:**
+```
+Staff abre modal → completa: nombre, tipo, género, duración, costo, contacto, requerimientos
+  → Submit → useMCPMutation("cultural_social", "manage_entertainment_acts", { action: "create", ... })
+  → HITL → pending_approval → ApprovalQueue
+  → Admin aprueba → execute_entertainment_act → status: "contracted"
+```
+
+**AUTO flow para cambiar estado:**
+```
+Staff hace click en "Cambiar estado" → select con opciones (contracted, confirmed, cancelled)
+  → Submit → useMCPMutation("cultural_social", "manage_entertainment_acts", { action: "update_status", ... })
+  → Refetch lista
+```
+
+---
+
+### Tab 5: Exposiciones de Arte (`ExhibitionsPanel`)
+
+**Tool:** `manage_art_exhibitions` — AUTO (full CRUD)
+
+**Concepto:** Galería virtual del club. Exposiciones de arte con curaduría, piezas, recepciones de apertura. El staff puede crear, actualizar y gestionar estados directamente (sin aprobación).
+
+**Layout:**
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Exposiciones de Arte          [+ Nueva Exposición]   │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  ┌─ Exposiciones Activas ──────────────────────┐    │
+│  │  ┌────────────────────────────────────────┐  │    │
+│  │  │ 🖼️ "Colores de Costa Rica"             │  │    │
+│  │  │    María Fernández · Artes Visuales     │  │    │
+│  │  │    Lounge · 1 Nov - 30 Nov 2025        │  │    │
+│  │  │    45 piezas · Curador: Ana Chen        │  │    │
+│  │  │    Recepción de apertura: 1 Nov 18:00   │  │    │
+│  │  │    [Ver detalle] [Cambiar estado]       │  │    │
+│  │  └────────────────────────────────────────┘  │    │
+│  │  ┌────────────────────────────────────────┐  │    │
+│  │  │ 🖼️ "Esculturas del Valle"              │  │    │
+│  │  │    Roberto Jiménez · Escultura          │  │    │
+│  │  │    Jardín Principal · 15 Dic - 15 Ene   │  │    │
+│  │  │    12 piezas · Sin recepción            │  │    │
+│  │  │    [Ver detalle] [Cambiar estado]       │  │    │
+│  │  └────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────┘    │
+│                                                      │
+│  ┌─ Próximas / Pasadas ───────────────────────┐    │
+│  │  ... filtrado por status ...                 │    │
+│  └─────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────┘
+```
+
+---
+
+## 4. Mock System Design
+
+### 4.1 Contracts (fuente de verdad)
+
+```typescript
+// shared/mocks/contracts.ts — agregar:
+
+// ═══ Cultural & Social ═══
+
+// get_cultural_calendar
+interface CalendarItem {
+  title: string;
+  type: "event" | "exhibition";
+  event_type?: string;
+  category?: string;
+  date: string;
+  end_date?: string;
+  start_time?: string;
+  end_time?: string;
+  venue: string;
+  status: string;
+  description: string;
+  artist?: string;
+  num_pieces?: number;
+}
+interface CulturalCalendarResponse {
+  status: string;
+  message: string;
+  calendar: CalendarItem[];
+  total_items: number;
+}
+
+// manage_social_events (list)
+interface CulturalEvent {
+  id: string;
+  name: string;
+  event_type: string;
+  formality: string;
+  venue: string;
+  venue_type: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  organizer_member_id: string;
+  description: string;
+  guest_count: number;
+  budget: number;
+  menu_theme: string;
+  dress_code: string;
+  status: string;
+  notes: string;
+}
+interface SocialEventsListResponse {
+  status: string;
+  message: string;
+  events: CulturalEvent[];
+}
+
+// manage_cultural_program (list)
+interface CulturalProgram {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  season: string;
+  start_date: string;
+  end_date: string;
+  coordinator_member_id: string;
+  max_participants: number;
+  budget: number;
+  status: string;
+  notes: string;
+}
+interface CulturalProgramsListResponse {
+  status: string;
+  message: string;
+  programs: CulturalProgram[];
+}
+
+// manage_entertainment_acts (list)
+interface EntertainmentAct {
+  id: string;
+  artist_name: string;
+  entertainment_type: string;
+  genre: string;
+  description: string;
+  duration_minutes: number;
+  cost: number;
+  contact_person: string;
+  contact_phone: string;
+  requirements: string[];
+  status: string;
+  notes: string;
+}
+interface EntertainmentActsListResponse {
+  status: string;
+  message: string;
+  acts: EntertainmentAct[];
+}
+
+// manage_art_exhibitions (list)
+interface ArtExhibition {
+  id: string;
+  title: string;
+  artist_name: string;
+  category: string;
+  description: string;
+  venue: string;
+  venue_type: string;
+  start_date: string;
+  end_date: string;
+  num_pieces: number;
+  curator_member_id: string;
+  opening_reception: boolean;
+  status: string;
+  notes: string;
+}
+interface ArtExhibitionsListResponse {
+  status: string;
+  message: string;
+  exhibitions: ArtExhibition[];
+}
+
+// HITL responses
+interface CulturalHITLResponse {
+  status: string;
+  request_id?: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+```
+
+### 4.2 Registry mapping
+
+```typescript
+// shared/mocks/mock-registry.ts — agregar:
+
+cultural_social: {
+  get_cultural_calendar: createMockCulturalCalendar,
+  manage_social_events: createMockSocialEventsList,
+  manage_cultural_program: createMockCulturalProgramsList,
+  manage_entertainment_acts: createMockEntertainmentActsList,
+  manage_art_exhibitions: createMockArtExhibitionsList,
+  organize_formal_gala: createMockHITLResponse,       // reutiliza patrón HITL
+  manage_cultural_program: createMockHITLResponse,      // same name, differentiate by action
+}
+```
+
+**Nota sobre tools con mismo nombre:** `manage_cultural_program` sirve para list Y create. El mock registry necesita discriminar por params. Esto ya lo resolvimos en CommunicationCenter con `manage_notification_templates` (list vs create). Patrón: el factory revisa `params.action` y devuelve el shape correspondiente.
+
+### 4.3 Mock Routing Warning
+
+```typescript
+// En getMockResponse():
+if (server === "cultural_social") {
+  if (tool === "manage_cultural_program" && params?.action === "create") {
+    return createMockHITLResponse();
+  }
+  if (tool === "manage_entertainment_acts" && params?.action === "create") {
+    return createMockHITLResponse();
+  }
+  // ... etc
+}
+```
+
+---
+
+## 5. Design Patterns — Lo que hace especial este módulo
+
+### 5.1 Visual identity por tipo de evento
+
+Cada tipo de evento cultural tiene una identidad visual distinta usando tokens del Silver Tide:
+
+| Tipo | Ícono | Color token | Glow |
+|------|-------|-------------|------|
+| Gala formal | 🎭 Theater | `gold-400` | Gold aura |
+| Evento social | 🍷 Wine | `terracotta-400` | Warm glow |
+| Programa cultural | 🎵 Music | `teal-400` | Teal accent |
+| Entretenimiento | 🎸 Guitar | `emerald-400` | Emerald pulse |
+| Exposición | 🖼️ Frame | `sage-400` | Sage subtle |
+
+Esto se implementa como config maps (igual que `CHANNEL_CONFIG` en CommunicationCenter).
+
+### 5.2 HITL como feature, no como bloqueo
+
+Cuando un staff crea una gala, el flujo NO se siente como "tu request fue bloqueado." Se siente como "tu gala está siendo revisada por el director — te avisamos." El feedback visual:
+
+1. `showToast({ type: "success", message: "Gala 'Noche Invernal' enviada a aprobación" })`
+2. La gala aparece en estado "Pendiente" con badge dorado
+3. En ApprovalQueue el admin ve el resumen con presupuesto y riesgo
+
+### 5.3 AI insights por tab (Nivel 1 — auto-load)
+
+Cada tab incluye un insight contextual que viene del backend como parte de la response. No es un tool AI separado — es un campo `ai_insight` en la response del tool principal. Esto es más eficiente que hacer dos queries.
+
+**Patrón:** Igual que DailyBriefing (`data.ai_insight`) y ComplianceCheck (`data.ai_summary`).
+
+---
+
+## 6. Bloques de implementación
+
+### Bloque B1 — Foundation (3 archivos)
+
+| # | Archivo | Tipo | Contenido |
+|---|---------|------|-----------|
+| 1 | `features/cultural/types.ts` | NUEVO | Types completos para Calendar, Events, Programs, Entertainment, Exhibitions, HITL |
+| 2 | `shared/mocks/contracts.ts` | MODIFICAR | 6 nuevos interfaces para cultural_social |
+| 3 | `shared/mocks/factories.ts` | MODIFICAR | 5 factories con datos realistas (galas, programas, artistas, exposiciones, calendario) |
+
+### Bloque B2 — Registry + Dashboard Hub (3 archivos)
+
+| # | Archivo | Tipo | Contenido |
+|---|---------|------|-----------|
+| 4 | `shared/mocks/mock-registry.ts` | MODIFICAR | Registrar 6 tools de `cultural_social` server con routing por action |
+| 5 | `features/cultural/CulturalDashboard.tsx` | NUEVO | Hub con DetailTabs (5 tabs), lazy loading, Suspense, breadcrumbs |
+| 6 | `features/cultural/components/CulturalCalendar.tsx` | NUEVO | Tab 1: Calendario unificado con timeline, KPI strip, filters, AI insight |
+
+### Bloque B3 — Galas + Programs (3 archivos)
+
+| # | Archivo | Tipo | Contenido |
+|---|---------|------|-----------|
+| 7 | `features/cultural/components/GalasPanel.tsx` | NUEVO | Tab 2: Galas + eventos sociales. List auto-load. Dos secciones: galas (premium) y sociales (regular) |
+| 8 | `features/cultural/components/ProgramsPanel.tsx` | NUEVO | Tab 3: Programas culturales con filtros por categoría. Grouped by season |
+| 9 | `features/cultural/components/GalaFormModal.tsx` | NUEVO | Modal HITL: venue, formalidad, presupuesto, catering, dress code |
+
+### Bloque B4 — Entertainment + Exhibitions (2 archivos)
+
+| # | Archivo | Tipo | Contenido |
+|---|---------|------|-----------|
+| 10 | `features/cultural/components/EntertainmentPanel.tsx` | NUEVO | Tab 4: Directorio de artistas con KPIs, status management |
+| 11 | `features/cultural/components/ExhibitionsPanel.tsx` | NUEVO | Tab 5: Galería con CRUD completo (AUTO) |
+
+### Bloque B5 — Modals + Router (2 archivos)
+
+| # | Archivo | Tipo | Contenido |
+|---|---------|------|-----------|
+| 12 | `features/cultural/components/EntertainmentFormModal.tsx` | NUEVO | Modal HITL para contratar artista |
+| 13 | `features/cultural/components/ProgramFormModal.tsx` | NUEVO | Modal HITL para crear programa |
+| 14 | `shared/lib/routes.ts` + `app/router.tsx` | MODIFICAR | Ruta `/admin/cultural` + lazy import |
+
+**Total: 10 archivos nuevos + 4 modificados = 14 archivos en 5 bloques.**
+
+---
+
+## 7. Reglas que aplican específicamente
+
+| Regla | Aplicación en este módulo |
+|-------|--------------------------|
+| #1 Tokens | Todos los colores de tipo de evento via tokens, no hardcoded |
+| #2 No blur | Cards de eventos con superficie sólida, sin glass |
+| #11 Focus-visible | En todos los botones, modals, filters |
+| #12 Touch targets | `min-h-[44px]` en todos los elementos interactivos |
+| #13 DetailTabs | 5 tabs en CulturalDashboard |
+| #14 EmptyState | Cada tab con EmptyState + CTA contextual cuando no hay data |
+| #15 showToast | En todos los mutations (create gala, hire artist, etc.) |
+| #16 PageContainer | Con breadcrumbs: Dashboard → Cultural |
+| #17 Button | Shared Button en todas las acciones |
+| #18 Reduced motion | useReducedMotion() en Framer Motion |
+| #19 On-demand | Entertainment analysis como botón on-demand (Rule #19) |
+| #20 Breakpoint | useBreakpoint() para responsive layout |
+| #21 Responsive | Desktop cards → Mobile accordion cards |
+| #22 cn | Para conditional classes |
+
+---
+
+## 8. Impacto en ApprovalQueue
+
+**3 tools HITL nuevos** que alimentan la ApprovalQueue:
+
+| Tool | Approval | Risk summary pattern |
+|------|----------|---------------------|
+| `organize_formal_gala` | 🔴 HITL | `"Gala formal: {name} ({formality}) en {venue} para {guest_count} invitados. Presupuesto: ₡{budget}"` |
+| `manage_entertainment_acts` (create) | 🔴 HITL | `"Contratación de artista: {artist_name} ({entertainment_type}). Costo: ₡{cost}"` |
+| `manage_cultural_program` (create) | 🔴 HITL | `"Nuevo programa cultural: {name} ({category}), temporada {season}. Presupuesto: ₡{budget}"` |
+
+Estos ya están diseñados en el backend con los risk summaries. El ApprovalQueue los renderiza automáticamente cuando están en el registry.
+
+---
+
+## 9. Fase 36b: AI Enhancement (futuro)
+
+Cuando el módulo base esté funcionando, propongo agregar:
+
+| Feature AI | Pattern | Descripción |
+|------------|---------|-------------|
+| **Entertainment Recommendation Engine** | On-demand (Rule #19) | "Basado en el historial de eventos, Los Soneros de Pacífico tienen 85% de asistencia. ¿Contratar para la próxima gala?" |
+| **Budget Forecasting** | On-demand | "Las galas de Q4 suelen exceder presupuesto en 15%. Reservar ₡1,200,000 extra." |
+| **Cultural Calendar Optimization** | On-demand | "Hay 3 eventos el mismo fin de semana. Considerar redistribuir para maximizar asistencia." |
+| **Exhibition Attendance Prediction** | On-demand | "Exposiciones de artes visuales en Lounge tienen 60% más visitantes que en Jardín." |
+
+Estos se mockean primero con el patrón `{module}_predict`, `{module}_insights`.
+
+---
+
+## 10. Próximos pasos
+
+1. **Aprobás el diseño** → arranco con B1 (types + contracts + factories)
+2. **Pedís ajustes** → reestructuro antes de escribir código
+3. **Priorizás** → si querés, puedo hacer Fase 31 (Empty State Audit) primero porque es más rápido y ya tengo los bloques listos, y después Cultural como Fase 36
+
+---
+
+**¿Aprobás esta propuesta? ¿Querés que ajuste algo antes de arrancar la implementación?**

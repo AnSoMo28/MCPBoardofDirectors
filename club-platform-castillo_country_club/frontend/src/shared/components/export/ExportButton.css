@@ -1,0 +1,480 @@
+/**
+ * @component ExportButton (Fase 24)
+ * @namespace .glass-export
+ * @depends globals.css (tokens, glass primitives)
+ * @note Glass dropdown with animated options, progress shimmer,
+ *       keyboard focus states, export history, spin/check keyframes.
+ * @import import './ExportButton.css';
+ */
+
+/* ═══════════════════════════════════════
+   Container
+   ═══════════════════════════════════════ */
+
+.glass-export {
+  position: relative;
+  display: inline-block;
+}
+
+/* ═══════════════════════════════════════
+   Trigger Button
+   ═══════════════════════════════════════ */
+
+.glass-export__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    letter-spacing 0.3s ease;
+  min-height: 36px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Variant styles */
+.glass-export__trigger--secondary {
+  background: var(--glass-bg);
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-export__trigger--secondary:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  letter-spacing: 0.03em;
+}
+
+.glass-export__trigger--primary {
+  background: rgba(201, 169, 110, 0.12);
+  color: var(--color-gold-400, #c9a96e);
+  border-color: rgba(201, 169, 110, 0.2);
+}
+
+.glass-export__trigger--primary:hover {
+  background: rgba(201, 169, 110, 0.2);
+  border-color: rgba(201, 169, 110, 0.35);
+  letter-spacing: 0.03em;
+}
+
+.glass-export__trigger--ghost {
+  background: transparent;
+  color: var(--color-silver-300, #b8b2a9);
+  border-color: transparent;
+}
+
+.glass-export__trigger--ghost:hover {
+  background: var(--glass-bg);
+  color: var(--color-silver-100, #f0ece4);
+}
+
+.glass-export__trigger:focus-visible {
+  outline: 2px solid var(--color-gold-400, #c9a96e);
+  outline-offset: 2px;
+}
+
+/* ── Trigger sub-elements ── */
+
+.glass-export__trigger-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.glass-export__trigger-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+}
+
+.glass-export__chevron {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  color: var(--color-silver-500, #7a7570);
+  transition: transform 0.2s ease;
+}
+
+.glass-export__chevron--open {
+  transform: rotate(180deg);
+}
+
+/* ═══════════════════════════════════════
+   Menu (Glass Dropdown)
+   ═══════════════════════════════════════ */
+
+.glass-export__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 50;
+  min-width: 260px;
+  padding: 4px 0;
+  backdrop-filter: blur(12px) saturate(1.05);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  background: rgba(14, 20, 32, 0.92);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
+  transform-origin: top right;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════
+   Option
+   ═══════════════════════════════════════ */
+
+.glass-export__option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    box-shadow 0.12s ease;
+  outline: none;
+}
+
+.glass-export__option:hover {
+  background: var(--glass-bg-hover);
+}
+
+.glass-export__option--focus {
+  background: var(--glass-bg-hover);
+  box-shadow: inset 0 0 0 1px rgba(201, 169, 110, 0.15);
+}
+
+/* ── AI variant ── */
+
+.glass-export__option--ai:hover {
+  background: rgba(201, 169, 110, 0.06);
+}
+
+.glass-export__option--ai.glass-export__option--focus {
+  background: rgba(201, 169, 110, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(201, 169, 110, 0.2);
+}
+
+/* ── Done variant ── */
+
+.glass-export__option--done .glass-export__option-icon {
+  color: var(--color-emerald-400, #34d399);
+}
+
+/* ═══════════════════════════════════════
+   Option Icon
+   ═══════════════════════════════════════ */
+
+.glass-export__option-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--color-silver-400, #a09a92);
+  transition: color 0.12s ease;
+}
+
+.glass-export__option:hover .glass-export__option-icon,
+.glass-export__option--focus .glass-export__option-icon {
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-export__option--ai .glass-export__option-icon {
+  color: var(--color-gold-400, #c9a96e);
+}
+
+/* ═══════════════════════════════════════
+   Option Info (Label + Description)
+   ═══════════════════════════════════════ */
+
+.glass-export__option-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-export__option-label {
+  margin: 0;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-200, #d4cfc7);
+  transition: color 0.12s ease;
+}
+
+.glass-export__option--ai .glass-export__option-label {
+  color: var(--color-gold-400, #c9a96e);
+}
+
+.glass-export__option-desc {
+  margin: 2px 0 0;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--color-silver-500, #7a7570);
+}
+
+/* ═══════════════════════════════════════
+   AI Badge
+   ═══════════════════════════════════════ */
+
+.glass-export__badge {
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgba(201, 169, 110, 0.12);
+  color: var(--color-gold-400, #c9a96e);
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════
+   History Section
+   ═══════════════════════════════════════ */
+
+.glass-export__history {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.glass-export__history-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-silver-500, #7a7570);
+  flex-shrink: 0;
+}
+
+.glass-export__history-text {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  color: var(--color-silver-500, #7a7570);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ═══════════════════════════════════════
+   Progress Bar (csv / excel shimmer)
+   ═══════════════════════════════════════ */
+
+.glass-export__progress {
+  position: absolute;
+  bottom: -2px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  border-radius: 1px;
+  overflow: hidden;
+  background: rgba(201, 169, 110, 0.08);
+}
+
+.glass-export__progress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-gold-400, #c9a96e) 45%,
+    var(--color-gold-400, #c9a96e) 55%,
+    transparent 100%
+  );
+  animation: export-progress-shimmer 1.2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════
+   Keyframes
+   ═══════════════════════════════════════ */
+
+@keyframes export-progress-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes export-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes export-check-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ── Animated icon classes ── */
+
+.glass-export__spin {
+  animation: export-spin 0.8s linear infinite;
+  color: var(--color-gold-400, #c9a96e);
+}
+
+.glass-export__check {
+  color: var(--color-emerald-400, #34d399);
+  animation: export-check-pop 0.3s ease-out;
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-export__trigger--secondary {
+  backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: var(--color-silver-700, #4a4742);
+}
+
+.light .glass-export__trigger--secondary:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.light .glass-export__trigger--primary {
+  background: rgba(201, 169, 110, 0.1);
+  border-color: rgba(201, 169, 110, 0.2);
+  color: #8b7340;
+}
+
+.light .glass-export__trigger--primary:hover {
+  background: rgba(201, 169, 110, 0.18);
+  border-color: rgba(201, 169, 110, 0.3);
+}
+
+.light .glass-export__trigger--ghost {
+  background: transparent;
+  color: var(--color-silver-600, #5c5853);
+}
+
+.light .glass-export__trigger--ghost:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .glass-export__chevron {
+  color: var(--color-silver-400, #a09a92);
+}
+
+.light .glass-export__menu {
+  backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-export__option:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-export__option--focus {
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(201, 169, 110, 0.2);
+}
+
+.light .glass-export__option--ai:hover {
+  background: rgba(201, 169, 110, 0.06);
+}
+
+.light .glass-export__option--ai.glass-export__option--focus {
+  background: rgba(201, 169, 110, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(201, 169, 110, 0.2);
+}
+
+.light .glass-export__option-icon {
+  color: var(--color-silver-400, #a09a92);
+}
+
+.light .glass-export__option:hover .glass-export__option-icon,
+.light .glass-export__option--focus .glass-export__option-icon {
+  color: var(--color-silver-700, #4a4742);
+}
+
+.light .glass-export__option--ai .glass-export__option-icon {
+  color: #8b7340;
+}
+
+.light .glass-export__option-label {
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .glass-export__option--ai .glass-export__option-label {
+  color: #8b7340;
+}
+
+.light .glass-export__option-desc {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-export__badge {
+  background: rgba(201, 169, 110, 0.15);
+  color: #8b7340;
+}
+
+.light .glass-export__history {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-export__history-dot {
+  background: var(--color-silver-400, #a09a92);
+}
+
+.light .glass-export__history-text {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-export__progress {
+  background: rgba(201, 169, 110, 0.1);
+}
+
+.light .glass-export__spin {
+  color: #8b7340;
+}
+
+.light .glass-export__check {
+  color: #059669;
+}

@@ -1,0 +1,507 @@
+/* src/features/engagement/components/SatisfactionSurvey.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Glass namespace: glass-eng-survey                           */
+/* Interactive survey wizard                                   */
+/* ═══════════════════════════════════════════════════════════ */
+
+[data-glass-eng-survey] {
+  --local-surface: var(--color-surface-1, #1a1a1a);
+  --local-surface-2: var(--color-surface-2, #222222);
+  --local-surface-3: var(--color-surface-3, #2a2a2a);
+  --local-border: rgba(255, 255, 255, 0.06);
+  --local-border-hover: rgba(255, 255, 255, 0.12);
+  --local-text: var(--color-silver-200, #e0dcd4);
+  --local-text-muted: var(--color-silver-400, #8a8580);
+  --local-accent: var(--color-emerald-400);
+  --local-gold: var(--color-gold-400);
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
+
+.eng-survey {
+  display: flex;
+  justify-content: center;
+}
+
+.eng-survey__shell {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Progress ───────────────────────────────────────────── */
+
+.eng-survey__progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eng-survey__progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  color: var(--local-text-muted);
+}
+
+.eng-survey__progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--local-surface);
+  overflow: hidden;
+}
+
+.eng-survey__progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--local-accent);
+  width: var(--progress, 0%);
+  transition: width 0.4s ease;
+}
+
+/* ── Question Card ──────────────────────────────────────── */
+
+.eng-survey__question-animated {
+  opacity: 0;
+  animation: eng-survey-slideIn 0.3s ease forwards;
+}
+
+.eng-survey__question-card {
+  padding: 24px;
+}
+
+.eng-survey__question-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.eng-survey__question-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--local-text-muted);
+}
+
+.eng-survey__question-text {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--local-text);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.eng-survey__question-description {
+  font-family: var(--font-body, "Cormorant Garamond", serif);
+  font-size: 14px;
+  color: var(--local-text-muted);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.eng-survey__question-input {
+  margin-top: 16px;
+}
+
+.eng-survey__required-hint {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  color: var(--local-text-muted);
+  margin-top: 10px;
+}
+
+/* ── NPS Input ──────────────────────────────────────────── */
+
+.eng-survey__nps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eng-survey__nps-grid {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 4px;
+}
+
+.eng-survey__nps-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 8px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--local-text);
+  background: var(--local-surface-3);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.eng-survey__nps-btn:hover {
+  background: color-mix(in srgb, var(--local-gold) 20%, transparent);
+}
+
+.eng-survey__nps-btn:active {
+  transform: scale(0.95);
+}
+
+.eng-survey__nps-btn[data-selected="true"] {
+  background: var(--local-accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(61, 170, 112, 0.25);
+}
+
+.eng-survey__nps-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  color: var(--local-text-muted);
+}
+
+/* ── Rating Input ───────────────────────────────────────── */
+
+.eng-survey__rating {
+  display: flex;
+  gap: 8px;
+}
+
+.eng-survey__rating-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: transform 0.15s ease;
+}
+
+.eng-survey__rating-btn:hover {
+  transform: scale(1.15);
+}
+
+.eng-survey__rating-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── Choice Input ───────────────────────────────────────── */
+
+.eng-survey__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eng-survey__choice-btn {
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--local-border);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--local-text-muted);
+  min-height: 44px;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.eng-survey__choice-btn:hover {
+  border-color: var(--local-border-hover);
+}
+
+.eng-survey__choice-btn[data-selected="true"] {
+  border-color: var(--local-accent);
+  background: color-mix(in srgb, var(--local-accent) 5%, transparent);
+  color: var(--local-text);
+}
+
+/* ── Text Input ─────────────────────────────────────────── */
+
+.eng-survey__textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--local-border);
+  background: var(--local-surface);
+  color: var(--local-text);
+  font-family: var(--font-body, "Cormorant Garamond", serif);
+  font-size: 15px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.eng-survey__textarea::placeholder {
+  color: var(--local-text-muted);
+  opacity: 0.7;
+}
+
+.eng-survey__textarea:focus {
+  outline: none;
+  border-color: var(--local-gold);
+}
+
+/* ── Navigation ─────────────────────────────────────────── */
+
+.eng-survey__nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── Comment Section ────────────────────────────────────── */
+
+.eng-survey__comment-animated {
+  opacity: 0;
+  animation: eng-survey-fadeUp 0.3s ease forwards;
+}
+
+.eng-survey__comment-card {
+  padding: 20px;
+}
+
+.eng-survey__comment-label {
+  display: block;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--local-text);
+  margin-bottom: 10px;
+}
+
+/* ── Dot Navigation ─────────────────────────────────────── */
+
+.eng-survey__dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.eng-survey__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.eng-survey__dot:hover {
+  opacity: 0.7;
+}
+
+.eng-survey__dot[data-answered="true"] {
+  background: var(--local-gold);
+}
+
+.eng-survey__dot[data-current="true"] {
+  background: var(--local-accent);
+  transform: scale(1.3);
+}
+
+/* ── Empty / Success States ─────────────────────────────── */
+
+.eng-survey__empty-card {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 48px;
+  text-align: center;
+}
+
+.eng-survey__empty-title {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--local-text);
+}
+
+.eng-survey__empty-subtitle {
+  font-family: var(--font-body, "Cormorant Garamond", serif);
+  font-size: 14px;
+  color: var(--local-text-muted);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.eng-survey__success-card {
+  padding: 48px;
+  text-align: center;
+  opacity: 0;
+  animation: eng-survey-successReveal 0.4s ease forwards;
+}
+
+.eng-survey__success-icon-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--local-accent) 10%, transparent);
+}
+
+.eng-survey__success-title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--local-text);
+}
+
+.eng-survey__success-text {
+  font-family: var(--font-body, "Cormorant Garamond", serif);
+  font-size: 16px;
+  color: var(--local-text-muted);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ── Skeleton ───────────────────────────────────────────── */
+
+.eng-survey__skeleton {
+  height: 128px;
+  border-radius: 16px;
+  background: var(--local-surface-2);
+  border: 1px solid var(--local-border);
+  opacity: 0;
+  animation: eng-survey-fadeUp 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.08s);
+}
+
+/* ════════════════════════════════════════════════════════════ */
+/* Keyframes                                                    */
+/* ════════════════════════════════════════════════════════════ */
+
+@keyframes eng-survey-slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes eng-survey-fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes eng-survey-successReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════ */
+/* Light Mode                                                   */
+/* ════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: light) {
+  [data-glass-eng-survey] {
+    --local-surface: #ffffff;
+    --local-surface-2: #f5f3f0;
+    --local-surface-3: #eae7e2;
+    --local-border: rgba(0, 0, 0, 0.08);
+    --local-border-hover: rgba(0, 0, 0, 0.15);
+    --local-text: #1a1a1a;
+    --local-text-muted: #5a5550;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════ */
+/* Reduced Motion                                               */
+/* ════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .eng-survey__question-animated,
+  .eng-survey__comment-animated,
+  .eng-survey__success-card,
+  .eng-survey__skeleton {
+    animation: none;
+    opacity: 1;
+  }
+
+  .eng-survey__progress-fill {
+    transition: none;
+  }
+
+  .eng-survey__nps-btn,
+  .eng-survey__rating-btn,
+  .eng-survey__choice-btn,
+  .eng-survey__dot {
+    transition: none;
+  }
+
+  .eng-survey__rating-btn:hover {
+    transform: none;
+  }
+
+  .eng-survey__nps-btn:active,
+  .eng-survey__rating-btn:active {
+    transform: none;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════ */
+/* Responsive                                                   */
+/* ════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .eng-survey__nps-grid {
+    gap: 3px;
+  }
+
+  .eng-survey__nps-btn {
+    font-size: 12px;
+    min-height: 38px;
+  }
+
+  .eng-survey__question-text {
+    font-size: 16px;
+  }
+
+  .eng-survey__success-card {
+    padding: 32px 20px;
+  }
+
+  .eng-survey__success-title {
+    font-size: 20px;
+  }
+}

@@ -1,0 +1,525 @@
+/**
+ * MemberEngagementProfile — Activity Intelligence Portrait
+ * Namespace: .glass-m360-engagement
+ * @phase 30 — Block 4.6
+ */
+
+/* ═══════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-engagement {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SECTION TITLE
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-engagement__section-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.glass-m360-engagement__peak-hours {
+  font-size: 0.625rem;
+  font-weight: 400;
+  color: var(--color-teal-400);
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════════════════════════
+   KPI ROW
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-engagement__kpis {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .glass-m360-engagement__kpis {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.glass-m360-engagement__kpi {
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--color-surface-0);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 8%, transparent);
+  transition: border-color 0.2s ease;
+}
+
+.glass-m360-engagement__kpi:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--color-silver-600) 18%,
+    transparent
+  );
+}
+
+.glass-m360-engagement__kpi-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.25rem;
+}
+
+.glass-m360-engagement__kpi-label {
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+}
+
+.glass-m360-engagement__kpi-value {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  line-height: 1.2;
+}
+
+.glass-m360-engagement__kpi-sub {
+  font-size: 0.5625rem;
+  color: var(--color-silver-600);
+  margin-top: 0.125rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEATMAP
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-engagement__heatmap {
+  padding: 1rem;
+  border-radius: 18px;
+  background: var(--color-surface-1);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 15%, transparent);
+}
+
+.glass-m360-engagement__heat-grid {
+  overflow-x: auto;
+}
+
+.glass-m360-engagement__heat-row {
+  display: grid;
+  grid-template-columns: 2.5rem repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.glass-m360-engagement__heat-corner {
+  /* empty corner cell */
+}
+
+.glass-m360-engagement__heat-hour-label {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+  text-align: center;
+}
+
+.glass-m360-engagement__heat-hour-label--peak {
+  color: var(--color-teal-400);
+  font-weight: 600;
+}
+
+.glass-m360-engagement__heat-day-label {
+  font-size: 0.625rem;
+  color: var(--color-silver-400);
+  display: flex;
+  align-items: center;
+}
+
+.glass-m360-engagement__heat-cell {
+  aspect-square: 1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.glass-m360-engagement__heat-cell--interactive:hover {
+  transform: scale(1.15);
+  z-index: 2;
+  position: relative;
+}
+
+.glass-m360-engagement__heat-cell--hot {
+  border: 1px solid
+    color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+}
+
+.glass-m360-engagement__heat-count {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+/* ── Heat legend ── */
+
+.glass-m360-engagement__heat-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.glass-m360-engagement__heat-legend-label {
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+}
+
+.glass-m360-engagement__heat-legend-swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DOMAIN DISTRIBUTION
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-engagement__domains {
+  padding: 1rem;
+  border-radius: 18px;
+  background: var(--color-surface-1);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 15%, transparent);
+}
+
+.glass-m360-engagement__domain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.glass-m360-engagement__domain-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  animation: m360-engagement-domain-in 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 50ms);
+}
+
+.glass-m360-engagement__domain-icon {
+  font-size: 0.875rem;
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.glass-m360-engagement__domain-label {
+  font-size: 0.75rem;
+  color: var(--color-silver-300);
+  width: 6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.glass-m360-engagement__domain-bar-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-surface-3);
+  overflow: hidden;
+}
+
+.glass-m360-engagement__domain-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.glass-m360-engagement__domain-bar-fill--animated {
+  animation: m360-engagement-bar-fill 0.6s ease forwards;
+  transform-origin: left;
+}
+
+.glass-m360-engagement__domain-count {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  width: 1.5rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.glass-m360-engagement__domain-trend {
+  font-size: 0.75rem;
+  width: 1rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.glass-m360-engagement__domain-date {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-600);
+  width: 3.5rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FAVORITE VENUES
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-engagement__venues {
+  padding: 1rem;
+  border-radius: 18px;
+  background: var(--color-surface-1);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 15%, transparent);
+}
+
+.glass-m360-engagement__venue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.5rem;
+}
+
+.glass-m360-engagement__venue {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 8px;
+  background: var(--color-surface-0);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 6%, transparent);
+  opacity: 0;
+  animation: m360-engagement-venue-in 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 60ms);
+  transition: border-color 0.2s ease;
+}
+
+.glass-m360-engagement__venue:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--color-silver-600) 18%,
+    transparent
+  );
+}
+
+.glass-m360-engagement__venue--top {
+  border-color: color-mix(
+    in srgb,
+    var(--color-gold-400) 20%,
+    transparent
+  );
+}
+
+.glass-m360-engagement__venue-rank {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  background: var(--color-surface-2);
+  color: var(--color-silver-400);
+  flex-shrink: 0;
+}
+
+.glass-m360-engagement__venue-rank[data-top="true"] {
+  background: color-mix(
+    in srgb,
+    var(--color-gold-400) 15%,
+    transparent
+  );
+  color: var(--color-gold-400);
+}
+
+.glass-m360-engagement__venue-info {
+  min-width: 0;
+}
+
+.glass-m360-engagement__venue-name {
+  font-size: 0.75rem;
+  color: var(--color-silver-200);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glass-m360-engagement__venue-visits {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+}
+/* ═══════════════════════════════════════════════════════
+   RECENCY DECAY
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-engagement__recency {
+  padding: 1rem;
+  border-radius: 18px;
+  background: var(--color-surface-1);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 15%, transparent);
+}
+
+.glass-m360-engagement__recency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.glass-m360-engagement__recency-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  animation: m360-engagement-domain-in 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 50ms);
+}
+
+.glass-m360-engagement__recency-icon {
+  font-size: 0.75rem;
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.glass-m360-engagement__recency-label {
+  font-size: 0.6875rem;
+  color: var(--color-silver-400);
+  width: 5rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glass-m360-engagement__recency-bar-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-surface-3);
+  overflow: hidden;
+}
+
+.glass-m360-engagement__recency-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease, opacity 0.3s ease;
+}
+
+.glass-m360-engagement__recency-score {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+  width: 2rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-engagement-domain-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes m360-engagement-bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes m360-engagement-venue-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360-engagement__heatmap,
+.light .glass-m360-engagement__domains,
+.light .glass-m360-engagement__venues {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-m360-engagement__kpi {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.light .glass-m360-engagement__venue {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.light .glass-m360-engagement__heat-cell--hot {
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.light .glass-m360-engagement__domain-bar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360-engagement__domain-row {
+    opacity: 1;
+    animation: none;
+  }
+
+  .glass-m360-engagement__domain-bar-fill--animated {
+    animation: none;
+  }
+
+  .glass-m360-engagement__venue {
+    opacity: 1;
+    animation: none;
+  }
+
+  .glass-m360-engagement__heat-cell--interactive:hover {
+    transform: none;
+  }
+
+  .glass-m360-engagement__heat-cell {
+    box-shadow: none !important;
+  }
+}

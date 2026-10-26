@@ -1,0 +1,883 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/FamilyTemperature.css
+   Phase 34+ Migration — "The Thermal Fabric"
+   Level 6+ Agency · Production Grade
+
+   MERGED: Old glass quality (11 elements recovered) + New BEM architecture
+   CSS STANDARD: 13 Dimensions Applied
+
+   Keyframes: fm-tempSlideUp, fm-tempBreathe, fm-tempGlow,
+              fm-tempRibbonFade, fm-tempPredictionSweep,
+              fm-tempDotBounce, fm-tempAuraPulse
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Glass Card Surface
+   D1-01: Translucent gradient with depth
+   D1-07: Inset top highlight (::before)
+   D1-12: Border-left gold accent
+   D1-13: Contextual shadow
+   D1-14: overflow: hidden
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-temperature {
+  position: relative;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    135deg,
+    rgba(180, 190, 210, 0.03) 0%,
+    rgba(15, 20, 30, 0.95) 40%,
+    rgba(10, 14, 20, 0.97) 100%
+  );
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid rgba(201, 169, 110, 0.2);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  opacity: 0;
+  animation: fm-tempSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Glass Morphism — Inset Highlight + Zone Glow Wash
+   D1-07: Top edge light
+   D6-01: Zone glow wash (::after)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-temperature::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.03) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Zone glow wash — radial gradient matching zone color */
+.fm-temperature::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 30% 20%,
+    color-mix(in srgb, var(--temp-zone-color, transparent) 5%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.fm-temperature[data-glow]::after {
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Header — Section Label + Zone Badge
+   D4-02: Label is mono uppercase 9px
+   D4-05: Badge is mono 9px
+   D2-07: Stagger delay 0s
+   D8-01: margin-bottom: -2px (tight coupling)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-temperature__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 14px;
+  opacity: 0;
+  animation: fm-tempSlideUp 0.3s ease 0s forwards;
+}
+
+.fm-temperature__section-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-silver-500);
+}
+
+.fm-temperature__zone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--temp-zone-color, var(--color-silver-400));
+  background: color-mix(in srgb, var(--temp-zone-color, var(--color-silver-400)) 12%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Thermal Aura Orb — SVG Ring + Center
+   D4-01: Score 28px mono (HERO element)
+   D5-01: Zone color via CSS var
+   D2-07: Stagger delay 0.05s
+   D6-03: z-index layering
+
+   RECOVERED from old:
+   - Score 28px (was 22px — too small)
+   - Arc drop-shadow glow
+   - Ghost ring visible (stroke-width: 4, opacity: 0.2)
+   - Aura always breathing (not conditional)
+   - transform-box: fill-box for aura
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-temperature__orb {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 14px;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-tempSlideUp 0.3s ease 0.05s forwards;
+}
+
+.fm-temperature__orb-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.fm-temperature__orb-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 6;
+}
+
+.fm-temperature__orb-ghost {
+  fill: none;
+  stroke: var(--color-silver-600);
+  stroke-width: 4;
+  opacity: 0.2;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease;
+}
+
+.fm-temperature__orb-arc {
+  fill: none;
+  stroke: var(--temp-zone-color, var(--color-silver-400));
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.32, 0.72, 0, 1);
+  filter: drop-shadow(0 0 4px var(--temp-zone-glow, transparent));
+}
+
+.fm-temperature__orb-aura {
+  fill: none;
+  stroke: var(--temp-zone-glow, transparent);
+  stroke-width: 2;
+  opacity: 0.2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fm-tempBreathe 3s ease-in-out infinite;
+}
+
+/* Aura intensifies on pulse zones */
+.fm-temperature[data-pulse] .fm-temperature__orb-aura {
+  opacity: 0.4;
+  stroke-width: 3;
+}
+
+/* Center overlay — THE HERO SCORE */
+.fm-temperature__orb-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.fm-temperature__orb-score {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--temp-zone-color, var(--color-silver-100));
+}
+
+.fm-temperature__orb-zone-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-silver-500);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Delta Callout — Centered under orb
+   D4-01: Delta value 14px mono
+   D5-04: Delta color via data-attribute
+   D2-07: Stagger delay 0.1s
+   D8-02: Centered for visual axis with orb
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-temperature__delta {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-tempSlideUp 0.3s ease 0.1s forwards;
+}
+
+.fm-temperature__delta-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.fm-temperature__delta-value[data-delta="positive"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-temperature__delta-value[data-delta="slightly-positive"] {
+  color: var(--color-teal-400);
+}
+
+.fm-temperature__delta-value[data-delta="slightly-negative"] {
+  color: var(--color-amber-400);
+}
+
+.fm-temperature__delta-value[data-delta="negative"] {
+  color: var(--color-rose-400);
+}
+
+.fm-temperature__delta-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Club Distribution Bar — 6px with visible gradient
+   D7-12: Distribution bar is interactive-feeling
+   D2-07: Stagger delay 0.15s
+
+   RECOVERED from old:
+   - height: 6px (was 4px — too thin)
+   - Full opacity gradient (was 0.2 — too muted)
+   - Dot has box-shadow glow
+   - Dash-style avg marker (not thin line)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-temperature__distribution {
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-tempSlideUp 0.3s ease 0.15s forwards;
+}
+
+.fm-temperature__distribution-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--color-rose-400) 0%,
+    var(--color-amber-400) 25%,
+    var(--color-teal-400) 50%,
+    var(--color-emerald-400) 75%,
+    var(--color-gold-400) 100%
+  );
+  overflow: visible;
+  margin-bottom: 8px;
+}
+
+.fm-temperature__distribution-avg {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: var(--temp-avg-pos, 50%);
+  width: 1px;
+  border-left: 1px dashed rgba(255, 255, 255, 0.25);
+  transform: translateX(-0.5px);
+  pointer-events: none;
+}
+
+.fm-temperature__distribution-marker {
+  position: absolute;
+  top: 50%;
+  left: var(--temp-family-pos, 50%);
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.fm-temperature__distribution-dot {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--temp-zone-color, var(--color-silver-400));
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 8px var(--temp-zone-glow, transparent);
+  animation: fm-tempDotBounce 0.4s ease 0.35s both;
+}
+
+.fm-temperature__distribution-labels {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-600);
+}
+
+.fm-temperature__distribution-club-label {
+  position: absolute;
+  left: var(--temp-avg-pos, 50%);
+  transform: translateX(-50%);
+  color: var(--color-silver-400);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Thermal Gradient Ribbon (30-day heatmap)
+   D2-01: Ribbon days are a stagger group
+   D7-01: Hover brightens + scaleY
+   D5-01: Day color via CSS var
+
+   RECOVERED from old:
+   - height: 12px pill (was 18px rect — too chunky)
+   - border-radius: 6px (pill shape)
+   - mask-image edge fade (premium detail)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-temperature__ribbon-section {
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-tempSlideUp 0.3s ease 0.2s forwards;
+}
+
+.fm-temperature__ribbon-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-silver-500);
+  margin-bottom: 6px;
+}
+
+.fm-temperature__ribbon-wrapper {
+  position: relative;
+}
+
+.fm-temperature__ribbon {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
+.fm-temperature__ribbon-day {
+  flex: 1;
+  min-width: 0;
+  background-color: var(--temp-day-color, var(--color-silver-600));
+  opacity: 0;
+  animation: fm-tempRibbonFade 0.2s ease forwards;
+  animation-delay: calc(var(--temp-day-index, 0) * 8ms + 0.25s);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+}
+
+.fm-temperature__ribbon-day:hover,
+.fm-temperature__ribbon-day[data-active] {
+  transform: scaleY(1.6);
+  opacity: 0.9;
+  z-index: 2;
+  position: relative;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--temp-day-color, transparent) 40%, transparent);
+}
+
+/* Tooltip */
+.fm-temperature__tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: var(--temp-tooltip-left, 50%);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(10, 14, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  animation: fm-tempSlideUp 0.15s ease forwards;
+}
+
+.fm-temperature__tooltip-day {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+}
+
+.fm-temperature__tooltip-score {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-silver-300);
+}
+
+.fm-temperature__tooltip-zone {
+  font-size: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Predictive Lane
+   D5-01: Gradient via CSS vars
+   D2-07: Stagger delay 0.25s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-temperature__prediction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-tempSlideUp 0.3s ease 0.25s forwards;
+}
+
+.fm-temperature__prediction-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-silver-600);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fm-temperature__prediction-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.fm-temperature__prediction-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--temp-pred-from, var(--color-silver-400)),
+    var(--temp-pred-to, var(--color-silver-400))
+  );
+  opacity: 0;
+  animation: fm-tempPredictionSweep 0.6s ease 0.5s forwards;
+}
+
+.fm-temperature__prediction-value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--temp-pred-color, var(--color-silver-200));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Narrative (P1) — Card treatment
+   D4-03: Body text uses --font-ui
+
+   RECOVERED from old:
+   - padding + bg + border card (was plain text)
+   - border-radius on card
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-temperature__narrative {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--color-silver-400);
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-tempSlideUp 0.3s ease 0.3s forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Keyframes — fm-temp* namespaced
+   D13-01: All at end
+   D13-02: All namespaced
+   D13-05: Component prefix match
+   Total: 7 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-tempSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-tempBreathe {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes fm-tempGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px color-mix(in srgb, var(--temp-zone-glow, transparent) 15%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 40px color-mix(in srgb, var(--temp-zone-glow, transparent) 25%, transparent);
+  }
+}
+
+@keyframes fm-tempRibbonFade {
+  from {
+    opacity: 0;
+    transform: scaleY(0.5);
+  }
+  to {
+    opacity: 0.75;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes fm-tempPredictionSweep {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    opacity: 0.35;
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+@keyframes fm-tempDotBounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fm-tempAuraPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.06);
+  }
+}
+
+/* Glow modifier — warm/hot/burning zones */
+.fm-temperature[data-glow] {
+  animation:
+    fm-tempSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards,
+    fm-tempGlow 4s ease-in-out 0.5s infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Light Mode
+   D11: Complete
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-temperature {
+  background: var(--color-surface-2);
+  border-color: rgba(0, 0, 0, 0.06);
+  border-left-color: rgba(201, 169, 110, 0.12);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-temperature::before,
+.light .fm-temperature::after {
+  display: none;
+}
+
+.light .fm-temperature__orb-track {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-temperature__orb-ghost {
+  stroke: var(--color-silver-300);
+  opacity: 0.25;
+}
+
+.light .fm-temperature__orb-arc {
+  filter: none;
+}
+
+.light .fm-temperature__distribution-avg {
+  border-left-color: rgba(0, 0, 0, 0.15);
+}
+
+.light .fm-temperature__distribution-dot {
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 6px var(--temp-zone-glow, transparent);
+}
+
+.light .fm-temperature__tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.light .fm-temperature__tooltip-score {
+  color: var(--color-silver-600);
+}
+
+.light .fm-temperature__prediction-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-temperature__prediction {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-temperature__narrative {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Reduced Motion
+   D12-05: opacity: 1 on all stagger
+   D12-06: transitions disabled
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-temperature,
+  .fm-temperature[data-glow],
+  .fm-temperature__header,
+  .fm-temperature__orb,
+  .fm-temperature__delta,
+  .fm-temperature__distribution,
+  .fm-temperature__ribbon-section,
+  .fm-temperature__prediction,
+  .fm-temperature__narrative {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .fm-temperature__ribbon-day {
+    animation: none;
+    opacity: 0.75;
+  }
+
+  .fm-temperature__orb-aura {
+    animation: none;
+    opacity: 0.15;
+  }
+
+  .fm-temperature[data-pulse] .fm-temperature__orb-aura {
+    opacity: 0.2;
+  }
+
+  .fm-temperature__orb-arc,
+  .fm-temperature__orb-ghost {
+    transition: none;
+  }
+
+  .fm-temperature__ribbon-day,
+  .fm-temperature__ribbon-day:hover,
+  .fm-temperature__ribbon-day[data-active] {
+    transition: none;
+    transform: scaleY(1.4);
+  }
+
+  .fm-temperature__prediction-fill {
+    animation: none;
+    opacity: 0.35;
+    transform: scaleX(1);
+  }
+
+  .fm-temperature__distribution-dot {
+    animation: none;
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .fm-temperature__tooltip {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-temperature__after {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Responsive
+   D9-01/04: Mobile adjustments
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fm-temperature {
+    padding: 14px 16px;
+  }
+
+  .fm-temperature__ribbon {
+    height: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fm-temperature__orb {
+    width: 100px;
+    height: 100px;
+  }
+
+  .fm-temperature__orb-score {
+    font-size: 22px;
+  }
+
+  .fm-temperature__delta {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Print
+   D12-01: break-inside: avoid
+   D12-02: White bg
+   D12-03: No pseudo-elements
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-temperature {
+    break-inside: avoid;
+    background: white;
+    border: 1px solid #ccc;
+    border-left: 3px solid #c9a96e;
+    backdrop-filter: none;
+    opacity: 1;
+    animation: none;
+    box-shadow: none;
+  }
+
+  .fm-temperature::before,
+  .fm-temperature::after {
+    display: none;
+  }
+
+  .fm-temperature__header,
+  .fm-temperature__orb,
+  .fm-temperature__delta,
+  .fm-temperature__distribution,
+  .fm-temperature__ribbon-section,
+  .fm-temperature__prediction,
+  .fm-temperature__narrative {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-temperature__ribbon-day {
+    animation: none;
+    opacity: 1;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-temperature__orb-arc {
+    stroke: #333 !important;
+    filter: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-temperature__orb-track,
+  .fm-temperature__orb-ghost {
+    stroke: #ddd !important;
+  }
+
+  .fm-temperature__narrative {
+    background: #f9f9f9;
+    border-color: #ddd;
+  }
+}

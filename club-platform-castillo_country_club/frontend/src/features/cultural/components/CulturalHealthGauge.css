@@ -1,0 +1,325 @@
+/**
+ * CulturalHealthGauge — V2 Health Gauge CSS
+ *
+ * Namespace: .cultural-health-gauge-*
+ * Dynamic colors via data-level attribute.
+ * Stagger via --stagger-i.
+ * Light mode overrides.
+ * Reduced motion.
+ */
+
+/* ══════════════════════════════════════════════════════════
+   ROOT
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-health-gauge {
+  --chg-font-display: 'Cormorant Garamond', serif;
+  --chg-font-mono: 'DM Mono', monospace;
+  --chg-ring-bg: rgba(255, 255, 255, 0.06);
+  --chg-bar-bg: rgba(255, 255, 255, 0.06);
+  --chg-text-primary: rgba(255, 255, 255, 0.88);
+  --chg-text-secondary: rgba(255, 255, 255, 0.5);
+  --chg-text-muted: rgba(255, 255, 255, 0.3);
+  --chg-gauge-color: #4ade80;
+  --chg-stagger-duration: 0.4s;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--chg-font-mono);
+}
+
+/* ══════════════════════════════════════════════════════════
+   LEVEL COLORS
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-health-gauge[data-level="excellent"] {
+  --chg-gauge-color: #4ade80;
+}
+
+.cultural-health-gauge[data-level="good"] {
+  --chg-gauge-color: #60a5fa;
+}
+
+.cultural-health-gauge[data-level="warning"] {
+  --chg-gauge-color: #eab308;
+}
+
+.cultural-health-gauge[data-level="critical"] {
+  --chg-gauge-color: #ef4444;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RING GAUGE
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-health-gauge__ring-wrap {
+  position: relative;
+}
+
+.cultural-health-gauge--sm .cultural-health-gauge__ring-wrap {
+  width: 80px;
+  height: 80px;
+}
+
+.cultural-health-gauge--md .cultural-health-gauge__ring-wrap {
+  width: 120px;
+  height: 120px;
+}
+
+.cultural-health-gauge--lg .cultural-health-gauge__ring-wrap {
+  width: 160px;
+  height: 160px;
+}
+
+.cultural-health-gauge__svg {
+  width: 100%;
+  height: 100%;
+}
+
+.cultural-health-gauge__ring-bg {
+  stroke: var(--chg-ring-bg);
+}
+
+.cultural-health-gauge__ring-fill {
+  stroke: var(--chg-gauge-color);
+  transition: stroke-dashoffset 1s ease-out;
+}
+
+.cultural-health-gauge__ring-fill--animated {
+  animation: chgRingReveal 1.2s ease-out forwards;
+}
+
+.cultural-health-gauge__score-text {
+  fill: var(--chg-gauge-color);
+  font-family: var(--chg-font-display);
+  font-weight: 700;
+}
+
+.cultural-health-gauge__level-text {
+  fill: var(--chg-text-muted);
+  font-family: var(--chg-font-mono);
+}
+
+/* ══════════════════════════════════════════════════════════
+   DIMENSION BARS
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-health-gauge__dimensions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 240px;
+}
+
+.cultural-health-gauge__dimension {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  opacity: 0;
+  animation: chgFadeSlideUp var(--chg-stagger-duration) ease forwards;
+  animation-delay: calc(0.3s + var(--stagger-i, 0) * 60ms);
+}
+
+.cultural-health-gauge__dim-header {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.cultural-health-gauge__dim-icon {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.cultural-health-gauge__dim-label {
+  flex: 1;
+  font-size: 0.55rem;
+  color: var(--chg-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cultural-health-gauge__dim-score {
+  font-family: var(--chg-font-display);
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--chg-text-primary);
+}
+
+/* Level-colored score */
+.cultural-health-gauge__dimension[data-level="excellent"] .cultural-health-gauge__dim-score {
+  color: #4ade80;
+}
+
+.cultural-health-gauge__dimension[data-level="good"] .cultural-health-gauge__dim-score {
+  color: #60a5fa;
+}
+
+.cultural-health-gauge__dimension[data-level="warning"] .cultural-health-gauge__dim-score {
+  color: #eab308;
+}
+
+.cultural-health-gauge__dimension[data-level="critical"] .cultural-health-gauge__dim-score {
+  color: #ef4444;
+}
+
+/* Bar track */
+.cultural-health-gauge__dim-bar {
+  height: 3px;
+  background: var(--chg-bar-bg);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cultural-health-gauge__dim-fill {
+  height: 100%;
+  width: var(--dim-width, 0%);
+  border-radius: 2px;
+}
+
+/* Level-colored fill */
+.cultural-health-gauge__dimension[data-level="excellent"] .cultural-health-gauge__dim-fill {
+  background: #4ade80;
+}
+
+.cultural-health-gauge__dimension[data-level="good"] .cultural-health-gauge__dim-fill {
+  background: #60a5fa;
+}
+
+.cultural-health-gauge__dimension[data-level="warning"] .cultural-health-gauge__dim-fill {
+  background: #eab308;
+}
+
+.cultural-health-gauge__dimension[data-level="critical"] .cultural-health-gauge__dim-fill {
+  background: #ef4444;
+}
+
+.cultural-health-gauge__dim-fill--animated {
+  animation: chgBarFill 0.8s ease-out forwards;
+  animation-delay: calc(0.5s + var(--stagger-i, 0) * 80ms);
+}
+
+/* ══════════════════════════════════════════════════════════
+   KEYFRAMES
+   ══════════════════════════════════════════════════════════ */
+
+@keyframes chgRingReveal {
+  from {
+    stroke-dashoffset: calc(2 * 3.14159 * var(--ring-radius, 54));
+  }
+  to {
+    stroke-dashoffset: var(--ring-offset, 0);
+  }
+}
+
+@keyframes chgFadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes chgBarFill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: var(--dim-width, 0%);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .cultural-health-gauge__ring-fill {
+    transition: none;
+  }
+
+  .cultural-health-gauge__ring-fill--animated {
+    animation: none;
+  }
+
+  .cultural-health-gauge__dimension {
+    animation: none;
+    opacity: 1;
+  }
+
+  .cultural-health-gauge__dim-fill--animated {
+    animation: none;
+  }
+}
+
+.cultural-health-gauge[data-prefers-reduced="true"] .cultural-health-gauge__ring-fill {
+  transition: none;
+}
+
+.cultural-health-gauge[data-prefers-reduced="true"] .cultural-health-gauge__ring-fill--animated,
+.cultural-health-gauge[data-prefers-reduced="true"] .cultural-health-gauge__dimension,
+.cultural-health-gauge[data-prefers-reduced="true"] .cultural-health-gauge__dim-fill--animated {
+  animation: none;
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════════════════════
+   LIGHT MODE
+   ══════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: light) {
+  .cultural-health-gauge {
+    --chg-ring-bg: rgba(0, 0, 0, 0.08);
+    --chg-bar-bg: rgba(0, 0, 0, 0.08);
+    --chg-text-primary: rgba(0, 0, 0, 0.88);
+    --chg-text-secondary: rgba(0, 0, 0, 0.5);
+    --chg-text-muted: rgba(0, 0, 0, 0.35);
+  }
+
+  .cultural-health-gauge[data-level="excellent"] {
+    --chg-gauge-color: #16a34a;
+  }
+
+  .cultural-health-gauge[data-level="good"] {
+    --chg-gauge-color: #2563eb;
+  }
+
+  .cultural-health-gauge[data-level="warning"] {
+    --chg-gauge-color: #ca8a04;
+  }
+
+  .cultural-health-gauge[data-level="critical"] {
+    --chg-gauge-color: #dc2626;
+  }
+
+  .cultural-health-gauge__dimension[data-level="excellent"] .cultural-health-gauge__dim-score,
+  .cultural-health-gauge__dimension[data-level="excellent"] .cultural-health-gauge__dim-fill {
+    color: #16a34a;
+    background: #16a34a;
+  }
+
+  .cultural-health-gauge__dimension[data-level="good"] .cultural-health-gauge__dim-score,
+  .cultural-health-gauge__dimension[data-level="good"] .cultural-health-gauge__dim-fill {
+    color: #2563eb;
+    background: #2563eb;
+  }
+
+  .cultural-health-gauge__dimension[data-level="warning"] .cultural-health-gauge__dim-score,
+  .cultural-health-gauge__dimension[data-level="warning"] .cultural-health-gauge__dim-fill {
+    color: #ca8a04;
+    background: #ca8a04;
+  }
+
+  .cultural-health-gauge__dimension[data-level="critical"] .cultural-health-gauge__dim-score,
+  .cultural-health-gauge__dimension[data-level="critical"] .cultural-health-gauge__dim-fill {
+    color: #dc2626;
+    background: #dc2626;
+  }
+}

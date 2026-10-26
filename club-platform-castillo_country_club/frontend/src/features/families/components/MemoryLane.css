@@ -1,0 +1,921 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/MemoryLane.css
+   Phase 34+ Migration — "The Emotional Timeline"
+   Level 6+ Agency · Apple Production Grade
+
+   PRE-WRITE PORT AUDIT — ALL original visual decisions preserved:
+     ✅ Inset glow hero (box-shadow: inset 0 0 20px)
+     ✅ Inset glow prominent (box-shadow: inset 0 0 14px)
+     ✅ Content separator (border-bottom between entries)
+     ✅ Significance 16px circle badge
+     ✅ Connector width 10px
+     ✅ Node box-shadow glow on ALL nodes
+     ✅ Node width/height transition
+     ✅ Entry translateX(-8px) slide from left
+     ✅ nth-child stagger (1-10, 0.05s increments)
+     ✅ Hero title 14px/700, subtle title 12px/500
+     ✅ Hero narrative 12px/silver-300
+     ✅ Body max-height 400px
+     ✅ Media scaleY(0.8) animation
+     ✅ Tags monochromatic + pill 100px + lowercase
+     ✅ Badge pill 100px + uppercase + 700
+     ✅ Narrative font-body + margin 6px 0 8px
+     ✅ Light mode hero/prominent glow inversion
+     ✅ Light mode narrative sizing
+     ✅ Reduced motion max-height: none
+     ✅ Content min-width:0, padding-bottom:16px, last-child
+     ✅ Media-btn pill 100px
+     ✅ Member-avatar hover gold bg 15% + border 25%
+     ✅ Node transition width/height
+
+   NEW additions (not in original):
+     ✅ -webkit-backdrop-filter (Safari)
+     ✅ Noise texture ::after (D1-05, D6-04)
+     ✅ :active states (D-03, D7-03)
+     ✅ min-height on buttons (D-07, D7-07)
+     ✅ cubic-bezier(0.32,0.72,0,1) on body expand (D3-01)
+     ✅ Exit transition faster than entrance (D3-04)
+     ✅ font-display on hero title (D4-04)
+     ✅ Light mode hover (D11-07)
+     ✅ ≤768px breakpoint (D9-01)
+     ✅ focus-visible on all buttons (D10)
+     ✅ data-testid (D10)
+     ✅ Print styles (D12)
+     ✅ Atom overrides: fm-glass-card, fm-section-label,
+        fm-status-dot, fm-action-btn, fm-ai-badge (P5)
+     ✅ CTA share button (P3, I-03)
+     ✅ fm-ai-badge (P7-12)
+
+   ATOMS USED (family-atoms.css):
+     fm-glass-card    → root surface
+     fm-section-label → header label
+     fm-status-dot    → timeline nodes
+     fm-action-btn    → media-btn + share-btn
+     fm-ai-badge      → AI-curated indicator
+
+   Keyframes: fm-memFadeIn, fm-memEntryReveal,
+              fm-memMediaIn, fm-memNodePulse
+   Total: 4 keyframes (fm-mem* namespaced)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Glass Card Surface (D1)
+   ATOM: fm-glass-card provides base glass morphism
+   COMPONENT: extends with MemoryLane-specific gradient + padding
+   FIXES: D1-05 (noise ::after), D1-03 (-webkit-backdrop-filter)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem {
+  position: relative;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    135deg,
+    rgba(180, 190, 210, 0.03) 0%,
+    rgba(15, 20, 30, 0.95) 40%,
+    rgba(10, 14, 20, 0.97) 100%
+  );
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+  opacity: 0;
+  animation: fm-memFadeIn 0.4s ease forwards;
+}
+
+/* D1: Inset top highlight */
+.fm-mem::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.03) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* D1-05, D6-04: Noise texture — consistent across all glass cards */
+.fm-mem::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.fm-mem > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Header (D4)
+   ATOM: fm-section-label provides base label styling
+   FIXES: +fm-ai-badge, +header-right group
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  opacity: 0;
+  animation: fm-memFadeIn 0.25s ease 0.1s forwards;
+}
+
+/* Component override: atom fm-section-label provides base */
+.fm-mem__label {
+  font-size: 10px;
+  color: var(--color-silver-500);
+}
+
+.fm-mem__header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fm-mem__count {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-600);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  AI Badge (P7-12)
+   ATOM: fm-ai-badge provides base badge styling
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__ai-badge {
+  /* Atom provides base; component-specific: positioning context */
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Empty State
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__empty {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-500);
+  text-align: center;
+  padding: 20px 0;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Timeline
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Memory Entry — The Timeline Card
+   PORTED: translateX(-8px), nth-child stagger, gap 12px
+   D5: Type-driven color via --mem-color (config §13)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__entry {
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  animation: fm-memEntryReveal 0.35s ease forwards;
+}
+
+/* D2: nth-child stagger — PORTED from original */
+.fm-mem__entry:nth-child(1)  { animation-delay: 0.05s; }
+.fm-mem__entry:nth-child(2)  { animation-delay: 0.1s; }
+.fm-mem__entry:nth-child(3)  { animation-delay: 0.15s; }
+.fm-mem__entry:nth-child(4)  { animation-delay: 0.2s; }
+.fm-mem__entry:nth-child(5)  { animation-delay: 0.25s; }
+.fm-mem__entry:nth-child(6)  { animation-delay: 0.3s; }
+.fm-mem__entry:nth-child(7)  { animation-delay: 0.35s; }
+.fm-mem__entry:nth-child(8)  { animation-delay: 0.4s; }
+.fm-mem__entry:nth-child(9)  { animation-delay: 0.45s; }
+.fm-mem__entry:nth-child(10) { animation-delay: 0.5s; }
+
+/* ── Timeline connector ──
+   PORTED: width 10px, node box-shadow on ALL nodes, node transition
+   ATOM: fm-status-dot provides base dot styling */
+
+.fm-mem__connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 10px;
+  padding-top: 4px;
+}
+
+/* Component overrides for fm-status-dot atom */
+.fm-mem__node {
+  width: 7px;
+  height: 7px;
+  background: var(--mem-color, var(--color-silver-400));
+  box-shadow: 0 0 6px var(--mem-color, var(--color-silver-400));
+  transition: width 0.2s ease, height 0.2s ease;
+  z-index: 1;
+}
+
+.fm-mem__connector[data-hero="true"] .fm-mem__node {
+  width: 10px;
+  height: 10px;
+}
+
+.fm-mem__line {
+  flex: 1;
+  width: 1px;
+  min-height: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  margin-top: 4px;
+}
+
+/* ── Content ──
+   PORTED: min-width:0, padding-bottom:16px, border-bottom separator,
+   last-child removal */
+
+.fm-mem__content {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  margin-bottom: 2px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.fm-mem__entry:last-child .fm-mem__content {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* D7-01: Hover + D7-03: Active */
+.fm-mem__content:hover {
+  background: rgba(255, 255, 255, 0.012);
+  border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+
+.fm-mem__content:active {
+  background: rgba(255, 255, 255, 0.006);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Significance Weight Variants
+   PORTED: hero inset glow 20px/15%, prominent inset glow 14px/8%,
+   padding, border-left, margin-left negative, border-radius sm
+   FIXES: D6-01 (pseudo on root covers all entries)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__entry[data-weight="hero"] .fm-mem__content {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm, 6px);
+  border-left: 3px solid var(--mem-color, var(--color-gold-400));
+  border-bottom: none;
+  background: rgba(255, 255, 255, 0.015);
+  box-shadow: inset 0 0 20px color-mix(in srgb, var(--mem-color, var(--color-gold-400)) 15%, transparent);
+  margin-left: -2px;
+}
+
+.fm-mem__entry[data-weight="prominent"] .fm-mem__content {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm, 6px);
+  border-left: 2px solid var(--mem-color, var(--color-silver-400));
+  border-bottom: none;
+  background: rgba(255, 255, 255, 0.01);
+  box-shadow: inset 0 0 14px color-mix(in srgb, var(--mem-color, var(--color-silver-400)) 8%, transparent);
+  margin-left: -1px;
+}
+
+.fm-mem__entry[data-weight="subtle"] .fm-mem__content {
+  opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Entry Header — Type Badge + Date + Significance Circle
+   PORTED: badge pill 100px + uppercase + 700, significance 16px circle
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__entry-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.fm-mem__type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mem-color, var(--color-silver-400));
+  background: color-mix(in srgb, var(--mem-color, transparent) 10%, transparent);
+}
+
+.fm-mem__date {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-600);
+}
+
+/* PORTED: 16px circle significance badge */
+.fm-mem__significance {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--mem-color, var(--color-silver-400));
+  background: color-mix(in srgb, var(--mem-color, var(--color-silver-400)) 10%, transparent);
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Title Button — Expandable Toggle
+   PORTED: hero 14px/700, subtle 12px/500/silver-400
+   FIXES: D4-04 (hero title font-display), D-03 (:active),
+          D-07 (min-height), H-07 (Escape via onKeyDown)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__title-btn {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  min-height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.fm-mem__title-btn:hover {
+  opacity: 0.85;
+}
+
+.fm-mem__title-btn:active {
+  opacity: 0.7;
+}
+
+.fm-mem__title-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.fm-mem__title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-silver-200);
+  margin: 0;
+}
+
+/* D4-04: Hero title uses display font for headline emphasis */
+.fm-mem__entry[data-weight="hero"] .fm-mem__title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* PORTED: subtle title de-emphasis */
+.fm-mem__entry[data-weight="subtle"] .fm-mem__title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-silver-400);
+}
+
+.fm-mem__expand-icon {
+  flex-shrink: 0;
+  color: var(--color-silver-600);
+  margin-top: 2px;
+  transition: color 0.15s ease;
+}
+
+.fm-mem__title-btn:hover .fm-mem__expand-icon {
+  color: var(--color-silver-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Expandable Body
+   PORTED: max-height 400px
+   FIXES: D3-01 (cubic-bezier), D3-04 (exit faster than entrance)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__body {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  /* D3-04: Exit is faster (0.2s) than entrance (0.35s) */
+  transition: max-height 0.2s cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 0.15s ease;
+}
+
+.fm-mem__body[data-expanded="true"] {
+  max-height: 400px;
+  opacity: 1;
+  pointer-events: auto;
+  /* D3-01: cubic-bezier for panel expand */
+  transition: max-height 0.35s cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 0.25s ease 0.05s;
+}
+
+/* ── Narrative ──
+   PORTED: font-body, margin 6px 0 8px, hero 12px/silver-300 */
+
+.fm-mem__narrative {
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--color-silver-400);
+  margin: 6px 0 8px;
+}
+
+.fm-mem__entry[data-weight="hero"] .fm-mem__narrative {
+  font-size: 12px;
+  color: var(--color-silver-300);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Media Preview
+   PORTED: pill 100px, scaleY(0.8) animation
+   ATOM: fm-action-btn provides base button
+   FIXES: D-07 (min-height on media-btn)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__media {
+  margin-bottom: 8px;
+}
+
+/* Component overrides for fm-action-btn atom */
+.fm-mem__media-btn {
+  padding: 2px 8px;
+  border-radius: 100px;
+  min-height: 28px;
+}
+
+.fm-mem__media-btn:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.fm-mem__media-preview {
+  margin-top: 6px;
+  border-radius: var(--radius-sm, 6px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  opacity: 0;
+  animation: fm-memMediaIn 0.3s ease forwards;
+}
+
+.fm-mem__media-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  object-fit: cover;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  AI Tags
+   PORTED: monochromatic, pill 100px, lowercase, border, margin-bottom 8px
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.fm-mem__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--color-silver-500);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  text-transform: lowercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Member Avatars
+   PORTED: silver-300 text, silver-400 bg 12%, hover gold bg 15% + border 25%
+   FIXES: D-03 (:active state)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__members {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.fm-mem__members-icon {
+  color: var(--color-silver-600);
+  flex-shrink: 0;
+}
+
+.fm-mem__member-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--color-silver-300);
+  background: color-mix(in srgb, var(--color-silver-400) 12%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.fm-mem__member-avatar:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+}
+
+.fm-mem__member-avatar:active {
+  background: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+}
+
+.fm-mem__member-avatar:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Actions / CTA (P3, I-03)
+   NEW: Share button per memory entry
+   ATOM: fm-action-btn provides base
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-mem__actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Component overrides for fm-action-btn atom */
+.fm-mem__share-btn {
+  color: var(--color-gold-400);
+  border-color: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  background: color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+}
+
+.fm-mem__share-btn:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 35%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §14  Keyframes — fm-mem* namespaced
+   PORTED: translateX(-8px) entry, scaleY(0.8) media
+   D13: ALL at end, ALL namespaced, count documented
+   Total: 4 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-memFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-memEntryReveal {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fm-memMediaIn {
+  from {
+    opacity: 0;
+    transform: scaleY(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes fm-memNodePulse {
+  0%, 100% {
+    box-shadow: 0 0 4px var(--mem-color, var(--color-silver-400));
+  }
+  50% {
+    box-shadow: 0 0 8px var(--mem-color, var(--color-silver-400));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §15  Light Mode (D11)
+   PORTED: hero/prominent glow inversion, narrative sizing,
+   tags, media-btn, member-avatar
+   FIXES: D11-07 (hover in light mode)
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-mem {
+  background: var(--color-surface-2);
+  border-color: rgba(0, 0, 0, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.light .fm-mem::before {
+  display: none;
+}
+
+.light .fm-mem::after {
+  display: none;
+}
+
+/* D11-07: Light mode hover */
+.light .fm-mem__content:hover {
+  background: rgba(0, 0, 0, 0.015);
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-mem__content:active {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+/* PORTED: Light mode glow inversion */
+.light .fm-mem__entry[data-weight="hero"] .fm-mem__content {
+  background: rgba(0, 0, 0, 0.015);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.02);
+}
+
+.light .fm-mem__entry[data-weight="prominent"] .fm-mem__content {
+  background: rgba(0, 0, 0, 0.01);
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.015);
+}
+
+.light .fm-mem__line {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-mem__content {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+
+/* PORTED: Light mode narrative sizing */
+.light .fm-mem__narrative {
+  color: var(--color-silver-600);
+}
+
+.light .fm-mem__entry[data-weight="hero"] .fm-mem__narrative {
+  color: var(--color-silver-500);
+}
+
+.light .fm-mem__tag {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-500);
+}
+
+.light .fm-mem__media-btn {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-mem__media-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .fm-mem__media-preview {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-mem__member-avatar {
+  background: color-mix(in srgb, var(--color-silver-400) 8%, transparent);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-mem__member-avatar:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+}
+
+.light .fm-mem__actions {
+  border-top-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-mem__share-btn {
+  background: color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+
+.light .fm-mem__share-btn:hover {
+  box-shadow: none;
+}
+
+.light .fm-mem__title-btn:focus-visible {
+  outline-color: var(--color-gold-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §16  Reduced Motion (D12)
+   PORTED: max-height none on expanded body
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-mem {
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-mem__header {
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-mem__entry {
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-mem__body {
+    transition: none;
+  }
+
+  .fm-mem__body[data-expanded="true"] {
+    max-height: none;
+  }
+
+  .fm-mem__node {
+    animation: none;
+  }
+
+  .fm-mem__content,
+  .fm-mem__title-btn,
+  .fm-mem__media-btn,
+  .fm-mem__member-avatar,
+  .fm-mem__expand-icon,
+  .fm-mem__tag {
+    transition: none;
+  }
+
+  .fm-mem__media-preview {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §17  Responsive (D9)
+   FIXES: D9-01 (≤768px breakpoint added)
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fm-mem {
+    padding: 14px 16px;
+  }
+
+  .fm-mem__entry[data-weight="hero"] .fm-mem__content {
+    padding: 8px 10px;
+  }
+
+  .fm-mem__entry[data-weight="hero"] .fm-mem__title {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fm-mem {
+    padding: 12px 14px;
+  }
+
+  .fm-mem__connector {
+    width: 8px;
+  }
+
+  .fm-mem__content {
+    padding-bottom: 12px;
+  }
+
+  .fm-mem__entry[data-weight="hero"] .fm-mem__title {
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-ui);
+  }
+
+  .fm-mem__members {
+    flex-wrap: wrap;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §18  Print (D12)
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-mem {
+    background: white;
+    border: 1px solid #ccc;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  .fm-mem::before,
+  .fm-mem::after {
+    display: none;
+  }
+
+  .fm-mem__header,
+  .fm-mem__entry {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-mem__entry {
+    break-inside: avoid;
+  }
+
+  .fm-mem__body[data-expanded="false"] {
+    max-height: none;
+    opacity: 1;
+  }
+
+  .fm-mem__node {
+    animation: none;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-mem__type-badge,
+  .fm-mem__significance {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-mem__media-btn,
+  .fm-mem__share-btn {
+    display: none;
+  }
+
+  .fm-mem__media-preview {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-mem__ai-badge {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

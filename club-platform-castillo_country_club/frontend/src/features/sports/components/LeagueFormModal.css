@@ -1,0 +1,522 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/LeagueFormModal.css
+   §B4.12 — League Form Modal V2 Styles
+   Living Protocol: 4/7 (form — no narrative)
+
+   1. RESPIRACIÓN:  modal entry animation
+   2. REACCIÓN:     hover/focus on inputs, buttons, team chips
+   3. MEMORIA:      form state persists during interaction
+   4. INTENCIÓN:    validation errors, submit state, HITL badge
+   5. SINIESTRÍA:   error borders, HITL risk amber, gold submit
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    N/A (form)
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root variables ───────────────────────────────── */
+
+.spt-lf__overlay {
+  --spt-lf-accent: var(--color-teal-400, #2a9ab5);
+  --spt-lf-gold: var(--color-gold-400, #c9a96e);
+  --spt-lf-amber: var(--color-amber-400, #d4a017);
+  --spt-lf-surface: var(--color-surface-1, #1a1a1a);
+  --spt-lf-surface-2: var(--color-surface-2, #222);
+  --spt-lf-border: rgba(255, 255, 255, 0.06);
+  --spt-lf-text: var(--color-silver-100, #f0ece4);
+  --spt-lf-text-muted: var(--color-silver-400, #8a8580);
+  --spt-lf-text-dim: var(--color-silver-500, #7a7570);
+}
+
+.spt-lf__overlay[data-mode="calm"]    { --spt-lf-accent: var(--color-teal-400, #2a9ab5); }
+.spt-lf__overlay[data-mode="alert"]   { --spt-lf-accent: var(--color-amber-400, #d4a017); }
+.spt-lf__overlay[data-mode="critical"]{ --spt-lf-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Overlay + Backdrop ───────────────────────────── */
+
+.spt-lf__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.spt-lf__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* ── §2 — Modal ────────────────────────────────────────── */
+
+.spt-lf__modal {
+  position: relative;
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--spt-lf-surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: spt-lf-modal-enter 0.25s ease;
+}
+
+.spt-lf__overlay[data-prefers-reduced="true"] .spt-lf__modal {
+  animation: none;
+}
+
+@keyframes spt-lf-modal-enter {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── §3 — Header ───────────────────────────────────────── */
+
+.spt-lf__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--spt-lf-border);
+  background: var(--spt-lf-surface);
+}
+
+.spt-lf__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.05rem;
+  color: var(--spt-lf-text);
+  margin: 0;
+}
+
+.spt-lf__hitl-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  color: var(--spt-lf-amber);
+  margin: 0.15rem 0 0;
+}
+
+.spt-lf__hitl-badge-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.spt-lf__close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.spt-lf__close-btn:hover {
+  background: var(--color-surface-3, #333);
+}
+
+.spt-lf__close-btn:focus-visible {
+  outline: 2px solid var(--spt-lf-accent);
+  outline-offset: 2px;
+}
+
+.spt-lf__close-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--spt-lf-text-muted);
+}
+
+/* ── §4 — Form Body ────────────────────────────────────── */
+
+.spt-lf__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+/* ── §5 — Form Field ───────────────────────────────────── */
+
+.spt-lf__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.spt-lf__label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--spt-lf-text-muted);
+}
+
+.spt-lf__label-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.spt-lf__error {
+  font-size: 0.6rem;
+  color: var(--color-rose-400);
+  margin: 0;
+}
+
+/* ── §6 — Inputs (LP 2: Reacción) ──────────────────────── */
+
+.spt-lf__input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--spt-lf-border);
+  border-radius: 8px;
+  background: var(--spt-lf-surface-2);
+  font-size: 0.8rem;
+  color: var(--spt-lf-text);
+  min-height: 44px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.spt-lf__input::placeholder {
+  color: var(--spt-lf-text-dim);
+}
+
+.spt-lf__input:focus {
+  outline: none;
+  border-color: var(--spt-lf-accent);
+  box-shadow: 0 0 0 3px rgba(42, 154, 181, 0.15);
+}
+
+.spt-lf__input[data-has-error="true"] {
+  border-color: var(--color-rose-400);
+}
+
+.spt-lf__input--compact {
+  min-height: 36px;
+  font-size: 0.75rem;
+}
+
+.spt-lf__input--mono {
+  font-family: var(--font-mono, "DM Mono", monospace);
+}
+
+.spt-lf__input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spt-lf__select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--spt-lf-border);
+  border-radius: 8px;
+  background: var(--spt-lf-surface-2);
+  font-size: 0.8rem;
+  color: var(--spt-lf-text);
+  min-height: 44px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.spt-lf__select:focus {
+  outline: none;
+  border-color: var(--spt-lf-accent);
+}
+
+/* ── §7 — Grid Layout ──────────────────────────────────── */
+
+.spt-lf__row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ── §8 — Team Builder ─────────────────────────────────── */
+
+.spt-lf__team-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.spt-lf__add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-height: 36px;
+  border: 1px solid var(--spt-lf-accent);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--spt-lf-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.spt-lf__add-btn:hover {
+  background: rgba(42, 154, 181, 0.1);
+}
+
+.spt-lf__add-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.spt-lf__add-btn:focus-visible {
+  outline: 2px solid var(--spt-lf-accent);
+  outline-offset: 2px;
+}
+
+.spt-lf__add-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.spt-lf__team-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.spt-lf__team-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--spt-lf-text);
+}
+
+.spt-lf__team-remove {
+  display: flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  color: var(--spt-lf-text-dim);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.spt-lf__team-remove:hover {
+  color: var(--color-rose-400);
+}
+
+.spt-lf__team-remove-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── §9 — Risk Summary (HITL — LP 5: Siniestría) ──────── */
+
+.spt-lf__risk {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: rgba(212, 168, 64, 0.05);
+  border: 1px solid rgba(212, 168, 64, 0.15);
+}
+
+.spt-lf__risk[data-hitl="true"] {
+  border-left: 3px solid var(--spt-lf-amber);
+}
+
+.spt-lf__risk-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.spt-lf__risk-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--spt-lf-amber);
+  flex-shrink: 0;
+}
+
+.spt-lf__risk-title {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--spt-lf-amber);
+  margin: 0;
+}
+
+.spt-lf__risk-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.75rem;
+  color: var(--spt-lf-text-muted);
+}
+
+.spt-lf__risk-list li::before {
+  content: "• ";
+  color: var(--spt-lf-amber);
+}
+
+/* ── §10 — Actions ─────────────────────────────────────── */
+
+.spt-lf__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--spt-lf-border);
+}
+
+.spt-lf__cancel-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--spt-lf-text-muted);
+  cursor: pointer;
+  min-height: 40px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.spt-lf__cancel-btn:hover {
+  background: var(--color-surface-3, #333);
+  color: var(--spt-lf-text);
+}
+
+.spt-lf__cancel-btn:focus-visible {
+  outline: 2px solid var(--spt-lf-accent);
+  outline-offset: 2px;
+}
+
+/* ── §10.1 — Gold Submit (HITL differentiation) ────────── */
+
+.spt-lf__submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--spt-lf-gold);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-abyss, #0a0a0a);
+  cursor: pointer;
+  min-height: 40px;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.spt-lf__submit-btn:hover {
+  opacity: 0.85;
+}
+
+.spt-lf__submit-btn:focus-visible {
+  outline: 2px solid var(--spt-lf-gold);
+  outline-offset: 2px;
+}
+
+.spt-lf__submit-btn[data-submitting="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spt-lf__submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── §11 — Spinner ─────────────────────────────────────── */
+
+.spt-lf__spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spt-lf-spin 0.6s linear infinite;
+}
+
+@keyframes spt-lf-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── §12 — Light Mode ──────────────────────────────────── */
+
+.light .spt-lf__overlay {
+  --spt-lf-surface: #ffffff;
+  --spt-lf-surface-2: #f5f5f5;
+  --spt-lf-border: rgba(0, 0, 0, 0.1);
+  --spt-lf-text: #1a1a1a;
+  --spt-lf-text-muted: #6b7280;
+  --spt-lf-text-dim: #9ca3af;
+}
+
+.light .spt-lf__backdrop {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.light .spt-lf__modal {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.light .spt-lf__team-chip {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .spt-lf__risk {
+  background: rgba(212, 168, 64, 0.04);
+}
+
+/* ── §13 — Reduced Motion ──────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-lf__modal {
+    animation: none;
+  }
+
+  .spt-lf__spinner {
+    animation: none;
+    border-top-color: transparent;
+  }
+}
+
+/* ── §14 — Responsive ──────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .spt-lf__row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .spt-lf__modal {
+    max-height: 100vh;
+    border-radius: 12px 12px 0 0;
+    align-self: flex-end;
+  }
+}

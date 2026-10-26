@@ -1,0 +1,792 @@
+/**
+ * AIProgramDesigner — AI Program Design Modal
+ *
+ * Dark modal overlay, concept chips, session timeline,
+ * DNA impact forecast bars, prediction hero cards.
+ * Teal/cyan accent (#06b6d4).
+ */
+
+/* ── Backdrop + Modal ── */
+.ai-program-designer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+}
+
+.ai-program-designer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.ai-program-designer__modal {
+  position: relative;
+  width: 90vw;
+  max-width: 700px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: #0f0f0f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ai-program-designer__modal::-webkit-scrollbar {
+  width: 3px;
+}
+.ai-program-designer__modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* ── Header ── */
+.ai-program-designer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ai-program-designer__header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-program-designer__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.ai-program-designer__phase-badge {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.ai-program-designer__close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.ai-program-designer__close:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── Section ── */
+.ai-program-designer__section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ai-program-designer__section-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ── Intention Mode ── */
+.ai-program-designer__intention-header h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.ai-program-designer__hint {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0.25rem 0 0;
+  line-height: 1.45;
+}
+
+/* ── Concepts ── */
+.ai-program-designer__concepts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-program-designer__concepts-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ai-program-designer__concepts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-program-designer__concept-chip {
+  text-align: left;
+  padding: 0.4rem 0.65rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.45);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+}
+
+.ai-program-designer__concept-chip:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ai-program-designer__concept-chip--selected {
+  background: rgba(6, 182, 212, 0.08);
+  border-color: rgba(6, 182, 212, 0.35);
+  color: #06b6d4;
+}
+
+/* ── Textarea ── */
+.ai-program-designer__textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.ai-program-designer__textarea:focus {
+  outline: none;
+  border-color: rgba(6, 182, 212, 0.3);
+}
+
+.ai-program-designer__textarea::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Config Row (sessions + frequency) ── */
+.ai-program-designer__config-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.ai-program-designer__config {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.ai-program-designer__config-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ai-program-designer__config-options {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.ai-program-designer__config-chip {
+  padding: 0.25rem 0.55rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-program-designer__config-chip:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ai-program-designer__config-chip--selected {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.4);
+  color: #06b6d4;
+}
+
+/* ── Detected ── */
+.ai-program-designer__detected {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ai-program-designer__detected-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ai-program-designer__detected-value {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0.15rem 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  text-transform: capitalize;
+}
+
+.ai-program-designer__confidence {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.25);
+  margin-left: auto;
+}
+
+/* ── Actions ── */
+.ai-program-designer__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ai-program-designer__btn {
+  padding: 0.5rem 1.25rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-program-designer__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ai-program-designer__btn--primary {
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  color: #06b6d4;
+}
+
+.ai-program-designer__btn--primary:hover:not(:disabled) {
+  background: rgba(6, 182, 212, 0.25);
+  letter-spacing: 0.08em;
+}
+
+.ai-program-designer__btn--secondary {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ai-program-designer__btn--secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ai-program-designer__btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ai-program-designer__btn--ghost:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── AI Commentary ── */
+.ai-program-designer__ai-says {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(6, 182, 212, 0.04);
+  border: 1px solid rgba(6, 182, 212, 0.12);
+  border-radius: 8px;
+}
+
+.ai-program-designer__ai-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.ai-program-designer__ai-text {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Proposal Card ── */
+.ai-program-designer__proposal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(6, 182, 212, 0.1);
+  border-radius: 8px;
+}
+
+.ai-program-designer__proposal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.ai-program-designer__proposal-desc {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Program Structure + Sessions ── */
+.ai-program-designer__structure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ai-program-designer__structure-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ai-program-designer__structure-meta {
+  font-size: 0.6rem;
+  color: rgba(6, 182, 212, 0.6);
+  font-weight: 600;
+}
+
+.ai-program-designer__sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ai-program-designer__session {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0;
+}
+
+.ai-program-designer__session-marker {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ai-program-designer__session-number {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #06b6d4;
+}
+
+.ai-program-designer__session-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-program-designer__session-title {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ai-program-designer__session-progress-bar {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.ai-program-designer__session-progress-fill {
+  height: 100%;
+  background: rgba(6, 182, 212, 0.4);
+  border-radius: 1px;
+  transition: width 0.4s ease;
+}
+
+/* ── Field ── */
+.ai-program-designer__field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+}
+
+.ai-program-designer__field-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  min-width: 55px;
+}
+
+.ai-program-designer__field-value {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ai-program-designer__field-score {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #4ade80;
+  margin-left: auto;
+}
+
+/* ── Predictions Hero ── */
+.ai-program-designer__predictions-hero {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ai-program-designer__prediction-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.6rem 0.4rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.ai-program-designer__prediction-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ai-program-designer__prediction-label {
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+/* ── DNA Impact ── */
+.ai-program-designer__dna-impact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ai-program-designer__dna-explain {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ai-program-designer__dna-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-program-designer__dna-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ai-program-designer__dna-bar-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ai-program-designer__dna-bar-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ai-program-designer__dna-bar-value {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #06b6d4;
+}
+
+.ai-program-designer__dna-bar-track {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ai-program-designer__dna-bar-fill {
+  height: 100%;
+  background: rgba(6, 182, 212, 0.5);
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+/* ── Sensory ── */
+.ai-program-designer__sensory {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ai-program-designer__sensory-grid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ai-program-designer__sensory-grid span {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Steps ── */
+.ai-program-designer__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-program-designer__steps-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ai-program-designer__steps-list li {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+
+/* ── Refinement ── */
+.ai-program-designer__refinement {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ai-program-designer__refine-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Impact Delta ── */
+.ai-program-designer__impact-delta {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ai-program-designer__impact-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ai-program-designer__impact-commentary {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.ai-program-designer__impact-deltas {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ai-program-designer__impact-deltas span {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Risks ── */
+.ai-program-designer__risks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ai-program-designer__risks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-program-designer__risk {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ai-program-designer__risk-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-program-designer__risk-severity {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.ai-program-designer__risk-type {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: capitalize;
+}
+
+.ai-program-designer__risk-desc {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.ai-program-designer__risk-mitigation {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ── Warnings / Recommendations ── */
+.ai-program-designer__warnings,
+.ai-program-designer__recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-program-designer__warning {
+  font-size: 0.68rem;
+  color: rgba(234, 179, 8, 0.7);
+  padding: 0.3rem 0.5rem;
+  background: rgba(234, 179, 8, 0.05);
+  border-radius: 4px;
+}
+
+.ai-program-designer__recommendation {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0.3rem 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+/* ── Confirmation ── */
+.ai-program-designer__confirmed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.ai-program-designer__confirmed-icon {
+  font-size: 2.5rem;
+}
+
+.ai-program-designer__confirmed h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.ai-program-designer__confirmed p {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.ai-program-designer__confirmed-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.ai-program-designer__confirmed-stats span {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+}

@@ -1,0 +1,614 @@
+/* src/features/families/components/IntelligencePanel.css
+   ═══════════════════════════════════════════════════════════
+   FamilyIntelligencePanel — Unified AI intelligence system
+
+   @namespace .glass-intelligence
+   @depends globals.css (glass primitives, tokens)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════
+   1. ROOT
+   ═══════════════════════════════════════════ */
+
+.glass-intelligence {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════
+   2. ACTIVATE BUTTON — The single entry point
+   ═══════════════════════════════════════════ */
+
+.glass-intelligence__activate {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 28px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    135deg,
+    rgba(201, 169, 110, 0.06) 0%,
+    rgba(15, 20, 30, 0.95) 50%,
+    rgba(10, 14, 20, 0.98) 100%
+  );
+  backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(201, 169, 110, 0.15);
+  box-shadow:
+    0 2px 16px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  font: inherit;
+  color: var(--color-silver-200);
+  text-align: center;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.glass-intelligence__activate::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(201, 169, 110, 0.25) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.glass-intelligence__activate:hover {
+  border-color: rgba(201, 169, 110, 0.3);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.2),
+    0 0 32px rgba(201, 169, 110, 0.06);
+  transform: translateY(-1px);
+}
+
+.glass-intelligence__activate:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 3px;
+}
+
+.glass-intelligence__activate-icon {
+  color: var(--color-gold-400);
+  animation: glass-intel-pulse 2s ease-in-out infinite;
+}
+
+.glass-intelligence__activate-text {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+.glass-intelligence__activate-hint {
+  font-size: 11px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════
+   3. BRIEFING PANEL — Header with narrative
+   ═══════════════════════════════════════════ */
+
+.glass-intelligence__briefing {
+  position: relative;
+  padding: 18px 20px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    135deg,
+    rgba(180, 190, 210, 0.04) 0%,
+    rgba(15, 20, 30, 0.95) 40%,
+    rgba(10, 14, 20, 0.97) 100%
+  );
+  backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  opacity: 0;
+  animation: glass-intel-slide-up 0.4s ease 0.1s forwards;
+}
+
+.glass-intelligence__briefing::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.04) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.glass-intelligence__briefing-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.glass-intelligence__briefing-narrative {
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-intelligence__briefing-headline {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-family: var(--font-display);
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+
+.glass-intelligence__briefing-text {
+  font-size: 12px;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+  line-height: 1.6;
+}
+
+/* Urgency strip at top */
+.glass-intelligence__briefing[data-urgency="critical"] {
+  border-top: 3px solid var(--color-rose-400);
+}
+.glass-intelligence__briefing[data-urgency="high"] {
+  border-top: 3px solid var(--color-amber-400);
+}
+.glass-intelligence__briefing[data-urgency="medium"] {
+  border-top: 3px solid var(--color-gold-400);
+}
+
+/* ═══════════════════════════════════════════
+   4. MEMORY BADGE — "Last analysis: 12 days ago"
+   ═══════════════════════════════════════════ */
+
+.glass-intelligence__memory {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════════
+   5. KEY INSIGHT + ACTION STRIP
+   ═══════════════════════════════════════════ */
+
+.glass-intelligence__insight-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  opacity: 0;
+  animation: glass-intel-slide-up 0.3s ease 0.2s forwards;
+}
+
+.glass-intelligence__insight-strip--urgent {
+  background: color-mix(in srgb, var(--color-rose-400) 4%, transparent);
+  border-color: color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+  border-left: 3px solid var(--color-rose-400);
+}
+
+.glass-intelligence__insight-strip--warning {
+  background: color-mix(in srgb, var(--color-amber-400) 4%, transparent);
+  border-color: color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+  border-left: 3px solid var(--color-amber-400);
+}
+
+.glass-intelligence__insight-strip--good {
+  background: color-mix(in srgb, var(--color-emerald-400) 4%, transparent);
+  border-color: color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+  border-left: 3px solid var(--color-emerald-400);
+}
+
+/* ═══════════════════════════════════════════
+   6. ACTION CHAIN
+   ═══════════════════════════════════════════ */
+
+.glass-intelligence__chain {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  opacity: 0;
+  animation: glass-intel-slide-up 0.3s ease 0.3s forwards;
+}
+
+.glass-intelligence__chain-step {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  position: relative;
+}
+
+.glass-intelligence__chain-step:last-child {
+  border-bottom: none;
+}
+
+.glass-intelligence__chain-timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.glass-intelligence__chain-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid;
+  background: rgba(15, 20, 30, 0.8);
+}
+
+.glass-intelligence__chain-dot--critical {
+  border-color: var(--color-rose-400);
+  background: var(--color-rose-400);
+}
+.glass-intelligence__chain-dot--high {
+  border-color: var(--color-amber-400);
+}
+.glass-intelligence__chain-dot--medium {
+  border-color: var(--color-gold-400);
+}
+.glass-intelligence__chain-dot--low {
+  border-color: var(--color-silver-500);
+}
+
+.glass-intelligence__chain-connector {
+  width: 1px;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 3px 0;
+}
+
+.glass-intelligence__chain-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-intelligence__chain-timing {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+
+.glass-intelligence__chain-action {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+
+.glass-intelligence__chain-impact {
+  font-size: 10px;
+  color: var(--color-emerald-400);
+  font-family: var(--font-mono);
+}
+
+.glass-intelligence__chain-context {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+/* Outcome box */
+.glass-intelligence__outcome {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 8px);
+  background: color-mix(in srgb, var(--color-gold-400) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+
+.glass-intelligence__outcome-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 6px;
+}
+
+.glass-intelligence__outcome-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+
+.glass-intelligence__outcome-label {
+  color: var(--color-silver-500);
+}
+
+.glass-intelligence__outcome-arrow {
+  color: var(--color-gold-400);
+}
+
+.glass-intelligence__outcome-predicted {
+  color: var(--color-emerald-400);
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════
+   7. PEER INSIGHT
+   ═══════════════════════════════════════════ */
+
+.glass-intelligence__peer {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 8px);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  opacity: 0;
+  animation: glass-intel-slide-up 0.3s ease 0.35s forwards;
+}
+
+/* ═══════════════════════════════════════════
+   8. DETAIL SECTIONS — Collapsed by default
+   ═══════════════════════════════════════════ */
+
+.glass-intelligence__details-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: var(--radius-md, 8px);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  transition: all 0.2s ease;
+  width: 100%;
+  font: inherit;
+}
+
+.glass-intelligence__details-toggle:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-silver-200);
+}
+
+.glass-intelligence__details-toggle:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.glass-intelligence__details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+
+.glass-intelligence__details--open {
+  max-height: 6000px;
+  opacity: 1;
+}
+
+@media (min-width: 1024px) {
+  .glass-intelligence__details--open {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   9. DETAIL CARD (each AI tool result)
+   ═══════════════════════════════════════════ */
+
+.glass-intelligence__detail-card {
+  padding: 16px 18px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    135deg,
+    rgba(180, 190, 210, 0.03) 0%,
+    rgba(15, 20, 30, 0.94) 40%,
+    rgba(10, 14, 20, 0.97) 100%
+  );
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  opacity: 0;
+  animation: glass-intel-slide-up 0.3s ease both;
+}
+
+.glass-intelligence__detail-card:nth-child(1) { animation-delay: 0.05s; }
+.glass-intelligence__detail-card:nth-child(2) { animation-delay: 0.1s; }
+.glass-intelligence__detail-card:nth-child(3) { animation-delay: 0.15s; }
+.glass-intelligence__detail-card:nth-child(4) { animation-delay: 0.2s; }
+.glass-intelligence__detail-card:nth-child(5) { animation-delay: 0.25s; }
+.glass-intelligence__detail-card:nth-child(6) { animation-delay: 0.3s; }
+
+.glass-intelligence__detail-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   10. KEYFRAMES
+   ═══════════════════════════════════════════ */
+
+@keyframes glass-intel-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glass-intel-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes glass-intel-glow-breathe {
+  0%, 100% { box-shadow: 0 0 0 rgba(201, 169, 110, 0); }
+  50% { box-shadow: 0 0 20px rgba(201, 169, 110, 0.08); }
+}
+
+/* ═══════════════════════════════════════════
+   11. CONSTELLATION
+   ═══════════════════════════════════════════ */
+
+.glass-intelligence-constellation {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.glass-intelligence-constellation__svg {
+  display: block;
+}
+
+/* ═══════════════════════════════════════════
+   12. REDUCED MOTION
+   ═══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-intelligence__activate-icon {
+    animation: none;
+  }
+
+  .glass-intelligence__briefing,
+  .glass-intelligence__insight-strip,
+  .glass-intelligence__chain,
+  .glass-intelligence__peer,
+  .glass-intelligence__detail-card {
+    opacity: 1;
+    animation: none;
+  }
+
+  .glass-intelligence__details {
+    transition: none;
+  }
+
+  .glass-intelligence__activate:hover {
+    transform: none;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   13. LIGHT MODE
+   ═══════════════════════════════════════════ */
+
+.light .glass-intelligence__activate {
+  background: var(--color-surface-2);
+  border-color: rgba(201, 169, 110, 0.15);
+  backdrop-filter: none;
+}
+
+.light .glass-intelligence__activate::before {
+  display: none;
+}
+
+.light .glass-intelligence__activate:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-color: rgba(201, 169, 110, 0.25);
+}
+
+.light .glass-intelligence__briefing {
+  background: var(--color-surface-2);
+  border-color: rgba(0, 0, 0, 0.06);
+  backdrop-filter: none;
+}
+
+.light .glass-intelligence__briefing::before {
+  display: none;
+}
+
+.light .glass-intelligence__insight-strip {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-intelligence__chain {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-intelligence__chain-connector {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-intelligence__outcome {
+  background: color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+}
+
+.light .glass-intelligence__peer {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-intelligence__detail-card {
+  background: var(--color-surface-2);
+  border-color: rgba(0, 0, 0, 0.06);
+  backdrop-filter: none;
+}
+
+.light .glass-intelligence__detail-card::before {
+  display: none;
+}
+
+.light .glass-intelligence__details-toggle {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-intelligence__details-toggle:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-intelligence__memory {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+}

@@ -1,0 +1,638 @@
+/* src/features/communications/components/AIDecisionBoard.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* AI Decision Board — The War Room                           */
+/* Phase 31 — Silver Tide Glass UI                            */
+/* Namespace: .glass-comm-decisions                           */
+/* ═══════════════════════════════════════════════════════════ */
+
+.glass-comm-decisions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-xl, 1rem);
+  padding: var(--space-4, 1rem);
+  backdrop-filter: blur(8px);
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+.decision-board__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.decision-board__header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+}
+
+.decision-board__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+}
+
+.decision-board__urgency-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.decision-board__urgency-badge[data-urgency="none"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+.decision-board__urgency-badge[data-urgency="low"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+}
+.decision-board__urgency-badge[data-urgency="medium"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+.decision-board__urgency-badge[data-urgency="high"] {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+.decision-board__urgency-badge[data-urgency="critical"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+  animation: decision-urgency-pulse 2s ease-in-out infinite;
+}
+
+/* ── Cascade Grid ─────────────────────────────────────── */
+
+.decision-board__cascade {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: var(--space-2, 0.5rem);
+  align-items: start;
+}
+
+.decision-board__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--space-8, 2rem);
+  color: var(--color-silver-500);
+  opacity: 0.3;
+  transition: opacity 0.5s ease, color 0.5s ease;
+}
+
+.decision-board__arrow[data-active="true"] {
+  opacity: 0.7;
+  color: var(--color-teal-400);
+}
+
+/* ── Decision Panel ───────────────────────────────────── */
+
+.decision-panel {
+  background: color-mix(in srgb, var(--color-surface-2, #222) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-lg, 0.75rem);
+  overflow: hidden;
+}
+
+.decision-panel[data-panel="thinking"] {
+  border-top: 2px solid color-mix(in srgb, var(--color-teal-400) 30%, transparent);
+}
+.decision-panel[data-panel="proposing"] {
+  border-top: 2px solid color-mix(in srgb, var(--color-gold-400) 30%, transparent);
+}
+.decision-panel[data-panel="simulating"] {
+  border-top: 2px solid color-mix(in srgb, var(--color-emerald-400) 30%, transparent);
+}
+
+.decision-panel__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+
+.decision-panel__body {
+  padding: var(--space-3, 0.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+  max-height: 32rem;
+  overflow-y: auto;
+}
+
+.decision-panel__empty {
+  font-size: 0.82rem;
+  color: var(--text-muted, #7a7570);
+  text-align: center;
+  padding: var(--space-6, 1.5rem) 0;
+}
+
+.decision-board__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-8, 2rem) 0;
+  color: var(--text-muted, #7a7570);
+  font-size: 0.88rem;
+}
+
+.decision-board__empty-icon {
+  opacity: 0.3;
+}
+
+/* ── Thinking Steps ───────────────────────────────────── */
+
+.thinking-step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2, 0.5rem);
+  opacity: 0;
+  animation: decision-fade-in 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.1s);
+}
+
+.thinking-step__indicator {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-top: 1px;
+}
+
+.thinking-step__indicator[data-status="complete"] {
+  background: color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+  color: var(--color-emerald-400);
+}
+
+.thinking-step__indicator[data-status="active"] {
+  background: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+}
+
+.thinking-step__indicator[data-status="pending"] {
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.thinking-step__spinner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-amber-400);
+  border-top-color: transparent;
+  animation: decision-spin 1s linear infinite;
+}
+
+.thinking-step__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-silver-500);
+  opacity: 0.4;
+}
+
+.thinking-step__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.thinking-step__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.thinking-step[data-status="pending"] .thinking-step__label {
+  opacity: 0.5;
+}
+
+.thinking-step__detail {
+  font-size: 0.72rem;
+  color: var(--text-muted, #7a7570);
+  line-height: 1.3;
+}
+
+/* ── Proposal ─────────────────────────────────────────── */
+
+.proposal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-1, 0.25rem) 0;
+}
+
+.proposal-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #7a7570);
+}
+
+.proposal-value {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.proposal-value--action {
+  font-weight: 600;
+}
+
+.proposal-value--action[data-urgency="high"] { color: var(--color-gold-400); }
+.proposal-value--action[data-urgency="critical"] { color: var(--color-rose-400); }
+
+.proposal-dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2, 0.5rem);
+}
+
+.proposal-points {
+  margin-top: var(--space-1, 0.25rem);
+}
+
+.proposal-points__list {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-1, 0.25rem) 0 0 0;
+}
+
+.proposal-points__list li {
+  font-size: 0.75rem;
+  color: var(--text-muted, #7a7570);
+  padding-left: var(--space-3, 0.75rem);
+  position: relative;
+  margin-bottom: 2px;
+  line-height: 1.35;
+}
+
+.proposal-points__list li::before {
+  content: "›";
+  position: absolute;
+  left: 0;
+  color: var(--color-teal-400);
+  font-weight: 700;
+}
+
+.proposal-avoid {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1, 0.25rem);
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  background: color-mix(in srgb, var(--color-rose-400) 6%, transparent);
+  color: var(--color-rose-400);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+/* ── Confidence Gauges ────────────────────────────────── */
+
+.proposal-gauges {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4, 1rem);
+  padding: var(--space-2, 0.5rem) 0;
+}
+
+.decision-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.decision-gauge__svg {
+  width: 70px;
+  height: 40px;
+  overflow: visible;
+}
+
+.decision-gauge__bg {
+  stroke: color-mix(in srgb, var(--text-primary) 10%, transparent);
+}
+
+.decision-gauge__fill {
+  stroke: var(--color-teal-400);
+  transition: stroke-dashoffset 1s ease;
+}
+
+.decision-gauge__fill[data-confidence="high"] { stroke: var(--color-emerald-400); }
+.decision-gauge__fill[data-confidence="medium"] { stroke: var(--color-amber-400); }
+.decision-gauge__fill[data-confidence="low"] { stroke: var(--color-rose-400); }
+
+.decision-gauge__value {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 12px;
+  fill: var(--text-primary);
+}
+
+.decision-gauge__value[data-confidence="high"] { fill: var(--color-emerald-400); }
+.decision-gauge__value[data-confidence="medium"] { fill: var(--color-amber-400); }
+.decision-gauge__value[data-confidence="low"] { fill: var(--color-rose-400); }
+
+.decision-gauge__label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+}
+
+/* ── Countdown ────────────────────────────────────────── */
+
+.proposal-countdown {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+  color: var(--color-amber-400);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.proposal-countdown[data-critical="true"] {
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+  color: var(--color-rose-400);
+  animation: decision-urgency-pulse 2s ease-in-out infinite;
+}
+
+/* ── Action Buttons ───────────────────────────────────── */
+
+.proposal-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2, 0.5rem);
+  padding-top: var(--space-2, 0.5rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  margin-top: var(--space-1, 0.25rem);
+}
+
+.proposal-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1, 0.25rem);
+  padding: var(--space-2, 0.5rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  min-height: 36px;
+}
+
+.proposal-action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.proposal-action-btn:active {
+  transform: translateY(0);
+}
+
+.proposal-action-btn[data-action="approve"] {
+  border-color: color-mix(in srgb, var(--color-emerald-400) 25%, transparent);
+  color: var(--color-emerald-400);
+}
+.proposal-action-btn[data-action="approve"]:hover {
+  background: color-mix(in srgb, var(--color-emerald-400) 12%, transparent);
+}
+
+.proposal-action-btn[data-action="postpone"] {
+  border-color: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+  color: var(--color-amber-400);
+}
+.proposal-action-btn[data-action="postpone"]:hover {
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+
+.proposal-action-btn[data-action="delegate"] {
+  border-color: color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+  color: var(--color-teal-400);
+}
+.proposal-action-btn[data-action="delegate"]:hover {
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+}
+
+.proposal-action-btn[data-action="discard"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+  color: var(--color-rose-400);
+}
+.proposal-action-btn[data-action="discard"]:hover {
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+}
+
+/* ── Simulation Scenarios ─────────────────────────────── */
+
+.simulation-scenario {
+  border-radius: var(--radius-md, 0.5rem);
+  overflow: hidden;
+}
+
+.simulation-scenario[data-scenario="act"] {
+  border: 1px solid color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-400) 4%, transparent);
+}
+
+.simulation-scenario[data-scenario="ignore"] {
+  border: 1px solid color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+  background: color-mix(in srgb, var(--color-rose-400) 4%, transparent);
+}
+
+.simulation-scenario__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.simulation-scenario[data-scenario="act"] .simulation-scenario__header {
+  color: var(--color-emerald-400);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+
+.simulation-scenario[data-scenario="ignore"] .simulation-scenario__header {
+  color: var(--color-rose-400);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+
+.simulation-scenario__body {
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+}
+
+.simulation-scenario__desc {
+  font-size: 0.78rem;
+  color: var(--text-muted, #7a7570);
+  line-height: 1.35;
+}
+
+.simulation-metrics {
+  display: flex;
+  gap: var(--space-3, 0.75rem);
+}
+
+.simulation-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.simulation-metric__value {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.simulation-metric__value[data-direction="up"] { color: var(--color-emerald-400); }
+.simulation-metric__value[data-direction="down"] { color: var(--color-rose-400); }
+
+.simulation-metric__label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+}
+
+.simulation-escape {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+  color: var(--color-rose-400);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+/* ── Action Feedback ──────────────────────────────────── */
+
+.decision-board__feedback {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.82rem;
+  font-weight: 500;
+  animation: decision-fade-in 0.3s ease;
+}
+
+.decision-board__feedback[data-action="approve"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+}
+
+.decision-board__feedback[data-action="postpone"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+}
+
+.decision-board__feedback[data-action="delegate"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-teal-400) 15%, transparent);
+}
+
+.decision-board__feedback[data-action="discard"] {
+  color: var(--color-silver-500);
+  background: color-mix(in srgb, var(--color-silver-500) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-silver-500) 15%, transparent);
+}
+
+/* ── Animations ───────────────────────────────────────── */
+
+@keyframes decision-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes decision-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes decision-urgency-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Light Mode ───────────────────────────────────────── */
+
+.light .glass-comm-decisions {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .decision-panel {
+  background: color-mix(in srgb, #ffffff 50%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .proposal-action-btn {
+  background: color-mix(in srgb, #000000 2%, transparent);
+}
+
+.light .simulation-scenario[data-scenario="act"] {
+  background: color-mix(in srgb, var(--color-emerald-400) 5%, transparent);
+}
+.light .simulation-scenario[data-scenario="ignore"] {
+  background: color-mix(in srgb, var(--color-rose-400) 5%, transparent);
+}
+
+/* ── Reduced Motion ───────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking-step {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .thinking-step__spinner {
+    animation: none !important;
+    border: 1.5px solid var(--color-amber-400);
+  }
+
+  .decision-board__urgency-badge,
+  .proposal-countdown[data-critical="true"] {
+    animation: none !important;
+  }
+
+  .decision-board__feedback {
+    animation: none !important;
+  }
+}

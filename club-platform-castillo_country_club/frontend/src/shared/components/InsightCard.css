@@ -1,0 +1,628 @@
+/**
+ * @component InsightCard (Fase 24)
+ * @namespace .glass-insight
+ * @depends globals.css (tokens)
+ * @note Generic insight card with severity encoding, expand/collapse,
+ *       citations, metric row, action progress ring, keyboard focus.
+ * @import import './InsightCard.css';
+ */
+
+/* ═══════════════════════════════════════
+   Severity Color Properties
+   ═══════════════════════════════════════ */
+
+.glass-insight--critical {
+  --insight-severity-color: var(--color-rose-400, #fb7185);
+  --insight-severity-bg: rgba(244, 63, 94, 0.08);
+  border-left: 3px solid var(--color-rose-400, #fb7185);
+  background: rgba(244, 63, 94, 0.015);
+}
+
+.glass-insight--high {
+  --insight-severity-color: var(--color-rose-400, #fb7185);
+  --insight-severity-bg: rgba(244, 63, 94, 0.06);
+  border-left: 3px solid var(--color-rose-400, #fb7185);
+}
+
+.glass-insight--medium {
+  --insight-severity-color: var(--color-amber-400, #fbbf24);
+  --insight-severity-bg: rgba(251, 191, 36, 0.06);
+  border-left: 3px solid var(--color-amber-400, #fbbf24);
+}
+
+.glass-insight--low {
+  --insight-severity-color: var(--color-teal-400, #2dd4bf);
+  --insight-severity-bg: rgba(45, 212, 191, 0.06);
+  border-left: 3px solid var(--color-teal-400, #2dd4bf);
+}
+
+.glass-insight--info {
+  --insight-severity-color: var(--color-silver-400, #a09a92);
+  --insight-severity-bg: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ═══════════════════════════════════════
+   Card Root
+   ═══════════════════════════════════════ */
+
+.glass-insight {
+  position: relative;
+  border-radius: 10px;
+  padding: 12px;
+  transition: border-color 0.15s ease;
+}
+
+.glass-insight:not(.glass-insight--critical):not(.glass-insight--high):not(.glass-insight--medium):not(.glass-insight--low):not(.glass-insight--info) {
+  border-left: 3px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── Entrance animation ── */
+
+.glass-insight--enter {
+  opacity: 0;
+  animation: insight-card-enter 0.3s ease forwards;
+}
+
+@keyframes insight-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-insight--enter {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════
+   Row Layout
+   ═══════════════════════════════════════ */
+
+.glass-insight__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* ═══════════════════════════════════════
+   Severity Icon
+   ═══════════════════════════════════════ */
+
+.glass-insight__icon-wrap {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  background: var(--insight-severity-bg, rgba(255, 255, 255, 0.03));
+  transition: box-shadow 0.3s ease;
+}
+
+.glass-insight__icon {
+  width: 14px;
+  height: 14px;
+  color: var(--insight-severity-color, var(--color-silver-400, #a09a92));
+}
+
+/* ── Severity glow (critical/high only, plays twice on mount) ── */
+
+.glass-insight--critical .glass-insight__icon-wrap,
+.glass-insight--high .glass-insight__icon-wrap {
+  animation: insight-severity-glow 0.6s ease-in-out 2;
+}
+
+@keyframes insight-severity-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(244, 63, 94, 0.25);
+  }
+}
+
+/* ═══════════════════════════════════════
+   Content Area
+   ═══════════════════════════════════════ */
+
+.glass-insight__content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ═══════════════════════════════════════
+   Badges
+   ═══════════════════════════════════════ */
+
+.glass-insight__badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.glass-insight__severity-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--insight-severity-color, var(--color-silver-400, #a09a92));
+  background: var(--insight-severity-bg, rgba(255, 255, 255, 0.03));
+}
+
+.glass-insight__layer-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--layer-color, var(--color-silver-400, #a09a92));
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ═══════════════════════════════════════
+   Title Toggle
+   ═══════════════════════════════════════ */
+
+.glass-insight__toggle {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-silver-100, #f0ece4);
+  transition: color 0.15s ease;
+}
+
+.glass-insight__toggle:hover {
+  color: var(--color-gold-400, #c9a96e);
+}
+
+.glass-insight__toggle:focus-visible {
+  outline: 2px solid var(--color-gold-400, #c9a96e);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════
+   Expanded Body
+   ═══════════════════════════════════════ */
+
+.glass-insight__body {
+  margin-top: 8px;
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-silver-300, #b8b2a9);
+}
+
+.glass-insight__body--enter {
+  animation: insight-body-expand 0.2s ease-out;
+}
+
+@keyframes insight-body-expand {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-insight__body--enter {
+    animation: none;
+  }
+}
+
+.glass-insight__description {
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════
+   Citations
+   ═══════════════════════════════════════ */
+
+.glass-insight__citations {
+  margin-top: 10px;
+}
+
+.glass-insight__citations-label {
+  margin: 0 0 4px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-500, #7a7570);
+}
+
+.glass-insight__citation-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.glass-insight__citation {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-teal-300, #5eead4);
+  background: rgba(45, 212, 191, 0.06);
+  border: 1px solid rgba(45, 212, 191, 0.1);
+}
+
+.glass-insight__citation-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-teal-400, #2dd4bf);
+  flex-shrink: 0;
+}
+
+.glass-insight__citation-relevance {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  color: var(--color-silver-500, #7a7570);
+}
+
+/* ═══════════════════════════════════════
+   Causal Chain
+   ═══════════════════════════════════════ */
+
+.glass-insight__chain {
+  margin-top: 10px;
+}
+
+.glass-insight__chain-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-amber-400, #fbbf24);
+}
+
+.glass-insight__chain-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.glass-insight__chain-confidence {
+  margin-left: auto;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-silver-500, #7a7570);
+}
+
+/* ═══════════════════════════════════════
+   Metric Row
+   ═══════════════════════════════════════ */
+
+.glass-insight__metric-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 12px;
+}
+
+.glass-insight__metric-label {
+  color: var(--color-silver-400, #a09a92);
+}
+
+.glass-insight__metric-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-weight: 600;
+  color: var(--insight-severity-color, var(--color-silver-200, #d4cfc7));
+}
+
+.glass-insight__metric-confidence {
+  margin-left: auto;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  color: var(--color-silver-500, #7a7570);
+}
+
+/* ═══════════════════════════════════════
+   Action Area
+   ═══════════════════════════════════════ */
+
+.glass-insight__action {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── Action button ── */
+
+.glass-insight__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  min-height: 30px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  color: var(--color-teal-400, #2dd4bf);
+  background: rgba(45, 212, 191, 0.06);
+}
+
+.glass-insight__action-btn:hover {
+  color: var(--color-teal-300, #5eead4);
+  background: rgba(45, 212, 191, 0.12);
+}
+
+.glass-insight__action-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400, #c9a96e);
+  outline-offset: 2px;
+}
+
+.glass-insight__action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.glass-insight__action-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── Progress ring (executing) ── */
+
+.glass-insight__ring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+}
+
+.glass-insight__ring svg {
+  width: 18px;
+  height: 18px;
+}
+
+.glass-insight__ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 2;
+}
+
+.glass-insight__ring-fill {
+  fill: none;
+  stroke: var(--color-gold-400, #c9a96e);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 30 20;
+  animation: insight-ring-spin 1s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes insight-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Done state ── */
+
+.glass-insight__action-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-emerald-400, #34d399);
+  background: rgba(52, 211, 153, 0.06);
+  animation: insight-action-pop 0.3s ease-out;
+}
+
+@keyframes insight-action-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Error state ── */
+
+.glass-insight__action-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.glass-insight__action-error-text {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-rose-400, #fb7185);
+  background: rgba(244, 63, 94, 0.06);
+}
+
+.glass-insight__action-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-amber-400, #fbbf24);
+  background: rgba(251, 191, 36, 0.06);
+  transition: background 0.15s ease;
+}
+
+.glass-insight__action-retry:hover {
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.glass-insight__action-retry:focus-visible {
+  outline: 2px solid var(--color-gold-400, #c9a96e);
+  outline-offset: 2px;
+}
+
+.glass-insight__action-retry-icon {
+  width: 11px;
+  height: 11px;
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-insight--critical {
+  background: rgba(244, 63, 94, 0.03);
+}
+
+.light .glass-insight__severity-badge {
+  font-weight: 700;
+}
+
+.light .glass-insight__layer-badge {
+  color: var(--layer-color, var(--color-silver-600, #5c5853));
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-insight__toggle {
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .glass-insight__toggle:hover {
+  color: #8b7340;
+}
+
+.light .glass-insight__description,
+.light .glass-insight__body {
+  color: var(--color-silver-600, #5c5853);
+}
+
+.light .glass-insight__citation {
+  color: #0d9488;
+  background: rgba(13, 148, 136, 0.06);
+  border-color: rgba(13, 148, 136, 0.12);
+}
+
+.light .glass-insight__citation-dot {
+  background: #0d9488;
+}
+
+.light .glass-insight__chain-header {
+  color: #92400e;
+}
+
+.light .glass-insight__metric-row {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-insight__metric-value {
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .glass-insight__action-btn {
+  color: #0d9488;
+  background: rgba(13, 148, 136, 0.06);
+}
+
+.light .glass-insight__action-btn:hover {
+  color: #0f766e;
+  background: rgba(13, 148, 136, 0.12);
+}
+
+.light .glass-insight__ring-fill {
+  stroke: #8b7340;
+}
+
+.light .glass-insight__action-done {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.06);
+}
+
+.light .glass-insight__action-error-text {
+  color: #e11d48;
+  background: rgba(225, 29, 72, 0.06);
+}
+
+.light .glass-insight__action-retry {
+  color: #92400e;
+  background: rgba(146, 64, 14, 0.06);
+}
+
+.light .glass-insight__action-retry:hover {
+  background: rgba(146, 64, 14, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-insight--critical .glass-insight__icon-wrap,
+  .glass-insight--high .glass-insight__icon-wrap {
+    animation: none;
+  }
+
+  .glass-insight__action-done {
+    animation: none;
+  }
+}

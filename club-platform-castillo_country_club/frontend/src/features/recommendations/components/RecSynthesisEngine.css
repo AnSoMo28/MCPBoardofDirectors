@@ -1,0 +1,850 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   RecSynthesisEngine — Glass namespace .glass-rse
+   Keyframes prefix: rse*
+
+   Agent-driven 3-state: dormant → processing → presenting
+   SVG node graph: radial domain layout, weighted edges, opportunity blips
+   Opportunity cards: level-sorted with domain tags
+
+   Attributes: data-agent-state, data-expanded, data-health,
+               data-done, data-active, data-opportunity-level,
+               data-signal-source
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ─────────────────────────────────────────────────────────────── */
+
+.glass-rse {
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rse-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+}
+
+.rse-header-icon {
+  color: var(--color-violet-400);
+  flex-shrink: 0;
+}
+
+.rse-header-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rse-header-stats {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DORMANT STATE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rse-dormant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.rse-dormant-visual {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rse-dormant-orb {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed var(--color-border-subtle);
+  animation: rseOrbSpin 12s linear infinite;
+}
+
+.rse-dormant-icon {
+  color: var(--color-silver-500);
+  z-index: 1;
+}
+
+.rse-dormant-text {
+  font-size: 0.875rem;
+  color: var(--color-silver-400);
+  max-width: 380px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.rse-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-violet-400);
+  background: rgba(139, 92, 246, 0.08);
+  color: var(--color-violet-400);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.rse-trigger-btn:hover {
+  background: rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.15);
+  transform: translateY(-1px);
+}
+
+.rse-trigger-btn:focus-visible {
+  outline: 2px solid var(--color-violet-400);
+  outline-offset: 2px;
+}
+
+.rse-trigger-btn:active {
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PROCESSING STATE — Step sequence
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rse-processing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.rse-step {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: rseStepReveal 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 80ms);
+  transition: background 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+
+.rse-step[data-active] {
+  border-color: var(--color-violet-400);
+  background: rgba(139, 92, 246, 0.04);
+}
+
+.rse-step[data-done] {
+  opacity: 1;
+  transform: none;
+  border-color: var(--color-emerald-400);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.rse-step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  flex-shrink: 0;
+}
+
+.rse-step[data-active] .rse-step-indicator {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--color-violet-400);
+}
+
+.rse-step[data-done] .rse-step-indicator {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-emerald-400);
+}
+
+.rse-step-label {
+  font-size: 0.8125rem;
+  color: var(--color-silver-400);
+}
+
+.rse-step[data-active] .rse-step-label {
+  color: var(--color-silver-100);
+  font-weight: 500;
+}
+
+.rse-step[data-done] .rse-step-label {
+  color: var(--color-silver-300);
+  text-decoration: line-through;
+  text-decoration-color: rgba(16, 185, 129, 0.3);
+}
+
+.rse-step-pulse {
+  position: absolute;
+  right: 0.75rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-violet-400);
+  animation: rsePulse 1s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRESENTING STATE — Graph + Opportunities layout
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rse-presenting {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  opacity: 0;
+  animation: rseFadeIn 0.5s ease 0.1s forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SVG NODE GRAPH
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rse-graph-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rse-graph-svg {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+}
+
+/* ── Edges ─────────────────────────────────────────────────────────────── */
+
+.rse-edge-line {
+  stroke: var(--color-border-default);
+  stroke-linecap: round;
+  opacity: 0;
+  animation: rseEdgeReveal 0.6s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 120ms + 0.3s);
+}
+
+.rse-edge-blip {
+  fill: var(--color-gold-400);
+  opacity: 0;
+  animation: rseBlipReveal 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 120ms + 0.8s);
+}
+
+/* ── Nodes ─────────────────────────────────────────────────────────────── */
+
+.rse-node {
+  opacity: 0;
+  animation: rseNodeReveal 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 80ms + 0.2s);
+}
+
+.rse-node-circle {
+  transition: fill 0.3s ease, stroke 0.3s ease, opacity 0.3s ease;
+}
+
+.rse-node-glow {
+  animation: rseGlowPulse 2.5s ease-in-out infinite;
+}
+
+.rse-node-count {
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--color-surface-0);
+  pointer-events: none;
+}
+
+.rse-node-label {
+  font-size: 10px;
+  fill: var(--color-silver-400);
+  pointer-events: none;
+}
+
+.rse-node[data-active] .rse-node-label {
+  fill: var(--color-silver-200);
+  font-weight: 600;
+}
+
+/* ── Center gauge ──────────────────────────────────────────────────────── */
+
+.rse-center-circle {
+  fill: var(--color-surface-1);
+  stroke: var(--color-border-subtle);
+  stroke-width: 1;
+}
+
+.glass-rse[data-health="rich"] .rse-center-circle {
+  stroke: var(--color-emerald-400);
+  stroke-width: 2;
+}
+
+.glass-rse[data-health="moderate"] .rse-center-circle {
+  stroke: var(--color-amber-400);
+  stroke-width: 1.5;
+}
+
+.rse-center-score {
+  font-size: 16px;
+  font-weight: 800;
+  fill: var(--color-silver-100);
+  font-variant-numeric: tabular-nums;
+}
+
+.rse-center-label {
+  font-size: 8px;
+  fill: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   OPPORTUNITY CARDS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rse-opportunities {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rse-opp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rse-opp-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  letter-spacing: 0.02em;
+}
+
+.rse-retry-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-subtle);
+  background: transparent;
+  color: var(--color-silver-400);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.rse-retry-btn:hover {
+  background: var(--color-surface-1);
+  color: var(--color-silver-100);
+  border-color: var(--color-border-default);
+}
+
+.rse-retry-btn:focus-visible {
+  outline: 2px solid var(--color-violet-400);
+  outline-offset: 2px;
+}
+
+.rse-opp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rse-opp-card {
+  padding: 0.875rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+  opacity: 0;
+  animation: rseCardReveal 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 100ms + 0.4s);
+  transition: border-color 0.2s ease;
+}
+
+.rse-opp-card:hover {
+  border-color: var(--color-border-default);
+}
+
+/* ── Level borders ─────────────────────────────────────────────────────── */
+
+.rse-opp-card[data-opportunity-level="exceptional"] {
+  border-left: 3px solid var(--color-gold-400);
+}
+
+.rse-opp-card[data-opportunity-level="strong"] {
+  border-left: 3px solid var(--color-emerald-400);
+}
+
+.rse-opp-card[data-opportunity-level="moderate"] {
+  border-left: 3px solid var(--color-teal-400);
+}
+
+.rse-opp-card[data-opportunity-level="low"] {
+  border-left: 3px solid var(--color-silver-500);
+}
+
+.rse-opp-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+
+.rse-opp-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-variant-numeric: tabular-nums;
+}
+
+.rse-opp-level {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.rse-opp-card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  margin: 0 0 0.25rem;
+  line-height: 1.3;
+}
+
+.rse-opp-card-desc {
+  font-size: 0.8125rem;
+  color: var(--color-silver-400);
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+}
+
+.rse-opp-card-domains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 0.375rem;
+}
+
+.rse-opp-domain-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.rse-opp-domain-tag[data-signal-source="wellness"] {
+  color: var(--color-emerald-400);
+  border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.rse-opp-domain-tag[data-signal-source="events"] {
+  color: var(--color-teal-400);
+  border-color: rgba(20, 184, 166, 0.25);
+  background: rgba(20, 184, 166, 0.06);
+}
+
+.rse-opp-domain-tag[data-signal-source="finance"] {
+  color: var(--color-gold-400);
+  border-color: rgba(232, 197, 71, 0.25);
+  background: rgba(232, 197, 71, 0.06);
+}
+
+.rse-opp-domain-tag[data-signal-source="sports"] {
+  color: var(--color-terracotta-400);
+  border-color: rgba(232, 121, 71, 0.25);
+  background: rgba(232, 121, 71, 0.06);
+}
+
+.rse-opp-domain-tag[data-signal-source="families"] {
+  color: var(--color-sage-400);
+  border-color: rgba(134, 184, 134, 0.25);
+  background: rgba(134, 184, 134, 0.06);
+}
+
+.rse-opp-domain-tag[data-signal-source="internal"] {
+  color: var(--color-silver-400);
+  border-color: var(--color-border-subtle);
+  background: var(--color-surface-2);
+}
+
+.rse-opp-card-expiry {
+  font-size: 0.6875rem;
+  color: var(--color-amber-400);
+  font-weight: 500;
+}
+
+/* ── Expand button ─────────────────────────────────────────────────────── */
+
+.rse-expand-btn {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px dashed var(--color-border-subtle);
+  background: transparent;
+  color: var(--color-silver-400);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.rse-expand-btn:hover {
+  background: var(--color-surface-1);
+  color: var(--color-silver-200);
+  border-color: var(--color-border-default);
+}
+
+.rse-expand-btn:focus-visible {
+  outline: 2px solid var(--color-violet-400);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes rseOrbSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rseStepReveal {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes rsePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.7);
+  }
+}
+
+@keyframes rseFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rseEdgeReveal {
+  from {
+    opacity: 0;
+    stroke-dashoffset: 100;
+  }
+  to {
+    opacity: 0.5;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes rseBlipReveal {
+  from {
+    opacity: 0;
+    r: 0;
+  }
+  to {
+    opacity: 0.8;
+  }
+}
+
+@keyframes rseNodeReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rseGlowPulse {
+  0%, 100% {
+    opacity: 0.2;
+    r: 20;
+  }
+  50% {
+    opacity: 0.5;
+    r: 24;
+  }
+}
+
+@keyframes rseCardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: light) {
+  .glass-rse {
+    background: #ffffff;
+    border-color: #e8e5df;
+  }
+
+  .rse-header {
+    background: #f8f7f4;
+    border-bottom-color: #e8e5df;
+  }
+
+  .rse-header-title {
+    color: #1a1814;
+  }
+
+  .rse-header-stats {
+    color: #8a8580;
+  }
+
+  .rse-step {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+  }
+
+  .rse-step[data-active] {
+    background: rgba(124, 58, 237, 0.04);
+    border-color: #7c3aed;
+  }
+
+  .rse-step[data-done] {
+    background: rgba(5, 150, 105, 0.04);
+    border-color: #059669;
+  }
+
+  .rse-step-label {
+    color: #6b6560;
+  }
+
+  .rse-step[data-active] .rse-step-label {
+    color: #1a1814;
+  }
+
+  .rse-dormant-text {
+    color: #6b6560;
+  }
+
+  .rse-trigger-btn {
+    border-color: #7c3aed;
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.06);
+  }
+
+  .rse-node-count {
+    fill: #ffffff;
+  }
+
+  .rse-node-label {
+    fill: #8a8580;
+  }
+
+  .rse-node[data-active] .rse-node-label {
+    fill: #4a4540;
+  }
+
+  .rse-center-circle {
+    fill: #f8f7f4;
+    stroke: #e8e5df;
+  }
+
+  .rse-center-score {
+    fill: #1a1814;
+  }
+
+  .rse-center-label {
+    fill: #8a8580;
+  }
+
+  .rse-edge-line {
+    stroke: #d4d0c8;
+  }
+
+  .rse-opp-card {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+  }
+
+  .rse-opp-card:hover {
+    border-color: #d4d0c8;
+  }
+
+  .rse-opp-card-title {
+    color: #1a1814;
+  }
+
+  .rse-opp-card-desc {
+    color: #6b6560;
+  }
+
+  .rse-opp-score {
+    background: #ffffff;
+    border-color: #e8e5df;
+    color: #1a1814;
+  }
+
+  .rse-opp-title {
+    color: #4a4540;
+  }
+
+  .rse-retry-btn {
+    border-color: #e8e5df;
+    color: #6b6560;
+  }
+
+  .rse-retry-btn:hover {
+    background: #f0ece4;
+    color: #1a1814;
+    border-color: #d4d0c8;
+  }
+
+  .rse-expand-btn {
+    border-color: #e8e5df;
+    color: #6b6560;
+  }
+
+  .rse-expand-btn:hover {
+    background: #f0ece4;
+    color: #4a4540;
+    border-color: #d4d0c8;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .rse-dormant-orb {
+    animation: none;
+  }
+
+  .rse-step {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .rse-step[data-active] .rse-step-indicator {
+    animation: none;
+  }
+
+  .rse-step-pulse {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .rse-presenting {
+    animation: none;
+    opacity: 1;
+  }
+
+  .rse-edge-line {
+    animation: none;
+    opacity: 0.5;
+    stroke-dasharray: none;
+  }
+
+  .rse-edge-blip {
+    animation: none;
+    opacity: 0.8;
+  }
+
+  .rse-node {
+    animation: none;
+    opacity: 1;
+  }
+
+  .rse-node-glow {
+    animation: none;
+    opacity: 0.3;
+  }
+
+  .rse-opp-card {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .rse-presenting {
+    grid-template-columns: 1fr;
+  }
+
+  .rse-graph-container {
+    order: 2;
+  }
+
+  .rse-opportunities {
+    order: 1;
+  }
+}

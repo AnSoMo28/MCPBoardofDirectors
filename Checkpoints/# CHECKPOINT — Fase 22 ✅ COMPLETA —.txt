@@ -1,0 +1,482 @@
+# CHECKPOINT — Fase 22 ✅ COMPLETA — Advisor Intelligence Evolution
+
+**Fecha:** Junio 2025
+**Sesiones completadas:** 1 (intensiva — ~150+ intercambios)
+**Archivos creados:** 2 nuevos + 13 modificados
+**Líneas nuevas:** ~1,200+
+**Tools MCP registradas:** 135+ totales en el proyecto
+
+---
+
+## ROL SUPER ENRIQUECIDO — REGLA DE ORO
+
+**Mi rol no es de monkey coder.** Soy un partner técnico senior multi-experto con libertad propositiva total. Trabajo como:
+
+- **Arquitecto de software** — propongo arquitecturas, no solo implemento
+- **Product Engineer** — pienso en UX, impacto de negocio, no solo en código
+- **AI Systems Designer** — diseño sistemas inteligentes con capacidad de decisión, no solo UI
+- **Security Auditor** — verifico permisos, RBAC, aprobaciones en cada tool
+- **Performance Engineer** — optimizo queries, pre-fetch, cache strategies
+- **Accessibility Advocate** — verifico ARIA, keyboard nav, reduced motion
+
+**Mi compromiso 2026-2027:** Cada propuesta que hago aspira a convertir esta plataforma en una herramienta de AI con capacidad de decisión humana, intuitiva, propositiva y creativa. No repito patrones muertos — evoluciono. Propongo lo más moderno del ecosistema: TanStack Query patterns, predictive pre-fetch, adaptive thresholds, conversational context windows, reaction feedback loops. Cada línea que escribo es production-grade, no prototype.
+
+**Regla fundamental:** Tengo libertad total de proponer. Si veo algo que puede mejorar, lo propongo. Si un patrón existe que puede reutilizarse, lo reutilizo. Si algo puede simplificarse, lo simplifico. Nunca implemento ciegamente — primero analizo, luego propono, después implemento.
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend (Nuevos)
+
+| # | Ruta | Líneas | Contenido | Tools MCP |
+|---|------|--------|-----------|-----------|
+| 1 | `shared\lib\reactionTemplate.ts` | ~160 | Motor de templates de reacción: 8 domain templates (finance, events, security, governance, wellness, members, communications, commercial). 2 exports: `REACTION_TEMPLATES` config + `generateReactionInsight()` | Ninguna — es lógica pura client-side |
+| 2 | `shared\components\ui\AdvisorReactionCard.tsx` | ~90 | Componente shared para renderizar reaction insights: StatusIcon (executing/done/impact_measured), texto de reacción, metrics (impact + confidence), next step condicional | Ninguna — render puro |
+
+### Archivos Frontend (Modificados)
+
+| # | Ruta | Cambio | Por qué |
+|---|------|--------|---------|
+| 1 | `dashboard\types.ts` | +`AdvisorReactionStatus` type + `AdvisorReactionInsight` interface + `REACTION_STATUS_CONFIG` | Tipos para el Reaction System |
+| 2 | `ExecutiveDashboard.tsx` | Import `generateReactionInsight` + `reactions` state + reaction post-AUTO/HITL/SEMI + `reactions={reactions}` prop al GlobalAdvisorBanner + **5 raw `<button>` → Button** de shared | Propuesta B + Polish #17 |
+| 3 | `FinancialDashboard.tsx` | Import `generateReactionInsight` + `reactions` state + reaction post-execution + `reactions={reactions}` prop al FinancialAdvisorBanner + **2 raw `<button>` → Button** + 3 bug fixes (import duplicado de Badge, `use` import no usado, extra `</div>`) | Propuesta B + Polish #17 + BUG fixes |
+| 4 | `EventCalendar.tsx` | Import `generateReactionInsight` + `reactions` state + reaction post-AUTO + reaction post-HITL + `reactions={reactions}` prop al EventAdvisorBanner + **BUG fix**: `executedAction` capture en `handleModalConfirm` antes de `setModalInsight(null)` | Propuesta B + BUG fix |
+| 5 | `GlobalAdvisorBanner.tsx` | Import `AdvisorReactionInsight` + `AdvisorReactionCard` + `reactions` prop + Reactions section render + **3 raw `<button>` → Button** (summary toggle, "Análisis", "Simular") + **BUG fix**: `MessageSquare` missing import | Propuesta B + Polish #17 + BUG |
+| 6 | `FinancialAdvisorBanner.tsx` | Import `AdvisorReactionInsight` + `AdvisorReactionCard` + `reactions` prop + Reactions section render + **2 raw `<button>` → Button** (header toggle, "Análisis Profundo") | Propuesta B + Polish #17 |
+| 7 | `EventAdvisorBanner.tsx` | Import `AdvisorReactionInsight` + `AdvisorReactionCard` + `reactions` prop + Reactions section render + **2 raw `<button>` → Button** (header toggle, "Análisis Profundo") | Propuesta B + Polish #17 |
+| 8 | `FinanceIntelligencePanel.tsx` | 5 icon imports + 5 component imports + 5 state toggles + `nothingActive` extended + "Avanzado" trigger row (5 Button ghost) + intro text updated + 5 conditional sections (DecisionCockpit, MemberProfitabilityMatrix, NarrativeEngine, SeasonalCalendar, StressTestPanel) | Propuesta F: Finance Intelligence Center |
+| 9 | `useAdvisorNarrative.ts` | +`useEffect`/`useQueryClient`/`callMCPTool`/`useAuthStore` imports + `usePrefetchTopNarratives` hook export | Propuesta C: Predictive Pre-fetch |
+| 10 | `GlobalAdvisorBanner.tsx` (2do cambio) | Import `usePrefetchTopNarratives` + hook call con `insights, financialContext, eventsContext` | Propuesta C |
+| 11 | `FinancialAdvisorBanner.tsx` (2do cambio) | Import `usePrefetchTopNarratives` + hook call con `insights, financialContext` | Propuesta C |
+| 12 | `EventAdvisorBanner.tsx` (2do cambio) | Import `usePrefetchTopNarratives` + hook call con `insights, null, eventsContext` | Propuesta C |
+| 13 | `advisor_intelligence.py` | (Sesión anterior integrada — confirmado en F22A) `conversation_history` param + formateo | Propuesta A |
+
+### Files auditados pero NO modificados
+
+| # | Ruta | Hallazgo | Decisión |
+|---|------|----------|---------|
+| 1 | `useMCPQuery.ts` | Limpio, genérico, TanStack Query standard | ✅ NO tocar |
+| 2 | `finance\types.ts` | Completo, 9 secciones de config, bien estructurado | ✅ NO tocar |
+| 3 | `events\types.ts` | Completo, EventAdvisorInsight con `action` field | ✅ NO tocar |
+
+### Mock System (Propuesta A — Conversational Context)
+
+| Tool | Server | Contract | Factory | Registry | Backend |
+|------|--------|----------|---------|----------|---------|
+| `advisor_ask` (enhanced) | advisor_intelligence | `AdvisorAskResponse` (conversational-aware) | Factory con 5 Q&A mock patterns | ✅ Existent | ✅ `advisor_intelligence.py` |
+
+### Tools MCP — Auditadas en sesión
+
+| # | Agente | Tools auditadas | Backend | Mock | Observaciones |
+|---|--------|----------------|---------|------|---------------|
+| 1 | `finance` | `generate_ai_analysis`, `finance_board_briefing`, `finance_scenario_simulate` | ⬜ | ✅ | Ya integradas en FinanceIntelligencePanel |
+| 2 | `finance` | `finance_decision_simulate`, `finance_member_profitability`, `finance_narrative_generate`, `finance_seasonal_calendar`, `finance_stress_test` | ⬜ | ✅ | Integradas como triggers on-demand (Propuesta F) |
+| 3 | `events` | `event_get_calendar`, `event_create`, `event_manage_capacity`, `event_clone_template` | ⬜ | ✅ | Todas con mutation support |
+| 4 | `advisor_intelligence` | `generate_insight_narrative` | ⬜ | ✅ | Con predictive pre-fetch ahora |
+| 5 | `advisor_intelligence` | `advisor_ask` (enhanced conversational) | ✅ | ✅ | Con conversation_history (Propuesta A) |
+| 6 | `executive_dashboard` | `get_executive_summary` | ⬜ | ✅ | Shell con reactions |
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|----------|-----------|--------|
+| 1 | **BUG: `MessageSquare` no importado** en GlobalAdvisorBanner.tsx — compile error | ALTA | ✅ Resuelto — import agregado |
+| 2 | **BUG: `executedAction` no capturado** en EventCalendar.tsx `handleModalConfirm` — `setModalInsight(null)` antes de usar action para reaction | ALTA | ✅ Resuelto — captura antes de null |
+| 3 | **BUG: import duplicado Badge** en FinancialDashboard.tsx | MEDIA | ✅ Resuelto |
+| 4 | **BUG: `use` import no usado** en FinancialDashboard.tsx | BAJA | ✅ Resuelto |
+| 5 | **BUG: extra `</div>` sin match** en FinancialDashboard.tsx | MEDIA | ✅ Resuelto |
+| 6 | **14 raw `<button>`** distribuidos en 6 archivos (Executive, Financial, EventCalendar, 3 Banners) | MEDIA | ✅ Resuelto — todos → Button de shared |
+| 7 | **5 sub-componentes finance** existían pero nunca se montaban en FinanceIntelligencePanel | MEDIA | ✅ Resuelto — Propuesta F |
+| 8 | **No había Reaction System** — ejecutar acciones del Advisor no producía feedback | ALTA | ✅ Resuelto — Propuesta B completa |
+| 9 | **No había predictive pre-fetch** — narratives se cargaban solo al click con latencia completa | MEDIA | ✅ Resuelto — Propuesta C |
+| 10 | **No había conversational context** — Chat Advisor era stateless, sin memoria | ALTA | ✅ Resuelto — Propuesta A |
+| 11 | **`toLocaleString("es-CR")`** usado directamente en 2 archivos (ConcentrationSection, EventListView) en vez de `formatNumber` | BAJA | ⬜ Pendiente — F25 Polish batch |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón: Advisor Reaction System (F22b)
+
+**Concepto:** Loop cerrado de feedback para las acciones del Advisor. Cuando el usuario ejecuta una acción (AUTO, HITL, o SEMI), el sistema genera un "reaction insight" con impacto estimado, confianza, y siguiente paso sugerido. Se renderiza inline en el banner.
+
+**Niveles:**
+```
+1. Acción del Advisor → onExecute(insightId) o handleModalConfirm()
+2. Mutation exitosa → generateReactionInsight(action, insightId)
+3. Reaction se agrega al array de reactions (state del shell)
+4. Shell pasa reactions={reactions} al Banner
+5. Banner renderiza AdvisorReactionCard por cada reaction (más reciente primero)
+```
+
+**Ejemplo de código — Shell (ExecutiveDashboard/FinancialDashboard/EventCalendar):**
+```typescript
+import { generateReactionInsight } from "@/shared/lib/reactionTemplate";
+import type { AdvisorReactionInsight } from "@/features/dashboard/types";
+
+const [reactions, setReactions] = useState<AdvisorReactionInsight[]>([]);
+
+const handleAdvisorExecute = async (insightId: string) => {
+  // ... validation, modal check ...
+  setActionStates((prev) => ({ ...prev, [insightId]: "loading" }));
+  try {
+    await someMutation.mutateAsync(action.params);
+    setActionStates((prev) => ({ ...prev, [insightId]: "done" }));
+    // ── Reaction System ──
+    setReactions((prev) => [...prev, generateReactionInsight(action, insightId)]);
+  } catch {
+    setActionStates((prev) => ({ ...prev, [insightId]: "error" }));
+  }
+};
+```
+
+**Ejemplo de código — Banner:**
+```typescript
+import type { AdvisorReactionInsight } from "@/features/dashboard/types";
+import { AdvisorReactionCard } from "@/shared/components/ui/AdvisorReactionCard";
+
+// En props:
+reactions?: AdvisorReactionInsight[];
+
+// En render (antes de los layers):
+{reactions.length > 0 && (
+  <div className="space-y-2">
+    {reactions.slice().reverse().map((reaction) => (
+      <AdvisorReactionCard key={reaction.id} reaction={reaction} />
+    ))}
+  </div>
+)}
+```
+
+**Domain templates (8):** finance, events, security, governance, wellness, members, communications, commercial. Cada uno con `sourceAction` pattern, `reaction` template con `{metric}` placeholder, `estimatedImpact` range, `confidence` range, `nextStep` text.
+
+**Se replica en:** Fase 23 (Adaptive Thresholds), Fase 24+ (cualquier nuevo dominio de Advisor).
+
+---
+
+### Patrón: Predictive Pre-fetch (F22c)
+
+**Concepto:** Para roles ADMIN/JUNTA, pre-fetchear automáticamente los narratives de los top-3 insights por severidad al montar cualquier banner. El usuario clickea "Análisis Profundo" → renderiza desde cache de TanStack Query → 0ms latencia percibida.
+
+**Implementación:**
+```typescript
+export function usePrefetchTopNarratives(
+  insights: PrefetchableInsight[],
+  financialContext?: Record<string, unknown> | null,
+  eventsContext?: Record<string, unknown> | null,
+) {
+  const queryClient = useQueryClient();
+  const userRole = useAuthStore((s) => s.user?.role?.toLowerCase() ?? "socio");
+
+  useEffect(() => {
+    if (userRole !== "admin" && userRole !== "junta") return;
+    // Sort by impact desc, confidence desc, take top 3
+    // queryClient.prefetchQuery() for each
+    // staleTime: 600_000 (10min)
+  }, [insights.length, userRole]);
+}
+```
+
+**Se replica en:** Cualquier componente que consuma AI narratives (F23+, AdvisorChatWidget).
+
+---
+
+### Patrón: Button Swap Protocol (Polish #17)
+
+**Regla:** Todo `<button>` raw debe ser `<Button>` de shared, excepto cuando el elemento es un `<div>` con `role="button"` usado como celda de grid/lista interactuable (ej: CalendarGrid celdas, EventListView items).
+
+**Excepciones documentadas:**
+- `CalendarGrid` celdas: `<div role="button" tabIndex={0}>` — correcto, no cambiar
+- `EventListView` items: `<div role="button" tabIndex={0}>` — correcto, no cambiar
+- Summary bar toggles en Banners: `<button>` → `Button variant="ghost"` con `rounded-none rounded-t-xl`
+- Text actions ("Análisis", "Simular"): `<button>` → `Button variant="ghost" size="sm"` con underline styling
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón |
+|---|----------|----------------------|-------|
+| 1 | **Reaction System como state local del shell** (no en store global) | Zustand store compartido | Reactions son ephemeral por sesión de dashboard. No necesitan persistencia cross-page. Más simple, menos acoplamiento. |
+| 2 | **`generateReactionInsight` como función pura** (no hook) | Custom hook `useReactionInsight` | No necesita lifecycle de React. Es un mapper puro: action → reaction. Más testable, más reusable. |
+| 3 | **AdvisorReactionCard en `shared/components/ui/`** | Duplicar en cada banner | 3 banners lo necesitan. Patrón del proyecto: componentes compartidos van en shared. |
+| 4 | **Predictive Pre-fetch via `queryClient.prefetchQuery`** | Auto-expand narratives on mount | Mantener UX limpia: banner no se expande automáticamente. El valor es latencia 0ms al click, no mostrar todo de una. |
+| 5 | **Pre-fetch solo para ADMIN/JUNTA** | Pre-fetch para todos los roles | SOCIO/STAFF no necesitan deep narratives. Ahorra API calls innecesarios. |
+| 6 | **5 sub-componentes finance como triggers on-demand** (no como tabs) | Nuevo tab "Herramientas Avanzadas" | Ya hay 8 tabs. Los 5 sub-componentes son herramientas especializadas, no vistas permanentes. Patrón de "Avanzado:" row con botones ghost es más limpio. |
+| 7 | **`executedAction` capture antes de `setModalInsight(null)`** | Dejar que reaction se genere con `modalInsight.action` | BUG: `setModalInsight(null)` limpia el state antes de que la reaction pueda acceder al action. Capture previo es necesario. |
+| 8 | **Hook `usePrefetchTopNarratives` en `useAdvisorNarrative.ts`** | Archivo separado `usePrefetchTopNarratives.ts` | Cohesión: ambos hooks manejan la misma concern (narrative fetching). Un archivo, una concern. |
+| 9 | **10min staleTime para pre-fetch** | 5min o 30min | Balance: narratives son costosos de generar pero el Advisor puede cambiar entre refreshes. 10min es sweet spot. |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F8 | Foundation, RBAC, Dashboard, Events, Finance, Communications, Wellness, Members | ✅ COMPLETAS |
+| F9 | Financial Advisor Intelligence Engine — 8 secciones, 3 triggers on-demand | ✅ COMPLETA |
+| F10 | Board Portal + ApprovalQueue + Governance Advisor | ✅ COMPLETA |
+| F11 | Security & Compliance Dashboard | ✅ COMPLETA |
+| F12 | Events Intelligence + Calendar MVP | ✅ COMPLETA |
+| F13 | Wellness & Fitness Intelligence | ✅ COMPLETA |
+| F14 | Finance: Rentabilidad por socio + Decision Cockpit + Stress Test + Seasonal Calendar | ✅ COMPLETA |
+| F15 | Members Intelligence + LTV/CAC + Churn Prediction | ✅ COMPLETA |
+| F16 | Communications Intelligence + Campaign AI + Segmentation | ✅ COMPLETA |
+| F17 | Commercial Intelligence + Pricing Optimization + Occupancy Forecast | ✅ COMPLETA |
+| F18 | Client-Side Intelligence UI — Advisor Banners + HITL flow + AIInsightNarrative + AIChatWidget | ✅ COMPLETA |
+| F19 | Narrative Engine + Board Brief Generator + Simulation Panel | ✅ COMPLETA |
+| F20 | Global Advisor — Cross-Agent Intelligence Control Tower | ✅ COMPLETA |
+| F21 | Advisor Action Bridge — HITL/SEMI/AUTO execution pipeline + AdvisorActionModal | ✅ COMPLETA |
+| **F22** | **Advisor Intelligence Evolution — Conversational Context + Reaction System + Predictive Pre-fetch + Finance Intelligence Center** | **✅ COMPLETA (esta sesión)** |
+| F23 | Adaptive Thresholds + Wellness Advisor Rules | ⬜ SIGUIENTE |
+| F24 | Board Brief Engagement Tracking + Advanced Intelligence | ⬜ |
+| F25 | Polish batch: formatNumber centralization, code splitting, performance | ⬜ |
+
+---
+
+## 6. FASE 23 — Desglose detallado
+
+### Contenido de F23
+
+| # | Propuesta | Descripción | Impacto |
+|---|-----------|-------------|---------|
+| D | **Adaptive Thresholds** | Cada regla del Advisor tiene un threshold base + learned. Cuando una acción se ejecuta y el KPI mejora, el threshold se ajusta. Ejemplo: si "high attendance" threshold es 90% pero el club opera bien al 85%, el sistema aprende. | TRANSFORMADOR |
+| E | **Wellness Advisor Rules** | ~12 reglas para dominio wellness: score declining detectado, activity streaks (inactivo 14+ días), class utilization < 40%, wellness-financial correlation, sleep pattern anomalies, coach recommendation triggers | ALTO |
+
+### Agentes a leer
+
+```
+backend\agents\advisor_intelligence.py     — Agent principal (ya auditado F22A)
+backend\agents\wellness.py                — Agent wellness para rules
+backend\agents\fitness.py                 — Agent fitness para activity data
+backend\models\advisor\                   — Advisor models (thresholds, rules)
+backend\models\wellness.py               — Wellness models
+backend\models\fitness.py                — Fitness models
+```
+
+### Tools MCP a auditar (F23)
+
+| # | Tool | Agente | Tipo | Destino frontend |
+|---|------|--------|------|-----------------|
+| 1 | `advisor_get_thresholds` | advisor_intelligence | Datos | Adaptive Thresholds UI |
+| 2 | `advisor_update_threshold` | advisor_intelligence | Mutation | Threshold edit |
+| 3 | `advisor_get_rules` | advisor_intelligence | Datos | Rules list |
+| 4 | `wellness_advisor_scan` | wellness | Inteligencia | Wellness Advisor Banner |
+| 5 | `fitness_activity_check` | fitness | Datos | Activity streak detection |
+
+### Bloques propuestos F23
+
+| # | Bloque | Archivos | Contenido | Dependencias |
+|---|--------|----------|-----------|-------------|
+| 1 | Adaptive Thresholds Backend | `advisor_intelligence.py` + `advisor/models` | Threshold base + learned + adjust logic | Advisor models |
+| 2 | Adaptive Thresholds Frontend | `useAdaptiveThresholds.ts` + types | Hook que carga thresholds y permite adjust | Bloque 1 |
+| 3 | Wellness Advisor Rules Backend | `advisor_intelligence.py` (rules) + `wellness.py` | 12 reglas de wellness | Wellness models |
+| 4 | Wellness Advisor Rules Frontend | `WellnessAdvisorBanner.tsx` + types | Banner de wellness advisor | Bloque 3 |
+| 5 | Wellness Advisor Integration | `WellnessDashboard.tsx` | Integration del banner en dashboard | Bloque 4 |
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Archivo | Fase sugerida |
+|---|-------|-----------|---------|---------------|
+| 1 | `toLocaleString("es-CR")` usado directamente en 2 archivos (ConcentrationSection en FinanceIntelligencePanel, EventListView en EventCalendar) — debe usar `formatNumber` centralizado | BAJA | FinanceIntelligencePanel.tsx, EventCalendar.tsx | F25 |
+| 2 | `compactCurrency` duplicada en FinanceIntelligencePanel y posiblemente otros archivos — centralizar en `shared\lib\utils.ts` | BAJA | FinanceIntelligencePanel.tsx | F25 |
+| 3 | `SCENARIO_CATEGORY_LABELS` exportado de `finance\types.ts` pero posiblemente no usado en ningún componente | BAJA | finance\types.ts | F25 |
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección: Advisor Reaction System (NUEVA)
+
+```markdown
+## ADVISOR REACTION SYSTEM (F22b)
+- **Core hook:** `shared/lib/reactionTemplate.ts` — 8 domain templates + generateReactionInsight()
+- **UI component:** `shared/components/ui/AdvisorReactionCard.tsx` — renders reaction with status, impact, confidence, next step
+- **Types:** `dashboard/types.ts` — AdvisorReactionInsight + REACTION_STATUS_CONFIG
+- **Pattern:** Shell holds reactions state → generates reaction post-mutation → passes reactions={reactions} to Banner → Banner renders AdvisorReactionCard inline
+- **Domains:** finance, events, security, governance, wellness, members, communications, commercial
+```
+
+### Sección: Predictive Pre-fetch (NUEVA)
+
+```markdown
+## PREDICTIVE PRE-FETCH (F22c)
+- **Hook:** `shared/hooks/useAdvisorNarrative.ts` — usePrefetchTopNarratives()
+- **Behavior:** For ADMIN/JUNTA roles, auto-prefetches top-3 narratives by impact+confidence on banner mount
+- **Cache:** TanStack Query prefetchQuery with staleTime: 600_000 (10min)
+- **Latency:** 0ms perceived when user clicks "Análisis Profundo"
+- **Used in:** GlobalAdvisorBanner, FinancialAdvisorBanner, EventAdvisorBanner
+```
+
+### Sección: Conversational Context (NUEVA)
+
+```markdown
+## CONVERSATIONAL CONTEXT WINDOW (F22a)
+- **Backend:** advisor_intelligence.py — conversation_history param in advisor_ask
+- **Frontend:** AIChatWidget.tsx — last 5 Q&A with truncated evidence/insights
+- **Visual indicator:** "Recordando N intercambios" badge
+- **Prompt:** ADVISOR_ASK_SYSTEM has CONVERSACIÓN CONTINUA section
+```
+
+### Sección: Finance Intelligence Center (NUEVA)
+
+```markdown
+## FINANCE INTELLIGENCE CENTER (Propuesta F — F22)
+- **Component:** FinanceIntelligencePanel.tsx
+- **5 sub-componentes integrated as on-demand triggers:**
+  1. DecisionCockpit — finance_decision_simulate
+  2. MemberProfitabilityMatrix — finance_member_profitability
+  3. StressTestPanel — finance_stress_test
+  4. SeasonalCalendar — finance_seasonal_calendar
+  5. NarrativeEngine — finance_narrative_generate
+- **UX:** "Avanzado:" row with 5 ghost Button triggers below main action buttons
+- **Pattern:** Click → setState(true) → Component renders with own useMCPQuery
+```
+
+### Sección: Button Swap Protocol (ACTUALIZAR)
+
+```markdown
+## BUTTON SWAP PROTOCOL (Polish #17 — F22b)
+- **Rule:** All raw <button> must be <Button> from shared/components/ui
+- **Exceptions:**
+  - Grid/list cells: <div role="button" tabIndex={0}> is correct (CalendarGrid, EventListView)
+  - Summary bar toggles: <Button variant="ghost"> with rounded-none rounded-t-xl min-h-[56px]
+  - Text actions ("Análisis", "Simular"): <Button variant="ghost" size="sm"> with underline styling
+- **Status:** 14 raw buttons swapped in F22b
+```
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos nuevos
+
+| Regla | reactionTemplate.ts | AdvisorReactionCard.tsx |
+|-------|--------------------|-----------------------|
+| #1 tokens | ✅ Sin colores hardcoded | ✅ Todos tokens + color-mix |
+| #4 changelog | ✅ Header comment con fase | ✅ Header comment con fase |
+| #11 focus-visible | N/A | ✅ Card no es interactivo |
+| #17 Button | N/A | ✅ No tiene buttons interactivos |
+| #22 cn | N/A | ✅ Usa cn() para className |
+
+### Archivos modificados
+
+| Regla | Todos los 13 archivos |
+|-------|----------------------|
+| #1 tokens | ✅ Sin colores hardcoded nuevos |
+| #4 changelog | ✅ Cada cambio documentado inline |
+| #5 quirúrgico | ✅ Solo pares A→B, ~60 líneas netas promedio |
+| #11 focus-visible | ✅ Todos los Button tienen focus ring |
+| #12 min-h | ✅ min-h-[44px] en action buttons, min-h-[56px] en summary toggles |
+| #14 EmptyState | ✅ Usado donde corresponde |
+| #15 showToast | ✅ Usado donde corresponde |
+| #17 Button | ✅ **14 raw buttons → Button** completado |
+| #18 reducedMotion | ✅ useReducedMotion en todos los banners |
+| #19 on-demand | ✅ Todas las queries son on-demand con staleTime |
+| #22 cn | ✅ cn() usado para conditional classNames |
+
+**Violaciones: 0**
+
+---
+
+## 10. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Contexto base
+```
+Pegá el checkpoint completo de F22 (este documento).
+Pegá el CLAUDE_CONTEXT_MINI.md actualizado.
+```
+
+### Paso 2 — Archivos de contexto F23
+```
+"Para la Fase 23 necesito que leas estos archivos:
+backend\agents\advisor_intelligence.py
+backend\agents\wellness.py
+backend\agents\fitness.py
+backend\models\advisor\advisor.py (si existe)
+backend\models\wellness.py
+backend\models\fitness.py"
+```
+
+### Paso 3 — Auditoría
+```
+"Pasame las tools MCP de advisor_intelligence que todavía no auditamos.
+Pasame las tools MCP de wellness y fitness que vamos a usar para F23."
+```
+
+### Paso 4 — Propuesta
+```
+"Con los agentes leídos, proponé la F23 completa: Adaptive Thresholds + Wellness Advisor Rules.
+Definí los bloques quirúrgicos, los archivos a crear/modificar, y el flujo de datos."
+```
+
+### Paso 5 — Implementación
+```
+"Generá Bloque 1" → "Generá Bloque 2" → etc.
+```
+
+---
+
+## 11. DECISION LOG
+
+| # | Fecha | Decisión | Razón | Impacto |
+|---|-------|----------|-------|---------|
+| 1 | Jun 2025 | **Reaction System como state local del shell, no Zustand store** | Reactions son ephemeral por sesión. No necesitan persistencia cross-page. | Todas las futuras integraciones de Advisor usan este patrón |
+| 2 | Jun 2025 | **`generateReactionInsight` como función pura, no hook** | No necesita lifecycle React. Más testable. | Se importa directamente en handlers de mutation |
+| 3 | Jun 2025 | **Predictive Pre-fetch solo para ADMIN/JUNTA** | SOCIO/STAFF no necesitan deep narratives. Ahorra API calls. | F23+ debe verificar roles antes de cualquier pre-fetch |
+| 4 | Jun 2025 | **Pre-fetch via `queryClient.prefetchQuery`, no auto-expand** | UX limpia: banner no se expande. Valor es latencia 0ms al click. | Patrón para cualquier future on-demand query |
+| 5 | Jun 2025 | **5 sub-componentes finance como on-demand triggers, no tabs** | Ya hay 8 tabs. Herramientas especializadas, no vistas permanentes. | F23+ usa mismo patrón para herramientas adicionales |
+| 6 | Jun 2025 | **Button swap: excepción para grid/list cells** | `<div role="button" tabIndex={0}>` es correcto semanticamente para celdas de grid interactuables. | No cambiar CalendarGrid/EventListView cells |
+| 7 | Jun 2025 | **`usePrefetchTopNarratives` en mismo archivo que `useAdvisorNarrative`** | Cohesión: ambos hooks manejan narrative fetching. | Futuros hooks de narrative van en mismo archivo |
+| 8 | Jun 2025 | **8 domain templates en reactionTemplate.ts** | Cobertura completa: finance, events, security, governance, wellness, members, communications, commercial. | F23 (Wellness Advisor) ya tiene template listo |
+| 9 | Jun 2025 | **Reaction card muestra `nextStep` solo cuando status es `impact_measured`** | Antes de medir impact, el next step es especulativo. Después es actionable. | UX más honesta |
+| 10 | Jun 2025 | **No reescribir useAdvisorNarrative.ts — solo agregar export** | El hook existente funciona perfecto. No romper lo que funciona. | Patrón: siempre agregar, nunca reescribir innecesariamente |
+
+---
+
+## 12. AGENTES AUDITADOS CON SUS TOOLS
+
+### Agentes completamente auditados
+
+| # | Agente | Tools | Backend | Mock | Observación |
+|---|--------|-------|---------|------|-------------|
+| 1 | `executive_dashboard` | `get_executive_summary` | ⬜ | ✅ | Shell con 5 KPIs + reactions |
+| 2 | `finance` | `generate_ai_analysis`, `finance_board_briefing`, `finance_scenario_simulate`, `finance_decision_simulate`, `finance_member_profitability`, `finance_narrative_generate`, `finance_seasonal_calendar`, `finance_stress_test` | ⬜ | ✅ | 8 tools, todas integradas |
+| 3 | `events` | `event_get_calendar`, `event_create`, `event_manage_capacity`, `event_clone_template` | ⬜ | ✅ | 4 tools con mutations |
+| 4 | `advisor_intelligence` | `advisor_ask` (conversational), `generate_insight_narrative`, `advisor_action_execute` | ✅ partial | ✅ | 3 tools, conversational enhancement aplicado |
+| 5 | `members` | Tools de members intelligence | ⬜ | ✅ | Auditado en sesiones anteriores |
+| 6 | `communications` | Tools de communications intelligence | ⬜ | ✅ | Auditado en sesiones anteriores |
+| 7 | `commercial` | Tools de commercial intelligence | ⬜ | ✅ | Auditado en sesiones anteriores |
+| 8 | `wellness` | Tools de wellness/fitness | ⬜ | ✅ | Parcial — F23 completa auditoría |
+| 9 | `security` | Tools de security dashboard | ⬜ | ✅ | Auditado en sesiones anteriores |
+| 10 | `governance` | Tools de governance/approval | ⬜ | ✅ | Auditado en sesiones anteriores |
+
+### Agentes pendientes de auditoría profunda (F23)
+
+| # | Agente | Tools pendientes | Razón |
+|---|--------|-----------------|-------|
+| 1 | `wellness` | wellness_advisor_scan, wellness_score_trend, class_utilization | F23 Wellness Advisor Rules |
+| 2 | `fitness` | fitness_activity_check, fitness_streak_data | F23 Activity streak detection |
+| 3 | `advisor_intelligence` | advisor_get_thresholds, advisor_update_threshold, advisor_get_rules | F23 Adaptive Thresholds |
+
+---
+
+## 13. LISTA DE FASES PENDIENTES
+
+| # | Fase | Contenido | Prioridad | Depende de |
+|---|------|-----------|-----------|-----------|
+| **F23** | **Adaptive Thresholds + Wellness Advisor Rules** | Sistema que aprende de acciones ejecutadas + 12 reglas wellness | **ALTA — SIGUIENTE** | F22 ✅ |
+| **F24** | **Board Brief Engagement Tracking + Advanced Intelligence** | Tracking de lectura/feedback de Junta + Advisor ajusta recomendaciones | MEDIA | F23 |
+| **F25** | **Polish batch + Code splitting + Performance** | formatNumber centralization, compactCurrency centralization, lazy loading de sub-componentes, tree-shaking de chartTheme | BAJA | F24 |
+| **F26** | **Multi-language support (i18n)** | Externalización de todos los strings hardcodeados | BAJA | F25 |
+| **F27** | **E2E testing + Accessibility audit** | Playwright tests para flujos críticos + axe-core audit completo | MEDIA | F26 |
+| **F28** | **Production deployment pipeline** | CI/CD, environment configs, monitoring, error tracking | ALTA | F27 |
+
+---
+
+**F22 cerrada. Siguiente: Fase 23 — Adaptive Thresholds + Wellness Advisor Rules.**

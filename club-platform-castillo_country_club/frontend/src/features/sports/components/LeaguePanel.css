@@ -1,0 +1,591 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/LeaguePanel.css
+   §B4.11 — League Panel V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  card stagger entry animation
+   2. REACCIÓN:     hover translateY, hover-reveal transitions
+   3. MEMORIA:      leagues, standings, stats persist
+   4. INTENCIÓN:    status transitions, format badges, team pills
+   5. SINIESTRÍA:   data-status colors, data-leader gold
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-league {
+  --spt-l-accent: var(--color-teal-400, #2a9ab5);
+  --spt-l-gold: var(--color-gold-400, #c9a96e);
+  --spt-l-surface: var(--color-surface-1, #1a1a1a);
+  --spt-l-border: rgba(255, 255, 255, 0.06);
+  --spt-l-text: var(--color-silver-100, #f0ece4);
+  --spt-l-text-muted: var(--color-silver-400, #8a8580);
+  --spt-l-text-dim: var(--color-silver-500, #7a7570);
+}
+
+.spt-league[data-mode="calm"]    { --spt-l-accent: var(--color-teal-400, #2a9ab5); }
+.spt-league[data-mode="alert"]   { --spt-l-accent: var(--color-amber-400, #d4a017); }
+.spt-league[data-mode="critical"]{ --spt-l-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-league__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.spt-league__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.05rem;
+  color: var(--spt-l-text);
+  margin: 0;
+}
+
+.spt-league__new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--spt-l-accent);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--spt-l-accent);
+  cursor: pointer;
+  min-height: 32px;
+  transition: background 0.2s ease;
+}
+
+.spt-league__new-btn:hover {
+  background: rgba(42, 154, 181, 0.1);
+}
+
+.spt-league__new-btn:focus-visible {
+  outline: 2px solid var(--spt-l-accent);
+  outline-offset: 2px;
+}
+
+.spt-league__new-btn-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ── §2 — Grid ─────────────────────────────────────────── */
+
+.spt-league__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+/* ── §3 — League Card (LP 1+2: Respiración + Reacción) ─── */
+
+.spt-league__card {
+  padding: 0.85rem;
+  background: var(--spt-l-surface);
+  border: 1px solid var(--spt-l-border);
+  border-radius: 10px;
+  transition: border-color 0.2s ease,
+              transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease;
+  animation: spt-l-card-enter 0.4s ease both;
+  animation-delay: calc(var(--stagger-i, 0) * 100ms);
+}
+
+@keyframes spt-l-card-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-league__card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ── §3.1 — Card Header ────────────────────────────────── */
+
+.spt-league__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.spt-league__card-title-area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.spt-league__card-sport-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.spt-league__card-title-text {
+  min-width: 0;
+}
+
+.spt-league__card-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--spt-l-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-league__card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+}
+
+.spt-league__card-format {
+  font-size: 0.6rem;
+  color: var(--spt-l-text-dim);
+}
+
+.spt-league__card-dot {
+  font-size: 0.6rem;
+  color: var(--spt-l-text-dim);
+}
+
+.spt-league__card-season {
+  font-size: 0.6rem;
+  color: var(--spt-l-text-dim);
+}
+
+/* ── §3.2 — Status Badge (LP 5: Siniestría) ────────────── */
+
+.spt-league__status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  transition: color 0.4s ease, background 0.4s ease;
+}
+
+.spt-league__status-badge[data-status="proposed"] {
+  color: var(--color-silver-400);
+  background: rgba(138, 133, 128, 0.1);
+}
+
+.spt-league__status-badge[data-status="active"] {
+  color: var(--color-emerald-400);
+  background: rgba(61, 170, 112, 0.1);
+}
+
+.spt-league__status-badge[data-status="completed"] {
+  color: var(--spt-l-accent);
+  background: rgba(42, 154, 181, 0.1);
+}
+
+.spt-league__status-badge[data-status="cancelled"] {
+  color: var(--color-rose-400);
+  background: rgba(229, 77, 77, 0.1);
+}
+
+/* ── §3.3 — Card Info ──────────────────────────────────── */
+
+.spt-league__card-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.spt-league__card-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--spt-l-text-muted);
+}
+
+.spt-league__card-info-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--spt-l-text-dim);
+}
+
+/* ── §3.4 — Team Pills ─────────────────────────────────── */
+
+.spt-league__team-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.spt-league__team-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--spt-l-border);
+  color: var(--spt-l-text-muted);
+}
+
+.spt-league__team-pts {
+  margin-left: 0.25rem;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-weight: 700;
+  color: var(--spt-l-accent);
+  transition: color 0.4s ease;
+}
+
+/* ── §3.5 — Standings Toggle (LP 2: Reacción) ──────────── */
+
+.spt-league__standings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 0.7rem;
+  color: var(--spt-l-accent);
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  transition: opacity 0.2s ease;
+}
+
+.spt-league__standings-toggle:hover {
+  opacity: 0.8;
+}
+
+.spt-league__standings-toggle:focus-visible {
+  outline: 2px solid var(--spt-l-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.spt-league__standings-toggle-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ── §3.6 — Standings Table (LP 5: Siniestría) ─────────── */
+
+.spt-league__standings {
+  margin-bottom: 0.65rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--spt-l-border);
+}
+
+.spt-league__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.spt-league__table thead {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.spt-league__th {
+  padding: 0.5rem 0.65rem;
+  font-weight: 500;
+  color: var(--spt-l-text-dim);
+  text-align: left;
+}
+
+.spt-league__th--pts {
+  text-align: right;
+}
+
+.spt-league__th--bar {
+  width: 6rem;
+}
+
+.spt-league__tr {
+  border-top: 1px solid var(--spt-l-border);
+  transition: background 0.4s ease;
+}
+
+.spt-league__tr[data-leader="true"] {
+  background: rgba(201, 169, 110, 0.04);
+}
+
+.spt-league__td {
+  padding: 0.5rem 0.65rem;
+}
+
+.spt-league__td--team {
+  font-weight: 500;
+  color: var(--spt-l-text);
+}
+
+.spt-league__td--pts {
+  text-align: right;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-weight: 600;
+  color: var(--spt-l-text);
+  transition: color 0.4s ease;
+}
+
+.spt-league__td--pts[data-leader="true"] {
+  color: var(--spt-l-gold);
+}
+
+.spt-league__leader-icon {
+  font-size: 0.85rem;
+}
+
+.spt-league__rank-num {
+  color: var(--spt-l-text-dim);
+}
+
+.spt-league__bar-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-surface-3, #333);
+  overflow: hidden;
+}
+
+.spt-league__bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--spt-l-accent);
+  transition: width 0.5s ease, background 0.4s ease;
+}
+
+.spt-league__bar-fill[data-leader="true"] {
+  background: var(--spt-l-gold);
+}
+
+/* ── §3.7 — Status Transitions (CSS hover-reveal) ──────── */
+
+.spt-league__transitions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-l-border);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.25s ease, max-height 0.25s ease, margin-top 0.25s ease;
+}
+
+.spt-league__card:hover .spt-league__transitions {
+  opacity: 1;
+  max-height: 3rem;
+  margin-top: 0;
+}
+
+.spt-league__transitions-label {
+  font-size: 0.6rem;
+  color: var(--spt-l-text-dim);
+  flex-shrink: 0;
+}
+
+.spt-league__transition-btn {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--spt-l-border);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--spt-l-text-muted);
+  cursor: pointer;
+  min-height: 28px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.spt-league__transition-btn:hover {
+  color: var(--spt-l-text);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.spt-league__transition-btn:focus-visible {
+  outline: 2px solid var(--spt-l-accent);
+  outline-offset: 2px;
+}
+
+/* ── §4 — Shimmer Skeleton ─────────────────────────────── */
+
+.spt-league__skeleton-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.spt-league__skeleton-block {
+  border-radius: 10px;
+  background: var(--spt-l-surface);
+  animation: spt-l-shimmer 1.5s ease-in-out infinite;
+}
+
+.spt-league__skeleton-block--card {
+  height: 200px;
+  width: 100%;
+}
+
+@keyframes spt-l-shimmer {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.7; }
+}
+
+/* ── §5 — Footer: Narrative (LP 7) ─────────────────────── */
+
+.spt-league__footer {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-l-border);
+}
+
+.spt-league__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-l-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-l-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §6 — Light Mode ───────────────────────────────────── */
+
+.light .spt-league {
+  --spt-l-surface: rgba(255, 255, 255, 0.7);
+  --spt-l-border: rgba(0, 0, 0, 0.08);
+  --spt-l-text: #1a1a1a;
+  --spt-l-text-muted: #6b7280;
+  --spt-l-text-dim: #9ca3af;
+}
+
+.light .spt-league__card {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.light .spt-league__card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-league__team-pill {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-league__table thead {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .spt-league__tr[data-leader="true"] {
+  background: rgba(201, 169, 110, 0.06);
+}
+
+.light .spt-league__bar-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-league__transition-btn {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* ── §7 — Reduced Motion ───────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-league__card {
+    animation: none;
+  }
+
+  .spt-league__card:hover {
+    transform: none;
+  }
+
+  .spt-league__card,
+  .spt-league__bar-fill,
+  .spt-league__status-badge,
+  .spt-league__team-pts,
+  .spt-league__td--pts,
+  .spt-league__tr,
+  .spt-league__transitions,
+  .spt-league__narrative {
+    transition: none;
+  }
+
+  .spt-league__skeleton-block {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* ── §8 — Responsive ───────────────────────────────────── */
+
+@media (min-width: 1024px) {
+  .spt-league__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .spt-league__skeleton-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .spt-league__card-info {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── §9 — Print ────────────────────────────────────────── */
+
+@media print {
+  .spt-league {
+    break-inside: avoid;
+  }
+
+  .spt-league__card {
+    animation: none;
+  }
+
+  .spt-league__card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .spt-league__card:hover .spt-league__transitions {
+    opacity: 0;
+    max-height: 0;
+  }
+
+  .spt-league__new-btn {
+    display: none;
+  }
+
+  .spt-league__skeleton-block {
+    animation: none;
+  }
+}

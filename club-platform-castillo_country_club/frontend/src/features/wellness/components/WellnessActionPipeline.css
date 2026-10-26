@@ -1,0 +1,138 @@
+/* ═══════════════════════════════════════════════════════════════
+   Wellness Action Pipeline — CSS
+   Namespace: .glass-wap
+   Keyframes prefix: wap*
+   ═══════════════════════════════════════════════════════════════ */
+
+.glass-wap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--color-surface-1) 90%, transparent);
+  backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+/* ── Header ── */
+.wap__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-gold-400);
+}
+
+.wap__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.wap__count {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  color: var(--color-gold-400);
+}
+
+/* ── Chips ── */
+.wap__chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.wap__chip {
+  position: relative;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+  opacity: 0;
+  animation: wapChipIn 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.08s);
+  transition: border-color 0.2s ease;
+  min-height: 36px;
+}
+
+.wap__chip:hover {
+  border-color: var(--color-gold-400);
+}
+
+@keyframes wapChipIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Urgency Fill (P8) ── */
+.wap__chip-fill {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  transform-origin: left;
+  transform: scaleX(var(--chip-fill, 0.5));
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.wap__chip-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-silver-200);
+}
+
+.wap__chip-content svg {
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+}
+
+.wap__chip-label {
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── Reactions ── */
+.wap__reactions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wap__reaction {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--color-emerald-400);
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-emerald-400) 8%, transparent);
+}
+
+.wap__reaction svg { color: var(--color-emerald-400); }
+
+/* ═══ Reduced Motion ═══ */
+@media (prefers-reduced-motion: reduce) {
+  .wap__chip { animation: none; opacity: 1; }
+}
+
+/* ═══ Light Mode ═══ */
+.light .glass-wap {
+  background: color-mix(in srgb, #ffffff 94%, transparent);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .wap__chip-label { color: var(--color-silver-700); }
+.light .wap__chip-content svg { color: var(--color-gold-500); }

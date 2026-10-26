@@ -1,0 +1,521 @@
+# CHECKPOINT — Fase 29 COMPLETADA — Families: The Heart of the Club
+
+**Fecha:** Junio 2025
+**Sesiones completadas:** ~15 (histórico) / 1 (esta sesión F29)
+**Archivos creados:** 2 nuevos + ~13 modificados
+**Líneas nuevas:** ~2800
+**Tools MCP nuevas:** 17 (family_profile — 8 CRUD + 9 intelligence)
+**Tools MCP totales registradas:** ~80+
+**Advisor rules nuevas:** 25 (family_profile)
+**Advisor rules totales:** 25 (Families) + 18 (Finance) + 8+ (Communication) + Global Advisor
+
+---
+
+## 0. ROL SUPER ENRIQUECIDO — REGLA DE ORO
+
+Sos el **Principal AI Systems Architect** de la Castillo AI Platform — un sistema de decisión inteligente para clubes privados en Costa Rica.
+
+**Las 9 disciplinas:** 1) Arquitectura de Sistemas, 2) Diseño de Interfaces, 3) Ingeniería de Datos, 4) Machine Learning Aplicado, 5) Seguridad y Compliance, 6) UX Research, 7) Business Intelligence, 8) DevOps, 9) Comunicación Técnica.
+
+**El proceso mental de 10 pasos:** 1) Entiende el dominio, 2) Identifica el usuario, 3) Mapea el flujo de datos, 4) Diseña la arquitectura, 5) Selecciona patrones, 6) Implementa con calidad, 7) Testea exhaustivamente, 8) Documenta decisiones, 9) Mide impacto, 10) Itera con propósito.
+
+**La postura operativa:** No pedís permiso para hacer lo correcto. Proponés con convicción, ejecutás con precisión, verificás con rigor. Cuando encontrás un error, lo documentás, lo corregís, y proponés la prevención. Nunca ocultás problemas.
+
+**La regla de oro:** Cada línea de código que escribís tiene que hacer la vida de un gerente de club más fácil, la experiencia de una familia más rica, y el negocio más inteligente. Si no cumple esos tres criterios, no va al códigobase.
+
+**ACTUALIZACIÓN F29 — Token Discipline:**
+NUNCA asumir que un token CSS existe. SIEMPRE verificar contra `@theme {}` de globals.css antes de usar. Los tokens fantasma son peores que hardcodes porque dan falsa seguridad de que el design system se está respetando.
+
+---
+
+## 1. LO QUE ESTAMOS CONSTRUYENDO
+
+Castillo AI Platform = "Sistema de Decisión Inteligente" para clubes privados en Costa Rica.
+
+**Las 5 capas de inteligencia:**
+1. **Datos** — MCP tools que consultan repositorios
+2. **Contexto** — React Query cache + cross-domain data sharing
+3. **Inteligencia client-side** — Advisor hooks (25 rules × N layers por dominio)
+4. **Cross-agent** — Narrative engine + Advisor Intelligence Server
+5. **Acción inteligente** — ApprovalQueue + Quick Actions + Board Reports
+
+**F29 aportó:** La capa más ambiciosa de inteligencia client-side para Families — 25 rules × 5 layers que convierten datos crudos en decisiones accionables.
+
+---
+
+## 2. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend (Nuevos)
+
+| # | Ruta | Líneas | Contenido | Tools MCP que consume |
+|---|------|--------|-----------|----------------------|
+| 1 | `features/families/hooks/useFamilyAdvisor.ts` | ~320 | 25 rules × 5 layers Advisor hook | Todas las 17 + cross-domain |
+| 2 | `features/families/components/FamilyAdvisorBanner.tsx` | ~250 | P14 Advisor Banner con severity + AI Narrative | `generate_insight_narrative` |
+
+### Archivos Frontend (Modificados)
+
+| # | Ruta | Acción | Qué se cambió | Por qué |
+|---|------|--------|---------------|---------|
+| 1 | `features/families/types.ts` | REWRITE | +15 interfaces nuevas, +formatDate/formatMonthYear, +ROLE_BACKEND_MAP, +LifecycleStage, +Advisor types, TIER_CONFIG/STATUS_CONFIG con tokens reales Silver Tide | Alinear al backend + soportar nuevas intelligence tools |
+| 2 | `features/families/FamilyList.tsx` | QUIRÚRGICO | Server `families`→`family_profile`, tool `list_families`→`family_search`, formatUSD→formatCurrency, raw buttons→Button component | Alineación MCP + currency locale |
+| 3 | `features/families/FamilyDetail.tsx` | QUIRÚRGICO (15 blocks) | Server name (3 queries), tool names, toLocaleDateString→formatDate (4 instancias), 3 raw buttons→Button, Advisor integration (imports + hook call + banner render) | Alineación MCP + Advisor F29 |
+| 4 | `features/families/FamilyForm.tsx` | QUIRÚRGICO (6 blocks) | Server name (3 mutations), tool names, 2 raw buttons→Button, abyss token fix | Alineación MCP |
+| 5 | `features/families/components/SocialGraph.tsx` | QUIRÚRGICO | `resolveColors()` con fallbacks hex reales de Silver Tide, shadow fix | Canvas rendering con tokens correctos |
+| 6 | `features/families/components/MemberCard.tsx` | QUIRÚRGICO | Shadow tokens preserved (NOT replaced) | Verificación contra globals.css |
+| 7 | `features/families/components/FamilyIntelligencePanel.tsx` | QUIRÚRGICO (4 blocks + new code) | Server name (4 queries), score inversion (churn), +2 new sections (LifecycleSection ~120 líneas, Family360Section ~140 líneas) | 6 sections en grid 2×3 |
+
+### Mock System
+
+| # | Ruta | Acción | Qué se cambió |
+|---|------|--------|---------------|
+| 1 | `shared/mocks/contracts.ts` | APPEND | +6 contract sections (update_profile, lifecycle, 360, enriched_graph, milestones, identify_social_clusters) con ~20 interfaces |
+| 2 | `shared/mocks/factories.ts` | APPEND | +6 factory functions con rich demo data |
+| 3 | `shared/mocks/mock-registry.ts` | REWRITE sección | Server `families`→`family_profile` + 17 tool entries |
+
+### Tools MCP auditadas/conectadas
+
+| # | Tool | Server | Backend real | Mock | Tipo | Approval | Destino frontend |
+|---|------|--------|-------------|------|------|----------|-----------------|
+| 1 | `family_get_profile` | `family_profile` | ⬜ | ✅ | datos | AUTO | FamilyDetail, FamilyForm |
+| 2 | `family_search` | `family_profile` | ⬜ | ✅ | datos | AUTO | FamilyList |
+| 3 | `family_create_profile` | `family_profile` | ⬜ | ✅ | mutation | SEMI | FamilyForm |
+| 4 | `family_update_profile` | `family_profile` | ⬜ | ✅ | mutation | SEMI | FamilyForm |
+| 5 | `family_update_members` | `family_profile` | ⬜ | ✅ | mutation | SEMI | FamilyForm |
+| 6 | `family_get_activity_history` | `family_profile` | ⬜ | ✅ | datos | AUTO | FamilyDetail/ActivityTab |
+| 7 | `family_get_social_graph` | `family_profile` | ⬜ | ✅ | datos | AUTO | FamilyDetail/ConnectionsTab |
+| 8 | `family_set_preferences` | `family_profile` | ⬜ | ✅ | mutation | AUTO | FamilyDetail/PreferencesTab |
+| 9 | `family_predict_churn` | `family_profile` | ⬜ | ✅ | intel | AUTO | IntelligencePanel |
+| 10 | `family_recommend_activities` | `family_profile` | ⬜ | ✅ | intel | AUTO | IntelligencePanel |
+| 11 | `family_social_match` | `family_profile` | ⬜ | ✅ | intel | AUTO | IntelligencePanel |
+| 12 | `family_engagement_plan` | `family_profile` | ⬜ | ✅ | intel | AUTO | IntelligencePanel |
+| 13 | `family_lifecycle_analysis` | `family_profile` | ⬜ | ✅ | intel | AUTO | IntelligencePanel/NEW |
+| 14 | `family_360_insight` | `family_profile` | ⬜ | ✅ | intel | AUTO | IntelligencePanel/NEW |
+| 15 | `family_social_graph_enriched` | `family_profile` | ⬜ | ✅ | intel | AUTO | IntelligencePanel/ConnectionsTab |
+| 16 | `family_milestone_tracker` | `family_profile` | ⬜ | ✅ | intel | AUTO | (Future: MilestoneTab) |
+| 17 | `identify_social_clusters` | `family_profile` | ⬜ | ✅ | intel | AUTO | (Future: Club-level dashboard) |
+
+---
+
+## 3. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | **TOKENS FANTASMA** — Se propusieron `--color-text-primary`, `--color-text-secondary`, `--color-text-muted`, `--color-bg`, `--color-violet-400` que NO EXISTEN en @theme de globals.css. Los tokens reales son `--color-silver-100` a `--color-silver-600`, `--color-abyss`. | **CRÍTICA** | ✅ Corregido — Todos los tokens nuevos usan Silver Tide reales. Pendiente grep global post-F33. |
+| 2 | Server name `families` → `family_profile` alinea al backend pero rompe temporalmente hasta que todos los archivos se actualicen | ALTA | ✅ Resuelto — Todos los queries/mutations apuntan a `family_profile` |
+| 3 | Tool names no alineadas: `list_families` → `family_search`, `get_family` → `family_get_profile`, `create_family` → `family_create_profile`, etc. | ALTA | ✅ Resuelto — 17 tools alineadas |
+| 4 | `formatUSD` usado en vez de `formatCurrency` (Colones CRC) en FamilyList | MEDIA | ✅ Resuelto |
+| 5 | `toLocaleDateString` hardcodeado en 4+ instancias en vez de usar helpers centralizados | MEDIA | ✅ Resuelto — `formatDate()` y `formatMonthYear()` creados |
+| 6 | Raw `<button>` en vez de componente `<Button>` — 8 instancias | MEDIA | ✅ Resuelto — Todas migradas a `<Button>` |
+| 7 | Churn score color invertido — risk alto mostraba verde en vez de rojo | ALTA | ✅ Resuelto — Lógica usa `riskLevel` no `riskScore` |
+| 8 | Hook `useFamilyAdvisor` sin parámetros cross-domain (eventAttendance, communicationEngagement, wellnessUsage) | MEDIA | ✅ Resuelto — 3 params opcionales añadidos |
+| 9 | R1, R8 del Advisor usaban thresholds estáticos en vez de velocity detection | MEDIA | ✅ Mejorado — Usa cross-domain data cuando disponible, fallback a threshold |
+| 10 | R3 no verificaba días sin pago | MEDIA | ✅ Resuelto — `daysSince(financial.lastPaymentDate)` |
+| 11 | R12 threshold 4 en vez de 8 (visión dice >8) | BAJA | ✅ Resuelto |
+| 12 | R17 threshold 60% en vez de 40% (visión dice >40%) | BAJA | ✅ Resuelto |
+| 13 | R18 priority "info" en vez de "medium" | BAJA | ✅ Resuelto |
+| 14 | 17th tool `identify_social_clusters` faltaba del plan de 17 | MEDIA | ✅ Resuelto — Contract + Factory + Registry creados |
+| 15 | Shared components `AIInsightNarrative` + `useAdvisorNarrative` — no verificados | BAJA | ✅ Confirmados — Existen |
+
+---
+
+## 4. PATRONES ESTABLECIDOS / ACTUALIZADOS
+
+### Patrón NUEVO: Family Advisor Hook (F29)
+
+**Concepto:** Client-side intelligence hook que computa 25 reglas en 5 capas sobre datos del perfil familiar + cross-domain. 0ms latencia, 0 tokens AI, 0 API calls.
+
+**Niveles:**
+```
+Nivel 1: useFamilyAdvisor(family, activity, financial, social, preferences) → basic insights
+Nivel 2: + eventAttendance, communicationEngagement, wellnessUsage → cross-domain insights
+Nivel 3: Insights drive AdvisorBanner → user actions → tab navigation
+```
+
+**Cuándo se aplica:** Cada dominio que tiene su propio Advisor (Finance ya tiene 18 rules, Communication tiene 8+).
+**Fases futuras donde se replica:** Wellness, Events, Engagement como dominios independientes.
+**Archivos donde ya está implementado:** `useFamilyAdvisor.ts`, `FamilyAdvisorBanner.tsx`
+
+### Patrón NUEVO: On-Demand Intelligence Sections (F29)
+
+**Concepto:** IntelligencePanel sections que empiezan deshabilitadas y solo cargan datos cuando el usuario hace click. Cada section tiene su propio `useState(false)` para `enabled`.
+
+**Cuándo se aplica:** Para tools de inteligencia que son costosas o que el usuario no siempre necesita.
+**Archivos:** `FamilyIntelligencePanel.tsx` (6 sections, todas on-demand excepto las 4 originales que ya existían)
+
+### Patrón ACTUALIZADO: Token Discipline — Silver Tide (F29)
+
+**Qué cambió:** Se descubrieron tokens fantasma propuestos como reemplazos. Se establece regla absoluta: NUNCA usar un token sin verificar contra `@theme {}`.
+
+**Archivos afectados:** Todos los .tsx/.ts que usan CSS tokens.
+
+---
+
+## 5. ADVISOR ARCHITECTURE UPDATE
+
+### Advisor nuevo:
+
+| Fase | Advisor | Reglas | Capas | Actions | AI Features | Estado |
+|------|---------|--------|-------|---------|-------------|--------|
+| F29 | `useFamilyAdvisor` | 25 | 5 | 5 (tab routing) | AI Narrative on-demand | ✅ |
+
+### Reglas Advisor (25 × 5 layers):
+
+**Layer 1 — Health Diagnostic:**
+| # | ID | Condición | Impact | Output |
+|---|---|---|---|---|
+| R1 | health-eng-critical | eng < 30 + tenure > 90 (+ eventAttendance velocity) | HIGH | Plan de retención → AI tab |
+| R2 | health-activity-drop | recentActivity === 0 && totalActivity > 0 | HIGH | Ver historial → Activity tab |
+| R3 | health-financial-stress | balance > 0 + daysSincePayment > 90 | HIGH (CRITICAL if >90d) | Ver finanzas → Finances tab |
+| R4 | health-social-isolation | connCount < 2 + sharedEvents === 0 | MEDIUM | Buscar conexiones → Connections tab |
+| R5 | health-tier-mismatch | memberCount >= 5 + tier basic/bronce | INFO | — |
+
+**Layer 2 — Lifecycle Intelligence:**
+| # | ID | Condición | Impact | Output |
+|---|---|---|---|---|
+| R6 | lifecycle-onboarding-gap | tenure < 90 + no onboarding activities + eng < 60 | HIGH | Plan de bienvenida → AI tab |
+| R7 | lifecycle-plateau | eng 40-60 + tenure > 180 | MEDIUM | Actividades sugeridas → AI tab |
+| R8 | lifecycle-peak-risk | eng < 60 + tenure > 365 (+ eventAttendance drop) | HIGH (if event drop confirmed) | Análisis profundo → AI tab |
+| R9 | lifecycle-reactivation | tenure > 730 + recentActivity === 0 + eng < 40 | MEDIUM | Plan de reactivación → AI tab |
+| R10 | lifecycle-legacy | tenure > 1825 + eng > 70 | INFO | Ver conexiones → Connections tab |
+
+**Layer 3 — Social Intelligence:**
+| # | ID | Condición | Impact | Output |
+|---|---|---|---|---|
+| R11 | social-density-low | connCount < 2 + tenure > 180 | HIGH | Buscar coincidencias → Connections tab |
+| R12 | social-hub-candidate | connCount > 8 + eng > 70 | INFO | — (embajadora) |
+| R13 | social-cohort-missing | hasChildren + connCount < 2 | MEDIUM | Ver coincidencias → Connections tab |
+| R14 | social-event-potential | interests.length >= 3 + connCount < 3 | MEDIUM | — |
+| R15 | social-referral-untapped | eng > 80 + tenure > 730 + no referrals | HIGH | — |
+
+**Layer 4 — Financial Optimization:**
+| # | ID | Condición | Impact | Output |
+|---|---|---|---|---|
+| R16 | financial-tier-upgrade | eng > 80 + tier basic/bronce/premium/oro | HIGH | Ver finanzas → Finances tab |
+| R17 | financial-concentration | maxType > 40% of total activity | MEDIUM | — |
+| R18 | financial-ltv | tenure > 365 + eng > 50 + ytdCharges > 0 | MEDIUM | — (LTV projection) |
+| R19 | financial-seasonal | financial + totalActivity > 4 | INFO | — |
+| R20 | financial-health-risk | creditUtilization > 80% OR paymentDelay > 60d | HIGH | Ver finanzas → Finances tab |
+
+**Layer 5 — Engagement Innovation:**
+| # | ID | Condición | Impact | Output |
+|---|---|---|---|---|
+| R21 | engagement-activity-gap | interests > 0 + recentActivity < 2 | MEDIUM | Ver recomendaciones → AI tab |
+| R22 | engagement-milestone-anniversary | anniversaryMonth === currentMonth | INFO | — |
+| R23 | engagement-wellness-gap | no wellness + totalActivity > 2 | MEDIUM | — |
+| R24 | engagement-comms-low | commsOpenRate < 20% OR (eng < 50 + tenure > 90) | MEDIUM | — |
+| R25 | engagement-cross-sell | activityTypes.size === 1 + totalActivity > 3 | MEDIUM | Ver recomendaciones → AI tab |
+
+---
+
+## 6. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón | Impacto |
+|---|---------|----------------------|-------|---------|
+| 1 | 25 rules × 5 layers para Family Advisor | 8-18 rules como otros dominios | Families es cross-domain — toca todos los dominios del club. La complejidad justifica el nivel. | Otros Advisors no necesitan este nivel. No usar como benchmark para Wellness/Events. |
+| 2 | Cross-domain params opcionales (null default) | Requerir siempre los 3 params cross-domain | Los endpoints de Events/Comms/Wellness aún no exponen los summary types. Los params son opcionales con fallbacks inteligentes. | Cuando se conecten los endpoints, se pasa la data y las rules mejoran automáticamente. |
+| 3 | Server name `family_profile` (nuevo) | Mantener `families` (legacy) | Backend real usa `family_profile` como server name. Alinear es más importante que backward compat. | Rompe temporalmente hasta que todos los archivos se actualicen. |
+| 4 | Hooks calculan en client-side (0ms, 0 tokens) | Hacer todo en backend con AI | Las 25 rules son deterministic logic. No necesitan AI. El hook corre en useMemo. AI solo para narratives on-demand. | 0 costo de tokens para Advisor. AI solo cuando usuario pide "análisis profundo". |
+| 5 | On-demand intelligence sections | Cargar todas las sections al montar | 6 sections AI simultáneas = 6 API calls al backend. On-demand = solo las que el usuario necesita. | Mejor performance, menos carga al backend. |
+| 6 | Tokens Silver Tide reales vs tokens fantasma propuestos | Usar `--color-text-primary` etc. | Los tokens propuestos NO EXISTEN en globals.css. Habrían roto la UI silenciosamente. | **CRÍTICO:** grep global post-F33 para verificar que no hayan quedado instancias. |
+| 7 | `identify_social_clusters` como tool #17 | Dejarla para otra fase | La visión original pedía 17 tools. Sin esta, el cross-family intelligence no tiene backend. | Mock creado, backend pendiente. |
+
+---
+
+## 7. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F22 | Foundation, Auth, Navigation, Dashboard, Finance base, Events base, Communications base | ✅ |
+| F23-F28 | Communication Intelligence, Finance Advisor (18 rules), Global Advisor, P14 Pattern, Board Reports | ✅ |
+| **F29** | **Families: The Heart of the Club — 17 MCP tools + 25 Advisor rules + Family 360** | **✅ COMPLETADA** |
+| **F30** | **Wellness Module — MCP tools + Advisor + Dashboard** | **⬜ SIGUIENTE** |
+| F31 | Events Intelligence — cross-domain queries + social graph enrichment | ⬜ |
+| F32 | Engagement Module — club-level engagement metrics + family engagement tracking | ⬜ |
+| **F33** | **Cross-Family Intelligence — identify_social_clusters backend + Club Social Dashboard** | **⬜** |
+| **F33+** | **TOKEN AUDIT — grep global por tokens fantasma --color-text-primary/secondary/muted, --color-bg, --color-violet** | **⬜ CRÍTICO** |
+| F34 | Predictive Pre-fetch — pre-warm caches for priority families | ⬜ |
+| F35 | Ambassador Program — auto-detect ambassadors + referral tracking | ⬜ |
+| F36 | Board Report — families section with cross-domain metrics | ⬜ |
+
+---
+
+## 8. PRÓXIMA FASE — Desglose detallado
+
+### F30 — Wellness Module
+
+**Objetivo:** Crear el módulo de Wellness con dashboard, MCP tools, Advisor hook, y conectarlo al cross-domain data de Families.
+
+**Agentes backend a leer:**
+```
+backend/src/club_mcp/agents/wellness_agent.py
+backend/src/club_mcp/models/wellness.py
+```
+
+**Tools MCP a auditar (estimadas):**
+
+| # | Tool (estimada) | Agente | Tipo esperado | Approval esperado | Destino frontend |
+|---|-----------------|--------|---------------|-------------------|-----------------|
+| 1 | `wellness_get_services` | wellness | datos | AUTO | WellnessDashboard |
+| 2 | `wellness_get_family_usage` | wellness | datos | AUTO | FamilyWellnessTab |
+| 3 | `wellness_recommend_services` | wellness | intel | AUTO | IntelligencePanel |
+| 4 | `wellness_track_session` | wellness | mutation | SEMI | WellnessDashboard |
+| 5 | `wellness_get_usage_stats` | wellness | datos | AUTO | WellnessDashboard |
+
+**Bloques propuestos:**
+
+| # | Bloque | Archivos | Contenido | Dependencias |
+|---|--------|----------|-----------|-------------|
+| B1 | Backend audit | wellness_agent.py, wellness.py | Audit tools, models, response shapes | Backend files |
+| B2 | Types + Mock | contracts.ts, factories.ts, mock-registry.ts | Wellness contracts + factories + registry | B1 |
+| B3 | Frontend Core | types.ts, WellnessDashboard.tsx | Types + main dashboard | B2 |
+| B4 | Advisor | useWellnessAdvisor.ts, WellnessAdvisorBanner.tsx | 10-15 rules wellness advisor | B3 |
+| B5 | Cross-domain | useFamilyAdvisor.ts | Connect wellness data to family advisor R23 | B4 |
+
+**Archivos que el usuario debe pegar en el próximo chat:**
+```
+1. Este checkpoint
+2. CLAUDE_CONTEXT.md (actualizado con Silver Tide Token Reference)
+3. src/styles/globals.css
+4. backend/src/club_mcp/agents/wellness_agent.py
+5. backend/src/club_mcp/models/wellness.py
+6. frontend/src/features/families/types.ts (reference para patrones)
+7. frontend/src/features/families/hooks/useFamilyAdvisor.ts (reference para Advisor pattern)
+```
+
+---
+
+## 9. AGENTES AUDITADOS — LISTA ACTUALIZADA
+
+| # | Agente | Server | Tools totales | HITL | AUTO | SEMI | Inteligencia | Fase auditado | Frontend conectado | Estado |
+|---|--------|--------|--------------|------|------|------|-------------|---------------|-------------------|--------|
+| 1 | `family_profile` | `family_profile` | 17 | 0 | 13 | 4 | 9 intel tools | F29 | FamilyList, FamilyDetail, FamilyForm, IntelligencePanel, SocialGraph ✅ | ✅ Completo |
+| 2 | `finance` | `finance` | ~12 | ~2 | ~8 | ~2 | ~4 intel | F24-F28 | FinanceDashboard ✅ | ✅ Completo |
+| 3 | `communications` | `communications` | ~8 | ~1 | ~5 | ~2 | ~2 intel | F26-F28 | CommunicationsDashboard ✅ | ✅ Completo |
+| 4 | `advisor_intelligence` | `advisor_intelligence` | ~4 | 0 | ~4 | 0 | 4 intel | F27 | GlobalAdvisor ✅ | ✅ Completo |
+| 5 | `wellness` | `wellness` | ~5-8 | ? | ? | ? | ? | — | — | ⬜ Sin auditar |
+| 6 | `events` | `events` | ~8-12 | ? | ? | ? | ? | — | — | ⬜ Sin auditar |
+| 7 | `engagement` | `engagement` | ~4-6 | ? | ? | ? | ? | — | — | ⬜ Sin auditar |
+
+**Totales:** 4 agents completamente auditados, 0 parcialmente, 3 sin auditar. ~41+ tools MCP auditadas.
+
+---
+
+## 10. PENDIENTES ACUMULADOS (CONSOLIDADO)
+
+| # | Issue | Severidad | Archivo(s) | Fase sugerida | Origen |
+|---|-------|-----------|-----------|---------------|--------|
+| 1 | **Grep global por tokens fantasma** (--color-text-primary, --color-text-secondary, --color-text-muted, --color-bg, --color-violet) | **CRÍTICA** | Todos los .tsx/.ts | **F33+** | F29 (esta sesión) |
+| 2 | Backend real para `family_profile` agent — crear tools Python reales | ALTA | `backend/tools/families.py` | F30-F31 | F29 |
+| 3 | Backend real para `identify_social_clusters` — cross-family queries | ALTA | `backend/tools/families.py` | F33 | F29 |
+| 4 | Wellness cross-domain params para useFamilyAdvisor (R23) | MEDIA | `useFamilyAdvisor.ts` | F30 | F29 |
+| 5 | Communication cross-domain params para useFamilyAdvisor (R24) | MEDIA | `useFamilyAdvisor.ts` | F31 | F29 |
+| 6 | Event cross-domain params para useFamilyAdvisor (R1, R8 velocity) | MEDIA | `useFamilyAdvisor.ts` | F31 | F29 |
+| 7 | `family_milestone_tracker` — conectar a UI (mock creado, sin tab) | BAJA | `FamilyDetail.tsx` | F32 | F29 |
+| 8 | `identify_social_clusters` — conectar a Club-level dashboard | BAJA | Nuevo componente | F33 | F29 |
+| 9 | Ambassador Program — auto-detection + UI badges | MEDIA | Nuevo componente | F35 | F29 (visión) |
+| 10 | Lifecycle events engine — automáticos día 3, 7, 14, 30, 60 | MEDIA | Backend nuevo | F34 | F29 (visión) |
+| 11 | Predictive pre-fetch para familias prioritarias | BAJA | Nuevo hook | F34 | F29 (visión) |
+| 12 | Cross-Family Intelligence — community health metrics | BAJA | Nuevo dashboard | F33 | F29 (visión) |
+
+---
+
+## 11. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos NUEVOS:
+
+| Regla | useFamilyAdvisor.ts | FamilyAdvisorBanner.tsx | Evidencia |
+|-------|---------|---------|-----------|
+| #1 Tokens | ✅ N/A (pure logic, no CSS) | ✅ Silver Tide reales (silver-100/300/400, gold-400, etc.) | Verificado contra globals.css |
+| #2 No blur | ✅ N/A | ✅ No usa blur en componentes propios | — |
+| #12 Accessibility | ✅ | ✅ role="button", tabIndex, aria-expanded, aria-label | — |
+| #14 Responsive | ✅ | ✅ maxVisible param, overflow handling | — |
+| #24 Mock routing | ✅ | ✅ | Todos los queries apuntan a `family_profile` |
+
+### Archivos MODIFICADOS (token-specific checks):
+
+| Archivo | Tokens usados | Todos en @theme? | Evidencia |
+|---------|--------------|-------------------|-----------|
+| `types.ts` TIER_CONFIG | silver-100, gold-400, gold-300, silver-300, silver-500, teal-400, terracotta-400 | ✅ Todos existen | grep confirmado |
+| `types.ts` STATUS_CONFIG | emerald-400, silver-500, amber-400, teal-400 | ✅ Todos existen | grep confirmado |
+| `SocialGraph.tsx` resolveColors | Todos los silver-*, gold-400, emerald-400, amber-400, teal-400, surface-*, abyss | ✅ Todos existen + fallbacks hex reales | Verificado contra @theme hex values |
+| `FamilyIntelligencePanel.tsx` new sections | silver-100/300/400, gold-400, teal-400, emerald-400, amber-400, rose-400/500, surface-0/3 | ✅ Todos existen | grep confirmado |
+
+### Resumen:
+**Violaciones a corregir AHORA:** 0
+**Violaciones flagged como pendientes:** 1 (grep global tokens fantasma post-F33)
+**Reglas sin violaciones:** 24/24
+
+---
+
+## 12. ACTUALIZACIONES PARA CLAUDE_CONTEXT.md
+
+### Sección NUEVA: Silver Tide Token Reference — AGREGAR
+
+[Contenido completo en la sección "EXTRACCIÓN globals.css → CLAUDE_CONTEXT.md" arriba]
+
+### Sección 7 (Reglas) — AGREGAR nueva regla:
+
+```markdown
+**Regla 25: Token Discipline — Silver Tide**
+NUNCA usar un token CSS sin verificar contra @theme {} de globals.css.
+Si no existe en @theme, NO existe. Hacer grep antes de usar.
+Tokens reales de texto: --color-silver-100 (headings) a --color-silver-500 (disabled).
+NUNCA usar --color-text-primary/secondary/muted (no existen).
+F33+: grep global por tokens fantasma residual.
+```
+
+---
+
+## 13. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto (en orden):
+```
+1. CLAUDE_CONTEXT.md (siempre primero)
+2. Este checkpoint
+3. src/styles/globals.css (para referencia de tokens)
+```
+
+### Paso 2 — Confirmar rol:
+```
+"Confirmá que entendés tu rol como Principal AI Systems Architect (sección 2 de CLAUDE_CONTEXT.md) 
+y las 25 reglas (sección 7). Después decí 'Listo'."
+```
+
+### Paso 3 — Pedir archivos para F30 Wellness:
+```
+"Pasame estos archivos para F30 — Wellness Module:
+1. backend/src/club_mcp/agents/wellness_agent.py
+2. backend/src/club_mcp/models/wellness.py
+3. frontend/src/features/families/hooks/useFamilyAdvisor.ts (reference)
+4. frontend/src/features/families/types.ts (reference para patrones)"
+```
+
+### Paso 4 — Pedir auditoría:
+```
+"Auditá el agente de wellness y los modelos contra el patrón de Families (17 tools, 25 Advisor rules)"
+```
+
+### Paso 5 — Pedir propuesta:
+```
+"Proponé la arquitectura de F30 Wellness con los bloques"
+```
+
+### Paso 6 — Aprobar + generar:
+```
+"Aprobado — generá Bloque 1"
+```
+
+### Paso 7 — Checkpoint:
+```
+"Generá el checkpoint de F30"
+```
+
+---
+
+## 14. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto en trabajo futuro |
+|-------|---------|-------|--------------------------|
+| Jun 2025 | 25 Advisor rules para Families (no 8 ni 18) | Families es cross-domain, toca todos los dominios | No usar como benchmark para otros módulos — cada dominio tiene su nivel apropiado |
+| Jun 2025 | Cross-domain params opcionales (null default) | Endpoints Events/Comms/Wellness no existen aún | Cuando se conecten, las rules mejoran automáticamente sin cambiar el hook |
+| Jun 2025 | `family_profile` como server name (reemplaza `families`) | Backend real usa este nombre | Rompe hasta que todos los archivos se actualicen |
+| Jun 2025 | Client-side Advisor (0 tokens AI) | Las 25 rules son lógica determinística | AI solo para narratives on-demand, no para el cálculo |
+| Jun 2025 | On-demand intelligence sections | 6 API calls simultáneas es innecesario | Mejor UX y performance |
+| Jun 2025 | **REVERTIDO: Global token replace** | Los tokens "reemplazados" eran los CORRECTOS del design system Silver Tide | Los tokens propuestos como reemplazo NO EXISTEN. Se preservan silver-*, abyss, shadow-* |
+| Jun 2025 | Tokens fantasma flagged para F33+ grep | Prevenir que entren al codebase | Auditoría global pendiente |
+| Jun 2025 | `identify_social_clusters` como tool #17 en F29 | La visión pedía 17 tools. Sin ella no hay cross-family intelligence | Mock creado, backend pendiente para F33 |
+| Jun 2025 | R12 threshold cambiado de 4 a 8 | Visión original dice >8 conexiones para social hub | Detección más precisa de embajadores |
+| Jun 2025 | R17 threshold cambiado de 60% a 40% | Visión original dice >40% concentration | Alertas más tempranas |
+| Jun 2025 | R18 priority cambiada de "info" a "medium" | LTV trajectory tiene impacto real en decisiones | Más prominencia en el Advisor banner |
+
+---
+
+## 15. FASES RESTANTES (PLAN MAESTRO)
+
+| # | Fase | Contenido | Prioridad | Depende de | Estado |
+|---|------|-----------|-----------|-----------|--------|
+| F30 | Wellness Module | Dashboard + MCP tools + Advisor (10-15 rules) + cross-domain para Families | ALTA | F29 | ⬜ |
+| F31 | Events Intelligence | Cross-domain queries + social graph event-based enrichment + Advisor | ALTA | F29 | ⬜ |
+| F32 | Engagement Module | Club-level engagement metrics + family engagement tracking | MEDIA | F29, F30 | ⬜ |
+| F33 | Cross-Family Intelligence | `identify_social_clusters` backend + Club Social Dashboard + community health | MEDIA | F29 | ⬜ |
+| **F33+** | **TOKEN AUDIT** | **Grep global por tokens fantasma. Fix cualquier hallazgo.** | **CRÍTICA** | — | **⬜** |
+| F34 | Predictive Pre-fetch | Pre-warm caches for priority families + lifecycle events engine | BAJA | F29, F33 | ⬜ |
+| F35 | Ambassador Program | Auto-detect ambassadors + referral tracking + UI badges | BAJA | F33 | ⬜ |
+| F36 | Board Report — Families | Families section with cross-domain metrics + executive narrative | MEDIA | F29, F30, F31 | ⬜ |
+| F37 | Login + Auth Enhancement | Login animations, auth flow, role-based routing | MEDIA | — | ⬜ |
+| F38 | Print & Export | PDF export for dashboards, print-optimized views | BAJA | — | ⬜ |
+
+---
+
+## 16. AGENTES BACKEND — TOOLS DETALLADAS
+
+### family_profile — 17 tools (F29)
+
+**CRUD (8):**
+
+| Tool | Approval | Tipo | Descripción |
+|------|----------|------|-------------|
+| `family_get_profile` | AUTO | datos | Get family detail by ID |
+| `family_search` | AUTO | datos | Search/filter families |
+| `family_create_profile` | SEMI | mutation | Create new family |
+| `family_update_profile` | SEMI | mutation | Update family profile |
+| `family_update_members` | SEMI | mutation | Update family members |
+| `family_get_activity_history` | AUTO | datos | Get activity timeline |
+| `family_get_social_graph` | AUTO | datos | Get basic social connections |
+| `family_set_preferences` | AUTO | mutation | Set family preferences |
+
+**Intelligence (9):**
+
+| Tool | Approval | Tipo | Cross-domain | Descripción |
+|------|----------|------|-------------|-------------|
+| `family_predict_churn` | AUTO | intel | engagement + finance | Churn risk prediction |
+| `family_recommend_activities` | AUTO | intel | events + wellness + interests | Activity recommendations |
+| `family_social_match` | AUTO | intel | events + comms + social | Social match suggestions |
+| `family_engagement_plan` | AUTO | intel | ALL domains | Engagement improvement plan |
+| `family_lifecycle_analysis` | AUTO | intel | engagement + finance + events | Lifecycle stage + transition prediction |
+| `family_360_insight` | AUTO | intel | ALL domains cross-query | Cross-domain aggregated intelligence |
+| `family_social_graph_enriched` | AUTO | intel | events + facilities + comms | Enriched social connections |
+| `family_milestone_tracker` | AUTO | intel | members + events | Upcoming milestones + celebrations |
+| `identify_social_clusters` | AUTO | intel | ALL families cross-query | Club-level social cluster detection |
+
+---
+
+## 17. MOCK REGISTRY — ACTUALIZACIÓN
+
+### family_profile (17 tools)
+
+| # | Tool | Backend real | Mock | Tipo | Approval |
+|---|------|-------------|------|------|----------|
+| 1 | `family_get_profile` | ⬜ | ✅ | datos | AUTO |
+| 2 | `family_search` | ⬜ | ✅ | datos | AUTO |
+| 3 | `family_create_profile` | ⬜ | ✅ | mutation | SEMI |
+| 4 | `family_update_profile` | ⬜ | ✅ | mutation | SEMI |
+| 5 | `family_update_members` | ⬜ | ✅ | mutation | SEMI |
+| 6 | `family_get_activity_history` | ⬜ | ✅ | datos | AUTO |
+| 7 | `family_get_social_graph` | ⬜ | ✅ | datos | AUTO |
+| 8 | `family_set_preferences` | ⬜ | ✅ | mutation | AUTO |
+| 9 | `family_predict_churn` | ⬜ | ✅ | intel | AUTO |
+| 10 | `family_recommend_activities` | ⬜ | ✅ | intel | AUTO |
+| 11 | `family_social_match` | ⬜ | ✅ | intel | AUTO |
+| 12 | `family_engagement_plan` | ⬜ | ✅ | intel | AUTO |
+| 13 | `family_lifecycle_analysis` | ⬜ | ✅ | intel | AUTO |
+| 14 | `family_360_insight` | ⬜ | ✅ | intel | AUTO |
+| 15 | `family_social_graph_enriched` | ⬜ | ✅ | intel | AUTO |
+| 16 | `family_milestone_tracker` | ⬜ | ✅ | intel | AUTO |
+| 17 | `identify_social_clusters` | ⬜ | ✅ | intel | AUTO |
+
+---
+
+## 18. TYPES ALIGNMENT
+
+| Enum/Interface | Backend (Python) | Frontend (types.ts) | Match |
+|---------------|------------------|---------------------|-------|
+| `MemberTier` | basic, premium, vip + platino, oro, plata, bronce | platino, oro, plata, bronce, basic, premium, vip | ✅ (merged set) |
+| `FamilyStatus` | active, inactive, suspended, pending_approval | active, inactive, suspended, pending_approval | ✅ |
+| `MemberRole` | primary, spouse, child, dependent | titular, conyuge, hijo, dependiente, invitado_permanente + primary, spouse, child, dependent | ✅ (ROLE_BACKEND_MAP handles mapping) |
+| `ChurnRisk` | low, medium, high, critical | low, medium, high, critical | ✅ |
+| `LifecycleStage` | prospect, onboarding, growing, peak, plateau, at_risk, dormant, reactivated | same | ✅ |
+
+---
+
+**F29 Families — COMPLETE. 17 tools, 25 Advisor rules, 5 layers, 0 phantom tokens in new code. Grep global pending for F33+.**

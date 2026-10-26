@@ -1,0 +1,348 @@
+/* src/features/communications/components/CommunicationCortex.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Communication Cortex — Neural Sphere                       */
+/* Phase 31 — Silver Tide Glass UI                            */
+/* Namespace: .glass-comm-cortex                              */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* ── Root ─────────────────────────────────────────────── */
+
+.glass-comm-cortex {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-2xl, 1.5rem);
+  padding: var(--space-5, 1.25rem);
+  backdrop-filter: blur(12px);
+}
+
+/* ── SVG Container ────────────────────────────────────── */
+
+.cortex-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-4, 1rem) 0;
+}
+
+.cortex-svg {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  overflow: visible;
+}
+
+/* ── Center Glow Colors (via data-mode) ───────────────── */
+
+.cortex-glow-inner { stop-color: var(--color-teal-400); }
+.cortex-glow-outer { stop-color: transparent; }
+
+.glass-comm-cortex[data-mode="calm"] .cortex-glow-inner { stop-color: var(--color-teal-400); }
+.glass-comm-cortex[data-mode="alert"] .cortex-glow-inner { stop-color: var(--color-amber-400); }
+.glass-comm-cortex[data-mode="critical"] .cortex-glow-inner { stop-color: var(--color-rose-400); }
+
+/* ── Center Sphere ────────────────────────────────────── */
+
+.cortex-center-glow-circle {
+  fill: var(--color-teal-400);
+  opacity: 0.15;
+}
+
+.cortex-center-group[data-mode="calm"] .cortex-center-glow-circle {
+  fill: var(--color-teal-400);
+  animation: cortex-center-pulse 8s ease-in-out infinite;
+}
+.cortex-center-group[data-mode="alert"] .cortex-center-glow-circle {
+  fill: var(--color-amber-400);
+  animation: cortex-center-pulse 5s ease-in-out infinite;
+}
+.cortex-center-group[data-mode="critical"] .cortex-center-glow-circle {
+  fill: var(--color-rose-400);
+  animation: cortex-center-pulse 2.5s ease-in-out infinite;
+}
+
+.cortex-center-sphere {
+  fill: var(--color-surface-1, #1a1a1a);
+  stroke: var(--color-teal-400);
+  stroke-width: 2;
+}
+
+.cortex-center-group[data-mode="calm"] .cortex-center-sphere { stroke: var(--color-teal-400); }
+.cortex-center-group[data-mode="alert"] .cortex-center-sphere { stroke: var(--color-amber-400); }
+.cortex-center-group[data-mode="critical"] .cortex-center-sphere { stroke: var(--color-rose-400); }
+
+.cortex-center-score {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 28px;
+  fill: var(--text-primary);
+  font-weight: 400;
+}
+
+.cortex-center-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 9px;
+  fill: var(--text-muted, #7a7570);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+@keyframes cortex-center-pulse {
+  0%, 100% { opacity: 0.1; transform: scale(1); transform-origin: center; }
+  50% { opacity: 0.3; transform: scale(1.15); transform-origin: center; }
+}
+
+/* ── Orbital Paths ────────────────────────────────────── */
+
+.cortex-orbit-path {
+  stroke: var(--color-silver-500);
+  opacity: 0.25;
+  transition: stroke 0.8s ease, opacity 0.8s ease;
+}
+
+/* Sentimiento orbit colors */
+.cortex-orbit-path[data-zone="thriving"] { stroke: var(--color-emerald-400); opacity: 0.5; }
+.cortex-orbit-path[data-zone="stable"] { stroke: var(--color-teal-400); opacity: 0.4; }
+.cortex-orbit-path[data-zone="concerned"] { stroke: var(--color-amber-400); opacity: 0.4; }
+.cortex-orbit-path[data-zone="at_risk"] { stroke: var(--color-gold-400); opacity: 0.45; }
+.cortex-orbit-path[data-zone="crisis"] { stroke: var(--color-rose-400); opacity: 0.5; }
+
+/* Silencio orbit colors */
+.cortex-orbit-path[data-silence="normal"] { stroke: var(--color-emerald-400); opacity: 0.3; }
+.cortex-orbit-path[data-silence="warning"] { stroke: var(--color-amber-400); opacity: 0.35; }
+.cortex-orbit-path[data-silence="alert"] { stroke: var(--color-gold-400); opacity: 0.4; }
+.cortex-orbit-path[data-silence="critical"] { stroke: var(--color-rose-400); opacity: 0.5; }
+
+/* Narrativa orbit colors */
+.cortex-orbit-path[data-story="strong"] { stroke: var(--color-emerald-400); opacity: 0.3; }
+.cortex-orbit-path[data-story="fragile"] { stroke: var(--color-amber-400); opacity: 0.35; }
+.cortex-orbit-path[data-story="breaking"] { stroke: var(--color-rose-400); opacity: 0.5; }
+
+/* Fatiga orbit colors */
+.cortex-orbit-path[data-fatigue="fresh"] { stroke: var(--color-emerald-400); opacity: 0.25; }
+.cortex-orbit-path[data-fatigue="normal"] { stroke: var(--color-teal-400); opacity: 0.3; }
+.cortex-orbit-path[data-fatigue="elevated"] { stroke: var(--color-amber-400); opacity: 0.35; }
+.cortex-orbit-path[data-fatigue="saturated"] { stroke: var(--color-gold-400); opacity: 0.4; }
+.cortex-orbit-path[data-fatigue="overloaded"] { stroke: var(--color-rose-400); opacity: 0.5; }
+
+/* Resonance orbit colors */
+.cortex-orbit-path[data-resonance="active"] { stroke: var(--color-gold-400); opacity: 0.45; }
+.cortex-orbit-path[data-resonance="quiet"] { stroke: var(--color-silver-500); opacity: 0.2; }
+
+/* Gravity orbit colors */
+.cortex-orbit-path[data-gravity="safe"] { stroke: var(--color-emerald-400); opacity: 0.3; }
+.cortex-orbit-path[data-gravity="drifting"] { stroke: var(--color-amber-400); opacity: 0.35; }
+.cortex-orbit-path[data-gravity="approaching"] { stroke: var(--color-gold-400); opacity: 0.45; }
+.cortex-orbit-path[data-gravity="critical"] { stroke: var(--color-rose-400); opacity: 0.55; }
+
+/* ── Orbiting Dots ────────────────────────────────────── */
+
+.cortex-orbit-rotator {
+  transform-origin: var(--orbit-cx, 250px) var(--orbit-cy, 250px);
+  animation: cortex-orbit var(--orbit-speed, 20s) linear infinite;
+  animation-direction: var(--orbit-dir, normal);
+}
+
+.cortex-orbit-dot {
+  fill: var(--color-teal-400);
+  opacity: 0.8;
+  transition: fill 0.8s ease;
+}
+
+.cortex-orbit-dot[data-zone="thriving"] { fill: var(--color-emerald-400); }
+.cortex-orbit-dot[data-zone="stable"] { fill: var(--color-teal-400); }
+.cortex-orbit-dot[data-zone="concerned"] { fill: var(--color-amber-400); }
+.cortex-orbit-dot[data-zone="at_risk"] { fill: var(--color-gold-400); }
+.cortex-orbit-dot[data-zone="crisis"] { fill: var(--color-rose-400); }
+
+.cortex-orbit-dot[data-silence="warning"] { fill: var(--color-amber-400); }
+.cortex-orbit-dot[data-silence="alert"] { fill: var(--color-gold-400); }
+.cortex-orbit-dot[data-silence="critical"] { fill: var(--color-rose-400); }
+
+.cortex-orbit-dot[data-story="fragile"] { fill: var(--color-amber-400); }
+.cortex-orbit-dot[data-story="breaking"] { fill: var(--color-rose-400); }
+
+.cortex-orbit-dot[data-fatigue="elevated"] { fill: var(--color-amber-400); }
+.cortex-orbit-dot[data-fatigue="saturated"] { fill: var(--color-gold-400); }
+.cortex-orbit-dot[data-fatigue="overloaded"] { fill: var(--color-rose-400); }
+
+.cortex-orbit-dot[data-resonance="active"] { fill: var(--color-gold-400); }
+
+.cortex-orbit-dot[data-gravity="drifting"] { fill: var(--color-amber-400); }
+.cortex-orbit-dot[data-gravity="approaching"] { fill: var(--color-gold-400); }
+.cortex-orbit-dot[data-gravity="critical"] { fill: var(--color-rose-400); }
+
+@keyframes cortex-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Orbit Labels ─────────────────────────────────────── */
+
+.cortex-orbit-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 9px;
+  font-weight: 600;
+  fill: var(--text-muted, #7a7570);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+  transition: fill 0.5s ease;
+}
+
+.cortex-orbit-label[data-zone="crisis"],
+.cortex-orbit-label[data-silence="critical"],
+.cortex-orbit-label[data-story="breaking"] {
+  fill: var(--color-rose-400);
+  opacity: 1;
+}
+
+.cortex-orbit-sublabel {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 7.5px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.5;
+}
+
+/* ── Pulse Vitals ─────────────────────────────────────── */
+
+.cortex-vitals {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3, 0.75rem);
+  padding-top: var(--space-3, 0.75rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.cortex-vital {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.cortex-vital__value {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.cortex-vital__value[data-urgency="medium"] { color: var(--color-amber-400); }
+.cortex-vital__value[data-urgency="high"] { color: var(--color-gold-400); }
+.cortex-vital__value[data-urgency="critical"] { color: var(--color-rose-400); }
+
+.cortex-vital__label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+}
+
+/* ── Thinking Stream ──────────────────────────────────── */
+
+.cortex-thinking {
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  padding-top: var(--space-3, 0.75rem);
+}
+
+.cortex-thinking__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+  margin-bottom: var(--space-3, 0.75rem);
+}
+
+.cortex-thinking__stream {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+  max-height: 14rem;
+  overflow-y: auto;
+}
+
+.cortex-thinking__entry {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-md, 0.5rem);
+  border-left: 3px solid var(--type-color, var(--color-silver-500));
+  background: color-mix(in srgb, var(--type-color, var(--color-silver-500)) 5%, transparent);
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  opacity: 0;
+  animation: cortex-think-appear 0.5s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.12s);
+  line-height: 1.45;
+}
+
+.cortex-thinking__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  opacity: 0.6;
+}
+
+.cortex-thinking__text {
+  flex: 1;
+}
+
+.cortex-thinking__confidence {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-teal-400);
+  opacity: 0.8;
+}
+
+@keyframes cortex-think-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Light Mode ───────────────────────────────────────── */
+
+.light .glass-comm-cortex {
+  background: color-mix(in srgb, #ffffff 60%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .cortex-center-sphere {
+  fill: #ffffff;
+}
+
+.light .cortex-thinking__entry {
+  background: color-mix(in srgb, var(--type-color, #888) 6%, transparent);
+}
+
+/* ── Reduced Motion ───────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .cortex-orbit-rotator {
+    animation: none !important;
+  }
+
+  .cortex-center-glow-circle {
+    animation: none !important;
+    opacity: 0.2;
+  }
+
+  .cortex-thinking__entry {
+    animation: none !important;
+    opacity: 1;
+  }
+}

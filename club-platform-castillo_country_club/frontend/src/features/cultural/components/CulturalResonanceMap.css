@@ -1,0 +1,194 @@
+/**
+ * CulturalResonanceMap — "The Resonance"
+ *
+ * SVG bubble chart with threshold lines, average line,
+ * and interactive tooltips showing 4-dimension breakdown.
+ * Dark background, level-colored bubbles, staggered entrance.
+ */
+
+.cultural-resonance-map {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: 'DM Mono', monospace;
+  width: fit-content;
+}
+
+.cultural-resonance-map__empty {
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+/* ── Header ── */
+.cultural-resonance-map__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cultural-resonance-map__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.cultural-resonance-map__stats {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.cultural-resonance-map__stat {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cultural-resonance-map__stat--drop {
+  color: #ef4444;
+}
+
+/* ── SVG ── */
+.cultural-resonance-map__svg {
+  overflow: visible;
+}
+
+/* ── Grid ── */
+.cultural-resonance-map__gridline {
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 0.5;
+}
+
+.cultural-resonance-map__y-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  fill: rgba(255, 255, 255, 0.2);
+}
+
+.cultural-resonance-map__x-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  fill: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Threshold lines ── */
+.cultural-resonance-map__threshold {
+  stroke-width: 0.5;
+  stroke-dasharray: 4 3;
+  opacity: 0.25;
+}
+
+/* ── Average line ── */
+.cultural-resonance-map__avg-line {
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
+  stroke-dasharray: 6 3;
+}
+
+.cultural-resonance-map__avg-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  fill: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Bubbles ── */
+.cultural-resonance-map__bubble-group {
+  cursor: pointer;
+  opacity: 0;
+  animation: resonance-bubble-enter 0.4s ease forwards;
+}
+
+@keyframes resonance-bubble-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.cultural-resonance-map__bubble-target {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.cultural-resonance-map__bubble {
+  transition: r 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease;
+}
+
+.cultural-resonance-map__bubble-group--hovered .cultural-resonance-map__bubble {
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* ── Tooltip ── */
+.cultural-resonance-map__tooltip {
+  pointer-events: none;
+  animation: resonance-tooltip-in 0.12s ease;
+}
+
+@keyframes resonance-tooltip-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Legend ── */
+.cultural-resonance-map__legend {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cultural-resonance-map__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.cultural-resonance-map__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid;
+  flex-shrink: 0;
+}
+
+.cultural-resonance-map__legend-label {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: capitalize;
+  letter-spacing: 0.04em;
+}
+
+/* ── Footer ── */
+.cultural-resonance-map__footer {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cultural-resonance-map__footer span {
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.04em;
+}

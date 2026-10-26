@@ -1,0 +1,301 @@
+/**
+ * Toast.css
+ * src/shared/components/ui/Toast.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @version     v2.1
+ * @namespace   .ui-toast, .ui-toast-wrap
+ * @keyframes   1 (ui-toast-slide-up)
+ * @signature   Stacked glass toast notifications with auto-dismiss,
+ *              semantic border-left accent, entrance/exit lifecycle
+ *
+ * NOTE: This file SUPPLEMENTS globals.css §6 .glass-toast primitives.
+ *       The .glass-toast class provides the base glass surface
+ *       (backdrop-filter, bg, border, radius, shadow, font-size).
+ *       This file adds UI component behaviors (wrap, exit, icon, etc.).
+ *
+ * FIXES APPLIED (v2.1) — hallazgos G8 (auditoría Lote 4 / BC-02 package):
+ * [x] G8-15 (CRITICAL): .glass-toast es un primitivo FIXED (top:20px
+ *     right:20px — globals §6, uso standalone). En el STACK, el item
+ *     con ambas clases NO declaraba position → heredaba el fixed y
+ *     ESCAPABA de la columna .ui-toast-wrap: todos los toasts se
+ *     apilaban superpuestos en top-right; gap/stagger/mobile §7 eran
+ *     inertes. Fix §1a: override con especificidad 0,2,0
+ *     (.ui-toast-wrap .ui-toast) — determinístico e
+ *     independiente del orden de carga de las hojas.
+ * [x] G8-15b: la animación de entrada y align-items estaban en empate
+ *     de especificidad (0,1,0) contra .glass-toast (animation:
+ *     slideUp / align-items: center) — el ganador dependía del ORDEN
+ *     de carga de las hojas. Ahora declaradas en el scoped §1a.
+ * [x] G8-15c: el bloque reduced-motion (0,1,0) perdía contra el nuevo
+ *     scoped §1a (0,2,0) → bumped a .ui-toast-wrap .ui-toast.
+ * [x] G8-16: stagger limitado a nth-child(2..4) → cap n+5 (0.2s).
+ * [x] Sync documental: exit 0.25s ↔ Toast.tsx EXIT_ANIMATION_MS (250).
+ *
+ * TOKEN VERIFICATION (v2.1, contra globals.css v2.2 — 12/12 existen):
+ *   --font-ui · --shadow-md · --color-silver-{200,400,500,700} ·
+ *   --color-{emerald,rose,amber,teal}-400 · --color-gold-400 ✓
+ *   z-index: sin token --z-* en el canon → literal 100 documentado
+ *   (por encima de .glass-toast:60 y .glass-modal; debajo de nada).
+ *   Literales rgba(): deuda F3 conocida y documentada (mapa de tokens).
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  Inherits globals .glass-toast (backdrop-filter)
+ * D2 Stagger  ✓  nth-child delays on stacked toasts (cap n+5)
+ * D3 Easing   ✓  Apple easing on entrance/exit (sync 250ms ↔ TSX)
+ * D4 Typo     ✓  UI font, 12px body
+ * D5 Color    ✓  Inherits globals .glass-toast--* semantic borders
+ * D6 Pseudo   ✗  Compact notification (not applicable)
+ * D7 Interact ✓  REAL hover pause (TSX G8-10) + dismiss hover/focus/active
+ * D8 Density  ✓  12px padding, compact message, 14px icon
+ * D9 Response ✓  Full-width on mobile
+ * D10 A11y    ✓  role="status"/"region", aria-label, focus-visible
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion (specificity-safe) + print
+ * D13 Frames  ✓  1 namespaced at end
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  CONTAINER — .ui-toast-wrap (D8, D9)
+   Fixed position stack for active toasts.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-toast-wrap {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+  width: 100%;
+  pointer-events: none;
+}
+
+/* Allow individual toasts to receive pointer events */
+.ui-toast-wrap > * {
+  pointer-events: auto;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  TOAST ITEM — .ui-toast (D2, D3, D8)
+   Extends .glass-toast from globals.css §6.
+   Adds: entrance animation, exit lifecycle, stagger.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  /* D3: Exit transition — 0.25s is bound to EXIT_ANIMATION_MS (250)
+   * in Toast.tsx §2. Change BOTH or NEITHER. */
+  transition:
+    opacity 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* §1a — CASCADE ARBITRATION (G8-15, CRITICAL)
+ * The .glass-toast primitive (globals §6) carries LAYOUT for its
+ * standalone usage: position:fixed; top:20px; right:20px + animation:
+ * slideUp + align-items:center. Inside THIS stack the item must FLOW
+ * as a flex-column child. This scoped rule (0,2,0) beats the
+ * primitive (0,1,0) regardless of stylesheet load order:
+ *   - position:relative + top/right:auto → back into the column
+ *   - animation: namespaced entrance (deterministic winner)
+ *   - align-items: flex-start → icon top-aligned with first line
+ * The wrap-scoped nth-child rules below (also 0,2,0, later in source)
+ * still win the animation-delay longhand over this shorthand. */
+.ui-toast-wrap .ui-toast {
+  position: relative;
+  top: auto;
+  right: auto;
+  align-items: flex-start;
+  /* D2: Entrance stagger — each toast slides up */
+  animation: ui-toast-slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Exit state — slide up and fade */
+.ui-toast--exit {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.97);
+}
+
+/* D7: Hover — REAL pause happens in TSX (G8-10); this is the visual
+ * affordance that the toast is "held" while hovered. */
+.ui-toast:hover {
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.2));
+}
+
+/* D2: nth-child stagger for multiple simultaneous toasts (cap: n+5) */
+.ui-toast:nth-child(2) { animation-delay: 0.05s; }
+.ui-toast:nth-child(3) { animation-delay: 0.10s; }
+.ui-toast:nth-child(4) { animation-delay: 0.15s; }
+.ui-toast:nth-child(n + 5) { animation-delay: 0.2s; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  ICON (D5)
+   Semantic color per toast type.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-toast__icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ui-toast__icon--success { color: var(--color-emerald-400); }
+.ui-toast__icon--error   { color: var(--color-rose-400); }
+.ui-toast__icon--warning { color: var(--color-amber-400); }
+.ui-toast__icon--info    { color: var(--color-teal-400); }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  MESSAGE (D4, D8)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-toast__message {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  line-height: 1.4;
+  margin: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  DISMISS BUTTON (D7, D8)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-toast__dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-silver-500);
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ui-toast__dismiss:hover {
+  background: rgba(255, 255, 255, 0.08); /* F3 debt: documented literal */
+  color: var(--color-silver-200);
+}
+
+.ui-toast__dismiss:active {
+  transform: scale(0.9);
+}
+
+.ui-toast__dismiss:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 1px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  LIGHT MODE (D11)
+   Surface (.light .glass-toast) viene de globals.css §6;
+   aquí los colores de texto y dismiss.
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-toast__message {
+  color: var(--color-silver-700);
+}
+
+.light .ui-toast__dismiss {
+  color: var(--color-silver-400);
+}
+
+.light .ui-toast__dismiss:hover {
+  background: rgba(0, 0, 0, 0.06); /* F3 debt: documented literal */
+  color: var(--color-silver-700);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  REDUCED MOTION (D12)
+   Specificity 0,2,0 — DEBE empatar/superar al scoped §1a
+   (G8-15c): en 0,1,0 perdía y la animación seguía viva.
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-toast-wrap .ui-toast {
+    animation: none;
+    transition: none;
+  }
+
+  .ui-toast--exit {
+    opacity: 0;
+    transform: none;
+  }
+
+  .ui-toast__dismiss:active {
+    transform: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  RESPONSIVE (D9)
+   Canon breakpoints: 768 + 480 (1024 condicional no aplica aquí).
+   Los items ya son position:relative (§1a) → las reglas del WRAP
+   gobiernan el layout real (G8-16 fix).
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .ui-toast-wrap {
+    left: 16px;
+    right: 16px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ui-toast-wrap {
+    bottom: 80px; /* Above mobile nav */
+    left: 12px;
+    right: 12px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  KEYFRAMES (D13)
+   ALL at end, ALL ui-toast-* namespaced. Count: 1.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Entrance — slide up and fade in */
+@keyframes ui-toast-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-toast-wrap {
+    display: none !important;
+  }
+}

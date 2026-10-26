@@ -1,0 +1,404 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Recommendations — Neural Command Center CSS (2027 NEW)
+
+   Glass namespace: .glass-rec
+   Keyframes prefix: rec*
+   Adaptive Morphism: data-mode="observe|analyze|act"
+
+   Sections: mode-indicator, focus-nav, pulse, brief, hero, synthesis,
+             intelligence-grid, intelligence-stream
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Root Variables ──────────────────────────────────────────────────── */
+
+.glass-rec {
+  --rec-gap: 1.5rem;
+  --rec-gap-compact: 1rem;
+  --rec-radius: 12px;
+  --rec-radius-sm: 8px;
+  --rec-bg: var(--color-surface-0);
+  --rec-bg-elevated: var(--color-surface-1);
+  --rec-border: var(--color-border-subtle);
+  --rec-border-strong: var(--color-border-default);
+  --rec-text-primary: var(--color-silver-100);
+  --rec-text-muted: var(--color-silver-400);
+  --rec-text-faint: var(--color-silver-500);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--rec-gap);
+  position: relative;
+}
+
+/* ── Adaptive Morphism: gap + density per mode ───────────────────────── */
+
+.glass-rec[data-mode="observe"] {
+  --rec-gap: 2rem;
+  --rec-gap-compact: 1.25rem;
+}
+
+.glass-rec[data-mode="analyze"] {
+  --rec-gap: 1.25rem;
+  --rec-gap-compact: 0.875rem;
+}
+
+.glass-rec[data-mode="act"] {
+  --rec-gap: 1rem;
+  --rec-gap-compact: 0.75rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MODE INDICATOR — Subtle system-state awareness bar
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rec-mode-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--rec-radius-sm);
+  background: var(--rec-bg-elevated);
+  border: 1px solid var(--rec-border);
+  font-size: 0.8125rem;
+  line-height: 1;
+  animation: recSlideDown 0.4s ease forwards;
+}
+
+.rec-mode-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.glass-rec[data-mode="observe"] .rec-mode-dot {
+  background: var(--color-teal-400);
+  box-shadow: 0 0 6px var(--color-teal-400);
+}
+
+.glass-rec[data-mode="analyze"] .rec-mode-dot {
+  background: var(--color-amber-400);
+  box-shadow: 0 0 6px var(--color-amber-400);
+  animation: recPulse 2s ease-in-out infinite;
+}
+
+.glass-rec[data-mode="act"] .rec-mode-dot {
+  background: var(--color-rose-400);
+  box-shadow: 0 0 8px var(--color-rose-400);
+  animation: recPulse 1s ease-in-out infinite;
+}
+
+.rec-mode-label {
+  font-weight: 600;
+  color: var(--rec-text-primary);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.rec-mode-detail {
+  color: var(--rec-text-muted);
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FOCUS NAVIGATION — Scroll-to-section pills
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rec-focus-nav {
+  display: flex;
+  gap: 0.375rem;
+  overflow-x: auto;
+  padding: 0.25rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.rec-focus-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.rec-focus-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 999px;
+  border: 1px solid var(--rec-border);
+  background: transparent;
+  color: var(--rec-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.rec-focus-pill:hover {
+  color: var(--rec-text-primary);
+  border-color: var(--rec-border-strong);
+  background: var(--rec-bg-elevated);
+}
+
+.rec-focus-pill:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.rec-focus-pill[data-active] {
+  color: var(--color-gold-400);
+  border-color: var(--color-gold-400);
+  background: rgba(232, 197, 71, 0.08);
+  box-shadow: 0 0 12px rgba(232, 197, 71, 0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECTIONS — Scroll margin + entrance animation
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.glass-rec section[id] {
+  scroll-margin-top: 5rem;
+}
+
+.glass-rec [data-section="pulse"] {
+  animation: recFadeUp 0.5s ease 0.05s both;
+}
+
+.glass-rec [data-section="brief"] {
+  animation: recFadeUp 0.5s ease 0.1s both;
+}
+
+.glass-rec [data-section="hero"] {
+  animation: recFadeUp 0.5s ease 0.15s both;
+}
+
+.glass-rec [data-section="synthesis"] {
+  animation: recFadeUp 0.5s ease 0.2s both;
+}
+
+.glass-rec [data-section="grid"] {
+  animation: recFadeUp 0.5s ease 0.25s both;
+}
+
+.glass-rec [data-section="stream"] {
+  animation: recFadeUp 0.5s ease 0.3s both;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HERO — Mode-dependent layout
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rec-hero-pair {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: var(--rec-gap);
+}
+
+/* Act mode: hero section gets prominence */
+.glass-rec[data-mode="act"] [data-section="hero"] {
+  order: -1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   INTELLIGENCE GRID — 3-column responsive
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rec-intelligence-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--rec-gap);
+}
+
+/* Analyze mode: grid becomes denser */
+.glass-rec[data-mode="analyze"] .rec-intelligence-grid {
+  gap: var(--rec-gap-compact);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   INTELLIGENCE STREAM — Vertical flow
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rec-intelligence-stream {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rec-gap);
+}
+
+/* Act mode: stream becomes more compact */
+.glass-rec[data-mode="act"] .rec-intelligence-stream {
+  gap: var(--rec-gap-compact);
+}
+
+.rec-stream-block {
+  background: var(--rec-bg);
+  border: 1px solid var(--rec-border);
+  border-radius: var(--rec-radius);
+  padding: 1.25rem;
+  transition: border-color 0.2s ease;
+}
+
+.rec-stream-block:hover {
+  border-color: var(--rec-border-strong);
+}
+
+.rec-stream-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--rec-text-primary);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--rec-border);
+  letter-spacing: 0.02em;
+}
+
+.rec-stream-header svg {
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SKELETON LOADING STATES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rec-skeleton {
+  border-radius: var(--rec-radius);
+  background: var(--rec-bg-elevated);
+}
+
+.rec-skeleton--banner {
+  height: 72px;
+}
+
+.rec-skeleton--brief {
+  height: 120px;
+}
+
+.rec-skeleton--hero {
+  height: 320px;
+}
+
+.rec-skeleton--panel {
+  height: 240px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes recSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes recFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes recPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: light) {
+  .glass-rec {
+    --rec-bg: #ffffff;
+    --rec-bg-elevated: #f8f7f4;
+    --rec-border: #e8e5df;
+    --rec-border-strong: #d4d0c8;
+    --rec-text-primary: #1a1814;
+    --rec-text-muted: #6b6560;
+    --rec-text-faint: #9e9890;
+  }
+
+  .rec-focus-pill[data-active] {
+    background: rgba(180, 150, 50, 0.1);
+    box-shadow: 0 0 8px rgba(180, 150, 50, 0.15);
+  }
+
+  .rec-stream-block {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
+  .rec-stream-block:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-rec,
+  .glass-rec * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .rec-intelligence-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rec-hero-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .rec-intelligence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rec-mode-indicator {
+    flex-wrap: wrap;
+  }
+
+  .rec-mode-detail {
+    width: 100%;
+    margin-left: 0;
+    padding-left: 1.375rem;
+  }
+
+  .rec-focus-nav {
+    gap: 0.25rem;
+  }
+
+  .rec-focus-pill {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+  }
+}

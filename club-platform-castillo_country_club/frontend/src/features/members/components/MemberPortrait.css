@@ -1,0 +1,318 @@
+/**
+ * MemberPortrait — SVG Orbital Rings
+ * Namespace: .glass-m360-portrait
+ * @phase 30 — Block 3.1
+ */
+
+/* ═══════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-portrait {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SVG — Size variants
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-portrait__svg {
+  width: 200px;
+  height: 200px;
+  overflow: visible;
+}
+
+.glass-m360-portrait[data-size="md"] .glass-m360-portrait__svg {
+  width: 160px;
+  height: 160px;
+}
+
+.glass-m360-portrait[data-size="sm"] .glass-m360-portrait__svg {
+  width: 120px;
+  height: 120px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RINGS — Orbital animation
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-portrait__ring {
+  transform-origin: center;
+  animation: m360-portrait-orbit var(--ring-duration, 30s) linear infinite;
+  transition: stroke-width 0.2s ease, opacity 0.2s ease;
+}
+
+/* Even rings counter-rotate */
+.glass-m360-portrait__ring:nth-of-type(even) {
+  animation-direction: reverse;
+}
+
+/* Hover emphasis */
+.glass-m360-portrait__ring:hover {
+  opacity: 0.95;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ORB — Central temperature glow
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-portrait__orb-glow {
+  animation: m360-portrait-breathe 6s ease-in-out infinite;
+}
+
+.glass-m360-portrait__orb-mid {
+  animation: m360-portrait-breathe 6s ease-in-out infinite;
+  animation-delay: -2s;
+}
+
+.glass-m360-portrait__orb-core {
+  transition: fill 1s ease, opacity 0.5s ease;
+}
+
+.glass-m360-portrait__temp-text {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LABELS — Below portrait
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-portrait__labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.glass-m360-portrait__name {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  text-align: center;
+}
+
+.glass-m360-portrait__state {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: color 0.5s ease;
+}
+
+.glass-m360-portrait__tier {
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RING LEGEND — Only in lg size
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-portrait__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 220px;
+}
+
+.glass-m360-portrait__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.375rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.glass-m360-portrait__legend-item:hover,
+.glass-m360-portrait__legend-item[data-highlighted] {
+  background: color-mix(in srgb, var(--color-silver-600) 8%, transparent);
+}
+
+.glass-m360-portrait__legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.glass-m360-portrait__legend-name {
+  font-size: 0.6875rem;
+  color: var(--color-silver-300);
+  flex: 1;
+  text-transform: capitalize;
+}
+
+.glass-m360-portrait__legend-value {
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-400);
+  min-width: 1.5rem;
+  text-align: right;
+}
+
+.glass-m360-portrait__legend-trend {
+  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  min-width: 1rem;
+  text-align: center;
+}
+
+.glass-m360-portrait__legend-trend[data-trend="improving"] {
+  color: var(--color-emerald-400);
+}
+
+.glass-m360-portrait__legend-trend[data-trend="declining"] {
+  color: var(--color-rose-400);
+}
+
+.glass-m360-portrait__legend-trend[data-trend="stable"] {
+  color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   TOOLTIP — Ring hover tooltip
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-portrait__tooltip {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 0.75rem);
+  transform: translateY(-50%);
+  min-width: 180px;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--color-surface-2);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 20%, transparent);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  z-index: 20;
+  pointer-events: none;
+  animation: m360-portrait-tooltip-in 0.2s ease;
+}
+
+.glass-m360-portrait__tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-silver-600) 10%, transparent);
+}
+
+.glass-m360-portrait__tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.glass-m360-portrait__tooltip-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  text-transform: capitalize;
+}
+
+.glass-m360-portrait__tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.glass-m360-portrait__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  color: var(--color-silver-400);
+}
+
+.glass-m360-portrait__tooltip-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.glass-m360-portrait__tooltip-row [data-status="critical"] {
+  color: var(--color-rose-400);
+}
+
+.glass-m360-portrait__tooltip-row [data-status="elevated"] {
+  color: var(--color-amber-400);
+}
+
+.glass-m360-portrait__tooltip-row [data-status="thriving"] {
+  color: var(--color-emerald-400);
+}
+
+.glass-m360-portrait__tooltip-row [data-trend="improving"] {
+  color: var(--color-emerald-400);
+}
+
+.glass-m360-portrait__tooltip-row [data-trend="declining"] {
+  color: var(--color-rose-400);
+}
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-portrait-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes m360-portrait-breathe {
+  0%, 100% { transform: scale(1); opacity: var(--glow-base, 0.2); }
+  50% { transform: scale(1.08); opacity: var(--glow-peak, 0.35); }
+}
+
+@keyframes m360-portrait-tooltip-in {
+  from { opacity: 0; transform: translateY(-50%) translateX(-4px); }
+  to { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360-portrait__tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.light .glass-m360-portrait__legend-item:hover,
+.light .glass-m360-portrait__legend-item[data-highlighted] {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360-portrait__ring {
+    animation: none;
+  }
+
+  .glass-m360-portrait__orb-glow,
+  .glass-m360-portrait__orb-mid {
+    animation: none;
+    opacity: 0.25;
+  }
+
+  .glass-m360-portrait__tooltip {
+    animation: none;
+    opacity: 1;
+  }
+}

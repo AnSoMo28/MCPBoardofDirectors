@@ -1,0 +1,659 @@
+# CHECKPOINT — Fase 26a+26b COMPLETADAS — Mock → Backend Migration (6 tools)
+
+**Fecha:** Junio 2026
+**Sesiones completadas:** 1 (esta sesión — larga, auditoría profunda + implementación completa)
+**Archivos creados:** 0 nuevos
+**Archivos modificados:** 9 (6 backend + 3 frontend)
+**Líneas nuevas:** ~850
+**Tools MCP nuevas:** 6 (wellness: 5, finance: 1)
+**Tools MCP totales registradas:** ~141+
+**Advisor rules nuevas:** 0
+**Advisor rules totales:** 80
+
+---
+
+## 0. ROL SUPER ENRIQUECIDO — REGLA DE ORO
+
+Soy el **Principal AI Systems Architect** del Castillo Country Club. No soy un generador de código. Soy un partner técnico senior multi-experto con libertad propositiva total que combina **9 disciplinas** para convertir esta plataforma en la herramienta de gestión de clubes privados más inteligente de Costa Rica.
+
+**Las 9 disciplinas:**
+1. FullStack Engineering — Código production-grade. TypeScript estricto, Python type hints. Cero placeholders.
+2. UI/UX Architecture — Interfaces que piensan por el usuario. Loading, error, empty states siempre.
+3. Product Strategy — Cada feature resuelve un problema real. ROI medible.
+4. Private Club Operations (CR) — Estacionalidad costarricense, socios VIP, cultura de club privado.
+5. AI/ML Architecture — Client-side compute + LLM reasoning. 80 reglas determinísticas.
+6. Financial Intelligence — VC-grade: LTV/CAC, Shannon entropy, HHI, Monte Carlo, health scoring.
+7. Marketing Intelligence — Segmentación, retención, LTV optimization, campaign targeting.
+8. ML & Gen AI — Modelos predictivos, anomaly detection, embeddings, clustering.
+9. AI Experience Design — Narrativa AI, simulación, planificación ejecutiva, reaction feedback, predictive pre-fetch.
+
+**Proceso mental (10 pasos):**
+1. ¿Qué dice el código actual? → Leer archivo real
+2. ¿Qué viola de las 22+ reglas? → Auditar línea por línea
+3. ¿Qué nivel de inteligencia tiene? → ¿Solo datos? ¿Contexto? ¿IA?
+4. ¿Qué nivel PODRÍA tener? → Proponer upgrade si aplica
+5. ¿Cómo encaja en la arquitectura Advisor? → Decisiones compatibles con F20+
+6. ¿Qué pendientes acumulados resuelve? → Cerrar issues del checkpoint
+7. ¿Propongo ANTES de codificar? → El usuario aprueba
+8. ¿Genero código completo o quirúrgico? → Regla #5: >30% rewrite, ≤15 líneas quirúrgico
+9. ¿Esto es nivel 2026-2027? → Si no lo es, replantear
+10. ¿El usuario sabía que esto existía? → Si no, proponerlo
+
+**Regla de oro (INVIOLABLE):** Yo propongo y analizo ANTES de escribir código. El usuario aprueba antes de generar. Changelog detallado al final de cada bloque. Formato de edición: Bloque A (código actual exacto) → Bloque B (líneas nuevas para copiar y pegar). Nunca mezclar. Siempre cuestiono lo que propongo — el cuestionamiento va dirigido a la mejora.
+
+**Postura operativa:** Ver bug → auditar patrón. Ver tool sin UI → proponer integración. Recibir componente → analizar contra 22+ reglas. Proponer feature → algo que el usuario no sabía que necesitaba. Integrar AI → Intelligence Engine de 5 niveles. Documentar → changelog detallado + verificación.
+
+### REGLA DE FORMATO:
+
+1. **BLOQUE A** = líneas EXACTAS que se reemplazan (copiar del archivo actual)
+2. **BLOQUE B** = líneas NUEVAS que las reemplazan (copiar y pegar)
+3. **Si es INSERTAR**: "después de X, antes de Y" con líneas literales de referencia
+4. **NUNCA** "agregar X al existente" — siempre reemplazar el bloque completo
+5. **NUNCA** instrucciones conceptuales — siempre código exacto
+6. **Si es REWRITE (>30%)**: entregar el archivo completo
+7. **Trabajar por APPENDS** en archivos grandes (factories.ts, contracts.ts, mock-registry.ts)
+8. **Nunca proponer bloques sin leer el código primero** — proceso mental paso 1
+
+---
+
+## 1. LO QUE ESTAMOS CONSTRUYENDO (recordatorio)
+
+**Castillo AI Platform** es un **Sistema de Decisión Inteligente** para clubes privados de Costa Rica. No es un dashboard, no es un ERP, no es un CRM. Es una plataforma que piensa, propone, predice, contextualiza, planifica, ejecuta y aprende.
+
+Las 5 capas de inteligencia:
+1. **CAPA 1 — DATOS** ✅ — "¿Qué está pasando?"
+2. **CAPA 2 — CONTEXTO** ✅ — "¿Qué necesito ver ahora?"
+3. **CAPA 3 — INTELIGENCIA CLIENT-SIDE** ✅ — 80 reglas determinísticas, 0 tokens, 0ms
+4. **CAPA 4 — CROSS-AGENT** ✅ — Global Advisor 25 rules, Systemic Risk Score, benchmarks CR
+5. **CAPA 5 — ACCIÓN INTELIGENTE** ✅ — 11 acciones, AI Narrative, Simulation, Board Brief, Chat, Reactions, Pre-fetch
+
+### Descubrimiento clave de esta sesión: Dos paradigmas coexisten
+
+```
+PARADIGMA 1: Executive Dashboard (hardcoded demo data) — INTENCIONAL
+├── get_executive_summary, get_financial_overview, get_membership_health,
+│   get_operational_pulse, detect_anomalies, get_age_group_balance
+└── Siempre muestra datos de ejemplo. En producción (F29) migrarán a computed.
+
+PARADIGMA 2: Domain Agents (computed from repo) — PRODUCCIÓN
+├── finance: generate_ai_analysis (9 dim), get_financial_summary (NUEVO F26a)
+├── wellness: predict, anomalies, goal_list (F26a), correlate, insights (F26b)
+└── Computa datos reales del repo. Es lo que se migra en F26.
+```
+
+**No confundir `get_financial_overview` (executive, hardcoded, 8 campos) con `get_financial_summary` (finance, computed, 15+ campos).**
+
+---
+
+## 2. LO QUE SE CREÓ/MODIFICÓ EN ESTA SESIÓN
+
+### Archivos Backend (Modificados)
+
+| # | Ruta | Acción | Qué se cambió |
+|---|------|--------|---------------|
+| 1 | `models/wellness.py` | MODIFY | +2 enums (`WellnessRiskLevel`, `WellnessAnomalyType`) + 10 models nuevos (F26a: `WellnessPrediction`, `WellnessAnomaly`, `WellnessAnomalyResponse`. F26b: `WellnessCorrelation`, `WellnessSegmentInsight`, `WellnessActivityValue`, `WellnessCorrelateResponse`, `WellnessKeyFinding`, `WellnessCriticalInsight`, `WellnessInsightsResponse`) |
+| 2 | `db/repositories/wellness_repo.py` | MODIFY | +imports + 6 métodos nuevos (F26a: `compute_prediction`, `detect_anomalies`. F26b: `_pearson`, `_significance`, `compute_correlations`, `compute_insights`) |
+| 3 | `agents/wellness.py` | MODIFY | +5 MCPTools (F26a: `wellness_goal_list`, `wellness_predict`, `wellness_anomalies`. F26b: `wellness_correlate`, `wellness_insights`) |
+| 4 | `models/finance.py` | MODIFY | +5 models (`FinancialMonthlyTrend`, `FinancialExpenseLine`, `FinancialRevenueLine`, `FinancialARAgingBucket`, `FinancialSummaryResponse`) |
+| 5 | `db/repositories/finance_repo.py` | MODIFY | +imports + `_cash_balance` seed (₡45M) + 3 métodos (`get_cash_position`, `get_accounts_receivable_summary`, `get_monthly_trend`) |
+| 6 | `agents/finance.py` | MODIFY | +6 model imports + 1 MCPTool (`get_financial_summary`) |
+
+### Archivos Frontend (Modificados)
+
+| # | Ruta | Acción | Qué se cambió |
+|---|------|--------|---------------|
+| 7 | `shared/mocks/contracts.ts` | APPEND | +9 interfaces wellness (F26a). F26b: sin cambios (ya existían) |
+| 8 | `shared/mocks/factories.ts` | APPEND | +3 factories (F26a: `createMockWellnessGoalList`, `createMockWellnessPredict`, `createMockWellnessAnomalies`). F26b: sin cambios (ya existían) |
+| 9 | `shared/mocks/mock-registry.ts` | ADD + CLEANUP | F26a: +3 entries wellness. F26b: -3 imports huérfanos (`createWellnessPredict`, `createWellnessAnomalies`, `createWellnessGoalList` sin prefijo `createMock`), -3 keys duplicadas |
+
+### Tools MCP migradas (6)
+
+| # | Tool | Server | Backend nuevo | Mock | Approval | Consumido por | Fase |
+|---|------|--------|--------------|------|----------|---------------|------|
+| 1 | `wellness_goal_list` | wellness | ✅ | ✅ NUEVO | AUTO | WellnessGoals.tsx | F26a |
+| 2 | `wellness_predict` | wellness | ✅ | ✅ NUEVO | AUTO | WellnessAIAdvisor.tsx | F26a |
+| 3 | `wellness_anomalies` | wellness | ✅ | ✅ NUEVO | AUTO | WellnessRiskRadar.tsx | F26a |
+| 4 | `get_financial_summary` | finance | ✅ | ✅ EXISTÍA | AUTO | FinancialDashboard.tsx | F26a |
+| 5 | `wellness_correlate` | wellness | ✅ | ✅ EXISTÍA | AUTO | WellnessBusinessInsights.tsx | F26b |
+| 6 | `wellness_insights` | wellness | ✅ | ✅ EXISTÍA | AUTO | WellnessAIAdvisor.tsx | F26b |
+
+---
+
+## 3. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | F24 y F25 ya completadas — checkpoint anterior era fuente más reciente | INFO | ✅ Confirmado |
+| 2 | Total Advisor rules = 80 (no 65 como decía CLAUDE_CONTEXT.md) | INFO | ✅ Actualizado |
+| 3 | `font-display` = Cormorant Garamond (no Playfair Display) | INFO | ✅ Actualizado |
+| 4 | `get_financial_summary` mock-only — no existía en backend finance.py | ALTA | ✅ Resuelto F26a |
+| 5 | `wellness_goal_list` no existía — WellnessGoals no funcional | ALTA | ✅ Resuelto F26a |
+| 6 | `wellness_predict` y `wellness_anomalies` mock-only | ALTA | ✅ Resuelto F26a |
+| 7 | Executive Dashboard (7/8 tools) es hardcoded intencionalmente (Paradigma 1) | INFO | ✅ Documentado |
+| 8 | `get_financial_overview` ≠ `get_financial_summary` — propósitos distintos | INFO | ✅ Documentado |
+| 9 | Wellness repo hace compute inline (patrón: get_recommendations, generate_report) | INFO | ✅ Seguido en F26 |
+| 10 | Finance repo es CRUD — compute de inteligencia está en el agent | INFO | ✅ Seguido en F26 |
+| 11 | `_cash_balance` no existía en finance_repo — necesitaba seed para cash position | MEDIA | ✅ Resuelto F26a |
+| 12 | `get_accounts_receivable_summary` no existía en finance_repo | MEDIA | ✅ Resuelto F26a |
+| 13 | `get_monthly_trend` no existía en finance_repo | MEDIA | ✅ Resuelto F26a |
+| 14 | Mock factories usan prefijo `createMock` — convención descubierta | INFO | ✅ Corregido |
+| 15 | Mock registry finance ya tenía `get_financial_summary` entry | INFO | ✅ Verificado |
+| 16 | Mock registry wellness ya tenía `wellness_correlate` y `wellness_insights` entries | INFO | ✅ Verificado F26b |
+| 17 | 3 imports huérfanos en mock-registry (`createWellnessPredict` etc. sin `createMock`) | BAJA | ✅ Eliminado F26b |
+| 18 | 3 keys duplicadas en mock-registry (wellness_predict/anomalies sin params) | BAJA | ✅ Eliminado F26b |
+| 19 | `income_breakdown` del repo agrupa por payment method, no business source | MEDIA | ⬜ Pendiente |
+| 20 | Streak calculation bug en wellness_repo `generate_report` | BAJA | ⬜ Pendiente |
+| 21 | `TierEconomics` importado pero `by_tier: []` en member_economics | MEDIA | ⬜ Pendiente |
+| 22 | `revenue_by_source` en `get_financial_summary` usa payment method como source | MEDIA | ⬜ Documentado como limitación |
+| 23 | `income_breakdown` y `expense_breakdown` de `generate_report` no incluyen trend_pct | MEDIA | ⬜ Pendiente |
+| 24 | `wellness_report` usa `createWellnessReport()` sin prefijo `createMock` | BAJA | ⬜ Pendiente (pre-existente) |
+
+---
+
+## 4. PATRONES ESTABLECIDOS / ACTUALIZADOS
+
+### Patrón NUEVO: Backend Tool Migration (F26)
+
+**Concepto:** Workflow completo para migrar una tool de mock-only a backend real.
+
+**10 pasos:**
+1. Auditar agent actual (pattern de tools, return shape, decorators)
+2. Auditar models existentes (Pydantic pattern, enums, ConfigDict)
+3. Auditar repo (métodos CRUD + compute existentes)
+4. Auditar mock factory (shape como source of truth para nuevos models)
+5. Auditar executive dashboard (verificar si ya existe con otro nombre — Paradigma 1 vs 2)
+6. Crear Pydantic models nuevos si necesario
+7. Crear repo methods nuevos si necesario (compute inline o en agent según patrón del dominio)
+8. Crear MCPTool en agent como thin wrapper (o con compute inline para finance)
+9. Alinear mock factory + contracts con nuevos models
+10. Verificar registry entry (sin duplicados, sin imports huérfanos)
+
+**Cuándo se aplica:** Cualquier tool mock-only que necesita backend real.
+**Archivos donde se aplicó:** wellness (5 tools), finance (1 tool)
+
+### Patrón NUEVO: Dual Paradigma Architecture (F26)
+
+**Concepto:** Dos paradigmas coexisten en el backend.
+
+```
+Paradigma 1 (Executive): Hardcoded demo data → siempre muestra algo → F29 migration
+Paradigma 2 (Domain): Computed from repo → producción real → F26 migration
+```
+
+**Regla:** No confundir tools entre paradigmas. `get_financial_overview` (P1) ≠ `get_financial_summary` (P2).
+
+### Patrón NUEVO: Cross-Domain Correlation Engine (F26b)
+
+**Concepto:** Correlaciones cross-domain calculadas con Pearson sobre engagement score como proxy unificador.
+
+**Algoritmo:** `_pearson(engagement[], metric[])` → coefficient + significance (high ≥0.7, medium ≥0.4, low <0.4)
+
+**Proxies sin datos cross-agent reales:**
+- Retention = activity in last 14 days (1.0/0.0)
+- Revenue = total_minutes / 100
+- Satisfaction = goal_completion_rate / 100
+- Spend = 50K + (engagement/100) × 150K CRC
+- NPS = max(0, engagement - 10)
+
+**Cuándo se aplica:** Cuando se necesita análisis cross-domain sin acceso real a otros agentes.
+
+### Patrón NUEVO: Aggregated Insights Pattern (F26b)
+
+**Concepto:** Un tool que agrega los outputs de otros tools del mismo agent en un reporte estructurado.
+
+**Implementación:** `compute_insights()` llama `compute_prediction()` + `detect_anomalies()` + `generate_report()` + goals + profile → `WellnessInsightsResponse`.
+
+**Análogo en finance:** `generate_ai_analysis()` agrega 9 dimensiones desde `get_budget()` + `generate_report()`.
+
+### Patrón ACTUALIZADO: Mock Conventions
+
+**Convenciones confirmadas:**
+- Factory prefix: `createMock` (no `create`) — `createWellnessReport` es legacy exception
+- Factory params: `params?: { key?: type }` — optional, con defaults
+- Contract naming: `{tool_name}_Contract` o `{ResponseName}` interface
+- Registry entry: `(params) => createMockXxx(params)`
+- Append strategy para archivos grandes
+- Verificar imports huérfanos después de cada append
+
+---
+
+## 5. ADVISOR ARCHITECTURE UPDATE
+
+Sin cambios esta sesión — no se agregaron reglas nuevas ni Advisors nuevos.
+
+Los 5 Advisors y 80 reglas están completos y funcionales.
+
+---
+
+## 6. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón | Impacto |
+|---|---------|----------------------|-------|---------|
+| 1 | Compute en repo para wellness predict/anomalies | Compute en agent (patrón finance) | Consistente con `get_recommendations()` y `generate_report()` existentes | Wellness usa repo, Finance usa agent |
+| 2 | Compute en repo para wellness correlate/insights | Compute en agent | Mismo razonamiento que #1 — wellness tiene pattern de compute en repo | F26b consistente con F26a |
+| 3 | `get_financial_summary` como tool nueva en finance.py | Mejorar `get_financial_overview` | Paradigma 1 (hardcoded) vs Paradigma 2 (computed) | No confundir en futuras fases |
+| 4 | Mock shape como source of truth para Pydantic model | Pydantic model como source | Mock más estructurado que models existentes | Model sigue mock |
+| 5 | `_cash_balance = 45_000_000` como seed | 0 o calcular | Consistente con mock. Posición realista club CR | Preparado para DB real en F29 |
+| 6 | `WellnessRiskLevel` compartido entre prediction y anomaly severity | Enums separados | Un vocabulario de severidad en wellness | Menos tipos |
+| 7 | `FinancialRevenueLine` como model nuevo | Reutilizar `RevenueSource` | Shapes incompatibles | Model dedicado |
+| 8 | `FinancialExpenseLine` como model nuevo | Reutilizar `BudgetLine` | Shapes incompatibles | Model dedicado |
+| 9 | F26 scope = 6 tools (no todas las mock-only) | Migrar ~20 tools | Paradigma 1 es intencional. Solo Paradigma 2 | Scope acotado |
+| 10 | Factory prefijo `createMock` | `create` | Convención existente descubierta | Consistencia |
+| 11 | `WellnessAnomaly.expected_min/max` typed | `expected_range: string` | Typed > untyped | Model más expresivo |
+| 12 | AR aging calcula desde `due_date` | `created_at` | Más relevante para aging | Datos más accionables |
+| 13 | `trend_analysis` como `dict[str, str]` | Pydantic model tipado | Mock tiene 4 campos string dinámicos. Dict es más flexible | Frontend ya usa interface |
+| 14 | `predictions` como `dict[str, Any]` | Pydantic model tipado | Campos heterogéneos (string, int, string) | Flexibilidad |
+| 15 | Pearson correlation para cross-domain | Reglas determinísticas | Standard estadístico, más robusto que heurísticas | Mejor para correlaciones reales con más datos |
+| 16 | Proxies para revenue/retention/satisfaction | Esperar datos reales cross-agent | F26 es mock migration, no cross-agent integration. Proxies permiten demo funcional | Preparado para F29 con datos reales |
+| 17 | `wellness_correlate` sin parámetros (club-wide) | `family_id` opcional | Es análisis cross-domain, no per-family | Consistente con concepto |
+| 18 | Eliminar keys duplicadas en registry | Dejar (JS last-key-wins) | Código basura, confuso para debugging | Registry limpio |
+| 19 | No proponer bloques sin leer código | Proponer desde descripciones | Usuario corrigió: "no conocés ningún repo" | Proceso mental paso 1 siempre |
+| 20 | Trabajar por appends | Reescribir archivos grandes | 8000+ líneas. Append es más seguro | Workflow establecido |
+
+---
+
+## 7. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F5 | Infraestructura, tokens, forms, lists, details | ✅ |
+| F6 | Dashboards densos + AI | ✅ |
+| F7 | Reports, mi-club, settings, finance | ✅ |
+| F8 | Dashboard sub-componentes (5/12 done) | 🔄 |
+| F9 | Wellness + Satisfaction | ✅ |
+| F10 | Proactive Recommendations | ✅ |
+| F11 | Communication Enhancement | ✅ |
+| F12 | Guest Management + Trial Memberships | ✅ |
+| F13 | Finance Enhancement + HITL Complete | ✅ |
+| F14 | Intelligence Features | ✅ |
+| F15 | Integration Testing + QA | ✅ |
+| F15ext-B | DailyBriefing enhancement | ✅ |
+| F15ext-C | ComplianceCheck enhancement | ✅ |
+| F15ext-S | SmartSchedule rewrite | ✅ |
+| F16 | ExecutiveDashboard Enhancement | ✅ |
+| F17 | RecommendationsDashboard — 7 rules Advisor | ✅ |
+| F18 | FinancialDashboard — 18 rules Advisor | ✅ |
+| F19 | EventOrchestrator — 15 rules Advisor | ✅ |
+| F20 | Global Cross-Agent — 25 rules Advisor | ✅ |
+| F21 | AI Intelligence Engine — 5 AI tools | ✅ |
+| F22 | Advisor Evolution — Reaction + Pre-fetch | ✅ |
+| F23 | Adaptive Thresholds + Wellness Advisor + Family Selector | ✅ |
+| F24 | Advisor Intelligence Enhancement (Talking Points + Simulation Dynamic + Action Bridge + Tracking) | ✅ |
+| F25 | Polish batch (font-body, compactCurrency, SEASON_CONFIG, swimming, getWellnessLevel, IMPACT_CONFIG) | ✅ |
+| **F26a** | **Mock → Backend Migration (4 tools: wellness_goal_list + wellness_predict + wellness_anomalies + get_financial_summary)** | **✅ COMPLETADA** |
+| **F26b** | **Mock → Backend Migration (2 tools: wellness_correlate + wellness_insights + registry cleanup)** | **✅ COMPLETADA** |
+| **F27** | **Multi-language support (i18n)** | **⬜ SIGUIENTE** |
+| F28 | E2E testing + Accessibility audit (WCAG 2.1 AA) | ⬜ |
+| F29 | CI/CD + Production deployment | ⬜ |
+
+---
+
+## 8. PRÓXIMA FASE — Desglose detallado
+
+### F27: Multi-language support (i18n)
+
+**Objetivo:** Agregar soporte español/inglés a toda la plataforma.
+
+**Nota:** Esta fase requiere investigación previa. No tengo archivos para auditar — el usuario debe definir el alcance.
+
+**Archivos que el usuario debe pegar en el próximo chat:**
+```
+1. Este checkpoint
+2. CLAUDE_CONTEXT.md
+```
+
+### Alternativas propuestas para sesión anterior (no implementadas):
+
+| Mejora | Estado | Descripción |
+|---|---|---|
+| M1: Mock Contract Validation Tool | ⬜ Propuesta | Script/test que compara Pydantic models vs TS interfaces |
+| M3: Backend Health Endpoint Enhancement | ⬜ Propuesta | Expandir health.py con verificación de repos + agents |
+| M4: Advisor Auto-Calibration Foundation | ⬜ Propuesta | Logging de thresholds activados para calibración automática |
+
+**Quick Start para nuevo chat:**
+```
+"Pasame el checkpoint + CLAUDE_CONTEXT.md. Confirmá que entendés tu rol y las reglas. Después decí 'Listo'."
+```
+
+---
+
+## 9. AGENTES AUDITADOS — LISTA ACTUALIZADA
+
+| # | Agente | Server | Tools totales | HITL | AUTO | SEMI | Inteligencia | Fase auditado | Frontend conectado | Estado |
+|---|--------|--------|--------------|------|------|------|-------------|---------------|-------------------|--------|
+| 1 | `executive_dashboard` | `executive_dashboard` | 8 | 2 | 6 | — | `detect_anomalies`, `generate_ai_analysis`, `get_age_group_balance` | F16+F26 | ExecutiveDashboard ✅ | ✅ Paradigma 1 (hardcoded) |
+| 2 | `finance` | `finance` | 9 backend + 8 mock-only = 17 total | 3 | 4 | 2 | `generate_ai_analysis` (9 dim), `get_financial_summary` (F26a) | F18+F26 | FinancialDashboard ✅ | ✅ |
+| 3 | `event_orchestrator` | `events` | 16 (9 backend + 7 mock-only) | 3 | 4 | 2 | `event_get_analytics` | F19 | EventCalendar ✅ | ✅ |
+| 4 | `proactive_recommendation` | `proactive_recommendation` | 8 | 2 | 6 | — | 6 tools | F17 | RecommendationsDashboard ✅ | ✅ |
+| 5 | `advisor_intelligence` | `advisor_intelligence` | 5 | 0 | 5 | — | 5 AI tools | F21 | ExecutiveDashboard ✅ + AIChatWidget ✅ | ✅ |
+| 6 | `compliance` | `compliance` | 7 | 1 | 5 | 1 | `generate_compliance_insights` | F15ext-C | ComplianceCheck ✅ | ✅ |
+| 7 | `facility_management` | `facility_management` | 7 | 2 | 5 | — | — | F15ext-S | SmartSchedule ✅ | ✅ |
+| 8 | `daily_briefing` | `daily_briefing` | 7 | 1 | 6 | — | `generate_daily_briefing` | F15ext-B | DailyBriefing ✅ | ✅ |
+| 9 | `smart_schedule` | `smart_schedule` | 8 | 2 | 6 | — | 2 tools | F15ext-S | SmartSchedule ✅ | ✅ |
+| 10 | `wellness` | `wellness` | **12/12 backend completo** | 1 | 11 | 2 | `wellness_predict`, `wellness_anomalies`, `wellness_correlate`, `wellness_insights` + `wellness_goal_list` | F23+F24+F26 | WellnessDashboard ✅ + WellnessAIAdvisor ✅ + WellnessRiskRadar ✅ + WellnessBusinessInsights ✅ | ✅ **100% migrado** |
+| 11 | `communication` | `communication` | 13 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 12 | `guest_management` | `guest_management` | 6 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 13 | `member_engagement` | `member_engagement` | 5 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 14 | `satisfaction` | `satisfaction` | 1 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 15 | `family_profile` | `families` | 11 | — | — | — | — | — | Tools en mock | ⬜ Parcial |
+| 16 | `sports_recreation` | `sports_recreation` | — | — | — | — | — | — | — | ⬜ |
+| 17 | `cultural_social` | `cultural_social` | — | — | — | — | — | — | — | ⬜ |
+| 18 | `document_intelligence` | `document_intelligence` | — | — | — | — | — | — | — | ⬜ |
+| 19 | `age_group` / `age_group_activity` | `age_group` | — | — | — | — | — | — | — | ⬜ |
+
+**Totales:** 10 agents completamente auditados (~86+ tools), 5 parcialmente, 4 sin auditar. ~141+ tools MCP.
+
+---
+
+## 10. PENDIENTES ACUMULADOS (CONSOLIDADO)
+
+| # | Issue | Severidad | Archivo(s) | Fase sugerida | Origen |
+|---|-------|-----------|-----------|---------------|--------|
+| 1 | `compactCurrency` local definitions en Financial/Global Advisors — importar de shared | BAJA | `useFinancialAdvisor.ts`, `useGlobalAdvisor.ts` | F25 cleanup | F18/F20/F25 |
+| 2 | `font-ui` sin prefijo completo `font-[family-name:var(--font-ui)]` — ~50 instancias | MEDIA | Múltiples | F25 | F15 |
+| 3 | `font-mono` sin prefijo — ~30 instancias | MEDIA | Múltiples | F25 | F15 |
+| 4 | `toLocaleString("es-CR")` en vez de `formatNumber()` — ~8 instancias | MEDIA | Múltiples | F25 | F15 |
+| 5 | Keyframes `slideDown`/`fadeUp` duplicados en sub-componentes | BAJA | Sub-componentes | F25 | F15 |
+| 6 | 5 sub-componentes finance no integrados como on-demand | MEDIA | Finance | Verificar F22 | F22 |
+| 7 | `personalize_communication` tool sin componente UI dedicado | MEDIA | Communications | Futuro | F17 |
+| 8 | Navigation fields inconsistentes entre Advisors | MEDIA | Todos los advisors | F25 | F18 |
+| 9 | Global Advisor TODO placeholders para cache connections | MEDIA | Global Advisor | F24 | F20 |
+| 10 | `TierEconomics` importado pero `by_tier: []` en member_economics | MEDIA | Finance agent | F26 | F18 |
+| 11 | Event Advisor: 4 AI mock tools sin UI dedicada | MEDIA | Events | Futuro | F19 |
+| 12 | Dashboard sub-componentes: 7/12 pendientes | MEDIA | Dashboard | F8 | F6 |
+| 13 | Empty State Audit — 9 módulos sin verificar | MEDIA | Múltiples | F25 | F15 |
+| 14 | StaleDataBanner no integrado en todos los módulos | BAJA | Múltiples | F25 | F15 |
+| 15 | Web Vitals endpoint — `reportVital()` es stub | BAJA | Backend | Futuro | F15 |
+| 16 | Notification prefs sync — no sincroniza con backend | BAJA | Settings | Futuro | F15 |
+| 17 | FamilySelector inline en WellnessDashboard — refactorizar a shared | BAJA | Wellness | F25 | F23 |
+| 18 | AIChatWidget tiene 4 raw `<button>` — regla #17 | MEDIA | `AIChatWidget.tsx` | F25 | F24 |
+| 19 | AVAILABLE_TOOLS_DESCRIPTION hardcodeada en advisor_intelligence.py | MEDIA | `advisor_intelligence.py` | F25 | F24 |
+| 20 | Advisor Chat suggested_action solo showToast sin onAdvisorAction | BAJA | `AIChatWidget.tsx` | F25 | F24 |
+| 21 | AISimulationPanel — no custom proposed changes por usuario | BAJA | `AISimulationPanel.tsx` | Futuro | F24 |
+| 22 | IMPACT_CONFIG labels genéricos vs específicos | BAJA | `WellnessAdvisorBanner.tsx` | F25 | F25 |
+| 23 | `revenue_by_source` agrupa por payment method, no business source | MEDIA | Finance repo | Futuro | F26 |
+| 24 | Streak calculation bug en wellness_repo `generate_report` | BAJA | `wellness_repo.py` | Futuro | F26 |
+| 25 | `format_currency()` duplicada (backend finance.py + frontend utils.ts) | BAJA | `finance.py` | Futuro | F26 |
+| 26 | `income_breakdown` y `expense_breakdown` de `generate_report` no incluyen trend_pct | MEDIA | `finance_repo.py` | Futuro | F26 |
+| 27 | Paradigma 1 (executive dashboard) hardcoded — necesitará migración en F29 | MEDIA | 5 tools executive_dashboard | F29 | F26 |
+| 28 | `wellness_report` usa `createWellnessReport()` sin prefijo `createMock` | BAJA | `mock-registry.ts` / `factories.ts` | Futuro | Pre-existente |
+| 29 | Mock Contract Validation Tool — verificar alineación Pydantic ↔ TypeScript | MEDIA | Toda la plataforma | Futuro (propuesta M1) | F26 |
+| 30 | Backend Health Endpoint Enhancement — verificar repos + agents | MEDIA | `backend/api/health.py` | Futuro (propuesta M3) | F26 |
+| 31 | Advisor Auto-Calibration Foundation — logging de thresholds | BAJA | Advisor hooks | Futuro (propuesta M4) | F26 |
+
+---
+
+## 11. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos backend:
+
+| Regla | wellness models | wellness_repo | wellness agent | finance models | finance_repo | finance agent |
+|-------|----------------|---------------|----------------|----------------|--------------|---------------|
+| Pattern Pydantic | ✅ | ✅ | N/A | ✅ | N/A | N/A |
+| @MCPTool decorator | N/A | N/A | ✅ | N/A | N/A | ✅ |
+| Return shape {status, message, data} | N/A | N/A | ✅ | N/A | N/A | ✅ |
+| Enum validation | N/A | N/A | ✅ | N/A | N/A | N/A |
+| .model_dump(mode="json") | N/A | N/A | ✅ | N/A | N/A | ✅ |
+
+### Archivos frontend:
+
+| Regla | contracts.ts | factories.ts | mock-registry.ts |
+|-------|-------------|-------------|-----------------|
+| Contract 1:1 con Pydantic | ✅ | N/A | N/A |
+| Factory `createMock` prefix | N/A | ✅ | N/A |
+| Registry sin duplicados | N/A | N/A | ✅ (fix F26b) |
+| #24 Mock routing | N/A | N/A | ✅ |
+
+### Resumen:
+**Violaciones a corregir:** 0
+**Violaciones ya flagged como pendientes:** items #2-4 (font), #18 (raw button), #28 (naming)
+**Reglas sin violaciones:** 25/25
+
+---
+
+## 12. ACTUALIZACIONES PARA CLAUDE_CONTEXT.md
+
+### Sección 1 (Qué construimos) — ACTUALIZAR:
+```
+TOTAL: 65 deterministic rules + 5 AI tools
+```
+→
+```
+TOTAL: 80 deterministic rules + 5 AI tools
+```
+
+### Sección 9 (MCP Agent Map) — ACTUALIZAR wellness:
+```
+wellness: 12/12 backend completo. 0 mock-only. Agent 100% migrado.
+Tools: wellness_profile_get, wellness_profile_update, wellness_activity_log,
+wellness_goal_set, wellness_goal_list(F26a), wellness_recommendations,
+wellness_schedule_class, wellness_report, wellness_predict(F26a),
+wellness_anomalies(F26a), wellness_correlate(F26b), wellness_insights(F26b)
+```
+
+### Sección 11 (Patrones) — AGREGAR:
+```markdown
+### P21: Backend Tool Migration (F26)
+10 pasos: auditar agent → models → repo → mock → executive → crear models → repo methods → MCPTool → mock alignment → registry verification.
+
+### P22: Dual Paradigma Architecture (F26)
+Paradigma 1 (executive): hardcoded demo data. Paradigma 2 (domain): computed from repo. No confundir tools entre paradigmas.
+
+### P23: Cross-Domain Correlation Engine (F26b)
+Pearson correlation con engagement score como proxy unificador. Proxies para revenue/retention/satisfaction.
+
+### P24: Aggregated Insights Pattern (F26b)
+Un tool agrega outputs de otros tools del mismo agent en reporte estructurado. Análogo a generate_ai_analysis en finance.
+```
+
+### Sección 13 (Estado de fases) — ACTUALIZAR:
+```markdown
+| F26a | Mock → Backend Migration (4 tools: wellness_goal_list + wellness_predict + wellness_anomalies + get_financial_summary) | ✅ |
+| F26b | Mock → Backend Migration (2 tools: wellness_correlate + wellness_insights + registry cleanup) | ✅ |
+| F27 | Multi-language support (i18n) | ⬜ SIGUIENTE |
+```
+
+---
+
+## 13. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto (en orden):
+```
+1. CLAUDE_CONTEXT.md (siempre primero)
+2. Este checkpoint
+```
+
+### Paso 2 — Confirmar rol:
+```
+"Confirmá que entendés tu rol como Principal AI Systems Architect (sección 2 de CLAUDE_CONTEXT.md)
+y las 22+ reglas (sección 7). Después decí 'Listo'."
+```
+
+### Paso 3 — Definir siguiente fase:
+```
+"F27 (i18n) o alternativa — necesito que me definas el alcance."
+```
+
+### Paso 4 — Propuestas pendientes (opcional):
+```
+"Las mejoras M1 (Mock Contract Validation), M3 (Health Endpoint),
+M4 (Advisor Auto-Calibration) quedaron propuestas sin implementar.
+¿Querés que arranque con alguna?"
+```
+
+### Paso 5 — Checkpoint:
+```
+"Generá el checkpoint de FXX"
+```
+
+---
+
+## 14. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto en trabajo futuro |
+|-------|---------|-------|--------------------------|
+| Junio 2026 | No proponer bloques sin leer código primero | Usuario corrigió: "no conocés ningún repo" | Siempre leer archivos reales antes de proponer |
+| Junio 2026 | F26 scoped a 6 tools (no todas las mock-only) | Paradigma 1 intencional, solo migrar Paradigma 2 | F27+ no toca Paradigma 1 hasta F29 |
+| Junio 2026 | Compute en repo para wellness (no en agent) | Consistente con get_recommendations() existente | Pattern wellness ≠ pattern finance |
+| Junio 2026 | Compute en agent para finance (no en repo) | Consistente con generate_ai_analysis existente | Pattern finance ≠ pattern wellness |
+| Junio 2026 | Dual Paradigma Architecture documentada | Descubierta al leer executive_dashboard | No confundir tools entre paradigmas |
+| Junio 2026 | Mock shape como source of truth | Mock más estructurado que models existentes | Model sigue mock |
+| Junio 2026 | `_cash_balance` seed field | In-memory repo sin banking integration | Preparado para DB real en F29 |
+| Junio 2026 | Factory prefijo `createMock` | Convención existente descubierta | Consistencia |
+| Junio 2026 | Trabajar por appends | Archivos grandes (8000+ líneas) | Workflow establecido |
+| Junio 2026 | WellnessRiskLevel compartido | Un vocabulario de severidad | Menos tipos |
+| Junio 2026 | Revenue by source usa payment method | Limitación del repo actual | F26b+ puede mejorar categorización |
+| Junio 2026 | AR aging calcula desde due_date | Más relevante que created_at | Datos más accionables |
+| Junio 2026 | Pearson correlation para cross-domain | Standard estadístico robusto | Mejor con más datos en F29 |
+| Junio 2026 | Proxies para revenue/retention/satisfaction | F26 es migration, no cross-agent integration | Preparado para F29 con datos reales |
+| Junio 2026 | `wellness_correlate` sin parámetros | Club-wide, no per-family | Consistente con concepto |
+| Junio 2026 | Eliminar imports huérfanos + keys duplicadas del registry | Código basura, confuso | Registry limpio |
+| Junio 2026 | `trend_analysis` como `dict[str, str]` (no Pydantic model) | Mock tiene campos dinámicos | Flexibilidad |
+| Junio 2026 | `predictions` como `dict[str, Any]` | Campos heterogéneos | Flexibilidad |
+
+---
+
+## 15. FASES RESTANTES (PLAN MAESTRO)
+
+| # | Fase | Contenido | Prioridad | Depende de | Estado |
+|---|------|-----------|-----------|-----------|--------|
+| **F27** | **Multi-language support (i18n)** | **Español/Inglés** | **BAJA** | **F26** | **⬜ SIGUIENTE** |
+| F28 | E2E testing + Accessibility audit (WCAG 2.1 AA) | Playwright + axe-core | ALTA | F27 | ⬜ |
+| F29 | CI/CD + Production deployment + Paradigma 1 migration | Docker + GitHub Actions + Sentry + Executive Dashboard computed | ALTA | F28 | ⬜ |
+
+**Mejoras propuestas (sin fase asignada):**
+
+| # | Mejora | Prioridad | Descripción |
+|---|--------|-----------|-------------|
+| M1 | Mock Contract Validation Tool | MEDIA | Script que compara Pydantic ↔ TS interfaces |
+| M3 | Backend Health Endpoint Enhancement | MEDIA | Verificar repos + agents registration |
+| M4 | Advisor Auto-Calibration Foundation | BAJA | Logging de thresholds activados |
+
+---
+
+## 16. AGENTES BACKEND — TOOLS DETALLADAS (actualización F26)
+
+### wellness.py — 12 tools backend (100% migrado)
+
+| # | Tool | Approval | Tipo | Backend | Mock | Origen | Destino |
+|---|------|----------|------|---------|------|--------|---------|
+| 1 | `wellness_profile_get` | AUTO | datos | ✅ | ✅ | Original | WellnessDashboard |
+| 2 | `wellness_profile_update` | SEMI | mutation | ✅ | ✅ | Original | Advisor action |
+| 3 | `wellness_activity_log` | AUTO | mutation | ✅ | ✅ | Original | — |
+| 4 | `wellness_goal_set` | SEMI | mutation | ✅ | ✅ | Original | Advisor action |
+| 5 | `wellness_goal_list` | AUTO | datos | ✅ | ✅ | F26a | WellnessGoals |
+| 6 | `wellness_recommendations` | AUTO | inteligencia | ✅ | ✅ | Original | WellnessDashboard |
+| 7 | `wellness_schedule_class` | HITL | mutation | ✅ | ✅ | Original | Advisor action |
+| 8 | `wellness_report` | AUTO | report | ✅ | ✅ | Original | WellnessDashboard |
+| 9 | `wellness_predict` | AUTO | inteligencia | ✅ | ✅ | F26a | WellnessAIAdvisor |
+| 10 | `wellness_anomalies` | AUTO | inteligencia | ✅ | ✅ | F26a | WellnessRiskRadar |
+| 11 | `wellness_correlate` | AUTO | inteligencia | ✅ | ✅ | F26b | WellnessBusinessInsights |
+| 12 | `wellness_insights` | AUTO | inteligencia | ✅ | ✅ | F26b | WellnessAIAdvisor |
+
+**New compute methods en repo:**
+- `compute_prediction(family_id)` → engagement score + risk level + churn risk + factors + recommendation
+- `detect_anomalies(family_id)` → 4 reglas (activity gap, goal stagnation, engagement drop, overtraining)
+- `compute_correlations()` → Pearson correlations + segment insights + activity value ranking
+- `compute_insights(family_id)` → aggregator de prediction + anomalies + goals + activities + report
+- `_pearson(x, y)` → standard Pearson coefficient
+- `_significance(coeff)` → classify as high/medium/low
+
+### finance.py — 9 tools backend
+
+| # | Tool | Approval | Tipo | Backend | Mock | Origen | Destino |
+|---|------|----------|------|---------|------|--------|---------|
+| 1 | `finance_expense_create` | HITL | mutation | ✅ | ✅ | Original | ApprovalQueue |
+| 2 | `finance_invoice_create` | HITL | mutation | ✅ | ✅ | Original | ApprovalQueue |
+| 3 | `finance_budget_check` | AUTO | datos | ✅ | ✅ | Original | FinancialDashboard |
+| 4 | `finance_payment_process` | HITL | mutation | ✅ | ✅ | Original | ApprovalQueue |
+| 5 | `finance_report_generate` | SEMI | report | ✅ | ✅ | Original | FinancialDashboard |
+| 6 | `finance_account_status` | AUTO | datos | ✅ | ✅ | Original | FinancialDashboard |
+| 7 | `finance_category_update` | SEMI | mutation | ✅ | ✅ | Original | Advisor action |
+| 8 | `generate_ai_analysis` | AUTO | intel (9 dim) | ✅ | ✅ | Original | FinancialAdvisorBanner |
+| 9 | `get_financial_summary` | AUTO | datos | ✅ | ✅ | F26a | FinancialDashboard |
+
+**New repo methods:**
+- `_cash_balance` seed field (₡45M)
+- `get_cash_position()` → seed + paid payments - expenses
+- `get_accounts_receivable_summary()` → total AR + 4 aging buckets
+- `get_monthly_trend(date_from, date_to)` → revenue + expenses + net per month
+
+---
+
+## 17. MOCK REGISTRY — ACTUALIZACIÓN
+
+### Wellness (post-F26 — 12/12 tools, 0 mock-only):
+```typescript
+wellness: {
+  wellness_report: () => createWellnessReport(),           // legacy naming
+  wellness_profile_get: () => createMockWellnessProfile(),
+  wellness_profile_update: (params) => createMockWellnessProfileUpdate(params),
+  wellness_activity_log: (params) => createMockWellnessActivityLog(params),
+  wellness_goal_set: (params) => createMockWellnessGoalSet(params),
+  wellness_recommendations: () => createMockWellnessRecommendations(),
+  wellness_schedule_class: (params) => createMockWellnessScheduleClass(params),
+  wellness_goal_list: (params) => createMockWellnessGoalList(params),        // F26a
+  wellness_predict: (params) => createMockWellnessPredict(params),           // F26a
+  wellness_anomalies: (params) => createMockWellnessAnomalies(params),       // F26a
+  wellness_correlate: () => createMockWellnessCorrelate(),                   // pre-existed
+  wellness_insights: () => createMockWellnessInsights(),                     // pre-existed
+}
+```
+
+### Finance (sin cambios en registry — get_financial_summary ya existía):
+```typescript
+finance: {
+  get_financial_summary: (params) => createMockFinancialSummary(params?.period),
+  finance_expense_create: (params) => createMockFinanceExpenseCreate(params),
+  finance_invoice_create: (params) => createMockFinanceInvoiceCreate(params),
+  finance_budget_check: (params) => createMockFinanceBudgetCheck(params),
+  finance_payment_process: (params) => createMockFinancePaymentProcess(params),
+  finance_report_generate: (params) => createMockFinanceReportGenerate(params),
+  finance_account_status: (params) => createMockFinanceAccountStatus(params),
+  finance_category_update: (params) => createMockFinanceCategoryUpdate(params),
+  generate_ai_analysis: (params) => createMockGenerateAiAnalysis(params),
+  finance_scenario_simulate: (params) => createMockScenarioSimulation(params),
+  finance_opportunities_scan: () => createMockOpportunityScan(),
+  finance_board_briefing: () => createMockBoardBriefing(),
+  finance_member_profitability: () => createMockMemberProfitability(),
+  finance_stress_test: (params) => createMockStressTest(params),
+  finance_seasonal_calendar: () => createMockSeasonalCalendar(),
+  finance_narrative_generate: (params) => createMockNarrativeGenerate(params),
+  finance_decision_simulate: (params) => createMockFinanceDecisionSimulate(params),
+}
+```
+
+---
+
+## 18. TYPES ALIGNMENT (F26 — nuevos)
+
+### Wellness (10 nuevos models ↔ 9 contratos):
+
+| Backend Model | Frontend Interface | Match |
+|---|---|---|
+| `WellnessGoal` | `WellnessGoalData` | ✅ 1:1 |
+| `WellnessPrediction` | `WellnessPredictionData` | ✅ 1:1 |
+| `WellnessPrediction.activity_forecast` | `WellnessActivityForecast` | ✅ 1:1 |
+| `WellnessPrediction.factors[]` | `WellnessPredictionFactor[]` | ✅ 1:1 |
+| `WellnessAnomaly` | `WellnessAnomalyData` | ✅ 1:1 |
+| `WellnessAnomalyResponse` | `WellnessAnomalyResponseData` | ✅ 1:1 |
+| `WellnessCorrelateResponse` | `WellnessCorrelateResponse` | ✅ 1:1 |
+| `WellnessSegmentInsight` | (inline in contract) | ✅ |
+| `WellnessActivityValue` | (inline in contract) | ✅ |
+| `WellnessInsightsResponse` | `WellnessInsightsResponse` | ✅ 1:1 |
+| `WellnessKeyFinding` | (inline in contract) | ✅ |
+| `WellnessCriticalInsight` | (inline in contract) | ✅ |
+
+### Finance (5 nuevos models ↔ contract existente):
+
+| Backend Model | Frontend Contract | Match |
+|---|---|---|
+| `FinancialSummaryResponse` | `get_financial_summary_Contract.data` | ✅ 1:1 |
+| `FinancialMonthlyTrend` | (inline) | ✅ |
+| `FinancialExpenseLine` | (inline) | ✅ |
+| `FinancialRevenueLine` | (inline) | ✅ |
+| `FinancialARAgingBucket` | (inline) | ✅ |
+
+---
+
+**Fin del checkpoint.**

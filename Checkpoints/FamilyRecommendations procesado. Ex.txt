@@ -1,0 +1,179 @@
+FamilyRecommendations procesado. Excelente componente.
+
+---
+
+## Auditoría: `FamilyRecommendations.tsx`
+
+### Patrón: On-demand con `enabled`
+
+```typescript
+{ enabled: shouldFetch && familyId.trim().length > 0, staleTime: 30_000 }
+```
+
+**Esto es exactamente el patrón Layer 2 de E3** — pero implementado de forma elegante nativa. El usuario llena el form, aprieta "Generar", y solo entonces se dispara la query. No necesita el patrón CTA→expand porque el componente ya tiene su propio flujo de input→submit→results.
+
+### Hallazgos
+
+| # | Hallazgo | Severidad |
+|---|---------|-----------|
+| 1 | **`font-ui` / `font-mono` sin prefijo** — igual que todos los demás | MEDIA |
+| 2 | **`FilterDropdown`** ✅ — componente shared usado para type filter | ✅ |
+| 3 | **Stagger animation** ✅ — `animationDelay: ${index * 60}ms` con reducedMotion guard | ✅ |
+| 4 | **Score gauge** — visual inteligente con `color-mix`, barra horizontal, colores semánticos | ✅ |
+| 5 | **Two EmptyStates** — uno para "Ingrese ID" (estado inicial) y otro para "Sin recomendaciones" (post-búsqueda vacía). UX excelente | ✅ |
+| 6 | **`handleKeyDown` Enter** — buen patrón de accesibilidad | ✅ |
+| 7 | **Types desde `../types`** ✅ — `FamilyRecommendationsResponse`, `Recommendation`, configs | ✅ |
+| 8 | **Regla #21 N/A** — single column cards, no table needed | N/A |
+
+---
+
+## Veredicto FINAL — Auditoría completa
+
+### Todos los sub-componentes son sólidos
+
+| # | Componente | Veredicto | Issues |
+|---|-----------|-----------|--------|
+| 1 | RecommendationsOverview | ✅ | `toLocaleString`, `font-ui` |
+| 2 | PricingOptimizer | ✅ | `font-ui/mono` |
+| 3 | ActivitySuggester | ✅ | `font-ui/mono`, keyframes |
+| 4 | QuarterlyInsights | ✅ | `toLocaleString`, `font-ui/mono`, mutation invalidation |
+| 5 | FamilyRecommendations | ✅ | `font-ui/mono` |
+| 6 | RecommendationsDashboard (shell) | ✅ | Missing imports, dead import |
+
+**Patrón unificado de issues:**
+- `font-ui` → `font-[family-name:var(--font-ui)]` (en ~50 instancias)
+- `font-mono` → `font-[family-name:var(--font-mono)]` (en ~30 instancias)
+- `toLocaleString()` → `formatNumber()` (en ~8 instancias)
+- `<style>` keyframes duplicados → consolidar en CSS global (3 copias)
+- Shell: imports faltantes + dead import
+
+**Estos son fixes mecánicos, no arquitectónicos.** Pueden hacerse en un solo paso.
+
+---
+
+## CIERRE DE AUDITORÍA — Propuesta
+
+Dado que la auditoría confirma que todo está bien construido, propongo cerrar F17 con **dos frentes**:
+
+### Frente 1: Polish (15 minutos)
+Fixes mecánicos de los issues encontrados. No requiere decisiones de diseño.
+
+### Frente 2: AI Advisor (lo que realmente importa)
+
+**El hook `useRecommendationAdvisor` — motor de inteligencia unificado.**
+
+**Qué es:** Un engine client-side que consume los datos que RecommendationsOverview YA está cargando (pricing, suggestions, insights) y computa acciones estratégicas priorizadas.
+
+**Por qué aquí y no en otro módulo:** RecommendationsDashboard es el ÚNICO módulo que tiene visibilidad de TODOS los dominios de decisión:
+
+| Dominio | Tool ya conectada | Lo que el Advisor extrae |
+|---------|-------------------|-------------------------|
+| **Pricing** | `optimize_pricing` (list) | ¿Cuántas optimizaciones pendientes? ¿Alguna con high risk? ¿Qué delta de revenue total? |
+| **Activities** | `suggest_new_activities` (list) | ¿Cuántas sugerencias? ¿Alta solicitud de socios? ¿Demanda insatisfecha? |
+| **Insights** | `generate_quarterly_insights` (list) | ¿Informe más reciente? ¿Tendencia de satisfacción? ¿Áreas de mejora pendientes? |
+
+**El Advisor NO hace queries nuevas.** Computa de data ya en caché.
+
+**Lo que genera:**
+
+```typescript
+type AdvisorInsight = {
+  id: string;
+  title: string;
+  reasoning: string;      // "hay 5 sugerencias con >50 solicitudes de socios"
+  impact: "low" | "medium" | "high";
+  suggestedTool: string;  // "suggest_new_activities"
+  suggestedAction: string; // "create"
+  suggestedParams: Record<string, unknown>; // payload listo
+  confidence: number;      // 0-100
+}
+```
+
+**El componente de UI:**
+- No es un tab más — es un banner expandible en el TOP del dashboard (antes de las tabs)
+- Solo aparece si hay insights relevantes
+- Cada insight es un card clickable que muestra acción sugerida
+- Click en "Ejecutar" → pre-llena el form correspondiente (navega al tab correcto)
+- Client-side puro: 0 calls, 0ms, 0 tokens
+
+**Ejemplo de output del Advisor:**
+
+> **3 acciones recomendadas para su club:**
+>
+> 1. **Aprobar optimización de Yoga** — 120 socios activos, demanda alta, sugerencia pendiente hace 15 días. `[Impacto: Alto]`
+>
+> 2. **Generar Q1 2026** — El último informe es Q4 2025. 3 meses de datos nuevos disponibles. `[Impacto: Medio]`
+>
+> 3. **Priorizar 2 sugerencias de alto interés** — Paddle Surf (87% interés, 45 solicitudes) y CrossFit (72% interés, 38 solicitudes) superan el umbral de demanda. `[Impacto: Alto]`
+
+---
+
+### Frente 3: El NEXT LEVEL — Advisor expandido con tools adicionales
+
+**La super propuesta:**
+
+El Advisor base consume los 3 queries del overview. Pero hay 5 tools adicionales que ningún componente está usando aún:
+
+| Tool | ¿Quién la usa hoy? | Potencial para Advisor |
+|------|---------------------|----------------------|
+| `generate_family_recommendations` | FamilyRecommendations tab (manual) | **Advisor podría recomendar familias para las cuales generar recomendaciones** — "5 familias sin recomendaciones en >30 días" |
+| `predict_event_attendance` | PredictAttendance tab (manual) | **Advisor podría sugerir predecir eventos próximos** — "Hay un torneo la próxima semana sin predicción" |
+| `detect_scheduling_conflicts` | SchedulingConflicts tab (manual) | **Advisor podría alertar conflictos detectados** — "3 conflictos de alto riesgo para la próxima quincena" |
+| `identify_social_clusters` | SocialClusters tab (manual) | **Advisor podría detectar clusters emergentes** — "Nuevo cluster de 12 familias con interés en actividades acuáticas" |
+| `personalize_communication` | Nadie | **Advisor podría sugerir comunicaciones pendientes** — "8 familias elegibles para loyalty reward" |
+
+**Esto convierte al Advisor en un dashboard de DECISIONES, no de datos.**
+
+---
+
+### Propuesta de implementación
+
+```
+RecommendationsDashboard.tsx (rewrite del shell)
+├── useRecommendationAdvisor() ← hook computacional
+│   ├── consume: pricing[], suggestions[], insights[]
+│   ├── computa: AdvisorInsight[]
+│   └── 0 calls, 0ms
+│
+├── AdvisorBanner (top, antes de tabs)
+│   ├── Solo visible si hay insights
+│   ├── Staggered cards con acciones sugeridas
+│   └── "Ejecutar" → navega al tab + pre-llena form
+│
+└── DetailTabs (7 tabs, existentes)
+    └── Sin cambios (ya están bien construidos)
+```
+
+**Archivos a crear/modificar:**
+
+| # | Archivo | Acción | Líneas |
+|---|---------|--------|--------|
+| 1 | `features/recommendations/hooks/useRecommendationAdvisor.ts` | NUEVO | ~150 |
+| 2 | `features/recommendations/components/AdvisorBanner.tsx` | NUEVO | ~120 |
+| 3 | `features/recommendations/RecommendationsDashboard.tsx` | MODIFY | +20 |
+| 4 | `features/recommendations/components/RecommendationsOverview.tsx` | FIX | formatters |
+| 5 | `features/recommendations/components/PricingOptimizer.tsx` | FIX | fonts |
+| 6 | `features/recommendations/components/ActivitySuggester.tsx` | FIX | fonts |
+| 7 | `features/recommendations/components/QuarterlyInsights.tsx` | FIX | fonts, formatters |
+| 8 | `features/recommendations/components/FamilyRecommendations.tsx` | FIX | fonts |
+| 9 | CSS global | FIX | keyframes consolidation |
+
+**Total estimado:** ~300 líneas nuevas + ~100 líneas de fixes
+
+---
+
+### ¿Por qué esto es diferente a lo que ya hicimos?
+
+| Lo que ya hicimos (E1-E4) | Lo que propongo (Advisor) |
+|---------------------------|--------------------------|
+| Cada módulo ve solo su dominio | Advisor ve TODOS los dominios |
+| El usuario decide qué consultar | Advisor sugiere QUÉ consultar |
+| Los datos son presentación | Los datos son DECISIONES |
+| El sistema es reactivo | El sistema es PROACTIVO |
+| Necesita 4 queries separadas | 0 queries nuevas, computa de caché |
+
+**El Advisor convierte RecommendationsDashboard de "panel de datos" a "sistema de decisión inteligente".**
+
+---
+
+¿Arrancamos con esto? Si confirmás, empiezo por crear el hook `useRecommendationAdvisor` y el `AdvisorBanner`, y simultáneamente hago los fixes mecánicos de fonts/formatters en los sub-componentes.

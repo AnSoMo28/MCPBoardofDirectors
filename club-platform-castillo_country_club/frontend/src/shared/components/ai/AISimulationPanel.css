@@ -1,0 +1,635 @@
+/**
+ * @component AISimulationPanel (Fase 23)
+ * @namespace .glass-aisim
+ * @depends globals.css (radius-xl, font tokens, color tokens, color-mix)
+ * @note Namespace .glass-aisim (NOT .glass-sim — that belongs to HypotheticalSimulator).
+ *       Fixed: renamed all .glass-sim to .glass-aisim to avoid collision.
+ *       4 keyframes, 55+ classes.
+ * @import import './AISimulationPanel.css';
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   AISimulationPanel — Silver Tide Simulation Cockpit
+   Fase 23 · Glass · Divergence · Bell Curve · Risk Dial · Matrix
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ── */
+.glass-aisim {
+  position: relative;
+  border-radius: var(--radius-xl, 16px);
+  background: rgba(14, 20, 32, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(52, 211, 153, 0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.glass-aisim__glow {
+  position: absolute;
+  top: -25%;
+  left: 30%;
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.04), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: aisim-glow 6s ease-in-out infinite;
+}
+@keyframes aisim-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* ── Header ── */
+.glass-aisim__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  z-index: 1;
+}
+.glass-aisim__header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.glass-aisim__header-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(52, 211, 153, 0.08);
+  color: var(--color-teal-400);
+}
+.glass-aisim__header-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-family: var(--font-display);
+}
+.glass-aisim__header-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  margin-top: 1px;
+}
+
+.glass-aisim__header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Temporal Zoom */
+.glass-aisim__zoom {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+.glass-aisim__zoom-btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--color-silver-400);
+  transition: all 0.15s ease;
+  min-height: 28px;
+}
+.glass-aisim__zoom-btn--active {
+  background: rgba(201, 169, 110, 0.12);
+  color: var(--color-gold-400);
+}
+.glass-aisim__zoom-btn:hover:not(.glass-aisim__zoom-btn--active) {
+  color: var(--color-silver-200);
+}
+
+.glass-aisim__refresh {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-silver-400);
+  transition: all 0.15s ease;
+}
+.glass-aisim__refresh:hover {
+  color: var(--color-silver-200);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ═══════════════════════════════════════
+   Divergence Diagram
+   ═══════════════════════════════════════ */
+
+.glass-aisim__diagram-section {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  position: relative;
+  z-index: 1;
+}
+.glass-aisim__divergence {
+  display: flex;
+  justify-content: center;
+}
+.glass-aisim__divergence-svg {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+}
+
+/* ═══════════════════════════════════════
+   Scenario Cards
+   ═══════════════════════════════════════ */
+
+.glass-aisim__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px 20px;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 640px) {
+  .glass-aisim__cards { grid-template-columns: 1fr; }
+}
+
+.glass-aisim__card {
+  position: relative;
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.glass-aisim__card:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.glass-aisim__card--recommended {
+  border-color: color-mix(in srgb, var(--color-gold-400) 18%, transparent);
+  background: color-mix(in srgb, var(--color-gold-400) 2%, rgba(255, 255, 255, 0.02));
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+}
+/* Shimmer on recommended */
+.glass-aisim__card--recommended::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(201, 169, 110, 0.04), transparent);
+  animation: aisim-card-shimmer 3.5s ease-in-out infinite;
+  border-radius: inherit;
+}
+@keyframes aisim-card-shimmer {
+  0% { left: -100%; }
+  50% { left: 140%; }
+  100% { left: 140%; }
+}
+
+.glass-aisim__card-crown {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-gold-400);
+  color: var(--color-abyss, #0a0e14);
+  box-shadow: 0 2px 8px rgba(201, 169, 110, 0.3);
+  z-index: 2;
+}
+
+.glass-aisim__card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.glass-aisim__card-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+}
+.glass-aisim__card-label {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-ui);
+}
+
+/* Probability ring */
+.glass-aisim__card-ring-wrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  align-self: center;
+}
+.glass-aisim__card-ring-svg {
+  width: 100%;
+  height: 100%;
+}
+.glass-aisim__card-ring-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+}
+
+.glass-aisim__card-desc {
+  font-size: 11px;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+}
+
+/* Metrics */
+.glass-aisim__card-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+.glass-aisim__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.glass-aisim__metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.glass-aisim__metric-label {
+  font-size: 10px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+}
+.glass-aisim__metric-value {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.glass-aisim__metric-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+.glass-aisim__metric-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.glass-aisim__card-member {
+  font-size: 10px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  line-height: 1.4;
+}
+
+/* Recommended badge */
+.glass-aisim__card-rec-badge {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  text-align: center;
+}
+.glass-aisim__card-rec-badge span {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-gold-400);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════
+   Uncertainty Range
+   ═══════════════════════════════════════ */
+
+.glass-aisim__uncertainty {
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+.glass-aisim__uncertainty-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.glass-aisim__uncertainty-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.glass-aisim__uncertainty-label {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  width: 50px;
+}
+.glass-aisim__uncertainty-label--pes { color: var(--color-rose-400); text-align: right; }
+.glass-aisim__uncertainty-label--opt { color: var(--color-emerald-400); }
+
+.glass-aisim__uncertainty-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+.glass-aisim__uncertainty-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--color-rose-400), var(--color-amber-400), var(--color-emerald-400));
+  opacity: 0.25;
+  transform-origin: center;
+}
+.glass-aisim__uncertainty-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3px;
+  height: 12px;
+  border-radius: 1px;
+  background: var(--color-silver-300);
+}
+.glass-aisim__uncertainty-diff {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════
+   Risk Dial
+   ═══════════════════════════════════════ */
+
+.glass-aisim__risk {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  position: relative;
+  z-index: 1;
+}
+.glass-aisim__risk-gauge {
+  width: 80px;
+  flex-shrink: 0;
+}
+.glass-aisim__risk-svg {
+  width: 100%;
+  height: auto;
+}
+.glass-aisim__risk-text {
+  flex: 1;
+}
+.glass-aisim__risk-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-amber-400);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.glass-aisim__risk-desc {
+  font-size: 12px;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════
+   Ceremony
+   ═══════════════════════════════════════ */
+
+.glass-aisim__ceremony {
+  border-radius: var(--radius-xl, 16px);
+  background: rgba(14, 20, 32, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(52, 211, 153, 0.12);
+  padding: 28px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.glass-aisim__ceremony-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.glass-aisim__ceremony-icon {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.glass-aisim__ceremony-ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  opacity: 0.4;
+  animation: aisim-ring 1.5s ease-out infinite;
+}
+@keyframes aisim-ring {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.glass-aisim__ceremony-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+}
+.glass-aisim__ceremony-sub {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+.glass-aisim__ceremony-track {
+  width: 180px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+.glass-aisim__ceremony-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--color-teal-400), var(--color-gold-400));
+}
+.glass-aisim__ceremony-dots {
+  display: flex;
+  gap: 6px;
+}
+.glass-aisim__ceremony-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.3s ease;
+}
+
+/* ═══════════════════════════════════════
+   Error State
+   ═══════════════════════════════════════ */
+
+.glass-aisim--error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  border-radius: var(--radius-xl, 16px);
+  background: rgba(14, 20, 32, 0.92);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.glass-aisim--error p {
+  font-size: 12px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+}
+.glass-aisim__error-retry {
+  font-size: 11px;
+  color: var(--color-gold-400);
+  font-family: var(--font-mono);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(201, 169, 110, 0.2);
+  transition: all 0.15s ease;
+  min-height: 32px;
+}
+.glass-aisim__error-retry:hover {
+  background: rgba(201, 169, 110, 0.08);
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-aisim {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.06);
+  border-top-color: rgba(52, 211, 153, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+.light .glass-aisim__glow { opacity: 0.02; }
+.light .glass-aisim__header { border-bottom-color: rgba(0, 0, 0, 0.05); }
+.light .glass-aisim__header-title { color: var(--color-abyss, #0a0e14); }
+.light .glass-aisim__header-meta { color: var(--color-silver-400); }
+.light .glass-aisim__header-icon { background: rgba(52, 211, 153, 0.06); }
+.light .glass-aisim__zoom {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-aisim__zoom-btn { color: var(--color-silver-500); }
+.light .glass-aisim__zoom-btn--active {
+  background: rgba(201, 169, 110, 0.1);
+  color: var(--color-gold-500);
+}
+.light .glass-aisim__zoom-btn:hover:not(.glass-aisim__zoom-btn--active) { color: var(--color-silver-700); }
+.light .glass-aisim__refresh { color: var(--color-silver-400); }
+.light .glass-aisim__refresh:hover { color: var(--color-silver-700); background: rgba(0, 0, 0, 0.03); }
+.light .glass-aisim__diagram-section { border-bottom-color: rgba(0, 0, 0, 0.04); }
+.light .glass-aisim__card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-aisim__card:hover { border-color: rgba(0, 0, 0, 0.08); }
+.light .glass-aisim__card--recommended {
+  border-color: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  background: color-mix(in srgb, var(--color-gold-400) 2%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-gold-400) 4%, transparent);
+}
+.light .glass-aisim__card-icon { background: rgba(0, 0, 0, 0.03); }
+.light .glass-aisim__card-desc { color: var(--color-silver-600); }
+.light .glass-aisim__card-metrics { border-top-color: rgba(0, 0, 0, 0.05); }
+.light .glass-aisim__metric-label { color: var(--color-silver-500); }
+.light .glass-aisim__metric-track { background: rgba(0, 0, 0, 0.04); }
+.light .glass-aisim__card-member { color: var(--color-silver-500); border-top-color: rgba(0, 0, 0, 0.04); }
+.light .glass-aisim__card-rec-badge {
+  background: color-mix(in srgb, var(--color-gold-400) 6%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+.light .glass-aisim__uncertainty { border-top-color: rgba(0, 0, 0, 0.04); }
+.light .glass-aisim__uncertainty-header { color: var(--color-silver-500); }
+.light .glass-aisim__uncertainty-track { background: rgba(0, 0, 0, 0.04); }
+.light .glass-aisim__uncertainty-center { background: var(--color-silver-500); }
+.light .glass-aisim__uncertainty-diff { color: var(--color-silver-400); }
+.light .glass-aisim__risk { border-top-color: rgba(0, 0, 0, 0.04); }
+.light .glass-aisim__risk-desc { color: var(--color-silver-600); }
+.light .glass-aisim__ceremony {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.06);
+  border-top-color: rgba(52, 211, 153, 0.1);
+}
+.light .glass-aisim__ceremony-label { color: var(--color-silver-700); }
+.light .glass-aisim__ceremony-sub { color: var(--color-silver-400); }
+.light .glass-aisim__ceremony-track { background: rgba(0, 0, 0, 0.04); }
+.light .glass-aisim__ceremony-dot { background: rgba(0, 0, 0, 0.06); }
+.light .glass-aisim--error {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .glass-aisim--error p { color: var(--color-silver-500); }
+.light .glass-aisim__error-retry { border-color: rgba(201, 169, 110, 0.15); }

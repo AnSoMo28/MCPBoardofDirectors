@@ -1,0 +1,550 @@
+# CHECKPOINT — Fase 14 Completada — 3 Intelligence Features (Profitability + Stress Test + Seasonal Calendar)
+
+**Fecha:** Mayo 2025
+**Sesiones completadas:** 1 (esta sesión — Fase 14 completa)
+**Archivos creados:** 3 nuevos + 4 modificados
+**Líneas nuevas:** ~3,013
+**Tools MCP registradas:** 17 en server "finance" (14 existentes + 3 nuevas)
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend Nuevos (3)
+
+```
+src/features/finance/components/
+├── MemberProfitabilityMatrix.tsx          ← ~530 líneas
+│   Tab "Rentabilidad" — Scatter plot Revenue×Cost con 4 quadrant
+│   backgrounds coloreados (ReferenceArea), dots con tamaño
+│   proporcional a member_count (custom shape con circle+text),
+│   click para seleccionar familia → detail card con 6 métricas
+│   + AI insight + close button. Summary strip 4 quadrant KPIs
+│   + concentración Top10. Strategy cards 4 con click para filtrar
+│   ranking. Ranking table sortable 8 columnas (desktop) + cards
+│   (mobile, Rule #21). Churn risk progress bar. Empty state.
+│   Tools: finance_member_profitability (auto, staleTime 300s)
+│
+├── StressTestPanel.tsx                    ← ~460 líneas
+│   Tab "Test de Estrés" — Scenario selector (6 chips: recesión,
+│   pandemia, competencia, renovación, boom, custom), iteration
+│   count selector (100/500/1000), custom scenario editor con
+│   sliders μ/σ por variable estocástica. Fan chart AreaChart
+│   con 5 percentiles (P10/P25/P50/P75/P90), fan bands, break-even
+│   reference line. GaugeCard component para 5 KPI metrics con
+│   progress bars y color thresholds. Distribution summary (5 cards:
+│   peor caso, media, mejor caso, desv estándar, asimetría) con
+│   skewness explanation. Assumptions list. AI commentary box
+│   con border-l gold.
+│   Tools: finance_stress_test (auto, staleTime 300s)
+│
+└── SeasonalCalendar.tsx                   ← ~580 líneas
+    Tab "Calendario" — Season indicator bar horizontal con dots
+    por mes (3 colores: alta/baja/transición). Annual summary 6
+    KPI cards. Layer toggle chips (6: revenue, gastos, eventos,
+    mantenimiento, reserva, acciones AI). Revenue vs Expenses
+    BarChart con Cells coloreadas por season. Timeline con 12
+    expandible rows: cada row muestra dot de temporada, label,
+    mini sparkbar del neto, valor neto, badges (crítico/acciones/
+    eventos), chevron. Month detail expandible con AnimatePresence:
+    3 KPIs, eventos, mantenimiento, obligaciones, acciones
+    recomendadas por mes. Actions panel priorizado (14 acciones
+    ordenadas por prioridad) con category/priority badges,
+    impacto estimado, deadline.
+    Tools: finance_seasonal_calendar (auto, staleTime 3600s)
+```
+
+### Archivos Modificados (4)
+
+| # | Archivo | Qué se cambió | Por qué |
+|---|---------|---------------|---------|
+| 1 | `shared/mocks/contracts.ts` | +130 líneas append | 17 interfaces: MemberProfitabilityFamily, MemberProfitabilitySummary, MemberProfitabilityData, FinanceMemberProfitabilityResponse, StressTestMetrics, FanChartPoint, DistributionSummary, StressTestData, FinanceStressTestResponse, SeasonalEvent, SeasonalMaintenance, SeasonalObligation, SeasonalAction, SeasonalMonth, SeasonalAnnualSummary, SeasonalCalendarData, FinanceSeasonalCalendarResponse |
+| 2 | `shared/mocks/factories.ts` | +350 líneas append | 3 factories: createMockMemberProfitability (8 familias CR), createMockStressTest (1000 iteraciones, fan chart 12 meses), createMockSeasonalCalendar (12 meses CR, 3 temporadas, 14 acciones) |
+| 3 | `shared/mocks/mock-registry.ts` | +8 líneas append | 3 imports + 3 entries bajo server "finance" |
+| 4 | `features/finance/types.ts` | +175 líneas append | Re-exports de 14 inner types + 8 config/type additions (QUADRANT_CONFIG, TIER_DISPLAY, STRESS_SCENARIO_CONFIGS, STRESS_METRIC_CONFIG, SEASON_CONFIG, SEASONAL_LAYER_CONFIGS, SEASONAL_ACTION_CATEGORY_CONFIG) |
+| 5 | `features/finance/components/FinancialIntelligence.tsx` | Rewrite (~780 líneas) | Sub-tabs expand de 3→6: +3 lazy imports, +3 Suspense blocks, +6 icons, sub-tab bar con overflow-x-auto para mobile, whitespace-nowrap en tab buttons. Los 3 componentes inline (ScenarioSimulator, OpportunityScanner, BoardBriefing) quedan IDÉNTICOS — 0 cambios |
+
+### Mock System
+
+**Contracts nuevos (3):**
+
+| Tool | Server | Contract shape |
+|------|--------|----------------|
+| `finance_member_profitability` | finance | `{status, message, data: {families[], summary, quadrant_strategies}}` |
+| `finance_stress_test` | finance | `{status, message, data: {scenario_name, iterations, metrics, fan_chart[], distribution_summary, assumptions[], ai_commentary}}` |
+| `finance_seasonal_calendar` | finance | `{status, message, data: {year, months[], annual_summary}}` |
+
+**Factories nuevas (3):**
+
+| Factory | Data costarricense |
+|---------|-------------------|
+| `createMockMemberProfitability` | 8 familias: Castillo Montero (VIP star ₡4.8M 52% margin, churn 8), Quesada Vargas (Premium star ₡3.2M 44%, churn 12), Solano Brenes (Básico potential ₡1.4M 18%, churn 25), Montero Quirós (Premium workhorse ₡3.8M 12%, churn 15), Vargas Rojas (Básico risk ₡800K -8%, churn 65), Jiménez Castro (Premium star ₡2.9M 48%, churn 5), Rodríguez Mora (Básico potential ₡1.1M 22%, churn 30), Brenes Alfaro (VIP workhorse ₡5.2M 8%, churn 20). Promedio ₡2.9M, margen 24.5%, concentración top10 22.4% |
+| `createMockStressTest` | Escenario "Recesión Costa Rica 2026", 1000 iteraciones, P(cash+) 87%, P(health>60) 72%, pérdida P95 ₡-18.3M, reserva ₡22M, crítico Ago 2026. Fan chart 12 meses (Jul 2026→Jun 2027) con P10→P90. Distribución: media ₡11.2M, σ ₡8.5M, skew -0.3. 6 assumptions |
+| `createMockSeasonalCalendar` | 12 meses 2026. High: Ene-Abr+Dic (factor 1.08), Low: Jun-Sep (0.92), Transition: May+Oct-Nov (1.0). 8 eventos culturales/sociales. 4 obligaciones (₡5.8M: impuestos, aguinaldos, prima, bono). 2 maintenance windows (piscina Jun-Jul). 14 acciones recomendadas priorizadas. Gap estacional 31.8%. Reserva recomendada ₡10M |
+
+**Registry keys nuevas (3):**
+
+| Server | Keys |
+|--------|------|
+| `finance` | `finance_member_profitability` (sin params), `finance_stress_test` (con params), `finance_seasonal_calendar` (sin params) |
+
+### Tools MCP Registradas (nuevas)
+
+| # | Tool | Server | Backend | Mock | Tipo | Aprobación |
+|---|------|--------|---------|------|------|------------|
+| 1 | `finance_member_profitability` | finance | ⬜ mock-only | ✅ | Data auto | AUTO |
+| 2 | `finance_stress_test` | finance | ⬜ mock-only | ✅ | AI auto | AUTO |
+| 3 | `finance_seasonal_calendar` | finance | ⬜ mock-only | ✅ | Data auto | AUTO |
+
+**Tools existentes de finance NO tocadas (14):**
+
+| # | Tool | Tipo |
+|---|------|------|
+| 1 | `get_financial_summary` | Bridge mock |
+| 2 | `finance_expense_create` | HITL mutation |
+| 3 | `finance_invoice_create` | HITL mutation |
+| 4 | `finance_budget_check` | AUTO |
+| 5 | `finance_payment_process` | HITL mutation |
+| 6 | `finance_report_generate` | SEMI |
+| 7 | `finance_account_status` | AUTO |
+| 8 | `finance_category_update` | SEMI |
+| 9 | `generate_ai_analysis` | AUTO AI |
+| 10 | `finance_scenario_simulate` | AUTO AI |
+| 11 | `finance_opportunities_scan` | AUTO AI |
+| 12 | `finance_board_briefing` | AUTO AI |
+
+### Configs nuevas (8 additions en types.ts)
+
+| Config | Entries | Tokens usados |
+|--------|---------|--------------|
+| `QUADRANT_CONFIG` | 4 (star/workhorse/potential/risk) | emerald/amber/teal/rose-400 |
+| `TIER_DISPLAY` | 3 (basic/premium/vip) | silver-300/gold-400/teal-400 |
+| `STRESS_SCENARIO_CONFIGS` | 6 scenarios, 19 variables total | N/A (datos) |
+| `STRESS_METRIC_CONFIG` | 5 metrics con thresholds | N/A (lógica) |
+| `SEASON_CONFIG` | 3 seasons (high/low/transition) | emerald/rose/amber-400 |
+| `SEASONAL_LAYER_CONFIGS` | 6 layers toggleables | emerald/rose/gold/amber/teal/silver |
+| `SEASONAL_ACTION_CATEGORY_CONFIG` | 4 action categories | emerald/gold/teal/silver-400 |
+
+### Re-exports (14 types desde contracts)
+
+`MemberProfitabilityFamily`, `MemberProfitabilitySummary`, `MemberProfitabilityData`, `StressTestMetrics`, `FanChartPoint`, `DistributionSummary`, `StressTestData`, `SeasonalEvent`, `SeasonalMaintenance`, `SeasonalObligation`, `SeasonalAction`, `SeasonalMonth`, `SeasonalAnnualSummary`, `SeasonalCalendarData`
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+### Hallazgos del análisis de archivos existentes
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | `mock-registry.ts` tiene key duplicada `get_financial_summary` en server "finance" — la segunda declaración sobreescribe la primera (JS object literal) | ALTA | Documentado — segunda declaración con params es la correcta, primera es código muerto |
+| 2 | `mock-registry.ts` tiene import faltante `createMockFinancialSummary` — se usa en el registry pero NO está en la declaración de imports mostrada | ALTA | Documentado — verificar archivo real. Si no está importado, es runtime error |
+| 3 | `mock-registry.ts` tiene imports faltantes para factories de Fase 13 (createMockFinanceExpenseCreate, etc.) — se usan pero no aparecen en el import list mostrado | ALTA | Documentado — probablemente el archivo real tiene más imports de los que se mostraron (truncado) |
+| 4 | `mock-registry.ts` tiene imports faltantes para otros servers (createMockPreferencesResponse, createMockCommunicationInsightsResponse, createMockGuestPrivilegesResponse) | MEDIA | Documentado — verificar archivo real |
+| 5 | `mock-registry.ts` tiene línea muerta primera declaración de `get_financial_summary` (sobrescrita) | BAJA | Documentado — eliminar para claridad |
+| 6 | `FinancialIntelligence.tsx` tiene 626 líneas (no 780 como estimaba el checkpoint de Fase 13) — la diferencia es que los 3 componentes inline no se expandieron | BAJA | Documentado — rewrite final tiene ~780 líneas por los 3 nuevos imports y Suspense blocks |
+| 7 | `finance/types.ts` NO se pasó completo — se infirió de imports en FinancialIntelligence.tsx + checkpoint + contracts del prompt. Los 14 configs + 12 interfaces existentes se confirmaron vía imports | BAJA | Documentado — si hay discrepancia en nombres de propiedades, se corrige al generar |
+| 8 | `chartTheme.ts` tiene constantes CHART (axisTick, axisLabel, tooltipBg, etc.), CHART_PALETTE (8 colores), CHART_COLORS (6 colores default), TOOLTIP_STYLE, AXIS_TICK — todo como `as const` | BAJA | Documentado — HEX values mapean 1:1 a Silver Tide CSS vars |
+
+### Hallazgos de implementación
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 9 | ScatterChart de Recharts NO soporta `domain` con arrays tipados directamente — se usó `[number, number]` type assertion | BAJA | Resuelto — funciona correctamente |
+| 10 | Custom shape en Scatter requiere casting `props: Record<string, unknown>` para evitar TS errors con Recharts internals | BAJA | Resuelto — patrón documentado |
+| 11 | Fan chart con 5 Area series requiere stacking strategy diferente — no se puede usar stackId estándar para todas. Se usaron fills directos + stroke separados | BAJA | Resuelto — las 5 líneas se renderizan como Areas con fill="none" y strokeWidth |
+| 12 | `SEASON_CONFIG.months` array define qué meses pertenecen a cada temporada pero NO se usa directamente en los componentes — la data viene del backend/mock con `season` field por mes | BAJA | Documentado — útil como reference data y para validación |
+| 13 | `STRESS_SCENARIO_CONFIGS` define variables para el editor custom pero el mock `createMockStressTest` devuelve el mismo resultado sin importar los parámetros | BAJA | Documentado — backend implementará Monte Carlo real |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón NUEVO: Scatter Plot de Rentabilidad con Cuadrantes
+
+**Cuándo se usa:** Cuando se necesitan visualizar datos en dos dimensiones con segmentación por cuadrantes.
+
+```
+1. ScatterChart con XAxis (variable 1) y YAxis (variable 2)
+2. Promedio de ambas variables como línea divisoria (ReferenceLine)
+3. ReferenceArea coloreados por cuadrante (4 áreas con fillOpacity 0.04)
+4. Dots con tamaño proporcional a una tercera variable (custom shape)
+5. Click en dot → detail card con métricas + AI insight
+6. Quadrant strategy cards con click para filtrar ranking table
+7. Ranking: sortable table (desktop) + cards (mobile, Rule #21)
+8. HEX constants separados para SVG (QUADRANT_HEX) — no usar CSS vars
+```
+
+**Ejemplo:** MemberProfitabilityMatrix.tsx
+**Se replica en:** Futuros scatter plots (member engagement vs. activity, revenue vs. satisfaction)
+
+### Patrón NUEVO: Fan Chart (Monte Carlo Percentiles)
+
+**Cuándo se usa:** Cuando se proyectan resultados con incertidumbre y se necesita mostrar la distribución de probabilidad.
+
+```
+1. AreaChart con 5 series (P10/P25/P50/P75/P90)
+2. P50 como línea principal (strokeWidth 2.5, dots visibles)
+3. P25/P75 como líneas secundarias (strokeWidth 1, dash)
+4. P10/P90 como líneas extremas (strokeWidth 1, dash largo)
+5. Break-even reference line con label
+6. Tooltip custom con los 5 percentiles y colores
+7. Fan bands como fill (opcional, puede ser complejo)
+8. Legend manual (no Recharts Legend) para control preciso
+9. GaugeCard para KPIs con progress bar y color thresholds
+10. Distribution summary con skewness indicator
+```
+
+**Ejemplo:** StressTestPanel.tsx (fan chart + gauge cards + distribution)
+**Se replica en:** Futuras proyecciones con incertidumbre (membership forecast, revenue projection)
+
+### Patrón NUEVO: Timeline con Capas Toggleables
+
+**Cuándo se usa:** Cuando hay datos temporales con múltiples dimensiones que el usuario quiere ver por separado.
+
+```
+1. Layer toggle chips con Set<string> state (add/remove)
+2. BarChart condicional — solo muestra las layers activas
+3. Expandible month rows con mini sparkbar + badges
+4. Month detail con AnimatePresence open/close
+5. Actions panel priorizado (separado del timeline)
+6. Season indicator bar horizontal como visual reference
+7. Annual summary KPIs como overview
+```
+
+**Ejemplo:** SeasonalCalendar.tsx
+**Se replica en:** Cualquier vista temporal con múltiples dimensiones (activity timeline, financial history)
+
+### Patrón NUEVO: Scenario Selector con Custom Editor
+
+**Cuándo se usa:** Cuando hay escenarios preconfigurados que el usuario puede modificar o crear desde cero.
+
+```
+1. Scenario chips (preconfigured) + "Custom" chip
+2. Iteration count selector (buttons, no dropdown)
+3. Custom editor visible SOLO cuando "Custom" selected
+4. Editor con sliders μ (media) y σ (dispersión) por variable
+5. min/max calculados como multiplicador del default
+6. Auto-simula al cambiar scenario (useMCPQuery re-fetches)
+7. Botón "Ejecutar" para refetch explícito
+```
+
+**Ejemplo:** StressTestPanel.tsx
+**Se replica en:** Futuros simuladores con presets (event pricing, membership scenarios)
+
+### Patrón CONFIRMADO: Gauge Card con Thresholds
+
+**Cuándo se usa:** Cuando un KPI tiene rangos de bueno/malo.
+
+```
+GaugeCard({
+  label, value, format, cfg: { goodThreshold, warnThreshold }
+})
+- format "percent": progress bar + color por threshold
+- format "currency": color por threshold (invertido para losses)
+- format "month": valor directo con color gold
+- Badge decorative con opacity 0.07
+```
+
+**Ejemplo:** StressTestPanel.tsx (5 GaugeCards)
+**Se replica en:** Cualquier KPI con semáforo
+
+### Patrón CONFIRMADO: Hub con DetailTabs + Lazy Loading
+
+Confirmado desde Fase 11-14:
+
+```
+Dashboard.tsx (hub padre)
+├── DetailTabs con tabs[]
+├── lazy(() => import("./ComponentA"))
+├── Suspense con Skeleton fallback
+└── Breadcrumbs absolutos
+```
+
+**Fase 14:** FinancialIntelligence expande el patrón a nivel sub-component:
+```
+FinancialIntelligence.tsx (sub-hub)
+├── Sub-tab bar (manual toggle, no DetailTabs)
+├── 3 componentes inline (Simulator, Opportunities, Briefing)
+├── 3 componentes lazy-loaded (Profitability, Stress, Calendar)
+├── Suspense con Skeleton fallback por componente
+└── AnimatePresence con opacity transition
+```
+
+### Patrón CONFIRMADO: Sub-tabs para Herramientas
+
+```
+DetailTabs (vistas principales)
+  └── Sub-tab bar (toggle local con buttons)
+        ├── Tab 1 → Component A
+        ├── Tab 2 → Component B
+        └── Tab N → Component N (lazy)
+```
+
+**Fase 14:** FinancialIntelligence: 6 sub-tabs con `overflow-x-auto` para mobile y `whitespace-nowrap flex-shrink-0` en buttons.
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón |
+|---|---------|----------------------|-------|
+| 1 | 6 sub-tabs en FinancialIntelligence (no 7+) | Agrupar "Rentabilidad" dentro de "Briefing" o "Oportunidades" | Las 3 features son herramientas independientes de alto valor. Merecen su propio sub-tab para discoverability |
+| 2 | Sub-tab bar con overflow-x-auto | DetailTabs shared component | Sub-tabs son locales al componente, no navegan a rutas diferentes. DetailTabs es para el hub padre |
+| 3 | `finance_member_profitability` como auto-load (no on-demand con botón) | Botón "Analizar" explícito | El análisis de rentabilidad es una vista estándar que el admin quiere ver inmediatamente. staleTime 5min evita recalcular |
+| 4 | Scatter plot custom shape con circle+text (no dot default de Recharts) | Recharts default dots | Default dots no permiten tamaño proporcional a member_count ni labels de familia. Custom shape da control total |
+| 5 | Fan chart con 5 Area lines separadas (no stacked areas) | Stacked areas con fill | Las 5 percentiles son líneas independientes, no acumulativas. Stacked areas crearía visualización incorrecta |
+| 6 | Scenario chips como selector (no dropdown) | Dropdown select | 6 escenarios son visibles de una vez como chips. Mejor UX que dropdown escondido |
+| 7 | Custom editor con sliders μ y σ separados | Un solo slider por variable | μ (tendencia central) y σ (dispersión) son conceptos estadísticos diferentes. Sliders separados dan control preciso |
+| 8 | `SEASON_CONFIG.months` array como reference data (no source of truth) | Que el componente derive season de los months array | La data viene del backend con `season` field por mes. El array es útil para validación y para CR_SEASONALITY knowledge |
+| 9 | `TIER_DISPLAY` separado de `BACKEND_TIER_CONFIG` (families/types.ts) | Reutilizar `BACKEND_TIER_CONFIG` directamente | TIER_DISPLAY vive en finance/types.ts para evitar import cross-feature. Pueden divergir en styling |
+| 10 | `QUADRANT_HEX` constante separada para SVG | Usar `CHART_PALETTE` directamente | Los quadrants tienen semántica propia (star=emerald, risk=rose). Separarlos hace el código más legible |
+| 11 | `SEASON_HEX` constante separada para SVG | Mapear de SEASON_CONFIG | SEASON_CONFIG usa CSS vars. Para SVG/bars se necesitan HEX. Constante separada evita mapeo inline |
+| 12 | Actions panel en SeasonalCalendar como sección separada (no inline en timeline) | Mostrar acciones dentro de cada month row | 14 acciones priorizadas son más útiles como lista global ordenada por prioridad que distribuidas en 12 meses |
+| 13 | Mini sparkbar en timeline rows (hidden sm:block) | Mostrar siempre el valor numérico | El sparkbar da percepción visual rápida en desktop. En mobile solo se muestra el valor numérico (Rule #21 adapta) |
+| 14 | `overflow-x-auto` en sub-tab bar | Wrapping de tabs | 6 tabs necesitan scroll horizontal en mobile. Wrapping rompería la metáfora de barra de tabs |
+| 15 | Skeleto diferenciado por componente (3/4/3 skeletons) | Mismo skeleton count para todos | Cada componente tiene densidad diferente. StressTest tiene más secciones que los otros |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| 1-7 | Infraestructura, tokens, forms, lists, details | ✅ |
+| 8 | Dashboard sub-componentes | 🔄 5/12 done |
+| 9 | Wellness + Satisfaction | ✅ |
+| 10 | Proactive Recommendations | ✅ COMPLETADA |
+| 11 | Communication Enhancement | ✅ COMPLETADA |
+| 12 | Guest Management + Trial Memberships | ✅ COMPLETADA |
+| 13 | Finance Enhancement + HITL Complete | ✅ COMPLETADA |
+| **14** | **Intelligence Features (Profitability + Stress + Calendar)** | **✅ COMPLETADA** |
+| 14b | Print/PDF + Export | ⬜ SIGUIENTE |
+| 15 | Integration Testing + QA | ⬜ |
+| 16 | Mock → Backend Migration | ⬜ |
+
+---
+
+## 6. PRÓXIMA FASE — Fase 14b: Print/PDF + Export
+
+**No requiere agente backend específico.**
+
+**Frontend existente:**
+- Placeholder buttons en: FinanceOverview ("Exportar"), ReportGenerator ("Exportar"), BoardBriefing ("PDF"), CommunicationCenter ("Exportar")
+- `export_report` tool existe en el agente executive_dashboard (approval: HITL con escalación condicional: audiencia externa → HITL)
+
+**Bloques propuestos (tentativo):**
+
+| Bloque | Contenido | Dependencia |
+|--------|-----------|-------------|
+| B1 | Export service utility + PDF template engine | Ninguna |
+| B2 | Export buttons connect to export_report tool + PDF generation | B1 |
+| B3 | Print-optimized CSS + page break handling | B2 |
+
+**ApprovalQueue impact:** `export_report` es HITL con escalación condicional (audiencia externa → HITL). Ya existe en ApprovalQueue — 0 cambios nuevos.
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+### Pendientes originales (pre-Fase 14) — Estado actualizado
+
+| # | Issue | Severidad | Archivo | Fase | Estado |
+|---|-------|-----------|---------|------|--------|
+| 2 | AIChatWidget: posición movida de derecha a izquierda sobre sidebar | MEDIA | `shared/components/chat/AIChatWidget.tsx` | 15 | ⬜ PENDIENTE |
+| 4 | Dashboard sub-componentes: 7/12 pendientes (violations reglas) | MEDIA | `features/dashboard/components/` | 8 | ⬜ PENDIENTE |
+| 6 | MembershipDonut: tooltip con backdrop-filter (Regla #2) | MEDIA | `features/dashboard/components/MembershipDonut.tsx` | 8 | ⬜ PENDIENTE |
+| 7 | AgeBalanceWidget: mock group colors no son tokens Silver Tide (Regla #1) | MEDIA | `features/dashboard/components/AgeBalanceWidget.tsx` | 8 | ⬜ PENDIENTE |
+| 8 | Sub-componentes dashboard: hex hardcodeados en vez de chartTheme (Regla #3) | MEDIA | `features/dashboard/components/*` | 8 | ⬜ PENDIENTE |
+| 9 | HitlQueue: botones raw en vez de Button shared (Regla #17) | MEDIA | `features/dashboard/components/HitlQueue.tsx` | 8 | ⬜ PENDIENTE |
+| 10 | MembershipDonut: falta useReducedMotion() (Regla #18) | BAJA | `features/dashboard/components/MembershipDonut.tsx` | 8 | ⬜ PENDIENTE |
+| 14 | SettingsPage: notificaciones store local no sync con backend | BAJA | `features/settings/SettingsPage.tsx` | 15 | ⬜ PENDIENTE |
+| 15 | SettingsPage: versión frontend hardcoded "1.0.0-beta" | BAJA | `features/settings/SettingsPage.tsx` | 15 | ⬜ PENDIENTE |
+| 16 | RiskHeatmap: emojis como icons en vez de Lucide | BAJA | `features/reports/RiskHeatmap.tsx` | 15 | ⬜ PENDIENTE |
+| 17 | MyReservations: tipos inline no compartidos | BAJA | `features/mi-club/MyReservations.tsx` | 15 | ⬜ PENDIENTE |
+| 18 | communication_insights: tool mock-only, no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 19 | guest_management_insights: tool mock-only, no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 20 | EmergencyBroadcast.tsx excluido de CommunicationDashboard | BAJA | `communications/` | — | Decisión confirmada |
+| 21 | GuestList.tsx y GuestRegistration.tsx viven en server "guests" separado de "guest_management" | BAJA | `features/guests/` | — | Arquitectura |
+| 22 | `get_financial_summary` es mock-only — no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 23 | `finance_scenario_simulate` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 24 | `finance_opportunities_scan` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 25 | `finance_board_briefing` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 26 | FilterDropdown import path no verificada — asume `@/shared/components/ui/FilterDropdown` | MEDIA | `FamilyAccount.tsx` | 15 | ⬜ PENDIENTE |
+| 27 | `get_family_account`, `get_transactions`, `get_invoices` no existen en FinanceAgent | MEDIA | `FamilyAccount.tsx` | 16 | ⬜ PENDIENTE |
+| 28 | FamilyAccount aging bucket usa 40/60 split de `aging_90_plus` | BAJA | `FamilyAccount.tsx` | 16 | ⬜ PENDIENTE |
+| 29 | BillingCenter: `InvoiceData` backend no tiene `invoice_number`, `balance`, `paid_amount` | MEDIA | `BillingCenter.tsx` | 16 | ⬜ PENDIENTE |
+| 31 | ScenarioSimulator `categoryLabels` hardcodeado (4 categorías internas) | BAJA | `FinancialIntelligence.tsx` | Futura | ⬜ PENDIENTE |
+
+### Pendientes resueltos en Fase 13 (NO repetir)
+
+| # | Issue | Resolución |
+|---|-------|-----------|
+| 1 | FinancialDashboard: métricas que no aparecen | ✅ RESUELTO en Fase 13 |
+| 3 | ApprovalQueue: 2 tipos nuevos | ✅ RESUELTO en Fase 13 |
+| 5 | Tier mismatch backend↔frontend | ✅ RESUELTO en Fase 13 |
+| 11 | FamilyAccount: tab bar local | ✅ RESUELTO en Fase 13 |
+| 12 | FamilyAccount: filter select raw | ✅ RESUELTO en Fase 13 |
+| 13 | FamilyAccount: Table raw | ✅ RESUELTO en Fase 13 |
+
+### Pendientes resueltos en Fase 14
+
+| # | Issue | Resolución |
+|---|-------|-----------|
+| 30 | 3 features de inteligencia financiera pendientes (Matriz Rentabilidad, Test de Estrés, Calendario Estacional) | ✅ RESUELTO — las 3 features están implementadas y integradas en FinancialIntelligence.tsx como 3 nuevos sub-tabs |
+
+### Pendientes nuevos de Fase 14
+
+| # | Issue | Severidad | Archivo | Fase sugerida |
+|---|-------|-----------|---------|---------------|
+| 32 | `finance_member_profitability` es mock-only — no existe en backend | BAJA | `shared/mocks/` | 16 |
+| 33 | `finance_stress_test` es mock-only — Monte Carlo real requiere backend | BAJA | `shared/mocks/` | 16 |
+| 34 | `finance_seasonal_calendar` es mock-only | BAJA | `shared/mocks/` | 16 |
+| 35 | Mock-registry key duplicada `get_financial_summary` — código muerto que genera confusión | MEDIA | `shared/mocks/mock-registry.ts` | 14b o 15 |
+| 36 | Mock-registry import faltante `createMockFinancialSummary` — posible runtime error | ALTA | `shared/mocks/mock-registry.ts` | 14b o 15 |
+| 37 | Mock-registry imports faltantes para factories de Fase 13 — verificar archivo real | ALTA | `shared/mocks/mock-registry.ts` | 14b o 15 |
+| 38 | StressTestPanel fan chart bands (P10-P90 fill) son aproximadas — las 5 Areas con fill="none" no crean bandas de fondo reales | BAJA | `StressTestPanel.tsx` | Futura |
+| 39 | MemberProfitabilityMatrix no tiene export/share functionality (placeholder futuro para Fase 14b Print/PDF) | BAJA | `MemberProfitabilityMatrix.tsx` | 14b |
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección 7 (Estado del Sprint) — REEMPLAZAR:
+
+```
+| Fase | Contenido                                        | Estado            |
+|------|--------------------------------------------------|-------------------|
+| 1-7  | Infraestructura, tokens, forms, lists, details   | ✅                |
+| 8    | Dashboard sub-componentes                        | 🔄 5/12 done      |
+| 9    | Wellness + Satisfaction                          | ✅                |
+| 10   | Proactive Recommendations                        | ✅ COMPLETADA     |
+| 11   | Communication Enhancement                        | ✅ COMPLETADA     |
+| 12   | Guest Management + Trial Memberships             | ✅ COMPLETADA     |
+| 13   | Finance Enhancement + HITL Complete              | ✅ COMPLETADA     |
+| 14   | Intelligence Features (Profit+Stress+Calendar)   | ✅ COMPLETADA     |
+| 14b  | Print/PDF + Export                               | ⬜ SIGUIENTE      |
+| 15   | Integration Testing + QA                         | ⬜                |
+| 16   | Mock → Backend Migration                         | ⬜                |
+```
+
+### Sección 4 (Patrones AI) — Agregar nuevos patrones:
+
+```
+| Nivel        | Patrón                                          | Ejemplo                              |
+|--------------|------------------------------------------------|--------------------------------------|
+| Hub          | DetailTabs + lazy() + Suspense                 | FinancialDashboard, CommunicationDashboard, GuestManagementDashboard |
+| Sub-hub      | Sub-tab bar manual + lazy + Suspense           | FinancialIntelligence (6 tabs)       |
+| Insights     | Quick deterministic + AI auto-load             | FinanceOverview, FinanceAnalytics    |
+| Intelligence | Scenario Simulator con sliders                 | ScenarioSimulator                    |
+| Intelligence | Opportunity Scanner con action flow            | OpportunityScanner                   |
+| Intelligence | Board Briefing con decisiones                  | BoardBriefing                        |
+| Intelligence | Scatter Plot con cuadrantes + detail card      | MemberProfitabilityMatrix            |
+| Intelligence | Fan Chart Monte Carlo + GaugeCards             | StressTestPanel                      |
+| Intelligence | Timeline con capas toggleables + expandible    | SeasonalCalendar                     |
+| Intelligence | Scenario Selector con custom editor            | StressTestPanel                      |
+| UI           | Section wrapper expandible con AnimatePresence | FinanceAnalytics (9 secciones)       |
+| UI           | Gauge Card con thresholds                      | StressTestPanel (5 KPIs)             |
+```
+
+### Sección 6 (Shared Components) — Verificar que DetailTabs, FilterDropdown, EmptyState estén listados.
+
+### Sección 8 (Pendientes) — REEMPLAZAR completamente con tabla consolidada de Sección 7 del checkpoint.
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos nuevos (3 componentes)
+
+| Regla | MemberProfitabilityMatrix | StressTestPanel | SeasonalCalendar |
+|-------|--------------------------|-----------------|-----------------|
+| #1 NUNCA hardcoded | ✅ Tokens en todos los text/fondo/bordes. HEX solo para SVG (QUADRANT_HEX) | ✅ Tokens. HEX solo para SVG (FAN_CHART_LINES) | ✅ Tokens. HEX solo para SVG (SEASON_HEX, BAR_HEX) |
+| #2 NO backdrop-filter | ✅ Tooltip TOOLTIP_STYLE sólido, detail card bg sólido | ✅ Tooltip TOOLTIP_STYLE sólido | ✅ Tooltip TOOLTIP_STYLE sólido |
+| #3 chartTheme | ✅ CHART, CHART_PALETTE, TOOLTIP_STYLE, AXIS_TICK | ✅ CHART, CHART_PALETTE, TOOLTIP_STYLE, AXIS_TICK, CHART_COLORS | ✅ CHART, TOOLTIP_STYLE, AXIS_TICK |
+| #4 Changelog | ✅ | ✅ | ✅ |
+| #5 Código completo | ✅ Archivo nuevo | ✅ Archivo nuevo | ✅ Archivo nuevo |
+| #6 ResponsiveContainer | ✅ ScatterChart | ✅ AreaChart | ✅ BarChart |
+| #7 CHART constants | ✅ | ✅ | ✅ |
+| #8 formatCurrency | ✅ Todos los montos + compactCurrency para ejes | ✅ Todos los montos + compactCurrency para ejes | ✅ Todos los montos |
+| #9 TOOLTIP_STYLE | ✅ ScatterTooltip | ✅ FanChartTooltip | ✅ SeasonalTooltip |
+| #10 AXIS_TICK | ✅ XAxis + YAxis | ✅ XAxis + YAxis | ✅ XAxis + YAxis |
+| #11 focus-visible | ✅ Sort buttons, strategy cards | ✅ Sliders (μ/σ), iter buttons, scenario chips | ✅ Layer toggles, month row buttons |
+| #12 min-h-[44px] | ✅ Sort headers, strategy cards, mobile cards, close button | ✅ Scenario chips, iter buttons, sliders | ✅ Layer chips, month row buttons |
+| #13 DetailTabs | N/A (child component) | N/A | N/A |
+| #14 EmptyState | ✅ Sin datos | ✅ Sin resultado seleccionado | ✅ Sin datos |
+| #15 showToast | N/A (no mutations) | ✅ "Ejecutar" feedback | N/A (no mutations) |
+| #17 Button shared | ✅ "Limpiar filtro" | ✅ Ejecutar button | N/A (layer toggles son chips, no Button) |
+| #18 reducedMotion | ✅ useMotion() + AnimatePresence | ✅ useMotion() + AnimatePresence | ✅ useMotion() + AnimatePresence |
+| #19 AI on-demand | ✅ Auto-load (data-enriched, no AI decision) | ✅ Auto-load con params | ✅ Auto-load |
+| #20 breakpoint | ✅ useBreakpoint() → isMobile, isDesktop | ✅ useBreakpoint() → isMobile | ✅ useBreakpoint() → isMobile |
+| #21 responsive | ✅ `hidden sm:block` table + `sm:hidden` cards | ✅ Grid responsive, height chart | ✅ Mini sparkbar `hidden sm:block` |
+| #22 cn() | ✅ Sort headers, strategy cards, table rows, mobile cards | ✅ Scenario chips, iter buttons | ✅ Layer chips, month rows |
+
+### Archivo modificado: FinancialIntelligence.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| #1 | ✅ | Tokens en sub-tab bar, icons |
+| #4 | ✅ | Changelog detallado |
+| #5 | ✅ | Full rewrite (~780 líneas) |
+| #11 | ✅ | Sub-tab buttons focus-visible |
+| #12 | ✅ | Sub-tab buttons min-h-[44px] |
+| #17 | ✅ | Button shared en los 3 inline |
+| #18 | ✅ | useMotion() en los 3 inline, AnimatePresence en hub |
+| #20 | ✅ | `hidden sm:inline` en tab labels |
+| #22 | ✅ | cn() en sub-tab buttons |
+
+### Archivos mock (contracts, factories, registry)
+
+| Regla | contracts.ts | factories.ts | mock-registry.ts |
+|-------|-------------|-------------|-----------------|
+| #1 | ✅ N/A (interfaces) | ✅ Data usa colones consistentes | ✅ N/A |
+| #4 | ✅ | ✅ | ✅ |
+
+**0 violaciones en archivos nuevos de Fase 14.**
+
+---
+
+## 10. QUICK START PARA NUEVO CHAT
+
+```
+1. Pegar CLAUDE_CONTEXT_MINI.md (Secciones 1-10)
+2. Pegar este CHECKPOINT (Fase 14 completa)
+3. Si la fase 14b (Print/PDF) es standalone:
+   → Pedir: "Definime los bloques de Fase 14b (Print/PDF + Export)"
+   → No requiere agente backend específico
+4. Si se necesita resolver pendientes ALTA del mock-registry (#36, #37):
+   → Pedir: "Pasame el archivo completo de mock-registry.ts"
+   → Hacer fix quirúrgico de imports duplicados/faltantes
+5. Si se trabaja en Fase 8 (dashboard sub-componentes):
+   → Pedir: "Pasame los archivos del dashboard que necesitamos fixear"
+   → Componentes: MembershipDonut, AgeBalanceWidget, HitlQueue
+6. Pedir: "Genera Bloque 1"
+```
+
+---
+
+## 11. DECISION LOG
+
+| # | Fecha | Decisión | Razón | Impacto |
+|---|-------|---------|-------|---------|
+| 1 | Mayo 2025 | 3 features nuevas como sub-tabs de FinancialIntelligence (no componentes independientes) | Viven dentro de "Inteligencia" — son herramientas de análisis financiero, no módulos nuevos | Sub-tab bar expande de 3→6. No hay cambios en FinancialDashboard hub |
+| 2 | Mayo 2025 | `finance_member_profitability` como auto-load (no on-demand) | El análisis de rentabilidad es una vista estándar. staleTime 5min es suficiente | Diferente al patrón Rule 19 general (on-demand), igual que generate_ai_analysis en Fase 13 |
+| 3 | Mayo 2025 | Scatter plot con custom shape (circle+text) en vez de Recharts default dots | Default dots no permiten tamaño proporcional ni labels | Patrón replicable para futuros scatter plots |
+| 4 | Mayo 2025 | Fan chart con 5 Area lines separadas (no stacked areas) | Percentiles son líneas independientes, no acumulativas | Las "bandas" de incertidumbre se logran con fillOpacity en los extremos (P10/P90) |
+| 5 | Mayo 2025 | Scenario selector con chips (no dropdown) | 6 escenarios visibles de una vez. Mejor UX | Patrón replicable para cualquier selector ≤8 opciones |
+| 6 | Mayo 2025 | Custom editor con sliders μ y σ separados | Conceptos estadísticos diferentes. Control preciso para la junta | Solo visible para "Custom" scenario |
+| 7 | Mayo 2025 | Actions panel en SeasonalCalendar como sección global priorizada (no inline en months) | 14 acciones ordenadas por prioridad son más útiles como lista global | Separación de concerns: timeline = visualización, actions = recomendaciones |
+| 8 | Mayo 2025 | `QUADRANT_HEX`, `FAN_CHART_LINES`, `SEASON_HEX`, `BAR_HEX` como constantes separadas | SVG requiere HEX, no CSS vars. Constantes separadas por feature evitan mapeo inline | No se toca CHART_PALETTE existente |
+| 9 | Mayo 2025 | `TIER_DISPLAY` separado de `BACKEND_TIER_CONFIG` | Evita import cross-feature (finance→families). Pueden divergir en styling | Si se unifica, mover a shared config |
+| 10 | Mayo 2025 | Sub-tab bar con `overflow-x-auto` + `whitespace-nowrap` | 6 tabs necesitan scroll horizontal en mobile. Wrapping rompe la metáfora | Patrón replicable para 5+ tabs |
+| 11 | Mayo 2025 | Skeleto diferenciado por componente (3/4/3) | Cada componente tiene densidad diferente. UX más realista | Mismo patrón: proporcional al contenido esperado |
+| 12 | Mayo 2025 | Mock-registry errores documentados pero NO fixeados en esta sesión | Fix requiere ver el archivo completo real. El fix podría romper imports existentes | Se pospone a Fase 14b o 15 con archivo completo |
+| 13 | Mayo 2025 | `createMockStressTest` ignora parámetros (devuelve siempre "Recesión Costa Rica") | Mock para UX. Backend real ejecutará Monte Carlo con parámetros reales | Se elimina en Fase 16 |
+| 14 | Mayo 2025 | `SEASON_CONFIG.months` como reference data (no source of truth) | Data viene del backend/mock con `season` field. Array útil para validación | No afecta componentes |
+| 15 | Mayo 2025 | NO se actualizó FinancialDashboard.tsx (hub padre) | FinancialIntelligence se importa como componente único. El hub no necesita saber de los sub-tabs | 0 cambios en hub |
+
+---
+
+Fase 14 completa. Las 3 features de inteligencia financiera están integradas como sub-tabs 4, 5 y 6 de FinancialIntelligence. La siguiente fase lógica es 14b (Print/PDF + Export) o resolver los pendientes ALTA del mock-registry (#36, #37). Nos vemos en el próximo chat.

@@ -1,0 +1,511 @@
+/**
+ * @component PulseRadar (Fase 25)
+ * @namespace .glass-radar
+ * @depends globals.css (tokens)
+ * @note Radar visualization: partial arcs, traveling drops,
+ *       gooey filter, connectors, labels, hub heartbeat.
+ *       Timeline-driven reveal with CSS animations.
+ * @import import './PulseRadar.css';
+ */
+
+/* ═══════════════════════════════════════
+   Root
+   ═══════════════════════════════════════ */
+
+.glass-radar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+/* ═══════════════════════════════════════
+   Responsive layout
+   ═══════════════════════════════════════ */
+
+.glass-radar__body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  width: 100%;
+}
+
+/* Mobile + tablet: labels below */
+@media (max-width: 1023px) {
+  .glass-radar__body {
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+/* ═══════════════════════════════════════
+   SVG Container
+   ═══════════════════════════════════════ */
+
+.glass-radar__svg-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.glass-radar__svg {
+  overflow: visible;
+  display: block;
+}
+
+/* ═══════════════════════════════════════
+   Hub (center)
+   ═══════════════════════════════════════ */
+
+.glass-radar__hub {
+  transform-origin: center;
+  animation: glass-radar-hub-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0s both;
+}
+
+.glass-radar__hub-glow {
+  transform-origin: center;
+  animation: glass-radar-hub-glow 2.5s ease-in-out 3.2s infinite;
+}
+
+/* ═══════════════════════════════════════
+   Base arcs (structure, faint)
+   ═══════════════════════════════════════ */
+
+.glass-radar__base-arc {
+  opacity: 0;
+  stroke-dasharray: var(--arc-length) var(--arc-gap);
+  stroke-dashoffset: var(--arc-length);
+  animation: glass-radar-base-draw 0.5s ease-out var(--draw-delay) both;
+}
+
+/* ═══════════════════════════════════════
+   Score arcs (colored, full draw)
+   ═══════════════════════════════════════ */
+
+.glass-radar__score-arc {
+  stroke-dasharray: var(--arc-length) var(--arc-gap);
+  stroke-dashoffset: var(--arc-length);
+  animation: glass-radar-score-draw var(--travel-dur) ease-out var(--travel-delay) both;
+}
+
+/* ═══════════════════════════════════════
+   Arc glow (breathing)
+   ═══════════════════════════════════════ */
+
+.glass-radar__arc-glow {
+  stroke-dasharray: var(--arc-length) var(--arc-gap);
+  stroke-dashoffset: var(--score-offset);
+  opacity: 0;
+  animation:
+    glass-radar-glow-draw var(--travel-dur) ease-out var(--travel-delay) both,
+    glass-radar-glow-breathe var(--breathe-dur) ease-in-out var(--breathe-delay) infinite;
+}
+
+/* ═══════════════════════════════════════
+   Drops (traveling nodes)
+   ═══════════════════════════════════════ */
+
+.glass-radar__drop {
+  opacity: 0;
+  transform-origin: center;
+}
+
+/* Step 4: emerge from center */
+.glass-radar__drop--emerged {
+  animation: glass-radar-drop-emerge 0.35s ease-out var(--emerge-delay) both;
+}
+
+/* Step 5: travel along arc path */
+.glass-radar__drop--traveled {
+  animation:
+    glass-radar-drop-emerge 0.35s ease-out var(--emerge-delay) both,
+    glass-radar-drop-travel var(--travel-dur) ease-out var(--travel-delay) both;
+}
+
+.glass-radar__drop-glow {
+  animation: glass-radar-drop-breathe 2s ease-in-out var(--breathe-delay) infinite;
+}
+
+/* ═══════════════════════════════════════
+   Connectors
+   ═══════════════════════════════════════ */
+
+.glass-radar__connector {
+  stroke-dasharray: var(--conn-length);
+  stroke-dashoffset: var(--conn-length);
+  animation: glass-radar-connector-draw 0.25s ease-out var(--conn-delay) both;
+}
+
+/* ═══════════════════════════════════════
+   Labels (DOM overlay)
+   ═══════════════════════════════════════ */
+
+.glass-radar__labels {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+/* Tablet + mobile: grid layout */
+@media (max-width: 1023px) {
+  .glass-radar__labels {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 16px;
+    min-width: auto;
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 500px) {
+  .glass-radar__labels {
+    grid-template-columns: 1fr;
+  }
+}
+
+.glass-radar__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  animation: glass-radar-label-in 0.3s ease-out var(--label-delay) both;
+}
+
+/* Desktop: align vertically with ring via connector Y */
+@media (min-width: 1024px) {
+  .glass-radar__label {
+    position: absolute;
+    left: calc(100% + 12px);
+    height: 24px;
+    align-items: center;
+  }
+}
+
+.glass-radar__label-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.glass-radar__label-name {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  color: var(--color-silver-400, #a09a92);
+  flex: 1;
+  white-space: nowrap;
+}
+
+.glass-radar__label-score {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 14px;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ═══════════════════════════════════════
+   Center score (DOM overlay)
+   ═══════════════════════════════════════ */
+
+.glass-radar__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.glass-radar__center-tooltip {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  color: var(--color-silver-400, #a09a92);
+  margin-bottom: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.glass-radar__center-tooltip--visible {
+  opacity: 1;
+}
+
+.glass-radar__center-score {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.5);
+  animation: glass-radar-score-in 0.3s ease-out 0.4s both;
+}
+
+.glass-radar__center-score-breathe {
+  display: inline-block;
+  animation: glass-radar-score-breathe 2.5s ease-in-out 3.2s infinite;
+}
+
+/* ═══════════════════════════════════════
+   Legend (fallback for tablet/mobile)
+   ═══════════════════════════════════════ */
+
+.glass-radar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 20px;
+  opacity: 0;
+  animation: glass-radar-label-in 0.3s ease-out 2.5s both;
+}
+
+.glass-radar__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.glass-radar__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.glass-radar__legend-name {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  color: var(--color-silver-400, #a09a92);
+}
+
+.glass-radar__legend-score {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════
+   Keyframes
+   ═══════════════════════════════════════ */
+
+@keyframes glass-radar-hub-in {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes glass-radar-hub-glow {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes glass-radar-base-draw {
+  from {
+    stroke-dashoffset: var(--arc-length);
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 0.12;
+  }
+}
+
+@keyframes glass-radar-score-draw {
+  from {
+    stroke-dashoffset: var(--arc-length);
+  }
+  to {
+    stroke-dashoffset: var(--score-offset);
+  }
+}
+
+@keyframes glass-radar-glow-draw {
+  from {
+    stroke-dashoffset: var(--arc-length);
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: var(--score-offset);
+    opacity: 0.3;
+  }
+}
+
+@keyframes glass-radar-glow-breathe {
+  0%, 100% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes glass-radar-drop-emerge {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Drop travel: uses offset-path set as inline CSS var */
+@keyframes glass-radar-drop-travel {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: var(--score-pct);
+  }
+}
+
+@keyframes glass-radar-drop-breathe {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.3);
+  }
+}
+
+@keyframes glass-radar-connector-draw {
+  from {
+    stroke-dashoffset: var(--conn-length);
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 0.5;
+  }
+}
+
+@keyframes glass-radar-label-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes glass-radar-score-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes glass-radar-score-breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.025);
+  }
+  65% {
+    transform: scale(1.012);
+  }
+}
+
+/* ═══════════════════════════════════════
+   Reduced motion
+   ═══════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-radar__hub,
+  .glass-radar__hub-glow,
+  .glass-radar__base-arc,
+  .glass-radar__score-arc,
+  .glass-radar__arc-glow,
+  .glass-radar__drop,
+  .glass-radar__connector,
+  .glass-radar__label,
+  .glass-radar__center-score,
+  .glass-radar__center-score-breathe,
+  .glass-radar__legend {
+    animation: none !important;
+  }
+
+  .glass-radar__hub {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .glass-radar__base-arc {
+    opacity: 0.12;
+    stroke-dashoffset: 0;
+  }
+
+  .glass-radar__score-arc {
+    stroke-dashoffset: var(--score-offset);
+  }
+
+  .glass-radar__arc-glow {
+    opacity: 0.15;
+    stroke-dashoffset: var(--score-offset);
+  }
+
+  .glass-radar__drop {
+    opacity: 1;
+    offset-distance: var(--score-pct);
+  }
+
+  .glass-radar__connector {
+    stroke-dashoffset: 0;
+    opacity: 0.5;
+  }
+
+  .glass-radar__label,
+  .glass-radar__legend {
+    opacity: 1;
+    transform: none;
+  }
+
+  .glass-radar__center-score {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-radar__base-arc {
+  stroke: #d4d0c8;
+}
+
+.light .glass-radar__label-name,
+.light .glass-radar__legend-name {
+  color: var(--color-silver-600, #5c5853);
+}
+
+.light .glass-radar__center-tooltip {
+  color: var(--color-silver-600, #5c5853);
+}
+
+.light .glass-radar__connector {
+  stroke: rgba(0, 0, 0, 0.15);
+}

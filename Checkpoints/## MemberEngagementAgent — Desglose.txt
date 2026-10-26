@@ -1,0 +1,778 @@
+## MemberEngagementAgent — Desglose Completo
+
+**Archivo:** `backend/src/club_mcp/agents/member_engagement_agent.py`
+**Dependencias:** `MemberEngagementRepository`, `BaseAgent`, 11 modelos (`CampaignType`, `CreateEngagementProfile`, `CreateLoyaltyReward`, `CreateMemberFeedback`, `CreateReactivationCampaign`, `CreateReferral`, `EngagementLevel`, `FeedbackChannel`, `FeedbackSentiment`, `RewardStatus`, `RewardType`)
+
+---
+
+### Enums documentados (extraídos del código)
+
+```
+EngagementLevel:    "champion" | "engaged" | "neutral" | "at_risk" | "inactive"
+CampaignType:       "reactivation" | "retention" | "upsell" | "referral" | "anniversary" | otros
+FeedbackChannel:    "email" | "in_app" | "phone" | "sms" | otros
+FeedbackSentiment:  "positive" | "neutral" | "negative"
+RewardType:         "discount" | "upgrade" | "free_event" | "merchandise" | otros
+RewardStatus:       "active" | "redeemed" | "expired" | otros
+```
+
+---
+
+### Tool 1: `get_engagement_insights` — 🟢 AUTO
+
+**Propósito:** Análisis de engagement individual o colectivo con score, nivel, actividad y recomendaciones.
+
+**Dos modos de operación:**
+
+#### Modo A — Individual (cuando `member_id` tiene valor)
+
+| Param | Tipo | Requerido | Validación |
+|-------|------|-----------|-----------|
+| member_id | str | Condicional | Si no hay perfil → `not_found` |
+
+**Lógica de insights (reglas hardcodeadas):**
+
+| Condición | Insight generado | Severidad |
+|-----------|-----------------|-----------|
+| `engagement_level` = AT_RISK o INACTIVE | "Socio en riesgo de abandono. Considerar campaña de reactivación." | ALTA |
+| `visits_last_30_days` == 0 | "Sin visitas en los últimos 30 días." | ALTA |
+| `loyalty_points` > 1000 | "X puntos acumulados. Ofrecer canje de recompensas." | MEDIA |
+| Ninguna de las anteriores | "Engagement saludable." | OK |
+
+**Shape de respuesta (individual):**
+
+```json
+{
+  "status": "success",
+  "profile": {
+    "member_id": "uuid",
+    "member_name": "string",
+    "engagement_level": "champion" | "engaged" | "neutral" | "at_risk" | "inactive",
+    "engagement_score": 85.0,
+    "loyalty_points": 1200,
+    "visits_last_30_days": 8,
+    "total_spend_ytd": 25000.00,
+    "referral_count": 3,
+    "last_activity_date": "2025-03-15"
+  },
+  "insights": ["string array"]
+}
+```
+
+**Profile fields que el frontend NECESITA (implícitos del model_dump):**
+
+| Campo | Tipo | Uso Frontend |
+|-------|------|-------------|
+| engagement_score | float (0-100) | Gauge, ranking, threshold display |
+| engagement_level | enum | Badge color, filtering |
+| loyalty_points | int | Stat card, loyalty section |
+| visits_last_30_days | int | Activity indicator |
+| total_spend_ytd | float | Revenue attribution |
+| referral_count | int | Viral coefficient |
+| last_activity_date | string | "Última actividad hace X días" |
+
+#### Modo B — Listado (cuando `member_id` vacío)
+
+| Param | Tipo | Requerido | Validación |
+|-------|------|-----------|-----------|
+| member_id | "" | — | — |
+| engagement_level | str | No | Validado contra `EngagementLevel` enum |
+
+**Shape de respuesta (listado):**
+
+```json
+{
+  "status": "success",
+  "message": "👥 X perfil(es) de engagement encontrados.",
+  "profiles": [/* array de profiles */],
+  "summary": {
+    "total": 150,
+    "by_level": {
+      "champion": 12,
+      "engaged": 45,
+      "neutral": 58,
+      "at_risk": 23,
+      "inactive": 12
+    }
+  }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Insights son reglas hardcodeadas, no análisis estadístico** — 3 if/else simples | ALTA | EngagementDashboard necesita análisis real: trend detection, correlación visit-spend, cohort analysis |
+| 2 | `engagement_score` se asume en el profile pero no se calcula aquí — ¿viene del repo? | ALTA | Si el repo lo devuelve hardcodeado, el score no refleja comportamiento real |
+| 3 | Sin `engagement_trend` — ¿mejora o empeora? | ALTA | Número sin tendencia es inútil para decisiones |
+| 4 | Sin `days_since_last_visit` calculado | MEDIA | Frontend tiene que parsear `last_activity_date` |
+| 5 | `summary.by_level` útil para MembershipDonut chart de engagement | OK | Ya existe el shape necesario |
+| 6 | Sin paginación en modo listado | MEDIA | Con 500+ socios, payload grande |
+
+**Oportunidades ML/analytics:**
+
+```
+Engagement Score (reemplazar hardcodeado):
+  score = w1×visit_frequency + w2×spend_trend + w3×event_attendance 
+        + w4×referral_activity + w5×feedback_sentiment + w6×loyalty_redemption
+  
+  Donde weights se ajustan por tier (VIP tiene diferentes expectativas)
+
+Cohort Analysis:
+  - Agrupar por mes de ingreso → ver curva de engagement por cohorte
+  - Detectar qué cohortes tienen mejor retención
+
+Churn Prediction (RFM-style):
+  R (Recency): days_since_last_visit
+  F (Frequency): visits_last_90_days
+  M (Monetary): spend_last_90_days
+  
+  Score = R_weight×R + F_weight×F + M_weight×M
+  Threshold: < 30 → at_risk, < 15 → likely_churn
+
+Engagement Funnel:
+  active → engaged → champion (upgrade path)
+  active → neutral → at_risk → inactive (churn path)
+  Tasa de conversión entre cada etapa
+```
+
+**Frontend destino:** `EngagementDashboard.tsx` (principal), `CommunicationCenter.tsx` (para targeting de campañas)
+
+---
+
+### Tool 2: `design_reactivation_campaign` — 🔴 HITL
+
+**Propósito:** Diseñar, gestionar y lanzar campañas de reactivación/retención/upsell.
+
+**Arquitectura multi-action:** 4 acciones en un solo tool:
+
+| Action | Aprobación | Descripción |
+|--------|-----------|-------------|
+| `list` | AUTO | Listar todas las campañas |
+| `get` | AUTO | Obtener campaña por ID |
+| `create` | 🔴 HITL | Crear nueva campaña → requiere aprobación admin |
+| `update_status` | AUTO | Actualizar estado de campaña |
+
+**Parámetros para `create` (el HITL):**
+
+| Param | Tipo | Requerido | Validación | Notas |
+|-------|------|-----------|-----------|-------|
+| name | str | Sí | Ninguna | Nombre de la campaña |
+| campaign_type | str | Sí (default "reactivation") | Validado contra `CampaignType` | |
+| description | str | Sí | Ninguna | |
+| target_member_ids | str | No | Split por "," → array | **IDs como CSV string, no array** |
+| target_engagement_level | str | No | Validado contra `EngagementLevel` | Alternative targeting |
+| channels | str | No (default "email") | Split por "," → `FeedbackChannel` enum | |
+| message_template | str | No | — | Template del mensaje |
+| start_date | str | Sí | Ninguna | Sin formato |
+| end_date | str | Sí | Ninguna | Sin validación end > start |
+| budget | float | No (default 0.0) | Sin validación positiva | Presupuesto en ₡ (colones — se ve en el risk_summary) |
+| notes | str | No | — | |
+
+**Flujo HITL:**
+1. Valida campos obligatorios
+2. Valida `campaign_type` y `target_engagement_level` contra enums
+3. Parsea `channels` y `target_member_ids` de CSV a listas
+4. Crea approval request con `risk_summary` y `estimated_impact`
+5. `approver_roles=["admin"]` — solo admin aprueba
+6. Post-aprobación → `execute_reactivation_campaign()` crea y activa inmediatamente
+
+**Shape de respuesta (pending):**
+
+```json
+{
+  "status": "pending_approval",
+  "request_id": "uuid",
+  "message": "📣 Campaña 'X' creada. Esperando aprobación del administrador.",
+  "details": {
+    "name": "string",
+    "campaign_type": "reactivation",
+    "target_count": 25,
+    "budget": 500000.00
+  }
+}
+```
+
+**Shape de respuesta (post-aprobación):**
+
+```json
+{
+  "status": "success",
+  "message": "📣 Campaña 'X' aprobada y activada. ¡A reactivar socios!",
+  "campaign": {
+    "id": "uuid",
+    "name": "string",
+    "campaign_type": "reactivation",
+    "status": "active",
+    "target_member_ids": [...],
+    "channels": ["email", "sms"],
+    "budget": 500000.00,
+    "conversion_count": 0,
+    "created_at": "ISO datetime"
+  }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Campaña se activa inmediatamente post-aprobación** — sin scheduling de `start_date` | ALTA | Si se aprueba hoy pero start_date es la semana que entra, se activa igual. No hay delayed launch |
+| 2 | `target_member_ids` es CSV string, no array — frágil para IDs con comas | MEDIA | UUIDs no tienen comas, pero es un pattern débil |
+| 3 | **Sin validación de `end_date > start_date`** | MEDIA | Campaña con fechas invertidas |
+| 4 | **Sin validación de `budget > 0`** cuando hay campaña | BAJA | Campaña con presupuesto 0 podría ser intencional (orgánica) |
+| 5 | `target_engagement_level` y `target_member_ids` son targeting alternativos — ¿se pueden combinar? | MEDIA | Si se pasan ambos, ¿prevalece cuál? El código usa ambos sin exclusión |
+| 6 | **Sin métricas de performance** post-lanzamiento | ALTA | Conversion tracking depende de `conversion_count` — ¿quién lo actualiza? ¿Cuándo? |
+| 7 | `affected_count=len(target_ids)` — si se usa `target_engagement_level` en vez de IDs, affected_count es 0 | MEDIA | Approval request subestima impacto |
+| 8 | Sin A/B testing capability | BAJA | Para campañas premium, test de variantes es estándar |
+| 9 | Sin template variables ({{name}}, {{tier}}) en `message_template` | MEDIA | Personalización massiva |
+
+**CampaignTypes disponibles (implícito):**
+
+| Tipo | Uso | Target típico |
+|------|-----|---------------|
+| `reactivation` | Re-engagement de inactivos | AT_RISK, INACTIVE |
+| `retention` | Prevenir churn | AT_RISK |
+| `upsell` | Upgrade de tier | ENGAGED, NEUTRAL |
+| `referral` | Pedir referidos | CHAMPION |
+| `anniversary` | Celebración | Todos con fecha cercana |
+
+**Oportunidades ML:**
+
+```
+Campaign Targeting Optimization:
+  - En vez de target por engagement_level, usar RFM clusters
+  - Identificar socios con "propensity to churn" > 70%
+  - Lookalike modeling: encontrar socios con patrones similares a los que se reactivaron
+
+Campaign Performance Prediction:
+  - Basado en campañas históricas del mismo tipo
+  - Features: target_size, channel, budget, season, engagement_level_distribution
+  - Output: expected_conversion_rate, expected_revenue_impact
+
+Optimal Send Time:
+  - Por socio: ¿cuándo abre emails? ¿cuándo visita?
+  - Por canal: email mejor martes-jueves 9-11am, SMS mejor sábado 10am
+
+Message Personalization:
+  - NLP sobre feedback previo del socio para personalizar tono
+  - Referencia a actividades pasadas favoritas
+```
+
+**Frontend destino:** `ReactivationCampaigns.tsx` (list/create), `ApprovalQueue.tsx` (pending), `EngagementDashboard.tsx` (metrics)
+
+---
+
+### Tool 3: `manage_loyalty_rewards` — 🔴 HITL
+
+**Propósito:** CRUD de recompensas de fidelización con aprobación para creación.
+
+**Multi-action:**
+
+| Action | Aprobación | Descripción |
+|--------|-----------|-------------|
+| `list` | AUTO | Listar recompensas (opcionalmente por member_id) |
+| `get` | AUTO | Obtener recompensa por ID |
+| `create` | 🔴 HITL | Crear recompensa → aprobación admin |
+| `redeem` | AUTO | Redimir recompensa activa |
+
+**Parámetros para `create`:**
+
+| Param | Tipo | Requerido | Validación |
+|-------|------|-----------|-----------|
+| member_id | str | Sí | Sin validación contra repo |
+| member_name | str | Sí | Sin validación |
+| reward_type | str | Sí (default "discount") | Validado contra `RewardType` |
+| description | str | Sí | — |
+| points_cost | int | No (default 0) | Sin validación positiva |
+| monetary_value | float | No (default 0.0) | En ₡ (colones) |
+| valid_from | str | No | Sin formato |
+| valid_until | str | No | Sin validación de fecha futura |
+| notes | str | No | — |
+
+**Parámetros para `redeem`:**
+
+| Param | Tipo | Validación |
+|-------|------|-----------|
+| reward_id | str | Debe existir y estar `ACTIVE` |
+
+**Flujo `redeem`:**
+1. Obtiene reward
+2. Verifica `status == ACTIVE`
+3. Actualiza a `REDEEMED` con `redeemed_at` timestamp
+4. Retorna confirmación
+
+**Flujo post-aprobación (`execute_loyalty_reward`):**
+1. Crea `CreateLoyaltyReward` validado
+2. `repo.create_reward(data)` — crea en estado default (presumiblemente ACTIVE)
+
+**Shape de respuesta (list):**
+
+```json
+{
+  "status": "success",
+  "message": "📋 Encontramos X recompensas.",
+  "rewards": [{
+    "id": "uuid",
+    "member_id": "uuid",
+    "member_name": "string",
+    "reward_type": "discount",
+    "description": "string",
+    "points_cost": 500,
+    "monetary_value": 10000.00,
+    "status": "active",
+    "valid_from": "string",
+    "valid_until": "string",
+    "redeemed_at": null | "ISO datetime",
+    "created_at": "ISO datetime"
+  }]
+}
+```
+
+**RewardTypes disponibles (implícito):**
+
+| Tipo | Valor típico | Uso |
+|------|-------------|-----|
+| `discount` | % o monto fijo | Descuento en consumos |
+| `upgrade` | — | Upgrade de tier temporal |
+| `free_event` | costo del evento | Entrada gratis a evento |
+| `merchandise` | costo del item | Artículos del club |
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Sin auto-expiry** — recompensas con `valid_until` pasado no se marcan como expiradas automáticamente | ALTA | Socio ve recompensas "activas" que ya expiraron. Necesita cron job o check en list |
+| 2 | **Sin validación de `points_cost` contra `loyalty_points` del socio** — puede crear recompensa que el socio no puede costear | ALTA | UX rota: socio ve recompensa pero no puede redimirla |
+| 3 | `monetary_value` sin validación de mínimo/máximo | MEDIA | Recompensas de ₡0 o ₡10,000,000 sin alerta |
+| 4 | `redeem` no descuenta `loyalty_points` del socio | ALTA | Points infinite glitch — socio redime sin gastar puntos |
+| 5 | Sin campo `max_redemptions` — ¿una recompensa se puede redimir infinitas veces? | ALTA | Si es una oferta limitada, no hay control |
+| 6 | Sin campo `tier_requirement` — ¿todas las recompensas aplican a todos los tiers? | MEDIA | Recompensas VIP no deberían estar disponibles para tier básico |
+| 7 | `create` requiere `member_name` como param — ¿no debería inferirse de `member_id`? | BAJA | Desnormalización, posible inconsistencia |
+| 8 | Sin historial de cambios de estado de recompensa | MEDIA | Audit trail: created → active → redeemed/expired |
+
+**Oportunidades ML:**
+
+```
+Reward Optimization:
+  - ¿Qué tipo de recompensa tiene mayor redemption rate por tier?
+  - ¿Qué monto de points_cost es el sweet spot? (no muy bajo = abuse, no muy alto = no se redime)
+  - ¿Qué duración de valid_until maximiza redemption sin dar demasiado tiempo?
+
+Loyalty Program Health:
+  - Redemption Rate = rewards_redeemed / rewards_issued
+  - Points Liability = total_points_outstanding × avg_monetary_value_per_point
+  - Breakage Rate = points_expiring / points_issued (ganancia del club por puntos no redimidos)
+
+Personalized Reward Recommendations:
+  - Basado en consumo history: ¿el socio gasta más en F&B o en eventos?
+  - Reward type que mayor incremento en visits genera por socio
+```
+
+**Frontend destino:** `EngagementDashboard.tsx` (loyalty section), `ApprovalQueue.tsx`, `MiClubLanding.tsx` (futuro — "Mis recompensas")
+
+---
+
+### Tool 4: `submit_feedback` — 🟢 AUTO
+
+**Propósito:** Registrar, listar, obtener y responder feedback de socios.
+
+**Multi-action:**
+
+| Action | Descripción |
+|--------|-------------|
+| `list` | Listar feedbacks (opcionalmente por member_id) |
+| `get` | Obtener feedback por ID |
+| `create` | Registrar nuevo feedback |
+| `responder` | Staff responde a un feedback |
+
+**Parámetros para `create`:**
+
+| Param | Tipo | Requerido | Validación | Notas |
+|-------|------|-----------|-----------|-------|
+| member_id | str | Sí | Sin validación | |
+| member_name | str | Sí | Sin validación | Desnormalizado |
+| channel | str | No (default "in_app") | Validado contra `FeedbackChannel` | |
+| sentiment | str | No (default "neutral") | Validado contra `FeedbackSentiment` | |
+| rating | int | No (default 0) | `max(0, min(5, rating))` | Clamped a 0-5 |
+| category | str | No | Sin validación | Categoría libre |
+| comment | str | Sí | — | Texto del feedback |
+
+**Parámetros para `respond`:**
+
+| Param | Tipo | Requerido |
+|-------|------|-----------|
+| feedback_id | str | Sí |
+| response | str | Sí |
+
+**Shape de respuesta (create):**
+
+```json
+{
+  "status": "success",
+  "message": "💬 Feedback de {name} registrado. ¡Gracias por tu opinión!",
+  "feedback": {
+    "id": "uuid",
+    "member_id": "uuid",
+    "member_name": "string",
+    "channel": "in_app",
+    "sentiment": "neutral",
+    "rating": 4,
+    "category": "string",
+    "comment": "string",
+    "response": null,
+    "responded_at": null,
+    "created_at": "ISO datetime"
+  }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | `category` es string libre, no enum | ALTA | Sin categorías estandarizadas, imposible hacer analytics por categoría. Debería ser enum: "facility", "service", "food_beverage", "events", "staff", "pricing" |
+| 2 | **Sin validación de spam/duplicados** — mismo socio puede enviar 100 feedbacks en un minuto | MEDIA | Sin rate limiting |
+| 3 | `rating` clamped a 0-5 pero `sentiment` es independiente — rating=5 con sentiment=negative es válido | BAJA | Inconsistencia semántica, pero podría ser intencional (satisfecho con servicio pero negativo sobre precio) |
+| 4 | `respond` no tiene nivel de aprobación — cualquier tool call puede responder | MEDIA | Respuestas de staff deberían tener algún control de calidad |
+| 5 | **Sin `acknowledged_at`** — feedback queda sin acusar recibo hasta que alguien responde | MEDIA | Socio espera al menos un "recibimos tu feedback" automático |
+| 6 | Sin `priority` o `urgency` — una queja de seguridad tiene la misma prioridad que un elogio | ALTA | Quejas críticas pueden perderse en la cola |
+| 7 | Sin attachment (foto de instalación dañada, etc.) | MEDIA | Feedback visual es más actionable |
+| 8 | `FeedbackChannel` enum existe pero el tool no documenta los valores aceptados | BAJA | Error message los lista, pero sería mejor documentación |
+
+**Oportunidades ML:**
+
+```
+Sentiment Analysis:
+  - Actualmente sentiment es self-reported por el socio
+  - NLP sobre el comment text para validar/auto-correct sentiment
+  - Detectar sarcasmo (rating=5, comment="absolutamente maravillosa la comida fría")
+
+Topic Modeling:
+  - LDA o BERTopic sobre todos los comments
+  - Identificar temas emergentes: "estacionamiento", "horario piscina", "calidad buffet"
+  - Trend de topic volume por mes
+
+Response Time Optimization:
+  - Tiempo promedio entre feedback y respuesta por categoría
+  - SLA: quejas < 24h, sugerencias < 72h, elogios < 1 semana
+  - Alertas automáticas cuando feedback lleva > SLA sin responder
+
+NPS Calculation:
+  - Promoters: rating >= 4
+  - Passives: rating == 3
+  - Detractors: rating <= 2
+  - NPS = %Promoters - %Detractors (-100 a +100)
+  
+  NPS benchmark clubs privados: 40-60 es bueno, 70+ excelente
+```
+
+**Frontend destino:** `CommunicationCenter.tsx` (feedback management), `EngagementDashboard.tsx` (metrics), `MiClubLanding.tsx` (submit — futuro)
+
+---
+
+### Tool 5: `manage_referrals` — 🟢 AUTO
+
+**Propósito:** Programa de referidos — registrar nuevos referidos y convertirlos.
+
+**Multi-action:**
+
+| Action | Descripción |
+|--------|-------------|
+| `list` | Listar referidos (opcionalmente por referrer_member_id) |
+| `create` | Registrar nuevo referido |
+| `convert` | Marcar referido como convertido → otorga puntos |
+
+**Parámetros para `create`:**
+
+| Param | Tipo | Requerido | Default | Notas |
+|-------|------|-----------|---------|-------|
+| referrer_member_id | str | Sí | — | Socio que refiere |
+| referrer_name | str | Sí | — | Desnormalizado |
+| referred_name | str | Sí | — | Nombre del referido |
+| referred_email | str | No | "" | |
+| referred_phone | str | No | "" | |
+| reward_points | int | No | 500 | Puntos a otorgar al referente |
+| notes | str | No | "" | |
+
+**Flujo `create`:**
+1. Crea `CreateReferral` en estado "pending" (implícito)
+2. Incrementa `referral_count` en el profile del referente
+3. Retorna confirmación
+
+**Flujo `convert`:**
+1. Obtiene referral por ID
+2. Actualiza status a "converted" con `converted_at` timestamp
+3. **Suma `reward_points` al `loyalty_points` del referente**
+4. Retorna confirmación
+
+**Shape de respuesta (create):**
+
+```json
+{
+  "status": "success",
+  "message": "🤝 Referido de {referrer}: '{referred}' registrado.",
+  "referral": {
+    "id": "uuid",
+    "referrer_member_id": "uuid",
+    "referrer_name": "string",
+    "referred_name": "string",
+    "referred_email": "string",
+    "referred_phone": "string",
+    "status": "pending",
+    "reward_points": 500,
+    "converted_at": null,
+    "created_at": "ISO datetime"
+  }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Sin validación de duplicados** — mismo referido puede registrarse múltiples veces | ALTA | Doble otorgamiento de puntos al convertir |
+| 2 | **`referral_count` se incrementa en `create`, no en `convert`** — cuenta referidos pendientes como exitosos | ALTA | Métrica inflada: 100 referidos creados, 3 convertidos, referral_count muestra 100 |
+| 3 | Sin validación de que `referred_email` o `referred_phone` no pertenezca a un socio existente | ALTA | Un socio existente puede ser "referido" por otro — gaming del sistema |
+| 4 | `reward_points` default 500 — ¿es configurable por tier del referente? | MEDIA | VIP debería ganar más puntos por referido que tier básico |
+| 5 | Sin campo `referred_member_id` — cuando el referido se hace socio, ¿cómo se vincula? | ALTA | No hay link automático entre referred_name y el nuevo member_id |
+| 6 | Sin expiry para referidos pendientes — ¿un referido de hace 2 años sigue "pending"? | MEDIA | Necesita TTL o cleanup |
+| 7 | Sin reward para el REFERIDO — solo el referente gana puntos | MEDIA | Best practice: ambos reciben incentivo (referido: welcome bonus, referente: referral bonus) |
+| 8 | Sin `campaign_id` para vincular a campaña de referidos activa | BAJA | Sin atribución de campaña |
+
+**Oportunidades ML:**
+
+```
+Referral Viral Coefficient:
+  K = (referrals_per_user) × (conversion_rate)
+  K > 1 → crecimiento viral
+  K < 1 → necesita paid acquisition
+
+Referral Chain Analysis:
+  ¿Los referidos se convierten en referentes? (2nd degree referrals)
+  ¿Qué socios son "super spreaders"? → reward them more
+
+Conversion Prediction:
+  Features: referred_channel (email/phone), has_both_contact, referrer_tier, season
+  Output: probability de conversión
+  → Priorizar follow-up para referidos con baja probabilidad
+
+Referral Program ROI:
+  Revenue from converted referrals vs points given away
+  CAC (Customer Acquisition Cost) via referrals vs otros canales
+```
+
+**Frontend destino:** `EngagementDashboard.tsx` (referral metrics), `MiClubLanding.tsx` (futuro — "Referir amigo")
+
+---
+
+### Tool 6: `get_engagement_dashboard` — 🟢 AUTO
+
+**Propósito:** Dashboard consolidado de engagement — consolida datos de todos los repos.
+
+**Sin parámetros de entrada.**
+
+**Carga 5 repos en paralelo (potencial N+1):**
+
+```
+profiles  = repo.list_profiles()
+campaigns = repo.list_campaigns()
+rewards   = repo.list_rewards()
+feedbacks = repo.list_feedback()
+referrals = repo.list_referrals()
+```
+
+**Shape de respuesta:**
+
+```json
+{
+  "status": "success",
+  "message": "📊 Dashboard de engagement del club.",
+  "dashboard": {
+    "profiles": {
+      "total": 150,
+      "by_level": {
+        "champion": 12,
+        "engaged": 45,
+        "neutral": 58,
+        "at_risk": 23,
+        "inactive": 12
+      },
+      "at_risk_members": ["Juan Pérez", "María López", ...],
+      "total_loyalty_points": 125000,
+      "total_spend_ytd": 8500000.00
+    },
+    "campaigns": {
+      "total": 8,
+      "active": 3,
+      "total_conversions": 45
+    },
+    "rewards": {
+      "total": 120,
+      "active": 45,
+      "redeemed": 60
+    },
+    "feedback": {
+      "total": 230,
+      "average_rating": 4.2,
+      "sentiment_breakdown": {
+        "positive": 150,
+        "neutral": 55,
+        "negative": 25
+      }
+    },
+    "referrals": {
+      "total": 35,
+      "pending": 20,
+      "converted": 15
+    }
+  }
+}
+```
+
+**KPIs que se extraen del dashboard:**
+
+| KPI | Campo | Cálculo | Benchmark |
+|-----|-------|---------|-----------|
+| Total Active Members | `profiles.total` | Count | — |
+| Champion % | `by_level.champion / total × 100` | 8-15% es healthy |
+| At-Risk Rate | `by_level.at_risk / total × 100` | < 15% objetivo |
+| Inactive Rate | `by_level.inactive / total × 100` | < 10% objetivo |
+| Campaign Conversion Rate | `total_conversions / (total × avg_target_per_campaign)` | 5-15% es buen benchmark |
+| Reward Redemption Rate | `rewards.redeemed / rewards.total × 100` | 40-60% es healthy |
+| Avg Feedback Rating | `feedback.average_rating` | > 4.0 es bueno |
+| NPS Proxy | sentiment_breakdown: positive% - negative% | > 40 es bueno para clubs |
+| Referral Conversion Rate | `referrals.converted / referrals.total × 100` | 30-50% es buen benchmark |
+| Viral K | `(referrals.total / profiles.total) × (converted / total)` | K > 0.3 es healthy |
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **5 await secuenciales** — no hay paralelización con `asyncio.gather()` | MEDIA | Latencia innecesaria. Todos los repos son independientes |
+| 2 | **`at_risk_members` devuelve nombres, no IDs** — no se puede navegar al perfil del socio | ALTA | Frontend solo muestra texto, no puede hacer drill-down |
+| 3 | **Sin comparativa temporal** — todos los KPIs son snapshot sin trend | ALTA | "150 socios" → ¿eran 160 el mes pasado? ¿Estamos creciendo o cayendo? |
+| 4 | `total_spend_ytd` es sum de profiles — ¿viene del profile o se calcula? | MEDIA | Si viene del profile, puede estar stale |
+| 5 | **Sin engagement score promedio** — tenemos profiles con score pero no se promedia | MEDIA | KPI clave ausente |
+| 6 | Sin revenue attribution por engagement level | ALTA | ¿Los champion generan 3x más revenue que neutral? |
+| 7 | Sin campaign ROI (conversions × avg_revenue vs campaign_cost) | ALTA | Junta directiva necesita ver ROI |
+| 8 | `sentiment_breakdown` no incluye NPS calculado | MEDIA | NPS = %positive - %negative (aproximación) |
+| 9 | Sin top engaged members / top referrers | MEDIA | Leaderboard gamifica engagement |
+| 10 | Sin churn rate mensual | ALTA | KPI #1 para retención |
+
+**Oportunidades ML/analytics:**
+
+```
+Engagement Health Score (compound):
+  health = 0.3×(1 - at_risk_rate) + 0.25×redemption_rate 
+         + 0.2×(avg_rating/5) + 0.15×referral_conversion_rate
+         + 0.1×campaign_conversion_rate
+  
+  Normalized 0-100. Benchmark: > 65 es healthy
+
+Cohort Retention Table:
+  Rows: mes de ingreso
+  Columns: meses desde ingreso (0, 1, 2, ... 12)
+  Values: % de socios activos
+  
+  Detecta: "Los socios que entraron en diciembre 2024 tienen 40% churn a los 3 meses"
+
+Engagement-Revenue Correlation:
+  Scatter: engagement_score (x) vs total_spend_ytd (y)
+  r² → ¿el engagement predice revenue?
+  Si r² > 0.5 → engagement spending es investment, no cost
+
+Seasonality Map (Costa Rica specific):
+  Engagement baja en: setiembre-octubre (lluvias, cierre de temporada)
+  Engagement alta en: diciembre-abril (temporada alta, eventos sociales)
+  Ajustar campañas y KPIs por estacionalidad
+```
+
+**Frontend destino:** `EngagementDashboard.tsx` (principal)
+
+---
+
+### Resumen Ejecutivo MemberEngagementAgent
+
+**Arquitectura:**
+- 6 tools: 2 HITL (campaign, loyalty), 4 AUTO (insights, feedback, referrals, dashboard)
+- Patrón multi-action: un tool maneja list/get/create/update en vez de tools separados
+- Patrón HITL: `create_request` → pending → `execute_X` post-aprobación
+- Repository pattern: toda la lógica en `MemberEngagementRepository`
+
+**Modelos usados (11):**
+
+| Modelo | Uso |
+|--------|-----|
+| `EngagementLevel` | 5 niveles: champion → inactive |
+| `CampaignType` | Tipos de campaña |
+| `FeedbackChannel` | Canales de feedback |
+| `FeedbackSentiment` | positive/neutral/negative |
+| `RewardType` | Tipos de recompensa |
+| `RewardStatus` | Estados de recompensa |
+| `CreateReactivationCampaign` | Input model para campaign |
+| `CreateLoyaltyReward` | Input model para reward |
+| `CreateMemberFeedback` | Input model para feedback |
+| `CreateReferral` | Input model para referral |
+| `CreateEngagementProfile` | Input model para profile (no usado directamente en tools) |
+
+**Gaps críticos para el frontend:**
+
+| Gap | Impacto | Prioridad |
+|-----|---------|-----------|
+| Sin engagement trend (up/down/stable) | KPIs sin dirección | ALTA |
+| Sin NPS calculado | Metric clave de retención ausente | ALTA |
+| Sin churn rate | No se puede medir retención | ALTA |
+| Sin campaign ROI | Junta directiva no ve valor | ALTA |
+| at_risk_members devuelve nombres no IDs | Sin drill-down | ALTA |
+| Rewards no verifican points balance | Gaming del sistema | ALTA |
+| Referrals no verifican duplicados | Doble points | ALTA |
+| Sin categorías estandarizadas en feedback | Sin analytics por categoría | ALTA |
+| Dashboard sin temporal comparison | Sin tendencia | ALTA |
+| 5 await secuenciales en dashboard | Performance | MEDIA |
+
+**KPIs que el frontend NECESITA y el backend YA provee:**
+
+| KPI | Tool fuente | Campo |
+|-----|-------------|-------|
+| Total profiles | get_engagement_dashboard | dashboard.profiles.total |
+| Distribution por level | get_engagement_dashboard | dashboard.profiles.by_level |
+| At-risk member names | get_engagement_dashboard | dashboard.profiles.at_risk_members |
+| Total loyalty points | get_engagement_dashboard | dashboard.profiles.total_loyalty_points |
+| Total spend YTD | get_engagement_dashboard | dashboard.profiles.total_spend_ytd |
+| Active campaigns | get_engagement_dashboard | dashboard.campaigns.active |
+| Campaign conversions | get_engagement_dashboard | dashboard.campaigns.total_conversions |
+| Reward redemption rate | get_engagement_dashboard | derived: redeemed/total |
+| Avg feedback rating | get_engagement_dashboard | dashboard.feedback.average_rating |
+| Sentiment breakdown | get_engagement_dashboard | dashboard.feedback.sentiment_breakdown |
+| Referral conversion rate | get_engagement_dashboard | derived: converted/total |
+| Individual engagement score | get_engagement_insights | profile.engagement_score |
+| Individual visit count | get_engagement_insights | profile.visits_last_30_days |
+
+**KPIs que FALTAN (para AI analysis):**
+
+| KPI | Cálculo | Datos necesarios |
+|-----|---------|-----------------|
+| NPS | %promoters(4-5) - %detractors(1-2) | feedback ratings (ya hay) |
+| Churn Rate | members_lost_this_month / members_start × 100 | Historial de status por mes |
+| Engagement Health Score | Weighted compound de 5 factores | Datos del dashboard (ya hay) |
+| Campaign ROI | (revenue_from_conversions - campaign_cost) / campaign_cost | Revenue per converted member + campaign budget |
+| Viral K | referrals_per_user × conversion_rate | Ya calculable |
+| Retention Rate | 1 - churn_rate | Requiere historial |
+| Customer Lifetime Value | avg_monthly_spend × avg_tenure_months × (1-churn) | Spend de profile + tenure |
+| Diversification Index (Shannon) | -Σ(p_i × log2(p_i)) sobre engagement levels | by_level distribution |
+
+**Modelos ML aplicables:**
+
+| Modelo | Complejidad | Valor |
+|--------|-------------|-------|
+| Churn Prediction (logistic regression) | Baja | Predecir quién churnea en 90 días → campaña preventiva |
+| Engagement Score (weighted features) | Baja | Reemplazar hardcode insights con score real |
+| NPS Trend (time series) | Baja | Detectar deterioro de satisfacción antes de que sea crítico |
+| Campaign Targeting (clustering) | Media | K-means sobre RFM → segmentos naturales |
+| Reward Recommendation (collaborative filtering) | Media | "Socios como tú canjearon X" |
+| Sentiment Analysis (NLP sobre comments) | Media | Auto-categorizar y detectar urgencia |
+
+---
+
+Listo. Mandame el siguiente agente.

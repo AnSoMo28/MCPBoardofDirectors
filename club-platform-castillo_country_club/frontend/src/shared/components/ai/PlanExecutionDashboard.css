@@ -1,0 +1,427 @@
+/**
+ * @component PlanExecutionDashboard (Fase 23)
+ * @namespace .glass-plan
+ * @depends globals.css (radius-xl, font tokens, color tokens)
+ * @note Clean — no conflicts. Mission control with KPI cards, SVG execution
+ *       ring, goal cards with pipeline timeline, approval gates, flow animation.
+ *       6 keyframes, ~39 classes.
+ * @import import './PlanExecutionDashboard.css';
+ */
+
+/* ═══════════════════════════════════════════════
+   Plan Execution Dashboard — Mission Control
+   Namespace: .glass-plan__*
+   ═══════════════════════════════════════════════ */
+
+/* Main surface */
+.glass-plan {
+  position: relative;
+  border-radius: var(--radius-xl, 16px);
+  background: rgba(14, 20, 32, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 2px solid rgba(20, 184, 166, 0.15);
+  overflow: hidden;
+}
+
+.glass-plan__glow {
+  position: absolute;
+  top: -30%;
+  left: -10%;
+  width: 45%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.04), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: plan-glow 7s ease-in-out infinite;
+}
+
+@keyframes plan-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+/* KPI Cards */
+.glass-plan__kpi {
+  position: relative;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.glass-plan__kpi:hover {
+  border-color: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.glass-plan__kpi-glow {
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 140%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glass-plan__kpi-glow--silver {
+  background: radial-gradient(circle, rgba(148, 163, 184, 0.06), transparent 70%);
+}
+
+.glass-plan__kpi-glow--emerald {
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.06), transparent 70%);
+}
+
+.glass-plan__kpi-glow--rose {
+  background: radial-gradient(circle, rgba(228, 90, 100, 0.06), transparent 70%);
+}
+
+.glass-plan__kpi-glow--amber {
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.06), transparent 70%);
+}
+
+.glass-plan__kpi-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Execution Ring (SVG donut) */
+.glass-plan__ring {
+  flex-shrink: 0;
+}
+
+.glass-plan__ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 4;
+}
+
+.glass-plan__ring-fill {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transform-origin: center;
+  transform: rotate(-90deg);
+}
+
+.glass-plan__ring-value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--color-silver-200);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* Goal Card */
+.glass-plan__goal {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.glass-plan__goal:hover {
+  border-color: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.glass-plan__goal--active {
+  border-color: rgba(20, 184, 166, 0.12);
+}
+
+.glass-plan__goal--blocked {
+  border-color: rgba(228, 90, 100, 0.12);
+  animation: plan-critical-pulse 3s ease-in-out infinite;
+}
+
+@keyframes plan-critical-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 0 transparent; }
+  50% { box-shadow: inset 0 0 24px rgba(228, 90, 100, 0.04); }
+}
+
+.glass-plan__goal--achieved {
+  border-color: rgba(52, 211, 153, 0.12);
+}
+
+/* Pipeline */
+.glass-plan__pipeline {
+  position: relative;
+  padding-left: 26px;
+}
+
+.glass-plan__pipeline::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+  border-radius: 1px;
+}
+
+/* Pipeline Node */
+.glass-plan__node {
+  position: relative;
+  padding: 6px 0;
+}
+
+.glass-plan__node-dot {
+  position: absolute;
+  left: -20px;
+  top: 10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  background: rgba(14, 20, 32, 0.95);
+  z-index: 1;
+  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+
+.glass-plan__node-dot--done {
+  border-color: var(--color-emerald-400);
+  background: var(--color-emerald-400);
+}
+
+.glass-plan__node-dot--executing {
+  border-color: var(--color-teal-400);
+  background: var(--color-teal-400);
+  box-shadow: 0 0 8px rgba(20, 184, 166, 0.5);
+  animation: plan-node-pulse 2s ease-in-out infinite;
+}
+
+.glass-plan__node-dot--awaiting {
+  border-color: var(--color-amber-400);
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+  animation: plan-node-pulse 2.5s ease-in-out infinite;
+}
+
+.glass-plan__node-dot--failed {
+  border-color: var(--color-rose-400);
+  background: var(--color-rose-400);
+}
+
+.glass-plan__node-dot--skipped {
+  border-color: rgba(255, 255, 255, 0.20);
+  background: transparent;
+  border-style: dashed;
+}
+
+@keyframes plan-node-pulse {
+  0%, 100% { box-shadow: 0 0 6px currentColor; }
+  50% { box-shadow: 0 0 14px currentColor; }
+}
+
+/* Flow animation between executing nodes */
+.glass-plan__flow {
+  position: absolute;
+  left: -20px;
+  bottom: -2px;
+  width: 10px;
+  height: 18px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.glass-plan__flow-dot {
+  position: absolute;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-teal-400);
+  box-shadow: 0 0 6px rgba(20, 184, 166, 0.6);
+  transform: translateX(-50%);
+  animation: plan-flow-down 1.2s ease-in-out infinite;
+}
+
+@keyframes plan-flow-down {
+  0% { top: 0; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 0.5; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* Approval Gate */
+.glass-plan__gate {
+  position: relative;
+  margin: 6px 0 2px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(251, 191, 36, 0.04);
+  border: 1px solid rgba(251, 191, 36, 0.12);
+  border-left: 3px solid var(--color-amber-400);
+  overflow: hidden;
+  animation: plan-gate-breathe 3s ease-in-out infinite;
+}
+
+.glass-plan__gate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.03), transparent 60%);
+  pointer-events: none;
+}
+
+@keyframes plan-gate-breathe {
+  0%, 100% { border-color: rgba(251, 191, 36, 0.12); }
+  50% { border-color: rgba(251, 191, 36, 0.22); }
+}
+
+/* Metrics row inside expanded goal */
+.glass-plan__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.glass-plan__metric-label {
+  display: block;
+  font-size: 9px;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
+  margin-bottom: 2px;
+}
+
+.glass-plan__metric-value {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-silver-300);
+  font-family: var(--font-mono);
+}
+
+/* Autonomy gauge */
+.glass-plan__autonomy {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.glass-plan__autonomy-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Empty state */
+.glass-plan__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.glass-plan__empty-icon {
+  animation: plan-empty-breathe 3s ease-in-out infinite;
+}
+
+@keyframes plan-empty-breathe {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(1.06); }
+}
+
+/* ═══ Light Mode Overrides ═══ */
+
+.light .glass-plan {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 2px solid rgba(20, 184, 166, 0.20);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.03);
+}
+
+.light .glass-plan__glow {
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.06), transparent 70%);
+}
+
+.light .glass-plan__kpi {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-plan__kpi:hover {
+  background: rgba(0, 0, 0, 0.035);
+  border-color: rgba(0, 0, 0, 0.10);
+}
+
+.light .glass-plan__goal {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-plan__goal:hover {
+  background: rgba(0, 0, 0, 0.025);
+  border-color: rgba(0, 0, 0, 0.10);
+}
+
+.light .glass-plan__pipeline::before {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.05));
+}
+
+.light .glass-plan__node-dot {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.light .glass-plan__ring-track {
+  stroke: rgba(0, 0, 0, 0.08);
+}
+
+.light .glass-plan__ring-value {
+  fill: var(--color-abyss, #0a0e14);
+}
+
+.light .glass-plan__gate {
+  background: rgba(251, 191, 36, 0.06);
+  border-color: rgba(251, 191, 36, 0.15);
+}
+
+.light .glass-plan__metrics {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.light .glass-plan__metric-label {
+  color: var(--color-silver-600, #4b5563);
+}
+
+.light .glass-plan__metric-value {
+  color: var(--color-silver-700, #374151);
+}
+
+.light .glass-plan__flow-dot {
+  background: var(--color-teal-500, #0d9488);
+  box-shadow: 0 0 6px rgba(13, 148, 136, 0.5);
+}
+
+.light .glass-plan__autonomy {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-plan__empty-icon {
+  color: var(--color-silver-400, #9ca3af);
+}

@@ -1,0 +1,1033 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/LifecycleTimeline.css
+   Phase 34+ Migration — "The River of Life"
+   Level 6+ Agency · Production Grade
+
+   SIGNATURE VISUAL ELEMENTS:
+   1.  Flowing river segments — CSS gradient animation moves
+   2.  You-are-here beacon — concentric pulse rings
+   3.  Ghost tributary — shimmer animation on projected path
+   4.  Intervention portal — pulsing border when active
+   5.  Trigger lightning cards — expandable
+   6.  Health bars — vertical fill with bounce
+   7.  Projection arrow — flowing dashed line
+   8.  River flow overlay — moving gradient per segment
+   9.  Beacon glow — icon with box-shadow pulse
+   10. Stage transitions — smooth color gradients
+
+   CSS STANDARD: 13 Dimensions Applied
+     D1  Glass morphism (inset highlight, gold border-left)
+     D2  Stagger (10 section groups + river segment cascade)
+     D3  Cubic-bezier easing on entrance
+     D4  Mono for data, display for stages, UI for body
+     D5  Stage-driven dynamic colors via --lc-* and --seg-*
+     D6  Pseudo-element depth (flow, shimmer, beacon rings, portal glow)
+     D7  Hover on river segments + triggers
+     D8  Tight spatial density
+     D9  Responsive ≤768px
+     D10 role="region", aria-label
+     D11 Light mode complete
+     D12 Reduced motion + print
+     D13 fm-lc* namespaced keyframes (10 total)
+
+   Keyframes: fm-lcSlideUp, fm-lcRiverFlow, fm-lcBeaconPulse,
+              fm-lcBeaconRing, fm-lcGhostShimmer, fm-lcPortalGlow,
+              fm-lcHealthFill, fm-lcProjectionFlow, fm-lcSegmentFade,
+              fm-lcFadeIn
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Glass Card Surface
+   D1-01: Translucent gradient
+   D1-07: Inset top highlight
+   D1-12: Border-left gold accent
+   D1-13: Contextual shadow
+   D1-14: overflow: hidden
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-lc {
+  position: relative;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    168deg,
+    rgba(180, 190, 210, 0.03) 0%,
+    rgba(12, 16, 24, 0.97) 40%,
+    rgba(8, 12, 18, 0.98) 100%
+  );
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid rgba(201, 169, 110, 0.2);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  opacity: 0;
+  animation: fm-lcSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Inset top edge light */
+.fm-lc::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.03) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Zone atmosphere glow */
+.fm-lc::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 30% 40%,
+    color-mix(in srgb, var(--lc-current-color, transparent) 4%, transparent) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Header
+   D4-02: Label mono uppercase
+   D2-07: Stagger delay 0s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-lc__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 14px;
+  opacity: 0;
+  animation: fm-lcSlideUp 0.3s ease 0s forwards;
+}
+
+.fm-lc__section-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-silver-500);
+}
+
+.fm-lc__confidence {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-silver-500);
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Current Stage Beacon — "You Are Here"
+   D6: Concentric pulse rings (::before, ::after on ring children)
+   D5: Stage color via --lc-current-color
+   D2-07: Stagger delay 0.05s
+
+   THE SIGNATURE ELEMENT: Three concentric rings pulse outward
+   from the current stage icon. Like a sonar beacon or GPS dot.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-lc__beacon {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 16px;
+  opacity: 0;
+  animation: fm-lcSlideUp 0.3s ease 0.05s forwards;
+}
+
+.fm-lc__beacon-ring {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-lc__beacon-icon {
+  position: relative;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--lc-current-bg, rgba(255, 255, 255, 0.04));
+  border: 1px solid color-mix(in srgb, var(--lc-current-color, var(--color-silver-400)) 25%, transparent);
+  color: var(--lc-current-color, var(--color-silver-400));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--lc-current-color, transparent) 30%, transparent);
+}
+
+/* Concentric pulse rings */
+.fm-lc__beacon-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--lc-current-color, var(--color-silver-400));
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  animation: fm-lcBeaconRing 3s ease-out infinite;
+}
+
+.fm-lc__beacon-pulse--1 { animation-delay: 0s; }
+.fm-lc__beacon-pulse--2 { animation-delay: 1s; }
+.fm-lc__beacon-pulse--3 { animation-delay: 2s; }
+
+.fm-lc__beacon-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-lc__beacon-stage {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--lc-current-color, var(--color-silver-100));
+  line-height: 1.2;
+}
+
+.fm-lc__beacon-desc {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  line-height: 1.3;
+  margin-top: 1px;
+}
+
+.fm-lc__beacon-days {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  margin-top: 3px;
+}
+
+/* Countdown badge */
+.fm-lc__countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.fm-lc__countdown[data-urgency="imminent"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+  animation: fm-lcPortalGlow 2s ease-in-out infinite;
+}
+
+.fm-lc__countdown[data-urgency="soon"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+}
+
+.fm-lc__countdown[data-urgency="normal"] {
+  color: var(--color-silver-500);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Stage River — THE FLOWING TIMELINE
+   D6: River flow animation (::after on each segment)
+   D7: Hover brightens segment
+   D5: Segment colors via --seg-color
+   D2-07: Stagger delay 0.1s (container), segments cascade
+
+   THE RIVER: Each stage segment has a colored fill that
+   "flows" via a moving gradient overlay. The current
+   segment has a "you are here" marker. Ghost segments
+   shimmer with a moving gradient.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-lc__river {
+  display: flex;
+  align-items: stretch;
+  height: 44px;
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-lcSlideUp 0.3s ease 0.1s forwards;
+}
+
+.fm-lc__river-segment {
+  position: relative;
+  width: var(--seg-width, 10%);
+  height: 100%;
+  overflow: hidden;
+  cursor: default;
+  opacity: 0;
+  animation: fm-lcSegmentFade 0.3s ease forwards;
+  animation-delay: calc(var(--seg-index, 0) * 60ms + 0.15s);
+  transition: filter 0.2s ease;
+}
+
+.fm-lc__river-segment:hover {
+  filter: brightness(1.3);
+  z-index: 2;
+}
+
+/* Colored fill */
+.fm-lc__river-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--seg-color, var(--color-silver-600));
+  opacity: 0.5;
+}
+
+/* Current segment is brighter */
+.fm-lc__river-segment[data-current] .fm-lc__river-fill {
+  opacity: 1;
+}
+
+/* Flow animation — moving gradient overlay */
+.fm-lc__river-flow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 70%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: fm-lcRiverFlow 3s ease-in-out infinite;
+  opacity: 0.4;
+}
+
+.fm-lc__river-segment[data-current] .fm-lc__river-flow {
+  opacity: 0.7;
+}
+
+/* Stage label at bottom of segment */
+.fm-lc__river-label {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 2;
+}
+
+/* You-are-here marker */
+.fm-lc__river-marker {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  color: white;
+  z-index: 3;
+  filter: drop-shadow(0 0 4px var(--lc-current-color, var(--color-gold-400)));
+  animation: fm-lcBeaconPulse 2s ease-in-out infinite;
+}
+
+/* Trigger event dot */
+.fm-lc__river-trigger-dot {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  color: var(--color-amber-400);
+  z-index: 3;
+  filter: drop-shadow(0 0 3px var(--color-amber-400));
+}
+
+/* Ghost segment — projected future */
+.fm-lc__river-ghost {
+  position: relative;
+  width: var(--ghost-width, 10%);
+  height: 100%;
+  overflow: hidden;
+  opacity: 0;
+  animation: fm-lcSegmentFade 0.4s ease 0.5s forwards;
+}
+
+.fm-lc__river-ghost-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--ghost-color, var(--color-silver-600));
+  opacity: 0.2;
+  border-left: 2px dashed var(--ghost-color, var(--color-silver-600));
+}
+
+/* Shimmer animation on ghost */
+.fm-lc__river-ghost-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 60%,
+    transparent 100%
+  );
+  background-size: 300% 100%;
+  animation: fm-lcGhostShimmer 4s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Projection Arrow — Animated Flowing Connection
+   D6: Flowing dashed line
+   D2-07: Stagger delay 0.15s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-lc__projection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-lcSlideUp 0.3s ease 0.15s forwards;
+}
+
+.fm-lc__projection-from {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--lc-current-color, var(--color-silver-300));
+}
+
+.fm-lc__projection-line {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 2px;
+}
+
+.fm-lc__projection-flow {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--lc-current-color, var(--color-silver-400)) 0px,
+    var(--lc-current-color, var(--color-silver-400)) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  background-size: 200% 100%;
+  opacity: 0.3;
+  animation: fm-lcProjectionFlow 2s linear infinite;
+}
+
+.fm-lc__projection-chevron {
+  position: absolute;
+  right: 0;
+  color: var(--lc-projected-color, var(--color-silver-400));
+  filter: drop-shadow(0 0 4px var(--lc-projected-color, transparent));
+}
+
+.fm-lc__projection-to {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--lc-projected-color, var(--color-silver-300));
+}
+
+.fm-lc__projection-est {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Health Bars — Vertical vitality per stage
+   D2-07: Stagger delay 0.2s
+   D5: Health bar colors via --hb-color
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-lc__health {
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-lcSlideUp 0.3s ease 0.2s forwards;
+}
+
+.fm-lc__health-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-silver-500);
+  margin-bottom: -2px;
+}
+
+.fm-lc__health-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 56px;
+  padding: 8px 0 0;
+}
+
+.fm-lc__health-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+}
+
+.fm-lc__health-track {
+  width: 100%;
+  height: 40px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.fm-lc__health-fill {
+  width: 100%;
+  height: var(--hb-height, 50%);
+  border-radius: 3px 3px 0 0;
+  background: var(--hb-color, var(--color-silver-400));
+  opacity: 0.7;
+  transform: scaleY(0);
+  transform-origin: bottom;
+  animation: fm-lcHealthFill 0.5s ease forwards;
+  animation-delay: calc(var(--hb-index, 0) * 80ms + 0.3s);
+}
+
+.fm-lc__health-bar[data-current] .fm-lc__health-fill {
+  opacity: 1;
+}
+
+.fm-lc__health-score {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Intervention Window Portal
+   D6: Pulsing border glow when active
+   D5: Portal color via --portal-color
+   D2-07: Stagger delay 0.25s
+
+   THE PORTAL: When the intervention window is ACTIVE,
+   the card has a pulsing border glow that demands attention.
+   Like a portal of opportunity opening.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-lc__portal {
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid color-mix(in srgb, var(--portal-color, var(--color-amber-400)) 20%, transparent);
+  background: color-mix(in srgb, var(--portal-color, var(--color-amber-400)) 3%, rgba(255, 255, 255, 0.01));
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-lcSlideUp 0.3s ease 0.25s forwards;
+}
+
+/* Active portal: pulsing glow */
+.fm-lc__portal[data-state="active"] {
+  border-color: color-mix(in srgb, var(--portal-color, var(--color-rose-400)) 35%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--portal-color, var(--color-rose-400)) 12%, transparent);
+  animation:
+    fm-lcSlideUp 0.3s ease 0.25s forwards,
+    fm-lcPortalGlow 3s ease-in-out 0.8s infinite;
+}
+
+.fm-lc__portal-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: var(--portal-color, var(--color-amber-400));
+}
+
+.fm-lc__portal-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex: 1;
+}
+
+.fm-lc__portal-status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--portal-color, var(--color-amber-400));
+}
+
+.fm-lc__portal-dates {
+  display: flex;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  margin-bottom: 8px;
+}
+
+.fm-lc__portal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fm-lc__portal-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-300);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.fm-lc__portal-action svg {
+  color: var(--portal-color, var(--color-amber-400));
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Trigger Events — Expandable Lightning Cards
+   D7: Hover + click to expand
+   D2-07: Stagger delay 0.3s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-lc__triggers {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-lcSlideUp 0.3s ease 0.3s forwards;
+}
+
+.fm-lc__triggers-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-silver-500);
+  margin-bottom: -2px;
+}
+
+.fm-lc__triggers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fm-lc__trigger {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.015);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.fm-lc__trigger:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.fm-lc__trigger[data-expanded] {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+}
+
+.fm-lc__trigger:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.fm-lc__trigger-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fm-lc__trigger-head svg {
+  color: var(--color-amber-400);
+  flex-shrink: 0;
+}
+
+.fm-lc__trigger-text {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-300);
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Keyframes — fm-lc* namespaced
+   D13-01: All at end
+   D13-02: All namespaced
+   Total: 10 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-lcSlideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fm-lcSegmentFade {
+  from { opacity: 0; transform: scaleX(0); transform-origin: left; }
+  to { opacity: 1; transform: scaleX(1); transform-origin: left; }
+}
+
+/* River flow — moving gradient within each segment */
+@keyframes fm-lcRiverFlow {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Beacon pulse — icon glows */
+@keyframes fm-lcBeaconPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Beacon concentric rings — expand outward and fade */
+@keyframes fm-lcBeaconRing {
+  0% {
+    width: 32px;
+    height: 32px;
+    opacity: 0.6;
+  }
+  100% {
+    width: 60px;
+    height: 60px;
+    opacity: 0;
+  }
+}
+
+/* Ghost shimmer — moving highlight on projected path */
+@keyframes fm-lcGhostShimmer {
+  0% { background-position: 300% 0; }
+  100% { background-position: -300% 0; }
+}
+
+/* Portal glow — pulsing box-shadow */
+@keyframes fm-lcPortalGlow {
+  0%, 100% { box-shadow: 0 0 8px color-mix(in srgb, var(--portal-color, var(--color-amber-400)) 8%, transparent); }
+  50% { box-shadow: 0 0 20px color-mix(in srgb, var(--portal-color, var(--color-amber-400)) 18%, transparent); }
+}
+
+/* Health bar fill — scale from bottom */
+@keyframes fm-lcHealthFill {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+/* Projection flow — moving dashes */
+@keyframes fm-lcProjectionFlow {
+  0% { background-position: 200% 0; }
+  100% { background-position: 0% 0; }
+}
+
+@keyframes fm-lcFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Light Mode
+   D11: Complete
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-lc {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+  border-left-color: rgba(201, 169, 110, 0.12);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-lc::before,
+.light .fm-lc::after {
+  display: none;
+}
+
+.light .fm-lc__river-fill {
+  opacity: 0.4;
+}
+
+.light .fm-lc__river-segment[data-current] .fm-lc__river-fill {
+  opacity: 0.8;
+}
+
+.light .fm-lc__river-flow {
+  opacity: 0.2;
+}
+
+.light .fm-lc__river-ghost-fill {
+  opacity: 0.15;
+}
+
+.light .fm-lc__beacon-icon {
+  box-shadow: 0 0 8px color-mix(in srgb, var(--lc-current-color, transparent) 20%, transparent);
+}
+
+.light .fm-lc__health-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-lc__portal {
+  background: color-mix(in srgb, var(--portal-color, var(--color-amber-400)) 4%, rgba(0, 0, 0, 0.01));
+}
+
+.light .fm-lc__trigger {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-lc__trigger:hover {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .fm-lc__portal-action {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Reduced Motion
+   D12-05: opacity: 1 on all stagger
+   D12-06: All animations disabled
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-lc,
+  .fm-lc__header,
+  .fm-lc__beacon,
+  .fm-lc__river,
+  .fm-lc__projection,
+  .fm-lc__health,
+  .fm-lc__portal,
+  .fm-lc__triggers {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .fm-lc__river-segment,
+  .fm-lc__river-ghost {
+    animation: none;
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .fm-lc__river-flow,
+  .fm-lc__river-ghost-shimmer,
+  .fm-lc__projection-flow {
+    animation: none;
+  }
+
+  .fm-lc__beacon-pulse {
+    animation: none;
+    opacity: 0;
+  }
+
+  .fm-lc__beacon-icon {
+    animation: none;
+  }
+
+  .fm-lc__health-fill {
+    animation: none;
+    transform: scaleY(1);
+  }
+
+  .fm-lc__portal[data-state="active"] {
+    animation: none;
+  }
+
+  .fm-lc__countdown[data-urgency="imminent"] {
+    animation: none;
+  }
+
+  .fm-lc__trigger {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Responsive
+   D9: Mobile adjustments
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fm-lc {
+    padding: 14px 16px;
+  }
+
+  .fm-lc__beacon {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .fm-lc__countdown {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .fm-lc__river {
+    height: 36px;
+  }
+
+  .fm-lc__river-label {
+    font-size: 6px;
+  }
+
+  .fm-lc__health-bars {
+    height: 44px;
+  }
+
+  .fm-lc__portal-dates {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fm-lc__beacon-stage {
+    font-size: 14px;
+  }
+
+  .fm-lc__projection {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .fm-lc__projection-est {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Print
+   D12-01: break-inside avoid
+   D12-02: White bg
+   D12-03: No pseudo-elements, no animations
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-lc {
+    break-inside: avoid;
+    background: white;
+    border: 1px solid #ccc;
+    border-left: 3px solid #c9a96e;
+    backdrop-filter: none;
+    opacity: 1;
+    animation: none;
+    box-shadow: none;
+  }
+
+  .fm-lc::before,
+  .fm-lc::after {
+    display: none;
+  }
+
+  .fm-lc__header,
+  .fm-lc__beacon,
+  .fm-lc__river,
+  .fm-lc__projection,
+  .fm-lc__health,
+  .fm-lc__portal,
+  .fm-lc__triggers {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-lc__river-segment,
+  .fm-lc__river-ghost {
+    animation: none;
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .fm-lc__river-flow,
+  .fm-lc__river-ghost-shimmer,
+  .fm-lc__projection-flow,
+  .fm-lc__beacon-pulse {
+    display: none;
+  }
+
+  .fm-lc__health-fill {
+    animation: none;
+    transform: scaleY(1);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-lc__river-fill {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

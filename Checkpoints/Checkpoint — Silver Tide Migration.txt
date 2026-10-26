@@ -1,0 +1,362 @@
+Checkpoint — Silver Tide Migration Complete
+
+
+Sprint Status — All Closed
+
+Sprint	Archivos	Estado
+8E-1	Migración inicial (lote 1)	✅
+8E-2	Migración (lote 2)	✅
+8E-3	Migración (lote 3)	✅
+8E-4	Migración (lote 4)	✅
+8E-5	Migración (lote 5)	✅
+8E-6	Migración (lote 6)	✅
+8E-7	Shared UI (Badge, Button, Card, Skeleton, Toast)	✅
+8E-8	Shared Layout (PageContainer, StatCard, EmptyState, DashboardLayout)	✅
+8E-9	Shared Lib/Stores (utils.ts, auth.store.ts, theme.store.ts)	✅
+8E-10	Families (types.ts, FamilyList, FamilyDetail, FamilyForm)	✅
+8E-11	Facilities (types.ts, FacilityMap, FacilityDetail, ReservationCalendar)	✅
+8E-12	Dashboard (ExecutiveDashboard, PrintView)	✅
+8E-13	Events + Engagement (EventCalendar, EventDetail, EventForm, EngagementDashboard, ReactivationCampaigns, SatisfactionSurvey, SatisfactionReport, types.ts de ambos)	✅
+8E-14	Communications + Documents + Reports (CommunicationCenter, AnnouncementBoard, EmergencyBroadcast, DocumentRepository, KnowledgeQuery, BoardReportViewer, RiskHeatmap, types.ts de los 3)	✅
+8E-15	Auth + App Shell (App.tsx, providers.tsx, router.tsx)	✅
+
+15/15 sprints completados.
+
+
+
+Estructura de archivos actual
+
+text
+text
+src/
+├── app/
+│   ├── App.tsx                          ✅ Silver Tide
+│   ├── providers.tsx                    ✅ Limpio (sin tokens CSS)
+│   └── router.tsx                       ✅ Limpio (sin tokens CSS)
+│
+├── stores/
+│   ├── auth.store.ts                    ✅ Silver Tide
+│   └── theme.store.ts                   ✅ Silver Tide
+│
+├── shared/
+│   ├── components/
+│   │   ├── ui/
+│   │   │   ├── Badge.tsx                ✅ Silver Tide
+│   │   │   ├── Button.tsx               ✅ Silver Tide
+│   │   │   ├── Card.tsx                 ✅ Silver Tide
+│   │   │   ├── Skeleton.tsx             ✅ Silver Tide
+│   │   │   ├── Toast.tsx                ✅ Silver Tide
+│   │   │   └── index.ts                 ✅
+│   │   ├── layout/
+│   │   │   ├── DashboardLayout.tsx      ✅ Silver Tide
+│   │   │   ├── PageContainer.tsx        ✅ Silver Tide
+│   │   │   ├── StatCard.tsx             ✅ Silver Tide
+│   │   │   └── EmptyState.tsx           ✅ Silver Tide
+│   │   ├── auth/
+│   │   │   └── PermissionGate.tsx       ✅ Silver Tide
+│   │   ├── chat/
+│   │   │   └── AIChatWidget.tsx         ✅ Silver Tide
+│   │   └── feedback/
+│   │       └── Placeholder.tsx          ✅ Silver Tide
+│   ├── hooks/
+│   │   └── useMCPQuery.ts               ✅ Silver Tide
+│   └── lib/
+│       └── utils.ts                     ✅ Silver Tide
+│
+├── features/
+│   ├── auth/
+│   │   └── LoginPage.tsx                ⬜ No migrado (no entregado)
+│   │
+│   ├── dashboard/
+│   │   ├── ExecutiveDashboard.tsx       ✅ Silver Tide
+│   │   └── components/
+│   │       └── PrintView.tsx            ✅ Silver Tide
+│   │
+│   ├── families/
+│   │   ├── types.ts                     ✅ Silver Tide
+│   │   ├── FamilyList.tsx               ✅ Silver Tide
+│   │   ├── FamilyDetail.tsx             ✅ Silver Tide
+│   │   └── FamilyForm.tsx               ✅ Silver Tide
+│   │
+│   ├── facilities/
+│   │   ├── types.ts                     ✅ Silver Tide
+│   │   ├── FacilityMap.tsx              ✅ Silver Tide
+│   │   ├── FacilityDetail.tsx           ✅ Silver Tide
+│   │   └── ReservationCalendar.tsx      ✅ Silver Tide
+│   │
+│   ├── events/
+│   │   ├── types.ts                     ✅ Silver Tide
+│   │   ├── EventCalendar.tsx            ✅ Silver Tide
+│   │   ├── EventDetail.tsx              ✅ Silver Tide
+│   │   └── EventForm.tsx                ✅ Silver Tide
+│   │
+│   ├── finance/
+│   │   ├── types.ts                     ✅ Silver Tide
+│   │   ├── FinancialDashboard.tsx       ✅ Silver Tide
+│   │   └── FamilyAccount.tsx            ✅ Silver Tide
+│   │
+│   ├── guests/
+│   │   ├── types.ts                     ✅ Silver Tide
+│   │   ├── GuestRegistration.tsx        ✅ Silver Tide
+│   │   └── GuestList.tsx                ✅ Silver Tide
+│   │
+│   ├── communications/
+│   │   ├── types.ts                     ✅ Silver Tide
+│   │   ├── CommunicationCenter.tsx      ✅ Silver Tide
+│   │   ├── AnnouncementBoard.tsx        ✅ Silver Tide
+│   │   └── EmergencyBroadcast.tsx       ✅ Silver Tide
+│   │
+│   ├── engagement/
+│   │   ├── types.ts                     ✅ Silver Tide
+│   │   ├── EngagementDashboard.tsx      ✅ Silver Tide
+│   │   ├── ReactivationCampaigns.tsx    ✅ Silver Tide
+│   │   ├── SatisfactionSurvey.tsx       ✅ Silver Tide
+│   │   └── SatisfactionReport.tsx       ✅ Silver Tide
+│   │
+│   ├── documents/
+│   │   ├── types.ts                     ✅ Silver Tide
+│   │   ├── DocumentRepository.tsx       ✅ Silver Tide
+│   │   └── KnowledgeQuery.tsx           ✅ Silver Tide
+│   │
+│   └── reports/
+│       ├── types.ts                     ✅ Silver Tide
+│       ├── BoardReportViewer.tsx        ✅ Silver Tide
+│       └── RiskHeatmap.tsx              ✅ Silver Tide
+│
+└── index.css                            ⬜ CRÍTICO — verificar/crear tokens
+
+
+Token Map de Referencia — Silver Tide
+
+css
+css
+/* ── Paleta Silver Tide ── */
+--color-silver-200:  /* Texto principal (reemplaza charcoal/cream) */
+--color-silver-400:  /* Texto secundario/muted (reemplaza stone) */
+--color-silver-500:  /* Placeholder text */
+--color-surface-1:   /* Superficies (reemplaza cream/surface) */
+--color-gold-400:    /* Acento principal (reemplaza gold) */
+--color-emerald-400: /* Éxito/positive (reemplaza forest) */
+--color-rose-400:    /* Error/peligro (reemplaza error) */
+--color-amber-400:   /* Warning (reemplaza warning) */
+--color-teal-400:    /* Info (reemplaza info) */
+
+/* ── Border estándar ── */
+border-white/[0.06]  /* Reemplaza var(--color-border) */
+
+/* ── Backgrounds semitransparentes ── */
+bg-white/[0.04]      /* Superficies sutiles */
+bg-white/[0.06]      /* Tags, badges sutiles */
+
+/* ── Patrón para bgColors en config maps ── */
+color-mix(in srgb, var(--color-xxx) N%, transparent)
+
+
+Prompt de Handoff para Nuevo Chat
+
+Copiá y pegá esto entero:
+
+
+
+text
+text
+## Contexto — Proyecto Castillo Country Club
+
+Estoy trabajando en una aplicación web React para la gestión integral del **Castillo Country Club**, un club de campo en Costa Rica. Es un SPA construido con:
+
+- **React 19** + **TypeScript**
+- **React Router v7** (`createBrowserRouter`)
+- **TanStack Query** (`@tanstack/react-query`) para datos del servidor
+- **Zustand** para estado local (auth, theme)
+- **Framer Motion** para animaciones
+- **Lucide React** para iconos
+- **Tailwind CSS 4** para utilidades
+- **Backend MCP** (Model Context Protocol) — los datos vienen de herramientas MCP, no de REST APIs convencionales. Se acceden via hooks personalizados `useMCPQuery` y `useMCPMutation`.
+- No hay API REST tradicional. Todo se comunica via MCP tools.
+
+### Roles del sistema
+- **ADMIN** — acceso total
+- **STAFF** — operaciones diarias (familias, eventos, instalaciones, invitados, documentos)
+- **JUNTA** — directiva (dashboard ejecutivo, reportes, finanzas, engagement)
+- **SOCIO** — portal `/mi-club` (su familia, eventos, reservas, cuenta, encuestas)
+
+### Lo que hicimos hasta ahora
+
+Completé una migración masiva de tokens CSS llamada **"Silver Tide"**. El proyecto tenía un sistema de CSS custom properties inconsistente con tokens semánticos antiguos (`--color-charcoal`, `--color-stone`, `--color-cream`, `--color-forest`, `--color-gold`, `--color-border`, `--color-surface`, etc.) que referenciaban colores hardcoded como fallbacks.
+
+Migramos **todos los componentes** (~40 archivos) a un sistema unificado:
+
+**Token Map Silver Tide:**
+--color-charcoal → --color-silver-200 (texto principal)
+--color-stone → --color-silver-400 (texto muted)
+--color-cream → --color-surface-1 (superficies)
+--color-forest → --color-emerald-400 (éxito/positivo)
+--color-gold → --color-gold-400 (acento)
+--color-error → --color-rose-400 (error)
+--color-warning → --color-amber-400 (warning)
+--color-info → --color-teal-400 (info)
+--color-border → border-white/[0.06] (bordes)
+--color-surface → --color-surface-1 (fondos)
+bg-white + dark:bg- → bg-[var(--color-surface-1)] (merge light/dark)
+dark:text- → text-[var(--color-silver-200)] (merge)
+
+text
+text
+
+También se reemplazaron:
+- `rgba()` hardcoded en bgColors → `color-mix(in srgb, var(--color-xxx) N%, transparent)`
+- `focus:ring-2 focus:ring-[var(--color-gold)]/20` → `focus:outline-2 focus:outline-[var(--color-gold-400)]`
+- Colores Tailwind rojos/verdes en errores/éxitos → variables del tema
+
+### Estructura de archivos completa
+
+src/
+├── app/
+│ ├── App.tsx ✅
+│ ├── providers.tsx ✅
+│ └── router.tsx ✅
+│
+├── stores/
+│ ├── auth.store.ts ✅
+│ └── theme.store.ts ✅
+│
+├── shared/
+│ ├── components/
+│ │ ├── ui/ (Badge, Button, Card, Skeleton, Toast) ✅
+│ │ ├── layout/ (DashboardLayout, PageContainer, StatCard, EmptyState) ✅
+│ │ ├── auth/ (PermissionGate) ✅
+│ │ ├── chat/ (AIChatWidget) ✅
+│ │ └── feedback/ (Placeholder) ✅
+│ ├── hooks/useMCPQuery.ts ✅
+│ └── lib/utils.ts ✅
+│
+├── features/
+│ ├── auth/ LoginPage.tsx ⬜ No migrado
+│ ├── dashboard/ ExecutiveDashboard, PrintView ✅
+│ ├── families/ types, FamilyList, FamilyDetail, FamilyForm ✅
+│ ├── facilities/ types, FacilityMap, FacilityDetail, ReservationCalendar ✅
+│ ├── events/ types, EventCalendar, EventDetail, EventForm ✅
+│ ├── finance/ types, FinancialDashboard, FamilyAccount ✅
+│ ├── guests/ types, GuestRegistration, GuestList ✅
+│ ├── communications/ types, CommunicationCenter, AnnouncementBoard, EmergencyBroadcast ✅
+│ ├── engagement/ types, EngagementDashboard, ReactivationCampaigns, SatisfactionSurvey, SatisfactionReport ✅
+│ ├── documents/ types, DocumentRepository, KnowledgeQuery ✅
+│ └── reports/ types, BoardReportViewer, RiskHeatmap ✅
+│
+└── index.css ⬜ CRÍTICO — verificar que todos los tokens Silver Tide estén definidos aquí
+
+text
+text
+
+### Datos que maneja la app (vía MCP tools)
+
+La app consume datos de un backend MCP con estas "herramientas" principales:
+- **families**: `list_families`, `get_family`, `create_family`, `update_family`
+- **events**: `list_events`, `get_event`, `create_event`
+- **facilities**: `list_facilities`, `get_facility`, `get_reservations`, `create_reservation`
+- **finance**: `get_financial_summary`, `get_family_account`, `get_transactions`
+- **guests**: `register_guest`, `list_guests`
+- **communications**: `list_announcements`, `create_announcement`, `send_emergency_broadcast`
+- **engagement**: `get_engagement_metrics`, `list_campaigns`, `get_survey_results`
+- **documents**: `search_documents`, `query_knowledge`
+- **reports**: `get_board_report`, `get_risk_matrix`
+- **dashboard**: `get_executive_summary`
+
+### Estado actual
+
+- **Toda la migración Silver Tide está completa** (15 sprints, ~40 archivos)
+- `LoginPage.tsx` es el único componente feature-level no migrado (no me lo entregaron)
+- `index.css` necesita verificación — debe contener las definiciones de todos los tokens Silver Tide
+- La app funciona con un `devBypass()` en `App.tsx` que auto-logea para desarrollo
+
+### Pendientes conocidos (features, no migración)
+
+Estas rutas todavía son placeholders:
+- `/admin/approvals` — Aprobaciones HITL (Human-in-the-Loop)
+- `/mi-club` — Landing portal socios
+- `/mi-club/reservas` — Reservas desde portal socio
+- `/operaciones/mantenimiento` — Gestión de mantenimiento
+- `/junta/estrategia` — Módulo estratégico (Fase 2)
+- `/settings` — Configuración del sistema
+
+### Lo que necesito hacer ahora
+
+[PONÉ ACÁ LO QUE QUERÉS HACER — por ejemplo:]
+
+1. **Verificar `index.css`** — que todos los tokens Silver Tide estén definidos con los valores correctos
+2. **Migrar `LoginPage.tsx`** — el único componente que falta
+3. **QA visual** — revisar que no queden tokens viejos rotos
+4. **Implementar feature nueva: [lo que sea]**
+5. **[Otro objetivo]**
+
+### Instrucciones de trabajo
+
+- Cuando te pase un archivo, analizá si tiene tokens CSS viejos que necesiten migración
+- Siempre mostrá el **changelog** con los reemplazos exactos (token viejo → token nuevo → cantidad de apariciones)
+- Devolvé el **código completo migrado** del archivo, no fragmentos
+- Al final, actualizá el **estado del sprint**
+- Los colores hex específicos para visualización de datos (risk heatmap, category colors) se dejan como hex — son semánticos, no parte del sistema de tema
+- Los `badgeVariant` ("success", "warning", "danger", "default") son props del componente Badge, no tokens CSS — se dejan igual
+- El proyecto usa Tailwind 4 + CSS custom properties. Las clases Tailwind se ajustan solo cuando referencian tokens viejos via `[]` syntax (ej: `text-[var(--color-charcoal)]`)
+
+
+¿Qué sigue? — Perspectiva Senior
+
+1. Validar la fundación (index.css) — PRIORIDAD ALTA
+
+
+Todo lo que migramos depende de que los tokens Silver Tide estén definidos en algún lugar. Si index.css no tiene :root { --color-silver-200: ...; --color-silver-400: ...; }, nada funciona. Este es el paso más crítico antes de cualquier otra cosa.
+
+
+2. QA visual con ambos temas
+
+
+La migración mergeó dark: prefixes en muchos lugares. Necesitás abrir la app, recorrer cada página en modo claro y modo oscuro, y verificar que:
+
+El texto sea legible en ambos temas
+Los bordes se vean
+Los badges tengan contraste suficiente
+Los hover states funcionen
+
+3. LoginPage.tsx
+
+
+Es el único componente feature no migrado. Un archivo, lo resolvemos rápido.
+
+
+4. Error boundaries y loading states
+
+
+No vi ErrorBoundary components en el router. Para producción necesitás:
+
+Un error boundary a nivel de feature (cada route)
+Un fallback global en el router
+Loading states consistentes (ya tenés Skeleton, pero ¿están en todas las páginas?)
+
+5. Auth flow real
+
+
+El devBypass() en App.tsx es temporal. Para producción necesitás:
+
+Flujo de login real contra el backend
+Persistencia de sesión (JWT/token refresh)
+Manejo de expiración de sesión
+Redirect a /login cuando no esté autenticado
+
+6. Features pendientes (placeholders)
+
+
+Las 6 rutas placeholder representan features completas. Priorizá según valor de negocio:
+
+/settings — necesario para configurar el club
+/mi-club landing — es la cara del socio
+/admin/approvals — HITL es parte del value prop de IA responsable
+
+7. Testing
+
+
+No hay tests visibles en la estructura. Prioritizá:
+
+Unit tests para utils y stores
+Integration tests para hooks MCP
+Visual regression (Chromatic o similar) — especialmente después de esta migración masiva

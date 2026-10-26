@@ -1,0 +1,506 @@
+## FinanceAgent — Desglose Completo
+
+**Archivo:** `backend/src/club_mcp/agents/finance.py`
+**Dependencias:** `FinanceRepository`, `BaseAgent`, modelos (`ExpenseCategory`, `ExpenseCreate`, `InvoiceCreate`, `InvoiceItem`, `PaymentCreate`, `PaymentMethod`)
+
+---
+
+### Tool 1: `finance_expense_create` — 🔴 HITL
+
+**Propósito:** Registrar un nuevo gasto operativo del club.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Validación backend | Notas |
+|-------|------|-----------|-------------------|-------|
+| description | str | Sí | Ninguna explícita | Descripción libre del gasto |
+| amount | float | Sí | `amount > 0` | En la moneda del club (CRC o USD — no se define) |
+| category | str | Sí | Validado contra `ExpenseCategory` enum | Si no matchea → error con lista válida |
+| vendor | str | No (default "") | Ninguna | Proveedor |
+| date | str | No (default "") | Ninguna | **Sin formato explícito** — podría ser ISO, DD/MM/YYYY, cualquier cosa |
+| notes | str | No | Ninguna | Notas internas |
+
+**Flujo HITL:**
+1. Valida category contra enum
+2. Valida amount > 0
+3. Crea `approval_request` via `approval_engine.create_request()`
+4. Retorna `pending_approval` con `request_id`
+5. Post-aprobación → `execute_expense_create()` crea el gasto real en repo
+
+**Shape de respuesta (pending):**
+
+```json
+{
+  "status": "pending_approval",
+  "message": "💰 Gasto \"...\" por $X,XXX.XX categoría ... registrado. Pendiente de aprobación. 🔔",
+  "request_id": "uuid",
+  "description": "string",
+  "amount": 1500.00,
+  "category": "maintenance"
+}
+```
+
+**Shape de respuesta (post-aprobación):**
+
+```json
+{
+  "status": "success",
+  "message": "✨ Gasto \"...\" por $X,XXX.XX registrado exitosamente. 💵",
+  "data": { /* ExpenseCreate model_dump */ }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | `date` sin formato validado — acepta cualquier string | MEDIA | Frontend puede enviar formatos inconsistentes, aging incorrecto |
+| 2 | Sin validación de `description` mínima (podría ser vacía) | BAJA | Datos pobres en repo |
+| 3 | `currency` no especificado — el club opera en CRC y USD | ALTA | `$amount:,.2f` asume USD, pero club costarricense opera dual-currency |
+| 4 | `execute_expense_create` crea el modelo `ExpenseCreate` post-aprobación — los datos ya pasaron por validación HITL pero `ExpenseCreate` podría tener validaciones adicionales que fallen silenciosamente | MEDIA | Si ExpenseCreate rechaza datos aprobados, hay inconsistencia |
+| 5 | No hay campo `requested_by` real — hardcodeado a "system" | MEDIA | Sin audit trail de quién solicitó el gasto |
+| 6 | No hay `attachment_url` para factura/recibo del proveedor | MEDIA | Clubes privados requieren documentación soporte |
+
+**Frontend destino:** `ApprovalQueue.tsx` (pendiente), `FinancialDashboard.tsx` (post-aprobación en historial)
+
+---
+
+### Tool 2: `finance_invoice_create` — 🔴 HITL
+
+**Propósito:** Generar una factura para una familia socios.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Validación | Notas |
+|-------|------|-----------|-----------|-------|
+| family_id | str | Sí | Ninguna explícita | ID de la familia |
+| items | list[dict] | Sí | `len(items) > 0`, parseo a `InvoiceItem` | Array de ítems |
+| due_date | str | No | Ninguna | Sin formato ni validación de fecha futura |
+| notes | str | No | — | |
+| tax_rate | float | No (default 0.0) | Ninguna | **Impuesto costarricense (IVA 13%) no aplicado por defecto** |
+
+**Shape de cada `InvoiceItem` (implícito):**
+
+```python
+# Se asume del InvoiceItem(**item):
+{
+  "description": str,
+  "quantity": float,
+  "unit_price": float
+}
+```
+
+**Cálculo interno:**
+
+```
+subtotal = Σ(quantity_i × unit_price_i)
+tax = subtotal × tax_rate / 100
+total = subtotal + tax
+```
+
+**Shape de respuesta (pending):**
+
+```json
+{
+  "status": "pending_approval",
+  "message": "📄 Factura por $X,XXX.XX generada para la familia. Pendiente de aprobación. 🔔",
+  "request_id": "uuid",
+  "subtotal": 1000.00,
+  "tax": 130.00,
+  "total": 1130.00,
+  "family_id": "uuid"
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | `tax_rate` default 0.0 — Costa Rica tiene IVA 13% obligatorio en la mayoría de servicios | ALTA | Facturas sin IVA incorrectas legalmente. Clubes privados facturan con IVA en consumos, eventos, F&B |
+| 2 | Sin validación de `due_date` como fecha futura | MEDIA | Podría crear facturas vencidas al momento de crear |
+| 3 | Sin `family_id` validation contra repo — no verifica que la familia exista | MEDIA | Factura huérfana si family_id no existe |
+| 4 | `items` es list[dict] — validación débil. `InvoiceItem(**item)` puede fallar silenciosamente si falta un campo | MEDIA | Mensaje de error genérico "Ítems inválidos: ..." sin detalle |
+| 5 | Sin `currency` — misma dualidad CRC/USD que expenses | ALTA | Facturas deben especificar moneda |
+| 6 | Sin `line_total` por ítem — se calcula implícitamente | BAJA | Frontend necesita mostrar line_total en preview |
+| 7 | Sin campo `invoice_number` — el repo genera uno? | MEDIA | Necesario para conciliación contable |
+| 8 | Sin `billing_period` — facturas de club suelen ser mensuales con referencia al periodo | MEDIA | Tracking de qué periodo cubre la factura |
+
+**Frontend destino:** `ApprovalQueue.tsx`, `FamilyAccount.tsx` (post-aprobación)
+
+---
+
+### Tool 3: `finance_budget_check` — 🟢 AUTO
+
+**Propósito:** Consultar el estado del presupuesto del club.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Default | Notas |
+|-------|------|-----------|---------|-------|
+| period | str | No | "monthly" | Sin validación de valores aceptados |
+
+**Shape de respuesta:**
+
+```json
+{
+  "status": "success",
+  "message": "✅ Presupuesto monthly: $XX,XXX de $XX,XXX utilizado (XX%). Restante: $XX,XXX",
+  "data": { /* Budget model_dump */ },
+  "total_budgeted": 50000.00,
+  "total_spent": 38000.00,
+  "total_remaining": 12000.00,
+  "utilization_pct": 76.0
+}
+```
+
+**KPIs financieros que se extraen:**
+
+| KPI | Campo | Fórmula | Benchmark club privado |
+|-----|-------|---------|----------------------|
+| Budget Utilization Rate | `utilization_pct` | `total_spent / total_budgeted × 100` | 75-85% óptimo, >90% alerta |
+| Budget Headroom | `total_remaining` | `total_budgeted - total_spent` | Debe cubrir 2+ meses de gastos recurrentes |
+| Burn Rate (implícito) | — | `total_spent / días_transcurridos` | No se calcula — oportunidad |
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | `period` sin validación — acepta cualquier string. Si el repo no conoce el periodo, ¿qué pasa? | MEDIA | Respuesta vacía o error silente |
+| 2 | Sin desglose por categoría — es un total global | ALTA | FinancialDashboard necesita breakdown por categoría para chart de barras |
+| 3 | Sin comparativa periodo anterior (YoY, MoM) | ALTA | Fundamental para detectar tendencias. El club necesita ver "este mes vs mismo mes año pasado" |
+| 4 | Sin `utilization_pct` por categoría | ALTA | Alerts por categoría (F&B sobre presupuesto, mantenimiento bajo) |
+| 5 | Threshold de alerta hardcodeado a 80% en el emoji | BAJA | Debería ser configurable |
+| 6 | **No calcula variance analysis** | ALTA | Budget variance = (actual - budget) / budget. Fundamental para junta directiva |
+
+**Oportunidades ML/analytics:**
+
+```
+Burn Rate Projection:
+  projected_end = total_spent + (burn_rate × días_restantes)
+  risk = "over_budget" si projected_end > total_budgeted
+
+Category Anomaly Detection:
+  Si category_spend > 1.5 × (avg_últimos_6_meses), flag
+
+Seasonality Adjustment:
+  Club de campo: gastos de mantenimiento suben en verano (dic-abr CR)
+  F&B sube en temporada alta de eventos
+```
+
+**Frontend destino:** `FinancialDashboard.tsx`, `ApprovalQueue.tsx` (para contexto)
+
+---
+
+### Tool 4: `finance_payment_process` — 🔴 HITL
+
+**Propósito:** Registrar y procesar un pago de familia.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Default | Validación |
+|-------|------|-----------|---------|-----------|
+| family_id | str | Sí | — | Sin validación contra repo |
+| amount | float | Sí | — | `amount > 0` |
+| method | str | No | "transfer" | Validado contra `PaymentMethod` enum |
+| invoice_id | str | No | "" | Sin validación de existencia |
+| reference | str | No | "" | Número de referencia bancaria |
+| date | str | No | "" | Sin formato |
+| notes | str | No | "" | |
+
+**PaymentMethod enum (implícito):**
+```
+"transfer" | "cash" | "card" | "check" | otros
+```
+
+**Flujo post-aprobación (`execute_payment_process`):**
+1. Crea `PaymentCreate` validado
+2. `repo.create_payment(validated)` — crea el pago
+3. `repo.update_payment_status(payment.id, "paid")` — marca como pagado
+4. Si tiene `invoice_id` → `repo.update_invoice_status(invoice_id, "paid")`
+
+**Shape de respuesta (pending):**
+
+```json
+{
+  "status": "pending_approval",
+  "message": "💳 Pago de $X,XXX.XX vía transfer registrado. Pendiente de aprobación. 🔔",
+  "request_id": "uuid",
+  "amount": 5000.00,
+  "method": "transfer",
+  "family_id": "uuid"
+}
+```
+
+**Shape de respuesta (post-aprobación):**
+
+```json
+{
+  "status": "success",
+  "message": "✨ Pago de $X,XXX.XX procesado exitosamente. ¡Gracias! 💰",
+  "data": { /* Payment model_dump */ }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Pago se marca "paid" automáticamente post-HITL** — no hay estado "processing" intermedio | MEDIA | En pagos reales (transferencia bancaria), hay tiempo de clearing. El estado debería ser "processing" → "paid" |
+| 2 | **Si `invoice_id` existe, marca TODA la factura como "paid"** — sin importar si el monto cubre el total | ALTA | Pagos parciales no soportados. Si factura es $10,000 y pagan $5,000, la factura se marca "paid" incorrectamente |
+| 3 | Sin validación de `amount <= invoice.total - invoice.already_paid` | ALTA | Sobrepagos sin detección |
+| 4 | `family_id` no se valida contra repo | MEDIA | Pago huérfano |
+| 5 | Sin campo `receipt_url` o `attachment` | MEDIA | Comprobante de pago |
+| 6 | `reference` sin formato — podría ser número de transferencia, código SINPE, etc. | BAJA | En CR, transferencias tienen referencia SINPE de 20 dígitos |
+| 7 | **Sin reconciliación automática** — el pago no se vincula automáticamente a la factura más antigua vencida | ALTA | En clubs privados, los pagos se aplican FIFO a facturas vencidas |
+
+**Oportunidades ML/analytics:**
+
+```
+Payment Pattern Analysis:
+  - Frecuencia de pago por familia (puntual, tardío, inconsistente)
+  - Método preferido por tier (VIP usa tarjeta, basic usa transferencia)
+  - Predicción de pagos tardíos basado en historial
+
+Collection Efficiency:
+  - DSO (Days Sales Outstanding) = (AR / Revenue) × días
+  - Aging buckets reales: 0-30, 31-60, 61-90, 90+
+  - % de facturas pagadas antes de due_date
+```
+
+**Frontend destino:** `ApprovalQueue.tsx`, `FamilyAccount.tsx`
+
+---
+
+### Tool 5: `finance_report_generate` — 🟡 SEMI_AUTO
+
+**Propósito:** Generar un reporte financiero del club.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Default | Validación |
+|-------|------|-----------|---------|-----------|
+| report_type | str | No | "income_expense" | Sin validación de tipos disponibles |
+| date_from | str | Sí (validado) | "" | `date_from < date_to` |
+| date_to | str | Sí (validado) | "" | |
+
+**Tipos de reporte (implícitos):**
+```
+"income_expense" — P&L básico
+Otros no documentados
+```
+
+**Shape de respuesta:**
+
+```json
+{
+  "status": "success",
+  "message": "string (report.summary)",
+  "data": { /* Report model_dump — shape desconocido */ },
+  "report_type": "income_expense",
+  "period": "2025-01-01 a 2025-03-31"
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | `report_type` no se valida — acepta cualquier string | ALTA | Si el repo no soporta el tipo, ¿crash silencioso? |
+| 2 | Shape del reporte (`report.model_dump`) no documentado | ALTA | Frontend no puede construir UI sin saber el shape |
+| 3 | **Solo genera "income_expense"** — no hay cash flow, balance sheet, ni revenue by source | ALTA | Clubes privados necesitan: Revenue by Source (cuotas, F&B, eventos, pro shop), Cash Flow Statement, AR Aging Report |
+| 4 | **Sin AI analysis** — genera datos raw, no interpretación | ALTA | Para FinancialDashboard con AI, este tool solo da datos. El análisis lo haría `generate_ai_analysis` (pendiente aprobación) |
+| 5 | `SEMI_AUTO` — ¿cuándo requiere aprobación? No hay condición clara en el código | MEDIA | La aprobación parece ser por defecto, no condicional |
+
+**Reportes financieros que un club privado necesita (gap analysis):**
+
+| Reporte | Existe | Prioridad |
+|---------|--------|-----------|
+| Income Statement (P&L) | ✅ "income_expense" | — |
+| Cash Flow Statement | ❌ | ALTA — junta directiva lo requiere mensual |
+| Revenue by Source | ❌ | ALTA — cuotas, F&B, eventos, pro shop, spa |
+| AR Aging Report | ❌ | ALTA — facturas vencidas por bucket |
+| Budget vs Actual | ❌ | ALTA — variance analysis trimestral |
+| Member Revenue per Tier | ❌ | MEDIA — revenue management |
+| Cost per Member | ❌ | MEDIA — eficiencia operativa |
+| EBITDA | ❌ | BAJA — se calcula a partir de P&L |
+
+**Frontend destino:** `FinancialDashboard.tsx`
+
+---
+
+### Tool 6: `finance_account_status` — 🟢 AUTO
+
+**Propósito:** Consultar estado de cuenta de una familia.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Notas |
+|-------|------|-----------|-------|
+| family_id | str | Sí | Sin validación contra repo |
+
+**Shape de respuesta (con actividad):**
+
+```json
+{
+  "status": "success",
+  "message": "✅ Estado de cuenta: Facturado $XX,XXX, Pagado $XX,XXX, Saldo $X,XXX. ¡Tiene X factura(s) vencida(s) por $X,XXX!",
+  "data": {
+    "family_id": "uuid",
+    "invoices": [...],
+    "total_invoiced": 25000.00,
+    "total_paid": 20000.00,
+    "balance_due": 5000.00,
+    "overdue_count": 2,
+    "overdue_amount": 3000.00
+  },
+  "balance_due": 5000.00,
+  "overdue_amount": 3000.00
+}
+```
+
+**Shape de respuesta (sin actividad):**
+
+```json
+{
+  "status": "success",
+  "message": "📋 No hay actividad financiera para esta familia.",
+  "data": { "family_id": "uuid", "balance_due": 0 }
+}
+```
+
+**KPIs que se extraen:**
+
+| KPI | Campo | Cálculo |
+|-----|-------|---------|
+| Current Balance | `balance_due` | `total_invoiced - total_paid` |
+| Overdue Amount | `overdue_amount` | Facturas donde `due_date < today` y `status != "paid"` |
+| Overdue Count | `overdue_count` | Cantidad de facturas vencidas |
+| Collection Ratio (familia) | — | `total_paid / total_invoiced × 100` — **no calculado** |
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | Sin aging buckets (0-30, 31-60, 61-90, 90+) | ALTA | FamilyAccount.tsx necesita aging — actualmente calcula buckets en frontend con gap 61-90 |
+| 2 | `balance_due` puede ser negativo (sobrepago) — no se documenta | MEDIA | Frontend debe manejar crédito |
+| 3 | Sin `last_payment_date` ni `last_payment_amount` | MEDIA | FamilyAccount muestra "Último Pago" como stat card |
+| 4 | Sin `next_due_date` | MEDIA | FamilyAccount muestra "Próximo Vencimiento" |
+| 5 | `data.invoices` shape no documentado — ¿qué campos tiene cada invoice? | ALTA | Frontend necesita status, dates, amounts por invoice |
+
+**Oportunidades ML:**
+
+```
+Churn Risk Score (Financial):
+  - Facturas vencidas > 90 días → alto riesgo
+  - Cambio en patrón de pago (era puntual, ahora tardío)
+  - Reducción en consumo del 50%+ vs mismo periodo año anterior
+  
+Credit Risk:
+  - balance_due / annual_revenue_family → exposure ratio
+  - Aging trend: ¿mejora o empeora?
+```
+
+**Frontend destino:** `FamilyAccount.tsx` (principal), `MiClubLanding.tsx` (parcial — saldo)
+
+---
+
+### Tool 7: `finance_category_update` — 🟡 SEMI_AUTO
+
+**Propósito:** Actualizar el presupuesto de una categoría de gasto.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Validación |
+|-------|------|-----------|-----------|
+| category | str | Sí | Validado contra `ExpenseCategory` enum |
+| budget_amount | float | Sí | `>= 0` |
+
+**ExpenseCategory enum (implícito):**
+```
+Valores no documentados explícitamente en este archivo.
+Se asume: "maintenance", "f_b", "events", "utilities", "payroll", "marketing", "wellness", etc.
+```
+
+**Shape de respuesta:**
+
+```json
+{
+  "status": "success",
+  "message": "✅ Presupuesto de \"maintenance\" actualizado a $XX,XXX.XX. 📊",
+  "category": "maintenance",
+  "budget_amount": 15000.00
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | Sin periodo — actualiza el presupuesto global, no por mes/trimestre | ALTA | Presupuestos son PERIÓDICOS. "Set budget for maintenance en Q1 2025" no es posible |
+| 2 | Sin `effective_date` | MEDIA | No se sabe cuándo entra en vigor el cambio |
+| 3 | Sin historial de cambios de presupuesto | MEDIA | Audit trail requerido para junta directiva |
+| 4 | `SEMI_AUTO` — ¿cuándo requiere aprobación? No hay condición | MEDIA | Cambios de presupuesto grandes deberían ser HITL |
+| 5 | Sin validación contra gastos ya ejecutados | MEDIA | Si ya se gastó $20,000 en maintenance, reducir el budget a $15,000 lo pone en over-budget inmediatamente sin warning |
+
+**Frontend destino:** `FinancialDashboard.tsx` (settings de presupuesto), `ApprovalQueue.tsx`
+
+---
+
+### Resumen Ejecutivo FinanceAgent
+
+**Arquitectura:**
+- 7 tools: 3 HITL (expense, invoice, payment), 1 SEMI_AUTO (report), 1 SEMI_AUTO (category), 2 AUTO (budget check, account status)
+- Patrón HITL: create_request → pending_approval → execute_X post-aprobación
+- Repository pattern: toda la lógica de datos en `FinanceRepository`
+
+**Gaps críticos para el frontend:**
+
+| Gap | Impacto en Frontend | Prioridad |
+|-----|---------------------|-----------|
+| Sin aging buckets en account_status | FamilyAccount.tsx calcula buckets con gap 61-90 | ALTA |
+| Sin currency field | Facturas y pagos en CRC y USD sin distinción | ALTA |
+| Sin breakdown por categoría en budget | FinancialDashboard no puede mostrar chart de categorías | ALTA |
+| Sin revenue by source | FinancialDashboard necesita este chart | ALTA |
+| Sin YoY/MoM comparison | KPIs sin tendencia | ALTA |
+| IVA 13% no aplicado por defecto | Facturas legalemente incorrectas | ALTA |
+| Pagos parciales no soportados | Overpayment, underpayment sin tracking | ALTA |
+| InvoiceItem shape no documentado | Frontend no puede construir form de factura | ALTA |
+
+**KPIs financieros que el frontend NECESITA y el backend YA provee:**
+
+| KPI | Tool fuente | Campo |
+|-----|-------------|-------|
+| Budget Utilization | finance_budget_check | utilization_pct |
+| Total Spent | finance_budget_check | total_spent |
+| Budget Headroom | finance_budget_check | total_remaining |
+| Balance Due (familia) | finance_account_status | balance_due |
+| Overdue Amount | finance_account_status | overdue_amount |
+| Overdue Count | finance_account_status | overdue_count |
+| Total Invoiced | finance_account_status | total_invoiced |
+| Total Paid | finance_account_status | total_paid |
+
+**KPIs que FALTAN (para AI analysis):**
+
+| KPI | Cálculo | Herramienta |
+|-----|---------|-------------|
+| DSO (Days Sales Outstanding) | `(AR / Revenue) × días_periodo` | Solo requiere datos existentes + date math |
+| Collection Ratio | `total_paid / total_invoiced × 100` | Derivable de account_status |
+| Budget Variance | `(actual - budget) / budget × 100` | Derivable de budget_check |
+| Burn Rate | `total_spent / días_transcurridos` | Derivable de budget_check + date |
+| Revenue per Member | `total_revenue / active_members` | Cross-agent (finance + families) |
+| Cost per Member | `total_expenses / active_members` | Cross-agent (finance + families) |
+| Operating Margin | `(revenue - expenses) / revenue × 100` | Derivable de report |
+| Shannon Entropy (diversificación revenue) | `-Σ(p_i × log2(p_i))` | Requiere revenue by source |
+
+**Modelos ML aplicables con datos existentes:**
+
+| Modelo | Datos requeridos | Implementación |
+|--------|-----------------|----------------|
+| Payment delay prediction | Historial de pagos por familia | Regresión logística simple — probability de >30 días late |
+| Budget overrun forecast | Gastos mensuales + budget | Time series projection (moving average o regresión lineal) |
+| Revenue concentration risk | Revenue por fuente | Herfindahl-Hirschman Index (HHI) — `Σ(market_share_i²)` |
+| Member lifetime value | Pagos históricos + tenure | CLV = `avg_monthly_revenue × tenure_months × (1 - churn_probability)` |
+
+---
+
+Listo. Ese es el desglose completo del FinanceAgent. Mandame el siguiente agente.

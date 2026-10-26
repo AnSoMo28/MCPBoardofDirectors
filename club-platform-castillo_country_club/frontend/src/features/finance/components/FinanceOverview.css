@@ -1,0 +1,213 @@
+/**
+ * @component FinanceOverview (Fase 19e)
+ * @namespace .glass-finance-kpi, .glass-finance-health, .glass-finance-insight, .glass-finance-chart, .glass-budget-burn
+ * @depends globals.css (glass tokens, color-mix, font tokens)
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   Fase 19e — Finance Overview Glass
+   KPI vital · Health gauge · Insight cards · Chart glass
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Finance KPI (Propuesta 2) ── */
+
+.glass-finance-kpi {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-finance-kpi::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.04) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glass-finance-kpi:hover {
+  border-color: var(--glass-border-hover);
+}
+
+/* KPI ambient glow — responds to trend direction */
+.glass-finance-kpi--positive {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-emerald-400) 6%, transparent);
+}
+
+.glass-finance-kpi--negative {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-rose-400) 6%, transparent);
+}
+
+.glass-finance-kpi--warning {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-amber-400) 6%, transparent);
+}
+
+/* ── Glass Health Gauge (Propuesta 3) ── */
+
+.glass-finance-health {
+  position: relative;
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-finance-health::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.04) 0%, transparent 30%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glass-finance-health__factor-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.glass-finance-health__factor-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.glass-finance-health__factor-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.glass-finance-health__factor-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.7s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* ── Glass Insight Cards (Propuesta 4) ── */
+
+.glass-finance-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.08);
+  border-left: 3px solid var(--insight-color, var(--color-silver-400));
+  transition: background 0.15s ease;
+}
+
+.glass-finance-insight:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* ── Glass Chart Container (Propuesta 6) ── */
+
+.glass-finance-chart {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-finance-chart::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Budget Burn Rate (Propuesta 5) ── */
+
+.glass-budget-burn {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: visible;
+}
+
+.glass-budget-burn__actual {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.glass-budget-burn__projection {
+  position: absolute;
+  top: -1px;
+  height: calc(100% + 2px);
+  border-right: 2px dashed;
+  border-radius: 0 3px 3px 0;
+  opacity: 0.5;
+  transition: width 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.glass-budget-burn__threshold {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 1px;
+  background: var(--color-amber-400);
+  opacity: 0.4;
+}
+
+/* ── Light Mode Overrides ── */
+
+.light .glass-finance-kpi {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-finance-kpi--positive,
+.light .glass-finance-kpi--negative,
+.light .glass-finance-kpi--warning {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-finance-health {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+}
+
+.light .glass-finance-insight {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: var(--color-border);
+}
+
+.light .glass-finance-chart {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}

@@ -1,0 +1,320 @@
+/* src/features/facilities/components/FacilityDecisionStage.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* FACILITY DECISION STAGE — "The Five Acts"                     */
+/*                                                                */
+/* MERGED: Their structure + Our living protocol.                */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — active indicator breathes           */
+/*   SENSE 2: REACCIÓN — tab hover translateY(-1px)             */
+/*   SENSE 5: SINIESTRÍA — 4 urgency levels for badges          */
+/*   SENSE 6: EMPATÍA — data-mode responsive + accent           */
+/*   SENSE 7: NARRATIVA — description bar                        */
+/*                                                                */
+/* Accessibility:                                                 */
+/*   ✅ focus-visible ring                                       */
+/*   ✅ roving tabindex (handled in .tsx)                        */
+/*   ✅ prefers-reduced-motion                                   */
+/*   ✅ responsive (mobile: icon-only tabs)                      */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.glass-fac-stage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ═══ TAB BAR ═════════════════════════════════════════════════ */
+
+.glass-fac-stage__tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 20%, transparent);
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.glass-fac-stage__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Individual Tab Button ── */
+.glass-fac-stage__tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--color-silver-500);
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  border-radius: 8px 8px 0 0;
+  outline: none;
+  min-height: 44px;
+
+  /* Sense 2: REACCIÓN — transition for hover + active */
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+/* Sense 2: REACCIÓN — hover micro-movement */
+.glass-fac-stage__tab:hover {
+  color: var(--color-silver-200);
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+}
+
+/* Accessibility: focus-visible ring */
+.glass-fac-stage__tab:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-teal-400);
+  border-radius: 8px 8px 0 0;
+}
+
+/* ── Active Tab ── */
+.glass-fac-stage__tab[data-active="true"] {
+  color: var(--color-silver-100);
+  font-weight: 600;
+}
+
+/* Sense 1: RESPIRACIÓN — active indicator breathes */
+.glass-fac-stage__tab[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: var(--fac-stage-accent, var(--color-teal-400));
+  border-radius: 2px 2px 0 0;
+  animation: glass-fac-stage-indicator-breathe 3s ease-in-out infinite;
+}
+
+@keyframes glass-fac-stage-indicator-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ── Tab Icon ── */
+.glass-fac-stage__tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.glass-fac-stage__tab[data-active="true"] .glass-fac-stage__tab-icon {
+  opacity: 1;
+}
+
+.glass-fac-stage__tab-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ═══ INSIGHT BADGE — 4 urgency levels ════════════════════════ */
+/* Sense 5: SINIESTRÍA                                          */
+/*   none   → not rendered                                       */
+/*   low    → subtle teal                                        */
+/*   medium → amber, slight scale                                */
+/*   high   → rose, pulsing                                      */
+
+.glass-fac-stage__tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.glass-fac-stage__tab-badge[data-urgency="low"] {
+  background: color-mix(in srgb, var(--color-teal-400) 15%, transparent);
+  color: var(--color-teal-400);
+}
+
+.glass-fac-stage__tab-badge[data-urgency="medium"] {
+  background: color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+  color: var(--color-amber-400);
+  transform: scale(1.05);
+}
+
+.glass-fac-stage__tab-badge[data-urgency="high"] {
+  background: color-mix(in srgb, var(--color-rose-400) 18%, transparent);
+  color: var(--color-rose-400);
+  animation: glass-fac-badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glass-fac-badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+/* ── Novelty Indicator: dot on urgent tab with 0 insights ── */
+.glass-fac-stage__tab-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-amber-400);
+  animation: glass-fac-novelty-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glass-fac-novelty-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+/* ═══ DESCRIPTION BAR (Sense 7: NARRATIVA) ════════════════════ */
+
+.glass-fac-stage__description {
+  padding: 6px 16px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+  flex-shrink: 0;
+}
+
+.glass-fac-stage__description-count {
+  color: var(--color-silver-400);
+  font-weight: 500;
+}
+
+/* ═══ CONTENT AREA ════════════════════════════════════════════ */
+
+.glass-fac-stage__content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+}
+
+.glass-fac-stage__content-panel {
+  height: 100%;
+}
+
+/* Entry animation on tab switch */
+.glass-fac-stage__content-inner {
+  animation: glass-fac-stage-content-enter 0.3s ease-out;
+  height: 100%;
+}
+
+@keyframes glass-fac-stage-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══ MODE-RESPONSIVE (Sense 6: EMPATÍA) ══════════════════════ */
+
+[data-mode="calm"] .glass-fac-stage__tab[data-active="true"]::after {
+  background: var(--fac-stage-accent, var(--color-teal-400));
+}
+
+[data-mode="alert"] .glass-fac-stage__tab[data-active="true"]::after {
+  background: var(--fac-stage-accent, var(--color-amber-400));
+}
+
+[data-mode="critical"] .glass-fac-stage__tab[data-active="true"]::after {
+  background: var(--fac-stage-accent, var(--color-rose-400));
+  animation-duration: 1.5s;
+}
+
+[data-mode="critical"] .glass-fac-stage__tabs {
+  border-bottom-color: color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+}
+
+[data-mode="alert"] .glass-fac-stage__tabs {
+  border-bottom-color: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .glass-fac-stage__tab {
+  color: var(--color-silver-400);
+}
+
+.light .glass-fac-stage__tab[data-active="true"] {
+  color: var(--color-silver-700);
+}
+
+.light .glass-fac-stage__description {
+  color: var(--color-silver-400);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-fac-stage__tab[data-active="true"]::after {
+    animation: none;
+  }
+
+  .glass-fac-stage__tab-badge[data-urgency="high"] {
+    animation: none;
+  }
+
+  .glass-fac-stage__tab-indicator {
+    animation: none;
+    opacity: 0.8;
+  }
+
+  .glass-fac-stage__content-inner {
+    animation-duration: 0ms;
+  }
+
+  .glass-fac-stage__tab:hover {
+    transform: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .glass-fac-stage__tab {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .glass-fac-stage__tab-label {
+    display: none;
+  }
+
+  .glass-fac-stage__tab-icon {
+    width: 20px;
+    height: 20px;
+    opacity: 1;
+  }
+
+  .glass-fac-stage__tab-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .glass-fac-stage__description {
+    display: none;
+  }
+}

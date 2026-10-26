@@ -1,0 +1,182 @@
+/* ═══════════════════════════════════════════════════════════════
+   Wellness Executive Brief — CSS
+   Namespace: .glass-wb
+   Keyframes prefix: wbe*
+   ═══════════════════════════════════════════════════════════════ */
+
+.glass-wb {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  background: color-mix(in srgb, var(--color-surface-1) 92%, transparent);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.wb__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-gold-400);
+}
+
+.wb__title {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--color-silver-100);
+  flex: 1;
+}
+
+.wb__score {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+/* ── Narrative ── */
+.wb__narrative {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-silver-300);
+  font-family: var(--font-body);
+}
+
+.wb__cursor {
+  color: var(--color-gold-400);
+  animation: wbeCursorBlink 0.8s step-end infinite;
+  margin-left: 1px;
+}
+
+@keyframes wbeCursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── Critical Insights ── */
+.wb__critical {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.wb__ci {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-rose-400) 6%, transparent);
+  border-left: 2px solid var(--color-rose-400);
+}
+
+.wb__ci-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+}
+
+.wb__ci-action {
+  font-size: 11px;
+  color: var(--color-silver-400);
+}
+
+.wb__ci-deadline {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--color-amber-400);
+}
+
+/* ── Toggle ── */
+.wb__toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--color-silver-400);
+  transition: color 0.2s ease;
+}
+
+.wb__toggle:hover { color: var(--color-silver-200); }
+
+/* ── Findings ── */
+.wb__findings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: wbeFindingsIn 0.25s ease;
+}
+
+@keyframes wbeFindingsIn {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 500px; }
+}
+
+.wb__finding {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.wb__finding:last-child { border-bottom: none; }
+
+.wb__finding-cat {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--color-silver-400);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.wb__finding-cat[data-category="engagement"] { color: var(--color-teal-400); }
+.wb__finding-cat[data-category="risk"] { color: var(--color-rose-400); }
+.wb__finding-cat[data-category="opportunity"] { color: var(--color-gold-400); }
+.wb__finding-cat[data-category="financial"] { color: var(--color-emerald-400); }
+
+.wb__finding-text {
+  flex: 1;
+  font-size: 11px;
+  color: var(--color-silver-300);
+  line-height: 1.4;
+}
+
+.wb__finding-action {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  max-width: 180px;
+  text-align: right;
+}
+
+/* ═══ Reduced Motion ═══ */
+@media (prefers-reduced-motion: reduce) {
+  .wb__cursor { animation: none; opacity: 1; }
+  .wb__findings { animation: none; opacity: 1; max-height: none; }
+}
+
+/* ═══ Light Mode ═══ */
+.light .glass-wb {
+  background: color-mix(in srgb, #ffffff 95%, transparent);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .wb__narrative { color: var(--color-silver-700); }
+.light .wb__ci-text { color: var(--color-silver-800); }
+.light .wb__ci-action { color: var(--color-silver-600); }
+.light .wb__finding-text { color: var(--color-silver-600); }
+.light .wb__finding-cat { background: rgba(0, 0, 0, 0.04); }

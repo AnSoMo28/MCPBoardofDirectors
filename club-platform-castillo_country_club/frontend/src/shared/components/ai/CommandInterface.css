@@ -1,0 +1,868 @@
+/**
+ * @component CommandInterface (Fase 23)
+ * @namespace .glass-cmd
+ * @depends globals.css (radius-xl, font tokens, color tokens, color-mix)
+ * @note Clean — no conflicts. Full command console with spotlight input,
+ *       parsing ceremony, multiple artifact card types (metric, insights,
+ *       simulation, action, rule, goal, report, error), followup chips.
+ *       1 keyframe (cmd-approve-pulse), ~118 classes.
+ * @import import './CommandInterface.css';
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   CommandInterface — Silver Tide Command Console
+   Fase 23 · Glass · Spotlight · Parsing Ceremony · Artifacts
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ── */
+.glass-cmd {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  border-radius: var(--radius-xl, 16px);
+  background: rgba(14, 20, 32, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 2px solid rgba(201, 169, 110, 0.15);
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+.glass-cmd__glow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 30%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(201, 169, 110, 0.03), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════
+   Header
+   ═══════════════════════════════════════ */
+
+.glass-cmd__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.glass-cmd__header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.glass-cmd__header-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(201, 169, 110, 0.08);
+  color: var(--color-gold-400);
+}
+.glass-cmd__header-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-family: var(--font-display);
+}
+.glass-cmd__header-sub {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+  margin-top: 1px;
+}
+.glass-cmd__header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.glass-cmd__header-hint,
+.glass-cmd__header-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ═══════════════════════════════════════
+   Messages Area
+   ═══════════════════════════════════════ */
+
+.glass-cmd__messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+  scrollbar-width: none;
+}
+.glass-cmd__messages::-webkit-scrollbar { display: none; }
+
+/* ═══════════════════════════════════════
+   Empty State
+   ═══════════════════════════════════════ */
+
+.glass-cmd__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+  text-align: center;
+}
+.glass-cmd__empty-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--color-silver-600);
+}
+.glass-cmd__empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-silver-200);
+  font-family: var(--font-display);
+}
+.glass-cmd__empty-sub {
+  font-size: 12px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+}
+
+/* Examples grid */
+.glass-cmd__examples {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 480px;
+  margin-top: 8px;
+}
+@media (max-width: 480px) {
+  .glass-cmd__examples { grid-template-columns: 1fr; }
+}
+.glass-cmd__example {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: all 0.15s ease;
+  min-height: 44px;
+}
+.glass-cmd__example:hover {
+  border-color: rgba(201, 169, 110, 0.15);
+  background: rgba(201, 169, 110, 0.03);
+}
+.glass-cmd__example-type {
+  font-size: 8px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.glass-cmd__example-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+  line-height: 1.4;
+}
+.glass-cmd__example-desc {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+}
+
+/* ═══════════════════════════════════════
+   Turn — User + Response
+   ═══════════════════════════════════════ */
+
+.glass-cmd__turn {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* User command */
+.glass-cmd__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-gold-400) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  align-self: flex-end;
+  max-width: 80%;
+}
+.glass-cmd__user-text {
+  font-size: 13px;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+}
+
+/* Response */
+.glass-cmd__response {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-self: flex-start;
+  max-width: 92%;
+}
+.glass-cmd__response-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.glass-cmd__response-meta {
+  font-size: 9px;
+  color: var(--color-silver-600);
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════
+   Type Badge
+   ═══════════════════════════════════════ */
+
+.glass-cmd__type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ═══════════════════════════════════════
+   Response Cards — Intelligence Artifacts
+   ═══════════════════════════════════════ */
+
+.glass-cmd__card {
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Metric Value ── */
+.glass-cmd__card--metric {
+  border-left: 3px solid rgba(201, 169, 110, 0.2);
+}
+.glass-cmd__card-glow {
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: 0.04;
+  filter: blur(20px);
+  pointer-events: none;
+}
+.glass-cmd__metric-value {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.glass-cmd__metric-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-silver-100);
+  font-family: var(--font-display);
+  line-height: 1;
+}
+.glass-cmd__metric-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.glass-cmd__metric-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.glass-cmd__metric-name {
+  font-size: 12px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  text-transform: capitalize;
+}
+.glass-cmd__metric-domain {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+
+/* ── Insights ── */
+.glass-cmd__card--insights { gap: 6px; }
+.glass-cmd__insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+.glass-cmd__insight-bar {
+  width: 3px;
+  align-self: stretch;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.glass-cmd__insight-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+}
+.glass-cmd__insight-desc {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+  margin-top: 2px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.glass-cmd__insight-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.glass-cmd__insight-impact {
+  font-size: 8px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.glass-cmd__insight-conf {
+  font-size: 8px;
+  color: var(--color-silver-600);
+  font-family: var(--font-mono);
+}
+.glass-cmd__chains {
+  padding: 10px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--color-amber-400) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.glass-cmd__chains-title {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-amber-400);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.glass-cmd__chain-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--color-silver-400);
+  font-family: var(--font-mono);
+}
+.glass-cmd__more {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+
+/* ── Simulation Result ── */
+.glass-cmd__card--simulation {
+  border-left: 3px solid rgba(52, 211, 153, 0.15);
+}
+.glass-cmd__sim-verdict {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.glass-cmd__sim-verdict-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+.glass-cmd__sim-verdict-label {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+.glass-cmd__sim-verdict-name {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+.glass-cmd__sim-verdict-text {
+  font-size: 12px;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+}
+.glass-cmd__sim-predictions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.015);
+}
+.glass-cmd__sim-pred {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+.glass-cmd__sim-pred-name {
+  color: var(--color-silver-400);
+  text-transform: capitalize;
+  min-width: 60px;
+}
+.glass-cmd__sim-pred-from { color: var(--color-silver-500); }
+.glass-cmd__sim-pred-to { font-weight: 600; }
+.glass-cmd__sim-pred-conf {
+  margin-left: auto;
+  font-size: 8px;
+  color: var(--color-silver-600);
+}
+.glass-cmd__sim-rec {
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+.glass-cmd__sim-rec-badge {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  padding: 4px 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-silver-400);
+}
+.glass-cmd__sim-rec-badge--positive { color: var(--color-emerald-400); background: rgba(52, 211, 153, 0.08); }
+.glass-cmd__sim-rec-badge--negative { color: var(--color-rose-400); background: rgba(228, 90, 100, 0.08); }
+
+/* ── Action Confirmation ── */
+.glass-cmd__card--action { border-left: 3px solid rgba(251, 191, 36, 0.15); }
+.glass-cmd__action-header { display: flex; align-items: center; gap: 8px; }
+.glass-cmd__action-desc { font-size: 12px; font-weight: 500; color: var(--color-silver-200); font-family: var(--font-ui); }
+.glass-cmd__action-meta { display: flex; align-items: center; gap: 8px; }
+.glass-cmd__action-level {
+  font-size: 9px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.glass-cmd__action-code {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.glass-cmd__action-cta { display: flex; align-items: center; gap: 10px; }
+.glass-cmd__action-approve {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  background: var(--color-gold-400);
+  color: var(--color-abyss, #0a0e14);
+  transition: all 0.15s ease;
+  animation: cmd-approve-pulse 2s ease-in-out infinite;
+}
+@keyframes cmd-approve-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 169, 110, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(201, 169, 110, 0); }
+}
+.glass-cmd__action-approve:hover { filter: brightness(1.08); }
+.glass-cmd__action-pending { font-size: 10px; color: var(--color-silver-500); font-family: var(--font-ui); }
+.glass-cmd__action-ready { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--color-emerald-400); font-family: var(--font-ui); }
+
+/* ── Rule Created ── */
+.glass-cmd__card--rule { border-left: 3px solid rgba(201, 169, 110, 0.15); }
+.glass-cmd__rule-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--color-silver-200); font-family: var(--font-ui); }
+.glass-cmd__rule-code {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 11px;
+  color: var(--color-silver-300);
+  font-family: var(--font-mono);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.glass-cmd__rule-issues { display: flex; flex-direction: column; gap: 3px; }
+.glass-cmd__rule-issue { font-size: 10px; font-family: var(--font-ui); display: flex; align-items: flex-start; gap: 4px; line-height: 1.4; }
+.glass-cmd__rule-issue--error { color: var(--color-rose-400); }
+.glass-cmd__rule-issue--warning { color: var(--color-amber-400); }
+.glass-cmd__rule-id { font-size: 9px; color: var(--color-silver-600); font-family: var(--font-mono); }
+
+/* ── Goal Created ── */
+.glass-cmd__card--goal { border-left: 3px solid rgba(201, 169, 110, 0.15); }
+.glass-cmd__goal-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--color-silver-200); font-family: var(--font-ui); }
+.glass-cmd__goal-flow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+}
+.glass-cmd__goal-current { font-size: 14px; color: var(--color-silver-400); }
+.glass-cmd__goal-target { font-size: 14px; font-weight: 700; color: var(--color-gold-400); }
+.glass-cmd__goal-deadline { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--color-silver-500); font-family: var(--font-mono); }
+.glass-cmd__goal-derive {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  color: var(--color-teal-400);
+  border: 1px solid rgba(52, 211, 153, 0.15);
+  transition: all 0.15s ease;
+}
+.glass-cmd__goal-derive:hover { background: rgba(52, 211, 153, 0.06); }
+
+/* ── Report Preview ── */
+.glass-cmd__card--report { border-left: 3px solid rgba(255, 255, 255, 0.06); }
+.glass-cmd__report-header { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--color-silver-200); font-family: var(--font-ui); }
+.glass-cmd__report-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.glass-cmd__report-metric { display: flex; flex-direction: column; gap: 2px; }
+.glass-cmd__report-metric-name { font-size: 10px; color: var(--color-silver-500); font-family: var(--font-mono); }
+.glass-cmd__report-metric-value { font-size: 13px; font-weight: 600; color: var(--color-silver-200); font-family: var(--font-mono); }
+.glass-cmd__report-metric-trend { font-size: 10px; color: var(--color-silver-500); }
+.glass-cmd__report-generate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-teal-400);
+  border: 1px solid rgba(52, 211, 153, 0.15);
+  transition: all 0.15s ease;
+}
+.glass-cmd__report-generate:hover { background: rgba(52, 211, 153, 0.06); }
+
+/* ── Error ── */
+.glass-cmd__card--error {
+  flex-direction: row;
+  gap: 10px;
+  border-left: 3px solid rgba(228, 90, 100, 0.2);
+  background: color-mix(in srgb, var(--color-rose-400) 3%, transparent);
+}
+.glass-cmd__error-msg { font-size: 12px; color: var(--color-rose-400); font-family: var(--font-ui); }
+.glass-cmd__error-suggestion { font-size: 10px; color: var(--color-silver-500); font-family: var(--font-ui); margin-top: 2px; }
+.glass-cmd__card-fallback { font-size: 12px; color: var(--color-silver-400); font-family: var(--font-ui); }
+
+/* ═══════════════════════════════════════
+   Followup Chips
+   ═══════════════════════════════════════ */
+
+.glass-cmd__followups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 6px;
+}
+.glass-cmd__followup {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 10px;
+  color: var(--color-teal-400);
+  font-family: var(--font-ui);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(52, 211, 153, 0.1);
+  transition: all 0.15s ease;
+  min-height: 30px;
+}
+.glass-cmd__followup:hover {
+  background: rgba(52, 211, 153, 0.06);
+  border-color: rgba(52, 211, 153, 0.2);
+}
+
+/* ═══════════════════════════════════════
+   Parsing Ceremony
+   ═══════════════════════════════════════ */
+
+.glass-cmd__parsing {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(201, 169, 110, 0.08);
+}
+.glass-cmd__parsing-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+.glass-cmd__parsing-glow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-gold-400), transparent);
+  transform-origin: left;
+  opacity: 0.3;
+}
+.glass-cmd__parsing-text {
+  font-size: 12px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  font-style: italic;
+}
+.glass-cmd__parsing-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.glass-cmd__parsing-step {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+.glass-cmd__parsing-step--done { color: var(--color-emerald-400); }
+
+.glass-cmd__processing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+}
+
+/* ═══════════════════════════════════════
+   Command Bar — Spotlight Input
+   ═══════════════════════════════════════ */
+
+.glass-cmd__input-wrap {
+  flex-shrink: 0;
+  padding: 10px 14px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  z-index: 2;
+}
+.glass-cmd__hint {
+  font-size: 10px;
+  color: var(--color-silver-600);
+  font-family: var(--font-ui);
+  padding: 0 4px 6px;
+}
+.glass-cmd__input-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.glass-cmd__input-bar:focus-within {
+  border-color: rgba(201, 169, 110, 0.3);
+  box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.06), 0 0 20px rgba(201, 169, 110, 0.04);
+}
+.glass-cmd__input-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.glass-cmd__input {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 13px;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+.glass-cmd__input::placeholder { color: var(--color-silver-600); }
+.glass-cmd__input:disabled { opacity: 0.5; }
+.glass-cmd__send {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-gold-400);
+  color: var(--color-abyss, #0a0e14);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.glass-cmd__send:hover:not(:disabled) { filter: brightness(1.08); }
+.glass-cmd__send:active:not(:disabled) { transform: scale(0.95); }
+.glass-cmd__send:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.glass-cmd__input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 6px;
+  font-size: 9px;
+  color: var(--color-silver-600);
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-cmd {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(0, 0, 0, 0.06);
+  border-top-color: rgba(201, 169, 110, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+.light .glass-cmd__glow { opacity: 0.01; }
+.light .glass-cmd__header { border-bottom-color: rgba(0, 0, 0, 0.05); }
+.light .glass-cmd__header-title { color: var(--color-abyss, #0a0e14); }
+.light .glass-cmd__header-sub { color: var(--color-silver-500); }
+.light .glass-cmd__header-icon { background: rgba(201, 169, 110, 0.06); }
+.light .glass-cmd__header-hint,
+.light .glass-cmd__header-count {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--color-silver-400);
+}
+.light .glass-cmd__empty-title { color: var(--color-silver-700, #374151); }
+.light .glass-cmd__empty-sub { color: var(--color-silver-400); }
+.light .glass-cmd__example {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-cmd__example:hover { border-color: rgba(201, 169, 110, 0.12); background: rgba(201, 169, 110, 0.02); }
+.light .glass-cmd__example-text { color: var(--color-silver-700, #374151); }
+.light .glass-cmd__example-desc { color: var(--color-silver-400); }
+.light .glass-cmd__user {
+  background: color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+.light .glass-cmd__user-text { color: var(--color-silver-700, #374151); }
+.light .glass-cmd__card {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-cmd__metric-number { color: var(--color-abyss, #0a0e14); }
+.light .glass-cmd__metric-name { color: var(--color-silver-500); }
+.light .glass-cmd__metric-domain { background: rgba(0, 0, 0, 0.03); color: var(--color-silver-400); }
+.light .glass-cmd__insight { background: rgba(0, 0, 0, 0.015); border-color: rgba(0, 0, 0, 0.04); }
+.light .glass-cmd__insight-title { color: var(--color-silver-700, #374151); }
+.light .glass-cmd__insight-desc { color: var(--color-silver-400); }
+.light .glass-cmd__chains { background: color-mix(in srgb, var(--color-amber-400) 3%, transparent); border-color: color-mix(in srgb, var(--color-amber-400) 6%, transparent); }
+.light .glass-cmd__sim-verdict-label { color: var(--color-silver-700, #374151); }
+.light .glass-cmd__sim-verdict-text { color: var(--color-silver-600); }
+.light .glass-cmd__sim-predictions { background: rgba(0, 0, 0, 0.015); }
+.light .glass-cmd__action-desc { color: var(--color-silver-700, #374151); }
+.light .glass-cmd__action-code { background: rgba(0, 0, 0, 0.03); }
+.light .glass-cmd__rule-code { background: rgba(0, 0, 0, 0.03); border-color: rgba(0, 0, 0, 0.05); }
+.light .glass-cmd__card--error { background: color-mix(in srgb, var(--color-rose-400) 2%, transparent); }
+.light .glass-cmd__followup { background: rgba(0, 0, 0, 0.015); border-color: rgba(52, 211, 153, 0.08); }
+.light .glass-cmd__followup:hover { background: rgba(52, 211, 153, 0.04); }
+.light .glass-cmd__parsing { background: rgba(0, 0, 0, 0.015); border-color: rgba(201, 169, 110, 0.06); }
+.light .glass-cmd__parsing-text { color: var(--color-silver-500); }
+.light .glass-cmd__input-wrap { border-top-color: rgba(0, 0, 0, 0.05); }
+.light .glass-cmd__input-bar {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .glass-cmd__input-bar:focus-within {
+  border-color: rgba(201, 169, 110, 0.25);
+  box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.05);
+}
+.light .glass-cmd__input { color: var(--color-abyss, #0a0e14); }
+.light .glass-cmd__input::placeholder { color: var(--color-silver-400); }
+.light .glass-cmd__input-footer { color: var(--color-silver-400); }
+.light .glass-cmd__type-badge { background: rgba(0, 0, 0, 0.02); }
+.light .glass-cmd__goal-current { color: var(--color-silver-500); }
+.light .glass-cmd__goal-derive { border-color: rgba(52, 211, 153, 0.12); }
+.light .glass-cmd__report-metric-name { color: var(--color-silver-400); }
+.light .glass-cmd__report-metric-value { color: var(--color-silver-700, #374151); }
+.light .glass-cmd__card--metric .glass-cmd__card-glow { opacity: 0.02; }
+.light .glass-cmd__sim-rec-badge { background: rgba(0, 0, 0, 0.03); }
+.light .glass-cmd__action-approve { box-shadow: 0 2px 8px rgba(201, 169, 110, 0.15); }

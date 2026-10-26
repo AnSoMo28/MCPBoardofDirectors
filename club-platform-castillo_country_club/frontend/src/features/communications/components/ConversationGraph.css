@@ -1,0 +1,301 @@
+/* src/features/communications/components/ConversationGraph.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Conversation Graph — The Memory                            */
+/* Phase 31 — Silver Tide Glass UI                            */
+/* Namespace: .glass-comm-graph                               */
+/* ═══════════════════════════════════════════════════════════ */
+
+.glass-comm-graph {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-xl, 1rem);
+  padding: var(--space-4, 1rem);
+  backdrop-filter: blur(8px);
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+.graph__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.graph__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+}
+
+.graph__header-meta {
+  display: flex;
+  gap: var(--space-2, 0.5rem);
+}
+
+.graph__node-count,
+.graph__cluster-count {
+  font-size: 0.72rem;
+  color: var(--text-muted, #7a7570);
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.graph__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.graph__empty-text {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.5;
+}
+
+/* ── SVG Graph ────────────────────────────────────────── */
+
+.graph__svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  border-radius: var(--radius-md, 0.5rem);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
+}
+
+/* Cluster labels */
+.graph__cluster-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 9px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.6;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Edges */
+.graph__edge {
+  stroke: var(--color-silver-500);
+  stroke-width: 0.8;
+  opacity: 0.15;
+  stroke-dasharray: "3 4";
+}
+
+/* Nodes */
+.graph__node-group {
+  opacity: 0;
+  animation: graph-node-appear 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.03s);
+}
+
+.graph__node-glow {
+  fill: var(--node-color, var(--color-teal-400));
+  opacity: 0.12;
+}
+
+.graph__node {
+  fill: var(--node-color, var(--color-teal-400));
+  opacity: 0.75;
+  transition: opacity 0.2s ease, r 0.2s ease;
+  cursor: pointer;
+}
+
+.graph__node:hover {
+  opacity: 1;
+}
+
+.graph__node[data-sentiment="very_positive"] { opacity: 0.85; }
+.graph__node[data-sentiment="very_negative"] { opacity: 0.85; }
+
+.graph__node-direction {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 6px;
+  fill: var(--color-surface-1, #1a1a1a);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* Callback nodes */
+.graph__callback-node {
+  opacity: 0;
+  animation: graph-callback-appear 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.08s);
+}
+
+.graph__callback-dot {
+  fill: none;
+  stroke: var(--color-gold-400);
+  stroke-width: 1.5;
+  stroke-dasharray: "3 2";
+  opacity: 0.6;
+  animation: graph-callback-pulse 3s ease-in-out infinite;
+}
+
+.graph__callback-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 7px;
+  fill: var(--color-gold-400);
+  opacity: 0.6;
+}
+
+/* ── Topic Legend ──────────────────────────────────────── */
+
+.graph__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem);
+  padding-top: var(--space-2, 0.5rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.graph__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+
+.graph__legend-count {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+.graph__legend-topic {
+  font-size: 0.68rem;
+  color: var(--text-muted, #7a7570);
+  text-transform: capitalize;
+}
+
+/* ── Sentiment Summary ────────────────────────────────── */
+
+.graph__sentiment-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem);
+}
+
+.graph__sentiment-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+}
+
+.graph__sentiment-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-silver-500);
+}
+
+.graph__sentiment-dot[data-sentiment="very_positive"] { background: var(--color-emerald-400); }
+.graph__sentiment-dot[data-sentiment="positive"] { background: var(--color-teal-400); }
+.graph__sentiment-dot[data-sentiment="neutral"] { background: var(--color-silver-500); }
+.graph__sentiment-dot[data-sentiment="negative"] { background: var(--color-amber-400); }
+.graph__sentiment-dot[data-sentiment="very_negative"] { background: var(--color-rose-400); }
+
+.graph__sentiment-count {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.graph__sentiment-label {
+  font-size: 0.65rem;
+  color: var(--text-muted, #7a7570);
+}
+
+/* ── Summary Strip ────────────────────────────────────── */
+
+.graph__summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2, 0.5rem);
+  padding-top: var(--space-3, 0.75rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.graph__summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.graph__summary-value {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.graph__summary-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+  text-align: center;
+}
+
+/* ── Animations ───────────────────────────────────────── */
+
+@keyframes graph-node-appear {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes graph-callback-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes graph-callback-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.85; }
+}
+
+/* ── Light Mode ───────────────────────────────────────── */
+
+.light .glass-comm-graph {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .graph__svg {
+  background: color-mix(in srgb, #000000 2%, transparent);
+}
+
+.light .graph__edge {
+  stroke: #ccc;
+}
+
+.light .graph__node-direction {
+  fill: #ffffff;
+}
+
+/* ── Reduced Motion ───────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .graph__node-group,
+  .graph__callback-node {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .graph__callback-dot {
+    animation: none !important;
+    opacity: 0.6;
+  }
+
+  .graph__node {
+    transition: none !important;
+  }
+}

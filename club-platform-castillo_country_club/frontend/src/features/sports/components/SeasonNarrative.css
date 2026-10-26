@@ -1,0 +1,588 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/SeasonNarrative.css
+   §B3.9 — Season Narrative Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  current act node pulse
+   2. REACCIÓN:     hover chapters + click expand
+   3. MEMORIA:      turning points persist
+   4. INTENCIÓN:    next act hint + prediction
+   5. SINIESTRÍA:   current act prominent + turning point icons
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph + chapter narratives
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-season {
+  --spt-sn-accent: var(--color-teal-400, #2a9ab5);
+  --spt-sn-glow: rgba(42, 154, 181, 0.15);
+  --spt-sn-surface: var(--color-surface-1, #1a1a1a);
+  --spt-sn-border: rgba(255, 255, 255, 0.06);
+  --spt-sn-text: var(--color-silver-100, #f0ece4);
+  --spt-sn-text-muted: var(--color-silver-400, #8a8580);
+
+  background: var(--spt-sn-surface);
+  border: 1px solid var(--spt-sn-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+/* ── §0.1 — Mode (LP 6: Empatía) ──────────────────────── */
+
+.spt-season[data-mode="calm"] {
+  --spt-sn-accent: var(--color-teal-400, #2a9ab5);
+  --spt-sn-glow: rgba(42, 154, 181, 0.15);
+}
+
+.spt-season[data-mode="alert"] {
+  --spt-sn-accent: var(--color-amber-400, #d4a017);
+  --spt-sn-glow: rgba(212, 160, 23, 0.2);
+}
+
+.spt-season[data-mode="critical"] {
+  --spt-sn-accent: var(--color-rose-400, #e54d4d);
+  --spt-sn-glow: rgba(229, 77, 77, 0.25);
+}
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-season__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.spt-season__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.2rem;
+  color: var(--spt-sn-text);
+  margin: 0;
+}
+
+.spt-season__matches {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 8px;
+  background: var(--spt-sn-glow);
+  color: var(--spt-sn-accent);
+  margin-left: auto;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* ── §2 — Progress Bar ─────────────────────────────────── */
+
+.spt-season__progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.spt-season__progress-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.spt-season__progress-fill {
+  height: 100%;
+  background: var(--spt-sn-accent);
+  border-radius: 2px;
+  transition: width 0.8s ease, background 0.4s ease;
+}
+
+.spt-season__progress-label {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  color: var(--spt-sn-text-muted);
+  flex-shrink: 0;
+}
+
+/* ── §3 — Prediction Card ──────────────────────────────── */
+
+.spt-season__prediction {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+}
+
+.spt-season__prediction-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-gold-400, #d4af37);
+  flex-shrink: 0;
+}
+
+.spt-season__prediction-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--spt-sn-text-muted);
+  margin: 0 0 0.15rem;
+}
+
+.spt-season__prediction-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--spt-sn-text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spt-season__prediction-confidence {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--spt-sn-text-muted);
+}
+
+/* ── §4 — Timeline ─────────────────────────────────────── */
+
+.spt-season__timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: 2rem;
+}
+
+/* Vertical line */
+.spt-season__timeline::before {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--spt-sn-border);
+}
+
+.spt-season__timeline-item {
+  animation: spt-sn-enter 0.4s ease both;
+  animation-delay: calc(var(--stagger-i, 0) * 80ms);
+}
+
+@keyframes spt-sn-enter {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── §5 — Chapter Card ─────────────────────────────────── */
+
+.spt-season__chapter {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.spt-season__chapter[data-current="true"] {
+  z-index: 1;
+}
+
+/* ── §6 — Timeline Node (LP 1: Respiración + 5: Siniestría) ── */
+
+.spt-season__node {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--spt-sn-surface);
+  border: 2px solid var(--spt-sn-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  left: -2rem;
+  margin-right: -2rem;
+  margin-left: -1rem;
+  z-index: 2;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.spt-season__node[data-current="true"] {
+  border-color: var(--spt-sn-accent);
+  box-shadow: 0 0 12px var(--spt-sn-glow);
+  animation: spt-sn-node-pulse 4s ease-in-out infinite;
+}
+
+@keyframes spt-sn-node-pulse {
+  0%, 100% { box-shadow: 0 0 8px var(--spt-sn-glow); }
+  50%      { box-shadow: 0 0 20px var(--spt-sn-glow); }
+}
+
+.spt-season__roman {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--spt-sn-text-muted);
+  transition: color 0.4s ease;
+}
+
+.spt-season__node[data-current="true"] .spt-season__roman {
+  color: var(--spt-sn-accent);
+}
+
+/* ── §7 — Chapter Body ─────────────────────────────────── */
+
+.spt-season__chapter-body {
+  flex: 1;
+  min-width: 0;
+  background: var(--spt-sn-surface);
+  border: 1px solid var(--spt-sn-border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.spt-season__chapter[data-current="true"] .spt-season__chapter-body {
+  border-color: var(--spt-sn-accent);
+  box-shadow: 0 0 8px var(--spt-sn-glow);
+}
+
+/* ── §8 — Chapter Header (LP 2: Reacción) ──────────────── */
+
+.spt-season__chapter-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+}
+
+.spt-season__chapter-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.spt-season__chapter-header:focus-visible {
+  outline: 2px solid var(--spt-sn-accent);
+  outline-offset: -2px;
+}
+
+.spt-season__chapter-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.spt-season__chapter-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--spt-sn-text-muted);
+  transition: color 0.4s ease;
+}
+
+.spt-season__chapter[data-current="true"] .spt-season__chapter-icon {
+  color: var(--spt-sn-accent);
+}
+
+.spt-season__chapter-title {
+  font-family: var(--font-body, "DM Sans", sans-serif);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--spt-sn-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-season__current-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  background: var(--spt-sn-glow);
+  color: var(--spt-sn-accent);
+  flex-shrink: 0;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+.spt-season__chapter-date {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.65rem;
+  color: var(--spt-sn-text-muted);
+  flex-shrink: 0;
+}
+
+.spt-season__chapter-drama {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.6rem;
+  color: var(--spt-sn-text-muted);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.spt-season__chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--spt-sn-text-muted);
+  flex-shrink: 0;
+}
+
+/* ── §9 — Chapter Detail (expanded) ────────────────────── */
+
+.spt-season__chapter-detail {
+  padding: 0 0.85rem 0.85rem;
+  animation: spt-sn-detail-enter 0.3s ease;
+}
+
+@keyframes spt-sn-detail-enter {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-season__chapter-narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.85rem;
+  color: var(--spt-sn-text-muted);
+  line-height: 1.6;
+  margin: 0 0 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-sn-accent);
+  transition: border-color 0.4s ease;
+}
+
+.spt-season__highlights {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.spt-season__highlight {
+  font-size: 0.8rem;
+  color: var(--spt-sn-text-muted);
+  padding-left: 1rem;
+  position: relative;
+}
+
+.spt-season__highlight::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--spt-sn-accent);
+  transition: color 0.4s ease;
+}
+
+/* ── §10 — Turning Points (LP 3: Memoria + 5: Siniestría) ── */
+
+.spt-season__turnings {
+  margin-top: 0.5rem;
+}
+
+.spt-season__turnings-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--spt-sn-text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.spt-season__turning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid rgba(212, 160, 23, 0.15);
+  border-left: 3px solid var(--color-amber-400, #d4a017);
+  border-radius: 6px;
+  background: rgba(212, 160, 23, 0.04);
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 0.35rem;
+  transition: background 0.2s ease;
+}
+
+.spt-season__turning:hover {
+  background: rgba(212, 160, 23, 0.08);
+}
+
+.spt-season__turning:focus-visible {
+  outline: 2px solid var(--color-amber-400, #d4a017);
+  outline-offset: 2px;
+}
+
+.spt-season__turning-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-amber-400, #d4a017);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.spt-season__turning-event {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--spt-sn-text);
+  margin: 0 0 0.15rem;
+}
+
+.spt-season__turning-impact {
+  font-size: 0.75rem;
+  color: var(--spt-sn-text-muted);
+  margin: 0 0 0.3rem;
+  line-height: 1.4;
+}
+
+.spt-season__turning-state {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  color: var(--spt-sn-text-muted);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.spt-season__turning-before {
+  opacity: 0.6;
+}
+
+.spt-season__turning-arrow {
+  color: var(--color-amber-400, #d4a017);
+}
+
+.spt-season__turning-after {
+  color: var(--spt-sn-text);
+  font-weight: 600;
+}
+
+/* ── §11 — Footer ──────────────────────────────────────── */
+
+.spt-season__footer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--spt-sn-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.spt-season__summary {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.85rem;
+  color: var(--spt-sn-text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.spt-season__rivalries {
+  font-size: 0.8rem;
+  color: var(--color-amber-400, #d4a017);
+  margin: 0;
+}
+
+/* ── §12 — Light Mode ──────────────────────────────────── */
+
+.light .spt-season {
+  --spt-sn-surface: rgba(255, 255, 255, 0.7);
+  --spt-sn-border: rgba(0, 0, 0, 0.08);
+  --spt-sn-text: #1a1a1a;
+  --spt-sn-text-muted: #6b7280;
+}
+
+.light .spt-season__chapter-body {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.light .spt-season__chapter-header:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-season__turning {
+  background: rgba(212, 160, 23, 0.04);
+  border-color: rgba(212, 160, 23, 0.15);
+}
+
+.light .spt-season__turning:hover {
+  background: rgba(212, 160, 23, 0.08);
+}
+
+.light .spt-season__prediction {
+  background: rgba(212, 175, 55, 0.06);
+}
+
+/* ── §13 — Responsive ──────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .spt-season__timeline {
+    padding-left: 1.5rem;
+  }
+
+  .spt-season__node {
+    left: -1.5rem;
+    margin-right: -1.5rem;
+    margin-left: -0.75rem;
+    width: 28px;
+    height: 28px;
+  }
+
+  .spt-season__chapter-header {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .spt-season__chapter-date,
+  .spt-season__chapter-drama {
+    font-size: 0.6rem;
+  }
+
+  .spt-season__chapter-title {
+    font-size: 0.8rem;
+  }
+}
+
+/* ── §14 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-season {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .spt-season__node[data-current="true"] {
+    animation: none;
+    box-shadow: none;
+    border: 3px solid #333;
+  }
+
+  .spt-season__timeline-item {
+    animation: none;
+  }
+
+  .spt-season__chapter-detail {
+    animation: none;
+  }
+
+  .spt-season__chevron {
+    display: none;
+  }
+}

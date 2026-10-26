@@ -1,0 +1,953 @@
+# MASTER_CHECKLIST.md — Validation Gates & Standards
+## Castillo Country Club · Intelligence Platform 2027
+### Level 6+ Agency · Apple/Xiaomi Production Grade
+### Version: 7.0 · Generación G7 (sincronizada) · 180 checks · ZERO tolerance
+### Updates: Master Self-Audit G7 — §14 restaurado completo (referencias
+###          colgantes eliminadas), §11 con conteo real (52), §12 sin
+###          colisión terminológica, §16 con matemática verificable +
+###          tabla de consistencia anti-drift (§16.3)
+
+---
+
+## CHANGELOG G7 (v6.1 → v7.0)
+
+```
+ESTRUCTURA:
+- Markdown puro sin envoltorio ```markdown — v6.1 tenía fence
+  corruption (```markdown duplicado + stray fence) que rompía la
+  absorpción del documento (hallazgo #31, el más crítico).
+- Versionado sincronizado G7 junto a BASE v7.0 y CHECKPOINT v7.0.
+
+CONTENIDO:
+- §1-§10 (Checklists A-J): numbering y semántica INTACTOS (180 checks,
+  verificado por script) — no romper los registros de audit de los
+  65 archivos ya completados. Únicos retoques: A-09 alineado con
+  BASE §8.3 (hallazgo #38) y nota D9 sobre breakpoints (#39).
+- §11: conteo REAL = 52 ítems (14 CSS + 20 TSX + 13 INTEGRATION +
+  5 SHARED/) — v6.1 decía "~46" contradiciendo su propio listado (#50).
+- §12: "7 Pillars" → "LAS 7 CUALIDADES Level 6+" con nota de
+  desambiguación vs los 11 Pilares del sistema (colisión #52);
+  referencia a Golden Rules ampliada (6 golden §8.1 + 4 adicionales §8.2).
+- §13: templates con §0 Imports marcado (consistente con BASE §5.1);
+  breakpoint 1024px condicional documentado en el CSS template (#39).
+- §14: RESTAURADO COMPLETO — v6.1 tenía aquí referencias colgantes
+  con el contenido obligatorio AUSENTE (= hallazgo #47): la tabla de
+  mapeo "unchanged from v6.0", los patrones "See original" y el
+  advisor "See original §14.3". G7 escribe las 5 subsecciones
+  completas: §14.1 tabla de mapeo, §14.2 los 3 patrones de data
+  fetching, §14.3 patrón advisor CON type guard, §14.4 types,
+  §14.5 hooks.
+- §15: intacto (tabla de patrones AI/ML).
+- §16: estado real de scripts (guardian v4.1.1/26 checks, validator
+  v4.0.0, verify-integration v3.0.0/8 checks — hallazgo #56);
+  cobertura 111/69 con desglose verificable por checklist (#51);
+  §16.3 NUEVO: tabla de consistencia anti-drift con matemática
+  explícita por claim — regenerar en cada generación.
+- GRAND TOTAL: matemática verificada (180 = suma por checklist;
+  combinaciones aplicables re-verificadas).
+```
+
+---
+
+## §1 — Checklist A — TypeScript Quality (18 checks)
+
+```
+A-01  □  0 `any` types (use `unknown`, narrow with type guards)
+A-02  □  0 type assertions (`as X`) except DOM narrowing
+A-03  □  All interface fields: `readonly`
+A-04  □  All array params: `readonly T[]`
+A-05  □  Union literals: `"value1" | "value2"`, not `string`
+A-06  □  Error typed as `unknown` (narrow before `.message`)
+A-07  □  No `enum` (use `const object` + union literal)
+A-08  □  Props objects for hooks with >1 param
+A-09  □  Named exports únicamente — 0 default exports en código
+          nuevo (legacy documentado con TODO de migración =
+          excepción temporal; ver BASE §8.3 — alineado G7, #38)
+A-10  □  `export type` for type-only re-exports
+A-11  □  No `React.ReactNode` without import (use `ReactNode`)
+A-12  □  `forwardRef` uses named function pattern
+A-13  □  No side effects in `useMemo`
+A-14  □  Stable references: `useMemo` for objects, `useCallback` for fns
+A-15  □  Query params wrapped in `useMemo` to prevent infinite re-fetch
+A-16  □  No `document.getElementById` — use refs
+A-17  □  No `// @ts-ignore` or `// @ts-expect-error` without justification
+A-18  □  § section markers in every file (§1 Types, §2 Constants, §3 Component)
+```
+
+---
+
+## §2 — Checklist B — CSS Production Grade (80 checks, 13 Dimensions)
+
+```
+── D1: GLASS MORPHISM (8 checks) ──────────────────────────────
+B-01  □  backdrop-filter + -webkit-backdrop-filter on glass surfaces
+B-02  □  background: rgba() (never solid) on glass surfaces
+B-03  □  border: 1px solid rgba(255,255,255,0.04-0.08)
+B-04  □  box-shadow multicapa (ambient + depth + inset ring)
+B-05  □  ::before edge light (gold gradient) on panels
+B-06  □  ::after noise texture on panels (SVG feTurbulence)
+B-07  □  Content wrapper z-index: 1 above pseudo-elements
+B-08  □  Light mode: removes backdrop-filter + pseudo-elements
+
+── D2: STAGGER CHOREOGRAPHY (6 checks) ───────────────────────
+B-09  □  Every list >1 item has nth-child + animation-delay
+B-10  □  Base state: opacity: 0, animation: forwards
+B-11  □  Delay increment: 20-60ms between items
+B-12  □  Dynamic .map() uses CSS custom property cascade
+B-13  □  Each section group gets SEQUENTIAL base delay
+B-14  □  Reduced motion kills all stagger (opacity: 1, animation: none)
+
+── D3: EASING & MOTION (8 checks) ────────────────────────────
+B-15  □  Panel/overlay entrance: cubic-bezier(0.32, 0.72, 0, 1) or var(--ease-apple)
+B-16  □  Micro-interaction hover: ease-out 0.15-0.2s
+B-17  □  Content stagger: ease 0.25-0.3s
+B-18  □  Exit faster than entrance (0.25s vs 0.35s)
+B-19  □  No animation >0.5s (except continuous pulse/breathe)
+B-20  □  Pulse/continuous: ease-in-out 2-3s
+B-21  □  NO `transition: all` — always specific properties
+B-22  □  Only GPU-composited properties animated (transform, opacity, filter)
+
+── D4: TYPOGRAPHY (8 checks) ──────────────────────────────────
+B-23  □  Data/values: --font-mono
+B-24  □  Labels: --font-mono, 9-10px, uppercase, tracking 0.06-0.10em
+B-25  □  Body: --font-ui, 12px
+B-26  □  Headlines: --font-display, 16-18px
+B-27  □  Badges: --font-mono, 8-10px, weight 700
+B-28  □  font-family declarations in CSS, NEVER inline in TSX
+B-29  □  margin: 0 on all h*, p
+B-30  □  3-level text hierarchy: silver-100/200 (primary), 300 (secondary), 400/500 (tertiary)
+
+── D5: COLOR SYSTEM (8 checks) ────────────────────────────────
+B-31  □  0 hardcoded hex/rgba in CSS — all via tokens
+B-32  □  color-mix() for translucent variants
+B-33  □  data-* attributes for state-driven colors
+B-34  □  NO inline styles for colors in TSX
+B-35  □  Hover: lightens in dark mode (rgba white 0.015 → 0.035)
+B-36  □  Focus ring: 2px solid var(--color-gold-400), offset 2px
+B-37  □  Status colors: critical=rose, warning=amber, good=emerald
+B-38  □  Domain colors from config, never hardcoded
+
+── D6: PSEUDO-ELEMENT DEPTH (4 checks) ───────────────────────
+B-39  □  Every card/panel has at least one pseudo-element
+B-40  □  pointer-events: none on all decorative pseudo-elements
+B-41  □  z-index explicit on every pseudo-element
+B-42  □  Light mode removes/hides decorative pseudo-elements
+
+── D7: INTERACTIVE STATES (8 checks) ──────────────────────────
+B-43  □  :hover on ALL interactive elements
+B-44  □  :focus-visible on ALL focusable elements
+B-45  □  :active on buttons and triggers
+B-46  □  :disabled: opacity 0.4 + pointer-events: none
+B-47  □  transition on ALL state changes
+B-48  □  cursor: pointer on clickable elements
+B-49  □  min-height: 44px on touch targets (36px on compact)
+B-50  □  font: inherit on buttons
+
+── D8: DENSITY (5 checks) ─────────────────────────────────────
+B-51  □  Padding: 14-16px (panel), 12px (card), 9-12px (compact)
+B-52  □  Gaps: 14px (panel), 10px (card), 6px (metrics), 5px (timeline)
+B-53  □  Text: 9-12px (labels/badges), 12-13px (body), 16-18px (headlines)
+B-54  □  Scrollbar: 3px wide, thumb rgba(255,255,255,0.06)
+B-55  □  Not sparse, not cramped — PRECISE
+
+── D9: RESPONSIVE (3 checks) ──────────────────────────────────
+B-56  □  @media (max-width: 768px) — tablet adaptations
+B-57  □  @media (max-width: 480px) — mobile adaptations
+B-58  □  Overflow handling: overflow-x: hidden on containers
+(G7, #39: canon de breakpoints = 768px + 480px OBLIGATORIOS +
+ 1024px CONDICIONAL si el layout cambia — ver BASE §5.2 y §13)
+
+── D10: ACCESSIBILITY (5 checks) ──────────────────────────────
+B-59  □  focus-visible: 2px solid gold-400, outline-offset: 2px
+B-60  □  role on custom interactive elements
+B-61  □  aria-label on ALL buttons and controls
+B-62  □  aria-hidden on decorative elements
+B-63  □  aria-live on dynamic content regions
+
+── D11: LIGHT MODE (6 checks) ─────────────────────────────────
+B-64  □  .light prefix for ALL overrides
+B-65  □  Backgrounds → white / warm-canvas / rgba(0,0,0,0.02)
+B-66  □  Text → silver-700/800
+B-67  □  Borders → rgba(0,0,0,0.04-0.08)
+B-68  □  Disables backdrop-filter
+B-69  □  Hover: darkens (rgba 0,0,0) instead of lightens
+
+── D12: REDUCED MOTION + PRINT (6 checks) ─────────────────────
+B-70  □  @media (prefers-reduced-motion: reduce) kills ALL animation
+B-71  □  @media (prefers-reduced-motion: reduce) kills ALL transition
+B-72  □  opacity: 1 on all stagger elements
+B-73  □  @media print: white bg, black text, no glass
+B-74  □  @media print: break-inside: avoid on cards
+B-75  □  @media print: hide decorative + interactive chrome
+
+── D13: KEYFRAMES (5 checks) ──────────────────────────────────
+B-76  □  ALL keyframes at END of CSS file (before media queries)
+B-77  □  ALL namespaced: <prefix>-<DescriptiveName>
+B-78  □  Max 6 per feature component file
+B-79  □  No generic names (fadeIn, slideUp, pulse → REJECTED)
+B-80  □  Count documented in file header
+
+TOTAL B: 8+6+8+8+8+4+8+5+3+5+6+6+5 = 80 ✓ (13 dimensiones)
+```
+
+---
+
+## §3 — Checklist C — Component Quality (22 checks)
+
+```
+C-01  □  CSS co-located: <ComponentName>.css alongside .tsx
+C-02  □  BEM prefix defined: .ui-* (shared), .ev-* (events), etc.
+C-03  □  0 framer-motion / react-spring / GSAP
+C-04  □  0 Tailwind utilities in TSX (all via CSS classes)
+C-05  □  0 inline styles for colors (data-* attrs or CSS vars)
+C-06  □  import "./<ComponentName>.css" in TSX
+C-07  □  data-testid on root element
+C-08  □  data-testid on key interactive elements
+C-09  □  aria-label on ALL buttons
+C-10  □  aria-hidden="true" on decorative elements
+C-11  □  aria-live on dynamic content regions
+C-12  □  role on custom interactive elements
+C-13  □  Keyboard: Enter/Space on custom buttons, Escape on overlays
+C-14  □  Focus trap on modals/dialogs
+C-15  □  Scroll lock when modal/drawer open
+C-16  □  Restore focus to trigger on close
+C-17  □  No business logic in component (delegate to hooks)
+C-18  □  § section markers in component file
+C-19  □  File header with: path, level, namespace, keyframes, depends
+C-20  □  PRE-WRITE VERIFICATION block
+C-21  □  ANTI-PATTERNS REMOVED block
+C-22  □  Props interface: all fields readonly
+```
+
+---
+
+## §4 — Checklist D — Intelligence Integration (8 checks)
+
+```
+D-01  □  Every insight has at least one CTA
+D-02  □  Severity → placement mapping (critical=interrupt, high=hero)
+D-03  □  Narrative generated (not raw description passthrough)
+D-04  □  CTAs deduplicated across all slots
+D-05  □  Headline = top-severity insight narrative
+D-06  □  hasUrgent flag drives ambient UI changes
+D-07  □  Placement drives visual treatment (not data shape)
+D-08  □  Intelligence auras: interrupt=rose, hero=gold, inline=none
+```
+
+---
+
+## §5 — Checklist E — Feature Component Migration (7 checks)
+
+```
+E-01  □  BEM prefix matches feature: .ev-*, .fm-*, .sp-*, etc.
+E-02  □  Imports tokens from globals.css (never redefines colors)
+E-03  □  If 3+ shared animations → extract to <feature>-atoms.css
+E-04  □  data-testid pattern: <prefix>-<component>-<element>
+E-05  □  Canvas elements: aria-hidden="true", pointer-events: none
+E-06  □  Intelligence: severity → placement mapping
+E-07  □  Data attributes: data-<prefix>-<property>
+```
+
+---
+
+## §6 — Checklist F — Integration Quality (10 checks)
+
+```
+F-01  □  Feature uses shared Button (not inline button markup)
+F-02  □  Feature uses shared Card (not custom card wrappers)
+F-03  □  Feature uses shared Modal (not custom modal implementations)
+F-04  □  Feature uses unified AdvisorBanner (not feature-specific)
+F-05  □  Feature uses advisor-engine from shared (not inline logic)
+F-06  □  Feature uses useMCPQuery for backend communication
+F-07  □  Feature has <50% remaining Tailwind after migration
+F-08  □  Feature's types.ts extends shared/types/domain-enums.ts
+F-09  □  Feature's config.ts uses shared token references
+F-10  □  All intelligence components show CTA (not just data display)
+```
+
+---
+
+## §7 — Checklist G — AI/ML Integration (8 checks)
+
+```
+G-01  □  MCP tool calls have loading/progress UI
+G-02  □  AI suggestions have accept/reject/modify actions
+G-03  □  Confidence scores visualized (gauge/bar, not just number)
+G-04  □  Predictions show uncertainty range
+G-05  □  Advisor recommendations have reasoning chain on demand
+G-06  □  System shows "thinking" state during MCP tool execution
+G-07  □  Fallback UI exists when AI backend is unavailable
+G-08  □  AI-generated narratives have "regenerate" action
+```
+
+---
+
+## §8 — Checklist H — Shared/ Architecture Compliance (7 checks)
+
+```
+H-01  □  shared/ follows the 6-block structure (CHECKPOINT §2.2)
+H-02  □  advisor-engine consumed by >0 feature hooks
+H-03  □  useMCPQuery consumed by >0 features
+H-04  □  ui barrel exports match available files
+H-05  □  No feature re-implements a shared component locally
+H-06  □  shared/ has zero circular dependencies
+H-07  □  Every shared/ file is exported or explicitly internal
+```
+
+---
+
+## §9 — Checklist I — Mandatory Shared/ Imports (10 checks)
+
+```
+I-01  □  File imports Button from @/shared/components/ui (if uses buttons)
+I-02  □  File imports Card from @/shared/components/ui (if uses cards)
+I-03  □  File imports Modal from @/shared/components/ui (if uses modals)
+I-04  □  File imports Badge from @/shared/components/ui (if shows status)
+I-05  □  File imports showToast from @/shared/components/ui (if notifies)
+I-06  □  Data fetching uses useMCPQuery from @/shared/hooks/useMCPQuery
+I-07  □  Advisor logic uses useAdvisorEngine from @/shared/lib/advisor-engine
+I-08  □  Health scores use computeHealthScore from @/shared/lib/advisor-engine
+I-09  □  Types extend shared/types/domain-enums.ts where applicable
+I-10  □  No feature creates its own Button, Card, Modal, Badge, Skeleton
+```
+
+---
+
+## §10 — Checklist J — Shared/ Import Verification (10 checks)
+
+```
+J-01  □  Every shared/components/ui/ import has been READ
+J-02  □  Every shared/components/layout/ import has been READ
+J-03  □  Every shared/components/auth/ import has been READ
+J-04  □  Every shared/hooks/ import has been READ
+J-05  □  Every shared/lib/ import has been READ
+J-06  □  Every shared/types/ import has been READ
+J-07  □  Props passed to shared components match their ACTUAL API
+J-08  □  Return types from shared hooks match their ACTUAL signatures
+J-09  □  If a shared file hasn't been read → MARK as PENDING AUDIT
+J-10  □  PENDING AUDIT files MUST be audited + rewritten BEFORE
+          the consuming feature file can be finalized
+(G7: el estado de audit se verifica contra AUDITED_REGISTRY del
+ manifest — SSOT; CHECKPOINT §12 es el resumen legible.)
+```
+
+---
+
+## §11 — ANTI-PATTERNS REGISTRY (52 ítems — conteo verificado G7)
+
+```
+REGISTRO: 52 ítems únicos = 14 CSS + 20 TSX + 13 INTEGRATION + 5 SHARED/
+(v6.1 decía "~46 unique items" contradiciendo su propio listado —
+hallazgo #50. El conteo por categoría es verificable línea por línea.)
+
+CSS (14):
+❌ transition: all
+❌ !important (except reduced-motion override)
+❌ Hardcoded hex/rgba colors
+❌ Generic keyframe names (fadeIn, slideUp, pulse)
+❌ Keyframes NOT at end of file
+❌ Missing -webkit-backdrop-filter
+❌ cubic-bezier(0.4, 0, 0.2, 1) (Material easing)
+❌ Inter, Roboto, Arial, Space Grotesk, system-ui
+❌ Missing light mode / reduced motion / print / responsive
+❌ Purple gradient on white                              ← v3.0
+❌ Equal-weight rainbow palettes                        ← v3.0
+❌ animate-[...] arbitrary Tailwind animations          ← v3.0
+❌ animate-spin Tailwind (use CSS keyframe)             ← v3.0
+❌ Keyframes without feature namespace                  ← v3.0
+
+TSX (20):
+❌ framer-motion / react-spring / GSAP
+❌ Tailwind utilities as primary styling
+❌ Inline styles for colors
+❌ Any `any` type
+❌ Default exports (código nuevo — ver A-09)
+❌ Mutable interface fields
+❌ Business logic in JSX
+❌ Missing data-testid / aria-* / focus-visible
+❌ Side effects in useMemo
+❌ eslint-disable without justification comment
+❌ Error caught without narrowing (use instanceof)
+❌ Magic numbers without named constants
+❌ Hardcoded UI strings without i18n-ready constant map
+❌ font-[family-name:var(--font-*)] in Tailwind          ← v3.0
+❌ globalIdx mutable counter during render              ← v3.0
+❌ mousedown document listener for click-outside         ← v3.0
+  (use onClick overlay + stopPropagation panel)
+❌ CSS file missing for component with styles            ← v3.0
+❌ Unnamed forwardRef (use named function)               ← v3.0
+❌ FASE 2 sin Checklist E                                ← v3.0
+❌ Canvas elements sin aria-hidden="true"                ← v3.0
+
+INTEGRATION (13):
+❌ Re-implementing a shared component locally
+❌ Feature AdvisorBanner instead of unified AdvisorBanner
+❌ Direct fetch instead of useMCPQuery / callMCPTool
+❌ Inline advisor logic instead of advisor-engine
+❌ AI output without loading/progress state
+❌ Prediction without uncertainty visualization
+❌ Insight without CTA
+❌ Domain hook in shared/ directory
+❌ null as T cast (use discriminated union)
+❌ Silent success fallback ("OK (no mock)")
+❌ Infrastructure layer importing from UI components
+❌ Deprecated files left in repo
+❌ FASE feature migration without Integration Audit first
+
+SHARED/ USAGE (5 — v6.0+):
+❌ Importing a shared/ file without reading its implementation
+❌ Assuming a component's API from its name
+❌ Passing props that don't exist on the actual component
+❌ Using a hook's return value without knowing its shape
+❌ Creating local copies of shared/ utilities
+```
+
+---
+
+## §12 — THE STANDARD — Level 6+ Agency
+
+```
+### LAS 7 CUALIDADES LEVEL 6+ (G7 — antes "7 Pillars", colisión
+terminológica con los 11 Pilares del sistema resuelta = hallazgo #52.
+Estas son CUALIDADES del estándar; los Pilares son la arquitectura
+del sistema — ver BASE §2.)
+
+1. INTENTIONAL   — Every value has a reason
+2. COHERENT      — Every component speaks the same design language
+3. PREMIUM       — Glass morphism, physics animations, print typography
+4. INTELLIGENT   — Data drives visual decisions, AI is visible
+5. SCALABLE      — Architecture predicts growth, shared/ is consumed
+6. ACCESSIBLE    — WCAG 2.1 AA is the floor
+7. BEAUTIFUL     — Dark mode = deep space, light mode = premium paper
+
+### REGLAS
+See MASTER_BASE.md §8.1 (6 Golden Rules) + §8.2 (Rules 7-10) —
+CANONICAL SOURCE (G7: v6.1 referenciaba solo §8.1 y omitía las 4
+reglas adicionales).
+```
+
+---
+
+## §13 — CSS + TSX Templates (alineados con BASE §5 — G7)
+
+### CSS Template (Complete)
+
+```css
+/**
+ * <ComponentName>.css
+ * src/shared/components/ui/<ComponentName>.css  (or features/<name>/components/)
+ *
+ * @level       Level 6+ Agency · Apple/Xiaomi Production Grade · 2027
+ * @namespace   .<prefix>-<component>
+ * @keyframes   <N>
+ * @signature   <describe the unique visual element>
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓/✗  D2 Stagger  ✓/✗  D3 Easing   ✓/✗  D4 Type    ✓/✗
+ * D5 Color    ✓/✗  D6 Pseudo   ✓/✗  D7 States   ✓/✗  D8 Density ✓/✗
+ * D9 Respo    ✓/✗  D10 A11y    ✓/✗  D11 Light   ✓/✗  D12 RM+Pr  ✓/✗
+ * D13 Keyfr   ✓/✗
+ */
+
+/* §0  Root */
+.<prefix>-<component> {
+  position: relative;
+  background: linear-gradient(...);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: transform 0.25s var(--ease-apple), box-shadow 0.25s ease;
+}
+
+/* §1  Pseudo-elements */
+.<prefix>-<component>::before {
+  /* edge light / inset highlight */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  /* ... */
+}
+
+.<prefix>-<component>::after {
+  /* noise / zone glow */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  /* ... */
+}
+
+/* §2-N  Sections */
+.<prefix>-<component>__<element> { ... }
+
+/* §N+1  Signature Element */
+.<prefix>-<component>__signature { ... }
+
+/* §N+2  Keyframes (at end, namespaced) */
+@keyframes <prefix>-<DescriptiveName> { ... }
+
+/* §N+3  Light Mode */
+.light .<prefix>-<component> { ... }
+
+/* §N+4  Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .<prefix>-<component> { animation: none; opacity: 1; }
+}
+
+/* §N+5  Responsive — 768px + 480px obligatorios; 1024px CONDICIONAL
+   (G7 #39: canon unificado con BASE §5.2 y checks B-56/B-57/B-58) */
+@media (max-width: 1024px) { /* solo si el layout cambia a desktop */ }
+@media (max-width: 768px) { ... }
+@media (max-width: 480px) { ... }
+
+/* §N+6  Print */
+@media print {
+  .<prefix>-<component> {
+    background: white;
+    color: black;
+    box-shadow: none;
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+}
+```
+
+### TSX Template (Complete)
+
+```tsx
+/**
+ * <ComponentName>.tsx
+ * src/shared/components/ui/<ComponentName>.tsx  (or features/<name>/components/)
+ *
+ * @level       Level 6+ Agency · Apple/Xiaomi Production Grade · 2027
+ * @namespace   .<prefix>-<component>
+ * @keyframes   <N> (in <ComponentName>.css)
+ * @depends     globals.css §1 tokens, <other deps>
+ *
+ * PRE-WRITE VERIFICATION:
+ * [x] <every import verified against READ file>
+ * [x] <every token reconciled against CHECKPOINT §1.2>
+ *
+ * ANTI-PATTERNS REMOVED:
+ * [x] <every anti-pattern documented>
+ */
+
+/* §0  Imports (organizados — ver BASE §5.1 STEP 4) */
+
+// ═══ React core ═══
+import { useState, useCallback, useMemo } from "react";
+
+// ═══ Shared — components ═══
+import { Button } from "@/shared/components/ui";
+
+// ═══ Shared — hooks ═══
+import { useMCPQuery } from "@/shared/hooks/useMCPQuery";
+
+// ═══ Shared — types ═══
+import type { Insight } from "@/shared/types/ai-intelligence";
+
+// ═══ Feature — hooks ═══
+import { useFeatureData } from "../hooks/useFeatureData";
+
+// ═══ Styles ═══
+import "./<ComponentName>.css";
+
+/* §1  TYPES */
+interface ComponentProps {
+  readonly data: readonly Insight[];
+  readonly onAction?: (id: string) => void;
+}
+
+/* §2  CONSTANTS */
+const STATUS_MAP: Record<string, string> = { ... };
+
+/* §3  COMPONENT */
+export function ComponentName({ data, onAction }: ComponentProps) {
+  // ... logic
+  return (
+    <div data-testid="<prefix>-<component>-root">
+      {/* ... */}
+    </div>
+  );
+}
+```
+
+---
+
+## §14 — SHARED/ MANDATORY IMPORTS (RESTAURADO COMPLETO — G7)
+
+```
+G7 (hallazgo #47): v6.1 contenía aquí referencias colgantes —
+"Full mapping table unchanged from v6.0", "See original", "See
+original §14.3" — con el contenido obligatorio AUSENTE. Esta
+sección ahora está completa y autocontenida. NADA referenciado a
+versiones deprecadas.
+```
+
+### §14.1 — UI COMPONENTS (tabla de mapeo completa)
+
+```
+Necesidad                 Import desde                    Componente
+───────────────────────── ─────────────────────────────── ─────────────────
+Botón / acción            @/shared/components/ui          Button
+Tarjeta / contenedor      @/shared/components/ui          Card
+Modal / overlay           @/shared/components/ui          Modal
+Badge / estado            @/shared/components/ui          Badge
+Notificación (toast)      @/shared/components/ui          showToast
+Skeleton / loading        @/shared/components/ui          Skeleton
+Input de texto            @/shared/components/ui          Input
+Input con label + error   @/shared/components/ui          FormField
+Dropdown de filtro        @/shared/components/ui          FilterDropdown
+Tabla de datos            @/shared/components/ui          Table
+Estado vacío              @/shared/components/ui          EmptyState
+Tendencia / delta         @/shared/components/ui          TrendIcon
+Wizard / steps            @/shared/components/ui          WizardStepper
+Frescura de datos         @/shared/components/ui          FreshnessBadge
+Banner datos stale        @/shared/components/ui          StaleDataBanner
+Gauge de score/confianza  @/shared/components/ui          ScoreGauge
+Glass surface premium     @/shared/components/ui          FrostedGlassCard
+CTA con glow              @/shared/components/ui          GlowButton
+Notificaciones dropdown   @/shared/components/ui          NotificationDropdown
+
+REGLA: si el componente existe en shared/components/ui y el archivo
+lo necesita → IMPORT obligatorio (I-01..I-05, F-01..F-03). Crear una
+versión local = anti-pattern "Re-implementing a shared component
+locally" (§11 INTEGRATION).
+
+⚠️ ESTADO DE AUDIT (manifest AUDITED_REGISTRY — CHECKPOINT §12):
+  ScoreGauge, FreshnessBadge, StaleDataBanner, Skeleton → PENDING
+  (bloquean EventCalendar — CHECKPOINT §13). Button, EmptyState,
+  AdvisorActionModal → reverify-on-use al consumirlos (Checklist J).
+```
+
+### §14.2 — DATA FETCHING (3 Patrones — completos)
+
+```
+PATTERN 1 — useMCPQuery (queries / lectura):
+  import { useMCPQuery } from "@/shared/hooks/useMCPQuery";
+
+  const { data, isLoading, error, freshness } = useMCPQuery({
+    agent: "events_agent",
+    tool: "get_event_calendar",
+    params: useMemo(() => ({ month, filter }), [month, filter]),
+  });
+  // A-15: params SIEMPRE en useMemo (referencia estable — evita
+  // re-fetch infinito por nueva identidad del objeto en cada render)
+  // Datos van al server state de React Query; NO copiarlos a useState.
+
+PATTERN 2 — useMCPMutation (escritura / comandos):
+  import { useMCPMutation } from "@/shared/hooks/useMCPQuery";
+
+  const { mutate, isPending } = useMCPMutation({
+    agent: "events_agent",
+    tool: "create_event",
+    onSuccess: (data) => { /* invalidate queries relacionadas */ },
+    onError: (err: unknown) => { /* narrow con instanceof APIError */ },
+  });
+  // El 401 global lo maneja el QueryClient (BC-02) — NO showToast
+  // en la capa de infraestructura (problema #19 resuelto así).
+
+PATTERN 3 — callMCPTool (imperativo — efectos, no-queries):
+  import { callMCPTool, APIError } from "@/shared/lib/api";
+
+  try {
+    const result = await callMCPTool("events_agent", "rsvp_event", {
+      eventId,
+    });
+  } catch (err: unknown) {
+    if (err instanceof APIError) { /* status, message tipados */ }
+    else { /* fallback genérico */ }
+  }
+  // A-06: catch SIEMPRE `unknown` + narrowing. Nunca `any`.
+
+NEVER: fetch(), axios, XMLHttpRequest, hooks custom de fetching
+que NO pasen por useMCPQuery (anti-pattern §11 INTEGRATION).
+TODO el tráfico frontend↔backend pasa por la cadena MCP:
+useMCPQuery/useMCPMutation/callMCPTool → routeMCPCall → Backend.
+```
+
+### §14.3 — ADVISOR ENGINE (patrón completo + type guard)
+
+```
+PATRÓN (por dominio/feature):
+  Componente → hook del feature (use<Domain>Advisor) →
+  useAdvisorEngine → AdvisorEngine.evaluate → domain rule
+  (shared/lib/advisor-engine/rules/<domain>.ts) → Insights.
+
+1. El COMPONENTE jamás contiene lógica de advisor (C-17):
+   const { insights, hasUrgent } = useEventAdvisor({ eventId });
+
+2. El HOOK del feature consume el engine compartido:
+   import { useAdvisorEngine } from "@/shared/lib/advisor-engine";
+   // El hook extiende BaseContext con el contexto del dominio
+   // (p.ej. EventContext) y pasa la rule correspondiente.
+
+3. TYPE GUARD OBLIGATORIO para respuestas raw (G7 — v6.1 decía
+   "code example fixed — add type guard" SIN mostrar el fix; ahora
+   sí):
+
+   // ❌ NUNCA:
+   const insight = raw as unknown as Insight;        // anti-pattern
+   // ✅ SIEMPRE — discriminated union + guard:
+   function isInsight(v: unknown): v is Insight {
+     if (typeof v !== "object" || v === null) return false;
+     const r = v as Record<string, unknown>;          // narrowing DOM-safe
+     return typeof r.id === "string"
+       && typeof r.severity === "string"
+       && SEVERITIES.includes(r.severity as Severity);
+   }
+   const insights = rawList.filter(isInsight);       // A-01/A-02 clean
+
+4. Health scores: computeHealthScore desde
+   @/shared/lib/advisor-engine (I-08) — jamás recalcular local.
+
+5. BaseContext SIEMPRE desde el módulo canónico:
+   import { BaseContext } from "@/shared/lib/advisor-engine/types";
+   (problema #25: import desde módulo equivocado — resuelto así)
+```
+
+### §14.4 — TYPES
+
+```
+1. Importar desde shared — jamás redefinir enums compartidos:
+   import { TrendDirection, HealthFactorStatus } from
+     "@/shared/types/domain-enums";
+   import type { Insight, AdvisorCommand } from
+     "@/shared/types/ai-intelligence";
+
+2. Feature types.ts EXTIENDE shared types (F-08):
+   export interface EventContext extends BaseContext {
+     readonly eventId: string;
+     readonly attendeeCount: number;
+   }
+
+3. Estructura del template: features/__TEMPLATE__/types.ts —
+   8 secciones, todo readonly, config maps con var(--color-*)
+   (RULE 9 BASE §8.2).
+
+4. BC-01: HealthFactorStatus usa valores EN INGLÉS
+   ("exceptional" | "healthy" | "attention" | "critical").
+
+5. export type para re-exports type-only (A-10). Discriminated
+   unions en vez de casts (anti-pattern "null as T").
+```
+
+### §14.5 — HOOKS
+
+```
+SHARED HOOKS (consumo directo — cross-features):
+  useMCPQuery / useMCPMutation   → data fetching MCP (Pilar 4)
+  useAutonomousAdvisor           → ejecución autónoma (Pilar 6)
+  useBreakpoint                  → responsive JS (⚠️ pending audit §13)
+  useDataFreshness               → frescura de datos
+  useReducedMotion               → media query reduced-motion
+  useAdvisorEngine               → motor de advisor (Pilar 6)
+
+REGLA DE PLACEMENT (CHECKPOINT §2.3):
+  Hook usado por 2+ features  → shared/hooks/
+  Hook usado por 1 feature    → features/<name>/hooks/
+  (anti-pattern §11: "Domain hook in shared/ directory" — caso
+   useExecutiveSummary, problema #11)
+
+FEATURE HOOKS (dominio-específico — el patrón Events):
+  useEventAdvisor, useEventData, useEventCalendar, useEventDetail,
+  useEventForm → features/events/hooks/ (9.3-9.4 ✅)
+```
+
+### §14.6 — COMMUNICATION ARCHITECTURE (CANONICAL)
+
+```
+P1: Feature Data Queries → useMCPQuery → callMCPTool → routeMCPCall → Backend ✅
+P2: Autonomous Execution → useAutonomousAdvisor → callMCPTool → Backend ✅
+P3: Advisor Evaluation → useAdvisorEngine → AdvisorEngine → rules ✅
+P4: Cross-Domain Signals → Rule emits → SignalBus → Target domain ✅
+
+DATA FETCHING:
+  PATTERN 1: useMCPQuery (queries)          → §14.2
+  PATTERN 2: useMCPMutation (writes)        → §14.2
+  PATTERN 3: callMCPTool (imperative)       → §14.2
+
+NEVER: fetch(), axios, custom hooks sin useMCPQuery (§14.2)
+
+(ESTA subsección es la fuente canónica — BASE §7 apunta aquí.)
+```
+
+---
+
+## §15 — AI/ML INTEGRATION STRATEGY
+
+```
+### 4 Layers of Visible Intelligence
+LAYER 1: AMBIENT — Status auras, pulse, breathing
+LAYER 2: REACTIVE — AdvisorBanner, predictions, alerts
+LAYER 3: INTERACTIVE — CommandPalette, Chat, accept/reject
+LAYER 4: TRANSPARENT — Reasoning chain, confidence, "why?"
+
+### Reusable AI/ML UX Patterns
+
+Pattern                    Component/Location              Status
+─────────────────────────────────────────────────────────────────
+Advisor Banner             shared/components/AdvisorBanner ✅ Exists (unified)
+Confidence Gauge           ScoreGauge                      ⚠️ Exists (pending audit §13)
+Prediction Visualization   TrendIcon + Chart               ✅ Exists
+AI Command Interface       CommandPalette                  ✅ Exists
+AI Chat                    AIChatWidget                    ✅ Exists
+AI Decision Panel          AIDecisionPanel                 ✅ Exists
+NL Rule Author             NLRuleAuthor                    ✅ Exists
+Scenario Builder           ScenarioBuilder                 ✅ Exists
+Simulation Results         TwinResults                     ✅ Exists
+Plan Execution             PlanExecutionDashboard          ✅ Exists
+System Health              SystemHealthDashboard           ✅ Exists
+Causal Chain               CausalChainViz                  ✅ Exists
+Action Timeline            AdvisorReactionCard             ✅ Exists
+```
+
+---
+
+## §16 — AUTOMATION MAPPING + CONSISTENCIA (matemática verificada)
+
+### §16.1 Estado REAL de scripts (G7 — verificado contra artefactos)
+
+```
+SCRIPT                          COBERTURA               ESTADO REAL
+──────────────────────────────  ──────────────────────  ──────────────────
+architecture-guardian.ts        A,B,C,F,H,I subsets     ✅ v4.1.1 · 26 checks
+                                (X-01..X-28,            (expandir → 45+;
+                                 sin X-11/X-24)          digest producción:
+                                                        1.151 files,
+                                                        30.075 violaciones,
+                                                        8.0/10)
+validate-shared-imports.ts      J + I (registry)        ✅ v4.0.0 · registry-
+                                                        driven (manifest SSOT)
+verify-integration.ts           F (integración)         ✅ v3.0.0 · 8 checks
+                                                        (router/mcp/tokens/
+                                                        buttons/gates/tools/
+                                                        routes/mocks) + --json
+css-audit.ts                    B (35)                  ⬜ TO CREATE — harness
+                                                        Python probado en
+                                                        scripts/css-audit/
+                                                        (port TS pendiente)
+component-audit.ts              C (14)                  ⬜ TO CREATE
+feature-integration-audit.ts    D (4) + E (5) + G (3)   ⬜ TO CREATE
+pre-commit-pipeline.ts          orchestrator            ⬜ TO CREATE
+
+(v6.1 decía guardian "~45" y validator "v2.0" — stale #56/#51;
+ G7 registra lo que EXISTE hoy y lo que falta.)
+```
+
+### §16.2 Cobertura por Checklist (asignación G7 — verificable)
+
+```
+Checklist   Automatizable   Manual (juicio de diseño)   Cubierto hoy por
+─────────   ─────────────   ─────────────────────────   ─────────────────
+A           16              2                           guardian (parcial)
+B           35              45                          css-audit (futuro)
+C           14              8                           component-audit (fut.)
+D           4               4                           feat-int (futuro)
+E           5               2                           feat-int (futuro)
+F           8               2                           verify-integration ✅
+G           3               5                           feat-int (futuro)
+H           6               1                           guardian (parcial)
+I           10              0                           validator ✅
+J           10              0                           validator ✅
+TOTAL       111 (62%)       69 (38%)                    28 directo + guardian
+                                                        (mapeo fino X→A-J
+                                                        pendiente = task M-03)
+
+MATEMÁTICA (hallazgo #51 resuelto):
+  Automatizables: 16+35+14+4+5+8+3+6+10+10 = 111 ✓
+  Manuales:        2+45+8+4+2+2+5+1+0+0     = 69 ✓
+  111 + 69 = 180 ✓  ·  111/180 = 62% ✓
+  (v6.1 mostraba una suma bruta de scripts de 128 con total
+   declarado 111 y SIN reconciliación de solapamientos — los checks
+   cubiertos por 2+ scripts se cuentan UNA vez; la cobertura se
+   define por CHECKLIST, no por script.)
+
+ASIGNACIÓN: inicial G7 — refinar al implementar cada script. Los
+manuales de B son dimensión de juicio (B-55 "PRECISE", jerarquía
+tipográfica, calidad visual); los de G requieren evaluación UX.
+```
+
+### §16.3 TABLA DE CONSISTENCIA (ANTI-DRIFT — NUEVA G7)
+
+```
+REGLA: esta tabla se REGENERA en cada bump de generación. Si un
+número no cuadra tras una edición, la generación NO se publica.
+Sin excepciones. (Mecanismo para que los masters NO vuelvan a
+generar errores — CHECKPOINT §0.3 punto 1.)
+
+CLAIM                          VALOR          VERIFICACIÓN (matemática explícita)
+─────────────────────────────  ─────────────  ──────────────────────────────────
+Total checks (A-J)             180            18+80+22+8+7+10+8+7+10+10 = 180 ✓
+Checklist B (13 dims)          80             8+6+8+8+8+4+8+5+3+5+6+6+5 = 80 ✓
+Checklist A                    18             A-01..A-18 ✓
+Checklist C                    22             C-01..C-22 ✓
+Checklist D/E/F/G/H/I/J        8/7/10/8/7/10/10  ids secuenciales ✓
+Anti-patterns                  52             14 CSS + 20 TSX + 13 INT + 5 SHARED ✓
+Automatizables                 111            16+35+14+4+5+8+3+6+10+10 = 111 ✓
+Manuales                       69             2+45+8+4+2+2+5+1+0+0 = 69 ✓
+Combinación máxima             180            A+B+C+D+E+F+G+H+I+J (§16.4) ✓
+Pilares del sistema            11             4 core + 5 parciales + 2 pendientes ✓
+Archivos infra pendientes      25             3+2+3+4+5+4+4 = 25 ✓
+Components shared/             92             24+20+11+2+10+3+2+17+1+2 = 92 ✓
+Shared/ total                  ~197           92+30+65+3+5+1+1 = 197 ✓
+Unidades auditadas ≥9.3        42             1+23+7+11 = 42 ✓
+OVERALL completados            9.33           (1×9.7+23×9.3+7×9.31+11×9.37)/42 ✓
+Archivos feature/shared compl. 65             1+46+7+11 = 65 ✓
+Pending review                 14 físicos     2 (EventCalendar) + 12 (7 shared/) ✓
+AUDITED_REGISTRY               27 entradas    15+4+7+1 = 27 ✓ (manifest §8)
+Checks guardian                26             X-01..X-28 sin X-11/X-24 ✓
+Checks verify-integration      8              8 ids verificados ✓
+Frontend files                 1.151          digest de producción guardian v4.1.1 ✓
+```
+
+### §16.4 CHECKLIST GRAND TOTAL (matemática explícita)
+
+```
+╔══════════════════════════════════════════════════════════════════════╗
+║  GRAND TOTAL — EXPLICIT MATH (verificado por script G7)              ║
+╠══════════════════════════════════════════════════════════════════════╣
+║                                                                      ║
+║  Checklist A (TypeScript):            18                            ║
+║  Checklist B (CSS 13 Dimensions):     80                            ║
+║  Checklist C (Component):             22                            ║
+║  Checklist D (Intelligence):          8  (when applicable)          ║
+║  Checklist E (Feature Migration):     7  (FASE 2+)                 ║
+║  Checklist F (Integration):           10 (FASE 2+)                 ║
+║  Checklist G (AI/ML):                 8  (intelligence)             ║
+║  Checklist H (Shared Architecture):   7  (shared/ changes)          ║
+║  Checklist I (Mandatory Imports):     10 (EVERY file)               ║
+║  Checklist J (Shared Verification):   10 (EVERY file)               ║
+║                                                                      ║
+║  TOTAL ALL CHECKS: 18+80+22+8+7+10+8+7+10+10 = 180 ✓                ║
+║                                                                      ║
+║  APPLICABLE COMBINATIONS:                                           ║
+║  ┌────────────────────────────────────────────────────────────┐     ║
+║  │ Type                  Checklists                   Total   │     ║
+║  │ ────────────────────  ──────────────────────────   ──────  │     ║
+║  │ UI Component          A+B+C+I+J                   = 140   │     ║
+║  │ UI + Intelligence     A+B+C+D+I+J                 = 148   │     ║
+║  │ Feature Component     A+B+C+E+F+I+J               = 157   │     ║
+║  │ Feature + Intel       A+B+C+D+E+F+G+I+J           = 173   │     ║
+║  │ Shared/ Changes       A+B+C+H+I+J                 = 147   │     ║
+║  │ MAX (all applicable)  A+B+C+D+E+F+G+H+I+J         = 180   │     ║
+║  └────────────────────────────────────────────────────────────┘     ║
+║  (140=18+80+22+10+10 ✓ · 148=+8 ✓ · 157=+7+10 ✓ · 173=+8+8 ✓        ║
+║   147=+7 ✓ · 180=suma completa ✓)                                   ║
+║                                                                      ║
+║  TOLERANCE: ZERO                                                    ║
+║                                                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+END OF MASTER_CHECKLIST.md v7.0 · Generación G7 (sincronizada con
+MASTER_BASE.md v7.0 y MASTER_CHECKPOINT.md v7.0)
+

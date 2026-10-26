@@ -1,0 +1,520 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/GuestPipelineRiver.css
+   Phase 34 "The Gateway" — Capa 3: Organic Pipeline
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-river
+   Glass: .glass-gst-river
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-river {
+  --glass-gst-river-version: 1;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-river-bg: rgba(18, 18, 26, 0.5);
+  --gst-river-border: rgba(255, 255, 255, 0.06);
+  --gst-river-fill-start: rgba(212, 168, 83, 0.35);
+  --gst-river-fill-end: rgba(212, 168, 83, 0.08);
+  --gst-river-flow-color: rgba(212, 168, 83, 0.5);
+  --gst-river-node-fill: rgba(18, 18, 26, 0.9);
+  --gst-river-node-stroke: rgba(255, 255, 255, 0.12);
+  --gst-river-node-hover: rgba(255, 255, 255, 0.08);
+  --gst-river-text-primary: #f0ece4;
+  --gst-river-text-muted: #7a7570;
+  --gst-river-radius: 16px;
+  --gst-river-detail-bg: rgba(18, 18, 26, 0.7);
+}
+
+/* ── Base ── */
+.gst-river {
+  position: relative;
+  background: var(--gst-river-bg);
+  border: 1px solid var(--gst-river-border);
+  border-radius: var(--gst-river-radius);
+  padding: 24px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  opacity: 0;
+  animation: gst-river-fadeIn 0.5s ease 0.3s forwards;
+}
+
+.gst-river[data-state="empty"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  animation: none;
+  opacity: 1;
+}
+
+.gst-river__empty-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 15px;
+  color: var(--gst-river-text-muted);
+  margin: 0;
+}
+
+/* ── Header ── */
+.gst-river__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.gst-river__health {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gst-river__health-score {
+  font-family: var(--font-display, "Italiana");
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--gst-accent);
+}
+
+.gst-river__health[data-level="excellent"] .gst-river__health-score {
+  color: var(--gst-severity-low);
+}
+
+.gst-river__health[data-level="good"] .gst-river__health-score {
+  color: var(--gst-accent);
+}
+
+.gst-river__health[data-level="attention"] .gst-river__health-score {
+  color: var(--gst-severity-medium);
+}
+
+.gst-river__health[data-level="warning"] .gst-river__health-score {
+  color: var(--gst-severity-high);
+}
+
+.gst-river__health[data-level="critical"] .gst-river__health-score {
+  color: var(--gst-severity-critical);
+}
+
+.gst-river__health-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gst-river-text-muted);
+}
+
+.gst-river__metrics {
+  display: flex;
+  gap: 24px;
+}
+
+.gst-river__metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.gst-river__metric-value {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gst-river-text-primary);
+}
+
+.gst-river__metric-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gst-river-text-muted);
+}
+
+/* ── SVG ── */
+.gst-river__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* ── SVG Gradient Stops ── */
+.gst-river__grad-start {
+  stop-color: var(--gst-river-fill-start);
+}
+
+.gst-river__grad-end {
+  stop-color: var(--gst-river-fill-end);
+}
+
+/* ── River Fill ── */
+.gst-river__fill {
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.gst-river:hover .gst-river__fill {
+  opacity: 0.75;
+}
+
+/* ── Flow Line ── */
+.gst-river__flow-line {
+  stroke: var(--gst-river-flow-color);
+  stroke-width: 2;
+  stroke-dasharray: 8 14;
+  stroke-linecap: round;
+  animation: gst-river-flow 2s linear infinite;
+}
+
+/* ── Nodes ── */
+.gst-river__node {
+  cursor: pointer;
+  outline: none;
+}
+
+.gst-river__node-circle {
+  fill: var(--gst-river-node-fill);
+  stroke: var(--gst-river-node-stroke);
+  stroke-width: 1.5;
+  transition: stroke 0.2s ease, fill 0.2s ease;
+}
+
+.gst-river__node:hover .gst-river__node-circle,
+.gst-river__node:focus-visible .gst-river__node-circle {
+  stroke: var(--gst-accent);
+  stroke-width: 2;
+  fill: var(--gst-river-node-hover);
+}
+
+/* ── Focus Visible ── */
+.gst-river__node:focus-visible .gst-river__node-circle {
+  stroke: var(--gst-accent);
+  stroke-width: 2.5;
+}
+
+/* ── Bottleneck Node ── */
+.gst-river__node[data-bottleneck="true"] .gst-river__node-circle {
+  stroke: var(--gst-severity-high);
+  stroke-width: 2;
+  animation: gst-river-bottleneck-pulse 2s ease-in-out infinite;
+}
+
+/* ── Quick Win Node ── */
+.gst-river__node[data-quickwin="true"] .gst-river__node-circle {
+  stroke: var(--gst-accent);
+  stroke-width: 2;
+  animation: gst-river-quickwin-pulse 2.5s ease-in-out infinite;
+}
+
+/* ── Node Text ── */
+.gst-river__node-count {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--gst-river-text-primary);
+  pointer-events: none;
+}
+
+.gst-river__node-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 9px;
+  font-weight: 500;
+  fill: var(--gst-river-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+/* ── Trend Arrow ── */
+.gst-river__node-trend {
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.gst-river__node[data-trend="improving"] .gst-river__node-trend {
+  fill: var(--gst-severity-low);
+}
+
+.gst-river__node[data-trend="stable"] .gst-river__node-trend {
+  fill: var(--gst-river-text-muted);
+}
+
+.gst-river__node[data-trend="declining"] .gst-river__node-trend {
+  fill: var(--gst-severity-high);
+}
+
+/* ── Detail Panel ── */
+.gst-river__detail {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: var(--gst-river-detail-bg);
+  border: 1px solid var(--gst-river-border);
+  border-radius: 10px;
+  opacity: 0;
+  animation: gst-river-detail-in 0.25s ease forwards;
+}
+
+.gst-river__detail-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.gst-river__detail-title {
+  font-family: var(--font-display, "Italiana");
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--gst-river-text-primary);
+  margin: 0;
+}
+
+.gst-river__detail-count {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 14px;
+  color: var(--gst-accent);
+}
+
+.gst-river__detail-stats {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.gst-river__detail-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gst-river__detail-stat-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gst-river-text-muted);
+}
+
+.gst-river__detail-stat-value {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gst-river-text-primary);
+}
+
+.gst-river__detail-stat-value[data-trend="improving"] {
+  color: var(--gst-severity-low);
+}
+
+.gst-river__detail-stat-value[data-trend="declining"] {
+  color: var(--gst-severity-high);
+}
+
+.gst-river__detail-bottleneck {
+  padding: 10px 14px;
+  border-left: 3px solid var(--gst-severity-high);
+  background: rgba(231, 76, 60, 0.06);
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 8px;
+}
+
+.gst-river__detail-bottleneck-cause,
+.gst-river__detail-bottleneck-rec {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 13px;
+  color: var(--gst-river-text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.5;
+}
+
+.gst-river__detail-quickwin {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 13px;
+  color: var(--gst-accent);
+  margin: 0;
+  padding: 8px 14px;
+  border-left: 3px solid var(--gst-accent);
+  background: rgba(212, 168, 83, 0.06);
+  border-radius: 0 6px 6px 0;
+}
+
+/* ── Animations ── */
+@keyframes gst-river-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gst-river-flow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+@keyframes gst-river-bottleneck-pulse {
+  0%, 100% {
+    stroke-opacity: 1;
+    filter: drop-shadow(0 0 0 rgba(231, 76, 60, 0));
+  }
+  50% {
+    stroke-opacity: 0.7;
+    filter: drop-shadow(0 0 8px rgba(231, 76, 60, 0.3));
+  }
+}
+
+@keyframes gst-river-quickwin-pulse {
+  0%, 100% {
+    stroke-opacity: 1;
+    filter: drop-shadow(0 0 0 rgba(212, 168, 83, 0));
+  }
+  50% {
+    stroke-opacity: 0.8;
+    filter: drop-shadow(0 0 8px rgba(212, 168, 83, 0.3));
+  }
+}
+
+@keyframes gst-river-detail-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-river {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-river__flow-line {
+  animation: none;
+}
+
+[data-prefers-reduced="true"] .gst-river__node[data-bottleneck="true"] .gst-river__node-circle,
+[data-prefers-reduced="true"] .gst-river__node[data-quickwin="true"] .gst-river__node-circle {
+  animation: none;
+}
+
+[data-prefers-reduced="true"] .gst-river__detail {
+  animation: none;
+  opacity: 1;
+}
+
+/* ── Light Mode ── */
+.light .gst-river {
+  --gst-river-bg: rgba(255, 255, 255, 0.8);
+  --gst-river-border: rgba(0, 0, 0, 0.08);
+  --gst-river-fill-start: rgba(139, 105, 20, 0.25);
+  --gst-river-fill-end: rgba(139, 105, 20, 0.05);
+  --gst-river-flow-color: rgba(139, 105, 20, 0.4);
+  --gst-river-node-fill: rgba(255, 255, 255, 0.95);
+  --gst-river-node-stroke: rgba(0, 0, 0, 0.1);
+  --gst-river-node-hover: rgba(0, 0, 0, 0.03);
+  --gst-river-text-primary: #1a1a2e;
+  --gst-river-text-muted: #6b6b78;
+  --gst-river-detail-bg: rgba(255, 255, 255, 0.85);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-river {
+    padding: 16px;
+  }
+
+  .gst-river__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gst-river__health-score {
+    font-size: 32px;
+  }
+
+  .gst-river__metrics {
+    gap: 16px;
+  }
+
+  .gst-river__metric {
+    align-items: flex-start;
+  }
+
+  .gst-river__detail-stats {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-river__health-score {
+    font-size: 36px;
+  }
+
+  .gst-river__metric-value {
+    font-size: 18px;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-river {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+    box-shadow: none;
+  }
+
+  .gst-river__flow-line {
+    animation: none;
+    stroke: #999;
+  }
+
+  .gst-river__node-circle {
+    fill: white;
+    stroke: #333;
+  }
+
+  .gst-river__node-count {
+    fill: #000;
+  }
+}
+
+/* AGREGAR al GuestPipelineRiver.css existente */
+
+/* ── vs Benchmark positive/negative ── */
+.gst-river__detail-stat-value[data-positive="true"] {
+  color: var(--gst-severity-low);
+}
+
+.gst-river__detail-stat-value[data-positive="false"] {
+  color: var(--gst-severity-high);
+}
+
+/* ── Bottleneck stats line ── */
+.gst-river__detail-bottleneck-stats {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 12px;
+  color: var(--gst-river-text-muted);
+  margin: 4px 0 0 0;
+  line-height: 1.5;
+}

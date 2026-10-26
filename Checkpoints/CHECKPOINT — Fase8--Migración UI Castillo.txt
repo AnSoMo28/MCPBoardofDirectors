@@ -1,0 +1,413 @@
+CHECKPOINT — Migración UI Castillo Country Club
+
+Fecha: Mayo 2025
+Proyecto: Castillo Country Club — Admin Platform
+Estado actual: Migración Silver Tide ~85% completa (UI Components)
+Chat anterior cubrió: Sprint 8D-1 a 8D-3 (análisis + tokens + MarbleBackground)
+Este chat cubrió: Sprint 8D-4 a 8E-3 (implementación completa)
+
+
+
+Design System — Tokens Finales
+
+Paleta Base
+
+text
+text
+── Deep Frost (base) ───────────────────
+--color-abyss           #080B12
+--color-surface-0       #0D1117
+--color-surface-1       #111820
+--color-surface-2       #151C28
+--color-canvas          #0A0F18
+
+── Silver Tide (text / neutrals) ───────
+--color-silver-100      #E8ECF1   (títulos)
+--color-silver-200      #C8D1DC   (texto principal)
+--color-silver-300      #B0BAC7   (subtítulos)
+--color-silver-400      #8A95A5   (textos secundarios)
+--color-silver-500      #606B78   (hints, deshabilitados)
+--color-silver-600      #404954   (borders sutiles)
+
+── Gold (primary accent) ───────────────
+--color-gold-100        #FDF6E9
+--color-gold-200        #F0D9A8
+--color-gold-300        #DBBF7C
+--color-gold-400        #C9A96E   (primary)
+--color-gold-500        #A88540   (hover activo)
+--color-gold-600        #8B6E30
+
+── Sage (verde elegante — clientes) ────
+--color-sage-100        #B8D4C0
+--color-sage-200        #8AB49A
+--color-sage-300        #6B9A7A
+--color-sage-400        #5B8A6A   (primary)
+--color-sage-500        #4A7A5C
+--color-sage-600        #3A6A4C
+
+── Terracotta (warm accent) ────────────
+--color-terracotta-100  #F0C9B8
+--color-terracotta-200  #E0A88E
+--color-terracotta-300  #D48B6E
+--color-terracotta-400  #D47A5A   (primary)
+--color-terracotta-500  #B85F42
+--color-terracotta-600  #9C4830
+
+── Emotionals (unchanged) ──────────────
+--color-emerald-300     #6DD4A0
+--color-emerald-400     #3DAA70
+--color-teal-200        #7DD8EA
+--color-teal-300        #4AB8D0
+--color-teal-400        #2A9AB5
+--color-amber-300       #E0C860
+--color-amber-400       #D4A840
+--color-rose-300        #D48A96
+--color-rose-400        #C46470
+
+Patrón de textura heredado (NO se toca)
+
+css
+css
+/* Silver Tide Reverb — herencia de Océano Profundo */
+/* Radial overlays sutiles en fondo */
+/* Noise texture en toda la app */
+/* Glass cards con silver-tints + gradientes de profundidad */
+
+
+COMPLETADO
+
+Sprint 8D-4 — globals.css (completo)
+
+Archivo:src/styles/globals.css
+
+
+Qué se hizo	Detalle
+Reescritura total de @theme	Todos los tokens anteriores + nuevos (sage, terracotta, silver, gold)
+Glass card classes	.glass-card, .glass-card--gold, .glass-card--sage, .glass-card--teal, .glass-card--terracotta
+Frost badge	.frost-badge con variantes success/warning/error/info/gold/sage
+Aurora sweep	@keyframes aurora-sweep + .aurora-btn + variantes --gold, --sage, --danger
+Login animations	@keyframes text-shimmer, logo-breathe, login-particle
+Sparkline gradient	#C9A96E (gold) como stop principal
+Inputs glass	.glass-input con focus gold ring
+Marquee ticker	Animación para sidebar ticker
+
+Notas:
+
+Tokens originales de Océano Profundo (--color-pearl, --color-deep-*, etc.) se eliminaron
+Referencias a font-garamond, font-nunito, font-sans eliminadas (usa vars de Next.js)
+
+Sprint 8D-5 — Sidebar + TopBar + StatCard (completo)
+
+Archivo	Cambios clave
+MarbleBackground.tsx	NUEVO. Canvas 2D con 4 vetas doradas animadas ondulantes + textura mármol SVG radial + noise grain + tinte terracotta sutil
+Sidebar.tsx	Reescrito completo. Fondo: #0A0F12 + MarbleCanvas + glass overlay + vignette. Logo: /castillo-icon.svg con glow dorado que respira. Links: gold-400 active, silver-400 inactive, gold-400/sage-400/teal-400 iconos. Bottom ticker marquee con shimmer "La familia por excelencia".
+TopBar.tsx	Silver Tide migrado. Logo icon. Notification badge: rose-400. User menu. Mobile hamburger.
+StatCard.tsx	Glass card. Título: silver-400. Valor: silver-100. Cambio positivo: emerald-400. Negativo: rose-400. Sparkline: gradiente gold-400.
+
+Sprint 8D-6 — UI Primitives (completo)
+
+Archivo	Cambios clave
+Button.tsx	5 variantes: primary (gold), sage (verde elegante), secondary (glass outline), ghost, danger (rose). Aurora sweep en hover. Focus ring gold. active:scale-[0.98].
+Badge.tsx	7 variantes: success, warning, error, info, neutral, gold, sage.
+Input.tsx	Glass style: rgba(255,255,255,0.04), border white/[0.08], focus ring gold. Error: rose-400.
+Table.tsx	Header: bg surface-2. Rows: surface-0. Hover: surface-1. Borders: white/[0.06].
+EmptyState.tsx	NUEVO. Icono silver-500, título silver-100, descripción silver-400, action slot.
+index.ts	Agregado EmptyState + Card exports extendidos
+
+Sprint 8D-7 — LoginPage (completo)
+
+Archivo:src/features/auth/LoginPage.tsx — Reescrito completo
+
+
+Panel	Qué tiene
+Left (55%)	MarbleCanvas animado + glass overlay + vignette + 12 partículas doradas CSS flotantes + logo /CCC.png con glow radial que respira + "Castillo" shimmer dorado + "Country Club" silver + línea divisora gold + "La familia por excelencia" shimmer silver+gold + "Escazú, Costa Rica"
+Divider	1px línea vertical gradiente gold que se desvanece arriba/abajo
+Right (45%)	Gradiente atmospheric triple + noise grain + vignette + glass card translúcida (silver-tints, blur 20px, border degradado top→bottom) + light catch borde superior + inputs glass + focus gold ring + botón gold con aurora sweep
+Mobile	Logo + "Castillo" + "Country Club" centrados arriba, glass card debajo, sin split
+
+Logo:/public/CCC.png — se accede como /CCC.png
+
+
+Sprint 8E-1 — Dashboard Charts (completo)
+
+Archivo	Cambios clave
+RevenueChart.tsx	Gold: #C9A96E. Teal previous: #4AB8D0. Grid: rgba(255,255,255,0.04). Tooltip: glass inline.
+MembershipDonut.tsx	Tooltip glass inline. Textos: silver tokens.
+TopActivities.tsx	Podium: gold/teal/emerald. No-podium: terracotta #D47A5A.
+AnomalyFeed.tsx	Severity: high=rose, medium=gold, low=teal. BG/border por severity. Ya no depende de severityColor.
+HitlQueue.tsx	Priority dots: rose/gold/teal. Botón "Aprobar": sage-400. Botón "Rechazar": glass con hover rose.
+AgeBalanceWidget.tsx	Members: teal. Activities: gold. Gini colors: emerald/gold/amber/rose.
+
+Sprint 8E-2 — Utility Components (completo)
+
+Archivo	Cambios clave
+Skeleton.tsx	Sin cambios — ya compatible con Silver Tide
+Modal.tsx	Overlay: rgba(0,0,0,0.65) + blur(4px). Textos: silver-100/silver-400. Close: silver-400.
+Toast.tsx	Cada tipo con bg/border/color/iconColor Silver Tide (emerald, rose, gold, teal). Glass overlay sutil. Animación: slideUp.
+KPICards.tsx	Iconos 20px strokeWidth 1.5. Colors: gold (ingresos), sage (familias), teal (engagement), emerald (NPS), terracotta (utilización), silver (eventos).
+PeriodSelector.tsx	Active pill: gold-400. Focus: gold-400. Inputs: .glass-input. Aplicar: .aurora-btn--gold.
+
+Sprint 8E-3 — QuickActions + YoY + PageContainer (completo)
+
+Archivo	Cambios clave
+QuickActions.tsx	FAB: gradiente gold + gold glow shadow + aurora. Actions: terracotta (evento), gold (familia), teal (comunicado), emerald (reportes), rose (alertas). Overlay: blur(4px).
+YearOverYearToggle.tsx	Toggle: teal-400 active, silver-400 inactive. Delta: emerald-300/rose-300. Sparkline: emerald/rose bars.
+PageContainer.tsx	Title: silver-100. Subtitle: silver-400. Action variant type incluye "sage".
+
+
+PENDIENTE
+
+Sprint 8E-4 — ExecutiveDashboard + StatCard verification
+
+Archivo	Qué falta
+ExecutiveDashboard.tsx	Actualizar tier colors en MembershipDonut data (#C4A44A → #C9A96E, etc.). Verificar chart palette.
+StatCard.tsx	Verificar que sparkline colors pasan correctamente desde KPICards con nuevos tokens.
+
+Archivos necesarios:ExecutiveDashboard.tsx, StatCard.tsx
+
+
+Sprint 8E-5 — Feature Pages
+
+Archivo	Qué falta
+FamiliesListPage.tsx	Migrar a Silver Tide (buttons, badges, table, filters)
+FamilyDetailPage.tsx	Migrar a Silver Tide
+EventsPage.tsx	Migrar a Silver Tide
+EventDetailPage.tsx	Migrar a Silver Tide
+
+Archivos necesarios: Todos los de arriba
+
+
+Sprint 8E-6 — Remaining Feature Pages
+
+Archivo	Qué falta
+Cualquier otra página de features	Migrar
+Settings pages	Migrar
+Reports pages	Migrar
+
+Sprint 8F — Theme System Cleanup
+
+Tarea	Detalle
+Eliminar useThemeStore	No hay tema claro. Todo es dark.
+Verificar ToggleTheme	En LoginPage y TopBar — evaluar si mantener
+Hardcode data-theme="dark"	En index.html y ThemeSync.tsx
+Eliminar CSS variables claras	Del theme.light en useThemeStore
+Eliminar moon.svg / sun.svg	Del theme store imports
+Reducir bundle	CSS eliminado ≈ 8-12KB gzipped
+
+Sprint 8G — Responsive + Accessibility + Production Polish
+
+Tarea	Detalle
+Mobile sidebar	Overlay con backdrop-blur + slide-left animation
+Login responsive	Mobile layout con logo + form sin split
+Touch targets	44px minimum
+Focus rings	gold-400 outline, 2px, offset-2
+Contrast ratios	Silver-200 on Surface-0 = ~12:1 ✓
+Contrast ratios	Silver-400 on Surface-0 = ~7:1 ✓
+Keyboard nav	Skip to content, focus traps en modals
+Screen readers	aria-labels en icon buttons
+
+
+ARCHIVOS MODIFICADOS (RESUMEN COMPLETO)
+
+Nuevos creados
+
+Archivo	Sprint
+src/shared/components/layout/MarbleBackground.tsx	8D-5
+src/shared/components/ui/EmptyState.tsx	8D-6
+
+Reescritos completos
+
+Archivo	Sprint
+src/styles/globals.css	8D-4
+src/shared/components/layout/Sidebar.tsx	8D-5
+src/features/auth/LoginPage.tsx	8D-7
+
+Migrados (referencias de color actualizadas)
+
+Archivo	Sprint
+src/shared/components/layout/TopBar.tsx	8D-5
+src/shared/components/layout/StatCard.tsx	8D-5
+src/shared/components/ui/Button.tsx	8D-6
+src/shared/components/ui/Badge.tsx	8D-6
+src/shared/components/ui/Input.tsx	8D-6
+src/shared/components/ui/Table.tsx	8D-6
+src/shared/components/ui/index.ts	8D-6
+src/shared/components/ui/Modal.tsx	8E-2
+src/shared/components/ui/Toast.tsx	8E-2
+src/shared/components/layout/PageContainer.tsx	8E-3
+src/features/dashboard/components/RevenueChart.tsx	8E-1
+src/features/dashboard/components/MembershipDonut.tsx	8E-1
+src/features/dashboard/components/TopActivities.tsx	8E-1
+src/features/dashboard/components/AnomalyFeed.tsx	8E-1
+src/features/dashboard/components/HitlQueue.tsx	8E-1
+src/features/dashboard/components/AgeBalanceWidget.tsx	8E-1
+src/features/dashboard/components/KPICards.tsx	8E-2
+src/features/dashboard/components/PeriodSelector.tsx	8E-2
+src/features/dashboard/components/QuickActions.tsx	8E-3
+src/features/dashboard/components/YearOverYearToggle.tsx	8E-3
+
+Sin cambios (compatible con Silver Tide)
+
+Archivo	Nota
+src/shared/components/ui/Skeleton.tsx	Ya usaba bg-white/[0.04] — compatible
+src/shared/components/ui/FrostedGlassCard.tsx	Creado en sprint anterior — pendiente integración
+
+
+DONDE SE APLICÓ CADA COLOR DE LA PALETA
+
+Gold (#C9A96E)
+
+Lugar	Uso
+globals.css	Token --color-gold-400, sparkline gradient
+Sidebar	Logo glow, active link, iconos, ticker shimmer
+MarbleBackground	4 vetas doradas animadas
+LoginPage	Botón submit, shimmer text, partículas, glow logo
+Button	Variante primary
+Badge	Variante gold
+KPICards	Ingresos icon
+RevenueChart	Area fill + stroke
+MembershipDonut	Tooltip text
+PeriodSelector	Active pill
+QuickActions	FAB button, "Nueva familia" icon
+YearOverYearToggle	Toggle active state (comparte con teal)
+
+Sage (#5B8A6A)
+
+Lugar	Uso
+Button	Variante sage con aurora sweep
+Badge	Variante sage
+KPICards	Familias activas icon
+HitlQueue	Botón "Aprobar"
+Sidebar	Link icon color
+
+Terracotta (#D47A5A)
+
+Lugar	Uso
+TopActivities	Barras no-podium
+KPICards	Utilización instalaciones icon
+MarbleBackground	Veta 2 (tinte sutil)
+QuickActions	"Nuevo evento" icon
+globals.css	.glass-card [data-tone="terracotta"]
+
+Teal (#2A9AB5)
+
+Lugar	Uso
+KPICards	Engagement icon
+AnomalyFeed	Severity "low"
+HitlQueue	Priority "low" dot, badge
+AgeBalanceWidget	Members bars, recommendation box
+PeriodSelector	(previamente — ahora gold)
+YearOverYearToggle	Toggle active, info box
+QuickActions	"Comunicado" icon
+
+Emerald (#3DAA70)
+
+Lugar	Uso
+AnomalyFeed	(no directo — emerald para success states)
+TopActivities	Podium position 3
+KPICards	NPS icon
+YearOverYearToggle	Delta positive
+QuickActions	"Ver reportes" icon
+
+Rose (#C46470)
+
+Lugar	Uso
+AnomalyFeed	Severity "high"
+HitlQueue	Priority "high" dot, reject button hover
+Button	Variante danger
+KPICards	(via StatCard change negative)
+YearOverYearToggle	Delta negative
+QuickActions	"Alertas" icon
+
+
+PROMPT DE CONTINUACIÓN PARA NUEVO CHAT
+
+text
+text
+## Contexto
+
+Estoy desarrollando la plataforma web de administración para Castillo Country Club, un club privado en Costa Rica.
+
+**Stack:** React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand + React Router v7 + Recharts + Lucide Icons + Framer Motion
+
+**Paquete:** `pnpm create vite@latest castillo-admin --template react-ts`
+
+**Base de conocimiento:** El documento original que me pasaste.
+
+## Estado Actual
+
+La migración a Silver Tide está ~85% completa en componentes UI.
+
+**COMPLETADO:**
+- Sprint 8D-1 a 8D-3 (análisis + tokens + MarbleBackground) — chat anterior
+- Sprint 8D-4 (globals.css — reescritura completa con todos los tokens)
+- Sprint 8D-5 (Sidebar, TopBar, StatCard — Silver Tide + MarbleBackground)
+- Sprint 8D-6 (Button, Badge, Input, Table, EmptyState — Silver Tide + sage variant + aurora sweep)
+- Sprint 8D-7 (LoginPage — reescritura completa con split panel + marble + shimmer + glass card)
+- Sprint 8E-1 (RevenueChart, MembershipDonut, TopActivities, AnomalyFeed, HitlQueue, AgeBalanceWidget)
+- Sprint 8E-2 (Skeleton, Modal, Toast, KPICards, PeriodSelector)
+- Sprint 8E-3 (QuickActions, YearOverYearToggle, PageContainer)
+
+**PENDIENTE INMEDIATO:**
+- Sprint 8E-4: ExecutiveDashboard (actualizar tier colors en data) + StatCard verification
+- Sprint 8E-5: Feature pages (Families, Events)
+- Sprint 8E-6: Remaining feature pages (Settings, Reports)
+- Sprint 8F: Theme system cleanup (eliminar tema claro, hardcode dark)
+- Sprint 8G: Responsive + accessibility + production polish
+
+## Tokens de Color Finales
+
+Base: `#080B12` (abyss), `#0D1117` (surface-0), `#111820` (surface-1), `#151C28` (surface-2)
+Neutrals: Silver Tide `#E8ECF1` → `#404954` (6 niveles)
+Primary: Gold `#C9A96E` (6 niveles, `--color-gold-400` = primary)
+Secondary: Sage `#5B8A6A` (6 niveles, verde elegante para clientes)
+Warm: Terracotta `#D47A5A` (6 niveles, warmth accent)
+Emotionals: Emerald `#3DAA70`, Teal `#2A9AB5`, Amber `#D4A840`, Rose `#C46470`
+
+## Patrón de textura heredado (NO se toca)
+
+```css
+/* Silver Tide Reverb */
+/* Radial overlays sutiles en fondo */
+/* Noise texture */
+/* Glass cards con silver-tints + gradientes de profundidad */
+
+Qué necesito en este chat
+
+Sprint 8E-4 — ExecutiveDashboard + StatCard verification
+
+
+Necesito estos archivos para continuar:
+
+
+1.src/features/dashboard/ExecutiveDashboard.tsx
+2.src/shared/components/layout/StatCard.tsx
+
+Sprint 8E-5 — Feature Pages
+
+
+Necesito estos archivos:
+
+
+3.src/features/families/FamiliesListPage.tsx
+4.src/features/families/FamilyDetailPage.tsx
+5.src/features/events/EventsPage.tsx
+6.src/features/events/EventDetailPage.tsx
+
+Reglas del chat:
+
+1.Pasame los archivos completos
+2.Yo devuelvo archivos completos listos para copiar y pegar
+3.Si algo es proactivo pero aplica solo a un archivo, lo hago
+4.Si algo requiere cambios en múltiples archivos, lo pongo como pendiente
+5.Cada sprint incluye changelog detallado
+
+Importante:
+
+Los tokens de Océano Profundo ya no existen
+--color-pearl, --color-deep-*, --color-abyss (el anterior), --color-aqua, --color-aqua-light fueron eliminados
+Si un archivo tiene estos tokens, es candidato a migración
+Usar var(--color-silver-X) para textos, var(--color-gold-X) para accents
+Botón primario: var(--color-gold-400), secundario: var(--color-sage-400)
+Font variables: --font-display (Cormorant Garamond), --font-body (Lora), --font-ui (DM Sans), --font-mono (DM Mono)
+Sistema de spacing: 4px base

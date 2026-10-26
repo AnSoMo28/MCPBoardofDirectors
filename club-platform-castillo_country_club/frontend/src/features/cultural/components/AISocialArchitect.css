@@ -1,0 +1,808 @@
+/**
+ * AISocialArchitect — AI Social Intervention Modal
+ *
+ * Dark modal overlay, social goal chips, activity suggestions,
+ * group size selector, social metric cards, targeting grid,
+ * prediction hero, risk badges. Green accent (#4ade80).
+ */
+
+/* ── Backdrop + Modal ── */
+.ai-social-architect {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+}
+
+.ai-social-architect__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.ai-social-architect__modal {
+  position: relative;
+  width: 90vw;
+  max-width: 700px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: #0f0f0f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ai-social-architect__modal::-webkit-scrollbar {
+  width: 3px;
+}
+.ai-social-architect__modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* ── Header ── */
+.ai-social-architect__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ai-social-architect__header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-social-architect__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.ai-social-architect__phase-badge {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.ai-social-architect__close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.ai-social-architect__close:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── Section ── */
+.ai-social-architect__section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ai-social-architect__section-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ── Intention Mode ── */
+.ai-social-architect__intention-header h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.ai-social-architect__hint {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0.25rem 0 0;
+  line-height: 1.45;
+}
+
+/* ── Goals ── */
+.ai-social-architect__goals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-social-architect__goals-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ai-social-architect__goals-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-social-architect__goal-chip {
+  text-align: left;
+  padding: 0.4rem 0.65rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.45);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-social-architect__goal-chip:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ai-social-architect__goal-chip--selected {
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+}
+
+.ai-social-architect__goal-icon {
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.ai-social-architect__goal-label {
+  flex: 1;
+}
+
+/* ── Textarea ── */
+.ai-social-architect__textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.ai-social-architect__textarea:focus {
+  outline: none;
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.ai-social-architect__textarea::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Suggestions ── */
+.ai-social-architect__suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-social-architect__suggestions-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ai-social-architect__suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ai-social-architect__suggestion-chip {
+  text-align: left;
+  padding: 0.35rem 0.6rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.4);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+}
+
+.ai-social-architect__suggestion-chip:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ai-social-architect__suggestion-chip--selected {
+  background: rgba(74, 222, 128, 0.06);
+  border-color: rgba(74, 222, 128, 0.25);
+  color: #4ade80;
+}
+
+/* ── Group Size ── */
+.ai-social-architect__group-size {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-social-architect__group-size-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ai-social-architect__group-size-options {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.ai-social-architect__group-chip {
+  padding: 0.25rem 0.55rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-social-architect__group-chip:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ai-social-architect__group-chip--selected {
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.4);
+  color: #4ade80;
+}
+
+/* ── Detected ── */
+.ai-social-architect__detected {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ai-social-architect__detected-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ai-social-architect__detected-value {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0.15rem 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  text-transform: capitalize;
+}
+
+.ai-social-architect__confidence {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.25);
+  margin-left: auto;
+}
+
+/* ── Actions ── */
+.ai-social-architect__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ai-social-architect__btn {
+  padding: 0.5rem 1.25rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-social-architect__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ai-social-architect__btn--primary {
+  background: rgba(74, 222, 128, 0.15);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  color: #4ade80;
+}
+
+.ai-social-architect__btn--primary:hover:not(:disabled) {
+  background: rgba(74, 222, 128, 0.25);
+  letter-spacing: 0.08em;
+}
+
+.ai-social-architect__btn--secondary {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ai-social-architect__btn--secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ai-social-architect__btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ai-social-architect__btn--ghost:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── AI Commentary ── */
+.ai-social-architect__ai-says {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(74, 222, 128, 0.04);
+  border: 1px solid rgba(74, 222, 128, 0.12);
+  border-radius: 8px;
+}
+
+.ai-social-architect__ai-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.ai-social-architect__ai-text {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Social Targeting ── */
+.ai-social-architect__targeting {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ai-social-architect__targeting-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.ai-social-architect__metric-card {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.ai-social-architect__metric-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.ai-social-architect__metric-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.ai-social-architect__metric-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ai-social-architect__metric-label {
+  font-size: 0.45rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Proposal Card ── */
+.ai-social-architect__proposal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(74, 222, 128, 0.1);
+  border-radius: 8px;
+}
+
+.ai-social-architect__proposal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.ai-social-architect__proposal-desc {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Fields ── */
+.ai-social-architect__field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+}
+
+.ai-social-architect__field-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  min-width: 55px;
+}
+
+.ai-social-architect__field-value {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ai-social-architect__field-score {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #4ade80;
+  margin-left: auto;
+}
+
+/* ── Predictions Hero ── */
+.ai-social-architect__predictions-hero {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ai-social-architect__prediction-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.6rem 0.4rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.ai-social-architect__prediction-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ai-social-architect__prediction-label {
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+/* ── Sensory ── */
+.ai-social-architect__sensory {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ai-social-architect__sensory-grid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ai-social-architect__sensory-grid span {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Segments ── */
+.ai-social-architect__segments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-social-architect__segments-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.ai-social-architect__segment-tag {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(74, 222, 128, 0.06);
+  border: 1px solid rgba(74, 222, 128, 0.15);
+  border-radius: 3px;
+}
+
+/* ── Cross-domain ── */
+.ai-social-architect__cross-domain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-social-architect__cross-domain-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-social-architect__cross-domain-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+.ai-social-architect__cross-domain-icon {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.ai-social-architect__cross-domain-value {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+
+/* ── Steps ── */
+.ai-social-architect__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-social-architect__steps-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ai-social-architect__steps-list li {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+
+/* ── Refinement ── */
+.ai-social-architect__refinement {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ai-social-architect__refine-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Impact Delta ── */
+.ai-social-architect__impact-delta {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ai-social-architect__impact-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ai-social-architect__impact-commentary {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.ai-social-architect__impact-deltas {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ai-social-architect__impact-deltas span {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Risks ── */
+.ai-social-architect__risks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ai-social-architect__risks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-social-architect__risk {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ai-social-architect__risk-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-social-architect__risk-severity {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.ai-social-architect__risk-type {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: capitalize;
+}
+
+.ai-social-architect__risk-desc {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.ai-social-architect__risk-mitigation {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ── Warnings / Recommendations ── */
+.ai-social-architect__warnings,
+.ai-social-architect__recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-social-architect__warning {
+  font-size: 0.68rem;
+  color: rgba(234, 179, 8, 0.7);
+  padding: 0.3rem 0.5rem;
+  background: rgba(234, 179, 8, 0.05);
+  border-radius: 4px;
+}
+
+.ai-social-architect__recommendation {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0.3rem 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+/* ── Confirmation ── */
+.ai-social-architect__confirmed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.ai-social-architect__confirmed-icon {
+  font-size: 2.5rem;
+}
+
+.ai-social-architect__confirmed h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.ai-social-architect__confirmed p {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.ai-social-architect__confirmed-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.ai-social-architect__confirmed-stats span {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+}

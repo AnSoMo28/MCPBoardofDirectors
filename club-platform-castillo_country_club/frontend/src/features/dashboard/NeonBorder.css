@@ -1,0 +1,83 @@
+/**
+ * @component NeonBorder (Fase 25)
+ * @namespace .glass-neon
+ * @depends globals.css (tokens)
+ * @note Container + canvas + static glow fallback for reduced motion.
+ *       Most rendering is canvas-based; CSS handles layout + fallback.
+ * @import import './NeonBorder.css';
+ */
+
+/* ═══════════════════════════════════════
+   Container
+   ═══════════════════════════════════════ */
+
+.glass-neon {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  overflow: visible;
+}
+
+/* ═══════════════════════════════════════
+   Canvas
+   ═══════════════════════════════════════ */
+
+.glass-neon__canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ═══════════════════════════════════════
+   Static Glow Fallback (reduced motion)
+   ═══════════════════════════════════════ */
+
+.glass-neon--static {
+  border-radius: inherit;
+  border: 1px solid
+    color-mix(in srgb, var(--neon-color, #c9a96e) 40%, transparent);
+  box-shadow:
+    0 0 8px var(--neon-color, #c9a96e),
+    0 0 20px
+      color-mix(
+        in srgb,
+        var(--neon-color, #c9a96e) 30%,
+        transparent
+      ),
+    inset 0 0 8px
+      color-mix(
+        in srgb,
+        var(--neon-color, #c9a96e) 10%,
+        transparent
+      );
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-neon--static {
+  box-shadow:
+    0 0 6px
+      color-mix(
+        in srgb,
+        var(--neon-color, #c9a96e) 50%,
+        transparent
+      ),
+    0 0 16px
+      color-mix(
+        in srgb,
+        var(--neon-color, #c9a96e) 18%,
+        transparent
+      ),
+    inset 0 0 6px
+      color-mix(
+        in srgb,
+        var(--neon-color, #c9a96e) 6%,
+        transparent
+      );
+}

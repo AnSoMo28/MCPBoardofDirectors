@@ -1,0 +1,627 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/CoachingFormModal.css
+   §B4.10 — Coaching Form Modal V2 Styles
+   Living Protocol: 4/7 (form — no narrative)
+
+   1. RESPIRACIÓN:  modal entry animation
+   2. REACCIÓN:     hover/focus on coach cards, pills, inputs
+   3. MEMORIA:      form state persists during interaction
+   4. INTENCIÓN:    validation errors, submit state, coach selection
+   5. SINIESTRÍA:   data-sport avatar colors, data-skill-level pill colors
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    N/A (form)
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root variables ───────────────────────────────── */
+
+.spt-coach-f__overlay {
+  --spt-cf-accent: var(--color-teal-400, #2a9ab5);
+  --spt-cf-surface: var(--color-surface-1, #1a1a1a);
+  --spt-cf-surface-2: var(--color-surface-2, #222);
+  --spt-cf-border: rgba(255, 255, 255, 0.06);
+  --spt-cf-text: var(--color-silver-100, #f0ece4);
+  --spt-cf-text-muted: var(--color-silver-400, #8a8580);
+  --spt-cf-text-dim: var(--color-silver-500, #7a7570);
+}
+
+.spt-coach-f__overlay[data-mode="calm"]    { --spt-cf-accent: var(--color-teal-400, #2a9ab5); }
+.spt-coach-f__overlay[data-mode="alert"]   { --spt-cf-accent: var(--color-amber-400, #d4a017); }
+.spt-coach-f__overlay[data-mode="critical"]{ --spt-cf-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Overlay + Backdrop ───────────────────────────── */
+
+.spt-coach-f__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.spt-coach-f__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* ── §2 — Modal ────────────────────────────────────────── */
+
+.spt-coach-f__modal {
+  position: relative;
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--spt-cf-surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: spt-cf-modal-enter 0.25s ease;
+}
+
+.spt-coach-f__overlay[data-prefers-reduced="true"] .spt-coach-f__modal {
+  animation: none;
+}
+
+@keyframes spt-cf-modal-enter {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── §3 — Header ───────────────────────────────────────── */
+
+.spt-coach-f__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--spt-cf-border);
+  background: var(--spt-cf-surface);
+}
+
+.spt-coach-f__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.05rem;
+  color: var(--spt-cf-text);
+  margin: 0;
+}
+
+.spt-coach-f__subtitle {
+  font-size: 0.65rem;
+  color: var(--spt-cf-text-muted);
+  margin: 0.15rem 0 0;
+}
+
+.spt-coach-f__close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.spt-coach-f__close-btn:hover {
+  background: var(--color-surface-3, #333);
+}
+
+.spt-coach-f__close-btn:focus-visible {
+  outline: 2px solid var(--spt-cf-accent);
+  outline-offset: 2px;
+}
+
+.spt-coach-f__close-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--spt-cf-text-muted);
+}
+
+/* ── §4 — Form Body ────────────────────────────────────── */
+
+.spt-coach-f__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+/* ── §5 — Form Field ───────────────────────────────────── */
+
+.spt-coach-f__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.spt-coach-f__label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--spt-cf-text-muted);
+}
+
+.spt-coach-f__label-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.spt-coach-f__error {
+  font-size: 0.6rem;
+  color: var(--color-rose-400);
+  margin: 0;
+}
+
+/* ── §6 — Inputs (LP 2: Reacción) ──────────────────────── */
+
+.spt-coach-f__input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--spt-cf-border);
+  border-radius: 8px;
+  background: var(--spt-cf-surface-2);
+  font-size: 0.8rem;
+  color: var(--spt-cf-text);
+  min-height: 44px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.spt-coach-f__input::placeholder {
+  color: var(--spt-cf-text-dim);
+}
+
+.spt-coach-f__input:focus {
+  outline: none;
+  border-color: var(--spt-cf-accent);
+  box-shadow: 0 0 0 3px rgba(42, 154, 181, 0.15);
+}
+
+.spt-coach-f__input[data-has-error="true"] {
+  border-color: var(--color-rose-400);
+}
+
+.spt-coach-f__input--compact {
+  min-height: 36px;
+  font-size: 0.75rem;
+}
+
+.spt-coach-f__select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--spt-cf-border);
+  border-radius: 8px;
+  background: var(--spt-cf-surface-2);
+  font-size: 0.8rem;
+  color: var(--spt-cf-text);
+  min-height: 44px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.spt-coach-f__select:focus {
+  outline: none;
+  border-color: var(--spt-cf-accent);
+}
+
+/* ── §7 — Grid Layouts ─────────────────────────────────── */
+
+.spt-coach-f__row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.spt-coach-f__row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ── §8 — Coach Picker (LP 5: Siniestría — sport colors) ─ */
+
+.spt-coach-f__coach-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.spt-coach-f__coach-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem;
+  border: 1px solid var(--spt-cf-border);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
+  transition: border-color 0.2s ease, background 0.2s ease,
+              transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.spt-coach-f__coach-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.spt-coach-f__coach-card[data-selected="true"] {
+  background: rgba(42, 154, 181, 0.08);
+  border-color: rgba(42, 154, 181, 0.3);
+  transform: translateY(-1px);
+}
+
+.spt-coach-f__coach-card:focus-visible {
+  outline: 2px solid var(--spt-cf-accent);
+  outline-offset: 2px;
+}
+
+.spt-coach-f__coach-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: var(--color-abyss, #0a0a0a);
+  transition: background 0.4s ease;
+}
+
+/* Sport-colored avatars */
+.spt-coach-f__coach-avatar[data-sport="tennis"]     { background: var(--color-teal-400); }
+.spt-coach-f__coach-avatar[data-sport="golf"]        { background: var(--color-emerald-400); }
+.spt-coach-f__coach-avatar[data-sport="padel"]       { background: var(--color-gold-400); }
+.spt-coach-f__coach-avatar[data-sport="swimming"]    { background: var(--color-teal-300); }
+.spt-coach-f__coach-avatar[data-sport="fitness"]     { background: var(--color-rose-400); }
+.spt-coach-f__coach-avatar[data-sport="basketball"]  { background: var(--color-amber-400); }
+.spt-coach-f__coach-avatar[data-sport="volleyball"]  { background: var(--color-emerald-300); }
+.spt-coach-f__coach-avatar[data-sport="football"]    { background: var(--color-sage-400); }
+.spt-coach-f__coach-avatar[data-sport="squash"]      { background: var(--color-terracotta-400); }
+.spt-coach-f__coach-avatar[data-sport="yoga"]        { background: var(--color-teal-200); }
+.spt-coach-f__coach-avatar[data-sport="pilates"]     { background: var(--color-sage-200); }
+
+.spt-coach-f__coach-info {
+  min-width: 0;
+}
+
+.spt-coach-f__coach-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--spt-cf-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-coach-f__coach-sports {
+  font-size: 0.75rem;
+  margin: 0.1rem 0 0;
+}
+
+/* ── §9 — Specialties ──────────────────────────────────── */
+
+.spt-coach-f__specialties {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.spt-coach-f__specialties-label {
+  font-size: 0.6rem;
+  color: var(--spt-cf-text-dim);
+}
+
+.spt-coach-f__specialty-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.55rem;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--spt-cf-border);
+  color: var(--spt-cf-text-muted);
+}
+
+.spt-coach-f__specialty-icon {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+/* ── §10 — Skill Level Pills (LP 5: Siniestría) ────────── */
+
+.spt-coach-f__skill-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.spt-coach-f__skill-pill {
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--spt-cf-border);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--spt-cf-text-dim);
+  cursor: pointer;
+  min-height: 28px;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.spt-coach-f__skill-pill:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.spt-coach-f__skill-pill[data-selected="true"] {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  transition: color 0.4s ease;
+}
+
+.spt-coach-f__skill-pill[data-selected="true"][data-skill-level="beginner"]     { color: var(--color-teal-400); }
+.spt-coach-f__skill-pill[data-selected="true"][data-skill-level="intermediate"] { color: var(--color-amber-400); }
+.spt-coach-f__skill-pill[data-selected="true"][data-skill-level="advanced"]     { color: var(--color-rose-400); }
+.spt-coach-f__skill-pill[data-selected="true"][data-skill-level="all_levels"]   { color: var(--color-emerald-400); }
+
+.spt-coach-f__skill-pill:focus-visible {
+  outline: 2px solid var(--spt-cf-accent);
+  outline-offset: 2px;
+}
+
+/* ── §11 — Focus Area Tags ─────────────────────────────── */
+
+.spt-coach-f__focus-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.spt-coach-f__add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-height: 36px;
+  border: 1px solid var(--spt-cf-accent);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--spt-cf-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.spt-coach-f__add-btn:hover {
+  background: rgba(42, 154, 181, 0.1);
+}
+
+.spt-coach-f__add-btn:focus-visible {
+  outline: 2px solid var(--spt-cf-accent);
+  outline-offset: 2px;
+}
+
+.spt-coach-f__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.spt-coach-f__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--spt-cf-border);
+  color: var(--spt-cf-text-muted);
+}
+
+.spt-coach-f__tag-icon {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.spt-coach-f__tag-remove {
+  border: none;
+  background: transparent;
+  color: var(--spt-cf-text-dim);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.spt-coach-f__tag-remove:hover {
+  color: var(--color-rose-400);
+}
+
+/* ── §12 — Actions ─────────────────────────────────────── */
+
+.spt-coach-f__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--spt-cf-border);
+}
+
+.spt-coach-f__cancel-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--spt-cf-text-muted);
+  cursor: pointer;
+  min-height: 40px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.spt-coach-f__cancel-btn:hover {
+  background: var(--color-surface-3, #333);
+  color: var(--spt-cf-text);
+}
+
+.spt-coach-f__cancel-btn:focus-visible {
+  outline: 2px solid var(--spt-cf-accent);
+  outline-offset: 2px;
+}
+
+.spt-coach-f__submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--spt-cf-accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-abyss, #0a0a0a);
+  cursor: pointer;
+  min-height: 40px;
+  transition: opacity 0.2s ease;
+}
+
+.spt-coach-f__submit-btn:hover {
+  opacity: 0.85;
+}
+
+.spt-coach-f__submit-btn:focus-visible {
+  outline: 2px solid var(--spt-cf-accent);
+  outline-offset: 2px;
+}
+
+.spt-coach-f__submit-btn[data-submitting="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spt-coach-f__submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── §13 — Spinner ─────────────────────────────────────── */
+
+.spt-coach-f__spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spt-cf-spin 0.6s linear infinite;
+}
+
+@keyframes spt-cf-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── §14 — Light Mode ──────────────────────────────────── */
+
+.light .spt-coach-f__overlay {
+  --spt-cf-surface: #ffffff;
+  --spt-cf-surface-2: #f5f5f5;
+  --spt-cf-border: rgba(0, 0, 0, 0.1);
+  --spt-cf-text: #1a1a1a;
+  --spt-cf-text-muted: #6b7280;
+  --spt-cf-text-dim: #9ca3af;
+}
+
+.light .spt-coach-f__backdrop {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.light .spt-coach-f__modal {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.light .spt-coach-f__coach-card {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .spt-coach-f__coach-card[data-selected="true"] {
+  background: rgba(42, 154, 181, 0.06);
+}
+
+.light .spt-coach-f__skill-pill {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-coach-f__skill-pill[data-selected="true"] {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-coach-f__specialty-tag,
+.light .spt-coach-f__tag {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ── §15 — Reduced Motion ──────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-coach-f__modal {
+    animation: none;
+  }
+
+  .spt-coach-f__coach-card[data-selected="true"] {
+    transform: none;
+  }
+
+  .spt-coach-f__spinner {
+    animation: none;
+    border-top-color: transparent;
+  }
+}
+
+/* ── §16 — Responsive ──────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .spt-coach-f__row-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .spt-coach-f__row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .spt-coach-f__coach-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .spt-coach-f__modal {
+    max-height: 100vh;
+    border-radius: 12px 12px 0 0;
+    align-self: flex-end;
+  }
+}

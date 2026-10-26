@@ -1,0 +1,215 @@
+/**
+ * MemberEngagementDNA — Double Helix Visualization
+ * Namespace: .glass-m360-dna
+ * @phase 30 — Block 3.6
+ */
+
+/* ═══════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-dna {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.glass-m360-dna__empty {
+  font-size: 0.75rem;
+  color: var(--color-silver-500);
+  padding: 1rem 0;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SVG HELIX
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-dna__svg {
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+  overflow: visible;
+}
+
+/* ── Strand animation (gentle breathing) ── */
+
+.glass-m360-dna__strand {
+  animation: m360-dna-strand-breathe 8s ease-in-out infinite;
+}
+
+.glass-m360-dna__strand--b {
+  animation-delay: -4s;
+}
+
+/* ── Rung reveal stagger ── */
+
+.glass-m360-dna__rung-group {
+  opacity: 0;
+  animation: m360-dna-rung-in 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 80ms);
+}
+
+/* ── Improving glow ── */
+
+.glass-m360-dna__rung--improving {
+  animation: m360-dna-rung-glow 3s ease-in-out infinite;
+}
+
+/* ── Declining blink ── */
+
+.glass-m360-dna__rung--declining {
+  animation: m360-dna-rung-blink 2.5s ease-in-out infinite;
+}
+
+/* ── Diamond marker ── */
+
+.glass-m360-dna__diamond {
+  filter: drop-shadow(0 0 3px var(--color-gold-400));
+}
+
+/* ═══════════════════════════════════════════════════════
+   LEGEND TABLE
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-dna__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.glass-m360-dna__legend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.375rem;
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  transition: background 0.15s ease;
+}
+
+.glass-m360-dna__legend-row:hover {
+  background: color-mix(in srgb, var(--color-silver-600) 5%, transparent);
+}
+
+.glass-m360-dna__legend-row[data-preferred] {
+  font-weight: 600;
+}
+
+.glass-m360-dna__legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.glass-m360-dna__legend-label {
+  flex: 1;
+  color: var(--color-silver-300);
+}
+
+.glass-m360-dna__legend-freq {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--color-silver-500);
+  min-width: 3rem;
+  text-align: right;
+}
+
+.glass-m360-dna__legend-strength {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--color-silver-500);
+  min-width: 2rem;
+  text-align: right;
+}
+
+.glass-m360-dna__legend-trend {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  min-width: 1rem;
+  text-align: center;
+}
+
+.glass-m360-dna__legend-trend[data-trend="improving"] {
+  color: var(--color-emerald-400);
+}
+
+.glass-m360-dna__legend-trend[data-trend="declining"] {
+  color: var(--color-rose-400);
+}
+
+.glass-m360-dna__legend-trend[data-trend="stable"] {
+  color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-dna-strand-breathe {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.55; }
+}
+
+@keyframes m360-dna-rung-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes m360-dna-rung-glow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.2); }
+}
+
+@keyframes m360-dna-rung-blink {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.35; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360-dna__legend-row:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .glass-m360-dna__strand {
+  opacity: 0.3;
+}
+
+.light .glass-m360-dna__diamond {
+  filter: drop-shadow(0 0 2px rgba(201, 169, 110, 0.4));
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360-dna__strand {
+    animation: none;
+    opacity: 0.4;
+  }
+
+  .glass-m360-dna__rung-group {
+    opacity: 1;
+    animation: none;
+  }
+
+  .glass-m360-dna__rung--improving {
+    animation: none;
+  }
+
+  .glass-m360-dna__rung--declining {
+    animation: none;
+    opacity: 0.55;
+  }
+}

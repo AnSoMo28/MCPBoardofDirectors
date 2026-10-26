@@ -1,0 +1,269 @@
+/**
+ * GlowButton.css
+ * src/shared/components/ui/GlowButton.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-glowbtn
+ * @keyframes   1 (ui-glowbtn-rotate)
+ * @signature   Rotating conic-gradient glow border with mask-composite
+ *              technique. Only the 2px border glows. Content is glass.
+ *
+ * NOTE: @property --glow-angle requires CSS Houdini (Chrome 85+).
+ *       Graceful degradation: border stays static gold on unsupported browsers.
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  Content span: translucent bg + backdrop-filter
+ * D2 Stagger  ✗  Single element (not applicable)
+ * D3 Easing   ✓  Apple easing on hover transitions
+ * D4 Typo     ✓  UI font, 11/12/14px sizes, weight 600
+ * D5 Color    ✓  --glow-color CSS var for dynamic color, tokens for text
+ * D6 Pseudo   ✓  ::before + ::after on glow span for mask-composite
+ * D7 Interact ✓  hover (glow intensity + content fill), focus-visible, active
+ * D8 Density  ✓  36/44/48px min-height, compact padding
+ * D9 Response ✓  Intrinsic sizing
+ * D10 A11y    ✓  data-testid, aria-hidden, focus-visible, disabled
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + touch + print
+ * D13 Frames  ✓  1 namespaced at end
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  @property HOUDINI DECLARATION
+   Enables CSS animation of the conic-gradient angle.
+   ═══════════════════════════════════════════════════════════════ */
+
+@property --glow-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  ROOT — .ui-glowbtn (D3, D7, D8)
+   Outer wrapper. 2px padding = border width.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-glowbtn {
+  --glow-color: var(--color-gold-400);
+  --glow-speed: 3s;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: var(--radius-md, 10px);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* D10: Focus-visible — gold ring */
+.ui-glowbtn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 3px;
+}
+
+/* D10: Disabled */
+.ui-glowbtn--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  GLOW BORDER — .ui-glowbtn__glow (D6)
+   Rotating conic-gradient. Only the border is visible
+   via mask-composite "exclude" technique.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-glowbtn__glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--glow-angle, 0deg),
+    transparent 0%,
+    transparent 35%,
+    var(--glow-color) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: ui-glowbtn-rotate var(--glow-speed) linear infinite;
+  /* D7: Hover intensity */
+  opacity: 0.4;
+  transition: opacity 0.5s ease;
+}
+
+.ui-glowbtn:hover .ui-glowbtn__glow {
+  opacity: 0.9;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  CONTENT — .ui-glowbtn__content (D1, D3, D4, D7)
+   Glass surface. Translucent base, gold fill on hover.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-glowbtn__content {
+  position: relative;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: calc(var(--radius-md, 10px) - 2px);
+  /* D1: Glass base — translucent, fluid visible through */
+  background: rgba(13, 17, 23, 0.70);
+  backdrop-filter: blur(8px) saturate(1.2);
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  /* D4: Typography */
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-gold-400);
+  /* D3: Specific transition properties */
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+/* D7: Hover — gold fill, dark text */
+.ui-glowbtn:hover .ui-glowbtn__content {
+  background: var(--color-gold-400);
+  color: var(--color-abyss);
+}
+
+/* D7: Active — subtle press */
+.ui-glowbtn:active .ui-glowbtn__content {
+  transform: scale(0.98);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  SIZE VARIANTS (D8)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-glowbtn--sm .ui-glowbtn__content {
+  padding: 6px 14px;
+  font-size: 11px;
+  min-height: 36px;
+}
+
+.ui-glowbtn--md .ui-glowbtn__content {
+  padding: 10px 20px;
+  font-size: 12px;
+  min-height: 44px;
+}
+
+.ui-glowbtn--lg .ui-glowbtn__content {
+  padding: 12px 28px;
+  font-size: 14px;
+  min-height: 48px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-glowbtn__content {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-gold-500);
+}
+
+.light .ui-glowbtn:hover .ui-glowbtn__content {
+  background: var(--color-gold-400);
+  color: white;
+}
+
+.light .ui-glowbtn__glow {
+  opacity: 0.5;
+}
+
+.light .ui-glowbtn:hover .ui-glowbtn__glow {
+  opacity: 0.8;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  REDUCED MOTION + TOUCH (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-glowbtn__glow {
+    animation: none;
+    opacity: 0.35;
+  }
+
+  .ui-glowbtn__content {
+    transition: none;
+  }
+
+  .ui-glowbtn:active .ui-glowbtn__content {
+    transform: none;
+  }
+}
+
+/* Performance: no glow animation on touch devices */
+@media (pointer: coarse) {
+  .ui-glowbtn__glow {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .ui-glowbtn--lg .ui-glowbtn__content {
+    padding: 10px 20px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  KEYFRAMES (D13)
+   ALL at end, ALL ui-glowbtn-* namespaced. Count: 1.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Glow rotation — full 360° conic-gradient sweep */
+@keyframes ui-glowbtn-rotate {
+  to { --glow-angle: 360deg; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-glowbtn__glow {
+    display: none !important;
+  }
+
+  .ui-glowbtn__content {
+    border: 1px solid #1a1a1a !important;
+    background: transparent !important;
+    color: #1a1a1a !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}

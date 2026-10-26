@@ -1,0 +1,466 @@
+/* src/features/facilities/components/WhatIfPlannerPanel.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* WHAT-IF PLANNER PANEL — "El Arquitecto"                      */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — scenario entry stagger              */
+/*   SENSE 2: REACCIÓN — card hover translateY(-2px)            */
+/*   SENSE 3: MEMORIA — delta indicators on snapshots            */
+/*   SENSE 4: INTENCIÓN — execute button letter-spacing         */
+/*   SENSE 5: SINIESTRÍA — auto-generated cards priority visual  */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — per-scenario + empty state             */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.glass-fac-whatif {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* ═══ SCENARIO CARD ═══════════════════════════════════════════ */
+
+.glass-fac-whatif__scenario {
+  position: relative;
+  padding: 18px;
+  background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 20%, transparent);
+  border-radius: 12px;
+  overflow: hidden;
+
+  /* Sense 1: stagger entry */
+  opacity: 0;
+  animation: glass-fac-whatif-enter 0.5s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.12s);
+
+  /* Sense 2: hover transition */
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+@keyframes glass-fac-whatif-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Sense 2: REACCIÓN — hover micro-movement */
+.glass-fac-whatif__scenario:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px -6px rgba(0, 0, 0, 0.3);
+  border-color: color-mix(in srgb, var(--color-border) 40%, transparent);
+}
+
+/* Sense 5: Auto-generated gets visual priority */
+.glass-fac-whatif__scenario[data-auto="true"] {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+/* ═══ AUTO BADGE ══════════════════════════════════════════════ */
+
+.glass-fac-whatif__auto-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+  color: var(--color-amber-400);
+  margin-bottom: 8px;
+}
+
+/* ═══ TITLE ═══════════════════════════════════════════════════ */
+
+.glass-fac-whatif__title {
+  font-size: 15px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-100);
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+
+.glass-fac-whatif__narrative {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.6;
+  margin: 0 0 14px;
+}
+
+/* ═══ SNAPSHOTS (Sense 3: MEMORIA) ═══════════════════════════ */
+
+.glass-fac-whatif__snapshots {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.glass-fac-whatif__snapshot {
+  padding: 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 12%, transparent);
+}
+
+.glass-fac-whatif__snapshot-label {
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-silver-500);
+  margin-bottom: 4px;
+}
+
+.glass-fac-whatif__snapshot-metric {
+  font-size: 16px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-silver-100);
+  line-height: 1.2;
+}
+
+.glass-fac-whatif__snapshot--before .glass-fac-whatif__snapshot-metric {
+  color: var(--color-silver-300);
+}
+
+.glass-fac-whatif__snapshot--during .glass-fac-whatif__snapshot-metric {
+  color: var(--color-amber-400);
+}
+
+.glass-fac-whatif__snapshot--after .glass-fac-whatif__snapshot-metric {
+  color: var(--color-teal-400);
+}
+
+.glass-fac-whatif__snapshot-detail {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  margin-top: 2px;
+}
+
+/* Delta indicator (Sense 3) */
+.glass-fac-whatif__snapshot-delta {
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.glass-fac-whatif__snapshot-delta[data-direction="up"] {
+  color: var(--color-emerald-400);
+}
+
+.glass-fac-whatif__snapshot-delta[data-direction="down"] {
+  color: var(--color-rose-400);
+}
+
+/* ═══ MONTE CARLO ═════════════════════════════════════════════ */
+
+.glass-fac-whatif__monte-carlo {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  border-radius: 8px;
+}
+
+.glass-fac-whatif__monte-carlo-title {
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-400);
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.glass-fac-whatif__monte-carlo-bar {
+  position: relative;
+  height: 8px;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.glass-fac-whatif__monte-carlo-range {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+  border-radius: 4px;
+}
+
+.glass-fac-whatif__monte-carlo-median {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: 12px;
+  background: var(--color-teal-400);
+  border-radius: 1px;
+}
+
+.glass-fac-whatif__monte-carlo-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.glass-fac-whatif__monte-carlo-label {
+  font-size: 9px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+}
+
+.glass-fac-whatif__monte-carlo-label--median {
+  color: var(--color-teal-400);
+  font-weight: 700;
+}
+
+/* ═══ CASCADE RISKS ═══════════════════════════════════════════ */
+
+.glass-fac-whatif__cascade {
+  margin-bottom: 14px;
+}
+
+.glass-fac-whatif__cascade-title {
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.glass-fac-whatif__cascade-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+  line-height: 1.4;
+  padding: 3px 0;
+}
+
+.glass-fac-whatif__cascade-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-rose-400);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.glass-fac-whatif__cascade-dot[data-positive="true"] {
+  background: var(--color-emerald-400);
+}
+
+/* ═══ MITIGATION ══════════════════════════════════════════════ */
+
+.glass-fac-whatif__mitigation {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--color-emerald-400) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-emerald-400) 12%, transparent);
+  border-radius: 8px;
+}
+
+.glass-fac-whatif__mitigation-title {
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-emerald-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.glass-fac-whatif__mitigation-action {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+  line-height: 1.4;
+  padding: 2px 0;
+}
+
+.glass-fac-whatif__mitigation-recovery {
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-emerald-400);
+  margin-top: 6px;
+}
+
+/* ═══ ACTION BUTTONS (Sense 4: INTENCIÓN) ═════════════════════ */
+
+.glass-fac-whatif__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.glass-fac-whatif__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.2s ease, letter-spacing 0.3s ease,
+              transform 0.2s ease;
+  min-height: 36px;
+  border: 1px solid transparent;
+}
+
+.glass-fac-whatif__btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-teal-400);
+}
+
+.glass-fac-whatif__btn--execute {
+  border-color: color-mix(in srgb, var(--color-teal-400) 30%, transparent);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+  color: var(--color-teal-400);
+}
+
+.glass-fac-whatif__btn--execute:hover {
+  background: color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+  letter-spacing: 0.06em;
+  transform: translateY(-1px);
+}
+
+.glass-fac-whatif__btn--dismiss {
+  border-color: color-mix(in srgb, var(--color-border) 25%, transparent);
+  background: transparent;
+  color: var(--color-silver-400);
+}
+
+.glass-fac-whatif__btn--dismiss:hover {
+  background: color-mix(in srgb, var(--color-surface) 40%, transparent);
+  color: var(--color-silver-200);
+}
+
+/* ═══ "VER MÁS" ══════════════════════════════════════════════ */
+
+.glass-fac-whatif__more {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 1px dashed color-mix(in srgb, var(--color-border) 30%, transparent);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-silver-400);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  min-height: 44px;
+}
+
+.glass-fac-whatif__more:hover {
+  background: color-mix(in srgb, var(--color-surface) 40%, transparent);
+  color: var(--color-silver-200);
+}
+
+/* ═══ EMPTY STATE ═════════════════════════════════════════════ */
+
+.glass-fac-whatif--empty {
+  justify-content: center;
+  align-items: center;
+}
+
+.glass-fac-whatif__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--color-silver-500);
+}
+
+.glass-fac-whatif__empty svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.glass-fac-whatif__empty-text {
+  font-size: 14px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+  max-width: 300px;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+
+.glass-fac-whatif__empty-sub {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  margin: 0;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .glass-fac-whatif__scenario {
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+}
+
+.light .glass-fac-whatif__title {
+  color: var(--color-silver-800);
+}
+
+.light .glass-fac-whatif__snapshot-metric {
+  color: var(--color-silver-700);
+}
+
+.light .glass-fac-whatif__snapshot--during .glass-fac-whatif__snapshot-metric {
+  color: var(--color-amber-600);
+}
+
+.light .glass-fac-whatif__snapshot--after .glass-fac-whatif__snapshot-metric {
+  color: var(--color-teal-600);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-fac-whatif__scenario {
+    animation: none;
+    opacity: 1;
+  }
+
+  .glass-fac-whatif__scenario:hover {
+    transform: none;
+  }
+
+  .glass-fac-whatif__btn:hover {
+    letter-spacing: 0.02em;
+    transform: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .glass-fac-whatif__snapshots {
+    grid-template-columns: 1fr;
+  }
+
+  .glass-fac-whatif__actions {
+    flex-direction: column;
+  }
+}

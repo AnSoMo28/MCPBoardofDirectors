@@ -1,0 +1,966 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   RecFamilyStream v2 — Glass namespace .glass-rfc
+   Keyframes prefix: rfc*
+
+   Intelligence stream with left rail + priority dots.
+   On-demand paradigm with form input.
+   Score × priority sort. Expandable reasoning chains.
+   Domain signal via data-signal-source from type config.
+
+   Attributes: data-score-level, data-priority, data-signal-source,
+   data-expanded, data-step, data-variant
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ─────────────────────────────────────────────────────────────── */
+
+.glass-rfc {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FORM
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rfc-form {
+  padding: 0.875rem;
+  border-radius: 10px;
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.rfc-form-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 0.5fr;
+  gap: 0.625rem;
+}
+
+@media (max-width: 640px) {
+  .rfc-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rfc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rfc-field-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rfc-input,
+.rfc-select {
+  height: 34px;
+  padding: 0 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+  color: var(--color-silver-100);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rfc-input:focus,
+.rfc-select:focus {
+  outline: none;
+  border-color: var(--color-gold-400);
+  box-shadow: 0 0 0 2px rgba(232, 197, 71, 0.15);
+}
+
+.rfc-input::placeholder {
+  color: var(--color-silver-600);
+}
+
+.rfc-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 1.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%237a7570' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+}
+
+.rfc-select option {
+  background: var(--color-surface-1);
+  color: var(--color-silver-100);
+}
+
+.rfc-form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LOADING
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rfc-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rfc-skeleton {
+  height: 80px;
+  border-radius: 8px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  position: relative;
+  overflow: hidden;
+}
+
+.rfc-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-surface-2) 50%,
+    transparent 100%
+  );
+  animation: rfcSkeletonShimmer 1.5s ease-in-out infinite;
+  animation-delay: var(--skeleton-delay, 0ms);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rfc-empty-wrap {
+  padding: 1.5rem 1rem;
+}
+
+.rfc-empty-icon {
+  color: var(--color-silver-600);
+  opacity: 0.4;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DOMAIN SIGNAL — DOTS & INLINE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rfc-domain-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rfc-domain-dot[data-signal-source="wellness"] {
+  background: var(--color-emerald-400);
+}
+
+.rfc-domain-dot[data-signal-source="events"] {
+  background: var(--color-teal-400);
+}
+
+.rfc-domain-dot[data-signal-source="finance"] {
+  background: var(--color-gold-400);
+}
+
+.rfc-domain-dot[data-signal-source="sports"] {
+  background: var(--color-terracotta-400);
+}
+
+.rfc-domain-dot[data-signal-source="families"] {
+  background: var(--color-sage-400);
+}
+
+.rfc-domain-dot[data-signal-source="internal"] {
+  background: var(--color-silver-400);
+}
+
+.rfc-domain {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 999px;
+  font-size: 0.5625rem;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-silver-400);
+}
+
+.rfc-domain-label {
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SUMMARY STRIP
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rfc-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.rfc-summary-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-silver-300);
+}
+
+.rfc-summary-stats {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.rfc-summary-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1875rem;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 999px;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-silver-400);
+}
+
+.rfc-summary-stat svg {
+  flex-shrink: 0;
+}
+
+.rfc-summary-stat[data-priority="urgent"] {
+  color: var(--color-rose-400);
+  border-color: rgba(244, 63, 94, 0.2);
+  background: rgba(244, 63, 94, 0.04);
+}
+
+.rfc-summary-stat[data-variant="score"] {
+  color: var(--color-gold-400);
+  border-color: rgba(232, 197, 71, 0.2);
+  background: rgba(232, 197, 71, 0.04);
+}
+
+.rfc-summary-domains {
+  display: flex;
+  gap: 0.1875rem;
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   INTELLIGENCE STREAM
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rfc-stream {
+  position: relative;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Left rail */
+.rfc-stream::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.75rem;
+  bottom: 0.75rem;
+  width: 2px;
+  background: var(--color-border-subtle);
+  border-radius: 1px;
+}
+
+.rfc-stream-item {
+  position: relative;
+  padding: 0.1875rem 0;
+}
+
+/* Stream dot */
+.rfc-stream-item::before {
+  content: "";
+  position: absolute;
+  left: -1.25rem;
+  top: 0.875rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--color-silver-500);
+  background: var(--color-surface-0);
+  transform: translateX(-3px);
+  z-index: 1;
+}
+
+/* Priority-colored stream dots */
+.rfc-stream-item:has(.rfc-card[data-priority="urgent"])::before {
+  border-color: var(--color-rose-400);
+  animation: rfcPulse 2s ease-in-out infinite;
+}
+
+.rfc-stream-item:has(.rfc-card[data-priority="high"])::before {
+  border-color: var(--color-amber-400);
+}
+
+.rfc-stream-item:has(.rfc-card[data-priority="medium"])::before {
+  border-color: var(--color-gold-400);
+}
+
+.rfc-stream-item:has(.rfc-card[data-priority="low"])::before {
+  border-color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CARD
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rfc-card {
+  padding: 0.625rem 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border-subtle);
+  border-left: 3px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  opacity: 0;
+  animation: rfcCardReveal 0.4s ease forwards;
+  animation-delay: var(--card-delay, 0ms);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rfc-card:hover {
+  border-color: var(--color-border-default);
+}
+
+/* Priority left accent */
+.rfc-card[data-priority="urgent"] {
+  border-left-color: var(--color-rose-400);
+}
+
+.rfc-card[data-priority="high"] {
+  border-left-color: var(--color-amber-400);
+}
+
+.rfc-card[data-priority="medium"] {
+  border-left-color: var(--color-gold-400);
+}
+
+.rfc-card[data-priority="low"] {
+  border-left-color: var(--color-silver-600);
+}
+
+/* ── Card header ──────────────────────────────────────────────────────── */
+
+.rfc-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.rfc-card-header:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.rfc-card-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.rfc-card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Type icon */
+.rfc-card-type-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-silver-400);
+}
+
+.rfc-card-type-icon[data-signal-source="wellness"] {
+  color: var(--color-emerald-400);
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.rfc-card-type-icon[data-signal-source="events"] {
+  color: var(--color-teal-400);
+  background: rgba(20, 184, 166, 0.08);
+  border-color: rgba(20, 184, 166, 0.2);
+}
+
+.rfc-card-type-icon[data-signal-source="finance"] {
+  color: var(--color-gold-400);
+  background: rgba(232, 197, 71, 0.08);
+  border-color: rgba(232, 197, 71, 0.2);
+}
+
+.rfc-card-type-icon[data-signal-source="sports"] {
+  color: var(--color-terracotta-400);
+  background: rgba(232, 121, 71, 0.08);
+  border-color: rgba(232, 121, 71, 0.2);
+}
+
+.rfc-card-type-icon[data-signal-source="families"] {
+  color: var(--color-sage-400);
+  background: rgba(134, 184, 134, 0.08);
+  border-color: rgba(134, 184, 134, 0.2);
+}
+
+.rfc-card-type-icon[data-signal-source="internal"] {
+  color: var(--color-silver-400);
+}
+
+/* Title area */
+.rfc-card-title-area {
+  min-width: 0;
+  flex: 1;
+}
+
+.rfc-card-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.rfc-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+/* Badges */
+.rfc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.0625rem 0.3125rem;
+  border-radius: 999px;
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.rfc-badge--type {
+  color: var(--color-silver-400);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.rfc-badge--type[data-signal-source="wellness"] {
+  color: var(--color-emerald-400);
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+
+.rfc-badge--type[data-signal-source="events"] {
+  color: var(--color-teal-400);
+  background: rgba(20, 184, 166, 0.06);
+  border-color: rgba(20, 184, 166, 0.15);
+}
+
+.rfc-badge--type[data-signal-source="finance"] {
+  color: var(--color-gold-400);
+  background: rgba(232, 197, 71, 0.06);
+  border-color: rgba(232, 197, 71, 0.15);
+}
+
+.rfc-badge--type[data-signal-source="sports"] {
+  color: var(--color-terracotta-400);
+  background: rgba(232, 121, 71, 0.06);
+  border-color: rgba(232, 121, 71, 0.15);
+}
+
+.rfc-badge--type[data-signal-source="families"] {
+  color: var(--color-sage-400);
+  background: rgba(134, 184, 134, 0.06);
+  border-color: rgba(134, 184, 134, 0.15);
+}
+
+.rfc-badge--priority {
+  color: var(--color-silver-400);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.rfc-badge--priority[data-priority="urgent"] {
+  color: var(--color-rose-400);
+  background: rgba(244, 63, 94, 0.06);
+  border-color: rgba(244, 63, 94, 0.15);
+}
+
+.rfc-badge--priority[data-priority="high"] {
+  color: var(--color-amber-400);
+  background: rgba(245, 158, 11, 0.06);
+  border-color: rgba(245, 158, 11, 0.15);
+}
+
+.rfc-badge--priority[data-priority="medium"] {
+  color: var(--color-gold-400);
+  background: rgba(232, 197, 71, 0.06);
+  border-color: rgba(232, 197, 71, 0.15);
+}
+
+.rfc-badge--priority[data-priority="low"] {
+  color: var(--color-silver-500);
+}
+
+.rfc-badge--urgent {
+  color: var(--color-rose-400);
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+/* Score */
+.rfc-card-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 28px;
+}
+
+.rfc-card-score-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.rfc-card-score[data-score-level="high"] .rfc-card-score-value {
+  color: var(--color-emerald-400);
+}
+
+.rfc-card-score[data-score-level="medium"] .rfc-card-score-value {
+  color: var(--color-amber-400);
+}
+
+.rfc-card-score[data-score-level="low"] .rfc-card-score-value {
+  color: var(--color-rose-400);
+}
+
+.rfc-card-expand-icon {
+  color: var(--color-silver-500);
+}
+
+/* ── Score bar ────────────────────────────────────────────────────────── */
+
+.rfc-score-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-surface-2);
+  overflow: hidden;
+  margin-top: 0.375rem;
+}
+
+.rfc-score-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--score-pct, 0%);
+}
+
+.rfc-score-bar[data-score-level="high"] .rfc-score-bar-fill {
+  background: var(--color-emerald-400);
+}
+
+.rfc-score-bar[data-score-level="medium"] .rfc-score-bar-fill {
+  background: var(--color-amber-400);
+}
+
+.rfc-score-bar[data-score-level="low"] .rfc-score-bar-fill {
+  background: var(--color-rose-400);
+}
+
+/* ── Expand zone (CSS grid transition) ────────────────────────────────── */
+
+.rfc-expand-zone {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.rfc-expand-zone[data-expanded] {
+  grid-template-rows: 1fr;
+}
+
+.rfc-expand-inner {
+  overflow: hidden;
+}
+
+/* ── Expanded detail ──────────────────────────────────────────────────── */
+
+.rfc-card-detail {
+  padding-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rfc-card-desc {
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Card footer ──────────────────────────────────────────────────────── */
+
+.rfc-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.375rem;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.rfc-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.rfc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.0625rem 0.3125rem;
+  border-radius: 999px;
+  font-size: 0.5rem;
+  color: var(--color-silver-500);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.rfc-tag svg {
+  flex-shrink: 0;
+  color: var(--color-silver-600);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REASONING CHAIN
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rfc-chain {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 0.25rem;
+}
+
+.rfc-chain-step {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.rfc-chain-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-silver-400);
+  position: relative;
+  z-index: 1;
+}
+
+.rfc-chain-node[data-step="analysis"] {
+  color: var(--color-teal-400);
+  border-color: rgba(20, 184, 166, 0.3);
+  background: rgba(20, 184, 166, 0.06);
+}
+
+.rfc-chain-node[data-step="action"] {
+  color: var(--color-gold-400);
+  border-color: rgba(232, 197, 71, 0.3);
+  background: rgba(232, 197, 71, 0.06);
+}
+
+.rfc-chain-content {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 0.5rem;
+}
+
+.rfc-chain-label {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-500);
+  margin-bottom: 0.0625rem;
+}
+
+.rfc-chain-text {
+  font-size: 0.75rem;
+  color: var(--color-silver-300);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.rfc-chain-connector {
+  width: 1px;
+  height: 0.5rem;
+  margin-left: 0.6875rem;
+  background: var(--color-border-subtle);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes rfcCardReveal {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes rfcPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(244, 63, 94, 0.06);
+  }
+}
+
+@keyframes rfcSkeletonShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: light) {
+  /* Form */
+  .rfc-form {
+    background: #ffffff;
+    border-color: #e8e5df;
+  }
+
+  .rfc-field-label {
+    color: #8a8580;
+  }
+
+  .rfc-input,
+  .rfc-select {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+    color: #1a1814;
+  }
+
+  .rfc-input:focus,
+  .rfc-select:focus {
+    border-color: #b49632;
+    box-shadow: 0 0 0 2px rgba(180, 150, 50, 0.12);
+  }
+
+  .rfc-input::placeholder {
+    color: #b0a898;
+  }
+
+  .rfc-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23b0a898' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
+  .rfc-select option {
+    background: #ffffff;
+    color: #1a1814;
+  }
+
+  /* Skeletons */
+  .rfc-skeleton {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+  }
+
+  .rfc-skeleton::after {
+    background: linear-gradient(90deg, transparent 0%, #f0ece4 50%, transparent 100%);
+  }
+
+  /* Empty */
+  .rfc-empty-icon {
+    color: #d4d0c8;
+  }
+
+  /* Domain dots */
+  .rfc-domain-dot[data-signal-source="wellness"] { background: #059669; }
+  .rfc-domain-dot[data-signal-source="events"] { background: #0d9488; }
+  .rfc-domain-dot[data-signal-source="finance"] { background: #b49632; }
+  .rfc-domain-dot[data-signal-source="sports"] { background: #c2571a; }
+  .rfc-domain-dot[data-signal-source="families"] { background: #4d8b4d; }
+  .rfc-domain-dot[data-signal-source="internal"] { background: #b0a898; }
+
+  .rfc-domain {
+    background: #f0ece4;
+    border-color: #e8e5df;
+    color: #6b6560;
+  }
+
+  /* Summary */
+  .rfc-summary-count { color: #4a4540; }
+
+  .rfc-summary-stat {
+    background: #ffffff;
+    border-color: #e8e5df;
+    color: #6b6560;
+  }
+
+  .rfc-summary-stat[data-priority="urgent"] {
+    color: #e11148;
+    border-color: rgba(225, 29, 72, 0.2);
+    background: rgba(225, 29, 72, 0.03);
+  }
+
+  .rfc-summary-stat[data-variant="score"] {
+    color: #b49632;
+    border-color: rgba(180, 150, 50, 0.2);
+    background: rgba(180, 150, 50, 0.03);
+  }
+
+  /* Stream */
+  .rfc-stream::before { background: #e8e5df; }
+  .rfc-stream-item::before { background: #ffffff; }
+
+  .rfc-stream-item:has(.rfc-card[data-priority="urgent"])::before {
+    border-color: #e11148;
+  }
+  .rfc-stream-item:has(.rfc-card[data-priority="high"])::before { border-color: #d97706; }
+  .rfc-stream-item:has(.rfc-card[data-priority="medium"])::before { border-color: #b49632; }
+
+  /* Cards */
+  .rfc-card { background: #ffffff; border-color: #e8e5df; }
+  .rfc-card:hover { border-color: #d4d0c8; }
+  .rfc-card[data-priority="urgent"] { border-left-color: #e11148; }
+  .rfc-card[data-priority="high"] { border-left-color: #d97706; }
+  .rfc-card[data-priority="medium"] { border-left-color: #b49632; }
+  .rfc-card[data-priority="low"] { border-left-color: #d4d0c8; }
+
+  /* Type icon */
+  .rfc-card-type-icon { background: #f8f7f4; border-color: #e8e5df; color: #6b6560; }
+  .rfc-card-type-icon[data-signal-source="wellness"] { color: #059669; background: rgba(5,150,105,0.06); border-color: rgba(5,150,105,0.15); }
+  .rfc-card-type-icon[data-signal-source="events"] { color: #0d9488; background: rgba(13,148,136,0.06); border-color: rgba(13,148,136,0.15); }
+  .rfc-card-type-icon[data-signal-source="finance"] { color: #b49632; background: rgba(180,150,50,0.06); border-color: rgba(180,150,50,0.15); }
+  .rfc-card-type-icon[data-signal-source="sports"] { color: #c2571a; background: rgba(194,87,26,0.06); border-color: rgba(194,87,26,0.15); }
+  .rfc-card-type-icon[data-signal-source="families"] { color: #4d8b4d; background: rgba(77,139,77,0.06); border-color: rgba(77,139,77,0.15); }
+
+  .rfc-card-title { color: #1a1814; }
+  .rfc-card-expand-icon { color: #b0a898; }
+
+  /* Badges */
+  .rfc-badge--type { color: #6b6560; background: #f0ece4; border-color: #e8e5df; }
+  .rfc-badge--type[data-signal-source="wellness"] { color: #059669; background: rgba(5,150,105,0.05); border-color: rgba(5,150,105,0.15); }
+  .rfc-badge--type[data-signal-source="events"] { color: #0d9488; background: rgba(13,148,136,0.05); border-color: rgba(13,148,136,0.15); }
+  .rfc-badge--type[data-signal-source="finance"] { color: #b49632; background: rgba(180,150,50,0.05); border-color: rgba(180,150,50,0.15); }
+  .rfc-badge--type[data-signal-source="sports"] { color: #c2571a; background: rgba(194,87,26,0.05); border-color: rgba(194,87,26,0.15); }
+  .rfc-badge--type[data-signal-source="families"] { color: #4d8b4d; background: rgba(77,139,77,0.05); border-color: rgba(77,139,77,0.15); }
+
+  .rfc-badge--priority { color: #6b6560; background: #f0ece4; border-color: #e8e5df; }
+  .rfc-badge--priority[data-priority="urgent"] { color: #e11148; background: rgba(225,29,72,0.05); border-color: rgba(225,29,72,0.15); }
+  .rfc-badge--priority[data-priority="high"] { color: #d97706; background: rgba(217,119,6,0.05); border-color: rgba(217,119,6,0.15); }
+  .rfc-badge--priority[data-priority="medium"] { color: #b49632; background: rgba(180,150,50,0.05); border-color: rgba(180,150,50,0.15); }
+
+  .rfc-badge--urgent { color: #e11148; background: rgba(225,29,72,0.06); border-color: rgba(225,29,72,0.15); }
+
+  /* Score */
+  .rfc-card-score[data-score-level="high"] .rfc-card-score-value { color: #059669; }
+  .rfc-card-score[data-score-level="medium"] .rfc-card-score-value { color: #d97706; }
+  .rfc-card-score[data-score-level="low"] .rfc-card-score-value { color: #e11148; }
+
+  .rfc-score-bar { background: #f0ece4; }
+  .rfc-score-bar[data-score-level="high"] .rfc-score-bar-fill { background: #059669; }
+  .rfc-score-bar[data-score-level="medium"] .rfc-score-bar-fill { background: #d97706; }
+  .rfc-score-bar[data-score-level="low"] .rfc-score-bar-fill { background: #e11148; }
+
+  /* Detail */
+  .rfc-card-desc { color: #6b6560; }
+  .rfc-card-footer { border-top-color: #e8e5df; }
+  .rfc-tag { color: #8a8580; background: #f0ece4; border-color: #e8e5df; }
+  .rfc-tag svg { color: #b0a898; }
+
+  /* Chain */
+  .rfc-chain-node { background: #f8f7f4; border-color: #e8e5df; color: #6b6560; }
+  .rfc-chain-node[data-step="analysis"] { color: #0d9488; border-color: rgba(13,148,136,0.3); background: rgba(13,148,136,0.05); }
+  .rfc-chain-node[data-step="action"] { color: #b49632; border-color: rgba(180,150,50,0.3); background: rgba(180,150,50,0.05); }
+  .rfc-chain-label { color: #8a8580; }
+  .rfc-chain-text { color: #4a4540; }
+  .rfc-chain-connector { background: #e8e5df; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .rfc-card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .rfc-stream-item:has(.rfc-card[data-priority="urgent"])::before {
+    animation: none;
+  }
+
+  .rfc-expand-zone {
+    transition: none;
+  }
+
+  .rfc-skeleton::after {
+    animation: none;
+  }
+}

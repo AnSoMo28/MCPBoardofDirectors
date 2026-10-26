@@ -1,0 +1,601 @@
+/**
+ * @component ModelHealthPanel (Fase 23 — REWRITE)
+ * @namespace .glass-mhp
+ * @depends globals.css (radius-xl, font tokens, color tokens, color-mix)
+ * @note REWRITE of B14 version. Much richer: fleet constellation, anomaly heat
+ *       strip, PSI instrument with zones, sparkline, feature importance bars,
+ *       boot sequence, CTA state. Replaces previous 62 classes / 4 keyframes.
+ *       5 keyframes, ~78 classes.
+ * @import import '../../ml/ml-glass.css'; + import './ModelHealthPanel.css';
+ */
+
+/* ═══════════════════════════════════════════════
+   Model Health Panel — Neural Fleet Diagnostic Console
+   Namespace: .glass-mhp__*
+   (Replaces existing .glass-mhp-* classes)
+   ═══════════════════════════════════════════════ */
+
+/* Main surface */
+.glass-mhp {
+  position: relative;
+  border-radius: var(--radius-xl, 16px);
+  background: rgba(14, 20, 32, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 2px solid rgba(94, 234, 212, 0.15);
+  overflow: hidden;
+  padding: 20px;
+}
+
+.glass-mhp__glow {
+  position: absolute;
+  top: -25%;
+  right: -10%;
+  width: 45%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 1.2s ease;
+  animation: mhp-glow-breathe 7s ease-in-out infinite;
+}
+
+@keyframes mhp-glow-breathe {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+/* Summary bar */
+.glass-mhp__summary {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-mhp__fleet-ring {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.glass-mhp__fleet-ring-label {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Stats */
+.glass-mhp__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 60px;
+}
+
+.glass-mhp__stat-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.glass-mhp__stat-label {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Drift indicator */
+.glass-mhp__drift {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.glass-mhp__drift-label {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+}
+
+.glass-mhp__drift-sub {
+  font-size: 8px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+
+/* Fleet Constellation */
+.glass-mhp__constellation {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-mhp__constellation-node {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.glass-mhp__constellation-node:hover {
+  opacity: 0.85;
+}
+
+/* Anomaly Heat Strip */
+.glass-mhp__heat-strip {
+  display: flex;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-mhp__heat-cell {
+  flex: 1;
+  height: 28px;
+  border-radius: 4px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: default;
+  position: relative;
+}
+
+.glass-mhp__heat-cell:hover {
+  transform: scaleY(1.3);
+  z-index: 1;
+}
+
+/* Model Card */
+.glass-mhp__card {
+  position: relative;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.glass-mhp__card:hover {
+  border-color: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.glass-mhp__card--drift {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+.glass-mhp__card--retrain {
+  border-left: 3px solid var(--color-rose-400);
+  animation: mhp-retrain-pulse 3s ease-in-out infinite;
+}
+
+@keyframes mhp-retrain-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 0 transparent; }
+  50% { box-shadow: inset 0 0 20px rgba(228, 90, 100, 0.04); }
+}
+
+/* Accuracy Ring */
+.glass-mhp__ring {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+}
+
+.glass-mhp__ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.glass-mhp__ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glass-mhp__ring-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* PSI Instrument */
+.glass-mhp__psi {
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-mhp__psi-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.glass-mhp__psi-label {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.glass-mhp__psi-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.glass-mhp__psi-track {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.glass-mhp__psi-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  opacity: 0.12;
+}
+
+.glass-mhp__psi-zone--green  { left: 0; background: var(--color-emerald-400); }
+.glass-mhp__psi-zone--amber  { background: var(--color-amber-400); }
+.glass-mhp__psi-zone--red    { background: var(--color-rose-400); }
+
+.glass-mhp__psi-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  border-radius: 3px;
+}
+
+.glass-mhp__psi-threshold {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--color-silver-400);
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.glass-mhp__psi-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3px;
+}
+
+.glass-mhp__psi-scale span {
+  font-size: 8px;
+  color: var(--color-silver-600);
+  font-family: var(--font-mono);
+}
+
+/* Sparkline */
+.glass-mhp__sparkline {
+  flex-shrink: 0;
+}
+
+/* Status badge */
+.glass-mhp__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.glass-mhp__badge--healthy  { color: var(--color-emerald-400); background: rgba(52, 211, 153, 0.08); }
+.glass-mhp__badge--degraded { color: var(--color-amber-400); background: rgba(251, 191, 36, 0.08); }
+.glass-mhp__badge--retrain  { color: var(--color-rose-400); background: rgba(228, 90, 100, 0.08); }
+
+/* Card meta strip */
+.glass-mhp__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.glass-mhp__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+
+.glass-mhp__meta-item--drift {
+  color: var(--color-amber-400);
+}
+
+/* Retrain alert */
+.glass-mhp__retrain {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(228, 90, 100, 0.05);
+  border: 1px solid rgba(228, 90, 100, 0.12);
+  font-size: 10px;
+  color: var(--color-rose-400);
+  font-family: var(--font-ui);
+}
+
+/* Feature importance */
+.glass-mhp__features-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 0;
+  font-size: 10px;
+  color: var(--color-silver-400);
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.glass-mhp__features-toggle:hover {
+  color: var(--color-silver-200);
+}
+
+.glass-mhp__feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.glass-mhp__feature-name {
+  font-size: 10px;
+  color: var(--color-silver-300);
+  font-family: var(--font-mono);
+  width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.glass-mhp__feature-pct {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  font-family: var(--font-mono);
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.glass-mhp__feature-track {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.glass-mhp__feature-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--color-teal-400);
+}
+
+/* Footer */
+.glass-mhp__footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+
+/* Boot sequence */
+.glass-mhp__boot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 16px;
+}
+
+.glass-mhp__boot-icon {
+  animation: mhp-boot-spin 2s linear infinite;
+}
+
+@keyframes mhp-boot-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.glass-mhp__boot-msg {
+  font-size: 12px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  text-align: center;
+}
+
+/* CTA */
+.glass-mhp__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.glass-mhp__cta-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+  color: var(--color-teal-400);
+  animation: mhp-cta-breathe 3s ease-in-out infinite;
+}
+
+@keyframes mhp-cta-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+.glass-mhp__cta-text h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+}
+
+.glass-mhp__cta-text p {
+  font-size: 11px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+  margin-top: 4px;
+  max-width: 320px;
+}
+
+/* Empty / Error */
+.glass-mhp__empty,
+.glass-mhp__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.glass-mhp__empty-icon {
+  animation: mhp-empty-breathe 3s ease-in-out infinite;
+}
+
+@keyframes mhp-empty-breathe {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(1.06); }
+}
+
+/* ═══ Light Mode Overrides ═══ */
+
+.light .glass-mhp {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 2px solid rgba(94, 234, 212, 0.20);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.03);
+}
+
+.light .glass-mhp__glow {
+  background: radial-gradient(circle, rgba(94, 234, 212, 0.08), transparent 70%);
+}
+
+.light .glass-mhp__summary {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-mhp__drift {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .glass-mhp__constellation {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-mhp__heat-strip {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-mhp__card {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-mhp__card:hover {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.10);
+}
+
+.light .glass-mhp__card--retrain {
+  border-left-color: var(--color-rose-400);
+}
+
+.light .glass-mhp__psi-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-mhp__psi-zone--green  { opacity: 0.10; }
+.light .glass-mhp__psi-zone--amber  { opacity: 0.10; }
+.light .glass-mhp__psi-zone--red    { opacity: 0.10; }
+
+.light .glass-mhp__psi-threshold {
+  background: var(--color-silver-500);
+}
+
+.light .glass-mhp__badge--healthy  { background: rgba(52, 211, 153, 0.10); }
+.light .glass-mhp__badge--degraded { background: rgba(251, 191, 36, 0.10); }
+.light .glass-mhp__badge--retrain  { background: rgba(228, 90, 100, 0.10); }
+
+.light .glass-mhp__retrain {
+  background: rgba(228, 90, 100, 0.04);
+  border-color: rgba(228, 90, 100, 0.12);
+}
+
+.light .glass-mhp__feature-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-mhp__footer {
+  border-top-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-silver-600, #4b5563);
+}
+
+.light .glass-mhp__meta {
+  border-top-color: rgba(0, 0, 0, 0.05);
+}

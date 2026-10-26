@@ -1,0 +1,395 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/CourtHeatmap.css
+   §B3.5 — Court Heatmap V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  cell intensity color gradient
+   2. REACCIÓN:     hover scale + border on cells
+   3. MEMORIA:      heatmap grid, peak cells persist
+   4. INTENCIÓN:    tooltip, insights, peak highlights
+   5. SINIESTRÍA:   intensity data-attribute colors
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-heatmap {
+  --spt-hm-accent: var(--color-teal-400, #2a9ab5);
+  --spt-hm-surface: var(--color-surface-1, #1a1a1a);
+  --spt-hm-border: rgba(255, 255, 255, 0.06);
+  --spt-hm-text: var(--color-silver-100, #f0ece4);
+  --spt-hm-text-muted: var(--color-silver-400, #8a8580);
+  --spt-hm-text-dim: var(--color-silver-500, #7a7570);
+}
+
+.spt-heatmap[data-mode="calm"]    { --spt-hm-accent: var(--color-teal-400, #2a9ab5); }
+.spt-heatmap[data-mode="alert"]   { --spt-hm-accent: var(--color-amber-400, #d4a017); }
+.spt-heatmap[data-mode="critical"]{ --spt-hm-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-heatmap__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.spt-heatmap__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.05rem;
+  color: var(--spt-hm-text);
+  margin: 0;
+}
+
+.spt-heatmap__subtitle {
+  font-size: 0.6rem;
+  color: var(--spt-hm-text-dim);
+  margin: 0.15rem 0 0;
+}
+
+.spt-heatmap__header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.spt-heatmap__flame-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--spt-hm-accent);
+  transition: color 0.4s ease;
+}
+
+.spt-heatmap__peak-count {
+  font-size: 0.6rem;
+  color: var(--spt-hm-text-dim);
+}
+
+/* ── §2 — Scroll Container ─────────────────────────────── */
+
+.spt-heatmap__scroll {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── §3 — Grid ─────────────────────────────────────────── */
+
+.spt-heatmap__grid {
+  min-width: 540px;
+}
+
+.spt-heatmap__hour-labels {
+  display: flex;
+  margin-bottom: 0.2rem;
+}
+
+.spt-heatmap__corner {
+  width: 3rem;
+  flex-shrink: 0;
+}
+
+.spt-heatmap__hour-label {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.5rem;
+  color: var(--spt-hm-text-dim);
+}
+
+.spt-heatmap__row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.15rem;
+}
+
+.spt-heatmap__day-label {
+  width: 3rem;
+  text-align: right;
+  padding-right: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--spt-hm-text-muted);
+  flex-shrink: 0;
+}
+
+/* ── §4 — Cells (LP 5: Siniestría via data-intensity) ─── */
+
+.spt-heatmap__cell {
+  flex: 1;
+  height: 1.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.15s ease,
+              border-color 0.15s ease,
+              box-shadow 0.15s ease,
+              z-index 0s;
+  position: relative;
+}
+
+/* Intensity levels */
+.spt-heatmap__cell[data-intensity="0"] { background: var(--color-surface-3, #2a2a2a); }
+.spt-heatmap__cell[data-intensity="1"] { background: rgba(42, 154, 181, 0.12); }
+.spt-heatmap__cell[data-intensity="2"] { background: rgba(42, 154, 181, 0.25); }
+.spt-heatmap__cell[data-intensity="3"] { background: rgba(42, 154, 181, 0.38); }
+.spt-heatmap__cell[data-intensity="4"] { background: rgba(42, 154, 181, 0.52); }
+.spt-heatmap__cell[data-intensity="5"] { background: rgba(42, 154, 181, 0.65); }
+.spt-heatmap__cell[data-intensity="6"] { background: rgba(42, 154, 181, 0.80); }
+.spt-heatmap__cell[data-intensity="7"] { background: var(--color-teal-400, #2a9ab5); }
+
+/* Peak highlight */
+.spt-heatmap__cell[data-peak] {
+  border-color: rgba(42, 154, 181, 0.4);
+  box-shadow: 0 0 6px rgba(42, 154, 181, 0.2);
+}
+
+/* Hover */
+.spt-heatmap__cell:hover {
+  transform: scale(1.15);
+  z-index: 10;
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ── §5 — Legend ────────────────────────────────────────── */
+
+.spt-heatmap__legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.spt-heatmap__legend-label {
+  font-size: 0.6rem;
+  color: var(--spt-hm-text-dim);
+}
+
+.spt-heatmap__legend-scale {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.spt-heatmap__legend-swatch {
+  width: 1.25rem;
+  height: 0.75rem;
+  border-radius: 2px;
+}
+
+.spt-heatmap__legend-swatch[data-intensity="0"] { background: var(--color-surface-3, #2a2a2a); }
+.spt-heatmap__legend-swatch[data-intensity="1"] { background: rgba(42, 154, 181, 0.12); }
+.spt-heatmap__legend-swatch[data-intensity="2"] { background: rgba(42, 154, 181, 0.25); }
+.spt-heatmap__legend-swatch[data-intensity="3"] { background: rgba(42, 154, 181, 0.38); }
+.spt-heatmap__legend-swatch[data-intensity="4"] { background: rgba(42, 154, 181, 0.52); }
+.spt-heatmap__legend-swatch[data-intensity="5"] { background: rgba(42, 154, 181, 0.65); }
+.spt-heatmap__legend-swatch[data-intensity="6"] { background: rgba(42, 154, 181, 0.80); }
+.spt-heatmap__legend-swatch[data-intensity="7"] { background: var(--color-teal-400, #2a9ab5); }
+
+.spt-heatmap__legend-min,
+.spt-heatmap__legend-max {
+  font-size: 0.55rem;
+  color: var(--spt-hm-text-dim);
+}
+
+.spt-heatmap__legend-hours {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+  font-size: 0.55rem;
+  color: var(--spt-hm-text-dim);
+}
+
+.spt-heatmap__clock-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── §6 — Tooltip ──────────────────────────────────────── */
+
+.spt-heatmap__tooltip {
+  position: fixed;
+  z-index: 50;
+  padding: 0.4rem 0.6rem;
+  background: var(--color-surface-0, #111);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+
+.spt-heatmap__tooltip-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--spt-hm-text);
+  margin: 0 0 0.1rem;
+}
+
+.spt-heatmap__tooltip-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--spt-hm-accent);
+  margin: 0 0 0.1rem;
+  transition: color 0.4s ease;
+}
+
+.spt-heatmap__tooltip-meta {
+  font-size: 0.5rem;
+  color: var(--spt-hm-text-dim);
+  margin: 0;
+}
+
+/* ── §7 — Insights ─────────────────────────────────────── */
+
+.spt-heatmap__insights {
+  padding: 0.65rem 0.85rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--spt-hm-border);
+  border-radius: 8px;
+  margin-top: 0.65rem;
+}
+
+.spt-heatmap__insights-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--spt-hm-text-muted);
+  margin: 0 0 0.4rem;
+}
+
+.spt-heatmap__insights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.spt-heatmap__insight {
+  font-size: 0.7rem;
+  color: var(--spt-hm-text-muted);
+  line-height: 1.5;
+  padding-left: 0.65rem;
+  position: relative;
+}
+
+.spt-heatmap__insight::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--spt-hm-accent);
+  transition: color 0.4s ease;
+}
+
+/* ── §8 — Footer: Narrative (LP 7) ─────────────────────── */
+
+.spt-heatmap__footer {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-hm-border);
+}
+
+.spt-heatmap__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-hm-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-hm-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §9 — Light Mode ───────────────────────────────────── */
+
+.light .spt-heatmap {
+  --spt-hm-surface: rgba(255, 255, 255, 0.7);
+  --spt-hm-border: rgba(0, 0, 0, 0.08);
+  --spt-hm-text: #1a1a1a;
+  --spt-hm-text-muted: #6b7280;
+  --spt-hm-text-dim: #9ca3af;
+}
+
+.light .spt-heatmap__cell[data-intensity="0"] { background: #e5e5e5; }
+.light .spt-heatmap__cell[data-intensity="1"] { background: rgba(42, 154, 181, 0.10); }
+.light .spt-heatmap__cell[data-intensity="2"] { background: rgba(42, 154, 181, 0.20); }
+.light .spt-heatmap__cell[data-intensity="3"] { background: rgba(42, 154, 181, 0.32); }
+.light .spt-heatmap__cell[data-intensity="4"] { background: rgba(42, 154, 181, 0.44); }
+.light .spt-heatmap__cell[data-intensity="5"] { background: rgba(42, 154, 181, 0.56); }
+.light .spt-heatmap__cell[data-intensity="6"] { background: rgba(42, 154, 181, 0.70); }
+.light .spt-heatmap__cell[data-intensity="7"] { background: var(--color-teal-400); }
+
+.light .spt-heatmap__legend-swatch[data-intensity="0"] { background: #e5e5e5; }
+.light .spt-heatmap__legend-swatch[data-intensity="1"] { background: rgba(42, 154, 181, 0.10); }
+.light .spt-heatmap__legend-swatch[data-intensity="2"] { background: rgba(42, 154, 181, 0.20); }
+.light .spt-heatmap__legend-swatch[data-intensity="3"] { background: rgba(42, 154, 181, 0.32); }
+.light .spt-heatmap__legend-swatch[data-intensity="4"] { background: rgba(42, 154, 181, 0.44); }
+.light .spt-heatmap__legend-swatch[data-intensity="5"] { background: rgba(42, 154, 181, 0.56); }
+.light .spt-heatmap__legend-swatch[data-intensity="6"] { background: rgba(42, 154, 181, 0.70); }
+.light .spt-heatmap__legend-swatch[data-intensity="7"] { background: var(--color-teal-400); }
+
+.light .spt-heatmap__tooltip {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.light .spt-heatmap__cell:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ── §10 — Reduced Motion ──────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-heatmap__cell {
+    transition: none;
+  }
+
+  .spt-heatmap__cell:hover {
+    transform: none;
+  }
+}
+
+/* ── §11 — Responsive ──────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .spt-heatmap__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .spt-heatmap__header-right {
+    align-self: flex-start;
+  }
+}
+
+/* ── §12 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-heatmap {
+    break-inside: avoid;
+  }
+
+  .spt-heatmap__cell:hover {
+    transform: none;
+  }
+
+  .spt-heatmap__tooltip {
+    display: none;
+  }
+
+  .spt-heatmap__scroll {
+    overflow: visible;
+  }
+}

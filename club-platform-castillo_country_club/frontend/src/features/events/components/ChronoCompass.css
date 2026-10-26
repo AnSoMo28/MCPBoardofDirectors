@@ -1,0 +1,310 @@
+/* src/features/events/components/ChronoCompass.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Events Domain — Chrono-Compass Component                    */
+/*                                                              */
+/* @namespace  chrono-*                                         */
+/* @keyframes  2 (chronoBlockIn, chronoNeedlePulse)            */
+/* @signature  Horizontal timeline with category blocks,        */
+/*             emerald gap zones, golden needle pulse           */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Container + Track */
+/* §1 Time Markers */
+/* §2 Event Blocks */
+/* §3 Gap Zones */
+/* §4 Needle */
+/* §5 Keyframes */
+/* §6 Light Mode */
+/* §7 Reduced Motion */
+/* §8 Responsive */
+/* §9 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Container + Track                                        */
+/* ─────────────────────────────────────────────────────────── */
+
+.chrono {
+  width: 100%;
+}
+
+.chrono__track {
+  position: relative;
+  height: 52px;
+  border-radius: var(--radius-sm, 8px);
+  background: color-mix(in srgb, var(--color-surface-3) 40%, transparent);
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Time Markers                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.chrono__markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.chrono__marker-group {
+  position: absolute;
+  inset: 0;
+}
+
+.chrono__marker {
+  position: absolute;
+  left: var(--m-left);
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.chrono__label {
+  position: absolute;
+  left: var(--m-left);
+  bottom: 3px;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--color-silver-600);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 Event Blocks                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.chrono__block {
+  position: absolute;
+  left: var(--b-left);
+  width: var(--b-width);
+  top: 5px;
+  bottom: 18px;
+  border-radius: 4px;
+  background: var(--b-bg);
+  color: var(--b-color);
+  overflow: hidden;
+  z-index: 2;
+  opacity: 0;
+  transform-origin: left center;
+  animation: chronoBlockIn 0.3s var(--ease-apple) forwards;
+  animation-delay: calc(var(--b-i, 0) * 40ms);
+}
+.chrono__block:hover {
+  filter: brightness(1.12);
+}
+
+.chrono__block-label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 Gap Zones                                                */
+/* ─────────────────────────────────────────────────────────── */
+
+.chrono__gap {
+  position: absolute;
+  left: var(--g-left);
+  width: var(--g-width);
+  top: 5px;
+  bottom: 18px;
+  border-radius: 4px;
+  border: 1px dashed color-mix(in srgb, var(--color-emerald-400) 25%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-400) 5%, transparent);
+  cursor: pointer;
+  z-index: 1;
+  padding: 0;
+  transition: background 0.15s var(--ease-apple), border-color 0.15s var(--ease-apple);
+}
+.chrono__gap:hover {
+  background: color-mix(in srgb, var(--color-emerald-400) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-emerald-400) 45%, transparent);
+}
+.chrono__gap:focus-visible {
+  outline: 2px solid var(--color-emerald-400);
+  outline-offset: 2px;
+}
+
+.chrono__gap--ideal {
+  border-color: color-mix(in srgb, var(--color-emerald-400) 40%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-400) 8%, transparent);
+}
+
+.chrono__gap--active {
+  border-style: solid;
+  border-color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 14%, transparent);
+}
+
+.chrono__gap-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--color-emerald-400);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 Needle                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+.chrono__needle {
+  position: absolute;
+  left: -1px;
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  background: var(--color-gold-400);
+  border-radius: 1px;
+  z-index: 5;
+  animation: chronoNeedlePulse 2s ease-in-out infinite;
+}
+.chrono__needle::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-gold-400);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Keyframes                                                */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes chronoBlockIn {
+  from {
+    opacity: 0;
+    transform: scaleY(0.75);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes chronoNeedlePulse {
+  0%, 100% { opacity: 0.65; }
+  50%      { opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Light Mode                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .chrono__track {
+  background: rgba(0, 0, 0, 0.025);
+}
+.light .chrono__marker {
+  background: rgba(0, 0, 0, 0.06);
+}
+.light .chrono__label {
+  color: var(--color-silver-400);
+}
+.light .chrono__gap {
+  border-color: color-mix(in srgb, var(--color-emerald-400) 18%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-400) 3%, transparent);
+}
+.light .chrono__gap:hover {
+  background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+.light .chrono__gap-label {
+  color: #047857;
+}
+.light .chrono__gap--active {
+  border-color: #047857;
+  background: color-mix(in srgb, #047857 10%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Reduced Motion                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .chrono__block {
+    animation: none !important;
+    opacity: 1;
+  }
+  .chrono__needle {
+    animation: none;
+    opacity: 0.85;
+  }
+  .chrono__gap {
+    transition: none;
+  }
+  .chrono__block {
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Responsive                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 639px) {
+  .chrono__track {
+    height: 44px;
+  }
+  .chrono__block-label {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+  .chrono__gap-label {
+    font-size: 7px;
+  }
+  .chrono__label {
+    font-size: 7px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Print                                                    */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  .chrono__track {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+  }
+  .chrono__block {
+    background: #e5e7eb;
+    color: #374151;
+    animation: none;
+    opacity: 1;
+  }
+  .chrono__gap {
+    border: 1px dashed #d1d5db;
+    background: transparent;
+  }
+  .chrono__gap-label {
+    color: #374151;
+  }
+  .chrono__needle {
+    display: none;
+  }
+  .chrono__marker {
+    background: #d1d5db;
+  }
+  .chrono__label {
+    color: #6b7280;
+  }
+}

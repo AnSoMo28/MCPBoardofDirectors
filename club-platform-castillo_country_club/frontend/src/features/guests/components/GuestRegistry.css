@@ -1,0 +1,681 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/GuestRegistry.css
+   Phase 34 "The Gateway" — Guest Registry (Rewrite)
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-registry
+   Glass: .glass-gst-registry
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+.glass-gst-registry {
+  --glass-gst-registry-version: 1;
+}
+
+:root {
+  --gst-registry-bg: rgba(18, 18, 26, 0.5);
+  --gst-registry-border: rgba(255, 255, 255, 0.06);
+  --gst-registry-text-primary: #f0ece4;
+  --gst-registry-text-muted: #7a7570;
+  --gst-registry-text-dim: #555250;
+  --gst-registry-radius: 16px;
+  --gst-registry-card-radius: 12px;
+  --gst-registry-surface: rgba(255, 255, 255, 0.02);
+  --gst-registry-surface-border: rgba(255, 255, 255, 0.04);
+
+  --gst-registry-gold: var(--color-gold-400, #d4a853);
+  --gst-registry-emerald: var(--color-emerald-400, #4ecdc4);
+  --gst-registry-amber: var(--color-amber-400, #f5a623);
+  --gst-registry-rose: var(--color-rose-400, #e74c3c);
+}
+
+/* ═══ §1 — BASE ═══════════════════════════════════════════ */
+
+.gst-registry {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ═══ §2 — LOADING ════════════════════════════════════════ */
+
+.gst-registry__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gst-registry__skeleton {
+  height: 112px;
+  border-radius: var(--gst-registry-card-radius);
+}
+
+/* ═══ §3 — HEADER ═════════════════════════════════════════ */
+
+.gst-registry__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gst-registry__header-count {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  color: var(--gst-registry-text-muted);
+  margin: 0;
+}
+
+/* ═══ §4 — FORM PANEL ═════════════════════════════════════ */
+
+.gst-registry__form-panel {
+  opacity: 0;
+  animation: gst-registry-expand 0.3s ease forwards;
+}
+
+.gst-registry__form-card {
+  padding: 20px;
+}
+
+.gst-registry__form-title {
+  font-family: var(--font-display, "Italiana");
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--gst-registry-text-primary);
+  margin: 0;
+}
+
+.gst-registry__form-subtitle {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--gst-registry-text-muted);
+  margin: 4px 0 0 0;
+}
+
+.gst-registry__form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* ═══ §5 — FORM GROUPS ════════════════════════════════════ */
+
+.gst-registry__form-row {
+  display: grid;
+  gap: 16px;
+}
+
+.gst-registry__form-row[data-cols="2"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.gst-registry__form-row[data-cols="3"] {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.gst-registry__form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gst-registry__label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gst-registry-text-primary);
+}
+
+/* ═══ §6 — INPUTS ═════════════════════════════════════════ */
+
+.gst-registry__input {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 16px;
+  color: var(--gst-registry-text-primary);
+  background: var(--gst-registry-surface);
+  border: 1px solid var(--gst-registry-surface-border);
+  border-radius: var(--gst-registry-card-radius);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  min-height: 48px;
+}
+
+.gst-registry__input:focus {
+  border-color: var(--gst-registry-gold);
+  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.12);
+}
+
+.gst-registry__input[aria-invalid="true"] {
+  border-color: var(--gst-registry-rose);
+}
+
+.gst-registry__input[data-variant="mono"] {
+  font-family: var(--font-mono, "DM Mono");
+}
+
+.gst-registry__textarea {
+  resize: vertical;
+  font-family: var(--font-body, "Source Serif 4");
+  min-height: auto;
+}
+
+.gst-registry__error {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--gst-registry-rose);
+  margin: 0;
+}
+
+/* ═══ §7 — PRIVILEGE GRID ═════════════════════════════════ */
+
+.gst-registry__priv-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.gst-registry__priv-btn {
+  padding: 8px 12px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  font-weight: 500;
+  border: 2px solid var(--gst-registry-surface-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--gst-registry-text-muted);
+  cursor: pointer;
+  transition: border-color 0.2s ease, opacity 0.2s ease;
+  min-height: 40px;
+  outline: none;
+  opacity: 0.5;
+}
+
+.gst-registry__priv-btn:hover {
+  opacity: 0.8;
+}
+
+.gst-registry__priv-btn:focus-visible {
+  outline: 2px solid var(--gst-registry-gold);
+  outline-offset: 2px;
+}
+
+.gst-registry__priv-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.gst-registry__priv-btn[data-active="true"] {
+  opacity: 1;
+  border-color: currentColor;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ═══ §8 — GUEST LIMIT BAR ════════════════════════════════ */
+
+.gst-registry__limit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.gst-registry__limit-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.gst-registry__limit-fill {
+  height: 100%;
+  border-radius: 4px;
+  width: var(--fill-width, 0%);
+  transition: width 0.4s ease;
+}
+
+.gst-registry__limit[data-level="ok"] .gst-registry__limit-fill {
+  background: var(--gst-registry-emerald);
+}
+
+.gst-registry__limit[data-level="attention"] .gst-registry__limit-fill {
+  background: var(--gst-registry-amber);
+}
+
+.gst-registry__limit[data-level="critical"] .gst-registry__limit-fill {
+  background: var(--gst-registry-rose);
+}
+
+.gst-registry__limit-count {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.gst-registry__limit[data-level="ok"] .gst-registry__limit-count {
+  color: var(--gst-registry-emerald);
+}
+
+.gst-registry__limit[data-level="attention"] .gst-registry__limit-count {
+  color: var(--gst-registry-amber);
+}
+
+.gst-registry__limit[data-level="critical"] .gst-registry__limit-count {
+  color: var(--gst-registry-rose);
+}
+
+.gst-registry__limit-notice {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 10px;
+  color: var(--gst-registry-amber);
+}
+
+/* ═══ §9 — HITL NOTICE ════════════════════════════════════ */
+
+.gst-registry__hitl-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 166, 35, 0.15);
+  background: rgba(245, 166, 35, 0.06);
+}
+
+.gst-registry__hitl-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--gst-registry-amber);
+  margin-top: 2px;
+}
+
+.gst-registry__hitl-text {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--gst-registry-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ═══ §10 — FORM ACTIONS ══════════════════════════════════ */
+
+.gst-registry__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+/* ═══ §11 — FILTERS ═══════════════════════════════════════ */
+
+.gst-registry__filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gst-registry__search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 320px;
+}
+
+.gst-registry__search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--gst-registry-text-muted);
+  pointer-events: none;
+}
+
+.gst-registry__filter-input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  color: var(--gst-registry-text-primary);
+  background: var(--gst-registry-surface);
+  border: 1px solid var(--gst-registry-surface-border);
+  border-radius: 8px;
+  outline: none;
+  min-height: 44px;
+  transition: border-color 0.2s ease;
+}
+
+.gst-registry__filter-input:focus {
+  border-color: var(--gst-registry-gold);
+}
+
+.gst-registry__filter-select {
+  padding: 10px 12px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  color: var(--gst-registry-text-primary);
+  background: var(--gst-registry-surface);
+  border: 1px solid var(--gst-registry-surface-border);
+  border-radius: 8px;
+  outline: none;
+  min-height: 44px;
+  transition: border-color 0.2s ease;
+}
+
+.gst-registry__filter-select:focus {
+  border-color: var(--gst-registry-gold);
+}
+
+/* ═══ §12 — GUEST LIST ════════════════════════════════════ */
+
+.gst-registry__guest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gst-registry__guest-card {
+  padding: 16px;
+  border-radius: var(--gst-registry-card-radius);
+  border: 1px solid var(--gst-registry-surface-border);
+  background: var(--gst-registry-surface);
+  opacity: 0;
+  animation: gst-registry-cardIn 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.04s);
+}
+
+.gst-registry__guest-card[data-status="checked_in"] {
+  border-left: 3px solid var(--gst-registry-emerald);
+}
+
+.gst-registry__guest-card[data-status="registered"] {
+  border-left: 3px solid var(--gst-registry-gold);
+}
+
+.gst-registry__guest-card[data-status="completed"] {
+  border-left: 3px solid var(--gst-registry-text-muted);
+}
+
+.gst-registry__guest-card[data-status="cancelled"] {
+  border-left: 3px solid var(--gst-registry-rose);
+}
+
+.gst-registry__guest-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 641px) {
+  .gst-registry__guest-row {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.gst-registry__guest-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.gst-registry__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.gst-registry__avatar-text {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gst-registry-text-primary);
+}
+
+.gst-registry__guest-info {
+  min-width: 0;
+}
+
+.gst-registry__guest-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gst-registry-text-primary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gst-registry__guest-meta {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 12px;
+  color: var(--gst-registry-text-muted);
+  margin: 2px 0 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gst-registry__guest-status-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gst-registry__status-badge {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  color: var(--badge-color, var(--gst-registry-text-muted));
+  background: var(--badge-bg, rgba(255, 255, 255, 0.06));
+  white-space: nowrap;
+}
+
+.gst-registry__guest-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--gst-registry-text-muted);
+}
+
+.gst-registry__date-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.gst-registry__guest-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ═══ §13 — PRIVILEGE CHIPS ═══════════════════════════════ */
+
+.gst-registry__priv-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gst-registry-surface-border);
+}
+
+.gst-registry__priv-chip {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Per-privilege colors via data attribute */
+.gst-registry__priv-chip[data-privilege="pool"] {
+  color: var(--color-teal-400, #26a69a);
+  background: rgba(38, 166, 154, 0.1);
+}
+
+.gst-registry__priv-chip[data-privilege="gym"] {
+  color: var(--color-emerald-400, #4ecdc4);
+  background: rgba(78, 205, 196, 0.1);
+}
+
+.gst-registry__priv-chip[data-privilege="dining"] {
+  color: var(--color-gold-400, #d4a853);
+  background: rgba(212, 168, 83, 0.1);
+}
+
+.gst-registry__priv-chip[data-privilege="tennis"] {
+  color: var(--color-terracotta-400, #c87941);
+  background: rgba(200, 121, 65, 0.1);
+}
+
+.gst-registry__priv-chip[data-privilege="golf"] {
+  color: var(--color-sage-400, #87a878);
+  background: rgba(135, 168, 120, 0.1);
+}
+
+.gst-registry__priv-chip[data-privilege="spa"] {
+  color: var(--color-rose-400, #e74c3c);
+  background: rgba(231, 76, 60, 0.1);
+}
+
+/* ═══ §14 — PRIVILEGE PANEL (expandable) ══════════════════ */
+
+.gst-registry__priv-panel {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gst-registry-surface-border);
+  opacity: 0;
+  animation: gst-registry-expand 0.25s ease forwards;
+}
+
+.gst-registry__priv-panel-title {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gst-registry-text-muted);
+  margin: 0 0 8px 0;
+}
+
+/* ═══ §15 — ANIMATIONS ════════════════════════════════════ */
+
+@keyframes gst-registry-expand {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gst-registry-cardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ §16 — REDUCED MOTION ════════════════════════════════ */
+
+[data-prefers-reduced="true"] .gst-registry__form-panel,
+[data-prefers-reduced="true"] .gst-registry__guest-card,
+[data-prefers-reduced="true"] .gst-registry__priv-panel {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-registry__limit-fill {
+  transition: none;
+}
+
+/* ═══ §17 — LIGHT MODE ════════════════════════════════════ */
+
+.light .gst-registry {
+  --gst-registry-bg: rgba(255, 255, 255, 0.85);
+  --gst-registry-border: rgba(0, 0, 0, 0.08);
+  --gst-registry-text-primary: #1a1a2e;
+  --gst-registry-text-muted: #6b6b78;
+  --gst-registry-text-dim: #999;
+  --gst-registry-surface: rgba(0, 0, 0, 0.02);
+  --gst-registry-surface-border: rgba(0, 0, 0, 0.04);
+}
+
+.light .gst-registry__input {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .gst-registry__guest-card {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* ═══ §18 — RESPONSIVE ════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .gst-registry__form-row[data-cols="2"],
+  .gst-registry__form-row[data-cols="3"] {
+    grid-template-columns: 1fr;
+  }
+
+  .gst-registry__priv-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gst-registry__filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gst-registry__search-wrap {
+    max-width: none;
+  }
+
+  .gst-registry__guest-actions {
+    flex-wrap: wrap;
+  }
+
+  .gst-registry__form-card {
+    padding: 16px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-registry__form-row[data-cols="3"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gst-registry__priv-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ═══ §19 — PRINT ═════════════════════════════════════════ */
+
+@media print {
+  .gst-registry__form-panel {
+    display: none;
+  }
+
+  .gst-registry__guest-card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .gst-registry__guest-actions {
+    display: none;
+  }
+}

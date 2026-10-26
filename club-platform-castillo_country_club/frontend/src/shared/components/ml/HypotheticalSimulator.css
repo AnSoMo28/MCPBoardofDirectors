@@ -1,0 +1,465 @@
+/**
+ * @component HypotheticalSimulator (Fase 23)
+ * @namespace .glass-sim, .glass-sim__*
+ * @depends globals.css (radius tokens, font tokens, color tokens, shadow-card, color-mix)
+ * @resolves Conflict #6 — .glass-sim is the canonical namespace (not .glass-hypothetical)
+ * @note --font-body referenced in original. If not defined in globals.css, falls back to system serif.
+ *       Clean up any .glass-hypothetical or .glass-sim-cockpit placeholders in globals.css.
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   HypotheticalSimulator — Silver Tide
+   Fase 23 · Glass · Risk Gauge · Probability Arc · Research Prompt
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ── */
+.glass-sim {
+  position: relative;
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(201, 169, 110, 0.12);
+  padding: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card, 0 4px 24px rgba(0, 0, 0, 0.15));
+}
+
+/* ── Ambient glow ── */
+.glass-sim__glow {
+  position: absolute;
+  top: -25%;
+  right: -10%;
+  width: 35%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 169, 110, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: sim-glow-breathe 6s ease-in-out infinite;
+}
+@keyframes sim-glow-breathe {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+/* ── Header ── */
+.glass-sim__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+.glass-sim__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  font-family: var(--font-display);
+}
+
+/* ── Confidence badge ── */
+.glass-sim__confidence {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.glass-sim__confidence--high {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 12%, transparent);
+}
+.glass-sim__confidence--medium {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+.glass-sim__confidence--low {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+}
+
+/* ── Input — Research Prompt ── */
+.glass-sim__input-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+.glass-sim__input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--color-silver-500);
+  pointer-events: none;
+}
+.glass-sim__input {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 12px 0 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  color: var(--color-silver-100);
+  font-family: var(--font-body);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+.glass-sim__input::placeholder {
+  color: var(--color-silver-500);
+}
+.glass-sim__input:focus {
+  border-color: rgba(201, 169, 110, 0.4);
+  box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.08);
+}
+.glass-sim__submit {
+  min-height: 44px !important;
+}
+
+/* ── Suggestions ── */
+.glass-sim__suggestions {
+  position: relative;
+  z-index: 1;
+}
+.glass-sim__recent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.glass-sim__recent-label {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.glass-sim__prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.glass-sim__chip {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--color-silver-400);
+  transition: all 0.15s ease;
+  min-height: 32px;
+}
+.glass-sim__chip:hover {
+  color: var(--color-silver-200);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+}
+.glass-sim__chip--recent {
+  border-left: 2px solid rgba(201, 169, 110, 0.2);
+}
+
+/* ── Results ── */
+.glass-sim__results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+.glass-sim__question-echo {
+  font-size: 12px;
+  color: var(--color-silver-400);
+  font-family: var(--font-body);
+  font-style: italic;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ── Loading ── */
+.glass-sim__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 0;
+  color: var(--color-silver-400);
+  position: relative;
+  z-index: 1;
+}
+.glass-sim__loading span {
+  font-size: 13px;
+  font-family: var(--font-ui);
+}
+
+/* ═══════════════════════════════════════
+   Risk Gauge
+   ═══════════════════════════════════════ */
+
+.glass-sim__risk {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-amber-400) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+.glass-sim__risk-gauge {
+  width: 80px;
+  flex-shrink: 0;
+}
+.glass-sim__risk-svg {
+  width: 100%;
+  height: auto;
+}
+.glass-sim__risk-text {
+  font-size: 12px;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* ═══════════════════════════════════════
+   Scenarios Grid
+   ═══════════════════════════════════════ */
+
+.glass-sim__grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 8px;
+}
+@media (min-width: 640px) {
+  .glass-sim__grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── Scenario card ── */
+.glass-sim__scenario {
+  text-align: left;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+.glass-sim__scenario:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.glass-sim__scenario--recommended {
+  border-color: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  border-left-color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 4%, transparent);
+  box-shadow: 0 0 20px -8px rgba(201, 169, 110, 0.1);
+}
+.glass-sim__scenario--recommended:hover {
+  box-shadow: 0 0 24px -6px rgba(201, 169, 110, 0.15);
+}
+.glass-sim__scenario-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+}
+.glass-sim__scenario-badge {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+}
+.glass-sim__scenario-desc {
+  font-size: 10px;
+  color: var(--color-silver-400);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+/* ── Probability arc ── */
+.glass-sim__arc {
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+/* ── Probability bar ── */
+.glass-sim__prob-bar-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+.glass-sim__prob-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.glass-sim__prob-pct {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+/* ── Expanded details ── */
+.glass-sim__scenario-details {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.glass-sim__detail-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  margin-bottom: 6px;
+}
+.glass-sim__detail-label--risk {
+  color: var(--color-rose-400);
+}
+.glass-sim__detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.glass-sim__detail-item {
+  font-size: 10px;
+  color: var(--color-silver-300);
+  font-family: var(--font-body);
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════
+   Cross-Domain Impacts
+   ═══════════════════════════════════════ */
+
+.glass-sim__cross-domain {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+.glass-sim__cross-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 8px;
+}
+@media (min-width: 640px) {
+  .glass-sim__cross-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.glass-sim__cross-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-family: var(--font-body);
+}
+.glass-sim__cross-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.glass-sim__cross-domain-name {
+  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.glass-sim__cross-impact {
+  color: var(--color-silver-300);
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-sim {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.06);
+  border-top-color: rgba(201, 169, 110, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+.light .glass-sim__glow { opacity: 0.3; }
+.light .glass-sim__title { color: var(--color-abyss, #0a0e14); }
+.light .glass-sim__input {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-abyss, #0a0e14);
+}
+.light .glass-sim__input::placeholder { color: var(--color-silver-400); }
+.light .glass-sim__input:focus {
+  border-color: rgba(201, 169, 110, 0.3);
+  box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.06);
+}
+.light .glass-sim__input-icon { color: var(--color-silver-400); }
+.light .glass-sim__chip {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-silver-500);
+}
+.light .glass-sim__chip:hover {
+  color: var(--color-abyss, #0a0e14);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+.light .glass-sim__chip--recent {
+  border-left-color: rgba(201, 169, 110, 0.15);
+}
+.light .glass-sim__question-echo {
+  color: var(--color-silver-500);
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+.light .glass-sim__risk {
+  background: color-mix(in srgb, var(--color-amber-400) 4%, transparent);
+  border-color: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.light .glass-sim__risk-text { color: var(--color-silver-600); }
+.light .glass-sim__scenario {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-sim__scenario:hover { border-color: rgba(0, 0, 0, 0.1); }
+.light .glass-sim__scenario--recommended {
+  border-color: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  background: color-mix(in srgb, var(--color-gold-400) 3%, transparent);
+}
+.light .glass-sim__scenario-name { color: var(--color-abyss, #0a0e14); }
+.light .glass-sim__scenario-desc { color: var(--color-silver-500); }
+.light .glass-sim__prob-bar-track { background: rgba(0, 0, 0, 0.04); }
+.light .glass-sim__scenario-details { border-top-color: rgba(0, 0, 0, 0.06); }
+.light .glass-sim__detail-label { color: var(--color-silver-400); }
+.light .glass-sim__detail-item { color: var(--color-silver-600); }
+.light .glass-sim__cross-domain {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-sim__cross-impact { color: var(--color-silver-600); }
+.light .glass-sim__loading { color: var(--color-silver-500); }
+.light .glass-sim__recent-label { color: var(--color-silver-400); }

@@ -1,0 +1,195 @@
+/**
+ * @component ExpenseManager (Fase 19j)
+ * @namespace .glass-expense-*
+ * @depends globals.css (glass tokens, color-mix, font tokens)
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   Fase 19j — Expense Manager Glass
+   Form · budget context · category link · warnings
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Expense Panel (Propuesta 1) ── */
+
+.glass-expense-panel {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-expense-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Category Chip Grid (Propuesta 5) ── */
+
+.glass-expense-category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.glass-expense-category-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  min-height: 44px;
+}
+
+.glass-expense-category-chip:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.12);
+  color: var(--color-silver-200);
+}
+
+.glass-expense-category-chip--active {
+  border-color: var(--chip-color, var(--color-gold-400));
+  background: color-mix(in srgb, var(--chip-color, var(--color-gold-400)) 10%, transparent);
+  color: var(--chip-color, var(--color-gold-400));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--chip-color, var(--color-gold-400)) 15%, transparent);
+}
+
+/* ── Budget Line Glass (Propuesta 4) ── */
+
+.glass-expense-budget-line {
+  position: relative;
+  padding: 12px;
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-expense-budget-line::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.02) 0%, transparent 30%);
+  pointer-events: none;
+}
+
+/* Highlighted (category selected matches) */
+.glass-expense-budget-line--highlighted {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--line-color, var(--color-gold-400)) 12%, transparent);
+}
+
+/* Status glow */
+.glass-expense-budget-line--over {
+  box-shadow: inset 0 0 16px color-mix(in srgb, var(--color-rose-400) 4%, transparent);
+}
+
+.glass-expense-budget-line--warning {
+  box-shadow: inset 0 0 16px color-mix(in srgb, var(--color-amber-400) 4%, transparent);
+}
+
+/* ── Budget Warning Banner (Propuesta 3) ── */
+
+.glass-expense-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border-left: 3px solid var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+  animation: expense-warning-appear 0.3s ease-out;
+}
+
+.glass-expense-warning--caution {
+  border-left-color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+}
+
+@keyframes expense-warning-appear {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Budget Summary Glass (Propuesta 1) ── */
+
+.glass-expense-summary {
+  position: relative;
+  padding: 12px;
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.glass-expense-summary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.02) 0%, transparent 30%);
+  pointer-events: none;
+}
+
+/* ── Light Mode Overrides ── */
+
+.light .glass-expense-panel {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-expense-category-chip {
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-expense-category-chip--active {
+  box-shadow: none;
+}
+
+.light .glass-expense-budget-line {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-expense-budget-line--highlighted {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-expense-budget-line--over,
+.light .glass-expense-budget-line--warning {
+  box-shadow: none;
+}
+
+.light .glass-expense-summary {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}

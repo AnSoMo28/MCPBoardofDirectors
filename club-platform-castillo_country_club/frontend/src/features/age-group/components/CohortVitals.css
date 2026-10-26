@@ -1,0 +1,483 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/age-group/components/CohortVitals.css
+   Phase 34+ Migration — Cohort Vitals Styles (v2)
+   "The ICU Ward" — Level 6+ Agency · Production Grade
+
+   CONSUMES FROM globals.css:
+     Tokens:    --color-gold-400, --color-amber-400, --color-rose-400,
+                --color-rose-300, --color-emerald-400, --color-silver-*,
+                --color-surface-1, --color-surface-2, --line-color,
+                --font-display ("Cormorant Garamond"), --font-ui ("DM Sans"),
+                --font-mono ("DM Mono"), --radius-lg, --shadow-sm
+     Keyframes: slideUp (not used — cardIn has scale, different animation)
+     Glass:     .glass-card consumed by parent
+
+   FEATURE KEYFRAMES: 2
+     ag-vital-cardIn, ag-vital-hotspotPulse
+   REUSED KEYFRAMES: 0 (cardIn differs from slideUp via scale(0.97))
+   ═══════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────
+   §0  Block
+   ────────────────────────────────────────────────────────── */
+
+.ag-vital {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §1  Grid
+   ────────────────────────────────────────────────────────── */
+
+.ag-vital__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §2  Card
+   ────────────────────────────────────────────────────────── */
+
+.ag-vital__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--color-surface-1, #111827);
+  border: 1px solid var(--line-color, rgba(255, 255, 255, 0.06));
+  border-left: 3px solid var(--vital-color, var(--color-gold-400, #C9A96E));
+  position: relative;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+  opacity: 0;
+  animation: ag-vital-cardIn 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s + 0.1s);
+}
+
+.ag-vital__card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--vital-color, var(--color-gold-400, #C9A96E)) 30%, transparent);
+}
+
+/* Hotspot card */
+.ag-vital__card[data-hotspot] {
+  border-left-color: var(--color-rose-400, #C46470);
+  animation:
+    ag-vital-cardIn 0.4s ease forwards,
+    ag-vital-hotspotPulse 3s ease-in-out infinite 0.5s;
+}
+
+/* Ripple-active card */
+.ag-vital__card[data-ripple] {
+  border-left-color: var(--vital-color, var(--color-gold-400, #C9A96E));
+  box-shadow:
+    -2px 0 8px color-mix(in srgb, var(--vital-color, var(--color-gold-400, #C9A96E)) 15%, transparent);
+}
+
+/* Health level drives subtle background tint */
+.ag-vital__card[data-health-level="critical"] {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-rose-400, #C46470) 6%, transparent),
+      transparent 60%
+    ),
+    var(--color-surface-1, #111827);
+}
+
+.ag-vital__card[data-health-level="warning"] {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-amber-400, #D4A840) 4%, transparent),
+      transparent 60%
+    ),
+    var(--color-surface-1, #111827);
+}
+
+.ag-vital__card[data-health-level="healthy"] {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-emerald-400, #3DAA70) 3%, transparent),
+      transparent 60%
+    ),
+    var(--color-surface-1, #111827);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §3  Card Header (icon + label + trend)
+   ────────────────────────────────────────────────────────── */
+
+.ag-vital__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ag-vital__icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--vital-color, var(--color-gold-400, #C9A96E)) 12%, transparent);
+  color: var(--vital-color, var(--color-gold-400, #C9A96E));
+  flex-shrink: 0;
+}
+
+.ag-vital__label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100, #F0F2F5);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Trend */
+.ag-vital__trend {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.ag-vital__trend[data-trend="up"] {
+  color: var(--color-emerald-400, #3DAA70);
+}
+
+.ag-vital__trend[data-trend="down"] {
+  color: var(--color-rose-400, #C46470);
+}
+
+.ag-vital__trend[data-trend="stable"] {
+  color: var(--color-silver-500, #5C6978);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §4  Count & Range
+   ────────────────────────────────────────────────────────── */
+
+.ag-vital__count {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: var(--font-display, "Cormorant Garamond", serif);
+  color: var(--color-silver-100, #F0F2F5);
+  line-height: 1;
+}
+
+.ag-vital__range {
+  margin: 0;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.6875rem;
+  color: var(--color-silver-500, #5C6978);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §5  Health Bar
+   ────────────────────────────────────────────────────────── */
+
+.ag-vital__health-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line-color, rgba(255, 255, 255, 0.06));
+  overflow: hidden;
+}
+
+.ag-vital__health-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--vital-color, var(--color-gold-400, #C9A96E));
+  transition: width 0.6s ease;
+}
+
+.ag-vital__card[data-health-level="critical"] .ag-vital__health-fill {
+  background: var(--color-rose-400, #C46470);
+}
+
+.ag-vital__card[data-health-level="warning"] .ag-vital__health-fill {
+  background: var(--color-amber-400, #D4A840);
+}
+
+.ag-vital__card[data-health-level="healthy"] .ag-vital__health-fill {
+  background: var(--color-emerald-400, #3DAA70);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §6  Sparkline
+   ────────────────────────────────────────────────────────── */
+
+.ag-vital__sparkline {
+  width: 100%;
+  height: 24px;
+  opacity: 0.8;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §7  Aging Badge
+   ────────────────────────────────────────────────────────── */
+
+.ag-vital__aging {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+}
+
+.ag-vital__aging-ring {
+  stroke: var(--color-amber-400, #D4A840);
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.ag-vital__aging[data-urgency="act"] .ag-vital__aging-ring {
+  stroke: var(--color-rose-400, #C46470);
+}
+
+.ag-vital__aging[data-urgency="monitor"] .ag-vital__aging-ring {
+  stroke: var(--color-silver-500, #5C6978);
+}
+
+.ag-vital__aging-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-silver-500, #5C6978);
+}
+
+.ag-vital__aging[data-urgency="act"] .ag-vital__aging-label {
+  color: var(--color-rose-400, #C46470);
+}
+
+.ag-vital__aging[data-urgency="plan"] .ag-vital__aging-label {
+  color: var(--color-amber-400, #D4A840);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §8  Keyframes (feature-specific: 2)
+   ────────────────────────────────────────────────────────── */
+
+@keyframes ag-vital-cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ag-vital-hotspotPulse {
+  0%, 100% {
+    border-left-color: var(--color-rose-400, #C46470);
+    box-shadow: none;
+  }
+  50% {
+    border-left-color: var(--color-rose-300, #e8798a);
+    box-shadow: -2px 0 12px color-mix(in srgb, var(--color-rose-400, #C46470) 15%, transparent);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §9  Responsive
+   ────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .ag-vital__grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .ag-vital__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .ag-vital__card {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .ag-vital__count {
+    font-size: 1.25rem;
+  }
+
+  .ag-vital__sparkline {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ag-vital__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §10  Light Mode
+   ────────────────────────────────────────────────────────── */
+
+.light .ag-vital__card {
+  background: var(--color-warm-canvas, #f5f3ee);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .ag-vital__card:hover {
+  background: #fafaf8;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .ag-vital__card[data-health-level="critical"] {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-rose-400, #C46470) 3%, transparent),
+      transparent 60%
+    ),
+    var(--color-warm-canvas, #f5f3ee);
+}
+
+.light .ag-vital__card[data-health-level="warning"] {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-amber-400, #D4A840) 2%, transparent),
+      transparent 60%
+    ),
+    var(--color-warm-canvas, #f5f3ee);
+}
+
+.light .ag-vital__card[data-health-level="healthy"] {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-emerald-400, #3DAA70) 2%, transparent),
+      transparent 60%
+    ),
+    var(--color-warm-canvas, #f5f3ee);
+}
+
+.light .ag-vital__label {
+  color: var(--color-abyss, #080B12);
+}
+
+.light .ag-vital__count {
+  color: var(--color-abyss, #080B12);
+}
+
+.light .ag-vital__range {
+  color: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-vital__health-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .ag-vital__icon {
+  color: var(--vital-color, var(--color-gold-500, #B8942D));
+}
+
+.light .ag-vital__aging-ring circle:first-child {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+.light .ag-vital__aging-label {
+  color: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-vital__aging[data-urgency="act"] .ag-vital__aging-label {
+  color: var(--color-rose-400, #C46470);
+}
+
+.light .ag-vital__aging[data-urgency="plan"] .ag-vital__aging-label {
+  color: var(--color-amber-500, #f59e0b);
+}
+
+.light .ag-vital__trend[data-trend="up"] {
+  color: var(--color-emerald-400, #3DAA70);
+}
+
+.light .ag-vital__trend[data-trend="down"] {
+  color: var(--color-rose-400, #C46470);
+}
+
+.light .ag-vital__trend[data-trend="stable"] {
+  color: var(--color-silver-600, #3D4755);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §11  Reduced Motion
+   ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-vital__card {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .ag-vital__card[data-hotspot] {
+    animation: none !important;
+  }
+
+  .ag-vital__health-fill {
+    transition: none;
+  }
+
+  .ag-vital__aging-ring {
+    transition: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §12  Print
+   ────────────────────────────────────────────────────────── */
+
+@media print {
+  .ag-vital__grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .ag-vital__card {
+    animation: none !important;
+    opacity: 1;
+    border: 1px solid #ccc;
+    border-left: 3px solid #999;
+    background: #fff;
+    break-inside: avoid;
+  }
+
+  .ag-vital__sparkline {
+    display: none;
+  }
+
+  .ag-vital__label {
+    color: #000;
+  }
+
+  .ag-vital__count {
+    color: #000;
+  }
+
+  .ag-vital__range {
+    color: #333;
+  }
+
+  .ag-vital__health-track {
+    background: #eee;
+  }
+}

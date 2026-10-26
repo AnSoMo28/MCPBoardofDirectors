@@ -1,0 +1,56 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+
+    /* Bundler mode */
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+
+    /* Aislamiento ambiental: sin types[] automáticos, @types/node NO filtra
+       en src/ (process.env deja de compilar en código de browser — el bug
+       clásico) y vite/client entra por el reference de vite-env.d.ts. */
+    "types": [],
+
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
+    /* verbatimModuleSyntax: obliga a `import type` explícito. El build de
+       Vite transpila sin chequear (esbuild/SWC); un import de valor que solo
+       trae tipos se borra en silencio y rompe en runtime. Con esto pasa a
+       ser error de compilación. La disciplina `import type` ya es estilo de
+       la casa — ahora queda codificada. */
+    "verbatimModuleSyntax": true,
+
+    /* Proyecto de type-check puro (el bundling lo hace Vite) — patrón
+       solution-style con tsc -b. */
+    "noEmit": true,
+
+    /* Linting del compilador */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* SIN baseUrl: con baseUrl="./src", los valores de paths se resolvían
+       RELATIVOS a él (src/src/*) y cada alias reventaba en TS2307. Sin
+       baseUrl, los valores resuelven relativos a ESTE archivo (convención
+       del template oficial). Espejo EXACTO de resolve.alias en vite.config.ts. */
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared": ["./src/shared"],
+      "@shared/*": ["./src/shared/*"],
+      "@features/*": ["./src/features/*"],
+      "@stores/*": ["./src/stores/*"],
+      "@app/*": ["./src/app/*"]
+    }
+  },
+  "include": ["src", "vite-env.d.ts", "architecture.manifest.ts"]
+}

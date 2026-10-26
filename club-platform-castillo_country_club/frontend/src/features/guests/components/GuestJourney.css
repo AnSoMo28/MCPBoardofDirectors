@@ -1,0 +1,359 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/GuestJourney.css
+   Phase 34 "The Gateway" — Signature: Guest Journey
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-journey
+   Glass: .glass-gst-journey
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+.glass-gst-journey {
+  --glass-gst-journey-version: 1;
+}
+
+:root {
+  --gst-journey-bg: rgba(18, 18, 26, 0.5);
+  --gst-journey-border: rgba(255, 255, 255, 0.06);
+  --gst-journey-text-primary: #f0ece4;
+  --gst-journey-text-muted: #7a7570;
+  --gst-journey-radius: 16px;
+  --gst-journey-bar-height: 6px;
+  --gst-journey-bar-track: rgba(255, 255, 255, 0.04);
+}
+
+/* ── Base ── */
+.gst-journey {
+  position: relative;
+  background: var(--gst-journey-bg);
+  border: 1px solid var(--gst-journey-border);
+  border-radius: var(--gst-journey-radius);
+  padding: 24px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  opacity: 0;
+  animation: gst-journey-fadeIn 0.5s ease 0.3s forwards;
+}
+
+.gst-journey[data-state="empty"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  animation: none;
+  opacity: 1;
+}
+
+.gst-journey__empty-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 15px;
+  color: var(--gst-journey-text-muted);
+  margin: 0;
+}
+
+/* ── Identity ── */
+.gst-journey__identity {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.gst-journey__name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gst-journey__name {
+  font-family: var(--font-display, "Italiana");
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--gst-journey-text-primary);
+  margin: 0;
+}
+
+.gst-journey__family {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 13px;
+  color: var(--gst-journey-text-muted);
+}
+
+/* ── Badges ── */
+.gst-journey__badges {
+  display: flex;
+  gap: 8px;
+}
+
+.gst-journey__badge {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.gst-journey__badge[data-type="segment"][data-level="exceptional"] {
+  color: var(--gst-severity-low);
+  background: rgba(78, 205, 196, 0.1);
+  border: 1px solid rgba(78, 205, 196, 0.2);
+}
+
+.gst-journey__badge[data-type="segment"][data-level="strong"] {
+  color: var(--gst-accent);
+  background: rgba(212, 168, 83, 0.1);
+  border: 1px solid rgba(212, 168, 83, 0.2);
+}
+
+.gst-journey__badge[data-type="segment"][data-level="moderate"] {
+  color: var(--gst-severity-medium);
+  background: rgba(245, 166, 35, 0.1);
+  border: 1px solid rgba(245, 166, 35, 0.2);
+}
+
+.gst-journey__badge[data-type="segment"][data-level="weak"],
+.gst-journey__badge[data-type="segment"][data-level="critical"] {
+  color: var(--gst-severity-high);
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.gst-journey__badge[data-type="temperature"][data-temperature="blazing"],
+.gst-journey__badge[data-type="temperature"][data-temperature="hot"] {
+  color: var(--gst-temp-hot);
+  background: rgba(255, 167, 38, 0.1);
+  border: 1px solid rgba(255, 167, 38, 0.2);
+}
+
+.gst-journey__badge[data-type="temperature"][data-temperature="warm"] {
+  color: var(--gst-temp-warm);
+  background: rgba(212, 168, 83, 0.1);
+  border: 1px solid rgba(212, 168, 83, 0.2);
+}
+
+.gst-journey__badge[data-type="temperature"][data-temperature="cool"] {
+  color: var(--gst-temp-cool);
+  background: rgba(78, 205, 196, 0.1);
+  border: 1px solid rgba(78, 205, 196, 0.2);
+}
+
+.gst-journey__badge[data-type="temperature"][data-temperature="cold"],
+.gst-journey__badge[data-type="temperature"][data-temperature="frozen"] {
+  color: var(--gst-temp-cold);
+  background: rgba(144, 164, 174, 0.1);
+  border: 1px solid rgba(144, 164, 174, 0.2);
+}
+
+/* ── Metrics ── */
+.gst-journey__metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.gst-journey__metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--gst-journey-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.gst-journey__metric-value {
+  font-family: var(--font-display, "Italiana");
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--gst-journey-text-primary);
+}
+
+.gst-journey__metric-value[data-level="exceptional"] {
+  color: var(--gst-severity-low);
+}
+
+.gst-journey__metric-value[data-level="strong"] {
+  color: var(--gst-accent);
+}
+
+.gst-journey__metric-value[data-level="moderate"] {
+  color: var(--gst-severity-medium);
+}
+
+.gst-journey__metric-value[data-level="weak"] {
+  color: var(--gst-severity-high);
+}
+
+.gst-journey__metric-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gst-journey-text-muted);
+  text-align: center;
+}
+
+/* ── Section Titles ── */
+.gst-journey__section-title {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gst-journey-text-muted);
+  margin: 0 0 12px 0;
+}
+
+/* ── Interest Map ── */
+.gst-journey__interests {
+  margin-bottom: 20px;
+}
+
+.gst-journey__interest-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gst-journey__interest-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.gst-journey__interest-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--gst-journey-text-primary);
+}
+
+.gst-journey__interest-score {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gst-journey-text-muted);
+}
+
+.gst-journey__interest-track {
+  height: var(--gst-journey-bar-height);
+  background: var(--gst-journey-bar-track);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gst-journey__interest-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(212, 168, 83, 0.5), rgba(212, 168, 83, 0.25));
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Narrative ── */
+.gst-journey__narrative {
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--gst-journey-border);
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 12px;
+}
+
+.gst-journey__narrative-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--gst-journey-text-primary);
+  margin: 0;
+}
+
+/* ── Blacklist Warning ── */
+.gst-journey__blacklist {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--gst-severity-high);
+  background: rgba(231, 76, 60, 0.06);
+}
+
+.gst-journey__blacklist-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 13px;
+  color: var(--gst-severity-high);
+  margin: 0;
+}
+
+/* ── Animations ── */
+@keyframes gst-journey-fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-journey {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-journey__interest-fill {
+  transition: none;
+}
+
+/* ── Light Mode ── */
+.light .gst-journey {
+  --gst-journey-bg: rgba(255, 255, 255, 0.85);
+  --gst-journey-border: rgba(0, 0, 0, 0.08);
+  --gst-journey-text-primary: #1a1a2e;
+  --gst-journey-text-muted: #6b6b78;
+  --gst-journey-bar-track: rgba(0, 0, 0, 0.04);
+}
+
+.light .gst-journey__metric {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .gst-journey__narrative {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-journey {
+    padding: 16px;
+  }
+
+  .gst-journey__identity {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .gst-journey__name {
+    font-size: 22px;
+  }
+
+  .gst-journey__metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gst-journey__metric-value {
+    font-size: 22px;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-journey {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+  }
+
+  .gst-journey__interest-fill {
+    background: #ddd !important;
+  }
+}

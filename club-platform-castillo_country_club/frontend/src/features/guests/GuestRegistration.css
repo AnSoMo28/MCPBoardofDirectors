@@ -1,0 +1,604 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/GuestRegistration.css
+   Phase 34 "The Gateway" — Guest Registration Wizard (Rewrite)
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-register
+   Glass: .glass-gst-register
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+.glass-gst-register {
+  --glass-gst-register-version: 1;
+}
+
+:root {
+  --gst-register-bg: rgba(18, 18, 26, 0.5);
+  --gst-register-border: rgba(255, 255, 255, 0.06);
+  --gst-register-text-primary: #f0ece4;
+  --gst-register-text-muted: #7a7570;
+  --gst-register-text-dim: #555250;
+  --gst-register-radius: 16px;
+  --gst-register-card-radius: 12px;
+  --gst-register-surface: rgba(255, 255, 255, 0.02);
+  --gst-register-surface-border: rgba(255, 255, 255, 0.04);
+
+  --gst-register-gold: var(--color-gold-400, #d4a853);
+  --gst-register-emerald: var(--color-emerald-400, #4ecdc4);
+  --gst-register-rose: var(--color-rose-400, #e74c3c);
+}
+
+/* ═══ §1 — BASE ═══════════════════════════════════════════ */
+
+.gst-register {
+  max-width: 672px;
+}
+
+/* ═══ §2 — FORM ═══════════════════════════════════════════ */
+
+.gst-register__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ═══ §3 — STEP PANELS ════════════════════════════════════ */
+
+.gst-register__step {
+  opacity: 0;
+  animation: gst-register-slideIn 0.25s ease forwards;
+}
+
+/* ═══ §4 — CARD ═══════════════════════════════════════════ */
+
+.gst-register__card {
+  padding: 24px;
+}
+
+.gst-register__card-title {
+  font-family: var(--font-display, "Italiana");
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--gst-register-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.gst-register__card-desc {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 14px;
+  color: var(--gst-register-text-muted);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+/* ═══ §5 — INPUTS (Reception-sized) ═══════════════════════ */
+
+.gst-register__input {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 16px;
+  color: var(--gst-register-text-primary);
+  background: var(--gst-register-surface);
+  border: 1px solid var(--gst-register-surface-border);
+  border-radius: var(--gst-register-card-radius);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  min-height: 48px;
+}
+
+.gst-register__input:focus {
+  border-color: var(--gst-register-gold);
+  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.12);
+}
+
+.gst-register__input[data-size="large"] {
+  min-height: 48px;
+  font-size: 16px;
+}
+
+.gst-register__textarea {
+  resize: none;
+  font-family: var(--font-body, "Source Serif 4");
+  min-height: auto;
+}
+
+/* ═══ §6 — SEARCH ═════════════════════════════════════════ */
+
+.gst-register__search-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.gst-register__search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--gst-register-text-muted);
+  pointer-events: none;
+}
+
+.gst-register__search-wrap .gst-register__input {
+  padding-left: 44px;
+}
+
+/* ═══ §7 — FIELD GRID ═════════════════════════════════════ */
+
+.gst-register__field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+/* ═══ §8 — HOST SEARCH RESULTS ════════════════════════════ */
+
+.gst-register__results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.gst-register__skeleton {
+  height: 80px;
+  border-radius: var(--gst-register-card-radius);
+}
+
+.gst-register__host-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  padding: 16px;
+  border-radius: var(--gst-register-card-radius);
+  border: 2px solid var(--gst-register-surface-border);
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  min-height: 48px;
+  outline: none;
+}
+
+.gst-register__host-option:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.gst-register__host-option:focus-visible {
+  outline: 2px solid var(--gst-register-gold);
+  outline-offset: 2px;
+}
+
+.gst-register__host-option[data-selected="true"] {
+  border-color: var(--gst-register-gold);
+  background: rgba(212, 168, 83, 0.05);
+}
+
+.gst-register__host-info {
+  min-width: 0;
+}
+
+.gst-register__host-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gst-register-text-primary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gst-register__host-member {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 13px;
+  color: var(--gst-register-text-muted);
+  margin: 2px 0 0 0;
+}
+
+.gst-register__host-check {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--gst-register-gold);
+}
+
+.gst-register__empty {
+  padding: 8px 0;
+}
+
+/* ═══ §9 — PURPOSE CHIPS ══════════════════════════════════ */
+
+.gst-register__purpose-section {
+  margin-bottom: 24px;
+}
+
+.gst-register__section-label {
+  display: block;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gst-register-text-primary);
+  margin-bottom: 12px;
+}
+
+.gst-register__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gst-register__chip {
+  padding: 10px 16px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gst-register-text-primary);
+  background: transparent;
+  border: 2px solid var(--gst-register-surface-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  min-height: 44px;
+  outline: none;
+}
+
+.gst-register__chip:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.gst-register__chip:focus-visible {
+  outline: 2px solid var(--gst-register-emerald);
+  outline-offset: 2px;
+}
+
+.gst-register__chip[data-selected="true"] {
+  border-color: var(--gst-register-emerald);
+  background: var(--gst-register-emerald);
+  color: var(--color-abyss, #0d0d0d);
+}
+
+/* ═══ §10 — FACILITY GRID ═════════════════════════════════ */
+
+.gst-register__facility-section {
+  margin-bottom: 24px;
+}
+
+.gst-register__facility-loading {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.gst-register__skeleton-facility {
+  height: 80px;
+  border-radius: var(--gst-register-card-radius);
+}
+
+.gst-register__facility-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.gst-register__facility-option {
+  padding: 12px 16px;
+  text-align: left;
+  border-radius: var(--gst-register-card-radius);
+  border: 2px solid var(--gst-register-surface-border);
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  min-height: 48px;
+  outline: none;
+}
+
+.gst-register__facility-option:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.gst-register__facility-option:focus-visible {
+  outline: 2px solid var(--gst-register-gold);
+  outline-offset: 2px;
+}
+
+.gst-register__facility-option[data-selected="true"] {
+  border-color: var(--gst-register-gold);
+  background: rgba(212, 168, 83, 0.05);
+}
+
+.gst-register__facility-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gst-register-text-primary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gst-register__facility-type {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--gst-register-text-muted);
+  margin: 2px 0 0 0;
+}
+
+/* ═══ §11 — NOTES ═════════════════════════════════════════ */
+
+.gst-register__notes-section {
+  margin-bottom: 8px;
+}
+
+/* ═══ §12 — SUMMARY (Step 3) ══════════════════════════════ */
+
+.gst-register__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.gst-register__summary-block {
+  padding: 12px 16px;
+  border-radius: var(--gst-register-card-radius);
+  background: var(--gst-register-surface);
+}
+
+.gst-register__summary-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gst-register-text-muted);
+  margin: 0 0 4px 0;
+}
+
+.gst-register__summary-value {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gst-register-text-primary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gst-register__summary-sub {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 13px;
+  color: var(--gst-register-text-muted);
+  margin: 2px 0 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ═══ §13 — ACTIONS ═══════════════════════════════════════ */
+
+.gst-register__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  gap: 8px;
+}
+
+.gst-register__actions[data-spread="true"] {
+  justify-content: space-between;
+}
+
+/* ═══ §14 — ERRORS ════════════════════════════════════════ */
+
+.gst-register__error {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  color: var(--gst-register-rose);
+  margin: 6px 0 0 0;
+}
+
+.gst-register__mutation-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 16px;
+  border-radius: var(--gst-register-card-radius);
+  background: rgba(231, 76, 60, 0.08);
+}
+
+.gst-register__mutation-error-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--gst-register-rose);
+}
+
+.gst-register__mutation-error-text {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  color: var(--gst-register-rose);
+  margin: 0;
+  flex: 1;
+}
+
+.gst-register__mutation-error-close {
+  padding: 4px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--gst-register-rose);
+  transition: background 0.2s ease;
+  outline: none;
+}
+
+.gst-register__mutation-error-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.gst-register__mutation-error-close:focus-visible {
+  outline: 2px solid var(--gst-register-rose);
+  outline-offset: 2px;
+}
+
+/* ═══ §15 — SUCCESS SCREEN ════════════════════════════════ */
+
+.gst-register__success-card {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  text-align: center;
+  border-radius: var(--gst-register-radius);
+  border: 1px solid var(--gst-register-border);
+  background: var(--gst-register-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  animation: gst-register-scaleIn 0.35s ease forwards;
+}
+
+.gst-register__success-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(78, 205, 196, 0.1);
+}
+
+.gst-register__success-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--gst-register-emerald);
+}
+
+.gst-register__success-title {
+  font-family: var(--font-display, "Italiana");
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--gst-register-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.gst-register__success-desc {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 14px;
+  color: var(--gst-register-text-muted);
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.gst-register__success-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* ═══ §16 — ANIMATIONS ════════════════════════════════════ */
+
+@keyframes gst-register-slideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes gst-register-scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ═══ §17 — REDUCED MOTION ════════════════════════════════ */
+
+[data-prefers-reduced="true"] .gst-register__step,
+[data-prefers-reduced="true"] .gst-register__success-card {
+  animation: none;
+  opacity: 1;
+}
+
+/* ═══ §18 — LIGHT MODE ════════════════════════════════════ */
+
+.light .gst-register {
+  --gst-register-bg: rgba(255, 255, 255, 0.85);
+  --gst-register-border: rgba(0, 0, 0, 0.08);
+  --gst-register-text-primary: #1a1a2e;
+  --gst-register-text-muted: #6b6b78;
+  --gst-register-text-dim: #999;
+  --gst-register-surface: rgba(0, 0, 0, 0.02);
+  --gst-register-surface-border: rgba(0, 0, 0, 0.04);
+}
+
+.light .gst-register__input {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .gst-register__host-option,
+.light .gst-register__facility-option {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* ═══ §19 — RESPONSIVE ════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .gst-register__card {
+    padding: 16px;
+  }
+
+  .gst-register__field-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .gst-register__facility-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .gst-register__facility-loading {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gst-register__card-title {
+    font-size: 16px;
+  }
+
+  .gst-register__success-card {
+    padding: 24px 16px;
+  }
+
+  .gst-register__success-icon-wrap {
+    width: 52px;
+    height: 52px;
+  }
+
+  .gst-register__success-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .gst-register__success-title {
+    font-size: 20px;
+  }
+}
+
+/* ═══ §20 — PRINT ═════════════════════════════════════════ */
+
+@media print {
+  .gst-register__step,
+  .gst-register__success-card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .gst-register__actions {
+    display: none;
+  }
+}

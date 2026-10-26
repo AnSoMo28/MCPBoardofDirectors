@@ -1,0 +1,462 @@
+/* src/features/facilities/components/MaintenanceCalendar.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* MAINTENANCE CALENDAR — "El Calendario"                        */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — day block entry stagger              */
+/*   SENSE 2: REACCIÓN — task row hover translateX(2px)          */
+/*   SENSE 3: MEMORIA — task count, total cost, overdue          */
+/*   SENSE 4: INTENCIÓN — priority/type/status badges            */
+/*   SENSE 5: SINIESTRÍA — overdue pulse, emergency highlight    */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — calendar summary                       */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.fac-maint-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fac-maint-cal--empty {
+  padding: 40px;
+  justify-content: center;
+  align-items: center;
+  color: var(--color-silver-500);
+}
+
+.fac-maint-cal__empty-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.fac-maint-cal__empty-text {
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  text-align: center;
+  max-width: 260px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ═══ HEADER ═══════════════════════════════════════════════════ */
+
+.fac-maint-cal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fac-maint-cal__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fac-maint-cal__header-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-teal-400);
+}
+
+.fac-maint-cal__title {
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+}
+
+.fac-maint-cal__header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fac-maint-cal__header-stat {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+.fac-maint-cal__header-total {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-gold-400);
+}
+
+.fac-maint-cal__header-total-icon {
+  width: 13px;
+  height: 13px;
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+
+.fac-maint-cal__narrative {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+
+/* ═══ DAY BLOCKS (Sense 1 + 5) ════════════════════════════════ */
+
+.fac-maint-cal__days {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fac-maint-cal__day {
+  border-radius: 10px;
+  overflow: hidden;
+  /* Sense 1: stagger */
+  opacity: 0;
+  animation: fac-mcal-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+}
+
+@keyframes fac-mcal-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Sense 5: Overdue pulse */
+.fac-maint-cal__day[data-overdue="true"] {
+  border-left: 3px solid var(--color-rose-400);
+  animation: fac-mcal-enter 0.4s ease-out forwards,
+             fac-mcal-overdue-pulse 2.5s ease-in-out 0.4s infinite;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s), 0s;
+}
+
+@keyframes fac-mcal-overdue-pulse {
+  0%, 100% { border-left-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent); }
+  50% { border-left-color: var(--color-rose-400); }
+}
+
+/* Today highlight */
+.fac-maint-cal__day[data-today="true"] {
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+}
+
+/* ── Day Header ── */
+.fac-maint-cal__day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+}
+
+.fac-maint-cal__day[data-today="true"] .fac-maint-cal__day-header {
+  background: color-mix(in srgb, var(--color-gold-400) 6%, var(--color-surface));
+}
+
+.fac-maint-cal__day[data-overdue="true"] .fac-maint-cal__day-header {
+  background: color-mix(in srgb, var(--color-rose-400) 5%, var(--color-surface));
+}
+
+.fac-maint-cal__day-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fac-maint-cal__overdue-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-rose-400);
+}
+
+.fac-maint-cal__day-label {
+  font-size: 13px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.fac-maint-cal__day[data-today="true"] .fac-maint-cal__day-label {
+  color: var(--color-gold-400);
+}
+
+.fac-maint-cal__day[data-overdue="true"] .fac-maint-cal__day-label {
+  color: var(--color-rose-400);
+}
+
+.fac-maint-cal__day-count {
+  font-size: 10px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+}
+
+.fac-maint-cal__day-cost {
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-gold-400);
+}
+
+/* ═══ TASK ROWS (Sense 2 + 4) ═════════════════════════════════ */
+
+.fac-maint-cal__day-tasks {
+  display: flex;
+  flex-direction: column;
+}
+
+.fac-maint-cal__task {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--color-surface) 40%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 6%, transparent);
+  /* Sense 2: hover */
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.fac-maint-cal__task:last-child {
+  border-bottom: none;
+}
+
+.fac-maint-cal__task:hover {
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  transform: translateX(2px);
+}
+
+/* Sense 5: Emergency gets left accent */
+.fac-maint-cal__task[data-maint-type="emergency"] {
+  border-left: 3px solid var(--color-rose-400);
+}
+
+/* ── Time ── */
+.fac-maint-cal__task-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 64px;
+  flex-shrink: 0;
+}
+
+.fac-maint-cal__task-time-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--color-silver-500);
+}
+
+.fac-maint-cal__task-time span {
+  font-size: 11px;
+  font-family: var(--font-display);
+  color: var(--color-silver-400);
+}
+
+/* ── Body ── */
+.fac-maint-cal__task-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.fac-maint-cal__task-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.fac-maint-cal__task-facility {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Priority badge (CSS-driven) */
+.fac-maint-cal__task-priority {
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.fac-maint-cal__task-priority[data-priority="low"] {
+  color: var(--color-silver-400);
+  background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+}
+.fac-maint-cal__task-priority[data-priority="medium"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+.fac-maint-cal__task-priority[data-priority="high"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.fac-maint-cal__task-priority[data-priority="critical"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+
+.fac-maint-cal__task-desc {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Meta badges ── */
+.fac-maint-cal__task-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Type badge (CSS-driven) */
+.fac-maint-cal__task-type {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.fac-maint-cal__task-type[data-maint-type="preventive"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+.fac-maint-cal__task-type[data-maint-type="corrective"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.fac-maint-cal__task-type[data-maint-type="emergency"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+.fac-maint-cal__task-type[data-maint-type="renovation"] {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+.fac-maint-cal__task-type[data-maint-type="cleaning"] {
+  color: var(--color-silver-400);
+  background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+}
+.fac-maint-cal__task-type[data-maint-type="inspection"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+
+/* Status badge (CSS-driven) */
+.fac-maint-cal__task-status {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.fac-maint-cal__task-status[data-maint-status="completed"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+.fac-maint-cal__task-status[data-maint-status="in_progress"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+.fac-maint-cal__task-status[data-maint-status="scheduled"] {
+  color: var(--color-silver-400);
+  background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+}
+.fac-maint-cal__task-status[data-maint-status="cancelled"] {
+  color: var(--color-silver-600);
+  background: color-mix(in srgb, var(--color-silver-600) 8%, transparent);
+}
+.fac-maint-cal__task-status[data-maint-status="on_hold"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+
+.fac-maint-cal__task-cost {
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-gold-400);
+  width: 64px;
+  text-align: right;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .fac-maint-cal__task {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+.light .fac-maint-cal__task-facility {
+  color: var(--color-silver-800);
+}
+
+.light .fac-maint-cal__day-header {
+  background: color-mix(in srgb, var(--color-surface) 95%, transparent);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fac-maint-cal__day {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-maint-cal__day[data-overdue="true"] {
+    animation: none;
+  }
+
+  .fac-maint-cal__task:hover {
+    transform: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fac-maint-cal__task {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .fac-maint-cal__task-meta {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .fac-maint-cal__task-cost {
+    text-align: left;
+    width: auto;
+  }
+}

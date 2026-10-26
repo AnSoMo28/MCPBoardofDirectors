@@ -1,0 +1,232 @@
+/* src/features/communications/components/ChannelOrganism.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Channel Organism — Living Channel Forms                     */
+/* Phase 31 — Silver Tide Glass UI                            */
+/* Namespace: .glass-comm-organisms                           */
+/* ═══════════════════════════════════════════════════════════ */
+
+.glass-comm-organisms {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-xl, 1rem);
+  padding: var(--space-4, 1rem);
+  backdrop-filter: blur(8px);
+}
+
+.organisms__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.organisms__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+}
+
+.organisms__subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted, #7a7570);
+}
+
+/* ── Grid ─────────────────────────────────────────────── */
+
+.organisms__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3, 0.75rem);
+  justify-content: center;
+}
+
+.organism-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-2, 0.5rem);
+  border-radius: var(--radius-lg, 0.75rem);
+  min-width: 5.5rem;
+  opacity: 0;
+  animation: organism-appear 0.5s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.1s);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.organism-card:hover {
+  transform: translateY(-2px);
+}
+
+.organism-card[data-preferred="true"] {
+  background: color-mix(in srgb, var(--color-teal-400) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-teal-400) 15%, transparent);
+}
+
+/* ── SVG Organism ─────────────────────────────────────── */
+
+.organism-svg {
+  width: 5rem;
+  height: 5rem;
+  overflow: visible;
+}
+
+.organism-glow {
+  opacity: 0.08;
+  fill: var(--color-teal-400);
+  animation: organism-breathe 6s ease-in-out infinite;
+}
+
+.organism-glow[data-channel="whatsapp"] { fill: var(--color-emerald-400); }
+.organism-glow[data-channel="email"] { fill: var(--color-teal-400); }
+.organism-glow[data-channel="sms"] { fill: var(--color-gold-400); }
+.organism-glow[data-channel="push"] { fill: var(--color-amber-400); }
+.organism-glow[data-channel="in_app"] { fill: var(--color-silver-400); }
+
+.organism-body {
+  fill: var(--color-surface-1, #1a1a1a);
+  stroke: var(--color-teal-400);
+  stroke-width: 1.5;
+  transition: r 0.6s ease, stroke-width 0.3s ease;
+}
+
+.organism-body[data-channel="whatsapp"] { stroke: var(--color-emerald-400); }
+.organism-body[data-channel="email"] { stroke: var(--color-teal-400); }
+.organism-body[data-channel="sms"] { stroke: var(--color-gold-400); }
+.organism-body[data-channel="push"] { stroke: var(--color-amber-400); }
+.organism-body[data-channel="in_app"] { stroke: var(--color-silver-400); }
+
+.organism-body[data-preferred="true"] {
+  stroke-width: 2.5;
+}
+
+.organism-icon {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  fill: var(--color-teal-400);
+}
+
+.organism-icon[data-channel="whatsapp"] { fill: var(--color-emerald-400); }
+.organism-icon[data-channel="email"] { fill: var(--color-teal-400); }
+.organism-icon[data-channel="sms"] { fill: var(--color-gold-400); }
+.organism-icon[data-channel="push"] { fill: var(--color-amber-400); }
+.organism-icon[data-channel="in_app"] { fill: var(--color-silver-400); }
+
+/* Fatigue ring */
+.organism-fatigue-ring {
+  stroke: var(--color-emerald-400);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50px 50px;
+  transition: stroke-dasharray 0.5s ease, stroke 0.5s ease;
+}
+
+.organism-fatigue-ring[data-fatigue="fresh"] { stroke: var(--color-emerald-400); }
+.organism-fatigue-ring[data-fatigue="normal"] { stroke: var(--color-teal-400); }
+.organism-fatigue-ring[data-fatigue="elevated"] { stroke: var(--color-amber-400); }
+.organism-fatigue-ring[data-fatigue="saturated"] { stroke: var(--color-gold-400); }
+.organism-fatigue-ring[data-fatigue="overloaded"] { stroke: var(--color-rose-400); }
+
+/* ── Info ─────────────────────────────────────────────── */
+
+.organism-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.organism-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.organism-effectiveness {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1rem;
+  color: var(--color-teal-400);
+}
+
+.organism-effectiveness[data-channel="whatsapp"] { color: var(--color-emerald-400); }
+.organism-effectiveness[data-channel="email"] { color: var(--color-teal-400); }
+.organism-effectiveness[data-channel="sms"] { color: var(--color-gold-400); }
+.organism-effectiveness[data-channel="push"] { color: var(--color-amber-400); }
+.organism-effectiveness[data-channel="in_app"] { color: var(--color-silver-400); }
+
+.organism-preferred-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+  padding: 2px var(--space-2, 0.5rem);
+  border-radius: var(--radius-sm, 0.25rem);
+}
+
+/* ── Intelligence Strip ───────────────────────────────── */
+
+.organisms__intelligence {
+  padding-top: var(--space-3, 0.75rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.organisms__intel-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #7a7570);
+  margin-bottom: var(--space-1, 0.25rem);
+}
+
+.organisms__intel-text {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+
+/* ── Animations ───────────────────────────────────────── */
+
+@keyframes organism-appear {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes organism-breathe {
+  0%, 100% { opacity: 0.06; r: attr(r); }
+  50% { opacity: 0.14; }
+}
+
+/* ── Light Mode ───────────────────────────────────────── */
+
+.light .glass-comm-organisms {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .organism-body {
+  fill: #ffffff;
+}
+
+/* ── Reduced Motion ───────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .organism-card {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .organism-glow {
+    animation: none !important;
+    opacity: 0.1;
+  }
+}

@@ -1,0 +1,693 @@
+/**
+ * @component PrintView + PrintLayout (Fase 24)
+ * @namespace .glass-print, .glass-print-layout
+ * @depends globals.css (tokens)
+ * @note Print typography system, comparison table, detail sections.
+ *       Screen preview uses glass tokens. @media print uses hardcoded print-safe colors.
+ * @import import './PrintView.css';
+ */
+
+/* ═══════════════════════════════════════
+   Print Typography System (design tokens)
+   ═══════════════════════════════════════ */
+
+:root {
+  --print-font-size-h1: 18pt;
+  --print-font-size-h2: 14pt;
+  --print-font-size-h3: 12pt;
+  --print-font-size-body: 11pt;
+  --print-font-size-small: 10pt;
+  --print-font-size-caption: 9pt;
+  --print-font-size-badge: 8pt;
+  --print-line-height-body: 1.6;
+  --print-line-height-caption: 1.4;
+  --print-spacing-section: 16pt;
+  --print-spacing-block: 8pt;
+  --print-radius-card: 6pt;
+}
+
+/* ═══════════════════════════════════════
+   PrintLayout — Container
+   ═══════════════════════════════════════ */
+
+.glass-print-layout {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: auto;
+  background: var(--color-abyss, #0a0e18);
+}
+
+/* ═══════════════════════════════════════
+   PrintLayout — Toolbar
+   ═══════════════════════════════════════ */
+
+.glass-print-layout__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 24px;
+  background: rgba(14, 20, 32, 0.92);
+  backdrop-filter: blur(16px) saturate(1.05);
+  -webkit-backdrop-filter: blur(16px) saturate(1.05);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.glass-print-layout__toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.glass-print-layout__toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.glass-print-layout__title {
+  margin: 0;
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-silver-100, #f0ece4);
+  white-space: nowrap;
+}
+
+.glass-print-layout__subtitle {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  color: var(--color-silver-500, #7a7570);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Toolbar buttons ── */
+
+.glass-print-layout__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 34px;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, letter-spacing 0.3s ease;
+}
+
+.glass-print-layout__btn:focus-visible {
+  outline: 2px solid var(--color-gold-400, #c9a96e);
+  outline-offset: 2px;
+}
+
+.glass-print-layout__btn--primary {
+  background: rgba(201, 169, 110, 0.12);
+  color: var(--color-gold-400, #c9a96e);
+  border-color: rgba(201, 169, 110, 0.2);
+}
+
+.glass-print-layout__btn--primary:hover {
+  background: rgba(201, 169, 110, 0.2);
+  border-color: rgba(201, 169, 110, 0.35);
+  letter-spacing: 0.03em;
+}
+
+.glass-print-layout__btn--ghost {
+  background: transparent;
+  color: var(--color-silver-300, #b8b2a9);
+  border-color: transparent;
+}
+
+.glass-print-layout__btn--ghost:hover {
+  background: var(--glass-bg);
+  color: var(--color-silver-100, #f0ece4);
+}
+
+/* ═══════════════════════════════════════
+   PrintLayout — Body
+   ═══════════════════════════════════════ */
+
+.glass-print-layout__body {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 32px 64px;
+}
+
+/* ═══════════════════════════════════════
+   Print Section (screen preview — glass)
+   ═══════════════════════════════════════ */
+
+.glass-print__section {
+  position: relative;
+  padding: 18px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(12px) saturate(1.05);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+}
+
+.glass-print__section--break {
+  break-before: page;
+}
+
+.glass-print__heading {
+  margin: 0 0 12px;
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-print__subheading {
+  margin: 0 0 6px;
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-print__body {
+  margin: 0;
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-silver-300, #b8b2a9);
+}
+
+/* ═══════════════════════════════════════
+   Comparison Table
+   ═══════════════════════════════════════ */
+
+.glass-print__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 12px;
+}
+
+.glass-print__table-header {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-silver-500, #7a7570);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-print__table-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.glass-print__table-cell {
+  padding: 7px 10px;
+  color: var(--color-silver-300, #b8b2a9);
+}
+
+.glass-print__table-cell--mono {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+}
+
+.glass-print__table-cell--bold {
+  font-weight: 600;
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-print__table-cell--right {
+  text-align: right;
+}
+
+.glass-print__delta--positive {
+  color: var(--color-emerald-400, #34d399) !important;
+}
+
+.glass-print__delta--negative {
+  color: var(--color-rose-400, #fb7185) !important;
+}
+
+/* ═══════════════════════════════════════
+   Insight Card (reused for print context)
+   ═══════════════════════════════════════ */
+
+.glass-print__insight-card {
+  padding: 12px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left-width: 4px;
+  border-radius: 10px;
+}
+
+.glass-print__insight-title {
+  margin: 0 0 4px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-print__insight-body {
+  margin: 0;
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-silver-400, #a09a92);
+}
+
+.glass-print__insight-meta {
+  margin-top: 6px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════
+   Recommendation Item
+   ═══════════════════════════════════════ */
+
+.glass-print__rec-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.glass-print__rec-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--color-gold-400, #c9a96e);
+  color: var(--color-abyss, #0a0e18);
+}
+
+.glass-print__rec-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-print__rec-title {
+  margin: 0 0 2px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-print__rec-description {
+  margin: 0;
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-silver-400, #a09a92);
+}
+
+.glass-print__rec-impact {
+  margin: 4px 0 0;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-emerald-400, #34d399);
+}
+
+/* ═══════════════════════════════════════
+   Risk Alert Card
+   ═══════════════════════════════════════ */
+
+.glass-print__alert-card {
+  padding: 12px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left-width: 4px;
+  border-radius: 10px;
+}
+
+.glass-print__alert-title {
+  margin: 0 0 4px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-print__alert-body {
+  margin: 0 0 8px;
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-silver-400, #a09a92);
+}
+
+.glass-print__alert-action {
+  padding: 8px 12px;
+  background: rgba(201, 169, 110, 0.04);
+  border-radius: 8px;
+}
+
+.glass-print__alert-action-label {
+  margin: 0 0 2px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-gold-400, #c9a96e);
+}
+
+.glass-print__alert-action-text {
+  margin: 0;
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-silver-300, #b8b2a9);
+}
+
+/* ═══════════════════════════════════════
+   Badge (shared small inline)
+   ═══════════════════════════════════════ */
+
+.glass-print__badge {
+  display: inline-block;
+  padding: 1px 7px;
+  margin-left: 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
+/* ═══════════════════════════════════════
+   Detail Block (detailed sections)
+   ═══════════════════════════════════════ */
+
+.glass-print__detail-block {
+  margin-bottom: 18px;
+}
+
+.glass-print__detail-block--avoid {
+  break-inside: avoid;
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides (screen preview)
+   ═══════════════════════════════════════ */
+
+.light .glass-print-layout {
+  background: #f5f3ef;
+}
+
+.light .glass-print-layout__toolbar {
+  backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-print-layout__title {
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .glass-print-layout__subtitle {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-print-layout__btn--primary {
+  background: rgba(201, 169, 110, 0.1);
+  border-color: rgba(201, 169, 110, 0.2);
+  color: #8b7340;
+}
+
+.light .glass-print-layout__btn--primary:hover {
+  background: rgba(201, 169, 110, 0.18);
+  border-color: rgba(201, 169, 110, 0.3);
+}
+
+.light .glass-print-layout__btn--ghost {
+  color: var(--color-silver-600, #5c5853);
+}
+
+.light .glass-print-layout__btn--ghost:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .glass-print__section {
+  backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-print__heading,
+.light .glass-print__subheading,
+.light .glass-print__table-cell--bold,
+.light .glass-print__insight-title,
+.light .glass-print__rec-title,
+.light .glass-print__alert-title {
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .glass-print__body,
+.light .glass-print__insight-body,
+.light .glass-print__rec-description,
+.light .glass-print__alert-body,
+.light .glass-print__alert-action-text {
+  color: var(--color-silver-600, #5c5853);
+}
+
+.light .glass-print__table-cell {
+  color: var(--color-silver-700, #4a4742);
+}
+
+.light .glass-print__table-header {
+  color: var(--color-silver-500, #7a7570);
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .glass-print__table-row {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-print__insight-card,
+.light .glass-print__alert-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-print__alert-action {
+  background: rgba(201, 169, 110, 0.05);
+}
+
+.light .glass-print__alert-action-label {
+  color: #8b7340;
+}
+
+.light .glass-print__rec-number {
+  background: #8b7340;
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════
+   Print media query
+   ═══════════════════════════════════════ */
+
+@media print {
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+
+  .glass-print-layout {
+    position: static !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .glass-print-layout__toolbar,
+  .no-print {
+    display: none !important;
+  }
+
+  .glass-print-layout__body {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .glass-print__section {
+    break-inside: avoid;
+    background: #fff !important;
+    border-color: #ddd !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    padding: 12pt;
+    margin-bottom: var(--print-spacing-section);
+  }
+
+  .glass-print__heading {
+    font-size: var(--print-font-size-h2);
+    color: #111 !important;
+  }
+
+  .glass-print__subheading {
+    font-size: var(--print-font-size-h3);
+    color: #222 !important;
+  }
+
+  .glass-print__body {
+    font-size: var(--print-font-size-body);
+    line-height: var(--print-line-height-body);
+    color: #374151 !important;
+  }
+
+  /* Table print */
+  .glass-print__table {
+    font-size: var(--print-font-size-caption);
+  }
+
+  .glass-print__table-header {
+    color: #4b5563 !important;
+    border-bottom-color: #d1d5db !important;
+    font-size: var(--print-font-size-badge);
+    padding: 6pt 8pt;
+  }
+
+  .glass-print__table-cell {
+    color: #1f2937 !important;
+    padding: 6pt 8pt;
+    font-size: var(--print-font-size-caption);
+  }
+
+  .glass-print__table-row {
+    border-bottom-color: #e5e7eb !important;
+  }
+
+  .glass-print__delta--positive {
+    color: #16a34a !important;
+  }
+
+  .glass-print__delta--negative {
+    color: #dc2626 !important;
+  }
+
+  /* Insight card print */
+  .glass-print__insight-card {
+    background: #f9fafb !important;
+    border-color: #e5e7eb !important;
+    border-left-color: currentColor;
+  }
+
+  .glass-print__insight-title {
+    font-size: var(--print-font-size-small);
+    color: #1f2937 !important;
+  }
+
+  .glass-print__insight-body {
+    font-size: var(--print-font-size-small);
+    color: #4b5563 !important;
+  }
+
+  .glass-print__insight-meta {
+    font-size: var(--print-font-size-caption);
+  }
+
+  /* Recommendation print */
+  .glass-print__rec-item {
+    margin-bottom: 12pt;
+  }
+
+  .glass-print__rec-number {
+    background: #1f2937 !important;
+    color: #fff !important;
+    width: 20pt;
+    height: 20pt;
+    font-size: var(--print-font-size-small);
+  }
+
+  .glass-print__rec-title {
+    font-size: var(--print-font-size-small);
+    color: #1f2937 !important;
+  }
+
+  .glass-print__rec-description {
+    font-size: var(--print-font-size-small);
+    color: #4b5563 !important;
+  }
+
+  .glass-print__rec-impact {
+    font-size: var(--print-font-size-caption);
+    color: #16a34a !important;
+  }
+
+  /* Alert print */
+  .glass-print__alert-card {
+    background: #fefce8 !important;
+    border-color: #fde68a !important;
+  }
+
+  .glass-print__alert-title {
+    font-size: var(--print-font-size-small);
+    color: #1f2937 !important;
+  }
+
+  .glass-print__alert-body {
+    font-size: var(--print-font-size-small);
+    color: #4b5563 !important;
+  }
+
+  .glass-print__alert-action {
+    background: #fffbeb !important;
+  }
+
+  .glass-print__alert-action-label {
+    color: #92400e !important;
+  }
+
+  .glass-print__alert-action-text {
+    font-size: var(--print-font-size-small);
+    color: #4b5563 !important;
+  }
+
+  /* Badge print */
+  .glass-print__badge {
+    font-size: var(--print-font-size-badge);
+    padding: 1pt 6pt;
+    border-radius: 3pt;
+  }
+
+  /* Detail block */
+  .glass-print__detail-block {
+    break-inside: avoid;
+    margin-bottom: var(--print-spacing-section);
+  }
+
+  /* Kill all animations */
+  .glass-print-layout * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

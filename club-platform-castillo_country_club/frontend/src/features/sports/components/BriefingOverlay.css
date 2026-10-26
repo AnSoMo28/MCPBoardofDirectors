@@ -1,0 +1,159 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/BriefingOverlay.css
+   §B3.2 — Briefing Overlay Styles
+   Living Protocol: 1/7 (respiración) + 6/7 (empatía) + 7/7 (narrativa)
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-briefing {
+  --spt-brief-accent: var(--color-teal-400, #2a9ab5);
+
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  animation: spt-briefing-lifecycle 3.5s ease forwards;
+}
+
+/* ── Mode (LP 6: Empatía) ──────────────────────────────── */
+
+.spt-briefing[data-mode="calm"] {
+  --spt-brief-accent: var(--color-teal-400, #2a9ab5);
+}
+
+.spt-briefing[data-mode="alert"] {
+  --spt-brief-accent: var(--color-amber-400, #d4a017);
+}
+
+.spt-briefing[data-mode="critical"] {
+  --spt-brief-accent: var(--color-rose-400, #e54d4d);
+}
+
+/* ── Lifecycle (LP 1: Respiración) ─────────────────────── */
+
+@keyframes spt-briefing-lifecycle {
+  0%   { opacity: 0; }
+  14%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; pointer-events: none; }
+}
+
+/* ── Content ────────────────────────────────────────────── */
+
+.spt-briefing__content {
+  text-align: center;
+  max-width: 480px;
+  padding: 2rem;
+  animation: spt-briefing-content-enter 0.5s ease both;
+  animation-delay: 0.2s;
+}
+
+@keyframes spt-briefing-content-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-briefing__greeting {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 2rem;
+  color: var(--color-silver-100, #f0ece4);
+  margin-bottom: 0.5rem;
+}
+
+.spt-briefing__divider {
+  width: 60px;
+  height: 2px;
+  background: var(--spt-brief-accent);
+  margin: 1rem auto;
+  transition: background 0.4s ease;
+}
+
+.spt-briefing__health {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 1.1rem;
+  color: var(--color-silver-300, #b0aaa3);
+  margin-bottom: 0.5rem;
+}
+
+.spt-briefing__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.85rem;
+  color: var(--color-silver-400, #8a8580);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* ── Insights ───────────────────────────────────────────── */
+
+.spt-briefing__insights {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.spt-briefing__insight {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.9rem;
+  color: var(--color-silver-400, #8a8580);
+  padding-left: 1rem;
+  border-left: 2px solid var(--spt-brief-accent);
+  text-align: left;
+  transition: border-color 0.4s ease;
+}
+
+.spt-briefing__insight[data-severity="critical"] {
+  border-left-color: var(--color-rose-400, #e54d4d);
+  color: var(--color-silver-200, #ccc);
+}
+
+.spt-briefing__insight[data-severity="high"] {
+  border-left-color: var(--color-amber-400, #d4a017);
+}
+
+/* ── Light Mode ─────────────────────────────────────────── */
+
+.light .spt-briefing {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.light .spt-briefing__greeting {
+  color: #1a1a1a;
+}
+
+.light .spt-briefing__health,
+.light .spt-briefing__narrative {
+  color: #4a4540;
+}
+
+.light .spt-briefing__insight {
+  color: #6b7280;
+}
+
+/* ── Reduced Motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-briefing {
+    animation: none;
+    opacity: 1;
+  }
+
+  .spt-briefing__content {
+    animation: none;
+  }
+}
+
+/* ── Print ──────────────────────────────────────────────── */
+
+@media print {
+  .spt-briefing {
+    display: none;
+  }
+}

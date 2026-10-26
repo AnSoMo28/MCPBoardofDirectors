@@ -1,0 +1,971 @@
+/* ═══════════════════════════════════════════════════════════════
+   COMFORT DASHBOARD — Living Protocol 7/7
+
+   §F5: 5D Technical Comfort
+   Prop 12: Psychological 6th Dimension + Perception Gap
+
+   REWRITE — integrates facility selector, psychological grid,
+   perception gap panel, intervention panel, data-mode.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Root ──────────────────────────────────────────────────── */
+
+.fac-comfort {
+  --comfort-excellent: var(--color-emerald-400);
+  --comfort-good: var(--color-teal-400);
+  --comfort-moderate: var(--color-amber-400);
+  --comfort-poor: var(--color-rose-400);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ═══ LIVING PROTOCOL: 1. RESPIRACIÓN ════════════════════════ */
+
+.fac-comfort__pill {
+  opacity: 0;
+  animation: fac-comfort-fadeUp 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.05s);
+}
+
+.fac-comfort__kpi {
+  opacity: 0;
+  animation: fac-comfort-fadeUp 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+}
+
+.fac-comfort__dim {
+  opacity: 0;
+  animation: fac-comfort-fadeUp 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+}
+
+.fac-comfort__psych-card {
+  opacity: 0;
+  animation: fac-comfort-fadeUp 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.07s);
+}
+
+.fac-comfort__radar-data {
+  transform-origin: center;
+  animation: fac-comfort-radarGrow 0.5s ease 0.2s forwards;
+  opacity: 0;
+}
+
+.fac-comfort__intervention {
+  opacity: 0;
+  animation: fac-comfort-fadeUp 0.35s ease 0.4s forwards;
+}
+
+.fac-comfort__gap {
+  opacity: 0;
+  animation: fac-comfort-fadeUp 0.35s ease 0.3s forwards;
+}
+
+.fac-comfort__psych {
+  opacity: 0;
+  animation: fac-comfort-fadeUp 0.35s ease 0.25s forwards;
+}
+
+@keyframes fac-comfort-fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fac-comfort-radarGrow {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ═══ LIVING PROTOCOL: 2. REACCIÓN ═══════════════════════════ */
+
+.fac-comfort__pill {
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.fac-comfort__pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.fac-comfort__pill--active {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.fac-comfort__psych-card {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.fac-comfort__psych-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.fac-comfort__intervention-btn {
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    letter-spacing 0.3s ease;
+}
+
+.fac-comfort__intervention-btn:hover {
+  background: var(--color-teal-400);
+  color: var(--color-silver-900);
+  letter-spacing: 0.04em;
+}
+
+/* ═══ LIVING PROTOCOL: 3. MEMORIA ════════════════════════════ */
+
+.fac-comfort__dim-recommendation {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--comfort-moderate);
+  line-height: 1.4;
+  margin: 2px 0 0;
+  font-style: italic;
+}
+
+/* ═══ LIVING PROTOCOL: 5. SINIESTRÍA ═════════════════════════ */
+
+.fac-comfort__pill--poor {
+  animation:
+    fac-comfort-fadeUp 0.35s ease forwards,
+    fac-comfort-pill-pulse 2s ease-in-out 0.5s infinite;
+  animation-delay: calc(var(--stagger-i, 0) * 0.05s);
+}
+
+.fac-comfort__pill--poor .fac-comfort__pill-alert,
+.fac-comfort__pill--moderate .fac-comfort__pill-alert {
+  animation: fac-comfort-dot-pulse 1.5s ease-in-out infinite;
+}
+
+.fac-comfort__gap-number[data-critical="true"] {
+  animation: fac-comfort-gap-pulse 2s ease-in-out infinite;
+}
+
+.fac-comfort__intervention--critical {
+  border-color: var(--comfort-poor);
+  animation:
+    fac-comfort-fadeUp 0.35s ease 0.4s forwards,
+    fac-comfort-border-pulse 2.5s ease-in-out 1s infinite;
+}
+
+@keyframes fac-comfort-pill-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50%      { box-shadow: 0 0 10px 2px var(--comfort-poor); }
+}
+
+@keyframes fac-comfort-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(1.5); }
+}
+
+@keyframes fac-comfort-gap-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+@keyframes fac-comfort-border-pulse {
+  0%, 100% { border-color: var(--comfort-poor); }
+  50%      { border-color: rgba(251, 113, 133, 0.3); }
+}
+
+/* ═══ LIVING PROTOCOL: 6. EMPATÍA (Mode Responsive) ══════════ */
+
+[data-mode="calm"] .fac-comfort {
+  border-color: var(--color-teal-800);
+}
+
+[data-mode="alert"] .fac-comfort {
+  border-color: var(--color-amber-800);
+}
+
+[data-mode="critical"] .fac-comfort {
+  border-color: var(--color-rose-800);
+}
+
+/* ═══ REDUCED MOTION ═════════════════════════════════════════ */
+
+[data-prefers-reduced="true"] .fac-comfort__pill,
+[data-prefers-reduced="true"] .fac-comfort__kpi,
+[data-prefers-reduced="true"] .fac-comfort__dim,
+[data-prefers-reduced="true"] .fac-comfort__psych-card,
+[data-prefers-reduced="true"] .fac-comfort__intervention,
+[data-prefers-reduced="true"] .fac-comfort__gap,
+[data-prefers-reduced="true"] .fac-comfort__psych,
+[data-prefers-reduced="true"] .fac-comfort__radar-data {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+[data-reduced="true"] {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* ═══ HEADER ══════════════════════════════════════════════════ */
+
+.fac-comfort__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.fac-comfort__header-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-teal-400);
+  flex-shrink: 0;
+}
+
+.fac-comfort__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.fac-comfort__trend {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.fac-comfort__trend--improving {
+  color: var(--comfort-good);
+  background: rgba(45, 212, 191, 0.1);
+}
+
+.fac-comfort__trend--stable {
+  color: var(--color-silver-400);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.fac-comfort__trend--declining {
+  color: var(--comfort-poor);
+  background: rgba(251, 113, 133, 0.1);
+}
+
+.fac-comfort__narrative-badge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  cursor: help;
+}
+
+.fac-comfort__narrative-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-silver-500);
+}
+
+/* ═══ KPI STRIP ══════════════════════════════════════════════ */
+
+.fac-comfort__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+@media (max-width: 480px) {
+  .fac-comfort__kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.fac-comfort__kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-silver-800);
+}
+
+.fac-comfort__kpi-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.fac-comfort__kpi-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.fac-comfort__kpi-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.fac-comfort__kpi-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+}
+
+/* ═══ FACILITY STRIP ═════════════════════════════════════════ */
+
+.fac-comfort__strip {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-silver-700) transparent;
+}
+
+.fac-comfort__strip::-webkit-scrollbar {
+  height: 4px;
+}
+
+.fac-comfort__strip::-webkit-scrollbar-thumb {
+  background: var(--color-silver-700);
+  border-radius: 2px;
+}
+
+.fac-comfort__pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-silver-700);
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.fac-comfort__pill--all {
+  min-width: auto;
+}
+
+.fac-comfort__pill--active {
+  border-color: var(--color-teal-400);
+  background: rgba(45, 212, 191, 0.08);
+}
+
+.fac-comfort__pill--active.fac-comfort__pill--poor {
+  border-color: var(--comfort-poor);
+  background: rgba(251, 113, 133, 0.08);
+}
+
+.fac-comfort__pill--active.fac-comfort__pill--moderate {
+  border-color: var(--comfort-moderate);
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.fac-comfort__pill-name {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  color: var(--color-silver-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.fac-comfort__pill-score {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.fac-comfort__pill--excellent .fac-comfort__pill-score { color: var(--comfort-excellent); }
+.fac-comfort__pill--good .fac-comfort__pill-score { color: var(--comfort-good); }
+.fac-comfort__pill--moderate .fac-comfort__pill-score { color: var(--comfort-moderate); }
+.fac-comfort__pill--poor .fac-comfort__pill-score { color: var(--comfort-poor); }
+
+.fac-comfort__pill-alert {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--comfort-moderate);
+  margin-top: 2px;
+}
+
+.fac-comfort__pill--poor .fac-comfort__pill-alert {
+  background: var(--comfort-poor);
+}
+
+/* ═══ MAIN GRID ══════════════════════════════════════════════ */
+
+.fac-comfort__main {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+@media (max-width: 600px) {
+  .fac-comfort__main {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+/* ═══ RADAR ══════════════════════════════════════════════════ */
+
+.fac-comfort__radar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 180px;
+}
+
+.fac-comfort__radar-svg {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  overflow: visible;
+}
+
+.fac-comfort__radar-grid {
+  fill: none;
+  stroke: var(--color-silver-700);
+  stroke-width: 0.5;
+  opacity: 0.35;
+}
+
+.fac-comfort__radar-grid[data-outer] {
+  opacity: 0.5;
+}
+
+.fac-comfort__radar-axis {
+  stroke: var(--color-silver-700);
+  stroke-width: 0.5;
+  opacity: 0.25;
+}
+
+.fac-comfort__radar-data {
+  fill: var(--color-teal-400);
+  fill-opacity: 0.12;
+  stroke: var(--color-teal-400);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.fac-comfort__radar-dot {
+  stroke: var(--color-silver-900);
+  stroke-width: 1.5;
+}
+
+.fac-comfort__radar-dot[data-tone="excellent"] { fill: var(--comfort-excellent); }
+.fac-comfort__radar-dot[data-tone="good"] { fill: var(--comfort-good); }
+.fac-comfort__radar-dot[data-tone="moderate"] { fill: var(--comfort-moderate); }
+.fac-comfort__radar-dot[data-tone="poor"] { fill: var(--comfort-poor); }
+
+.fac-comfort__radar-label {
+  font-family: var(--font-display);
+  font-size: 7px;
+  fill: var(--color-silver-400);
+}
+
+/* ═══ DIMENSION BARS ═════════════════════════════════════════ */
+
+.fac-comfort__dims {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fac-comfort__dim {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fac-comfort__dim-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fac-comfort__dim-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.fac-comfort__dim-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.fac-comfort__dim-name {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  color: var(--color-silver-400);
+}
+
+.fac-comfort__dim-score {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.fac-comfort__dim-bar-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-silver-800);
+  overflow: hidden;
+}
+
+.fac-comfort__dim-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  width: var(--bar-pct, 0%);
+  background: var(--bar-color, var(--color-teal-400));
+  transition: width 0.5s ease;
+}
+
+.fac-comfort__dim-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.fac-comfort__dim-meta-item {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-500);
+}
+
+.fac-comfort__dim-meta-arrow {
+  font-size: 10px;
+  color: var(--color-silver-600);
+}
+
+.fac-comfort__dim-meta-gap {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.fac-comfort__dim-meta-gap[data-positive="true"] {
+  color: var(--comfort-good);
+}
+
+.fac-comfort__dim-meta-gap[data-positive="false"] {
+  color: var(--comfort-poor);
+}
+
+/* ═══ PSYCHOLOGICAL SECTION ══════════════════════════════════ */
+
+.fac-comfort__psych {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fac-comfort__psych-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.fac-comfort__psych-title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-silver-300);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.fac-comfort__psych-subtitle {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-silver-500);
+  font-style: italic;
+}
+
+.fac-comfort__psych-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-2);
+}
+
+.fac-comfort__psych-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-silver-800);
+  border-left: 3px solid var(--color-silver-700);
+}
+
+.fac-comfort__psych-card--high {
+  border-left-color: var(--comfort-good);
+}
+
+.fac-comfort__psych-card--medium {
+  border-left-color: var(--comfort-moderate);
+}
+
+.fac-comfort__psych-card--low {
+  border-left-color: var(--comfort-poor);
+}
+
+.fac-comfort__psych-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.fac-comfort__psych-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.fac-comfort__psych-name {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fac-comfort__psych-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.fac-comfort__psych-bar-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-silver-800);
+  overflow: hidden;
+}
+
+.fac-comfort__psych-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--bar-pct, 0%);
+  background: var(--bar-color, var(--color-teal-400));
+  transition: width 0.5s ease;
+}
+
+.fac-comfort__psych-factor {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.fac-comfort__psych-improvement {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--comfort-moderate);
+  line-height: 1.4;
+  margin: 0;
+  font-style: italic;
+}
+
+/* ═══ PERCEPTION GAP PANEL ═══════════════════════════════════ */
+
+.fac-comfort__gap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-silver-800);
+}
+
+.fac-comfort__gap-title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-silver-300);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.fac-comfort__gap-scores {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.fac-comfort__gap-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.fac-comfort__gap-score-label {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.fac-comfort__gap-score-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.fac-comfort__gap-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fac-comfort__gap-number {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-silver-300);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.fac-comfort__gap-number[data-critical="true"] {
+  color: var(--comfort-poor);
+  background: rgba(251, 113, 133, 0.1);
+}
+
+.fac-comfort__gap-bar-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-silver-800);
+  overflow: hidden;
+}
+
+.fac-comfort__gap-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+.fac-comfort__gap-desc {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-silver-400);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ═══ INTERVENTION PANEL ═════════════════════════════════════ */
+
+.fac-comfort__intervention {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid;
+}
+
+.fac-comfort__intervention--critical {
+  border-color: var(--comfort-poor);
+  background: rgba(251, 113, 133, 0.06);
+}
+
+.fac-comfort__intervention--high {
+  border-color: var(--comfort-moderate);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+.fac-comfort__intervention--medium {
+  border-color: var(--color-amber-400);
+  background: rgba(234, 179, 8, 0.04);
+}
+
+.fac-comfort__intervention--low {
+  border-color: var(--comfort-good);
+  background: rgba(45, 212, 191, 0.04);
+}
+
+.fac-comfort__intervention-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fac-comfort__intervention-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.fac-comfort__intervention-badge {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.fac-comfort__intervention-text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-silver-300);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.fac-comfort__intervention-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-teal-400);
+  background: rgba(45, 212, 191, 0.1);
+  color: var(--color-teal-400);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+
+.fac-comfort__intervention-btn-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ═══ NARRATIVE ══════════════════════════════════════════════ */
+
+.fac-comfort__narrative {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-silver-500);
+  line-height: 1.6;
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-silver-800);
+  font-style: italic;
+}
+
+/* ═══ INTERVENTION ALERT (aggregate) ═════════════════════════ */
+
+.fac-comfort__alert {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-amber-700);
+  background: rgba(251, 191, 36, 0.04);
+}
+
+.fac-comfort__alert[data-urgency="critical"] {
+  border-color: var(--color-rose-700);
+  background: rgba(251, 113, 133, 0.04);
+}
+
+.fac-comfort__alert-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-amber-400);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.fac-comfort__alert[data-urgency="critical"] .fac-comfort__alert-icon {
+  color: var(--color-rose-400);
+}
+
+.fac-comfort__alert-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fac-comfort__alert-title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+}
+
+.fac-comfort__alert-list {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.fac-comfort__alert-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid;
+}
+
+.fac-comfort__alert-urgency {
+  font-size: 9px;
+  opacity: 0.7;
+  text-transform: uppercase;
+}

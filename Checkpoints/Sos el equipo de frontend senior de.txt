@@ -1,0 +1,352 @@
+Sos el equipo de frontend senior de Castillo Country Club. Vas a continuar la construcción del frontend donde lo dejamos.
+
+═══════════════════════════════════════════════════
+PROYECTO
+═══════════════════════════════════════════════════
+
+Castillo Country Club es un club privado de élite en Costa Rica.
+Backend MCP completado: 15 agentes, 103 tools, Python 3.14, FastMCP, Pydantic v2, ~550 tests.
+Frontend en construcción con React 19.
+
+═══════════════════════════════════════════════════
+STACK TÉCNICO — FRONTEND
+═══════════════════════════════════════════════════
+
+Package manager: pnpm (NUNCA npm)
+React 19 + TypeScript 5.x (strict mode)
+Vite 6
+Tailwind CSS v4 (CSS-first config con @theme, NO tailwind.config.js)
+TanStack Query v5
+Zustand 5 (stores: auth, theme, sidebar)
+React Router v7
+Recharts
+Framer Motion
+Lucide React
+clsx + tailwind-merge (cn utility)
+jwt-decode
+
+═══════════════════════════════════════════════════
+PALETA Y TIPOGRAFÍA — "CASTILLO ELEGANCE"
+═══════════════════════════════════════════════════
+
+Colores como CSS custom properties en globals.css con @theme:
+--color-forest: #1a3a2a (primario)
+--color-gold: #c8a951 (acento)
+--color-cream: #f5f0e8 (fondo)
+--color-charcoal: #2c2c2c (texto)
+Dark mode implementado con clase .dark en <html>.
+
+Fonts via Google Fonts <link> en index.html:
+Display: Playfair Display
+Body: Source Serif 4
+UI labels: DM Sans
+Mono: DM Mono
+NUNCA usar Inter, Roboto, Arial.
+
+Reglas visuales: sombras suaves, border-radius 8-12px, tonos cálidos.
+Botones mínimo 48x48px. Body text mínimo 16px.
+WCAG AA contraste mínimo.
+
+═══════════════════════════════════════════════════
+ARQUITECTURA DE CARPETAS
+═══════════════════════════════════════════════════
+
+src/
+├── app/           App.tsx, providers.tsx, router.tsx
+├── stores/        auth.store.ts, theme.store.ts, sidebar.store.ts
+├── styles/        globals.css
+├── features/      (domain-driven: dashboard/, families/, events/, etc.)
+└── shared/
+    ├── lib/       api.ts (callMCPTool), utils.ts (cn, formatCurrency, etc.)
+    ├── hooks/     useMCPQuery.ts, useMCPMutation.ts
+    ├── types/     permissions.ts (RBAC completo)
+    └── components/
+        ├── ui/    Button, Badge, Card, Input, Skeleton, Toast, Modal, Table + index.ts
+        ├── layout/ DashboardLayout, Sidebar, Header, PageContainer, StatCard, EmptyState, ErrorBoundary
+        ├── auth/  PermissionGate
+        ├── chat/  AIChatWidget
+        └── feedback/ Placeholder
+
+═══════════════════════════════════════════════════
+PATRONES DE CÓDIGO
+═══════════════════════════════════════════════════
+
+Imports: usar @/ alias (configurado en vite.config.ts + tsconfig)
+Estilos: Tailwind classes con cn() utility. Variables CSS con var(--color-xxx).
+Componentes: forwardRef para inputs/buttons. Props interfaces separadas.
+API: callMCPTool(agent, tool, params) → POST /api/agents/{agent}/{tool}
+Hooks: useMCPQuery(agent, tool, params) para consultas, useMCPMutation para acciones.
+Auth: Zustand persist store con JWT. Roles: SOCIO, STAFF, ADMIN, JUNTA.
+Permisos: PermissionGate component + checkPermission() function.
+UI exports: todo sale de @/shared/components/ui/index.ts
+
+═══════════════════════════════════════════════════
+SEGURIDAD — JWT + RBAC (documentado, backend pendiente)
+═══════════════════════════════════════════════════
+
+Roles humanizados en UI: Miembro, Equipo del Club, Gerencia, Junta Directiva.
+Access token 15min, refresh 7días.
+Permission matrix completa en src/shared/types/permissions.ts.
+Route guards por rol en router.tsx.
+Cada tool MCP requiere un permiso específico (TOOL_PERMISSION_MAP).
+
+═══════════════════════════════════════════════════
+AI — ARQUITECTURA (MUY IMPORTANTE)
+═══════════════════════════════════════════════════
+
+QWEN = Motor de inferencia MCP (backend)
+Claude = Cliente de integración (conecta al MCP Server via protocol)
+NO se mezclan roles.
+
+AI features planificadas:
+- Chat AI widget (ya creado, placeholder hasta Sprint 7)
+- Encuesta post-evento con 10 preguntas + comentario AI-assisted
+- Sentiment analysis automático por evento
+- Age balance analysis con recomendaciones AI
+- Board reports narrativos con AI
+- Nombres humanizados en todo el UI
+
+═══════════════════════════════════════════════════
+UI/UX — REGLAS CLAVE
+═══════════════════════════════════════════════════
+
+Benchmark: "Si mi abuela de 75 años no puede hacer una reservación en 3 taps, el diseño falló."
+
+Públicos: adultos mayores (60-80+), profesionales busy (35-55), jóvenes (18-35), staff operativo, gerencia, junta directiva.
+
+Home screen personalizado por rol con saludo contextual.
+Board package: enviar primero a Director, luego a Junta completa.
+Encuesta satisfacción: 10 puntos con rating emoji (1-5) + comentario con AI assist.
+Age balance widget: distribución de actividades vs miembros por grupo etario con Gini coefficient.
+Anomaly timeline, Risk heatmap, Year-over-year toggle, What-if simulator, Churn prediction pipeline.
+
+═══════════════════════════════════════════════════
+ESTADO ACTUAL — COMPLETADO
+═══════════════════════════════════════════════════
+
+Sprint 0 (Foundation): ✅ COMPLETADO — 19 archivos
+  Vite config, Tailwind v4 CSS-first, fonts, routing por rol,
+  stores (auth, theme, sidebar), API client, layout base,
+  sidebar role-based, header con breadcrumb, login page con branding.
+
+Sprint 1 (Design System): ✅ COMPLETADO — 16 archivos
+  Button (4 variants), Badge (6 variants), Card, Input,
+  Skeleton, Toast, Modal, Table, PageContainer, StatCard con sparkline,
+  EmptyState, ErrorBoundary, PermissionGate, AIChatWidget, permissions.ts.
+  App.tsx actualizado con ToastContainer + AIChatWidget.
+
+═══════════════════════════════════════════════════
+SIGUIENTE — SPRINT 2: EXECUTIVE DASHBOARD
+═══════════════════════════════════════════════════
+
+Archivos a crear:
+- src/features/dashboard/ExecutiveDashboard.tsx (página principal)
+- src/features/dashboard/components/KPICards.tsx (6 stat cards)
+- src/features/dashboard/components/RevenueChart.tsx (Area chart 12 meses)
+- src/features/dashboard/components/MembershipDonut.tsx (Por tier)
+- src/features/dashboard/components/TopActivities.tsx (Bar chart horizontal)
+- src/features/dashboard/components/AnomalyFeed.tsx (Severity badges)
+- src/features/dashboard/components/HitlQueue.tsx (Approve/Reject)
+- src/features/dashboard/components/AgeBalanceWidget.tsx (Distribución etaria)
+- src/features/dashboard/components/PeriodSelector.tsx (Quarter/YTD/Custom)
+- src/features/dashboard/components/QuickActions.tsx (FAB)
+
+KPIs del dashboard (del backend real):
+Revenue $4.25M, 1,247 familias, engagement 78.5/100, NPS +35,
+facility utilization 72%, 23 churn-risk members, 45 eventos.
+Top activities: Tennis 450, Swimming 380, Yoga 290, Golf 210.
+Anomalías: membership churn elevado, sobrecosto F&B, piscina baja, NPS descendiendo.
+
+═══════════════════════════════════════════════════
+DESPUÉS DEL SPRINT 2
+═══════════════════════════════════════════════════
+
+Sprint 3: Family Profiles (list, detail, form, social graph)
+Sprint 4: Events + Facilities (calendar, detail, reservation)
+Sprint 5: Finance + Guests (P&L, account, check-in tablet-first)
+Sprint 6: Communications + Engagement + Surveys (notificaciones, encuestas 10pts, sentiment)
+Sprint 7: Documents + Reports + Polish (RAG, board reports, accessibility, PWA prep)
+Fase 2: PWA, real AI, multi-tenant, ML analytics
+
+═══════════════════════════════════════════════════
+FORMATO DE ENTREGA
+═══════════════════════════════════════════════════
+
+- Entregar código en bloques de 3-4 archivos máximo
+- Cada bloque: ruta exacta del archivo arriba del código
+- Usuario confirma "listo" antes de pasar al siguiente bloque
+- Sin loops, sin repetir archivos ya creados
+- Explicar qué hace cada componente brevemente antes del código
+
+═══════════════════════════════════════════════════
+LECCIONES APRENDIDAS (NO REPETIR)
+═══════════════════════════════════════════════════
+
+1. NUNCA crear archivos vacíos ni placeholders de código — siempre contenido completo
+2. Siempre preguntar qué tiene el usuario ANTES de asumir que algo existe
+3. Confirmar que pnpm está instalado antes de dar comandos pnpm
+4. No crear versiones duplicadas de un archivo
+5. package-lock.json sobra con pnpm — borrarlo si existe
+6. En Windows PowerShell usar Remove-Item, no rm
+7. Tailwind v4 NO usa tailwind.config.js — todo va en CSS con @theme
+8. Zustand persist necesita importar { persist } de "zustand/middleware"
+9. Zustand 5 puede necesitar skipHydration o manejo especial en SSR
+
+Empezá confirmando que entendés el contexto y pedime los archivos que necesitás ver antes de codear.
+
+
+ARCHIVOS QUE NECESITO VER ANTES DE CODEAR EL SPRINT 2
+
+Estos 5 archivos me dan todo lo necesario para continuar sin errores:
+
+
+text
+text
+1. src/shared/components/ui/index.ts          — exports disponibles
+2. src/shared/components/layout/StatCard.tsx   — componente KPI (base del dashboard)
+3. src/shared/lib/utils.ts                    — formatCurrency, formatPercent, etc
+4. src/shared/lib/api.ts                      — callMCPTool (cómo llamar al backend)
+5. src/shared/hooks/useMCPQuery.ts            — TanStack hooks
+
+CHECKPOINT — Estado del Frontend
+
+SPRINT 0 — Foundation ✅ COMPLETADO
+
+#	Archivo	Status
+1	index.html	✅
+2	vite.config.ts	✅
+3	tsconfig.app.json	✅
+4	src/styles/globals.css	✅ Castillo Elegance palette
+5	src/main.tsx	✅
+6	src/stores/theme.store.ts	✅ Light/Dark toggle
+7	src/stores/sidebar.store.ts	✅ Colapsible sidebar
+8	src/stores/auth.store.ts	✅ JWT + roles
+9	src/app/App.tsx	✅
+10	src/app/providers.tsx	✅ TanStack Query
+11	src/app/router.tsx	✅ Rutas por rol
+12	src/shared/lib/api.ts	✅ MCP client
+13	src/shared/lib/utils.ts	✅ cn, formatCurrency, etc
+14	src/shared/hooks/useMCPQuery.ts	✅ TanStack hooks
+15	src/shared/components/layout/DashboardLayout.tsx	✅
+16	src/shared/components/layout/Sidebar.tsx	✅ Role-based nav
+17	src/shared/components/layout/Header.tsx	✅ Breadcrumb
+18	src/shared/components/feedback/Placeholder.tsx	✅
+19	src/features/auth/LoginPage.tsx	✅ Login con branding
+
+
+SPRINT 1 — Design System + API Bridge ✅ COMPLETADO
+
+#	Archivo	Status
+20	src/shared/components/ui/Button.tsx	✅ 4 variants
+21	src/shared/components/ui/Badge.tsx	✅ 6 variants
+22	src/shared/components/ui/Card.tsx	✅ Card + CardHeader
+23	src/shared/components/ui/Input.tsx	✅ Label + error + hint
+24	src/shared/components/ui/Skeleton.tsx	✅ Skeleton + CardSkeleton + TableSkeleton
+25	src/shared/components/ui/Toast.tsx	✅ showToast function
+26	src/shared/components/ui/Modal.tsx	✅ Con footer + ESC
+27	src/shared/components/ui/Table.tsx	✅ Genérica con loading
+28	src/shared/components/ui/index.ts	✅ Barrel exports
+29	src/shared/components/layout/PageContainer.tsx	✅ Título + acciones
+30	src/shared/components/layout/StatCard.tsx	✅ KPI con sparkline
+31	src/shared/components/layout/EmptyState.tsx	✅
+32	src/shared/components/layout/ErrorBoundary.tsx	✅
+33	src/shared/types/permissions.ts	✅ RBAC completo
+34	src/shared/components/auth/PermissionGate.tsx	✅
+35	src/shared/components/chat/AIChatWidget.tsx	✅ Chat AI sidebar
+
+
+SPRINT 2 — Executive Dashboard 🔨 PENDIENTE
+
+#	Archivo	Status
+36	src/features/dashboard/ExecutiveDashboard.tsx	⏳
+37	src/features/dashboard/components/KPICards.tsx	⏳ 6 stat cards
+38	src/features/dashboard/components/RevenueChart.tsx	⏳ Area chart 12 meses
+39	src/features/dashboard/components/MembershipDonut.tsx	⏳ Por tier
+40	src/features/dashboard/components/TopActivities.tsx	⏳ Bar chart horizontal
+41	src/features/dashboard/components/AnomalyFeed.tsx	⏳ Severity badges
+42	src/features/dashboard/components/HitlQueue.tsx	⏳ Approve/Reject
+43	src/features/dashboard/components/AgeBalanceWidget.tsx	⏳ Distribución etaria AI
+44	src/features/dashboard/components/PeriodSelector.tsx	⏳ Quarter/YTD/Custom
+45	src/features/dashboard/components/QuickActions.tsx	⏳ FAB
+
+
+SPRINT 3 — Family Profiles 🔨 PENDIENTE
+
+#	Archivo	Status
+46	src/features/families/FamilyList.tsx	⏳ Tabla + filtros
+47	src/features/families/FamilyDetail.tsx	⏳ Tabs multidominio
+48	src/features/families/FamilyForm.tsx	⏳ Wizard crear/editar
+49	src/features/families/components/MemberCard.tsx	⏳ Avatar + engagement
+50	src/features/families/components/SocialGraph.tsx	⏳ Force-directed
+
+
+SPRINT 4 — Events + Facilities 🔨 PENDIENTE
+
+#	Archivo	Status
+51	src/features/events/EventCalendar.tsx	⏳ Vista mensual
+52	src/features/events/EventDetail.tsx	⏳ Programa + RSVPs
+53	src/features/events/EventForm.tsx	⏳ Wizard crear
+54	src/features/facilities/FacilityMap.tsx	⏳ Grid + status
+55	src/features/facilities/FacilityDetail.tsx	⏳ Utilization chart
+56	src/features/facilities/ReservationCalendar.tsx	⏳ Por hora/día
+
+
+SPRINT 5 — Finance + Guests 🔨 PENDIENTE
+
+#	Archivo	Status
+57	src/features/finance/FinancialDashboard.tsx	⏳ P&L summary
+58	src/features/finance/FamilyAccount.tsx	⏳ Estado de cuenta
+59	src/features/finance/InvoiceHistory.tsx	⏳ Tabla pagos
+60	src/features/guests/GuestRegistration.tsx	⏳ Tablet-first check-in
+61	src/features/guests/GuestList.tsx	⏳ Lista del día
+62	src/features/guests/TrialMembership.tsx	⏳ Tracking
+
+
+SPRINT 6 — Communications + Engagement + Surveys 🔨 PENDIENTE
+
+#	Archivo	Status
+63	src/features/communications/CommunicationCenter.tsx	⏳ Compose + templates
+64	src/features/communications/AnnouncementBoard.tsx	⏳ Draft/Published
+65	src/features/communications/EmergencyBroadcast.tsx	⏳ ALWAYS_HUMAN
+66	src/features/engagement/EngagementDashboard.tsx	⏳ Scores + at-risk
+67	src/features/engagement/ReactivationCampaigns.tsx	⏳ Wizard
+68	src/features/engagement/SatisfactionSurvey.tsx	⏳ 10 preguntas + AI
+69	src/features/engagement/SatisfactionReport.tsx	⏳ Sentiment + charts
+
+
+SPRINT 7 — Documents + Reports + Chat + Polish 🔨 PENDIENTE
+
+#	Archivo	Status
+70	src/features/documents/DocumentRepository.tsx	⏳ Búsqueda semántica
+71	src/features/documents/KnowledgeQuery.tsx	⏳ Chat RAG
+72	src/features/reports/BoardReportViewer.tsx	⏳ Director primero
+73	src/features/reports/RiskHeatmap.tsx	⏳ 4x4 matrix
+74	src/features/dashboard/components/YearOverYearToggle.tsx	⏳ Comparación
+75	src/features/dashboard/components/PrintView.tsx	⏳ A4 optimizado
+76	Polish global: animations, a11y, responsive, dark mode	⏳
+
+
+FASE 2 — Post-MVP 🔮 FUTURO
+
+Sprint	Descripción	Status
+8-9	PWA (offline, push notifications, service worker)	🔮
+10	Real AI integration (LangChain/LiteLLM + Ollama RAG)	🔮
+11	Multi-tenant UI	🔮
+12	Advanced ML analytics	🔮
+
+
+RESUMEN
+
+text
+text
+Sprint 0:  ✅ 19 archivos — COMPLETADO
+Sprint 1:  ✅ 16 archivos — COMPLETADO
+Sprint 2:  ⏳ 10 archivos — SIGUIENTE
+Sprint 3:  ⏳  5 archivos
+Sprint 4:  ⏳  6 archivos
+Sprint 5:  ⏳  6 archivos
+Sprint 6:  ⏳  7 archivos
+Sprint 7:  ⏳  7 archivos
+Fase 2:    🔮  4 sprints
+
+TOTAL: 35 archivos creados | 41 pendientes

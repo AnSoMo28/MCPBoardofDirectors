@@ -1,0 +1,900 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   RecAutonomousQueue — Glass namespace .glass-raq
+   Keyframes prefix: raq*
+
+   AI-prioritized action queue with readiness indicators.
+   Cards sorted by readiness then impact. Dependency visualization.
+   Act mode hero component.
+
+   Attributes: data-empty, data-mode, data-readiness, data-priority,
+               data-signal-source, data-variant
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ─────────────────────────────────────────────────────────────── */
+
+.glass-raq {
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.raq-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+}
+
+.raq-header[data-mode="act"] {
+  background: rgba(244, 63, 94, 0.04);
+  border-bottom-color: rgba(244, 63, 94, 0.15);
+}
+
+.raq-header-icon {
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+}
+
+.raq-header[data-mode="act"] .raq-header-icon {
+  color: var(--color-rose-400);
+}
+
+.raq-header-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.raq-header-count {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 0.375rem;
+  border-radius: 999px;
+  background: rgba(232, 197, 71, 0.12);
+  color: var(--color-gold-400);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.raq-header[data-mode="act"] .raq-header-count {
+  background: rgba(244, 63, 94, 0.1);
+  color: var(--color-rose-400);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.raq-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.raq-empty-icon {
+  color: var(--color-emerald-400);
+  opacity: 0.5;
+}
+
+.raq-empty-text {
+  font-size: 0.875rem;
+  color: var(--color-silver-500);
+  max-width: 320px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SUMMARY STRIP — Readiness counts
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.raq-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.raq-summary::-webkit-scrollbar {
+  display: none;
+}
+
+.raq-summary-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  line-height: 1;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  white-space: nowrap;
+}
+
+.raq-summary-item svg {
+  flex-shrink: 0;
+}
+
+.raq-summary-value {
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-variant-numeric: tabular-nums;
+}
+
+.raq-summary-label {
+  color: var(--color-silver-500);
+  font-weight: 400;
+}
+
+/* ── Summary readiness colors ─────────────────────────────────────────── */
+
+.raq-summary-item[data-readiness="ready"] {
+  border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.raq-summary-item[data-readiness="ready"] svg {
+  color: var(--color-emerald-400);
+}
+
+.raq-summary-item[data-readiness="ready"] .raq-summary-value {
+  color: var(--color-emerald-400);
+}
+
+.raq-summary-item[data-readiness="awaiting_approval"] {
+  border-color: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.04);
+}
+
+.raq-summary-item[data-readiness="awaiting_approval"] svg {
+  color: var(--color-amber-400);
+}
+
+.raq-summary-item[data-readiness="awaiting_approval"] .raq-summary-value {
+  color: var(--color-amber-400);
+}
+
+.raq-summary-item[data-readiness="conflict_blocked"] {
+  border-color: rgba(244, 63, 94, 0.2);
+  background: rgba(244, 63, 94, 0.04);
+}
+
+.raq-summary-item[data-readiness="conflict_blocked"] svg {
+  color: var(--color-rose-400);
+}
+
+.raq-summary-item[data-readiness="conflict_blocked"] .raq-summary-value {
+  color: var(--color-rose-400);
+}
+
+.raq-summary-item[data-readiness="data_pending"] {
+  border-color: var(--color-border-subtle);
+  background: var(--color-surface-2);
+}
+
+.raq-summary-item[data-readiness="data_pending"] svg {
+  color: var(--color-silver-400);
+}
+
+.raq-summary-item[data-readiness="data_pending"] .raq-summary-value {
+  color: var(--color-silver-300);
+}
+
+.raq-summary-item[data-readiness="avg"] {
+  margin-left: auto;
+  border-color: var(--color-border-subtle);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BODY — Action cards
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.raq-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ACTION CARD
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.raq-card {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  opacity: 0;
+  animation: raqCardReveal 0.4s ease forwards;
+  animation-delay: var(--card-delay, 0ms);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.raq-card:hover {
+  border-color: var(--color-border-default);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Readiness left border ────────────────────────────────────────────── */
+
+.raq-card[data-readiness="ready"] {
+  border-left: 3px solid var(--color-emerald-400);
+}
+
+.raq-card[data-readiness="awaiting_approval"] {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+.raq-card[data-readiness="data_pending"] {
+  border-left: 3px solid var(--color-silver-500);
+}
+
+.raq-card[data-readiness="conflict_blocked"] {
+  border-left: 3px solid var(--color-rose-400);
+}
+
+/* ── Card header ──────────────────────────────────────────────────────── */
+
+.raq-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  background: var(--color-surface-1);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.raq-readiness-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.raq-readiness-pill[data-readiness="ready"] {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-emerald-400);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.raq-readiness-pill[data-readiness="awaiting_approval"] {
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--color-amber-400);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.raq-readiness-pill[data-readiness="data_pending"] {
+  background: var(--color-surface-2);
+  color: var(--color-silver-400);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.raq-readiness-pill[data-readiness="conflict_blocked"] {
+  background: rgba(244, 63, 94, 0.06);
+  color: var(--color-rose-400);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+.raq-priority-badge {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.raq-priority-badge[data-priority="urgent"] {
+  color: var(--color-rose-400);
+}
+
+.raq-priority-badge[data-priority="high"] {
+  color: var(--color-amber-400);
+}
+
+.raq-priority-badge[data-priority="medium"] {
+  color: var(--color-silver-300);
+}
+
+.raq-priority-badge[data-priority="low"] {
+  color: var(--color-silver-500);
+}
+
+.raq-impact-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 6px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.raq-impact-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-variant-numeric: tabular-nums;
+}
+
+.raq-impact-label {
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Card body ────────────────────────────────────────────────────────── */
+
+.raq-card-body {
+  padding: 0.75rem 0.875rem;
+}
+
+.raq-card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  margin: 0 0 0.25rem;
+  line-height: 1.3;
+}
+
+.raq-card-desc {
+  font-size: 0.8125rem;
+  color: var(--color-silver-400);
+  margin: 0 0 0.375rem;
+  line-height: 1.5;
+}
+
+.raq-card-impact-desc {
+  font-size: 0.75rem;
+  color: var(--color-emerald-400);
+  margin: 0 0 0.5rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ── Domain tags ──────────────────────────────────────────────────────── */
+
+.raq-card-domains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.raq-domain-tag {
+  display: inline-flex;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.raq-domain-tag[data-signal-source="wellness"] {
+  color: var(--color-emerald-400);
+  border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.raq-domain-tag[data-signal-source="events"] {
+  color: var(--color-teal-400);
+  border-color: rgba(20, 184, 166, 0.25);
+  background: rgba(20, 184, 166, 0.04);
+}
+
+.raq-domain-tag[data-signal-source="finance"] {
+  color: var(--color-gold-400);
+  border-color: rgba(232, 197, 71, 0.25);
+  background: rgba(232, 197, 71, 0.04);
+}
+
+.raq-domain-tag[data-signal-source="sports"] {
+  color: var(--color-terracotta-400);
+  border-color: rgba(232, 121, 71, 0.25);
+  background: rgba(232, 121, 71, 0.04);
+}
+
+.raq-domain-tag[data-signal-source="families"] {
+  color: var(--color-sage-400);
+  border-color: rgba(134, 184, 134, 0.25);
+  background: rgba(134, 184, 134, 0.04);
+}
+
+.raq-domain-tag[data-signal-source="internal"] {
+  color: var(--color-silver-400);
+  border-color: var(--color-border-subtle);
+  background: var(--color-surface-2);
+}
+
+/* ── Dependencies ─────────────────────────────────────────────────────── */
+
+.raq-dependencies {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  padding: 0.375rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.04);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  margin-bottom: 0.375rem;
+}
+
+.raq-dep-icon {
+  color: var(--color-amber-400);
+  flex-shrink: 0;
+}
+
+.raq-dep-label {
+  font-size: 0.625rem;
+  color: var(--color-amber-400);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.raq-dep-chip {
+  display: inline-flex;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  color: var(--color-silver-300);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* ── Blocks indicator ─────────────────────────────────────────────────── */
+
+.raq-blocks-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  color: var(--color-teal-400);
+  padding: 0.25rem 0;
+}
+
+.raq-blocks-indicator svg {
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CARD FOOTER — Impact bar + action buttons
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.raq-card-footer {
+  padding: 0.5rem 0.875rem 0.625rem;
+  border-top: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ── Impact bar ───────────────────────────────────────────────────────── */
+
+.raq-impact-bar {
+  flex: 1;
+  max-width: 120px;
+}
+
+.raq-impact-bar-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+
+.raq-impact-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0;
+  animation: raqImpactGrow 0.6s ease forwards;
+  animation-delay: var(--bar-delay, 0ms);
+  background: var(--color-gold-400);
+}
+
+.raq-card[data-readiness="ready"] .raq-impact-bar-fill {
+  background: var(--color-emerald-400);
+}
+
+.raq-card[data-readiness="conflict_blocked"] .raq-impact-bar-fill {
+  background: var(--color-rose-400);
+}
+
+@keyframes raqImpactGrow {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--impact-pct, 50%);
+  }
+}
+
+/* ── Action buttons ───────────────────────────────────────────────────── */
+
+.raq-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.raq-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.raq-action-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.raq-action-btn:active {
+  transform: translateY(0);
+}
+
+.raq-action-btn[data-variant="execute"] {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-emerald-400);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.raq-action-btn[data-variant="execute"]:hover {
+  background: rgba(16, 185, 129, 0.18);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+  transform: translateY(-1px);
+}
+
+.raq-action-btn[data-variant="approve"] {
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--color-amber-400);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.raq-action-btn[data-variant="approve"]:hover {
+  background: rgba(245, 158, 11, 0.15);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.12);
+  transform: translateY(-1px);
+}
+
+.raq-blocked-label,
+.raq-pending-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  color: var(--color-silver-500);
+}
+
+.raq-blocked-label svg {
+  color: var(--color-rose-400);
+}
+
+.raq-pending-label svg {
+  color: var(--color-silver-400);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   QUICK EXECUTE BAR — Act mode only
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.raq-quick-execute {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-top: 1px solid var(--color-border-subtle);
+  background: rgba(244, 63, 94, 0.04);
+  font-size: 0.8125rem;
+  color: var(--color-silver-300);
+}
+
+.raq-quick-execute svg {
+  color: var(--color-amber-400);
+  flex-shrink: 0;
+}
+
+.raq-execute-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-left: auto;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-rose-400);
+  background: rgba(244, 63, 94, 0.1);
+  color: var(--color-rose-400);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.raq-execute-all-btn:hover {
+  background: rgba(244, 63, 94, 0.18);
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.15);
+}
+
+.raq-execute-all-btn:focus-visible {
+  outline: 2px solid var(--color-rose-400);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   EXPAND BUTTON
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.raq-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px dashed var(--color-border-subtle);
+  background: transparent;
+  color: var(--color-silver-400);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.raq-expand-btn:hover {
+  background: var(--color-surface-1);
+  color: var(--color-silver-200);
+  border-color: var(--color-border-default);
+}
+
+.raq-expand-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes raqCardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: light) {
+  .glass-raq {
+    background: #ffffff;
+    border-color: #e8e5df;
+  }
+
+  .raq-header {
+    background: #f8f7f4;
+    border-bottom-color: #e8e5df;
+  }
+
+  .raq-header[data-mode="act"] {
+    background: rgba(225, 29, 72, 0.03);
+    border-bottom-color: rgba(225, 29, 72, 0.12);
+  }
+
+  .raq-header-title {
+    color: #1a1814;
+  }
+
+  .raq-header-count {
+    background: rgba(180, 150, 50, 0.1);
+    color: #b49632;
+  }
+
+  .raq-header[data-mode="act"] .raq-header-count {
+    background: rgba(225, 29, 72, 0.08);
+    color: #e11148;
+  }
+
+  .raq-empty-icon {
+    color: #059669;
+  }
+
+  .raq-empty-text {
+    color: #8a8580;
+  }
+
+  .raq-summary {
+    background: #f8f7f4;
+    border-bottom-color: #e8e5df;
+  }
+
+  .raq-summary-item {
+    background: #ffffff;
+    border-color: #e8e5df;
+  }
+
+  .raq-summary-value {
+    color: #1a1814;
+  }
+
+  .raq-summary-label {
+    color: #8a8580;
+  }
+
+  .raq-card {
+    border-color: #e8e5df;
+  }
+
+  .raq-card:hover {
+    border-color: #d4d0c8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .raq-card-header {
+    background: #f8f7f4;
+    border-bottom-color: #e8e5df;
+  }
+
+  .raq-card-title {
+    color: #1a1814;
+  }
+
+  .raq-card-desc {
+    color: #6b6560;
+  }
+
+  .raq-card-impact-desc {
+    color: #059669;
+  }
+
+  .raq-impact-score {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+  }
+
+  .raq-impact-value {
+    color: #1a1814;
+  }
+
+  .raq-dependencies {
+    background: rgba(217, 119, 6, 0.04);
+    border-color: rgba(217, 119, 6, 0.15);
+  }
+
+  .raq-dep-label {
+    color: #d97706;
+  }
+
+  .raq-dep-chip {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+    color: #4a4540;
+  }
+
+  .raq-blocks-indicator {
+    color: #0d9488;
+  }
+
+  .raq-card-footer {
+    border-top-color: #e8e5df;
+  }
+
+  .raq-impact-bar-track {
+    background: #f0ece4;
+  }
+
+  .raq-action-btn[data-variant="execute"] {
+    background: rgba(5, 150, 105, 0.08);
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.25);
+  }
+
+  .raq-action-btn[data-variant="execute"]:hover {
+    background: rgba(5, 150, 105, 0.14);
+  }
+
+  .raq-action-btn[data-variant="approve"] {
+    background: rgba(217, 119, 6, 0.06);
+    color: #d97706;
+    border-color: rgba(217, 119, 6, 0.2);
+  }
+
+  .raq-action-btn[data-variant="approve"]:hover {
+    background: rgba(217, 119, 6, 0.12);
+  }
+
+  .raq-quick-execute {
+    background: rgba(225, 29, 72, 0.03);
+    border-top-color: #e8e5df;
+    color: #4a4540;
+  }
+
+  .raq-quick-execute svg {
+    color: #d97706;
+  }
+
+  .raq-execute-all-btn {
+    border-color: #e11148;
+    background: rgba(225, 29, 72, 0.06);
+    color: #e11148;
+  }
+
+  .raq-execute-all-btn:hover {
+    background: rgba(225, 29, 72, 0.12);
+  }
+
+  .raq-expand-btn {
+    border-color: #e8e5df;
+    color: #6b6560;
+  }
+
+  .raq-expand-btn:hover {
+    background: #f0ece4;
+    color: #4a4540;
+    border-color: #d4d0c8;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .raq-card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .raq-impact-bar-fill {
+    animation: none;
+    width: var(--impact-pct, 50%);
+  }
+
+  .raq-action-btn:hover {
+    transform: none;
+  }
+}

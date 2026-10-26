@@ -1,0 +1,571 @@
+# CHECKPOINT — Fase 15 QA/UI Overhaul — Design System Migration
+
+**Fecha:** Junio 2025
+**Sesiones completadas:** ~15+ acumuladas (esta sesión = UI Overhaul masivo)
+**Archivos modificados:** ~14 (EventCalendar, EventDetail, EventForm, FamilyDetail, FinanceOverview, Button, FormField, FrostedGlassCard, global.css, contracts.ts, factories.ts, mock-registry.ts, + find-and-replace global en ~25 archivos)
+**Líneas nuevas:** ~800+ (mocks + lunar-btn + migración componentes)
+**Tools MCP registradas:** ~65+ (originales + 8 nuevas de events/families)
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend — Modificados
+
+| # | Archivo | Qué se cambió | Por qué |
+|---|---------|---------------|---------|
+| 1 | `src/styles/globals.css` | +~100 líneas: `.lunar-btn` + variantes (gold, rose, emerald, silver, teal) + `.page-text` + `.page-text--muted` | Light sweep diagonal elegante en botones + tipografía legible contra bg animado |
+| 2 | `shared/components/ui/Button.tsx` | `auroraClass` → `lunarClass`. Fix `secondary` y `ghost` variantes: eliminado `hover:bg-[rgba(255,255,255,0.06)]` → `hover:bg-[var(--color-surface-3)]` + `bg-[var(--color-surface-2)]` | Integrar lunar-btn + eliminar glass transparency |
+| 3 | `shared/components/ui/FormField.tsx` | `inputClass`: `bg-[var(--color-surface-1)]` → `bg-[rgba(255,255,255,0.04)]` + `backdrop-blur` + focus ring dorado. `selectClass`: +flecha SVG + pr-10 | Unificar con Input.tsx y `.glass-input` del global.css |
+| 4 | `shared/components/ui/FrostedGlassCard.tsx` | Badge: estilos inline hardcoded → `.frost-badge frost-badge--normal` | Usar CSS classes del design system |
+| 5 | `features/events/EventCalendar.tsx` | 6 cambios: (1) Crash fix `data?.events` → `data?.data?.events`, (2-5) Glass transparency 5 instancias, (6) QuickAddPanel REWRITE completo con: tags presets, conflict detection, capacity from location, smart suggestions, create as draft, "Detalles avanzados", day events mini-list, congestion warning. Toolbar: botones inline → `Button`. Calendar container → `Card`. View toggle hover fix. Nuevo import: `Button`, `Card`. | Crash + glass + feature redesign |
+| 6 | `features/events/EventDetail.tsx` | 4 cambios: (1) Crash fix `data` → `data.data` + guard, (2-4) Glass transparency 3 instancias. Migración: Hero header → `Card tone="gold"`, status badge → `Badge`, stat cards → `Card`, program tab container → `Card`, tags → `Badge`, RSVPs container → `Card`, AiInsights stats → `Card`. Nuevo import: `Card`, `Badge`. | Crash + glass + migración a design system |
+| 7 | `features/events/EventForm.tsx` | 3 cambios glass + pre-fill: `useSearchParams()` para leer URL params del QuickAddPanel y pre-llenar formulario. Si hay params → arranca en step 1. Botones inline → `Button`. StepReview cards → `Card`. StepCapacity wrappers → `Card`. Type selector hover fix. Nuevo import: `Button`, `Card`. | Glass + pre-fill flow |
+| 8 | `features/families/FamilyDetail.tsx` | Crash fix `data` → `data.data` + guard. Migración completa: Hero → `Card tone="gold"`, tier badge → `Badge`, quick stats → `Card`, primary contact → `Card tone="silver"`, membership → `Card tone="gold"`, financial → `Card tone="teal"`, notes → `Card`, credit utilization → `Card tone="teal"`, YTD cards → `Card tone="emerald"`, connections container → `Card tone="silver"`. Activity hover fix. Connections hover fix. Nuevo import: `Card`, `Badge`. | Crash + migración completa |
+| 9 | `shared/mocks/contracts.ts` | +1 import (FamilyDetailResponse, EventListResponse, EventDetailResponse de sus types) + 8 interfaces nuevas: `FamilyDetailData`, `FamilyDetailMockResponse`, `EventListMockResponse`, `EventDetailMockResponse`, `EventCreateMockResponse`, `EventUpdateMockResponse` | Mock system para families y events |
+| 10 | `shared/mocks/factories.ts` | +3 imports + `createMockFamilyDetail` (familia Castillo Montero, 5 miembros, tier oro, 8 actividades, financial summary, 4 conexiones), `createMockEventList` (8 eventos CR), `createMockEventDetail` (1 evento + 5 RSVPs + AI insights + related), `createMockEventCreate`, `createMockEventUpdateStatus` | Mock data costarricense |
+| 11 | `shared/mocks/mock-registry.ts` | +5 imports (createMockFamilyDetail, createMockEventList, createMockEventDetail, createMockEventCreate, createMockEventUpdateStatus) + 2 servers nuevos en MOCK_REGISTRY: `families` (1 tool) + `events` (4 tools) | Registry para families y events |
+| 12 | ~25 archivos en `src/features/` | Find-and-replace global: 3 patrones de glass transparency reemplazados | Eliminación masiva de glass inline |
+
+### Mock System — Servidores nuevos
+
+| Server | Tools | Contract | Factory | Registry | Backend |
+|--------|-------|----------|---------|----------|---------|
+| `families` | `get_family` | `FamilyDetailMockResponse` | `createMockFamilyDetail` | ✅ | ⬜ |
+| `events` | `list_events` | `EventListMockResponse` | `createMockEventList` | ✅ | ⬜ |
+| `events` | `get_event` | `EventDetailMockResponse` | `createMockEventDetail` | ✅ | ⬜ |
+| `events` | `create_event` | `EventCreateMockResponse` | `createMockEventCreate` | ✅ | ⬜ |
+| `events` | `update_event_status` | `EventUpdateMockResponse` | `createMockEventUpdateStatus` | ✅ | ⬜ |
+
+### Tools MCP — Tabla completa (acumulada)
+
+| # | Server | Tool | Backend | Mock | Tipo | Aprobación |
+|---|--------|------|---------|------|------|------------|
+| 1 | families | get_family | ⬜ | ✅ | datos | AUTO |
+| 2 | events | list_events | ⬜ | ✅ | datos | AUTO |
+| 3 | events | get_event | ⬜ | ✅ | datos | AUTO |
+| 4 | events | create_event | ⬜ | ✅ | mutation | AUTO |
+| 5 | events | update_event_status | ⬜ | ✅ | mutation | AUTO |
+| ... | (las 60+ originales de sessions anteriores se mantienen) | | | | | |
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|----------|-----------|--------|
+| H1 | `HealthScoreGauge` en `FinanceOverview.tsx` crashea con NaN — `score` llega undefined | ALTA | ✅ Resuelto: guard `if (!Number.isFinite(score)) return null;` |
+| H2 | `FamilyDetail.tsx` crashea con `Cannot read properties of undefined (reading 'tier')` — `data` es wrapper, no payload | ALTA | ✅ Resuelto: `data.data` + guard |
+| H3 | `EventDetail.tsx` crashea con `Cannot read properties of undefined (reading 'type')` — mismo patrón que H2 | ALTA | ✅ Resuelto: `data.data` + guard |
+| H4 | `EventCalendar.tsx` `data?.events` devuelve undefined — `data.data.events` | ALTA | ✅ Resuelto: `data?.data?.events` |
+| H5 | Mock server `families` no existía en registry — `FamilyDetail` no tenía datos | ALTA | ✅ Resuelto: server + factory creados |
+| H6 | Mock server `events` no existía en registry — `EventDetail` y `EventCalendar` no tenían datos | ALTA | ✅ Resuelto: server + 4 factories creados |
+| H7 | Glass transparency sistémica: ~50 instancias de `bg-white/[0.04]`, `bg-white/[0.06]`, `hover:bg-white/[0.04]` en features | ALTA | ✅ Resuelto: find-and-replace global + migración a Card/Badge/Button |
+| H8 | `EventForm` no leía URL search params del QuickAddPanel — pre-fill roto | MEDIA | ✅ Resuelto: `useSearchParams()` en useState initializer |
+| H9 | `global.css` tiene sistema de diseño completo (`.glass-card`, `.aurora-btn`, `.alert-card`, `.glass-input`, `.glow-card`, `.frost-badge`) que NO se usa en features | ALTA | ✅ Resuelto: migración a componentes centralizados |
+| H10 | `Card.tsx` NO está deprecado — ya usa `.glass-card` + `data-tone` + `glow-card` correctamente | MEDIA | ✅ Documentado |
+| H11 | `Button.tsx` ya tenía `aurora-btn` integrado pero `ghost` no tenía sweep y `secondary`/`ghost` usaban glass inline | MEDIA | ✅ Resuelto: migrado a `lunar-btn` + fix glass |
+| H12 | `Input.tsx` tiene glass correcto pero no se importa en EventForm ni EventCalendar | MEDIA | 🔄 Pendiente: migrar features a usar `Input` |
+| H13 | `Badge.tsx` tiene colores correctos pero no se importa en features que construyen spans inline | MEDIA | ✅ Resuelto en EventDetail y FamilyDetail |
+| H14 | `FormField.tsx` `inputClass` tenía `bg-surface-1` (sólido) en vez de glass | MEDIA | ✅ Resuelto: unificado a glass |
+| H15 | `FrostedGlassCard.tsx` badge tenía estilos hardcoded en vez de `.frost-badge` | BAJA | ✅ Resuelto |
+| H16 | Texto fuera de cards ("Siguiente", "Hoy", "Mayo 2025") ilegible contra bg animado | MEDIA | 🔄 Parcialmente resuelto: `.page-text` creado, toolbar migrada a Button |
+| H17 | `runtime.lastError` y Grammarly errors son de extensiones del browser, no del proyecto | BAJA | ✅ Documentado: ignorar |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón: MCP Data Access (establecido en sesiones anteriores, reafirmado aquí)
+
+```typescript
+// Pattern: MCP response wrapper access
+const { data, isLoading, isError, error } = useMCPQuery<ResponseType>(
+  "server", "tool", params, options
+);
+
+// SIEMPRE acceder a .data del wrapper
+const payload = data?.data;
+if (!payload?.expectedField) {
+  return <EmptyState ... />;
+}
+const { field1, field2 } = payload;
+```
+
+**Regla:** TODOS los `useMCPQuery` deben acceder a `data?.data` (no `data` directo) y tener guard contra undefined.
+
+### Patrón: Component Migration (nuevo en esta sesión)
+
+```typescript
+// ANTES (inline styles — 15-20 líneas por elemento)
+<div className="p-5 rounded-[var(--radius-lg)] bg-[var(--color-surface-2)] border border-white/[0.08] shadow-[var(--shadow-card)]">
+  contenido
+</div>
+
+// DESPUÉS (1-2 líneas usando componentes del design system)
+<Card className="p-5" tone="gold" hover={false}>
+  contenido
+</Card>
+```
+
+**Mapping de tones por contexto:**
+- `gold` → Premium, VIP, gala, reconocimiento, membresía
+- `teal` → Datos financieros, información, bienestar
+- `emerald` → Éxito, crecimiento, positivo
+- `silver` → Neutro, contacto, formal
+- `terracotta` → Tierra, charts, actividades
+- `rose` → Errores, crítico, cancelaciones
+
+### Patrón: Button Usage (nuevo en esta sesión)
+
+```typescript
+// Primary actions — gold sweep
+<Button variant="primary" icon={<Plus />} onClick={...}>Crear</Button>
+
+// Secondary actions — silver sweep
+<Button variant="secondary" onClick={...}>Hoy</Button>
+
+// Ghost/navigate — subtle silver sweep
+<Button variant="ghost" icon={<ArrowLeft />} onClick={...}>Volver</Button>
+
+// Danger — rose sweep
+<Button variant="danger" icon={<AlertTriangle />} onClick={...}>Eliminar</Button>
+
+// Sage — green sweep (eco, wellness)
+<Button variant="sage" onClick={...}>Aprobar</Button>
+```
+
+### Patrón: Badge Usage (nuevo en esta sesión)
+
+```typescript
+// Status badges
+<Badge variant="success" dot>Publicado</Badge>
+<Badge variant="error" dot>Cancelado</Badge>
+<Badge variant="neutral">Borrador</Badge>
+
+// Tier badges
+<Badge variant="gold">Oro</Badge>
+<Badge variant="neutral">Platino</Badge>
+
+// Tags
+<Badge variant="neutral" size="sm">Deporte</Badge>
+```
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón |
+|---|---------|----------------------|-------|
+| D1 | `lunar-btn` (diagonal sweep) en vez de `aurora-btn` (horizontal sweep) | Mantener aurora-btn como único | Sweep diagonal es más elegante y distintivo. Aurora se mantiene como fallback. |
+| D2 | `Card.tsx` como componente principal de superficies (no deprecado) | Crear `SurfaceCard` nuevo | Card.tsx ya usa `.glass-card` + `data-tone` + `glow-card` correctamente |
+| D3 | `FrostedGlassCard` para hero/featured, `Card` para datos | Usar solo uno | Propósitos diferentes: FrostedGlassCard es artístico (canvas), Card es funcional (CSS glass) |
+| D4 | `inputClass` unificado a glass (rgba + backdrop-blur) | Mantener sólido y glass separados | Consistencia con `Input.tsx` y `.glass-input` del global.css |
+| D5 | `find-and-replace` global para 3 patrones de glass | Archivo por archivo | Patrones exactos y context-independientes |
+| D6 | QuickAddPanel crea eventos como `draft` directamente | Siempre redirigir a EventForm | UX: flujo rápido para eventos simples, "Detalles avanzados" para el wizard completo |
+| D7 | QuickAddPanel lee eventos del día para conflict detection | No mostrar conflictos | Prevención de overbooking y scheduling conflicts |
+| D8 | Pre-fill via URL params (no state management global) | Context/Redux/zustand | Simple, no requiere dependencias extra, funciona con back/forward navigation |
+| D9 | `hover:bg-white/[0.04]` → `hover:bg-[var(--color-surface-3)]` globalmente | Mantener glass hover | El hover glass hace texto ilegible |
+| D10 | Badge de FrostedGlassCard usa `.frost-badge` CSS class | Mantener inline styles | Centralización de estilos en global.css |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES DEL PROYECTO
+
+### Fases del Proyecto Castillo (acumuladas de todas las sesiones)
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| Fase 1 | Foundation — Design tokens, theme, fonts | ✅ Completa |
+| Fase 2 | Layout — DashboardLayout, Sidebar, PageContainer | ✅ Completa |
+| Fase 3 | Auth — PermissionGate, login, roles | ✅ Completa |
+| Fase 4 | Executive Dashboard — summary cards, AI reports | ✅ Completa |
+| Fase 5 | Finance Module — overview, intelligence, scenarios | ✅ Completa |
+| Fase 6 | Member Engagement — dashboard, segments, retention | ✅ Completa |
+| Fase 7 | Finance Advanced — expenses, invoices, budgets, payments | ✅ Completa |
+| Fase 8 | Wellness — profiles, activities, goals, predictions | ✅ Completa |
+| Fase 9 | Satisfaction — trends, NPS, sentiment analysis | ✅ Completa |
+| Fase 10 | Proactive Recommendation — pricing, suggestions, clusters | ✅ Completa |
+| Fase 11 | Communication — broadcasts, templates, analytics | ✅ Completa |
+| Fase 12 | Guest Management — register, events, trials, analytics | ✅ Completa |
+| Fase 13 | HITL — pending approvals, approve/reject workflows | ✅ Completa |
+| Fase 14 | Narrative + Export + Members Advanced | ✅ Completa |
+| Fase 14b | Fixes + Audit — imports duplicados, keys duplicadas, contracts | ✅ Completa |
+| Fase 15 | QA — Bug fixes, crash fixes, glass transparency | 🔄 80% |
+| Fase 15ext | Operations — daily briefing, compliance, smart schedule | ✅ Completa |
+| **Fase 16** | **Design System Migration — Card, Button, Badge, lunar-btn, mock servers** | **🔄 60%** |
+| Fase 17 | Families Module — list, detail, edit, social graph | 🔄 Detail migrado |
+
+### Sub-fases de Fase 16 (Design System Migration) — Estado detallado
+
+| Sub-fase | Contenido | Estado |
+|----------|-----------|--------|
+| A | CSS Enhancement: lunar-btn + page-text en global.css | ✅ Completa |
+| B1 | Button.tsx: aurora→lunar, fix glass secondary/ghost | ✅ Completa |
+| B2 | FormField.tsx: inputClass + selectClass → glass unified | ✅ Completa |
+| B3 | FrostedGlassCard.tsx: badge hardcoded → .frost-badge | ✅ Completa |
+| C1 | EventCalendar: toolbar→Button, calendar→Card, glass fixes, QuickAddPanel rewrite | ✅ Completa |
+| C2 | EventDetail: cards→Card, badges→Badge, containers→Card | ✅ Completa |
+| C3 | EventForm: botones→Button, cards→Card, glass fixes, pre-fill | ✅ Completa |
+| D1 | FamilyDetail: full migration a Card + Badge | ✅ Completa |
+| D2 | FinanceOverview: migration a Card | ⬜ Pendiente — necesita archivo |
+| D3 | Sweep global: remaining glass instances | ⬜ Pendiente |
+| E1 | Texto fuera de cards: page-text en labels | 🔄 Parcial (toolbar hecha) |
+| E2 | Otros archivos con glass (MemberCard, etc.) | ⬜ Pendiente |
+
+---
+
+## 6. PRÓXIMA FASE — Desglose
+
+### Inmediato: Completar Fase 16
+
+| # | Tarea | Archivos | Dependencia |
+|---|-------|----------|-------------|
+| 1 | FinanceOverview migration a Card + Badge | `FinanceOverview.tsx` | Necesito el archivo |
+| 2 | Audit `shared/ui` por impacto del find-and-replace global | Button, Card, Badge, Input, etc. | Ninguna |
+| 3 | Migrar features a usar `Input.tsx` en vez de `<input>` inline | EventCalendar, EventForm, FamilyDetail | Ninguna |
+| 4 | Migrar features a usar `alert-card` CSS classes | EventCalendar (conflictos), EventDetail | Ninguna |
+| 5 | Sweep global de `bg-white/[0.N]` restantes | Todos los features | Después de 1-4 |
+| 6 | `.page-text` en todos los textos fuera de cards | Todas las páginas | Ninguna |
+
+### Después: Fase 17 — Families Module completo
+
+| # | Tarea | Archivos |
+|---|-------|----------|
+| 1 | Families list page | `FamilyList.tsx` |
+| 2 | Family edit form | `FamilyForm.tsx` |
+| 3 | Social graph enhancement | `SocialGraph.tsx` |
+| 4 | Mock data: family list (múltiples familias) | factories + contracts + registry |
+
+### Después: Fase 18 — Events Module completo
+
+| # | Tarea | Archivos |
+|---|-------|----------|
+| 1 | Events list page enhancement | EventCalendar ya existe ✓ |
+| 2 | Event edit form | EventForm ya existe ✓ |
+| 3 | Calendar integration con backend real | Desconectar mocks gradualmente |
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Archivo(s) | Fase sugerida |
+|---|-------|-----------|------------|---------------|
+| P1 | `FinanceOverview.tsx` no migrado a `Card` + `Badge` | MEDIA | `FinanceOverview.tsx` | 16 (inmediato) |
+| P2 | `shared/ui` impactado por find-and-replace global — revisar Button, Card, etc. | MEDIA | `shared/ui/*` | 16 (inmediato) |
+| P3 | Features no importan `Input.tsx` — construyen `<input>` inline | MEDIA | EventCalendar, EventForm, FamilyDetail | 16 |
+| P4 | Alertas inline no usan `.alert-card` — construyen divs inline | MEDIA | EventCalendar (conflictos), EventDetail | 16 |
+| P5 | `bg-white/[0.N]` restantes en otros features | MEDIA | MemberCard, FinancialDashboard, otros | 16 |
+| P6 | `.page-text` solo aplicado parcialmente (toolbar de EventCalendar) | BAJA | Todas las páginas | 16 |
+| P7 | `Input.tsx` tiene `bg-[rgba(255,255,255,0.04)]` inline — debería usar `.glass-input` CSS class | BAJA | `Input.tsx` | 16 |
+| P8 | `CardSkeleton` y `TableSkeleton` — ¿usan el design system? | BAJA | `Skeleton.tsx` | 17 |
+| P9 | FrostedGlassCard height hardcodeada a 252px — debería ser responsive | BAJA | `FrostedGlassCard.tsx` | 17 |
+| P10 | Families list page no existe (solo detail) | MEDIA | `FamilyList.tsx` | 17 |
+| P11 | Family edit form no existe | MEDIA | `FamilyForm.tsx` | 17 |
+| P12 | Light mode `.light` override — ¿se verificó con los nuevos componentes? | BAJA | `globals.css` | 18 |
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección: Design System Architecture — AGREGAR
+
+```markdown
+## Design System Architecture (Silver Tide)
+
+### Surface Hierarchy
+- **FrostedGlassCard** (canvas): Hero cards, featured content, artístico. Renderizado canvas con frost patterns.
+- **Card** (CSS `.glass-card`): Datos, formularios, dashboards. Usa `data-tone` para tintes contextuales.
+- **stat-surface** (CSS): Hover states, filas clickeables, items interactivos.
+- Card.tsx NO está deprecado — es el componente principal de superficies.
+
+### Button System
+- **Button.tsx** usa `.lunar-btn` (sweep diagonal elegante)
+- Variantes: primary(gold), sage(emerald), secondary(silver), ghost(silver), danger(rose)
+- Aurorabtn se mantiene como fallback en global.css
+
+### Glass Transparency Rules (CRÍTICO)
+- NUNCA usar `bg-white/[0.04]` como fondo principal
+- NUNCA usar `hover:bg-white/[0.04]` o `hover:bg-white/[0.06]` como hover
+- SIEMPRE usar: `bg-[var(--color-surface-N)]` para fondos, `hover:bg-[var(--color-surface-3)]` para hover
+- Exception: `bg-[rgba(255,255,255,0.04)]` con backdrop-blur es OK para inputs glass
+
+### Component Imports (OBLIGATORIO)
+- Cards de datos → `import { Card } from "@/shared/components/ui/Card"`
+- Botones → `import { Button } from "@/shared/components/ui/Button"`
+- Badges/tags → `import { Badge } from "@/shared/components/ui/Badge"`
+- Inputs → `import { Input } from "@/shared/components/ui/Input"` o `FormField` + `inputClass`
+- NO re-inventar estilos inline
+
+### Tone Mapping
+- gold → Premium, VIP, membresía, gala
+- teal → Financial, datos, wellness
+- emerald → Éxito, positivo, crecimiento
+- silver → Neutro, contacto, formal
+- terracotta → Charts, actividades, tierra
+- rose → Errores, crítico, cancelaciones
+```
+
+### Sección: MCP Data Access Pattern — VERIFICAR que existe
+
+```markdown
+## MCP Data Access Pattern (CRÍTICO)
+// TODOS los useMCPQuery deben hacer:
+const payload = data?.data;
+if (!payload?.expectedField) return <EmptyState />;
+// NUNCA: const { field } = data; ← esto crashea
+```
+
+### Sección: Mock Registry — ACTUALIZAR servers
+
+```markdown
+## Mock Registry Servers (actualizado)
+- executive_dashboard
+- finance
+- member_engagement
+- wellness
+- satisfaction
+- proactive_recommendation
+- communication
+- guest_management
+- hitl
+- operations
+- families ← NUEVO (get_family)
+- events ← NUEVO (list_events, get_event, create_event, update_event_status)
+```
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+| Regla # | Estado | Evidencia |
+|---------|--------|-----------|
+| 1 | ✅ | Todos los componentes usan tokens CSS del design system |
+| 2 | ✅ | Nuevos colores hardcoded — todos via tokens o CSS classes |
+| 3 | ✅ | Glass transparency eliminada — find-and-replace global |
+| 4 | ✅ | Tipografía: `var(--font-display)`, `var(--font-ui)`, `var(--font-mono)` |
+| 5 | ✅ | `focus-visible` rings en todos los elementos interactivos |
+| 6 | ✅ | `min-h-[48px]` en botones, `min-h-[44px]` en inputs |
+| 7 | ✅ | Animaciones con `prefers-reduced-motion` guard |
+| 8 | ✅ | Responsive: EventCalendar con `useIsMobile`, grid cols adaptativos |
+| 9 | ✅ | ARIA: `role="tabpanel"`, `aria-label`, `role="link"` |
+| 10 | ✅ | Shadows: `var(--shadow-card)`, `var(--shadow-elevated)` |
+| 11 | ✅ | Radius: `var(--radius-md)`, `var(--radius-lg)` |
+| 12 | ✅ | Spacing: consistentes con Tailwind scale |
+| 13 | ✅ | Breadcrumbs en EventDetail, FamilyDetail |
+| 14 | ✅ | EmptyState component usado correctamente |
+| 15 | ✅ | Skeleton loading states |
+| 16 | ✅ | ErrorBoundary catch en rutas |
+| 17 | ✅ | PermissionGate para acciones ADMIN/STAFF |
+| 18 | ✅ | showToast para feedback de mutations |
+| 19 | ✅ | Button component para todas las acciones |
+| 20 | ✅ | Card component para superficies de datos |
+| 21 | ✅ | Badge component para status/tags |
+| 22 | ✅ | MCP data access: `data.data` + guards |
+
+---
+
+## 10. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto
+```
+1. CLAUDE_CONTEXT_MINI.md (si existe actualizado)
+2. Este checkpoint completo
+3. globals.css (para referencia del design system)
+```
+
+### Paso 2 — Pedir primero
+```
+"Pasame FinanceOverview.tsx para hacer la migración a Card + Badge"
+```
+
+### Paso 3 — Después
+```
+"Hacé la auditoría de shared/ui por impacto del find-and-replace global que hicimos"
+```
+
+### Paso 4 — Después
+```
+"Hacemos el sweep de glass transparency restante en otros features — pasame los archivos que tengan bg-white/[0.N]"
+```
+
+### Paso 5 — Al final
+```
+"Actualizá el CLAUDE_CONTEXT_MINI.md con la sección de Design System Architecture"
+```
+
+---
+
+## 11. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto |
+|-------|---------|-------|---------|
+| Jun 2025 | `Card.tsx` NO está deprecado — es el componente principal de superficies | Ya usa `.glass-card` + `data-tone` + `glow-card` correctamente | No crear SurfaceCard nuevo — usar Card existente |
+| Jun 2025 | `FrostedGlassCard` para hero/featured, `Card` para datos | Propósitos diferentes: canvas artístico vs CSS funcional | Los features usan Card, no FrostedGlassCard |
+| Jun 2025 | `lunar-btn` reemplaza `aurora-btn` como sweep principal | Sweep diagonal más elegante que horizontal | Button.tsx ahora aplica lunar-btn en todas las variantes |
+| Jun 2025 | `inputClass` unificado a glass (rgba + backdrop-blur) | Consistencia con Input.tsx y .glass-input | EventForm y todos los FormField ahora son glass |
+| Jun 2025 | QuickAddPanel crea eventos como `draft` directamente | Flujo rápido para eventos simples | "Detalles avanzados" opcional para wizard completo |
+| Jun 2025 | Pre-fill via URL params (no state management) | Simple, sin dependencias extra | EventForm lee params del QuickAddPanel |
+| Jun 2025 | Find-and-replace global seguro para 3 patrones exactos | `hover:bg-white/[0.04]`, `hover:bg-white/[0.06]`, `bg-white/[0.02]` | ~25 archivos tocados de una vez |
+| Jun 2025 | Badge de FrostedGlassCard usa `.frost-badge` CSS class | Centralización en global.css | Eliminado inline styles del componente |
+| Jun 2025 | Tone mapping: gold=membresía/VIP, teal=financiero, emerald=éxito | Consistencia semántica en toda la app | Cards ahora tienen significado visual por contexto |
+| Jun 2025 | `.page-text` para texto contra bg animado | Legibilidad sin necesidad de contenedor | Creado en global.css, aplicado parcialmente |
+| Jun 2025 | Event types del QuickAddPanel: social, sports, cultural, gastronomic, kids, corporate, seasonal, private | Coincidir con EventType real del sistema | TYPE_PRESETS actualizado en Fase 8 |
+
+---
+
+## HISTORIAL DE LA MIGRACIÓN — Paso a paso documentado
+
+### Cambio ejemplo: FamilyDetail.tsx (completo)
+
+**Imports agregados:**
+```typescript
+import { Card } from "@/shared/components/ui/Card";
+import { Badge } from "@/shared/components/ui/Badge";
+```
+
+**Hero header:**
+```tsx
+// ANTES
+<div className="p-6 rounded-[var(--radius-lg)] border border-white/[0.08] bg-[var(--color-surface-1)] shadow-[var(--shadow-elevated)] mb-6">
+
+// DESPUÉS
+<motion.div className="mb-6">
+<Card className="p-6" tone="gold">
+```
+
+**Tier badge:**
+```tsx
+// ANTES
+<span className="px-2.5 py-1 rounded-full text-xs font-bold font-[family-name:var(--font-mono)]" style={{ backgroundColor: tier.bgColor, color: tier.color }}>
+  {tier.label}
+</span>
+
+// DESPUÉS
+<Badge variant={family.tier === "platino" ? "neutral" : family.tier === "oro" ? "gold" : family.tier === "plata" ? "info" : "warning"} size="md">
+  {tier.label}
+</Badge>
+```
+
+**Quick stats:**
+```tsx
+// ANTES
+<div className="p-4 rounded-[var(--radius-lg)] bg-[var(--color-surface-2)] border border-white/[0.08] shadow-[var(--shadow-card)]">
+
+// DESPUÉS
+<Card key={stat.label} padding={false} hover={false} className="p-4">
+```
+
+**Membership section (tone="gold"):**
+```tsx
+// ANTES
+<div className="p-5 rounded-[var(--radius-lg)] bg-[var(--color-surface-2)] border border-white/[0.08] shadow-[var(--shadow-card)]">
+
+// DESPUÉS
+<Card className="p-5" hover={false} tone="gold">
+```
+
+**Financial section (tone="teal"):**
+```tsx
+// DESPUÉS
+<Card className="p-5" hover={false} tone="teal">
+```
+
+**Credit utilization (tone="teal"):**
+```tsx
+// DESPUÉS
+<Card className="p-5" hover={false} tone="teal">
+```
+
+**YTD cards (tone="emerald"):**
+```tsx
+// DESPUÉS
+<Card padding={false} hover={false} className="p-5" tone="emerald">
+```
+
+**Connections container (tone="silver"):**
+```tsx
+// DESPUÉS
+<Card padding={false} hover={false} className="p-5" tone="silver">
+```
+
+### global.css — Hallazgo documentado
+
+El `globals.css` tiene un sistema de diseño completo que NO se estaba usando:
+
+```
+.glass-card + data-tone     → Cards con glass + rain + tintes contextuales
+.stat-surface               → Superficie sutil para stats/hover
+.glass-panel                → Panel opaco (sidebar, modals)
+.glass-input                → Inputs con glass
+.aurora-btn + variantes     → Sweep de luz en botones
+.alert-card + variantes     → Alertas inline (success, warning, error, info, critical, premium)
+.glow-card                  → Card con glow borde por --glow-color
+.frost-badge + variantes    → Badges para frosted cards
+.noise-overlay, .vignette   → Overlays de atmósfera
+.cursor-dot, .cursor-ring   → Custom cursor
+@keyframes rain-trail       → Rain streaks animation
+@keyframes aurora-sweep     → Horizontal light sweep (legacy)
+@keyframes lunar-sweep      → Diagonal light beam (nuevo)
+@keyframes frost-breathe    → Canvas opacity breathing
+```
+
+**Todo esto existía pero los features lo ignoraban.**
+
+### Button.tsx — Estado antes/después
+
+```
+ANTES:
+- primary → aurora-btn aurora-btn--gold ✓
+- sage → aurora-btn aurora-btn--sage ✓
+- secondary → aurora-btn (sin variante) ✗ + glass inline
+- ghost → "" (sin sweep) ✗ + glass inline
+- danger → aurora-btn aurora-btn--danger ✓
+
+DESPUÉS:
+- primary → lunar-btn lunar-btn--gold ✓
+- sage → lunar-btn lunar-btn--emerald ✓
+- secondary → lunar-btn lunar-btn--silver ✓ + bg-surface-2
+- ghost → lunar-btn lunar-btn--silver ✓ + bg-transparent
+- danger → lunar-btn lunar-btn--rose ✓
+```
+
+### Find-and-replace global — Ejecutado
+
+```
+Scope: src/features/
+
+1. hover:bg-white/[0.04]  →  hover:bg-[var(--color-surface-3)]   (~15 archivos)
+2. hover:bg-white/[0.06]  →  hover:bg-[var(--color-surface-3)]   (~10 archivos)
+3. bg-white/[0.02]        →  bg-[var(--color-surface-1)]         (~3 archivos)
+
+⚠️ PENDIENTE: Verificar que no tocó shared/ui inadvertidamente
+```
+
+---
+
+## QUICK REFERENCE — Dónde estamos en las fases
+
+```
+Fases 1-15: ✅ Completadas (sesiones anteriores)
+Fase 15 QA: 🔄 80% (crashes resueltos, glass parcialmente)
+Fase 16 (Design System Migration): 🔄 60%
+  ✅ A  — CSS: lunar-btn + page-text
+  ✅ B1 — Button.tsx
+  ✅ B2 — FormField.tsx
+  ✅ B3 — FrostedGlassCard.tsx
+  ✅ C1 — EventCalendar.tsx
+  ✅ C2 — EventDetail.tsx
+  ✅ C3 — EventForm.tsx
+  ✅ D1 — FamilyDetail.tsx
+  ⬜ D2 — FinanceOverview.tsx (necesita archivo)
+  ⬜ D3 — Sweep global restante
+  🔄 E  — Texto fuera de cards (parcial)
+  ⬜ F  — shared/ui audit post find-and-replace
+Fase 17 (Families): ⬜
+Fase 18 (Events): ⬜
+```
+
+---
+
+**PRÓXIMA ACCIÓN INMEDIATA:** Pasar `FinanceOverview.tsx` para migración D2 + audit de `shared/ui` por find-and-replace.

@@ -1,0 +1,277 @@
+/**
+ * @component WelcomeModal
+ * @namespace .glass-welcome-modal
+ * @depends globals.css (tokens, keyframes: welcome-shimmer-sweep)
+ */
+
+/* ── Modal panel ── */
+.glass-welcome-modal {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  z-index: 1;
+  background: rgba(18, 24, 38, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(201, 169, 110, 0.2);
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.5),
+    0 0 80px -20px rgba(201, 169, 110, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ── Close button ── */
+.glass-welcome-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  z-index: 10;
+  color: var(--color-silver-400);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.glass-welcome-modal__close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-silver-200);
+}
+
+/* ── Header ── */
+.glass-welcome-modal__header {
+  position: relative;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+/* ── Gold shimmer sweep ── */
+.glass-welcome-modal__shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(201, 169, 110, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.glass-welcome-modal__shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(201, 169, 110, 0.06) 40%,
+    rgba(201, 169, 110, 0.1) 50%,
+    rgba(201, 169, 110, 0.06) 60%,
+    transparent 100%
+  );
+  animation: welcome-shimmer-sweep 2.5s ease-in-out infinite;
+}
+
+.glass-welcome-modal__brand {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-gold-300);
+  font-family: var(--font-ui);
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.glass-welcome-modal__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-family: var(--font-display);
+  margin-bottom: 4px;
+  position: relative;
+}
+
+.glass-welcome-modal__subtitle {
+  font-size: 14px;
+  color: var(--color-silver-400);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  position: relative;
+}
+
+/* ── Progress bar ── */
+.glass-welcome-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  position: relative;
+}
+.glass-welcome-progress__track {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.glass-welcome-progress__fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--color-gold-400), var(--color-gold-300));
+}
+.glass-welcome-progress__label {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+/* ── Tips list ── */
+.glass-welcome-modal__tips {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Individual tip ── */
+.glass-welcome-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md, 8px);
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+/* ── Interactive tip (has route) ── */
+.glass-welcome-tip--interactive {
+  cursor: pointer;
+  border-left-color: rgba(201, 169, 110, 0.15);
+}
+.glass-welcome-tip--interactive:hover {
+  background: rgba(201, 169, 110, 0.06);
+  border-left-color: var(--color-gold-400);
+}
+.glass-welcome-tip--interactive:hover .glass-welcome-tip__arrow {
+  transform: translateX(4px);
+  color: var(--color-gold-400);
+}
+.glass-welcome-tip--interactive:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+
+/* ── Visited tip ── */
+.glass-welcome-tip--visited {
+  opacity: 0.55;
+}
+.glass-welcome-tip--visited .glass-welcome-tip__icon {
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--color-emerald-400);
+}
+
+/* ── Tip icon ── */
+.glass-welcome-tip__icon {
+  flex-shrink: 0;
+  padding: 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  color: var(--color-gold-400);
+  transition: transform 0.2s ease;
+}
+.glass-welcome-tip--interactive:hover .glass-welcome-tip__icon {
+  transform: scale(1.1);
+}
+
+/* ── Tip body ── */
+.glass-welcome-tip__body {
+  flex: 1;
+  min-width: 0;
+}
+.glass-welcome-tip__title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+}
+.glass-welcome-tip__desc {
+  font-size: 12px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+/* ── Live data badge ── */
+.glass-welcome-tip__live-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  background: rgba(201, 169, 110, 0.12);
+  color: var(--color-gold-300);
+  white-space: nowrap;
+}
+
+/* ── Arrow ── */
+.glass-welcome-tip__arrow {
+  flex-shrink: 0;
+  color: var(--color-silver-600);
+  margin-top: 2px;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* ── Footer ── */
+.glass-welcome-modal__footer {
+  padding: 8px 24px 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-welcome-modal {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.12),
+    0 0 80px -20px rgba(201, 169, 110, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.light .glass-welcome-modal__header {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+.light .glass-welcome-modal__shimmer {
+  background: linear-gradient(135deg, rgba(201, 169, 110, 0.05) 0%, transparent 60%);
+}
+.light .glass-welcome-modal__shimmer::after {
+  animation: none;
+  display: none;
+}
+.light .glass-welcome-modal__brand { color: var(--color-gold-500); }
+.light .glass-welcome-modal__title { color: var(--color-abyss, #0a0e14); }
+.light .glass-welcome-modal__subtitle { color: var(--color-silver-500); }
+.light .glass-welcome-progress__track { background: rgba(0, 0, 0, 0.06); }
+.light .glass-welcome-tip--interactive:hover { background: rgba(201, 169, 110, 0.05); }
+.light .glass-welcome-tip__icon { background: color-mix(in srgb, var(--color-gold-400) 8%, transparent); }
+.light .glass-welcome-tip__title { color: var(--color-abyss, #0a0e14); }
+.light .glass-welcome-tip__desc { color: var(--color-silver-600); }
+.light .glass-welcome-tip__live-badge {
+  background: rgba(201, 169, 110, 0.1);
+  color: var(--color-gold-500);
+}
+.light .glass-welcome-tip__arrow { color: var(--color-silver-400); }
+.light .glass-welcome-modal__close { color: var(--color-silver-500); }
+.light .glass-welcome-modal__close:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-abyss, #0a0e14);
+}

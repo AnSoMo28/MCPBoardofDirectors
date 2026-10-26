@@ -1,0 +1,361 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/GuestHealthScoreCard.css
+   Phase 34 "The Gateway" — Guest Health Score Card (Rewrite)
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-health
+   Glass: .glass-gst-health
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-health {
+  --glass-gst-health-version: 1;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-health-bg: rgba(18, 18, 26, 0.5);
+  --gst-health-border: rgba(255, 255, 255, 0.06);
+  --gst-health-text-primary: #f0ece4;
+  --gst-health-text-muted: #7a7570;
+  --gst-health-radius: 16px;
+  --gst-health-bar-height: 6px;
+  --gst-health-bar-track: rgba(255, 255, 255, 0.04);
+
+  /* Level colors */
+  --gst-health-excellent: var(--color-emerald-400, #4ecdc4);
+  --gst-health-healthy: var(--color-teal-400, #26a69a);
+  --gst-health-attention: var(--color-amber-400, #f5a623);
+  --gst-health-critical: var(--color-rose-400, #e74c3c);
+
+  /* Level backgrounds */
+  --gst-health-excellent-bg: var(--color-emerald-bg, rgba(78, 205, 196, 0.1));
+  --gst-health-healthy-bg: var(--color-teal-bg, rgba(38, 166, 154, 0.1));
+  --gst-health-attention-bg: var(--color-amber-bg, rgba(245, 166, 35, 0.1));
+  --gst-health-critical-bg: var(--color-rose-bg, rgba(231, 76, 60, 0.1));
+}
+
+/* ── Base ── */
+.gst-health {
+  position: relative;
+  background: var(--gst-health-bg);
+  border: 1px solid var(--gst-health-border);
+  border-radius: var(--gst-health-radius);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  opacity: 0;
+  animation: gst-health-fadeIn 0.5s ease 0.2s forwards;
+}
+
+.gst-health[data-state="empty"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  padding: 24px;
+  animation: none;
+  opacity: 1;
+}
+
+.gst-health__empty-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 15px;
+  color: var(--gst-health-text-muted);
+  margin: 0;
+}
+
+/* ── Header ── */
+.gst-health__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  padding-bottom: 12px;
+}
+
+/* ── Score Badge ── */
+.gst-health__score-badge {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gst-health[data-level="excellent"] .gst-health__score-badge {
+  background: var(--gst-health-excellent-bg);
+}
+
+.gst-health[data-level="healthy"] .gst-health__score-badge {
+  background: var(--gst-health-healthy-bg);
+}
+
+.gst-health[data-level="attention"] .gst-health__score-badge {
+  background: var(--gst-health-attention-bg);
+}
+
+.gst-health[data-level="critical"] .gst-health__score-badge {
+  background: var(--gst-health-critical-bg);
+}
+
+.gst-health__score-number {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.gst-health[data-level="excellent"] .gst-health__score-number {
+  color: var(--gst-health-excellent);
+}
+
+.gst-health[data-level="healthy"] .gst-health__score-number {
+  color: var(--gst-health-healthy);
+}
+
+.gst-health[data-level="attention"] .gst-health__score-number {
+  color: var(--gst-health-attention);
+}
+
+.gst-health[data-level="critical"] .gst-health__score-number {
+  color: var(--gst-health-critical);
+}
+
+/* ── Header Info ── */
+.gst-health__header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.gst-health__header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* ── Level Badge ── */
+.gst-health__level-badge {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.gst-health__level-badge[data-level="excellent"] {
+  color: var(--gst-health-excellent);
+  background: var(--gst-health-excellent-bg);
+}
+
+.gst-health__level-badge[data-level="healthy"] {
+  color: var(--gst-health-healthy);
+  background: var(--gst-health-healthy-bg);
+}
+
+.gst-health__level-badge[data-level="attention"] {
+  color: var(--gst-health-attention);
+  background: var(--gst-health-attention-bg);
+}
+
+.gst-health__level-badge[data-level="critical"] {
+  color: var(--gst-health-critical);
+  background: var(--gst-health-critical-bg);
+}
+
+/* ── Trend ── */
+.gst-health__trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gst-health__trend-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.gst-health__trend[data-trend="improving"] {
+  color: var(--gst-health-excellent);
+}
+
+.gst-health__trend[data-trend="stable"] {
+  color: var(--gst-health-text-muted);
+}
+
+.gst-health__trend[data-trend="declining"] {
+  color: var(--gst-health-critical);
+}
+
+.gst-health__trend-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* ── Summary ── */
+.gst-health__summary {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 11px;
+  color: var(--gst-health-text-muted);
+  margin: 0;
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Factor Bars ── */
+.gst-health__factors {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+
+.gst-health__factor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.gst-health__factor-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  color: var(--gst-health-text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.gst-health__factor-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.gst-health__factor-weight {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 10px;
+  color: var(--gst-health-text-muted);
+}
+
+.gst-health__factor-score {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.gst-health__factor-score[data-factor-level="good"] {
+  color: var(--gst-health-excellent);
+}
+
+.gst-health__factor-score[data-factor-level="attention"] {
+  color: var(--gst-health-attention);
+}
+
+.gst-health__factor-score[data-factor-level="critical"] {
+  color: var(--gst-health-critical);
+}
+
+/* ── Factor Track ── */
+.gst-health__factor-track {
+  height: var(--gst-health-bar-height);
+  background: var(--gst-health-bar-track);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gst-health__factor-fill {
+  height: 100%;
+  width: var(--fill-width, 0%);
+  border-radius: 3px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gst-health__factor-fill[data-factor-level="good"] {
+  background: linear-gradient(90deg, rgba(78, 205, 196, 0.5), rgba(78, 205, 196, 0.25));
+}
+
+.gst-health__factor-fill[data-factor-level="attention"] {
+  background: linear-gradient(90deg, rgba(245, 166, 35, 0.5), rgba(245, 166, 35, 0.25));
+}
+
+.gst-health__factor-fill[data-factor-level="critical"] {
+  background: linear-gradient(90deg, rgba(231, 76, 60, 0.5), rgba(231, 76, 60, 0.25));
+}
+
+/* ── Animations ── */
+@keyframes gst-health-fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-health {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-health__factor-fill {
+  transition: none;
+}
+
+/* ── Light Mode ── */
+.light .gst-health {
+  --gst-health-bg: rgba(255, 255, 255, 0.85);
+  --gst-health-border: rgba(0, 0, 0, 0.08);
+  --gst-health-text-primary: #1a1a2e;
+  --gst-health-text-muted: #6b6b78;
+  --gst-health-bar-track: rgba(0, 0, 0, 0.04);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-health__header {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .gst-health__score-badge {
+    width: 52px;
+    height: 52px;
+  }
+
+  .gst-health__score-number {
+    font-size: 20px;
+  }
+
+  .gst-health__factors {
+    padding: 0 12px 12px;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-health {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+  }
+
+  .gst-health__factor-fill {
+    background: #ddd !important;
+  }
+}

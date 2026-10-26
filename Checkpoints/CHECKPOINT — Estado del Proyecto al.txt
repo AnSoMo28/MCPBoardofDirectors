@@ -1,0 +1,292 @@
+CHECKPOINT — Estado del Proyecto al 14 de Mayo 2026
+
+
+AGENTES COMPLETADOS (6/12)
+
+#	Agente	Tools	HITL	Tests	Estado
+1	FamilyProfileAgent	7	2	32	PASSED
+2	EventOrchestratorAgent	9	3	50	PASSED
+3	AgeGroupAgent	7	1	26	PASSED
+4	FinanceAgent	7	3	30	PASSED
+5	WellnessAgent	7	1	28	PASSED
+6	ComplianceAgent	7	2	27	PASSED
+
+Total: 193 tests passing, ~74% coverage
+
+
+
+ARCHIVOS CREADOS POR AGENTE (patrón)
+
+Cada agente sigue esta estructura:
+
+
+text
+text
+backend/src/club_mcp/models/{domain}.py          ← Pydantic models
+backend/src/club_mcp/db/repositories/{domain}_repo.py  ← In-memory repo
+backend/src/club_mcp/agents/{agent_name}.py       ← Agent + MCPTools
+backend/tests/unit/agents/test_{agent_name}.py    ← Tests
+
+Después de cada agente se actualizan:
+
+backend/src/club_mcp/agents/__init__.py
+backend/src/club_mcp/db/repositories/__init__.py
+backend/src/club_mcp/models/__init__.py
+backend/src/club_mcp/server.py
+
+
+AGENTES PENDIENTES (6/12)
+
+#	Agente	Tools	HITL	Prioridad HITL
+7	SportsRecreationAgent	7	2	organize_tournament, manage_sport_leagues
+8	CulturalSocialAgent	6	3	organize_formal_gala, manage_entertainment_acts, manage_cultural_program
+9	CommunicationAgent	7	3	broadcast_club_announcement, manage_emergency_broadcast (⛔), send_personalized_notification (>100)
+10	FacilityManagementAgent	7	2	schedule_maintenance, coordinate_event_setup
+11	MemberEngagementAgent	6	2	design_reactivation_campaign, manage_loyalty_rewards
+12	GuestManagementAgent	5	2	plan_private_event, manage_trial_memberships
+
+Plus: ProactiveRecommendationAgent (8 tools, 2 HITL)
+
+
+
+PATRÓN EXACTO QUE SIGO CON CADA AGENTE
+
+Paso 1: Modelo → backend/src/club_mcp/models/{domain}.py
+Enums (str, Enum) para estados/categorías
+BaseModel con ConfigDict(from_attributes=True)
+Create/Update schemas separados
+Response/Summary models
+
+Paso 2: Repositorio → backend/src/club_mcp/db/repositories/{domain}_repo.py
+Clase {Domain}Repository con __init__ que crea dict[str, dict]
+_gen_id() helper con uuid4
+CRUD methods: create_X, get_X, update_X, list_X
+Los repos NUNCA importan de agents (evitar circular)
+
+Paso 3: Agente → backend/src/club_mcp/agents/{agent_name}.py
+Hereda BaseAgent
+agent_name y description
+__init__ recibe repo, approval_engine, notifier
+Cada tool decorado con @MCPTool("tool_name", "desc", approval=ApprovalLevel.XXX)
+AUTO → ejecuta directo
+SEMI_AUTO → ejecuta con logging/notificación
+HITL → crea approval_request, devuelve pending_approval + request_id
+Tools HITL tienen execute_X() separado para post-approval
+
+Paso 4: Tests → backend/tests/unit/agents/test_{agent_name}.py
+Fixtures: repo, agent (con approval_engine)
+Helper _seed_{domain}() para datos de prueba
+Clase por tool con tests de: éxito, error, validación, edge cases
+Tests de approval flow para HITL (create_request → approve → execute)
+Siempre @pytest.mark.asyncio
+
+Paso 5: Actualizar __init__.py files
+agents/__init__.py → import + __all__
+db/repositories/__init__.py → import + __all__
+models/__init__.py → import + __all__
+
+Paso 6: Actualizar server.py
+Import del agent y repo
+Crear instancia del repo
+Agregar al agents: list[BaseAgent]
+
+Paso 7: Verificar
+bash
+bash
+uv run pytest tests/unit/agents/test_{agent_name}.py -v
+uv run pytest -v --cov
+
+
+INFRAESTRUCTURA TAMBIÉN PENDIENTE
+
+Según el árbol del proyecto, además de agentes faltan:
+
+
+backend/src/club_mcp/orchestrator/ (router, context, flows, event_bus)
+backend/src/club_mcp/api/ (FastAPI app, routes, schemas)
+backend/src/club_mcp/notifications/ (email, push, whatsapp)
+backend/src/club_mcp/ai/ (ollama_client, llm_router, embeddings)
+backend/src/club_mcp/middleware/
+backend/src/club_mcp/utils/
+frontend/ (React app completa)
+docker/, docs/, scripts/, seeds/
+
+
+PROMPT PARA CONTINUAR EN NUEVO CHAT
+
+Copiá y pegá esto en un chat nuevo:
+
+
+text
+text
+Sos un ingeniero senior construyendo un sistema MCP (Model Context Protocol) para clubes privados. Estamos trabajando en el repo "club-platform-castillo_country_club".
+
+## CONTEXTO
+El proyecto tiene 12 agentes MCP especializados. Ya completamos 6 agentes con tests passing:
+1. FamilyProfileAgent (7 tools, 2 HITL, 32 tests)
+2. EventOrchestratorAgent (9 tools, 3 HITL, 50 tests)
+3. AgeGroupAgent (7 tools, 1 HITL, 26 tests)
+4. FinanceAgent (7 tools, 3 HITL, 30 tests)
+5. WellnessAgent (7 tools, 1 HITL, 28 tests) — no estaba en el plan original, lo creamos como extra
+6. ComplianceAgent (7 tools, 2 HITL, 27 tests) — no estaba en el plan original, lo creamos como extra
+
+Total: 193 tests passing, ~74% coverage. El framework de HITL ya está funcionando.
+
+## PATRÓN QUE SEGUIMOS (respetar exactamente)
+
+Para cada agente creo archivos en este orden:
+
+### 1. MODELO → `backend/src/club_mcp/models/{domain}.py`
+- Enums heredando de (str, Enum)
+- BaseModel con `model_config = ConfigDict(from_attributes=True)`
+- Schemas de Create/Update separados
+- Response models
+
+### 2. REPOSITORIO → `backend/src/club_mcp/db/repositories/{domain}_repo.py`
+- Clase `{Domain}Repository` con dicts internos
+- Helper `_gen_id(prefix)` con `uuid.uuid4().hex[:8]`
+- Métodos CRUD completos
+- NUNCA importar desde `club_mcp.agents` (evita circular imports)
+
+### 3. AGENTE → `backend/src/club_mcp/agents/{agent_name}.py`
+- Hereda de `BaseAgent` (de `club_mcp.agents.base`)
+- Usa decorador `@MCPTool("tool_name", "descripción", approval=ApprovalLevel.XXX)`
+- Approval levels: `AUTO`, `SEMI_AUTO`, `HITL`
+- Tools HITL: método principal crea request con `self.approval_engine.create_request()` y devuelve `pending_approval`
+- Tools HITL: método `execute_X()` separado para post-approval
+- __init__ recibe: repo, approval_engine=None, notifier=None
+- Si approval_engine is not None: `self.approval_engine = approval_engine`
+
+### 4. TESTS → `backend/tests/unit/agents/test_{agent_name}.py`
+- Fixtures con `@pytest.fixture`: `repo`, `agent` (inyectando `approval_engine` del conftest)
+- Helper `_seed_{domain}()` que llena datos de prueba
+- Clase por tool: `class Test{ToolName}:`
+- Tests: éxito, error, validación, edge cases, approval flow
+- Siempre `@pytest.mark.asyncio` en cada test
+- Para fixtures con `autouse`: usar `autouse=True` (no solo `autouse`)
+
+### 5. ACTUALIZAR __init__.py (3 archivos)
+- `backend/src/club_mcp/agents/__init__.py` → importar agent + agregar a `__all__`
+- `backend/src/club_mcp/db/repositories/__init__.py` → importar repo + agregar a `__all__`
+- `backend/src/club_mcp/models/__init__.py` → importar modelos + agregar a `__all__`
+- IMPORTANTE: NO importar agentes en `db/repositories/__init__.py` (causa circular import)
+
+### 6. ACTUALIZAR server.py
+- Import del agente y repo
+- Crear instancia: `{domain}_repo = {Domain}Repository()`
+- Agregar a la lista: `{AgentName}({domain}_repo, approval_engine, notifier),`
+
+### 7. VERIFICAR
+```bash
+uv run pytest tests/unit/agents/test_{agent_name}.py -v
+uv run pytest -v --cov
+
+AGENTES PENDIENTES (por orden de prioridad)
+
+7. SportsRecreationAgent (Sports & Recreation)
+Domain: sports_recreation
+Tools según spec:
+🟢 manage_court_reservations() → AUTO (socios) / 🔴 (eventos bloqueando)
+🟡 organize_tournament() → SEMI_AUTO
+🟢 manage_fitness_classes() → AUTO
+🟢 coordinate_coaching() → AUTO
+🟡 manage_sport_leagues() → SEMI_AUTO
+🟢 get_equipment_availability() → AUTO
+🟢 get_sports_recommendations() → AUTO
+Repo: court reservations, tournaments, fitness classes, equipment, leagues
+Tests: ~28 tests
+
+8. CulturalSocialAgent (Cultural & Social)
+Domain: cultural_social
+Tools según spec:
+🟡 manage_cultural_program() → SEMI_AUTO
+🟡 organize_social_gathering() → SEMI_AUTO
+🟡 coordinate_workshops() → SEMI_AUTO
+🟢 manage_library_bookclub() → AUTO
+🔴 organize_formal_gala() → HITL
+🔴 manage_entertainment_acts() → HITL
+Repo: cultural programs, social events, workshops, library, galas
+Tests: ~26 tests
+
+9. CommunicationAgent
+Domain: communication
+Tools según spec:
+🟡 send_personalized_notification() → SEMI_AUTO (AUTO 1:1, HITL >100)
+⛔ broadcast_club_announcement() → HITL (siempre humano)
+🟡 generate_weekly_digest() → SEMI_AUTO
+🟡 send_event_reminders() → SEMI_AUTO
+🟡 collect_post_event_feedback() → SEMI_AUTO
+⛔ manage_emergency_broadcast() → HITL (doble confirmación)
+🟢 generate_rsvp_confirmations() → AUTO
+Repo: notifications, announcements, digests, feedback
+Tests: ~28 tests
+
+10. FacilityManagementAgent
+Domain: facility
+Tools según spec:
+🟢 get_venue_availability() → AUTO
+🟡 book_venue() → SEMI_AUTO (AUTO individual, HITL eventos grandes)
+🔴 schedule_maintenance() → HITL
+🟢 manage_capacity_realtime() → AUTO
+🔴 coordinate_event_setup() → SEMI_AUTO con aprobación
+🟢 get_utilization_report() → AUTO
+🟢 manage_club_map() → AUTO
+Repo: venues, bookings, maintenance, capacity, maps
+Tests: ~27 tests
+
+11. MemberEngagementAgent
+Domain: member_engagement
+Tools según spec:
+🟢 calculate_engagement_score() → AUTO
+🟢 identify_at_risk_members() → AUTO
+🔴 design_reactivation_campaign() → HITL
+🟢 analyze_participation_trends() → AUTO
+🔴 manage_loyalty_rewards() → HITL
+🟡 run_satisfaction_survey() → SEMI_AUTO
+Repo: engagement scores, at-risk members, campaigns, loyalty, surveys
+Tests: ~24 tests
+
+12. GuestManagementAgent
+Domain: guest_management
+Tools según spec:
+🟡 register_guest() → SEMI_AUTO (AUTO normal, HITL si excede límites)
+🟢 manage_guest_privileges() → AUTO
+🔴 plan_private_event() → HITL (alto valor)
+🟢 get_guest_analytics() → AUTO
+🔴 manage_trial_memberships() → HITL
+Repo: guests, privileges, private events, trials
+Tests: ~22 tests
+
+13. ProactiveRecommendationAgent (extra, no en plan original)
+Domain: recommendation
+Tools según spec:
+🟢 generate_family_recommendations() → AUTO
+🟢 predict_event_attendance() → AUTO
+🟢 detect_scheduling_conflicts() → AUTO
+🟡 suggest_new_activities() → SEMI_AUTO
+🟢 personalize_communication() → AUTO
+🔴 optimize_pricing() → HITL
+🟢 identify_social_clusters() → AUTO
+🟡 generate_quarterly_insights() → SEMI_AUTO
+Repo: recommendations, predictions, insights, clusters
+Tests: ~28 tests
+
+ARCHIVOS EXISTENTES IMPORTANTES
+
+El conftest.py ya tiene fixtures compartidas: approval_engine, notifier, etc.
+Los init.py ya tienen los 6 agentes/repos/modelos actuales.
+server.py ya registra los 6 agentes.
+No crear archivos duplicados, siempre verificar si ya existen.
+
+
+REGLAS
+No uses @pytest.fixture(autouse), siempre @pytest.fixture(autouse=True)
+Los repos NO importan de agents
+Los init de repositories NO deben importar agentes
+Cada tool tiene docstring explicando qué hace
+Los mensajes de respuesta usan emojis (pero no en los tests)
+Para ModelConfig usar model_config = ConfigDict(from_attributes=True)
+Tests de approval flow: crear request → approve con UUID → execute
+Coverage mínimo: 70%
+
+Empezá con el agente #7: SportsRecreationAgent. Pasame el modelo, repo, agente, tests, y las actualizaciones de init.py y server.py.

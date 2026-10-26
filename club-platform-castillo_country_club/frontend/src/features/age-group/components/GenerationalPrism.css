@@ -1,0 +1,421 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/age-group/components/GenerationalPrism.css
+   Phase 34+ Migration — Generational Prism Styles (v2)
+   "The Living Genome" — Level 6+ Agency · Production Grade
+
+   CONSUMES FROM globals.css:
+     Tokens:    --color-gold-400, --color-amber-400, --color-rose-400
+                --color-silver-*, --color-surface-1, --line-color
+                --font-display ("Cormorant Garamond"), --font-ui ("DM Sans")
+                --radius-md, --shadow-sm
+     Keyframes: pulse-glow (referenced for future use)
+     Glass:     .glass-card consumed by parent
+
+   FEATURE KEYFRAMES: 7
+     ag-genome-auraPulse, ag-genome-breathe, ag-genome-expand,
+     ag-genome-contract, ag-genome-hotspotFlash, ag-genome-ringPulse,
+     ag-genome-tooltipIn
+   REUSED KEYFRAMES: 0 (all unique — SVG r-attribute, scale, compound filter)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────
+   §0  Block
+   ────────────────────────────────────────────────────────── */
+
+.ag-genome {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Screen reader only */
+.ag-genome .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §1  SVG
+   ────────────────────────────────────────────────────────── */
+
+.ag-genome__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §2  Center Aura
+   ────────────────────────────────────────────────────────── */
+
+.ag-genome__aura {
+  opacity: 0.2;
+  animation: ag-genome-auraPulse 4s ease-in-out infinite;
+  transition: fill 0.6s ease;
+}
+
+.ag-genome__aura[data-level="high"] {
+  fill: var(--color-gold-400, #C9A96E);
+  opacity: 0.35;
+}
+
+.ag-genome__aura[data-level="medium"] {
+  fill: var(--color-amber-400, #D4A840);
+  opacity: 0.25;
+}
+
+.ag-genome__aura[data-level="low"] {
+  fill: var(--color-rose-400, #C46470);
+  opacity: 0.2;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §3  Donut Segments
+   ────────────────────────────────────────────────────────── */
+
+.ag-genome__seg {
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease,
+    transform 0.2s ease;
+  transform-origin: 150px 150px;
+  outline: none;
+}
+
+.ag-genome__seg:hover,
+.ag-genome__seg[data-hovered] {
+  filter: brightness(1.25) drop-shadow(0 0 6px var(--seg-color, var(--color-gold-400, #C9A96E)));
+  transform: scale(1.02);
+}
+
+.ag-genome__seg:focus-visible {
+  stroke: var(--color-silver-100, #F0F2F5);
+  stroke-width: 2;
+  stroke-dasharray: 4 2;
+}
+
+/* Energy animation drives segment breathing */
+.ag-genome__seg[data-energy="breathe"] {
+  animation: ag-genome-breathe var(--energy-speed, 4s) ease-in-out infinite;
+}
+
+.ag-genome__seg[data-energy="expand"] {
+  animation: ag-genome-expand var(--energy-speed, 2s) ease-in-out infinite;
+}
+
+.ag-genome__seg[data-energy="contract"] {
+  animation: ag-genome-contract var(--energy-speed, 3s) ease-in-out infinite;
+}
+
+.ag-genome__seg[data-energy="static"] {
+  animation: none;
+}
+
+/* Hotspot segments */
+.ag-genome__seg[data-hotspot] {
+  filter: brightness(0.9);
+  animation:
+    ag-genome-breathe var(--energy-speed, 4s) ease-in-out infinite,
+    ag-genome-hotspotFlash 2s ease-in-out infinite;
+}
+
+/* Ripple-active segments */
+.ag-genome__seg[data-ripple] {
+  filter:
+    brightness(1.15)
+    drop-shadow(0 0 8px var(--seg-color, var(--color-gold-400, #C9A96E)));
+}
+
+/* Hotspot ring overlay */
+.ag-genome__hotspot-ring {
+  pointer-events: none;
+  opacity: 0.7;
+  animation: ag-genome-ringPulse 2s ease-in-out infinite;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §4  Center Text
+   ────────────────────────────────────────────────────────── */
+
+.ag-genome__score {
+  font-size: 28px;
+  font-weight: 800;
+  fill: var(--color-silver-100, #F0F2F5);
+  font-family: var(--font-display, "Cormorant Garamond", serif);
+}
+
+.ag-genome__subtitle {
+  font-size: 10px;
+  font-weight: 500;
+  fill: var(--color-silver-500, #5C6978);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §5  Tooltip
+   ────────────────────────────────────────────────────────── */
+
+.ag-genome__tooltip {
+  position: absolute;
+  bottom: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface-1, #111827);
+  border: 1px solid var(--line-color, rgba(255, 255, 255, 0.06));
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+  opacity: 0;
+  animation: ag-genome-tooltipIn 0.2s ease forwards;
+}
+
+.ag-genome__tooltip-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.ag-genome__tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.ag-genome__tooltip-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100, #F0F2F5);
+}
+
+.ag-genome__tooltip-count {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.6875rem;
+  color: var(--color-silver-300, #B8C0CC);
+}
+
+.ag-genome__tooltip-pct {
+  color: var(--color-silver-500, #5C6978);
+}
+
+.ag-genome__tooltip-health {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.6875rem;
+  color: var(--color-emerald-400, #3DAA70);
+}
+
+.ag-genome__tooltip-risk {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.6875rem;
+  color: var(--color-amber-400, #D4A840);
+  font-weight: 500;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §6  Keyframes (feature-specific: 7)
+   ────────────────────────────────────────────────────────── */
+
+@keyframes ag-genome-auraPulse {
+  0%, 100% {
+    r: 74;
+    opacity: var(--aura-base, 0.2);
+  }
+  50% {
+    r: 78;
+    opacity: calc(var(--aura-base, 0.2) + 0.1);
+  }
+}
+
+@keyframes ag-genome-breathe {
+  0%, 100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.008);
+  }
+}
+
+@keyframes ag-genome-expand {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+}
+
+@keyframes ag-genome-contract {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(0.99);
+  }
+}
+
+@keyframes ag-genome-hotspotFlash {
+  0%, 100% {
+    filter: brightness(0.9);
+  }
+  50% {
+    filter: brightness(1.1) drop-shadow(0 0 4px var(--color-rose-400, #C46470));
+  }
+}
+
+@keyframes ag-genome-ringPulse {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 0.3; }
+}
+
+@keyframes ag-genome-tooltipIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §7  Responsive
+   ────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .ag-genome {
+    max-width: 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ag-genome {
+    max-width: 240px;
+  }
+
+  .ag-genome__tooltip {
+    font-size: 0.625rem;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §8  Light Mode
+   ────────────────────────────────────────────────────────── */
+
+.light .ag-genome__score {
+  fill: var(--color-abyss, #080B12);
+}
+
+.light .ag-genome__subtitle {
+  fill: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-genome__tooltip {
+  background: var(--color-warm-canvas, #f5f3ee);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.08));
+}
+
+.light .ag-genome__tooltip-label {
+  color: var(--color-abyss, #080B12);
+}
+
+.light .ag-genome__tooltip-count {
+  color: var(--color-silver-700, #374151);
+}
+
+.light .ag-genome__tooltip-health {
+  color: var(--color-emerald-500, #34d399);
+}
+
+.light .ag-genome__tooltip-risk {
+  color: var(--color-amber-500, #f59e0b);
+}
+
+.light .ag-genome__seg:focus-visible {
+  stroke: var(--color-silver-800, #2d3748);
+}
+
+.light .ag-genome__seg[data-energy="breathe"],
+.light .ag-genome__seg[data-energy="expand"],
+.light .ag-genome__seg[data-energy="contract"] {
+  animation-duration: calc(var(--energy-speed, 4s) * 1.3);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §9  Reduced Motion
+   ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-genome__aura,
+  .ag-genome__seg,
+  .ag-genome__hotspot-ring {
+    animation: none !important;
+    transform: none;
+  }
+
+  .ag-genome__tooltip {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .ag-genome__seg[data-hotspot] {
+    animation: none !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §10  Print
+   ────────────────────────────────────────────────────────── */
+
+@media print {
+  .ag-genome {
+    max-width: 200px;
+  }
+
+  .ag-genome__aura,
+  .ag-genome__hotspot-ring {
+    display: none;
+  }
+
+  .ag-genome__seg {
+    animation: none !important;
+  }
+
+  .ag-genome__score {
+    fill: #000;
+  }
+
+  .ag-genome__subtitle {
+    fill: #333;
+  }
+
+  .ag-genome__tooltip {
+    display: none;
+  }
+}

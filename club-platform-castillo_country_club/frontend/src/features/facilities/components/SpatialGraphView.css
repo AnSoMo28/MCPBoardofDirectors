@@ -1,0 +1,663 @@
+/* ═══════════════════════════════════════════════════════════════
+   SPATIAL GRAPH VIEW — Living Protocol 7/7
+
+   REWRITE — adds pan/zoom transform, node drag, zoom controls,
+   interaction cursor states, drag feedback.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Root ──────────────────────────────────────────────────── */
+
+.glass-fac-graph {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Interaction cursors (I5) ── */
+
+.glass-fac-graph[data-interaction="idle"] {
+  cursor: grab;
+}
+
+.glass-fac-graph[data-interaction="panning"] {
+  cursor: grabbing;
+}
+
+.glass-fac-graph[data-interaction="dragging"] {
+  cursor: grabbing;
+}
+
+/* ═══ SVG CANVAS ═════════════════════════════════════════════ */
+
+.glass-fac-graph__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.glass-fac-graph__world {
+  will-change: transform;
+}
+
+/* ═══ LIVING PROTOCOL: 1. RESPIRACIÓN ════════════════════════ */
+
+.glass-fac-graph__node {
+  opacity: 0;
+  animation: glass-graph-node-enter 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+}
+
+@keyframes glass-graph-node-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.glass-fac-graph__node-bg {
+  animation: glass-graph-breathe 3.5s ease-in-out infinite;
+  animation-delay: calc(var(--stagger-i, 0) * 0.2s);
+}
+
+@keyframes glass-graph-breathe {
+  0%, 100% { fill-opacity: 0.65; }
+  50%      { fill-opacity: 0.9; }
+}
+
+/* Faster breathing for stressed nodes */
+.glass-fac-graph__node[data-crowd="overloaded"] .glass-fac-graph__node-bg {
+  animation-duration: 1.4s;
+}
+
+.glass-fac-graph__node[data-crowd="crowded"] .glass-fac-graph__node-bg {
+  animation-duration: 1.8s;
+}
+
+.glass-fac-graph__node[data-crowd="busy"] .glass-fac-graph__node-bg {
+  animation-duration: 2.4s;
+}
+
+/* ═══ LIVING PROTOCOL: 2. REACCIÓN ═══════════════════════════ */
+
+.glass-fac-graph__node {
+  transition: filter 0.2s ease;
+}
+
+.glass-fac-graph__node:hover {
+  filter: brightness(1.15) drop-shadow(0 0 6px rgba(255, 255, 255, 0.15));
+}
+
+.glass-fac-graph[data-interaction="idle"] .glass-fac-graph__node {
+  cursor: pointer;
+}
+
+.glass-fac-graph[data-interaction="dragging"] .glass-fac-graph__node[data-dragging="true"] {
+  cursor: grabbing;
+  filter: brightness(1.25) drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+}
+
+/* Disable node interaction during pan/drag of another node */
+.glass-fac-graph[data-interaction="panning"] .glass-fac-graph__node,
+.glass-fac-graph[data-interaction="dragging"] .glass-fac-graph__node:not([data-dragging="true"]) {
+  pointer-events: none;
+}
+
+/* ═══ LIVING PROTOCOL: 3. MEMORIA ════════════════════════════ */
+
+/* Comfort dot + occupancy text persist visual memory */
+/* (Rendered in component via fill/text) */
+
+/* ═══ LIVING PROTOCOL: 4. INTENCIÓN ══════════════════════════ */
+
+/* Click opens panel, drag repositions — both via pointer events */
+
+/* ═══ LIVING PROTOCOL: 5. SINIESTRÍA ═════════════════════════ */
+
+.glass-fac-graph__node-bottleneck-ring {
+  fill: none;
+  stroke: var(--color-rose-400);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+  animation: glass-graph-bottleneck-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes glass-graph-bottleneck-pulse {
+  0%, 100% { stroke-opacity: 0.7; }
+  50%      { stroke-opacity: 0.15; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-fac-graph__node,
+  .glass-fac-graph__node-bg,
+  .glass-fac-graph__node-bottleneck-ring {
+    animation: none !important;
+    opacity: 1 !important;
+    fill-opacity: 0.8 !important;
+    stroke-opacity: 0.5 !important;
+  }
+}
+
+/* ═══ LIVING PROTOCOL: 6. EMPATÍA ════════════════════════════ */
+
+.glass-fac-graph[data-mode="calm"] {
+  border-color: var(--color-teal-800);
+}
+
+.glass-fac-graph[data-mode="alert"] {
+  border-color: var(--color-amber-800);
+}
+
+.glass-fac-graph[data-mode="critical"] {
+  border-color: var(--color-rose-800);
+}
+
+/* ═══ LIVING PROTOCOL: 7. NARRATIVA ══════════════════════════ */
+
+/* Tooltip + panel + empty state carry narrative */
+
+/* ═══ CLUSTERS ═══════════════════════════════════════════════ */
+
+.glass-fac-graph__cluster {
+  fill: rgba(255, 255, 255, 0.015);
+  stroke: var(--color-silver-800);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+/* ═══ EDGES ══════════════════════════════════════════════════ */
+
+.glass-fac-graph__edge {
+  fill: none;
+  stroke-linecap: round;
+  opacity: 0.35;
+  transition: opacity 0.2s ease, stroke-width 0.2s ease;
+}
+
+.glass-fac-graph__edge[data-highlighted="true"] {
+  opacity: 0.8;
+}
+
+.glass-fac-graph__edge[data-edge-type="flow"] {
+  stroke-dasharray: 6 3;
+}
+
+.glass-fac-graph__edge[data-edge-type="synergy"] {
+  stroke-dasharray: 3 2;
+}
+
+.glass-fac-graph__particle {
+  opacity: 0.55;
+}
+
+/* ═══ NODE RING ══════════════════════════════════════════════ */
+
+.glass-fac-graph__node-ring {
+  fill: none;
+  stroke-width: 2;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.glass-fac-graph__node[data-selected="true"] .glass-fac-graph__node-ring {
+  opacity: 0.9;
+  stroke-width: 3;
+}
+
+/* ═══ NODE TEXT ══════════════════════════════════════════════ */
+
+.glass-fac-graph__node-name {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--color-silver-200);
+  text-anchor: middle;
+  pointer-events: none;
+  letter-spacing: 0.02em;
+}
+
+.glass-fac-graph__node-occupancy {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  fill: var(--color-silver-400);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.glass-fac-graph__node-comfort-dot {
+  pointer-events: none;
+}
+
+/* ═══ TOOLTIP ════════════════════════════════════════════════ */
+
+.glass-fac-graph__tooltip {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  max-width: 260px;
+}
+
+.glass-fac-graph__tooltip[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.glass-fac-graph__tooltip-name {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin-bottom: 2px;
+}
+
+.glass-fac-graph__tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.glass-fac-graph__tooltip-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-silver-500);
+}
+
+.glass-fac-graph__tooltip-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-silver-300);
+}
+
+.glass-fac-graph__tooltip-value[data-crowd="overloaded"],
+.glass-fac-graph__tooltip-value[data-crowd="crowded"] {
+  color: var(--color-rose-400);
+}
+
+.glass-fac-graph__tooltip-value[data-crowd="busy"] {
+  color: var(--color-amber-400);
+}
+
+.glass-fac-graph__tooltip-value[data-crowd="quiet"],
+.glass-fac-graph__tooltip-value[data-crowd="empty"] {
+  color: var(--color-silver-500);
+}
+
+.glass-fac-graph__tooltip-narrative {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  line-height: 1.5;
+  margin-top: 2px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-silver-800);
+}
+
+/* ═══ PERSONALITY PANEL ══════════════════════════════════════ */
+
+.glass-fac-graph__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 280px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border-left: 1px solid var(--glass-border);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.3);
+  z-index: 15;
+  overflow-y: auto;
+  animation: glass-graph-panel-enter 0.25s ease forwards;
+}
+
+@keyframes glass-graph-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.glass-fac-graph__panel-close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-silver-700);
+  background: transparent;
+  color: var(--color-silver-500);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.glass-fac-graph__panel-close:hover {
+  color: var(--color-silver-300);
+  border-color: var(--color-silver-600);
+}
+
+.glass-fac-graph__panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-right: 36px;
+}
+
+.glass-fac-graph__panel-name {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.glass-fac-graph__panel-personality-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(45, 212, 191, 0.08);
+  border: 1px solid var(--color-teal-800);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-teal-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  align-self: flex-start;
+}
+
+.glass-fac-graph__panel-narrative {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-silver-400);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Panel Comfort ── */
+
+.glass-fac-graph__panel-comfort {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-silver-800);
+}
+
+.glass-fac-graph__panel-comfort-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.glass-fac-graph__panel-comfort-value {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.glass-fac-graph__panel-comfort-max {
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-silver-600);
+}
+
+.glass-fac-graph__panel-comfort-status {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-silver-500);
+}
+
+/* ═══ RADAR CHART ════════════════════════════════════════════ */
+
+.glass-fac-graph__radar {
+  width: 100%;
+  padding: var(--space-2) 0;
+}
+
+.glass-fac-graph__radar-grid {
+  fill: none;
+  stroke: var(--color-silver-800);
+  stroke-width: 0.5;
+}
+
+.glass-fac-graph__radar-axis {
+  stroke: var(--color-silver-800);
+  stroke-width: 0.5;
+}
+
+.glass-fac-graph__radar-value {
+  fill: rgba(45, 212, 191, 0.12);
+  stroke: var(--color-teal-400);
+  stroke-width: 1.5;
+  animation: glass-graph-radar-enter 0.6s ease forwards;
+  transform-origin: 100px 85px;
+}
+
+@keyframes glass-graph-radar-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.glass-fac-graph__radar-dot {
+  fill: var(--color-teal-400);
+  stroke: var(--color-silver-900);
+  stroke-width: 1.5;
+}
+
+.glass-fac-graph__radar-label-name {
+  font-family: var(--font-display);
+  font-size: 8px;
+  font-weight: 600;
+  fill: var(--color-silver-400);
+}
+
+.glass-fac-graph__radar-label-value {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  fill: var(--color-silver-500);
+}
+
+/* ═══ LEGEND ═════════════════════════════════════════════════ */
+
+.glass-fac-graph__legend {
+  position: absolute;
+  bottom: var(--space-3);
+  left: var(--space-3);
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 5;
+}
+
+.glass-fac-graph__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--color-silver-500);
+}
+
+.glass-fac-graph__legend-line {
+  display: inline-block;
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+/* ═══ I5: ZOOM CONTROLS ═════════════════════════════════════ */
+
+.glass-fac-graph__controls {
+  position: absolute;
+  bottom: var(--space-3);
+  right: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-silver-800);
+  z-index: 10;
+}
+
+.glass-fac-graph__ctrl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--color-silver-400);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.glass-fac-graph__ctrl-btn:hover:not(:disabled) {
+  color: var(--color-silver-200);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.glass-fac-graph__ctrl-btn:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.glass-fac-graph__ctrl-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.glass-fac-graph__ctrl-btn--reset-pin {
+  color: var(--color-amber-400);
+}
+
+.glass-fac-graph__ctrl-btn--reset-pin:hover {
+  color: var(--color-amber-300);
+}
+
+.glass-fac-graph__ctrl-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--color-amber-400);
+  color: var(--color-silver-900);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 3px;
+}
+
+.glass-fac-graph__ctrl-zoom {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-silver-500);
+  padding: 2px 0;
+  min-width: 36px;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.glass-fac-graph__ctrl-divider {
+  width: 20px;
+  height: 1px;
+  background: var(--color-silver-800);
+  margin: 2px 0;
+}
+
+/* ═══ EMPTY STATE ════════════════════════════════════════════ */
+
+.glass-fac-graph--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glass-fac-graph__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  color: var(--color-silver-600);
+}
+
+.glass-fac-graph__empty-text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-silver-500);
+  max-width: 300px;
+  line-height: 1.6;
+  margin: 0;
+}

@@ -1,0 +1,699 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/family-atoms.css
+   Phase 34+ Migration — Shared Visual Atoms
+   Level 6+ Agency · Production Grade
+
+   Foundation patterns shared across ALL family components.
+   Batches 3-7 import this file and compose these atoms.
+
+   Atom inventory:
+     §1  fm-dataCard    — reusable card container
+     §2  fm-metric      — value + trend + projection (P2: Time)
+     §3  fm-insight     — narrative-first intelligence line (P1+P3)
+     §4  fm-signal      — severity indicator badge
+     §5  fm-progress    — generic progress bar
+     §6  fm-section     — section header within cards
+     §7  fm-cta         — action button for inline CTAs (P3)
+     §8  fm-expandable  — expand/collapse content
+     §9  fm-sparkline   — sparkline container + projection (P2)
+
+   Design principles (2027):
+     P1  Narrative First    → fm-insight renders text ABOVE numbers
+     P2  Time as Citizen    → fm-metric shows trend + projection
+     P3  Every Insight CTA  → fm-insight always has action slot
+     P5  Shared Atoms       → this file is the single source
+
+   Usage:
+     import "../family-atoms.css";
+     <div className="fm-dataCard" data-tone="gold">
+       <div className="fm-dataCard__header">
+         <span className="fm-dataCard__title">Title</span>
+       </div>
+       <div className="fm-dataCard__body">...</div>
+     </div>
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Custom Property Tokens
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Card */
+  --fm-card-padding: 20px;
+  --fm-card-gap: 12px;
+  --fm-card-radius: var(--radius-lg);
+  --fm-card-border: var(--color-border-subtle);
+
+  /* Metric */
+  --fm-metric-value-size: 1.75rem;
+  --fm-metric-label-size: 0.6875rem;
+  --fm-metric-trend-size: 0.75rem;
+
+  /* Insight */
+  --fm-insight-padding: 14px 16px;
+  --fm-insight-radius: var(--radius-md);
+  --fm-insight-border-width: 3px;
+
+  /* Progress */
+  --fm-progress-height: 6px;
+  --fm-progress-radius: 3px;
+
+  /* Sparkline */
+  --fm-sparkline-height: 40px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  fm-dataCard — Reusable card container
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dataCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fm-card-gap);
+  padding: var(--fm-card-padding);
+  border-radius: var(--fm-card-radius);
+  border: 1px solid var(--fm-card-border);
+  background: var(--color-surface-1);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Tone modifiers via data-attribute */
+.fm-dataCard[data-tone="gold"] {
+  border-color: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  border-top: 2px solid var(--color-gold-400);
+}
+
+.fm-dataCard[data-tone="teal"] {
+  border-color: color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+  border-top: 2px solid var(--color-teal-400);
+}
+
+.fm-dataCard[data-tone="emerald"] {
+  border-color: color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+  border-top: 2px solid var(--color-emerald-400);
+}
+
+.fm-dataCard[data-tone="rose"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+  border-top: 2px solid var(--color-rose-400);
+}
+
+.fm-dataCard[data-tone="silver"] {
+  border-color: var(--fm-card-border);
+}
+
+/* Hover (optional — disable with data-static) */
+.fm-dataCard:not([data-static]):hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Header */
+.fm-dataCard__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fm-dataCard__header--start {
+  justify-content: flex-start;
+}
+
+.fm-dataCard__title {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.fm-dataCard__subtitle {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  color: var(--color-silver-500);
+}
+
+/* Body */
+.fm-dataCard__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fm-card-gap);
+}
+
+/* Footer */
+.fm-dataCard__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  fm-metric — Value + trend + projection (P2)
+
+   Renders a metric with temporal context:
+   - Current value (prominent)
+   - Trend indicator (arrow + delta)
+   - Projection (future estimate)
+
+   @example
+   <div className="fm-metric" data-trend="up" data-level="positive">
+     <span className="fm-metric__label">Engagement</span>
+     <span className="fm-metric__value">73</span>
+     <div className="fm-metric__trend">
+       <span className="fm-metric__trend-arrow">↑</span>
+       <span className="fm-metric__trend-delta">+8pts / 30d</span>
+     </div>
+     <span className="fm-metric__projection">Proyectado: 81+</span>
+   </div>
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fm-metric__label {
+  font-family: var(--font-ui);
+  font-size: var(--fm-metric-label-size);
+  font-weight: 500;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fm-metric__value {
+  font-family: var(--font-display);
+  font-size: var(--fm-metric-value-size);
+  font-weight: 700;
+  color: var(--color-silver-200);
+  line-height: 1.1;
+}
+
+/* Data-level colors the value */
+.fm-metric[data-level="positive"] .fm-metric__value {
+  color: var(--color-emerald-400);
+}
+
+.fm-metric[data-level="negative"] .fm-metric__value {
+  color: var(--color-rose-400);
+}
+
+.fm-metric[data-level="warning"] .fm-metric__value {
+  color: var(--color-amber-400);
+}
+
+/* Trend indicator */
+.fm-metric__trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--fm-metric-trend-size);
+  color: var(--color-silver-500);
+}
+
+.fm-metric[data-trend="up"] .fm-metric__trend {
+  color: var(--color-emerald-400);
+}
+
+.fm-metric[data-trend="down"] .fm-metric__trend {
+  color: var(--color-rose-400);
+}
+
+.fm-metric__trend-arrow {
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+/* Projection — dashed future */
+.fm-metric__projection {
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  color: var(--color-silver-600);
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  fm-insight — Narrative-first intelligence (P1+P3)
+
+   The core 2027 pattern. Renders insight as STORY, not data.
+   Layout: narrative (prominent) → evidence (muted) → CTA.
+
+   @example
+   <div className="fm-insight" data-severity="high">
+     <p className="fm-insight__narrative">
+       Los García podrían irse. 21 días sin visita.
+     </p>
+     <p className="fm-insight__evidence">
+       Engagement: 45/100 (−15pts en 30d)
+     </p>
+     <div className="fm-insight__actions">
+       <button className="fm-cta fm-cta--primary">Enviar invitación</button>
+       <button className="fm-cta fm-cta--secondary">Agendar llamada</button>
+     </div>
+   </div>
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-insight {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--fm-insight-padding);
+  border-radius: var(--fm-insight-radius);
+  border-left: var(--fm-insight-border-width) solid var(--color-silver-500);
+  background: var(--color-surface-1);
+  animation: fm-atomsFadeUp 0.3s ease forwards;
+}
+
+/* Severity → border color + background tint */
+.fm-insight[data-severity="critical"] {
+  border-left-color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 5%, var(--color-surface-1));
+}
+
+.fm-insight[data-severity="high"] {
+  border-left-color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 5%, var(--color-surface-1));
+}
+
+.fm-insight[data-severity="medium"] {
+  border-left-color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 4%, var(--color-surface-1));
+}
+
+.fm-insight[data-severity="low"] {
+  border-left-color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 4%, var(--color-surface-1));
+}
+
+.fm-insight[data-severity="info"] {
+  border-left-color: var(--color-silver-400);
+}
+
+.fm-insight[data-severity="positive"] {
+  border-left-color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 5%, var(--color-surface-1));
+}
+
+/* Narrative — the FIRST thing the user reads (P1) */
+.fm-insight__narrative {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Evidence — supporting data, secondary */
+.fm-insight__evidence {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--color-silver-500);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Actions — CTA row (P3) */
+.fm-insight__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  fm-signal — Severity indicator badge
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--fm-signal-color, var(--color-silver-400));
+  background: var(--fm-signal-bg, transparent);
+}
+
+.fm-signal__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fm-signal-color, var(--color-silver-400));
+  flex-shrink: 0;
+}
+
+.fm-signal[data-signal="critical"] {
+  --fm-signal-color: var(--color-rose-400);
+  --fm-signal-bg: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+
+.fm-signal[data-signal="high"] {
+  --fm-signal-color: var(--color-amber-400);
+  --fm-signal-bg: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+
+.fm-signal[data-signal="medium"] {
+  --fm-signal-color: var(--color-gold-400);
+  --fm-signal-bg: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+
+.fm-signal[data-signal="low"] {
+  --fm-signal-color: var(--color-teal-400);
+  --fm-signal-bg: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+
+.fm-signal[data-signal="info"] {
+  --fm-signal-color: var(--color-silver-400);
+  --fm-signal-bg: color-mix(in srgb, var(--color-silver-400) 8%, transparent);
+}
+
+.fm-signal[data-signal="positive"] {
+  --fm-signal-color: var(--color-emerald-400);
+  --fm-signal-bg: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  fm-progress — Generic progress bar
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-progress {
+  width: 100%;
+  height: var(--fm-progress-height);
+  border-radius: var(--fm-progress-radius);
+  background: var(--color-surface-3);
+  overflow: hidden;
+}
+
+.fm-progress__fill {
+  height: 100%;
+  border-radius: var(--fm-progress-radius);
+  width: var(--fm-progress-pct, 0%);
+  transition: width 0.5s ease;
+  background: var(--color-silver-400);
+}
+
+.fm-progress[data-level="safe"] .fm-progress__fill {
+  background: var(--color-emerald-400);
+}
+
+.fm-progress[data-level="warning"] .fm-progress__fill {
+  background: var(--color-amber-400);
+}
+
+.fm-progress[data-level="critical"] .fm-progress__fill {
+  background: var(--color-rose-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  fm-section — Section header within cards
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fm-section__title {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-300);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.fm-section__action {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  color: var(--color-gold-400);
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  transition: opacity 0.15s ease;
+}
+
+.fm-section__action:hover {
+  opacity: 0.8;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  fm-cta — Action buttons for inline CTAs (P3)
+
+   Lighter than the shared UI Button — designed for
+   inline use within insight cards and data cards.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  line-height: 1.3;
+}
+
+.fm-cta--primary {
+  background: var(--color-gold-400);
+  color: var(--color-abyss);
+}
+
+.fm-cta--primary:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 85%, white);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-gold-400) 30%, transparent);
+}
+
+.fm-cta--secondary {
+  background: transparent;
+  color: var(--color-silver-300);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.fm-cta--secondary:hover {
+  border-color: var(--color-silver-400);
+  color: var(--color-silver-200);
+}
+
+.fm-cta--ghost {
+  background: transparent;
+  color: var(--color-gold-400);
+  padding: 6px 8px;
+}
+
+.fm-cta--ghost:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+
+.fm-cta:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-gold-400);
+}
+
+.fm-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  fm-expandable — Expand/collapse content
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-expandable__trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: color 0.15s ease;
+}
+
+.fm-expandable__trigger:hover {
+  color: var(--color-silver-200);
+}
+
+.fm-expandable__trigger-icon {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+.fm-expandable[data-open] .fm-expandable__trigger-icon {
+  transform: rotate(180deg);
+}
+
+.fm-expandable__content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.fm-expandable[data-open] .fm-expandable__content {
+  grid-template-rows: 1fr;
+}
+
+.fm-expandable__content-inner {
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  fm-sparkline — Sparkline container (P2: Time)
+
+   SVG-based sparkline with projection zone.
+   The projection zone (dashed) shows predicted values.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-sparkline {
+  width: 100%;
+  height: var(--fm-sparkline-height);
+}
+
+.fm-sparkline__area {
+  fill: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  transition: opacity 0.2s ease;
+}
+
+.fm-sparkline__line {
+  fill: none;
+  stroke: var(--color-gold-400);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fm-sparkline__projection {
+  fill: none;
+  stroke: var(--color-gold-400);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  opacity: 0.5;
+}
+
+.fm-sparkline__dot {
+  fill: var(--color-gold-400);
+  r: 2.5;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.fm-sparkline:hover .fm-sparkline__dot {
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Light Mode
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-dataCard {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+}
+
+.light .fm-dataCard:not([data-static]):hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-insight {
+  background: var(--color-surface-0);
+}
+
+.light .fm-insight[data-severity="critical"] {
+  background: color-mix(in srgb, var(--color-rose-400) 4%, var(--color-surface-0));
+}
+
+.light .fm-insight[data-severity="high"] {
+  background: color-mix(in srgb, var(--color-amber-400) 4%, var(--color-surface-0));
+}
+
+.light .fm-cta--secondary {
+  border-color: var(--color-border-default);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Reduced Motion
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-insight {
+    animation: none;
+  }
+
+  .fm-expandable__content {
+    transition: none;
+  }
+
+  .fm-expandable__trigger-icon {
+    transition: none;
+  }
+
+  .fm-progress__fill {
+    transition: none;
+  }
+
+  .fm-sparkline__dot {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Print
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-dataCard {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  .fm-cta {
+    display: none;
+  }
+
+  .fm-expandable__content {
+    grid-template-rows: 1fr !important;
+  }
+
+  .fm-expandable__content-inner {
+    overflow: visible !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-atomsFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

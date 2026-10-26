@@ -1,0 +1,525 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/ClassesPanel.css
+   §B4.7 — Classes Panel V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  card stagger entry animation
+   2. REACCIÓN:     hover translateY on cards
+   3. MEMORIA:      stats, class list, enrollment data
+   4. INTENCIÓN:    filters, fill-level labels, underperforming flag
+   5. SINIESTRÍA:   data-fill-level colors throughout
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-classes {
+  --spt-cl-accent: var(--color-teal-400, #2a9ab5);
+  --spt-cl-surface: var(--color-surface-1, #1a1a1a);
+  --spt-cl-border: rgba(255, 255, 255, 0.06);
+  --spt-cl-text: var(--color-silver-100, #f0ece4);
+  --spt-cl-text-muted: var(--color-silver-400, #8a8580);
+  --spt-cl-text-dim: var(--color-silver-500, #7a7570);
+}
+
+.spt-classes[data-mode="calm"]    { --spt-cl-accent: var(--color-teal-400, #2a9ab5); }
+.spt-classes[data-mode="alert"]   { --spt-cl-accent: var(--color-amber-400, #d4a017); }
+.spt-classes[data-mode="critical"]{ --spt-cl-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-classes__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.spt-classes__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.05rem;
+  color: var(--spt-cl-text);
+  margin: 0;
+}
+
+.spt-classes__new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--spt-cl-accent);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--spt-cl-accent);
+  cursor: pointer;
+  min-height: 32px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.spt-classes__new-btn:hover {
+  background: rgba(42, 154, 181, 0.1);
+}
+
+.spt-classes__new-btn:focus-visible {
+  outline: 2px solid var(--spt-cl-accent);
+  outline-offset: 2px;
+}
+
+.spt-classes__new-btn-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ── §2 — Stats Grid ───────────────────────────────────── */
+
+.spt-classes__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.spt-classes__stat-card {
+  padding: 0.5rem 0.65rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--spt-cl-border);
+  border-radius: 6px;
+}
+
+.spt-classes__stat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.2rem;
+}
+
+.spt-classes__stat-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  transition: color 0.4s ease;
+}
+
+.spt-classes__stat-icon[data-level="default"] { color: var(--spt-cl-text-dim); }
+.spt-classes__stat-icon[data-level="accent"]  { color: var(--spt-cl-accent); }
+.spt-classes__stat-icon[data-level="success"] { color: var(--color-emerald-400); }
+.spt-classes__stat-icon[data-level="warning"] { color: var(--color-amber-400); }
+
+.spt-classes__stat-label {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--spt-cl-text-dim);
+}
+
+.spt-classes__stat-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  transition: color 0.4s ease;
+}
+
+.spt-classes__stat-value[data-level="default"] { color: var(--spt-cl-text); }
+.spt-classes__stat-value[data-level="accent"]  { color: var(--spt-cl-accent); }
+.spt-classes__stat-value[data-level="success"] { color: var(--color-emerald-400); }
+.spt-classes__stat-value[data-level="warning"] { color: var(--color-amber-400); }
+
+/* ── §3 — Filters ──────────────────────────────────────── */
+
+.spt-classes__filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.spt-classes__select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--spt-cl-border);
+  border-radius: 5px;
+  background: var(--color-surface-2, #222);
+  font-size: 0.7rem;
+  color: var(--spt-cl-text-muted);
+  min-height: 28px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.spt-classes__select:focus {
+  outline: none;
+  border-color: var(--spt-cl-accent);
+}
+
+.spt-classes__filter-count {
+  margin-left: auto;
+  font-size: 0.6rem;
+  color: var(--spt-cl-text-dim);
+}
+
+/* ── §4 — Class Grid ───────────────────────────────────── */
+
+.spt-classes__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+}
+
+/* ── §5 — Class Card (LP 1+2: Respiración + Reacción) ──── */
+
+.spt-classes__card {
+  padding: 0.85rem;
+  background: var(--spt-cl-surface);
+  border: 1px solid var(--spt-cl-border);
+  border-radius: 10px;
+  transition: border-color 0.2s ease,
+              transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease;
+  /* Stagger entry */
+  animation: spt-cl-card-enter 0.4s ease both;
+  animation-delay: calc(var(--stagger-i, 0) * 80ms);
+}
+
+@keyframes spt-cl-card-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-classes__card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Underperforming glow (LP 5: Siniestría) */
+.spt-classes__card[data-underperforming="true"] {
+  border-left: 3px solid var(--color-rose-400);
+}
+
+/* ── §5.1 — Card Header ────────────────────────────────── */
+
+.spt-classes__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.spt-classes__card-title-area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.spt-classes__card-sport-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.spt-classes__card-title-text {
+  min-width: 0;
+}
+
+.spt-classes__card-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--spt-cl-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-classes__card-type {
+  font-size: 0.6rem;
+  color: var(--spt-cl-text-dim);
+}
+
+.spt-classes__card-full-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  background: rgba(61, 170, 112, 0.1);
+  color: var(--color-emerald-400);
+  flex-shrink: 0;
+}
+
+/* ── §5.2 — Card Info ──────────────────────────────────── */
+
+.spt-classes__card-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.spt-classes__card-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.spt-classes__card-info-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--spt-cl-text-dim);
+  flex-shrink: 0;
+}
+
+.spt-classes__card-info-text {
+  font-size: 0.7rem;
+  color: var(--spt-cl-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── §5.3 — Enrollment Bar (LP 5: Siniestría) ──────────── */
+
+.spt-classes__card-enrollment {
+  margin-top: 0.15rem;
+}
+
+.spt-classes__card-enrollment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.spt-classes__card-enrollment-count {
+  font-size: 0.6rem;
+  color: var(--spt-cl-text-dim);
+}
+
+.spt-classes__card-enrollment-right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.spt-classes__card-fill-label {
+  font-size: 0.55rem;
+  font-weight: 500;
+  transition: color 0.4s ease;
+}
+
+.spt-classes__card-fill-label[data-fill-level="high"]   { color: var(--color-emerald-400); }
+.spt-classes__card-fill-label[data-fill-level="good"]   { color: var(--color-teal-400); }
+.spt-classes__card-fill-label[data-fill-level="medium"] { color: var(--color-amber-400); }
+.spt-classes__card-fill-label[data-fill-level="low"]    { color: var(--color-rose-400); }
+
+.spt-classes__card-fill-pct {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.65rem;
+  font-weight: 700;
+  transition: color 0.4s ease;
+}
+
+.spt-classes__card-fill-pct[data-fill-level="high"]   { color: var(--color-emerald-400); }
+.spt-classes__card-fill-pct[data-fill-level="good"]   { color: var(--color-teal-400); }
+.spt-classes__card-fill-pct[data-fill-level="medium"] { color: var(--color-amber-400); }
+.spt-classes__card-fill-pct[data-fill-level="low"]    { color: var(--color-rose-400); }
+
+.spt-classes__card-bar-track {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.spt-classes__card-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease, background 0.4s ease;
+}
+
+.spt-classes__card-bar-fill[data-fill-level="high"]   { background: var(--color-emerald-400); }
+.spt-classes__card-bar-fill[data-fill-level="good"]   { background: var(--color-teal-400); }
+.spt-classes__card-bar-fill[data-fill-level="medium"] { background: var(--color-amber-400); }
+.spt-classes__card-bar-fill[data-fill-level="low"]    { background: var(--color-rose-400); }
+
+/* ── §6 — Shimmer Skeleton ─────────────────────────────── */
+
+.spt-classes__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.spt-classes__skeleton-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.spt-classes__skeleton-block {
+  border-radius: 8px;
+  background: var(--spt-cl-surface);
+  animation: spt-cl-shimmer 1.5s ease-in-out infinite;
+}
+
+.spt-classes__skeleton-block--stats { height: 56px; width: 100%; }
+.spt-classes__skeleton-block--card  { height: 160px; width: 100%; }
+
+@keyframes spt-cl-shimmer {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.7; }
+}
+
+/* ── §7 — Footer: Narrative (LP 7) ─────────────────────── */
+
+.spt-classes__footer {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-cl-border);
+}
+
+.spt-classes__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-cl-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-cl-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §8 — Light Mode ───────────────────────────────────── */
+
+.light .spt-classes {
+  --spt-cl-surface: rgba(255, 255, 255, 0.7);
+  --spt-cl-border: rgba(0, 0, 0, 0.08);
+  --spt-cl-text: #1a1a1a;
+  --spt-cl-text-muted: #6b7280;
+  --spt-cl-text-dim: #9ca3af;
+}
+
+.light .spt-classes__stat-card {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-classes__card {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.light .spt-classes__card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-classes__card-bar-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-classes__select {
+  background: #f5f5f5;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .spt-classes__card-full-badge {
+  background: rgba(61, 170, 112, 0.08);
+}
+
+.light .spt-classes__card[data-underperforming="true"] {
+  border-left-color: var(--color-rose-400);
+}
+
+/* ── §9 — Reduced Motion ───────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-classes__card {
+    animation: none;
+  }
+
+  .spt-classes__card:hover {
+    transform: none;
+  }
+
+  .spt-classes__card,
+  .spt-classes__card-bar-fill,
+  .spt-classes__card-fill-pct,
+  .spt-classes__card-fill-label,
+  .spt-classes__stat-value,
+  .spt-classes__stat-icon,
+  .spt-classes__narrative {
+    transition: none;
+  }
+
+  .spt-classes__skeleton-block {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* ── §10 — Responsive ──────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .spt-classes__stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .spt-classes__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .spt-classes__skeleton-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .spt-classes__filters {
+    flex-wrap: wrap;
+  }
+
+  .spt-classes__filter-count {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* ── §11 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-classes {
+    break-inside: avoid;
+  }
+
+  .spt-classes__card {
+    animation: none;
+  }
+
+  .spt-classes__card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .spt-classes__new-btn,
+  .spt-classes__filters {
+    display: none;
+  }
+
+  .spt-classes__skeleton-block {
+    animation: none;
+  }
+}

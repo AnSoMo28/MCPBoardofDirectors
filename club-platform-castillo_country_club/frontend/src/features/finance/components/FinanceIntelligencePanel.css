@@ -1,0 +1,267 @@
+/**
+ * @component FinanceIntelligencePanel (Fase 19h)
+ * @namespace .glass-intelligence-*, .intelligence-status-dot, .intelligence-capability-card
+ * @depends globals.css (glass tokens, color-mix, font tokens)
+ * @note --section-accent se setea inline via style={} en el TSX
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   Fase 19h — Finance Intelligence Panel Glass
+   Section grid · dock · intro command center · neural loading
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Intelligence Section (Propuesta 1) ── */
+
+.glass-intelligence-section {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-top: 2px solid var(--section-accent, var(--color-silver-500));
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-intelligence-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glass-intelligence-section:hover {
+  border-color: var(--glass-border-hover);
+}
+
+/* Severity inner glow */
+.glass-intelligence-section--severity-success {
+  box-shadow: inset 0 2px 24px color-mix(in srgb, var(--color-emerald-400) 3%, transparent);
+}
+
+.glass-intelligence-section--severity-warning {
+  box-shadow: inset 0 2px 24px color-mix(in srgb, var(--color-amber-400) 3%, transparent);
+}
+
+.glass-intelligence-section--severity-danger {
+  box-shadow: inset 0 2px 24px color-mix(in srgb, var(--color-rose-400) 3%, transparent);
+}
+
+/* ── Status Dot (Propuesta 5) ── */
+
+.intelligence-status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.intelligence-status-dot--success {
+  background: var(--color-emerald-400);
+}
+
+.intelligence-status-dot--warning {
+  background: var(--color-amber-400);
+}
+
+.intelligence-status-dot--danger {
+  background: var(--color-rose-400);
+  box-shadow: 0 0 6px var(--color-rose-400);
+}
+
+/* ── Glass Intelligence Dock (Propuesta 2) ── */
+
+.glass-intelligence-dock {
+  position: relative;
+  backdrop-filter: blur(12px) saturate(1.05);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-intelligence-dock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.04) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Glass Intelligence Intro (Propuesta 3) ── */
+
+.glass-intelligence-intro {
+  position: relative;
+  backdrop-filter: blur(12px) saturate(1.05);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 48px 24px;
+}
+
+.glass-intelligence-intro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 30%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Radar sweep */
+.glass-intelligence-intro__radar {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  width: 180px;
+  height: 180px;
+  margin-left: -90px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(201,169,110,0.06) 30deg, transparent 60deg);
+  animation: intel-radar-sweep 4s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes intel-radar-sweep {
+  to { transform: rotate(360deg); }
+}
+
+/* Capability card */
+.intelligence-capability-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.intelligence-capability-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* ── Glass Intelligence Loading (Propuesta 4) ── */
+
+.glass-intelligence-loading {
+  position: relative;
+  backdrop-filter: blur(12px) saturate(1.05);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 64px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Expanding rings */
+.glass-intelligence-loading__ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 169, 110, 0.25);
+  animation: intel-loading-ring 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes intel-loading-ring {
+  0% { transform: scale(0.5); opacity: 0.5; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+/* ── Advanced Tools Toggle ── */
+
+.glass-intelligence-advanced-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  min-height: 44px;
+}
+
+.glass-intelligence-advanced-toggle:hover {
+  color: var(--color-silver-300);
+}
+
+/* ── Light Mode Overrides ── */
+
+.light .glass-intelligence-section {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-intelligence-section--severity-success,
+.light .glass-intelligence-section--severity-warning,
+.light .glass-intelligence-section--severity-danger {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-intelligence-dock {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+}
+
+.light .glass-intelligence-intro {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+}
+
+.light .glass-intelligence-intro__radar {
+  display: none;
+}
+
+.light .intelligence-capability-card {
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-intelligence-loading {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+}
+
+.light .glass-intelligence-loading__ring {
+  border-color: rgba(201, 169, 110, 0.15);
+}

@@ -1,0 +1,283 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/age-group/components/AgingOutStrip.css
+   Phase 34+ Migration — Aging Out Strip Styles (v2)
+   "The Hourglass Corridor" — Level 6+ Agency · Production Grade
+
+   CONSUMES FROM globals.css:
+     Tokens:    --color-rose-400, --color-amber-400, --color-silver-*
+                --color-surface-*, --line-color, --glass-bg, --radius-*
+     Keyframes: slideUp (implicit via parent stagger)
+     Glass:     .glass-card consumed by parent
+
+   FEATURE KEYFRAMES: 2
+     ag-aging-itemIn, ag-aging-urgencyPulse
+   REUSED KEYFRAMES: 0 (all unique)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────
+   §0  Block
+   ────────────────────────────────────────────────────────── */
+
+.ag-aging {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius-lg, 12px);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-rose-400, #C46470) 6%, transparent) 0%,
+      color-mix(in srgb, var(--color-amber-400, #D4A840) 6%, transparent) 50%,
+      transparent 100%
+    ),
+    var(--color-surface-1, #111827);
+  border: 1px solid var(--line-color, rgba(255, 255, 255, 0.06));
+  overflow: hidden;
+}
+
+.ag-aging[data-max-urgency="act"] {
+  border-color: color-mix(in srgb, var(--color-rose-400, #C46470) 20%, transparent);
+}
+
+.ag-aging[data-max-urgency="plan"] {
+  border-color: color-mix(in srgb, var(--color-amber-400, #D4A840) 15%, transparent);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §1  Header
+   ────────────────────────────────────────────────────────── */
+
+.ag-aging__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-300, #B8C0CC);
+}
+
+.ag-aging__header svg {
+  color: var(--color-amber-400, #D4A840);
+  flex-shrink: 0;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §2  Items container
+   ────────────────────────────────────────────────────────── */
+
+.ag-aging__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §3  Item — single bracket card
+   ────────────────────────────────────────────────────────── */
+
+.ag-aging__item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.04));
+  border: 1px solid color-mix(in srgb, var(--item-color, var(--color-rose-400, #C46470)) 12%, transparent);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+  opacity: 0;
+  animation: ag-aging-itemIn 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.1s + 0.15s);
+}
+
+.ag-aging__item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: color-mix(in srgb, var(--item-color, var(--color-rose-400, #C46470)) 25%, transparent);
+  transform: translateY(-1px);
+}
+
+.ag-aging__item[data-urgency="act"] {
+  animation:
+    ag-aging-itemIn 0.4s ease forwards,
+    ag-aging-urgencyPulse 3s ease-in-out infinite 0.55s;
+}
+
+/* Ring */
+.ag-aging__ring {
+  flex-shrink: 0;
+}
+
+.ag-aging__ring-fill {
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+/* Info */
+.ag-aging__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.ag-aging__item-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100, #F0F2F5);
+}
+
+.ag-aging__item-years {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.6875rem;
+  color: var(--item-color, var(--color-rose-400, #C46470));
+  font-weight: 500;
+}
+
+.ag-aging__item-members {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.6875rem;
+  color: var(--color-silver-500, #5C6978);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §4  Keyframes (feature-specific: 2)
+   ────────────────────────────────────────────────────────── */
+
+@keyframes ag-aging-itemIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes ag-aging-urgencyPulse {
+  0%, 100% {
+    border-color: color-mix(in srgb, var(--item-color, var(--color-rose-400, #C46470)) 12%, transparent);
+    box-shadow: none;
+  }
+  50% {
+    border-color: color-mix(in srgb, var(--item-color, var(--color-rose-400, #C46470)) 30%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--item-color, var(--color-rose-400, #C46470)) 10%, transparent);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §5  Responsive
+   ────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .ag-aging__item {
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .ag-aging {
+    padding: 0.75rem;
+  }
+
+  .ag-aging__items {
+    flex-direction: column;
+  }
+
+  .ag-aging__item {
+    width: 100%;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §6  Light Mode
+   ────────────────────────────────────────────────────────── */
+
+.light .ag-aging {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-rose-400, #C46470) 4%, transparent) 0%,
+      color-mix(in srgb, var(--color-amber-400, #D4A840) 4%, transparent) 50%,
+      transparent 100%
+    ),
+    var(--color-warm-canvas, #f5f3ee);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .ag-aging__item {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .ag-aging__item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .ag-aging__item-label {
+  color: var(--color-abyss, #080B12);
+}
+
+.light .ag-aging__item-members {
+  color: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-aging__header {
+  color: var(--color-silver-700, #374151);
+}
+
+.light .ag-aging__header svg {
+  color: var(--color-amber-500, #f59e0b);
+}
+
+.light .ag-aging__ring circle:first-child {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §7  Reduced Motion
+   ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-aging__item {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .ag-aging__item[data-urgency="act"] {
+    animation: none !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §8  Print
+   ────────────────────────────────────────────────────────── */
+
+@media print {
+  .ag-aging {
+    border: 1px solid #ccc;
+    background: #fff;
+  }
+
+  .ag-aging__item {
+    animation: none !important;
+    opacity: 1;
+    border: 1px solid #ccc;
+  }
+
+  .ag-aging__item-label {
+    color: #000;
+  }
+
+  .ag-aging__item-years {
+    color: #333;
+  }
+
+  .ag-aging__item-members {
+    color: #666;
+  }
+}

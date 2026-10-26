@@ -1,0 +1,341 @@
+/**
+ * @component ParamsPreview (Fase 25)
+ * @namespace .glass-params
+ * @depends globals.css (tokens)
+ * @note Smart formatted params view with expand/collapse, delta visual bar,
+ *       copy JSON button, fallback JSON view.
+ * @import import './ParamsPreview.css';
+ */
+
+/* ═══════════════════════════════════════
+   Root
+   ═══════════════════════════════════════ */
+
+.glass-params {
+  position: relative;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--color-surface-1, rgba(18, 22, 30, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ═══════════════════════════════════════
+   Copy Button
+   ═══════════════════════════════════════ */
+
+.glass-params__copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-silver-500, #7a7570);
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.12s ease, background 0.12s ease;
+}
+
+.glass-params:hover .glass-params__copy-btn,
+.glass-params__copy-btn:focus-visible {
+  opacity: 1;
+}
+
+.glass-params__copy-btn:hover {
+  color: var(--color-silver-200, #d4cfc7);
+  background: var(--glass-bg-hover);
+}
+
+.glass-params__copy-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400, #c9a96e);
+  outline-offset: 1px;
+}
+
+.glass-params__copy-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.glass-params__copy-btn--copied {
+  color: var(--color-emerald-400, #34d399);
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════
+   Fields List
+   ═══════════════════════════════════════ */
+
+.glass-params__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ═══════════════════════════════════════
+   Field Row
+   ═══════════════════════════════════════ */
+
+.glass-params__field {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.glass-params__field-label {
+  flex-shrink: 0;
+  width: 120px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  color: var(--color-silver-500, #7a7570);
+  padding-top: 1px;
+}
+
+@media (min-width: 640px) {
+  .glass-params__field-label {
+    width: 160px;
+  }
+}
+
+.glass-params__field-value {
+  flex: 1;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 12px;
+  color: var(--color-silver-200, #d4cfc7);
+  min-width: 0;
+  word-break: break-word;
+}
+
+.glass-params__field-value--currency {
+  color: var(--color-emerald-400, #34d399);
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-weight: 600;
+}
+
+.glass-params__field-value--date {
+  color: var(--color-teal-400, #2dd4bf);
+}
+
+.glass-params__field-value--boolean {
+  color: var(--color-amber-400, #fbbf24);
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════
+   Delta Visualization
+   ═══════════════════════════════════════ */
+
+.glass-params__delta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.glass-params__delta-text {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-params__delta-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.glass-params__delta-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  max-width: 160px;
+}
+
+.glass-params__delta-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.glass-params__delta-bar-fill--positive {
+  background: var(--color-emerald-400, #34d399);
+}
+
+.glass-params__delta-bar-fill--negative {
+  background: var(--color-rose-400, #fb7185);
+}
+
+.glass-params__delta-bar-fill--neutral {
+  background: var(--color-silver-400, #a09a92);
+}
+
+.glass-params__delta-label {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.glass-params__delta-label--positive {
+  color: var(--color-emerald-400, #34d399);
+}
+
+.glass-params__delta-label--negative {
+  color: var(--color-rose-400, #fb7185);
+}
+
+.glass-params__delta-label--neutral {
+  color: var(--color-silver-400, #a09a92);
+}
+
+/* ═══════════════════════════════════════
+   Expand / Collapse
+   ═══════════════════════════════════════ */
+
+.glass-params__expand-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  color: var(--color-silver-500, #7a7570);
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+
+.glass-params__expand-btn:hover {
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-params__expand-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400, #c9a96e);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.glass-params__expand-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ═══════════════════════════════════════
+   Empty / Fallback
+   ═══════════════════════════════════════ */
+
+.glass-params__empty {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 12px;
+  color: var(--color-silver-500, #7a7570);
+}
+
+.glass-params__fallback {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.glass-params__fallback-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.glass-params__fallback-key {
+  flex-shrink: 0;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  color: var(--color-silver-500, #7a7570);
+  padding-top: 1px;
+}
+
+.glass-params__fallback-value {
+  flex: 1;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  color: var(--color-silver-400, #a09a92);
+  word-break: break-all;
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-params {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-params__copy-btn {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-params__copy-btn:hover {
+  color: var(--color-silver-700, #4a4742);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .glass-params__copy-btn--copied {
+  color: #059669;
+}
+
+.light .glass-params__field-label {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-params__field-value {
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .glass-params__field-value--currency {
+  color: #059669;
+}
+
+.light .glass-params__field-value--date {
+  color: #0d9488;
+}
+
+.light .glass-params__field-value--boolean {
+  color: #d97706;
+}
+
+.light .glass-params__delta-bar {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-params__delta-bar-fill--positive {
+  background: #059669;
+}
+
+.light .glass-params__delta-bar-fill--negative {
+  background: #e11d48;
+}
+
+.light .glass-params__delta-label--positive {
+  color: #059669;
+}
+
+.light .glass-params__delta-label--negative {
+  color: #e11d48;
+}
+
+.light .glass-params__empty {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-params__fallback-key {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-params__fallback-value {
+  color: var(--color-silver-600, #5c5853);
+}

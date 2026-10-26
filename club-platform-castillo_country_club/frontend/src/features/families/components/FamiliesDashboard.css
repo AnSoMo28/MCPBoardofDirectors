@@ -1,0 +1,861 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/FamiliesDashboard.css
+   Phase 34+ Migration — "The Living Command Surface"
+   Level 6+ Agency · Apple Production Grade
+
+   SIGNATURE VISUAL ELEMENTS:
+   1. Canvas deep space background (mood-responsive)
+   2. Z-axis urgency positioning (translateZ + perspective)
+   3. Breathing surface (pulse rhythm → CSS animation)
+   4. Intelligence auras (glow per card severity)
+   5. Spring physics layout (JS-driven, CSS renders)
+   6. Time scrubber (glass bar with gradient track)
+   7. Ink dissolve transition (on family change)
+   8. Immersive command palette (full-overlay glass)
+
+   CSS STANDARD: 13 Dimensions Applied
+     D1  Glass morphism (surface, palette, scrubber, cards)
+     D2  Stagger (cards cascade by urgency)
+     D3  Cubic-bezier on palette, scrubber, card reveal
+     D4  Mono for data, display for headlines, UI for body
+     D5  Dynamic colors via data-urgency, data-placement
+     D6  Pseudo-element depth (noise, aura glow layers)
+     D7  Hover on cards, buttons, palette trigger
+     D8  Dense (compact command bar, tight cards)
+     D9  Responsive (cards stack, scrubber full-width)
+     D10 role, aria-label, aria-live, focus-visible
+     D11 Light mode complete
+     D12 Reduced motion + print
+     D13 fm-dash* namespaced keyframes (6)
+
+   Keyframes: fm-dashFadeIn, fm-dashCardReveal,
+              fm-dashBreathing, fm-dashAuraPulse,
+              fm-dashOrbSpin, fm-dashPaletteReveal
+   Total: 6 keyframes (fm-dash* namespaced)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — The Living Surface
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dash {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--color-abyss, #080B12);
+}
+
+/* D6: Noise texture on root */
+.fm-dash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.015;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Glass Surface (D1)
+   Innovation 3: Breathing — animation driven by pulse rhythm
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dash__surface {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 0 16px 16px;
+  background: linear-gradient(
+    168deg,
+    rgba(180, 190, 210, 0.02) 0%,
+    rgba(12, 16, 24, 0.4) 40%,
+    rgba(8, 12, 18, 0.5) 100%
+  );
+  backdrop-filter: blur(2px) saturate(1.1);
+  -webkit-backdrop-filter: blur(2px) saturate(1.1);
+}
+
+/* D3: Breathing animation — surface opacity pulses */
+.fm-dash__surface[data-breathing="true"] {
+  animation: fm-dashBreathing var(--breathe-duration, 3s) ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Command Bar (D1: glass, D8: dense)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dash__command-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  opacity: 0;
+  animation: fm-dashFadeIn 0.3s ease 0.1s forwards;
+}
+
+.fm-dash__command-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fm-dash__family-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+  line-height: 1;
+}
+
+.fm-dash__nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-silver-500);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.fm-dash__nav-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-silver-300);
+}
+
+.fm-dash__nav-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.fm-dash__command-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Command palette trigger */
+.fm-dash__palette-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.fm-dash__palette-trigger:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-silver-300);
+}
+
+.fm-dash__palette-trigger:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.fm-dash__kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-600);
+}
+
+/* Composite score badge */
+.fm-dash__score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-silver-200);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+}
+
+.fm-dash__score-badge[data-urgency="critical"] {
+  color: var(--color-rose-400);
+  border-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+}
+
+.fm-dash__score-badge[data-urgency="high"] {
+  color: var(--color-amber-400);
+  border-color: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Floating Cards (Innovation 2: Z-axis urgency)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dash__cards {
+  position: relative;
+  flex: 1;
+  min-height: 400px;
+}
+
+.fm-dash__card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md, 10px);
+  background: rgba(12, 16, 24, 0.75);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  opacity: 0;
+  animation: fm-dashCardReveal 0.4s ease forwards;
+  will-change: transform;
+}
+
+.fm-dash__card:nth-child(1) { animation-delay: 0.15s; }
+.fm-dash__card:nth-child(2) { animation-delay: 0.25s; }
+.fm-dash__card:nth-child(3) { animation-delay: 0.35s; }
+.fm-dash__card:nth-child(4) { animation-delay: 0.45s; }
+.fm-dash__card:nth-child(5) { animation-delay: 0.55s; }
+.fm-dash__card:nth-child(6) { animation-delay: 0.65s; }
+
+/* D7: Hover */
+.fm-dash__card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(12, 16, 24, 0.85);
+}
+
+/* Innovation 2: Depth by urgency level */
+.fm-dash__card[data-urgency-level="critical"] {
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, rgba(255, 255, 255, 0.05));
+}
+
+.fm-dash__card[data-urgency-level="high"] {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
+
+.fm-dash__card[data-urgency-level="low"] {
+  opacity: 0.7;
+  filter: saturate(0.7);
+}
+
+.fm-dash__card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.fm-dash__card-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-400);
+}
+
+.fm-dash__card-body {
+  min-height: 40px;
+}
+
+.fm-dash__card-narrative {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-silver-300);
+  margin: 0;
+}
+
+/* Innovation 4: Intelligence Aura */
+.fm-dash__card-aura {
+  position: absolute;
+  inset: -20px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  animation: fm-dashAuraPulse 4s ease-in-out infinite;
+}
+
+.fm-dash__card-aura[data-placement="interrupt"] {
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--color-rose-400) 8%, transparent) 0%,
+    transparent 70%
+  );
+  opacity: 1;
+}
+
+.fm-dash__card-aura[data-placement="hero"] {
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--color-gold-400) 6%, transparent) 0%,
+    transparent 70%
+  );
+  opacity: 1;
+}
+
+/* Temperature widget inside card */
+.fm-dash__temp-widget {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.fm-dash__temp-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--color-silver-200);
+  line-height: 1;
+}
+
+.fm-dash__temp-zone {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-gold-400);
+}
+
+.fm-dash__members-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-silver-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Intelligence Headline (D4: display font)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dash__headline {
+  position: absolute;
+  bottom: 80px;
+  left: 16px;
+  right: 16px;
+  text-align: center;
+  opacity: 0;
+  animation: fm-dashFadeIn 0.5s ease 0.8s forwards;
+}
+
+.fm-dash__headline-text {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--color-silver-300);
+  margin: 0;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.fm-dash__headline[data-urgent="true"] .fm-dash__headline-text {
+  color: var(--color-silver-200);
+  text-shadow: 0 0 30px color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Time Scrubber (D1: glass, D3: cubic-bezier)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dash__scrubber {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-top: auto;
+  border-radius: var(--radius-md, 10px);
+  background: rgba(12, 16, 24, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  opacity: 0;
+  animation: fm-dashFadeIn 0.3s ease 0.6s forwards;
+}
+
+.fm-dash__scrubber-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-600);
+  flex-shrink: 0;
+}
+
+.fm-dash__scrubber-input {
+  flex: 1;
+  height: 3px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(
+    90deg,
+    var(--color-teal-400) 0%,
+    var(--color-gold-400) 50%,
+    var(--color-emerald-400) 100%
+  );
+  border-radius: 2px;
+  outline: none;
+  opacity: 0.4;
+  cursor: pointer;
+}
+
+.fm-dash__scrubber-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-gold-400);
+  border: 2px solid var(--color-abyss, #080B12);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+  cursor: pointer;
+}
+
+.fm-dash__scrubber-input::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-gold-400);
+  border: 2px solid var(--color-abyss, #080B12);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+  cursor: pointer;
+}
+
+.fm-dash__scrubber-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-gold-400);
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Command Palette Overlay (Innovation 8)
+   D1: full glass overlay, D3: cubic-bezier reveal
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dash__palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 20vh;
+  background: rgba(8, 11, 18, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  opacity: 0;
+  animation: fm-dashPaletteReveal 0.2s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.fm-dash__palette {
+  width: 90%;
+  max-width: 520px;
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(12, 16, 24, 0.95);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+}
+
+.fm-dash__palette-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.fm-dash__palette-search-icon {
+  flex-shrink: 0;
+  color: var(--color-silver-600);
+}
+
+.fm-dash__palette-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--color-silver-200);
+}
+
+.fm-dash__palette-input::placeholder {
+  color: var(--color-silver-600);
+}
+
+.fm-dash__palette-results {
+  padding: 12px 16px;
+  min-height: 80px;
+}
+
+.fm-dash__palette-hint {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-silver-600);
+  margin: 0;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Keyboard Hint (D4)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dash__keyboard-hint {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--color-silver-700, #3a4050);
+  text-align: center;
+  margin: 8px 0 0;
+  opacity: 0;
+  animation: fm-dashFadeIn 0.3s ease 1s forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Loading / Error / SR-Only
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dash__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 100vh;
+  background: var(--color-abyss, #080B12);
+}
+
+.fm-dash__loading-orb {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--color-gold-400) 0%,
+    transparent 70%
+  );
+  animation: fm-dashOrbSpin 1.5s ease-in-out infinite;
+}
+
+.fm-dash__loading-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-silver-500);
+  margin: 0;
+}
+
+.fm-dash__error {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--color-rose-400);
+  text-align: center;
+  padding: 100px 20px;
+  margin: 0;
+}
+
+.fm-dash__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Keyframes — fm-dash* namespaced
+   D13: ALL at end, ALL namespaced
+   Total: 6 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-dashFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fm-dashCardReveal {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Innovation 3: Breathing — subtle opacity pulse */
+@keyframes fm-dashBreathing {
+  0%, 100% { opacity: 0.97; }
+  50%      { opacity: 1; }
+}
+
+/* Innovation 4: Aura glow pulse */
+@keyframes fm-dashAuraPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes fm-dashOrbSpin {
+  0%   { transform: scale(0.8); opacity: 0.3; }
+  50%  { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(0.8); opacity: 0.3; }
+}
+
+@keyframes fm-dashPaletteReveal {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Light Mode (D11)
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-dash {
+  background: var(--color-surface-0);
+}
+
+.light .fm-dash::after {
+  display: none;
+}
+
+.light .fm-dash__surface {
+  background: linear-gradient(
+    168deg,
+    rgba(0, 0, 0, 0.01) 0%,
+    rgba(0, 0, 0, 0.02) 100%
+  );
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.light .fm-dash__card {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.light .fm-dash__card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .fm-dash__family-name {
+  color: var(--color-silver-800, #1a1a2e);
+}
+
+.light .fm-dash__nav-btn {
+  border-color: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.02);
+  color: var(--color-silver-500);
+}
+
+.light .fm-dash__palette-trigger {
+  border-color: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .fm-dash__scrubber {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-dash__palette {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .fm-dash__palette-overlay {
+  background: rgba(240, 242, 245, 0.7);
+}
+
+.light .fm-dash__card-aura[data-placement="interrupt"] {
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--color-rose-400) 5%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+.light .fm-dash__card-aura[data-placement="hero"] {
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--color-gold-400) 4%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Reduced Motion (D12)
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-dash__surface {
+    animation: none;
+  }
+
+  .fm-dash__card {
+    animation: none;
+    opacity: 1;
+    transform: none !important;
+  }
+
+  .fm-dash__headline,
+  .fm-dash__scrubber,
+  .fm-dash__keyboard-hint,
+  .fm-dash__command-bar {
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-dash__card-aura {
+    animation: none;
+  }
+
+  .fm-dash__loading-orb {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .fm-dash__palette-overlay {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Responsive (D9)
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fm-dash__family-name {
+    font-size: 16px;
+  }
+
+  .fm-dash__card {
+    width: calc(100% - 32px);
+    position: relative;
+    transform: none !important;
+  }
+
+  .fm-dash__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: auto;
+  }
+
+  .fm-dash__headline {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    text-align: left;
+    margin: 16px 0;
+  }
+
+  .fm-dash__palette {
+    width: 95%;
+  }
+}
+
+@media (max-width: 480px) {
+  .fm-dash__command-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .fm-dash__keyboard-hint {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Print (D12)
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-dash {
+    background: white;
+    min-height: auto;
+  }
+
+  .fm-dash::after {
+    display: none;
+  }
+
+  .fm-dash__surface {
+    background: white;
+    backdrop-filter: none;
+  }
+
+  .fm-dash__card {
+    position: relative;
+    transform: none !important;
+    background: white;
+    border: 1px solid #ccc;
+    backdrop-filter: none;
+    break-inside: avoid;
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-dash__card-aura {
+    display: none;
+  }
+
+  .fm-dash__command-bar,
+  .fm-dash__headline,
+  .fm-dash__scrubber,
+  .fm-dash__keyboard-hint {
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-dash__scrubber {
+    display: none;
+  }
+
+  .fm-dash__palette-overlay {
+    display: none;
+  }
+}

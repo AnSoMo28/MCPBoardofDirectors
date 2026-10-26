@@ -1,0 +1,160 @@
+/**
+ * CulturalMutationTracker — "The Mutations"
+ *
+ * SVG timeline with mutation markers above a genre stream baseline.
+ * Mutation markers are rotated diamonds with type-specific colors.
+ * Staggered entrance animation, hover tooltips.
+ */
+
+.cultural-mutation-tracker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: 'DM Mono', monospace;
+  width: fit-content;
+}
+
+.cultural-mutation-tracker__empty {
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+/* ── Header ── */
+.cultural-mutation-tracker__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cultural-mutation-tracker__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.cultural-mutation-tracker__stats {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.cultural-mutation-tracker__stat {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── SVG ── */
+.cultural-mutation-tracker__svg {
+  overflow: visible;
+}
+
+/* ── Section Labels ── */
+.cultural-mutation-tracker__section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 6px;
+  fill: rgba(255, 255, 255, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ── Baseline ── */
+.cultural-mutation-tracker__baseline {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 0.5;
+}
+
+/* ── Mutations ── */
+.cultural-mutation-tracker__mutation {
+  cursor: pointer;
+  opacity: 0;
+  animation: mutation-enter 0.4s ease forwards;
+}
+
+@keyframes mutation-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(1px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cultural-mutation-tracker__marker {
+  transition: fill-opacity 0.2s ease, stroke-width 0.2s ease;
+}
+
+.cultural-mutation-tracker__mutation--hovered .cultural-mutation-tracker__marker {
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* ── Genre Streams ── */
+.cultural-mutation-tracker__stream-bar {
+  transition: opacity 0.3s ease;
+}
+
+.cultural-mutation-tracker__stream-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 6px;
+  fill: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.04em;
+}
+
+/* ── Tooltip ── */
+.cultural-mutation-tracker__tooltip {
+  pointer-events: none;
+  animation: mutation-tooltip-in 0.12s ease;
+}
+
+@keyframes mutation-tooltip-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Legend ── */
+.cultural-mutation-tracker__legend {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cultural-mutation-tracker__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.cultural-mutation-tracker__legend-icon {
+  font-size: 0.7rem;
+}
+
+.cultural-mutation-tracker__legend-label {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.cultural-mutation-tracker__legend-count {
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+}

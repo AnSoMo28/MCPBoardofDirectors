@@ -1,0 +1,183 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/IntelligenceConstellation.css
+   Phase 34+ Migration — "The Radar Command Display"
+   Level 6+ Agency · Production Grade
+
+   SIGNATURE VISUAL ELEMENTS:
+   1. Wrapper glass card (subtle, embedded in panel)
+   2. SVG intrinsic sizing with max-width
+   3. Sweep rotation animation (fm-constSweep)
+   4. Node reveal stagger (fm-constNodeReveal)
+   5. Score polygon draw animation (fm-constPolyDraw)
+   6. Reduced motion kills all SVG + CSS animation
+   7. Light mode SVG adjustments
+
+   CSS STANDARD: 13 Dimensions Applied
+     D1  Glass morphism (subtle wrapper, no heavy effects — embedded)
+     D2  Stagger (node reveal on phase change)
+     D3  CSS sweep rotation (linear infinite)
+     D4  Mono for all SVG text (via inline SVG font-family)
+     D5  Colors via CSS vars (all SVG uses var())
+     D6  SVG filters for glow (feGaussianBlur in <defs>)
+     D7  Hover on wrapper (subtle border brighten)
+     D8  Compact sizing (max-width: 240px)
+     D9  Responsive (width: 100% scales with container)
+     D10 role="img", aria-label
+     D11 Light mode (adjust SVG opacity values)
+     D12 Reduced motion (disable all animations)
+     D13 fm-const* namespaced keyframes (3 total)
+
+   Keyframes: fm-constSweep, fm-constNodeReveal, fm-constPolyDraw
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Subtle Embedded Wrapper
+   D1: Minimal glass (this lives INSIDE the panel)
+   D8: Compact max-width
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-const {
+  position: relative;
+  width: 100%;
+  max-width: 240px;
+  margin: 0 auto;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fm-const__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Sweep Animation (CSS fallback)
+   D3: CSS linear infinite rotation
+   Note: Primary animation via SVG <animateTransform>.
+   This CSS class is a fallback/reference.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-const__sweep {
+  transform-origin: 120px 120px;
+  /* SVG animateTransform handles rotation — this is a CSS backup */
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Keyframes — fm-const* namespaced
+   D13-01: All at end
+   D13-02: All namespaced
+   Total: 3 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-constSweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes fm-constNodeReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fm-constPolyDraw {
+  from {
+    stroke-dashoffset: 800;
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Light Mode
+   D11: Adjust SVG appearance
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-const__svg {
+  /* SVG elements use CSS vars — they adapt automatically.
+     But we adjust the vignette and mesh for light backgrounds. */
+  filter: none;
+}
+
+/* In light mode, the vignette should lighten, not darken.
+   This is handled by the SVG radialGradient — it uses
+   rgba(8,12,18,0.4) which works on dark backgrounds.
+   On light backgrounds, we counteract with a filter. */
+.light .fm-const {
+  background: rgba(0, 0, 0, 0.01);
+  border-radius: var(--radius-md, 10px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Reduced Motion
+   D12-05: Disable all SVG animations
+   D12-06: Disable CSS animations/transitions
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-const__sweep {
+    animation: none;
+    display: none;
+  }
+
+  /* SVG <animate> and <animateTransform> elements are
+     conditionally NOT rendered in the TSX when reduced=true.
+     This CSS rule is a safety net. */
+  .fm-const__svg animate,
+  .fm-const__svg animateTransform,
+  .fm-const__svg animateMotion {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Responsive
+   D9: Scale down on small screens
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .fm-const {
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 400px) {
+  .fm-const {
+    max-width: 150px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Print
+   D12-01: Static version
+   D12-03: No animations
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-const {
+    max-width: 200px;
+  }
+
+  .fm-const__sweep {
+    display: none;
+  }
+
+  .fm-const__svg animate,
+  .fm-const__svg animateTransform,
+  .fm-const__svg animateMotion {
+    display: none;
+  }
+}

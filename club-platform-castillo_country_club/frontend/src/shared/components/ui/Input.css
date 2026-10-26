@@ -1,0 +1,408 @@
+/**
+ * Input.css
+ * src/shared/components/ui/Input.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-input
+ * @keyframes   0
+ * @signature   Glass input with gold focus ring, validation states,
+ *              character counter, translucent surface
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  backdrop-filter + -webkit + translucent bg
+ * D2 Stagger  ✗  Single element (not applicable)
+ * D3 Easing   ✓  Apple easing, specific properties (not "all")
+ * D4 Typo     ✓  UI font body, mono counter, proper sizing
+ * D5 Color    ✓  color-mix() for focus/error/success rings
+ * D6 Pseudo   ✗  Compact element (not applicable)
+ * D7 Interact ✓  hover, focus, disabled, validation states
+ * D8 Density  ✓  48px min-height, 12px padding, compact messages
+ * D9 Response ✓  Full-width intrinsic, mobile padding
+ * D10 A11y    ✓  aria-invalid, aria-describedby, role="alert"
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  0 keyframes
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  WRAPPER — .ui-input
+   Flex column container for label + input + messages.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  LABEL ROW (D4)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-input__label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.ui-input__label {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  line-height: 1;
+}
+
+/* D4: Counter in mono — compact data display */
+.ui-input__counter {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  letter-spacing: 0.04em;
+  transition: color 0.2s ease;
+}
+
+.ui-input__counter--warning {
+  color: var(--color-amber-400);
+}
+
+.ui-input__counter--full {
+  color: var(--color-rose-400);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  INPUT CONTAINER
+   Relative positioning for icon, feedback, action overlays.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-input__container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  FIELD — .ui-input__field (D1, D3, D5, D7, D8)
+   Glass surface. Gold focus ring. Specific transition properties.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-input__field {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 10px);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-silver-200);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  outline: none;
+  /* D3: Specific properties — NEVER "all" */
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.ui-input__field::placeholder {
+  color: var(--color-silver-500);
+}
+
+/* D7: Hover — lighten surface */
+.ui-input__field:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* D7: Focus — gold ring via color-mix */
+.ui-input__field:focus {
+  border-color: rgba(201, 169, 110, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+
+/* D7: Disabled */
+.ui-input__field:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  ICON OFFSETS
+   Padding adjustments when icon or action slot is present.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-input__field--has-icon {
+  padding-left: 44px;
+}
+
+.ui-input__field--has-action {
+  padding-right: 44px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  LEADING ICON
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-input__icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  color: var(--color-silver-500);
+  pointer-events: none;
+  z-index: 1;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  VALIDATION FEEDBACK (D5)
+   Positioned right. Color derived from tokens.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-input__feedback {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.ui-input__feedback--error {
+  color: var(--color-rose-400);
+}
+
+.ui-input__feedback--success {
+  color: var(--color-emerald-400);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  VALIDATION STATES (D5)
+   Border + focus ring derived via color-mix from tokens.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-input--error {
+  border-color: var(--color-rose-400);
+}
+
+.ui-input--error:focus {
+  border-color: var(--color-rose-400);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+}
+
+.ui-input--success {
+  border-color: var(--color-emerald-400);
+}
+
+.ui-input--success:focus {
+  border-color: var(--color-emerald-400);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-emerald-400) 12%, transparent);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  ACTION BUTTON (D7)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-input__action {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-silver-400);
+  cursor: pointer;
+  z-index: 1;
+  font: inherit;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ui-input__action:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-silver-200);
+}
+
+.ui-input__action:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.ui-input__action:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  MESSAGES (D4, D8)
+   Compact text below input. Mono for data, UI for descriptions.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-input__message {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.ui-input__message--error {
+  color: var(--color-rose-300);
+}
+
+.ui-input__message--success {
+  color: var(--color-emerald-400);
+}
+
+.ui-input__message--hint {
+  color: var(--color-silver-500);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §10  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-input__label {
+  color: var(--color-silver-800);
+}
+
+.light .ui-input__counter {
+  color: var(--color-silver-500);
+}
+
+.light .ui-input__field {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.10);
+  color: var(--color-silver-800);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.light .ui-input__field::placeholder {
+  color: var(--color-silver-400);
+}
+
+.light .ui-input__field:hover {
+  border-color: rgba(0, 0, 0, 0.18);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .ui-input__field:focus {
+  border-color: rgba(201, 169, 110, 0.5);
+  background: white;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+
+.light .ui-input__icon {
+  color: var(--color-silver-400);
+}
+
+.light .ui-input__action:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-800);
+}
+
+.light .ui-input--error {
+  border-color: var(--color-rose-500);
+}
+
+.light .ui-input--error:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+
+.light .ui-input--success {
+  border-color: var(--color-emerald-500);
+}
+
+.light .ui-input--success:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+
+.light .ui-input__message--error {
+  color: var(--color-rose-500);
+}
+
+.light .ui-input__message--success {
+  color: var(--color-emerald-500);
+}
+
+.light .ui-input__message--hint {
+  color: var(--color-silver-400);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §11  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-input__field {
+    transition: none;
+  }
+
+  .ui-input__counter {
+    transition: none;
+  }
+
+  .ui-input__action {
+    transition: none;
+  }
+
+  .ui-input__action:active {
+    transform: translateY(-50%);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §12  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .ui-input__field {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §13  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-input__field {
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: #1a1a1a !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+
+  .ui-input__action {
+    display: none !important;
+  }
+}

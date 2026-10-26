@@ -1,0 +1,596 @@
+/* src/features/facilities/components/InspectionPanel.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* INSPECTION PANEL — "El Ojo Clínico"                           */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — card entry stagger                   */
+/*   SENSE 2: REACCIÓN — card hover translateY(-2px)             */
+/*   SENSE 3: MEMORIA — result, findings, corrective actions     */
+/*   SENSE 4: INTENCIÓN — expand details, related tasks          */
+/*   SENSE 5: SINIESTRÍA — fail pulse, issues accent             */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — inspection summary                     */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Keyframes (Sense 1 + 5) ── */
+@keyframes fac-insp-card-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fac-insp-fail-pulse {
+  0%, 100% { border-left-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent); }
+  50% { border-left-color: var(--color-rose-400); }
+}
+
+@keyframes fac-insp-shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+/* ── Container ── */
+.fac-insp {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ═══ HEADER ═══════════════════════════════════════════════════ */
+
+.fac-insp__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.fac-insp__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fac-insp__header-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-teal-400);
+}
+
+.fac-insp__header-text {
+  min-width: 0;
+}
+
+.fac-insp__title {
+  font-size: 15px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+}
+
+.fac-insp__subtitle {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  margin: 2px 0 0;
+}
+
+.fac-insp__header-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fac-insp__header-issue {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-rose-400);
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+}
+
+.fac-insp__header-next {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-teal-400);
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+
+.fac-insp__narrative {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+
+[data-mode="alert"] .fac-insp__narrative {
+  border-left-color: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+}
+
+[data-mode="critical"] .fac-insp__narrative {
+  border-left-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+}
+
+/* ═══ LIST ═════════════════════════════════════════════════════ */
+
+.fac-insp__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ═══ CARD (Sense 1 + 2 + 5) ══════════════════════════════════ */
+
+.fac-insp__card {
+  position: relative;
+  background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 12%, transparent);
+  border-radius: 10px;
+  overflow: hidden;
+  /* Sense 1: stagger */
+  opacity: 0;
+  animation: fac-insp-card-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+  /* Sense 2: hover */
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.fac-insp__card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-border) 35%, transparent);
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.2);
+}
+
+/* Sense 5: Result accents */
+.fac-insp__card[data-result="fail"] {
+  border-left: 3px solid var(--color-rose-400);
+  animation: fac-insp-card-enter 0.4s ease-out forwards,
+             fac-insp-fail-pulse 2.5s ease-in-out 0.4s infinite;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s), 0s;
+}
+
+.fac-insp__card[data-result="major_issues"] {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+.fac-insp__card[data-result="minor_issues"] {
+  border-left: 3px solid color-mix(in srgb, var(--color-amber-400) 50%, transparent);
+}
+
+.fac-insp__card[data-result="pass"] {
+  border-left: 3px solid var(--color-emerald-400);
+}
+
+/* ── Card body ── */
+.fac-insp__card-body {
+  padding: 14px;
+}
+
+.fac-insp__card-top {
+  display: flex;
+  gap: 12px;
+}
+
+/* ── Result icon ── */
+.fac-insp__result-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+}
+
+.fac-insp__result-icon-svg {
+  width: 18px;
+  height: 18px;
+}
+
+.fac-insp__result-icon[data-result="pass"] {
+  border-color: color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+}
+.fac-insp__result-icon[data-result="pass"] .fac-insp__result-icon-svg {
+  color: var(--color-emerald-400);
+}
+
+.fac-insp__result-icon[data-result="fail"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+}
+.fac-insp__result-icon[data-result="fail"] .fac-insp__result-icon-svg {
+  color: var(--color-rose-400);
+}
+
+.fac-insp__result-icon[data-result="major_issues"] {
+  border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+}
+.fac-insp__result-icon[data-result="major_issues"] .fac-insp__result-icon-svg {
+  color: var(--color-amber-400);
+}
+
+.fac-insp__result-icon[data-result="minor_issues"] {
+  border-color: color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+}
+.fac-insp__result-icon[data-result="minor_issues"] .fac-insp__result-icon-svg {
+  color: var(--color-amber-400);
+}
+
+/* ── Card content ── */
+.fac-insp__card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.fac-insp__card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.fac-insp__card-name {
+  font-size: 13px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Result badge (CSS-driven) */
+.fac-insp__card-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.fac-insp__card-badge[data-result="pass"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+.fac-insp__card-badge[data-result="fail"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+.fac-insp__card-badge[data-result="major_issues"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.fac-insp__card-badge[data-result="minor_issues"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+
+/* ── Meta ── */
+.fac-insp__card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.fac-insp__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+.fac-insp__meta-icon {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+.fac-insp__meta-item--next {
+  color: var(--color-teal-400);
+  font-weight: 600;
+}
+
+/* ── Findings ── */
+.fac-insp__findings {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--color-surface) 40%, transparent);
+  border-radius: 6px;
+  border-left: 2px solid color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+}
+
+.fac-insp__card[data-result="fail"] .fac-insp__findings {
+  border-left-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+}
+
+/* ── Corrective actions ── */
+.fac-insp__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.fac-insp__action-chip {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-silver-400);
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+}
+
+.fac-insp__action-chip[data-result="fail"],
+.fac-insp__action-chip[data-result="major_issues"] {
+  color: var(--color-amber-400);
+  border-color: color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+}
+
+/* ── Expanded details (Sense 4) ── */
+.fac-insp__details {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 8%, transparent);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.3s ease;
+  margin-top: 0;
+}
+
+.fac-insp__card[data-expanded="true"] .fac-insp__details {
+  max-height: 300px;
+  opacity: 1;
+  margin-top: 10px;
+}
+
+.fac-insp__notes {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  line-height: 1.5;
+  margin: 0 0 10px;
+  font-style: italic;
+}
+
+/* ── Related maintenance ── */
+.fac-insp__related {
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--color-surface) 40%, transparent);
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 8%, transparent);
+}
+
+.fac-insp__related-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-teal-400);
+  margin-bottom: 6px;
+}
+
+.fac-insp__related-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.fac-insp__related-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fac-insp__related-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fac-insp__related-desc {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Related status (CSS-driven) */
+.fac-insp__related-status {
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 8px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.fac-insp__related-status[data-maint-status="completed"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+.fac-insp__related-status[data-maint-status="in_progress"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+.fac-insp__related-status[data-maint-status="scheduled"] {
+  color: var(--color-silver-400);
+  background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+}
+.fac-insp__related-status[data-maint-status="on_hold"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+
+/* ── Expand toggle (Sense 4) ── */
+.fac-insp__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 6px;
+  border: none;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 8%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  font-size: 10px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-teal-400);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.fac-insp__toggle:hover {
+  background: color-mix(in srgb, var(--color-teal-400) 6%, transparent);
+}
+
+.fac-insp__toggle:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-teal-400);
+  outline: none;
+}
+
+.fac-insp__toggle-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ═══ SKELETON ═════════════════════════════════════════════════ */
+
+.fac-insp__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fac-insp__skeleton-card {
+  height: 100px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-surface) 40%, transparent) 25%,
+    color-mix(in srgb, var(--color-surface) 60%, transparent) 50%,
+    color-mix(in srgb, var(--color-surface) 40%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: fac-insp-shimmer 1.5s ease-in-out infinite;
+}
+
+.fac-insp__skeleton-card:nth-child(2) { animation-delay: 0.15s; }
+.fac-insp__skeleton-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* ═══ EMPTY STATE ══════════════════════════════════════════════ */
+
+.fac-insp__empty-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.fac-insp__empty-text {
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  text-align: center;
+  max-width: 300px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .fac-insp__card {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+.light .fac-insp__card-name {
+  color: var(--color-silver-800);
+}
+
+.light .fac-insp__narrative {
+  color: var(--color-silver-600);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fac-insp__card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-insp__card:hover {
+    transform: none;
+  }
+
+  .fac-insp__card[data-result="fail"] {
+    animation: none;
+  }
+
+  .fac-insp__details {
+    max-height: 300px;
+    opacity: 1;
+    margin-top: 10px;
+    transition: none;
+  }
+
+  .fac-insp__skeleton-card {
+    animation: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fac-insp__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fac-insp__card-top {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fac-insp__result-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .fac-insp__result-icon-svg {
+    width: 14px;
+    height: 14px;
+  }
+}

@@ -1,0 +1,428 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/GuestConciergeVoice.css
+   Phase 34 "The Gateway" — Capa 2: The Concierge Voice
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-voice
+   Glass: .glass-gst-voice
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-voice {
+  --glass-gst-voice-version: 1;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-voice-bg: rgba(18, 18, 26, 0.6);
+  --gst-voice-border: rgba(255, 255, 255, 0.06);
+  --gst-voice-greeting-color: var(--gst-accent);
+  --gst-voice-text-color: var(--gst-text-primary);
+  --gst-voice-muted-color: var(--gst-text-muted);
+  --gst-voice-cursor-color: var(--gst-accent);
+  --gst-voice-radius: 16px;
+  --gst-voice-padding: 28px 32px;
+  --gst-voice-gap: 16px;
+  --gst-voice-action-radius: 8px;
+  --gst-voice-action-padding: 10px 20px;
+  --gst-voice-typing-speed: 30ms;
+}
+
+/* ── Base ── */
+.gst-voice {
+  position: relative;
+  background: var(--gst-voice-bg);
+  border: 1px solid var(--gst-voice-border);
+  border-radius: var(--gst-voice-radius);
+  padding: var(--gst-voice-padding);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+  opacity: 0;
+  animation: gst-voice-fadeIn 0.6s ease 0.2s forwards;
+  cursor: pointer;
+  outline: none;
+}
+
+/* ── Focus Visible ── */
+.gst-voice:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+/* ── Mode Glows ── */
+.gst-voice[data-mode="calm"] {
+  border-color: rgba(212, 168, 83, 0.08);
+}
+
+.gst-voice[data-mode="alert"] {
+  border-color: rgba(245, 166, 35, 0.15);
+  animation: gst-voice-fadeIn 0.6s ease 0.2s forwards,
+             gst-voice-alert-glow 4s ease-in-out 1s infinite;
+}
+
+.gst-voice[data-mode="critical"] {
+  border-color: rgba(255, 23, 68, 0.2);
+  animation: gst-voice-fadeIn 0.6s ease 0.2s forwards,
+             gst-voice-critical-glow 2s ease-in-out 1s infinite;
+}
+
+.gst-voice[data-mode="celebration"] {
+  border-color: rgba(212, 168, 83, 0.15);
+}
+
+/* ── Priority Indicator ── */
+.gst-voice__indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.gst-voice__indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gst-accent);
+  flex-shrink: 0;
+}
+
+.gst-voice__indicator[data-priority="critical"] .gst-voice__indicator-dot {
+  background: var(--gst-severity-critical);
+  animation: gst-voice-dot-pulse 1s ease-in-out infinite;
+}
+
+.gst-voice__indicator[data-priority="high"] .gst-voice__indicator-dot {
+  background: var(--gst-severity-high);
+  animation: gst-voice-dot-pulse 2s ease-in-out infinite;
+}
+
+.gst-voice__indicator[data-priority="medium"] .gst-voice__indicator-dot {
+  background: var(--gst-severity-medium);
+}
+
+.gst-voice__indicator[data-priority="info"] .gst-voice__indicator-dot {
+  background: var(--gst-severity-low);
+}
+
+.gst-voice__indicator-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gst-voice-muted-color);
+}
+
+/* ── Greeting ── */
+.gst-voice__greeting {
+  font-family: var(--font-display, "Italiana");
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--gst-voice-greeting-color);
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+/* ── Text Container ── */
+.gst-voice__text-container {
+  min-height: 60px;
+}
+
+.gst-voice__text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--gst-voice-text-color);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ── Typing Cursor ── */
+.gst-voice__cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--gst-voice-cursor-color);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: gst-voice-blink 0.8s step-end infinite;
+}
+
+/* ── Actions ── */
+.gst-voice__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: var(--gst-voice-gap);
+  opacity: 0;
+  animation: gst-voice-actions-in 0.4s ease forwards;
+}
+
+.gst-voice__action {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 600;
+  padding: var(--gst-voice-action-padding);
+  border-radius: var(--gst-voice-action-radius);
+  border: 1px solid var(--gst-voice-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--gst-voice-text-color);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, letter-spacing 0.3s ease;
+  outline: none;
+}
+
+.gst-voice__action:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--gst-accent);
+}
+
+.gst-voice__action:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+.gst-voice__action:active {
+  transform: scale(0.97);
+}
+
+.gst-voice__action[data-variant="primary"] {
+  background: rgba(212, 168, 83, 0.12);
+  border-color: rgba(212, 168, 83, 0.25);
+  color: var(--gst-accent);
+}
+
+.gst-voice__action[data-variant="primary"]:hover {
+  background: rgba(212, 168, 83, 0.2);
+  border-color: var(--gst-accent);
+  letter-spacing: 0.04em;
+}
+
+/* ── Skip Hint ── */
+.gst-voice__skip-hint {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  color: var(--gst-voice-muted-color);
+  margin: 12px 0 0 0;
+  opacity: 0.6;
+}
+
+/* ── Skeleton Loading ── */
+.gst-voice__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gst-voice__skeleton-line {
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: gst-voice-shimmer 1.5s ease-in-out infinite;
+}
+
+.gst-voice__skeleton-line--long {
+  width: 100%;
+}
+
+.gst-voice__skeleton-line--medium {
+  width: 75%;
+}
+
+.gst-voice__skeleton-line--short {
+  width: 50%;
+}
+
+/* ── Error State ── */
+.gst-voice__error-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 15px;
+  color: var(--gst-severity-high);
+  margin: 0;
+}
+
+/* ── Animations ── */
+@keyframes gst-voice-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gst-voice-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes gst-voice-actions-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gst-voice-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes gst-voice-alert-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(245, 166, 35, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 0 rgba(245, 166, 35, 0.08);
+  }
+}
+
+@keyframes gst-voice-critical-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 23, 68, 0);
+  }
+  50% {
+    box-shadow: 0 0 24px 0 rgba(255, 23, 68, 0.1);
+  }
+}
+
+@keyframes gst-voice-dot-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-voice {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-voice__cursor {
+  animation: none;
+  display: none;
+}
+
+[data-prefers-reduced="true"] .gst-voice__actions {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-voice__indicator-dot {
+  animation: none;
+}
+
+[data-prefers-reduced="true"] .gst-voice__skeleton-line {
+  animation: none;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Light Mode ── */
+.light .gst-voice {
+  --gst-voice-bg: rgba(255, 255, 255, 0.85);
+  --gst-voice-border: rgba(0, 0, 0, 0.08);
+  --gst-voice-text-color: #1a1a2e;
+  --gst-voice-muted-color: #6b6b78;
+  --gst-voice-cursor-color: #8b6914;
+}
+
+.light .gst-voice__action {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1a2e;
+}
+
+.light .gst-voice__action[data-variant="primary"] {
+  background: rgba(139, 105, 20, 0.08);
+  border-color: rgba(139, 105, 20, 0.2);
+  color: #8b6914;
+}
+
+.light .gst-voice__skeleton-line {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.04) 0%,
+    rgba(0, 0, 0, 0.08) 50%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-voice {
+    padding: 20px 20px;
+  }
+
+  .gst-voice__greeting {
+    font-size: 22px;
+  }
+
+  .gst-voice__text {
+    font-size: 15px;
+  }
+
+  .gst-voice__actions {
+    flex-direction: column;
+  }
+
+  .gst-voice__action {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-voice__greeting {
+    font-size: 24px;
+  }
+
+  .gst-voice__text {
+    font-size: 16px;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-voice {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+    box-shadow: none;
+  }
+
+  .gst-voice__text {
+    color: #000;
+  }
+
+  .gst-voice__skip-hint,
+  .gst-voice__cursor {
+    display: none;
+  }
+}

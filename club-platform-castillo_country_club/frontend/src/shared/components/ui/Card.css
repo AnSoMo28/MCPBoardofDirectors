@@ -1,0 +1,191 @@
+/**
+ * Card.css
+ * src/shared/components/ui/Card.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-card
+ * @keyframes   0 — aura keyframes live in globals.css §8 Group 2
+ * @signature   Glass card with Houdini aura orb, tone-driven border-left
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  Inherits globals.css .glass-card primitives
+ * D2 Stagger  ✗  Single card (not applicable)
+ * D3 Easing   ✓  Apple easing on hover, inherited from globals
+ * D4 Typo     ✓  Display title, UI description, section spacing
+ * D5 Color    ✓  data-tone driven, tokens only
+ * D6 Pseudo   ✓  Inherits globals .glass-card::before + ::after
+ * D7 Interact ✓  hover lift, static modifier disables
+ * D8 Density  ✓  16px padded, tight sub-component gaps
+ * D9 Response ✓  Full-width, reduced padding on mobile
+ * D10 A11y    ✓  data-testid, semantic roles
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  0 local keyframes (uses globals §8)
+ *
+ * DEPENDENCY:
+ * globals.css §4 (.glass-card, .glass-card--aura, .glass-card__aura-*)
+ * globals.css §8 (card-aura-rotate, card-aura-hue, card-aura-rotate-bg)
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  ROOT — .ui-card
+   Extends .glass-card from globals.css §4.
+   Adds: padding modifier, static modifier, data-glow.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-card {
+  /* Inherits all glass-card styles from globals.css §4 */
+  /* This layer adds UI component-specific behaviors */
+}
+
+/* D8: Padded modifier — standard card content spacing */
+.ui-card--padded {
+  padding: 16px 18px;
+}
+
+/* D7: Static modifier — disables all hover effects */
+.ui-card--static {
+  cursor: default;
+}
+
+.ui-card--static:hover {
+  transform: none !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2),
+              0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  border-top-color: rgba(201, 169, 110, 0.12);
+  border-left-color: rgba(201, 169, 110, 0.06);
+}
+
+/* Data-glow: custom glow color on hover */
+.ui-card[data-glow="custom"]:hover {
+  box-shadow: 0 0 24px -6px var(--glow-color, rgba(201, 169, 110, 0.15));
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  SUB-COMPONENTS (D4, D8)
+   Header, Title, Description, Content, Footer.
+   All BEM: .ui-card__*.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.ui-card__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.ui-card__description {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ui-card__content {
+  /* No default styling — consumers add their own layout */
+}
+
+.ui-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-card__title {
+  color: var(--color-silver-800);
+}
+
+.light .ui-card__description {
+  color: var(--color-silver-500);
+}
+
+.light .ui-card__footer {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .ui-card--static:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-top-color: rgba(201, 169, 110, 0.10);
+  border-left-color: rgba(201, 169, 110, 0.06);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-card:hover {
+    transform: none !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .ui-card--padded {
+    padding: 14px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ui-card--padded {
+    padding: 12px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-card {
+    break-inside: avoid;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .ui-card::before,
+  .ui-card::after {
+    display: none !important;
+  }
+
+  .ui-card__title {
+    color: #1a1a1a !important;
+  }
+
+  .ui-card__description {
+    color: #666 !important;
+  }
+
+  .ui-card__footer {
+    border-top-color: #ddd !important;
+  }
+}

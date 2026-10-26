@@ -1,0 +1,874 @@
+/* src/features/events/EventCalendar.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Events Domain — Calendar Page                               */
+/*                                                              */
+/* @namespace  ev-calendar                                      */
+/* @keyframes  6 (evCalFadeUp, evCalAurora, evCalConflict,      */
+/*              evCalGapPulse, evCalShimmer, evCalNeedle)       */
+/* @signature  Aurora breathe + conflict flicker on day cells   */
+/*                                                              */
+/* AUDIT v2.0 — 3 FASES (Senior Expert · G10 · J-10):           */
+/* [x] C-01 L623-626 evCalNeedle PISABA el translateX(-50%)     */
+/*         base de .ev-chrono__needle (L544): durante la        */
+/*         animación el transform se reemplaza completo y la    */
+/*         aguja saltaba medio ancho a la derecha. Keyframes    */
+/*         corregidos para componer translateX + translateY.    */
+/* [x] C-02 L776 print ocultaba .ev-calendar__stagger — y el    */
+/*         wrapper del CONTENIDO PRINCIPAL (TSX §3.11) lleva    */
+/*         esa clase → imprimir la página daba una hoja en      */
+/*         blanco. El stagger ahora se NEUTRALIZA en papel      */
+/*         (animation:none + opacity:1); solo se ocultan los    */
+/*         elementos decorativos/interactivos (nuevo slot       */
+/*         .ev-calendar__banner-slot + hint).                   */
+/* [x] C-03 L715-734 reduced-motion incompleto: evCalConflict   */
+/*         (aurora::before) y evCalGapPulse (--active) seguían  */
+/*         animando (riesgo vestibular). Flicker congelado con  */
+/*         paused (frame 0% = opacity 0 — nunca `animation:     */
+/*         none`, que revelaría el overlay rosa a opacity 1).   */
+/* [x] C-04 L11-28 TOC del header desincronizado del cuerpo     */
+/*         (faltaba §9 Capacity Bar; numeración corrida).       */
+/*         Regenerado §0–§18 fiel al cuerpo.                    */
+/* [x] C-05 L482 .ev-chrono con padding 8px y labels a          */
+/*         bottom:-16px (L506) → 8px de solape con el hermano   */
+/*         siguiente. padding-bottom 20px.                      */
+/* [x] C-06 L47 hint a 11px → 12px (umbral de lectura cómodo).  */
+/* [x] C-07 NUEVO: estado pending del cambio de vista           */
+/*         ([data-view-pending="true"] · React 19 useTransition) */
+/*         con filter — no colisiona con la animación de        */
+/*         opacity del stagger ni necesita !important.          */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Root + Variables */
+/* §1 Stagger Animation + View-Pending */
+/* §2 Toolbar */
+/* §3 Calendar Grid Container */
+/* §4 Calendar Day (sub-component styles) */
+/* §5 Aurora + Heat Bar */
+/* §6 Calendar Peek */
+/* §7 Event Chip */
+/* §8 Event Card */
+/* §9 Capacity Bar */
+/* §10 View Toggle */
+/* §11 Quick-Add Panel */
+/* §12 Day Intelligence */
+/* §13 Chrono-Compass */
+/* §14 Keyframes (namespaced evCal*) */
+/* §15 Light Mode */
+/* §16 Reduced Motion */
+/* §17 Responsive */
+/* §18 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Root                                                     */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-calendar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-panel);
+}
+
+.ev-calendar__skeleton {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* C-06: 12px — umbral cómodo de lectura para texto de apoyo */
+.ev-calendar__hint {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  letter-spacing: 0.01em;
+}
+
+.ev-calendar__grid-wrapper {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Stagger Animation + View-Pending                         */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-calendar__stagger {
+  opacity: 0;
+  animation: evCalFadeUp 0.4s var(--ease-apple) forwards;
+  animation-delay: calc(var(--i, 0) * 0.06s);
+}
+
+/* C-07 · React 19 useTransition — feedback sutil mientras el
+   cambio de vista se confirma. filter en lugar de opacity: no
+   compite con el fill-mode forwards de evCalFadeUp. */
+.ev-calendar__stagger[data-view-pending="true"] {
+  filter: saturate(0.85) brightness(0.96);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 Toolbar                                                  */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-calendar__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--gap-card);
+}
+
+.ev-calendar__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-metric);
+}
+
+.ev-calendar__nav-btn {
+  min-width: 40px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.ev-calendar__month-title {
+  font-size: clamp(0.875rem, 1.5vw, 1.125rem);
+  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--color-silver-200);
+  min-width: 140px;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.ev-calendar__toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-card);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 Calendar Grid Container                                  */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-calendar__grid {
+  background: color-mix(in srgb, var(--color-surface-1) 50%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.ev-calendar__grid-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Header cells (Mon, Tue, ...) */
+.ev-calendar__header-cell {
+  background: color-mix(in srgb, var(--color-surface-2) 40%, transparent);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ev-calendar__header-cell:last-child {
+  border-right: none;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 Calendar Day                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-calendar-day {
+  position: relative;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s var(--ease-apple);
+  cursor: pointer;
+}
+.ev-calendar-day:last-child {
+  border-right: none;
+}
+.ev-calendar-day:hover {
+  background: color-mix(in srgb, var(--color-surface-3) 50%, transparent);
+}
+.ev-calendar-day:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: -2px;
+}
+.ev-calendar-day--other-month {
+  opacity: 0.35;
+}
+.ev-calendar-day--today {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-gold-400) 30%, transparent);
+}
+.ev-calendar-day--conflicts {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+}
+/* Predictive density glow — high AI-predicted demand */
+.ev-calendar-day--predicted-busy {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+}
+/* Cross-domain impact indicator */
+.ev-calendar-day--cross-domain {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-violet-400) 15%, transparent);
+}
+
+/* Density heat bar variants */
+.ev-calendar-day--density-low .ev-calendar-day__heat-fill {
+  background: var(--color-teal-400);
+  width: 20%;
+}
+.ev-calendar-day--density-medium .ev-calendar-day__heat-fill {
+  background: var(--color-teal-400);
+  width: 40%;
+}
+.ev-calendar-day--density-high .ev-calendar-day__heat-fill {
+  background: var(--color-amber-400);
+  width: 70%;
+}
+.ev-calendar-day--density-heavy .ev-calendar-day__heat-fill {
+  background: var(--color-amber-400);
+  width: 90%;
+}
+.ev-calendar-day--density-critical .ev-calendar-day__heat-fill {
+  background: var(--color-rose-400);
+  width: 100%;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Aurora + Heat Bar                                        */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-calendar-day__aurora {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--aurora-alpha, 0);
+  border-radius: inherit;
+  overflow: hidden;
+}
+.ev-calendar-day__aurora::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 85% 55% at 50% 95%,
+    var(--aurora-color, transparent) 0%,
+    transparent 70%
+  );
+  animation: evCalAurora 6s ease-in-out infinite;
+}
+/* Conflict flicker overlay */
+.ev-calendar-day__aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-rose-400);
+  animation: evCalConflict 3s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.ev-calendar-day--conflicts .ev-calendar-day__aurora::before {
+  animation-play-state: running;
+}
+
+.ev-calendar-day__heat-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  z-index: 2;
+}
+.ev-calendar-day__heat-fill {
+  height: 100%;
+  border-radius: 0 2px 0 0;
+  transition: width 0.5s var(--ease-apple);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Calendar Peek (desktop hover preview)                    */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-calendar-peek {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  padding: 6px;
+  overflow-y: auto;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--color-surface-1) 88%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.97);
+  transition: opacity 0.15s var(--ease-apple), transform 0.15s var(--ease-apple);
+  transition-delay: 0s;
+}
+.ev-calendar-day:hover .ev-calendar-peek {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+  transition-delay: 300ms;
+}
+/* AI insight highlight within peek */
+.ev-calendar-peek__insight {
+  padding: 4px 6px;
+  margin-top: 4px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  border-left: 2px solid var(--color-gold-400);
+  color: var(--color-silver-200);
+  line-height: 1.4;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Event Chip (compact — grid cells)                        */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-event-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  line-height: 1.3;
+  background: var(--chip-bg);
+  color: var(--chip-color);
+  overflow: hidden;
+}
+.ev-event-chip__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Event Card (list view)                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-event-card {
+  position: relative;
+  background: color-mix(in srgb, var(--color-surface-2) 55%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s var(--ease-apple), border-color 0.15s var(--ease-apple), transform 0.2s var(--ease-apple);
+  overflow: hidden;
+}
+.ev-event-card:hover {
+  background: color-mix(in srgb, var(--color-surface-3) 60%, transparent);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+.ev-event-card:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+/* Left accent stripe */
+.ev-event-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--card-accent, var(--color-silver-500));
+  border-radius: 3px 0 0 3px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Capacity Bar                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-capacity-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.ev-capacity-bar__fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s var(--ease-apple);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §10 View Toggle                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-calendar__view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-surface-2) 50%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ev-calendar__view-btn {
+  min-width: 36px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §11 Quick-Add Panel                                         */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-quickadd__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease-apple);
+}
+.ev-quickadd__backdrop[data-state="open"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ev-quickadd {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  width: 100%;
+  max-width: 448px;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--color-surface-1) 85%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow-float);
+  transform: translateX(100%);
+  pointer-events: none;
+  transition: transform 0.35s var(--ease-apple);
+  overflow: hidden;
+}
+.ev-quickadd[data-state="open"] {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §12 Day Intelligence                                        */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-day-intel__section {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-surface-2) 40%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ev-day-intel__venue-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ev-day-intel__venue-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.ev-day-intel__venue-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s var(--ease-apple);
+}
+
+.ev-day-intel__slot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+  cursor: pointer;
+  transition: background 0.15s var(--ease-apple), border-color 0.15s var(--ease-apple);
+}
+.ev-day-intel__slot-chip:hover {
+  background: color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-emerald-400) 35%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §13 Chrono-Compass (visual day timeline)                    */
+/* ─────────────────────────────────────────────────────────── */
+
+.ev-chrono {
+  position: relative;
+  /* C-05: clearance para labels a bottom:-16px */
+  padding: 8px 0 20px;
+}
+.ev-chrono__track {
+  position: relative;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-surface-3) 50%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.ev-chrono__markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ev-chrono__marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.ev-chrono__label {
+  position: absolute;
+  bottom: -16px;
+  transform: translateX(-50%);
+  font-size: 8px;
+  font-family: var(--font-mono);
+  color: var(--color-silver-600);
+  white-space: nowrap;
+}
+.ev-chrono__block {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  color: var(--block-color, var(--color-silver-200));
+  background: var(--block-bg, rgba(255, 255, 255, 0.08));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 6px;
+  z-index: 2;
+  transition: filter 0.15s var(--ease-apple);
+}
+.ev-chrono__block:hover {
+  filter: brightness(1.2);
+}
+.ev-chrono__needle {
+  position: absolute;
+  top: -6px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--color-gold-400);
+  transform: translateX(-50%);
+  z-index: 3;
+  animation: evCalNeedle 2s ease-in-out infinite;
+}
+.ev-chrono__gap {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border: 1px dashed color-mix(in srgb, var(--color-silver-400) 30%, transparent);
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 1;
+  transition: border-color 0.15s var(--ease-apple), background 0.15s var(--ease-apple);
+  overflow: hidden;
+}
+.ev-chrono__gap:hover {
+  border-color: color-mix(in srgb, var(--color-gold-400) 50%, transparent);
+  background: color-mix(in srgb, var(--color-gold-400) 6%, transparent);
+}
+.ev-chrono__gap--ideal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-gold-400) 15%, transparent) 50%,
+    transparent 100%
+  );
+  animation: evCalShimmer 2.5s ease-in-out infinite;
+}
+.ev-chrono__gap--active {
+  border-color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  animation: evCalGapPulse 2s ease-in-out infinite;
+}
+.ev-chrono__gap-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §14 Keyframes (namespaced evCal*)                           */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes evCalFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes evCalAurora {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+@keyframes evCalConflict {
+  0%, 85%, 100% { opacity: 0; }
+  90%           { opacity: 0.18; }
+  95%           { opacity: 0; }
+}
+
+@keyframes evCalGapPulse {
+  0%, 100% { opacity: 0.18; }
+  50%      { opacity: 0.45; }
+}
+
+@keyframes evCalShimmer {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  40%  { opacity: 0.2; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+/* C-01: compone translateX(-50%) + translateY — el transform de
+   un keyframe REEMPLAZA al del elemento, no lo suma. Sin el
+   translateX la aguja saltaba medio ancho en cada latido. */
+@keyframes evCalNeedle {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(-3px); }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §15 Light Mode                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .ev-calendar__grid {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .ev-calendar__header-cell {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .ev-calendar-day {
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .ev-calendar-day:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+.light .ev-calendar-day--today {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+}
+.light .ev-calendar-day--conflicts {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-rose-400) 18%, transparent);
+}
+.light .ev-calendar-peek {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+.light .ev-event-card {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .ev-event-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.light .ev-calendar__view-toggle {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .ev-quickadd {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-float);
+}
+.light .ev-quickadd__backdrop {
+  background: rgba(0, 0, 0, 0.15);
+}
+.light .ev-day-intel__section {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .ev-day-intel__venue-bar {
+  background: rgba(0, 0, 0, 0.06);
+}
+.light .ev-day-intel__slot-chip {
+  color: #047857;
+  background: rgba(4, 120, 87, 0.06);
+  border-color: rgba(4, 120, 87, 0.15);
+}
+.light .ev-day-intel__slot-chip:hover {
+  background: rgba(4, 120, 87, 0.1);
+  border-color: rgba(4, 120, 87, 0.25);
+}
+.light .ev-chrono__track {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .ev-chrono__gap {
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.light .ev-chrono__gap:hover {
+  border-color: color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+  background: color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+}
+.light .ev-chrono__label {
+  color: var(--color-silver-400);
+}
+.light .ev-calendar-day__heat-bar {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §16 Reduced Motion                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ev-calendar__stagger,
+  .ev-calendar-day__aurora::after,
+  .ev-chrono__gap--ideal::after,
+  .ev-chrono__needle {
+    animation: none !important;
+  }
+  /* C-03: el flicker de conflicto se congela con paused — el frame
+     0% es opacity 0. NUNCA `animation: none` aquí: sin keyframes el
+     overlay rosa quedaría a su opacidad por defecto (1). */
+  .ev-calendar-day__aurora::before {
+    animation-play-state: paused !important;
+  }
+  .ev-chrono__gap--active {
+    animation: none !important;
+  }
+  .ev-calendar__stagger {
+    opacity: 1;
+  }
+  .ev-quickadd {
+    transition: none;
+  }
+  .ev-calendar-peek {
+    transition-delay: 0s !important;
+  }
+  .ev-event-card {
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §17 Responsive                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 639px) {
+  .ev-calendar__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ev-calendar__nav {
+    justify-content: center;
+  }
+  .ev-calendar__toolbar-right {
+    justify-content: center;
+  }
+  .ev-calendar__month-title {
+    min-width: 120px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .ev-calendar__nav-btn {
+    min-width: 36px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ev-calendar__grid-wrapper {
+    overflow: visible;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §18 Print                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  /* Decorativo / interactivo: fuera del papel */
+  .ev-calendar__toolbar,
+  .ev-calendar__view-toggle,
+  .ev-calendar__banner-slot,
+  .ev-calendar__hint,
+  .ev-quickadd__backdrop,
+  .ev-quickadd,
+  .ev-calendar-peek,
+  .ev-calendar-day__aurora,
+  .ev-calendar-day__heat-bar {
+    display: none !important;
+  }
+  /* C-02: el stagger es solo la animación de entrada — en papel
+     se NEUTRALIZA (nunca display:none: el wrapper del contenido
+     principal lleva esta clase y la impresión quedaba en blanco). */
+  .ev-calendar__stagger {
+    animation: none !important;
+    animation-delay: 0s !important;
+    opacity: 1 !important;
+  }
+  .ev-calendar {
+    gap: 8px;
+  }
+  .ev-calendar__grid {
+    background: white;
+    border: 1px solid #ccc;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .ev-calendar-day {
+    border: 1px solid #eee;
+  }
+  .ev-calendar-day--today {
+    box-shadow: inset 0 0 0 1.5px #333;
+  }
+  .ev-event-card {
+    background: white;
+    border: 1px solid #ccc;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .ev-event-card::before {
+    background: #333;
+  }
+}

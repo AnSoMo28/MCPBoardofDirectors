@@ -1,0 +1,70 @@
+## ProactiveRecommendationAgent — 8 tools extraídas
+
+| # | Tool | Tipo | Aprobación | Descripción |
+|---|------|------|------------|-------------|
+| 1 | `optimize_pricing` | CRUD | HITL (create) | list, get, create, update_status de optimizaciones de precio |
+| 2 | `suggest_new_activities` | CRUD | HITL (create) | list, get, create, update_status de sugerencias de actividades |
+| 3 | `generate_family_recommendations` | datos | AUTO | Recomendaciones personalizadas para una familia |
+| 4 | `predict_event_attendance` | inteligencia | AUTO | Predicción de asistencia a eventos |
+| 5 | `detect_scheduling_conflicts` | datos | AUTO | Detección de conflictos de programación |
+| 6 | `personalize_communication` | inteligencia | AUTO | Borradores personalizados de comunicación |
+| 7 | `identify_social_clusters` | datos | AUTO | Clusters sociales entre familias |
+| 8 | `generate_quarterly_insights` | datos | AUTO | Informe trimestral de insights (list, get, generate, update_status) |
+
+### Enums relevantes
+- `PricingStrategy` — estrategias de precio
+- `RecommendationType`, `RecommendationPriority` — tipos y prioridades
+- `PredictionConfidence` — low, medium, high
+- `InsightPeriod` — Q1-Q4
+- `ClusterType` — tipos de clusters sociales
+
+---
+
+## Hallazgo importante: `detect_scheduling_conflicts` EXISTE en backend
+
+**Mi recomendación anterior de "Opción B — mockearla" era incorrecta.** La tool real vive en `proactive_recommendation`, no en `event_orchestrator`. No necesita mock — se puede conectar directamente.
+
+### Mapeo corregido para SmartSchedule (Cross-agent O2)
+
+| Tool | Agente | Estado | Tipo |
+|------|--------|--------|------|
+| `detect_scheduling_conflicts` | `proactive_recommendation` | Backend real | datos (AUTO) — on-demand cross-agent |
+
+---
+
+## Mapa completo final — Operations con 4 agentes reales
+
+| Componente | Agente | Tools |
+|------------|--------|-------|
+| **DailyBriefing** | `executive_dashboard` | `get_executive_summary`, `get_operational_pulse`, `detect_anomalies` |
+| | `compliance` (cross O3) | `compliance_alert_list` |
+| **ComplianceCheck** | `compliance` | `compliance_report_generate`, `compliance_alert_list`, `compliance_audit_get` + mutations |
+| **SmartSchedule** | `facility_management` | `get_facility_occupancy`, `get_maintenance_schedule`, `manage_facilities` |
+| | `event_orchestrator` | `event_get_calendar` (conflictos integrados) |
+| | `proactive_recommendation` (cross O2) | `detect_scheduling_conflicts` |
+
+**Cobertura: 100%. Sin tools mock necesarias para Operations.**
+
+---
+
+## Estado de la recopilación de agentes
+
+| Agente | Leído | Tools |
+|--------|-------|-------|
+| `compliance` | ✅ | 7 |
+| `executive_dashboard` | ✅ | 8 |
+| `facility_management` | ✅ | 7 |
+| `event_orchestrator` | ✅ | 9 |
+| `proactive_recommendation` | ✅ | 8 |
+
+**Total: 5 agentes, 39 tools. Tenemos todo lo necesario para Operations.**
+
+---
+
+**¿Procedemos a la auditoría de los 3 archivos de Operations?**
+
+1. `features/operations/components/DailyBriefing.tsx`
+2. `features/operations/components/ComplianceCheck.tsx`
+3. `features/operations/components/SmartSchedule.tsx`
+
+Podés pasar los 3 juntos o de uno en uno como prefieras.

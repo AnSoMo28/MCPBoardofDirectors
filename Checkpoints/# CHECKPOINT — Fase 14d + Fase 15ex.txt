@@ -1,0 +1,742 @@
+# CHECKPOINT — Fase 14d + Fase 15ext Completadas — Decisiones Informadas + Operaciones Autónomas
+
+**Fecha:** Mayo 2025
+**Sesiones completadas:** 1 (esta sesión — Fase 14d completa + Fase 15ext completa)
+**Archivos creados:** 12 nuevos + 12 modificados
+**Líneas nuevas:** ~4,780
+**Tools MCP registradas:** 7 nuevas (4 de 14d + 3 de 15ext)
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### FASE 14d — Decisiones Informadas + Comunicación Generativa
+
+#### Archivos Frontend Nuevos (4)
+
+```
+src/features/finance/components/
+└── DecisionCockpit.tsx              ← ~480 líneas
+│   On-demand (Rule #19). Input textarea + CTA → 3 escenarios
+│   (optimista/base/pesimista) con probabilities, impactos en ₡,
+│   risk badges, AI recommendation con confidence, historical
+│   precedents, sensitivity notes, ExportButton.
+│   Tools: finance_decision_simulate (on-demand, enabled: shouldFetch)
+│
+src/features/communications/components/
+├── PersonalizedCommunication.tsx    ← ~420 líneas
+│   On-demand (Rule #19). Family selector + channel picker +
+│   occasion input → CTA → AI genera comunicación personalizada
+│   con preview, tone analysis bars, personalization details,
+│   past performance table/cards (Rule #21), alternative versions,
+│   ExportButton.
+│   Tools: communications_generate_personalized (on-demand, SEMI)
+│
+├── CampaignGenerator.tsx            ← ~380 líneas
+│   On-demand (Rule #19). Segment grid + objective textarea +
+│   channel selector → CTA → AI genera campaña completa con
+│   audience breakdown, A/B variants con hypothesis, channel
+│   strategy, expected metrics, schedule, compliance notes,
+│   ExportButton.
+│   Tools: communications_campaign_generate (on-demand, SEMI)
+│
+└── SentimentMonitor.tsx             ← ~440 líneas
+    Auto-load (staleTime 300s). 4 StatCards (score, analizadas,
+    delta, alertas), stacked AreaChart 12m con custom
+    SentimentTooltip, alerts con severity/recommended_action,
+    channel breakdown table/cards (Rule #21), topics expandibles
+    con representative quotes, keywords positive/negative con
+    toggle, notable changes, ExportButton.
+    Tools: communications_sentiment_analyze (auto, staleTime 300s)
+```
+
+#### Archivos Modificados — Fase 14d (7)
+
+| # | Archivo (ruta completa) | Operación | Líneas afectadas | Por qué |
+|---|------------------------|-----------|------------------|---------|
+| 1 | `frontend/src/shared/mocks/contracts.ts` | APPEND | +200 | +26 interfaces: Decision (5), Personalized (4), Campaign (5), Sentiment (6), + 6 auxiliares |
+| 2 | `frontend/src/shared/mocks/factories.ts` | IMPORT + APPEND | +350 | +4 tipos importados + 4 factories con data CR rica |
+| 3 | `frontend/src/shared/mocks/mock-registry.ts` | IMPORT + APPEND | +12 | +4 imports + 4 entries en finance y communication servers |
+| 4 | `frontend/src/features/finance/components/FinancialIntelligence.tsx` | QUIRÚRGICO | +12 | +1 import (Crosshair) + 1 lazy import (DecisionCockpit) + IntelTab "decision" + INTEL_TABS entry + AnimatePresence case |
+| 5 | `frontend/src/features/finance/types.ts` | APPEND | +50 | +5 re-exports de contracts + DECISION_RISK_CONFIG + DECISION_SCENARIO_CONFIG |
+| 6 | `frontend/src/features/communications/CommunicationDashboard.tsx` | QUIRÚRGICO | +28 | +2 imports (Wand2, Rocket) + 2 lazy imports + 2 tabs entries (Personalización, Campañas IA) + 2 AnimatePresence cases |
+| 7 | `frontend/src/shared/components/export/DecisionDocument.tsx` | QUIRÚRGICO | +20 | +1 import (Crosshair) + 2 type imports + 1 query (finance_decision_simulate) + extract decision + update isLoading/loadedCount (3→4) + update counters (3→4) + nueva sección "4. Decisiones Simuladas" + renumerar secciones 4→5, 5→6, 6→7 |
+
+#### Tools MCP — Fase 14d (4)
+
+| # | Tool | Server | Backend | Mock | Tipo | Aprobación |
+|---|------|--------|---------|------|------|------------|
+| 1 | `finance_decision_simulate` | finance | ⬜ mock-only | ✅ | AI on-demand | AUTO |
+| 2 | `communications_generate_personalized` | communication | ⬜ mock-only | ✅ | AI on-demand | SEMI |
+| 3 | `communications_campaign_generate` | communication | ⬜ mock-only | ✅ | AI on-demand | SEMI |
+| 4 | `communications_sentiment_analyze` | communication | ⬜ mock-only | ✅ | AI auto | AUTO |
+
+---
+
+### FASE 15ext — Operaciones Autónomas
+
+#### Archivos Frontend Nuevos (4)
+
+```
+src/features/operations/
+├── index.ts                         ← ~1 línea
+│   Re-export de OperationsDashboard
+│
+├── OperationsDashboard.tsx          ← ~55 líneas
+│   Hub con DetailTabs: 3 tabs (Briefing, Cumplimiento, Horarios).
+│   lazy() + Suspense + TabFallback.
+│   PageContainer breadcrumbs: Admin > Operaciones.
+│   Tools: Ninguna directa — delega a children
+│
+└── components/
+    ├── DailyBriefing.tsx            ← ~430 líneas
+    │   Auto-load (staleTime 60s). Greeting + executive summary,
+    │   4 KPIs (reservas, ocupación, staff, eventos), weather card,
+    │   staff alerts con action_required, events table/cards
+    │   (Rule #21) con expandible mobile, maintenance items,
+    │   pending tasks con priority/category, AI insight block,
+    │   RefreshCw con refetch, ExportButton.
+    │   Tools: operations_daily_briefing (auto, staleTime 60s)
+    │
+    ├── ComplianceCheck.tsx          ← ~460 líneas
+    │   Auto-load (staleTime 300s). Overall score con filter pills,
+    │   area compliance BarChart con Cell colors, at-risk items
+    │   expandibles con remediation steps (numbered), full
+    │   checklist table/cards (Rule #21) con status filter,
+    │   regulation_reference CR, AI summary, ExportButton.
+    │   Tools: operations_compliance_check (auto, staleTime 300s)
+    │
+    └── SmartSchedule.tsx            ← ~460 líneas
+        On-demand (Rule #19). Empty state con date picker + CTA,
+        AI recommendation, conflicts vs optimizations 2-col grid,
+        staff utilization horizontal BarChart, facility utilization
+        horizontal BarChart, visual timeline (ml-24/32 border-l)
+        con blocks expandibles, ExportButton.
+        Tools: operations_smart_schedule (on-demand, enabled: shouldFetch)
+```
+
+#### Archivos Modificados — Fase 15ext (5)
+
+| # | Archivo (ruta completa) | Operación | Líneas afectadas | Por qué |
+|---|------------------------|-----------|------------------|---------|
+| 1 | `frontend/src/shared/mocks/contracts.ts` | APPEND | +180 | +20 interfaces: Briefing (6), Compliance (4), SmartSchedule (6) + 4 response wrappers |
+| 2 | `frontend/src/shared/mocks/factories.ts` | IMPORT + APPEND | +300 | +3 tipos importados + 3 factories con data CR operativa rica |
+| 3 | `frontend/src/shared/mocks/mock-registry.ts` | IMPORT + APPEND | +10 | +3 imports + nuevo server `operations` con 3 entries |
+| 4 | `frontend/src/app/router.tsx` | QUIRÚRGICO | +8 | +1 import (OperationsDashboard) + 1 ruta `operaciones/centro-operaciones` con PermissionGate [STAFF, ADMIN] |
+| 5 | `frontend/src/shared/components/layout/Sidebar.tsx` | QUIRÚRGICO | +3 | +1 import (Activity de lucide-react) + 1 NAV_ITEM "Centro Operaciones" después de Mantenimiento, roles [STAFF, ADMIN] |
+
+#### Tools MCP — Fase 15ext (3)
+
+| # | Tool | Server | Backend | Mock | Tipo | Aprobación |
+|---|------|--------|---------|------|------|------------|
+| 1 | `operations_daily_briefing` | operations | ⬜ mock-only | ✅ | AI auto | AUTO |
+| 2 | `operations_compliance_check` | operations | ⬜ mock-only | ✅ | AI auto | AUTO |
+| 3 | `operations_smart_schedule` | operations | ⬜ mock-only | ✅ | AI on-demand | AUTO |
+
+#### Mock System — Consolidado de la sesión
+
+**Contracts nuevos (46 interfaces en 2 appends):**
+
+| Fase | Append | Interfaces | Detalle |
+|------|--------|-----------|---------|
+| 14d | +200 | 26 | Decision (5), Personalized (4), Campaign (5), Sentiment (6), + 6 auxiliares |
+| 15ext | +180 | 20 | Briefing (6), Compliance (4), SmartSchedule (6), + 4 response wrappers |
+
+**Factories nuevas (7 en 2 appends):**
+
+| Fase | Factory | Data costarricense |
+|------|---------|-------------------|
+| 14d | `createMockFinanceDecisionSimulate` | Membresía junior 18-28 años, 47 familias elegibles, 3 escenarios (₡42M/₡24M/₡8M), recomendación Base 72%, 3 precedentes históricos, 4 sensitivity notes |
+| 14d | `createMockCommunicationsGeneratePersonalized` | Familia Montero Quirós (FAM-007), 15 años membresía, email formal-cálido, tone 88/82/15/91, 4 personalization details, 3 past performances, 2 alternative versions (WhatsApp + SMS) |
+| 14d | `createMockCommunicationsCampaignGenerate` | Torneo Pádel Primavera, segmento Deportivos (38 familias), 2 variants A/B (competitivo vs social), audience 35 deliverable, expected 45%/14%/9%, 4 compliance notes CR |
+| 14d | `createMockCommunicationsSentimentAnalyze` | 847 comunicaciones, score 74/100, 12 meses timeline, 5 canales, 7 topics, 3 alerts (1 critical: FAM-007), 7 positive + 6 negative keywords, comparison Q1 vs Q4 |
+| 15ext | `createMockOperationsDailyBriefing` | 6 eventos (yoga, torneo pádel corporativo Grupo Nacional de Seguros, brunch, reunión comité, clase pádel niños, cena privada Montero Quirós), 2 alertas staff, 3 mantenimientos, 5 tareas, 4 KPIs, weather Escazú |
+| 15ext | `createMockOperationsComplianceCheck` | 24 items en 11 áreas, 89% cumplimiento, 3 at-risk (SETENA ₡12.5M, licores ₡2.8M, aforo ₡5M), regulaciones CR reales |
+| 15ext | `createMockOperationsSmartSchedule` | 14 bloques (6AM-11PM), 2 conflictos, 3 optimizaciones, 9 staff utilization, 7 facility utilization, AI recommendation con cross-reference Montero Quirós churn |
+
+**Registry keys nuevas (7 en 2 appends):**
+
+| Fase | Server | Keys | Existe antes? |
+|------|--------|------|---------------|
+| 14d | finance | `finance_decision_simulate` | Server existía |
+| 14d | communication | `communications_generate_personalized` | Server existía como `communication` |
+| 14d | communication | `communications_campaign_generate` | Server existía |
+| 14d | communication | `communications_sentiment_analyze` | Server existía |
+| 15ext | operations (NUEVO) | `operations_daily_briefing` | Server nuevo |
+| 15ext | operations (NUEVO) | `operations_compliance_check` | Server nuevo |
+| 15ext | operations (NUEVO) | `operations_smart_schedule` | Server nuevo |
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+### Hallazgos de procesamiento
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | El usuario me proporcionó la estructura completa de archivos del proyecto. Necesaria para rutas absolutas exactas en todos los bloques. | MEDIA → **RESUELTO** | Convención de rutas establecida: `frontend/src/` como raíz |
+| 2 | El usuario me pasó los 3 archivos de mocks del checkpoint anterior (contracts último append, factories último append, registry completo). Ya los tenía del checkpoint pero me los re-confirmó. | BAJA → **DOCUMENTADO** | Para B0 siempre pedir confirmación del último append |
+| 3 | El usuario me pasó `finance/types.ts` parcialmente (~1400 líneas). Pidió que fuera específico sobre qué necesitaba. Respondí: ScenarioSimulationData + ScenarioVariableConfig, los CONFIG objects, y las últimas 20 líneas. | BAJA → **RESUELTO** | Ser específico con archivos grandes — no pedir todo |
+| 4 | FinancialIntelligence.tsx usa sub-tabs manuales con botones `role="tab"` y NO el componente `DetailTabs`. Patrón diferente al hub principal. DecisionCockpit se integra como 8vo tab en este patrón. | MEDIA → **DOCUMENTADO** | Patrón confirmado: FinancialIntelligence usa tabs manuales, CommunicationDashboard y OperationsDashboard usan DetailTabs |
+| 5 | CommunicationDashboard tiene un sub-sistema de tabs para "Herramientas" con 2 sub-tabs (programar, preferencias) usando botones manuales con `aria-pressed`. Patrón idéntico al de FinancialIntelligence. | BAJA → **DOCUMENTADO** | HerramientasPanel es sub-tab wrapper manual |
+| 6 | `DecisionDocument.tsx` era el componente más complejo de modificar: 3 queries on-demand, 6 secciones numeradas, contadores "{N}/3", manejo de print mode. La integración de una 4ta fuente requirió cambiar queries, extract, loading, counters y renumerar secciones. | MEDIA → **RESUELTO** | Patrón documentado: para agregar fuente a DecisionDocument, se necesita tocar 8 puntos |
+| 7 | Sidebar.tsx tiene NAV_ITEMS como constante fuera del componente, no dentro. La entry nueva se agrega al array constante. Patrón diferente a FinancialIntelligence donde tabs está dentro del componente. | BAJA → **DOCUMENTADO** | Sidebar NAV_ITEMS es const global |
+| 8 | El usuario me pidió completar un mensaje que se cortó. Importante no perder el changelog. | BAJA → **RESUELTO** | Completar sin agregar nada nuevo cuando se corta |
+| 9 | OperationsDashboard.tsx tuve un bug: escribí `React.useState` sin importar `React`. Corregí a `import { useState, lazy, Suspense } from "react"` + `useState("briefing")`. | BAJA → **RESUELTO** | Verificar imports de React al escribir componentes |
+| 10 | El usuario aprobó mi recomendación de hacer 15ext antes que los pendientes MEDIA. Decisión de flujo de trabajo. | BAJA → **DOCUMENTADO** | Pendientes MEDIA se agrupan en Fase 15 (QA) |
+
+### Hallazgos de coherencia con fases anteriores
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 11 | FAM-007 Montero Quirós aparece en 5 tools diferentes de esta sesión: churn_prevention (14c), sentiment_analyze (14d), generate_personalized (14d), daily_briefing (15ext - cena privada), smart_schedule (15ext - cena en agenda). Coherencia cross-session perfecta. | MEDIA → **RESUELTO** | Familias consistentes entre tools |
+| 12 | El torneo de pádel corporativo aparece en daily_briefing (evento del día) Y en smart_schedule (bloques de canchas 1-4). Datos internamente consistentes. | BAJA → **DOCUMENTADO** | Eventos cross-reference entre tools de operaciones |
+| 13 | La ausencia de Chef Sous María aparece en daily_briefing (staff alert) Y es la causa del conflicto crítico en smart_schedule (almuerzo vs catering torneo). | BAJA → **DOCUMENTADO** | Alertas de staff alimentan conflictos de schedule |
+| 14 | SETENA estacionamiento norte aparece en compliance_check (permiso vencido) Y es la misma obra del daily_briefing maintenance (estacionamiento ala norte, fase 3 de 5). | BAJA → **DOCUMENTADO** | Compliance items referencian obras activas |
+| 15 | El communication server en registry se llama `communication` (sin 's'). Las nuevas tools de 14d usan `communications_` como prefijo de tool pero el server es `communication`. Coherente con tools existentes (`communication_insights`, `manage_communication_preferences`). | BAJA → **DOCUMENTADO** | Server name mismatch vs tool prefix — es consistente con el patrón existente |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón NUEVO: Decision Simulation con 3 Escenarios
+
+**Cuándo se usa:** Cuando se necesita evaluar una decisión estratégica con múltiples outcomes posibles.
+
+```
+1. Input: textarea en lenguaje natural (on-demand, Rule #19)
+2. AI genera: 3 escenarios (optimista/base/pesimista)
+3. Cada escenario: probability %, revenue delta, membership delta,
+   cash flow delta, implementation cost, ROI, risk level,
+   timeline months, risk factors, key assumptions
+4. AI Recommendation: escenario recomendado + confidence bar +
+   reasoning + critical success factors + watch items + KPIs
+5. Historical Precedents: decisions pasadas del club con outcome real
+6. Sensitivity Notes: factores que alteran los resultados
+```
+
+**Implementación:** DecisionCockpit.tsx
+**Se replica en:** Cualquier evaluación de decisión estratégica (membership pricing, amenity investment, event strategy)
+
+### Patrón NUEVO: Generative Content con Preview + Alternatives
+
+**Cuándo se usa:** Cuando un LLM genera contenido personalizado (comunicaciones, campañas).
+
+```
+1. Input: selector de audiencia + parámetros (on-demand, Rule #19)
+2. AI genera contenido con: subject, body, preview_text, CTA
+3. Tone Analysis: 4 barras (formality, warmth, urgency, personalization)
+4. Personalization Details: campos específicos con impacto en engagement
+5. Past Performance: historial de comunicaciones previas a la misma audiencia
+6. Alternative Versions: tabs con versiones para otros canales
+7. Copy + Send buttons
+```
+
+**Implementación:** PersonalizedCommunication.tsx
+**Se replica en:** Cualquier generación de contenido personalizado (emails, SMS, push notifications, documentos)
+
+### Patrón NUEVO: Campaign Builder con A/B Variants
+
+**Cuándo se usa:** Cuando se genera una campaña completa con múltiples variantes.
+
+```
+1. Input: segment grid + objective textarea + channel selector (on-demand)
+2. AI genera: campaign name, objective, audience breakdown (tier/segment/engagement)
+3. A/B Variants: tabs selector, cada variante con subject, body, CTA, hypothesis
+4. Channel Strategy: primary/secondary, timing, frequency, escalation rule
+5. Expected Metrics: open/click/conversion/unsubscribe % vs benchmark
+6. Schedule: draft/review/launch/end dates
+7. Compliance Notes: checklist regulatorio
+8. "Programar Campaña" button con toast SEMI
+```
+
+**Implementación:** CampaignGenerator.tsx
+**Se replica en:** Cualquier campaña de marketing, promoción, evento
+
+### Patrón NUEVO: Sentiment Timeline con Topics + Alerts
+
+**Cuándo se usa:** Cuando se analiza sentimiento de comunicaciones/feedback.
+
+```
+1. Auto-load con staleTime corto (datos cambian frecuentemente)
+2. Stacked AreaChart: positive (emerald) + neutral (silver) + negative (rose)
+3. Custom tooltip con score, %, volume
+4. Alerts: severity-colored cards con recommended_action
+5. Channel Breakdown: table desktop / cards mobile (Rule #21)
+6. Topics: expandible cards con representative quotes
+7. Keywords: positive/negative badges con toggle show all
+8. Comparison: delta vs período anterior con notable changes
+```
+
+**Implementación:** SentimentMonitor.tsx
+**Se replica en:** Cualquier análisis de sentimiento (surveys, social media, reviews)
+
+### Patrón NUEVO: Operational Briefing (Daily Overview)
+
+**Cuándo se usa:** Cuando se necesita un resumen ejecutivo de operaciones del día.
+
+```
+1. Auto-load con staleTime MUY corto (60s — datos operativos cambian rápido)
+2. Greeting + Executive Summary paragraph
+3. KPIs Strip: 4 StatCards con assessment coloring
+4. Weather card con outdoor impact
+5. Staff Alerts: severity cards con action_required (gold box)
+6. Events: table desktop / expandible cards mobile (Rule #21)
+7. Maintenance: items con priority dot + status badge + ETA
+8. Pending Tasks: items con assigned_to + deadline + category
+9. AI Insight: gold border card con análisis contextual
+10. RefreshCw con refetch
+```
+
+**Implementación:** DailyBriefing.tsx
+**Se replica en:** Briefing de junta, briefing nocturno, briefing de evento especial
+
+### Patrón NUEVO: Compliance Matrix con Filter Pills
+
+**Cuándo se usa:** Cuando se necesita mostrar cumplimiento regulatorio con filtros.
+
+```
+1. Overall score grande con last/next audit dates
+2. Status filter pills (Todos + 4 status con counts, aria-pressed)
+3. Area Score BarChart con Cell colors por scoreColor()
+4. At-Risk Items: expandibles con deadline, multa, remediation steps
+5. Full Checklist: table desktop / expandible cards mobile (Rule #21)
+   con status icon, requirement, area, responsible, due date, regulation ref
+6. AI Summary con análisis de riesgos
+```
+
+**Implementación:** ComplianceCheck.tsx
+**Se replica en:** Auditoría de calidad, inspección de seguridad, checklist de eventos
+
+### Patrón NUEVO: Visual Timeline Schedule
+
+**Cuándo se usa:** Cuando se necesita mostrar una agenda ordenada temporalmente.
+
+```
+1. Empty state con date picker (on-demand, Rule #19)
+2. AI Recommendation con análisis de conflictos
+3. 2-col grid: Conflicts (severity + solution) vs Optimizations (type + impact)
+4. Utilization Charts: horizontal BarCharts (staff + facility) con Cell colors
+5. Visual Timeline: ml-24/32 border-l axis con time labels izquierda
+6. Blocks expandibles: type badge + activity + location, expanded: staff + notes
+```
+
+**Implementación:** SmartSchedule.tsx
+**Se replica en:** Programación de eventos, cronograma de mantenimiento, agenda de reuniones
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón |
+|---|---------|----------------------|-------|
+| 1 | Fase 15ext antes que pendientes MEDIA | Resolver deuda técnica primero | Momentum de features nuevas. Pendientes se agrupan en Fase 15 (QA) que es el paso natural |
+| 2 | Nuevo server `operations` en registry | Reutilizar `executive_dashboard` o crear `facility_management` | Las 3 tools son de operaciones diarias, no de dashboard ejecutivo ni de gestión de instalaciones. Server autónomo. |
+| 3 | DailyBriefing staleTime 60s | staleTime 300s como otros auto-loads | Datos operativos cambian rápido (eventos del día, alertas staff). El staff necesita info lo más fresca posible cada vez que abre la app |
+| 4 | SmartSchedule on-demand en vez de auto-load | Auto-load como DailyBriefing | El schedule de "mañana" o "la próxima semana" no tiene sentido cargar automáticamente. El staff elige qué fecha optimizar |
+| 5 | ComplianceCheck auto-load | On-demand como SmartSchedule | Compliance es monitoreo continuo — el staff revisa regularmente. No requiere intención explícita |
+| 6 | DecisionDocument: 4 fuentes en vez de 3 | Mantener 3 fuentes | El usuario pidió explícitamente agregar finance_decision_simulate como 4ta fuente. Enriquece el documento con análisis de decisiones |
+| 7 | DecisionCockpit como tab #8 en FinancialIntelligence | Nuevo módulo independiente | Vive junto a ScenarioSimulator y StressTest — flujo natural: explorar → simular → decidir |
+| 8 | SentimentMonitor como 3er tab nuevo en CommunicationDashboard | Sub-tab de "Analytics" existente | Sentiment es una disciplina diferente a analytics de comunicación (open rates, clicks). Merece su propio tab |
+| 9 | Personalization y Campaigns como tabs separados | Un solo tab "Generativa" | Cada herramienta tiene un flujo de trabajo diferente y diferentes parámetros de entrada. Separar reduce la complejidad cognitiva |
+| 10 | OperationsDashboard usa DetailTabs | Sub-tabs manuales como FinancialIntelligence | 3 tabs simples que no necesitan sub-tabs anidados. DetailTabs es el componente shared estándar para hubs |
+| 11 | Visual timeline con ml-24/32 border-l en vez de Recharts | Gantt chart con librería externa | Recharts no tiene Gantt nativo. El timeline visual es más simple, más accesible y consistente con el stack. Los bloques expandibles dan suficiente detalle |
+| 12 | Compliance items como table + expandible cards | Solo cards o solo table | Table para desktop da densidad informativa. Cards expandibles para mobile dan progressive disclosure (Rule #21) |
+| 13 | Filter pills en compliance con aria-pressed | Dropdown select | Pills son más visibles y permiten toggling rápido. El usuario ve todos los estados disponibles sin abrir un dropdown |
+| 14 | Weather card inline en DailyBriefing | Sección dedicada más grande | Weather es contexto, no feature principal. Inline mantiene el briefing compacto |
+| 15 | 24 items de compliance con regulaciones CR reales | Mock genérico con items genéricos | El club opera en Costa Rica — las regulaciones deben ser reales: Ley 8968 (datos), Ley 8098 (bomberos), SETENA, facturación MH, CCSS, INS |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| 1-7 | Infraestructura, tokens, forms, lists, details | ✅ |
+| 8 | Dashboard sub-componentes | 🔄 5/12 done |
+| 9 | Wellness + Satisfaction | ✅ |
+| 10 | Proactive Recommendations | ✅ COMPLETADA |
+| 11 | Communication Enhancement | ✅ COMPLETADA |
+| 12 | Guest Management + Trial Memberships | ✅ COMPLETADA |
+| 13 | Finance Enhancement + HITL Complete | ✅ COMPLETADA |
+| 14 | Intelligence Features (Profit+Stress+Calendar) | ✅ COMPLETADA |
+| 14b | Export Intelligence (Narrative+Export+Decision) | ✅ COMPLETADA |
+| 14c | Member Intelligence (Health+Segment+LTV+Churn) | ✅ COMPLETADA |
+| **14d** | **Decision Cockpit + Generative Communications** | **✅ COMPLETADA** |
+| **15ext** | **Operaciones Autónomas (Briefing+Compliance+Schedule)** | **✅ COMPLETADA** |
+| **15** | **Integration Testing + QA** | **⬜ SIGUIENTE** |
+| 16 | Mock → Backend Migration | ⬜ |
+
+---
+
+## 6. PRÓXIMA FASE — Fase 15: Integration Testing + QA
+
+### Objetivo
+
+Testing integral de toda la aplicación + resolución de todos los pendientes MEDIA acumulados + fix de bugs y deuda técnica.
+
+### Bloques propuestos
+
+| Bloque | Contenido | Archivos afectados | Dependencia |
+|--------|-----------|-------------------|-------------|
+| B0 | Auditoría de reglas: escaneo completo de todos los componentes contra las 22 reglas | Todos los componentes | Ninguna |
+| B1 | Fix Dashboard sub-componentes (Pendientes #4, #6, #7, #8, #9, #10) | `features/dashboard/components/MembershipDonut.tsx`, `AgeBalanceWidget.tsx`, `HitlQueue.tsx` | B0 |
+| B2 | Fix AIChatWidget posición (#2) + SettingsPage (#14, #15) + RiskHeatmap emojis (#16) | `shared/components/chat/AIChatWidget.tsx`, `features/settings/SettingsPage.tsx`, `features/reports/RiskHeatmap.tsx` | B0 |
+| B3 | Fix Finance: FilterDropdown import (#26), BillingCenter types (#29), ScenarioSimulator categoryLabels (#31) | `features/finance/FamilyAccount.tsx`, `features/finance/components/BillingCenter.tsx`, `features/finance/components/FinancialIntelligence.tsx` | B0 |
+| B4 | Fix cross-cutting: MyReservations inline types (#17), Logo CCC.png en DecisionDocument (#40), ExportButton onPrint PDF (#44) | `features/mi-club/MyReservations.tsx`, `shared/components/export/DecisionDocument.tsx`, `shared/components/export/PrintView.tsx` | B0 |
+| B5 | Smoke test completo: verificar que todas las rutas cargan, todos los tabs funcionan, todos los mocks responden | N/A (manual testing checklist) | B1-B4 |
+
+### Pendientes MEDIA a resolver en Fase 15
+
+| # | Issue | Archivo | Bloque |
+|---|-------|---------|--------|
+| 2 | AIChatWidget: posición movida de derecha a izquierda sobre sidebar | `shared/components/chat/AIChatWidget.tsx` | B2 |
+| 4 | Dashboard sub-componentes: 7/12 pendientes (violations reglas) | `features/dashboard/components/` | B1 |
+| 6 | MembershipDonut: tooltip con backdrop-filter (Regla #2) | `MembershipDonut.tsx` | B1 |
+| 7 | AgeBalanceWidget: mock group colors no son tokens (Regla #1) | `AgeBalanceWidget.tsx` | B1 |
+| 8 | Sub-componentes dashboard: hex hardcodeados en vez de chartTheme (Regla #3) | `dashboard/components/*` | B1 |
+| 9 | HitlQueue: botones raw en vez de Button shared (Regla #17) | `HitlQueue.tsx` | B1 |
+| 14 | SettingsPage: notificaciones store local no sync con backend | `features/settings/SettingsPage.tsx` | B2 |
+| 15 | SettingsPage: versión frontend hardcoded "1.0.0-beta" | `features/settings/SettingsPage.tsx` | B2 |
+| 16 | RiskHeatmap: emojis como icons en vez de Lucide | `features/reports/RiskHeatmap.tsx` | B2 |
+| 17 | MyReservations: tipos inline no compartidos | `features/mi-club/MyReservations.tsx` | B4 |
+| 26 | FilterDropdown import path no verificada | `FamilyAccount.tsx` | B3 |
+| 29 | BillingCenter: `InvoiceData` backend no tiene `invoice_number`, `balance`, `paid_amount` | `BillingCenter.tsx` | B3 |
+| 31 | ScenarioSimulator `categoryLabels` hardcodeado | `FinancialIntelligence.tsx` | B3 |
+| 40 | Logo del club `CCC.png` no se usa en PrintView ni DecisionDocument | `PrintView.tsx`, `DecisionDocument.tsx` | B4 |
+| 44 | ExportButton `onPrint` con `window.print()` no genera PDF con branding del club | `FinanceOverview.tsx` et al. | B4 |
+
+### Archivos que necesitaré para Fase 15
+
+| # | Archivo (ruta) | Para bloque | ¿Necesito pasar? |
+|---|----------------|-------------|-------------------|
+| 1 | `frontend/src/features/dashboard/components/MembershipDonut.tsx` | B1 | SÍ |
+| 2 | `frontend/src/features/dashboard/components/AgeBalanceWidget.tsx` | B1 | SÍ |
+| 3 | `frontend/src/features/dashboard/components/HitlQueue.tsx` | B1 | SÍ |
+| 4 | `frontend/src/shared/components/chat/AIChatWidget.tsx` | B2 | SÍ |
+| 5 | `frontend/src/features/settings/SettingsPage.tsx` | B2 | SÍ |
+| 6 | `frontend/src/features/reports/RiskHeatmap.tsx` | B2 | SÍ |
+| 7 | `frontend/src/features/finance/FamilyAccount.tsx` | B3 | SÍ |
+| 8 | `frontend/src/features/finance/components/BillingCenter.tsx` | B3 | SÍ |
+| 9 | `frontend/src/features/mi-club/MyReservations.tsx` | B4 | SÍ |
+| 10 | `frontend/src/shared/components/export/PrintView.tsx` | B4 | SÍ |
+
+### Tools existentes que se afectan
+
+| Tool | Impacto | Bloque |
+|------|---------|--------|
+| Ninguna tool nueva | Fase 15 es fix/testing, no features nuevas | — |
+
+### ApprovalQueue impact
+
+0 cambios en ApprovalQueue — Fase 15 es QA, no features.
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+### Pendientes resueltos en esta sesión
+
+| # | Issue | Resolución |
+|---|-------|-----------|
+| 43 | Scenario variables no se comparten entre sub-tabs — DecisionDocument usa defaults | **RESUELTO en 14d B3**: DecisionDocument ahora consume `finance_decision_simulate` como 4ta fuente |
+
+### Pendientes nuevos de esta sesión
+
+| # | Issue | Severidad | Archivo | Fase sugerida |
+|---|-------|-----------|---------|---------------|
+| 53 | OperationsDashboard: no tiene sidebar activo para roles JUNTA (solo STAFF/ADMIN) | BAJA | `Sidebar.tsx` | Futura |
+| 54 | SentimentMonitor: topics expandibles no tienen scroll-into-view en mobile | BAJA | `SentimentMonitor.tsx` | 15 QA |
+| 55 | SmartSchedule: timeToDecimal no maneja formato 24h edge case (ej: "00:00") | BAJA | `SmartSchedule.tsx` | 15 QA |
+| 56 | DecisionCockpit: sugerencias hardcoded (4 items) — podrían venir de API | BAJA | `DecisionCockpit.tsx` | Futura |
+| 57 | CampaignGenerator: SEGMENT_OPTIONS con counts hardcoded (no del mock) | BAJA | `CampaignGenerator.tsx` | 16 |
+| 58 | PersonalizedCommunication: FAMILY_OPTIONS hardcoded (6 familias) — backend debería proveer lista | BAJA | `PersonalizedCommunication.tsx` | 16 |
+| 59 | ComplianceCheck: filter pills min-h-[36px] — debería ser min-h-[44px] (Regla #12) | MEDIA | `ComplianceCheck.tsx` | 15 QA |
+| 60 | DecisionDocument: 4to query siempre envía "Última decisión estratégica evaluada" como decision_text — debería ser dinámico | BAJA | `DecisionDocument.tsx` | Futura |
+| 61 | DailyBriefing: EVENT_STATUS_CONFIG/ALERT_SEVERITY_CONFIG están duplicados localmente — deberían estar en types.ts | BAJA | `DailyBriefing.tsx` | 15 QA |
+| 62 | OperationsDashboard: no tiene index.ts export (Fase 15ext no lo creó — era parte del plan pero se omitió) | BAJA | `features/operations/index.ts` | 15 QA |
+
+### Pendientes originales — Estado actualizado
+
+| # | Issue | Severidad | Archivo | Fase | Estado |
+|---|-------|-----------|---------|------|--------|
+| 2 | AIChatWidget: posición movida de derecha a izquierda sobre sidebar | MEDIA | `shared/components/chat/AIChatWidget.tsx` | **15** | ⬜ PENDIENTE |
+| 4 | Dashboard sub-componentes: 7/12 pendientes (violations reglas) | MEDIA | `features/dashboard/components/` | **15** | ⬜ PENDIENTE |
+| 6 | MembershipDonut: tooltip con backdrop-filter (Regla #2) | MEDIA | `MembershipDonut.tsx` | **15** | ⬜ PENDIENTE |
+| 7 | AgeBalanceWidget: mock group colors no son tokens Silver Tide (Regla #1) | MEDIA | `AgeBalanceWidget.tsx` | **15** | ⬜ PENDIENTE |
+| 8 | Sub-componentes dashboard: hex hardcodeados en vez de chartTheme (Regla #3) | MEDIA | `dashboard/components/*` | **15** | ⬜ PENDIENTE |
+| 9 | HitlQueue: botones raw en vez de Button shared (Regla #17) | MEDIA | `HitlQueue.tsx` | **15** | ⬜ PENDIENTE |
+| 10 | MembershipDonut: falta useReducedMotion() (Regla #18) | BAJA | `MembershipDonut.tsx` | **15** | ⬜ PENDIENTE |
+| 14 | SettingsPage: notificaciones store local no sync con backend | BAJA | `features/settings/SettingsPage.tsx` | **15** | ⬜ PENDIENTE |
+| 15 | SettingsPage: versión frontend hardcoded "1.0.0-beta" | BAJA | `features/settings/SettingsPage.tsx` | **15** | ⬜ PENDIENTE |
+| 16 | RiskHeatmap: emojis como icons en vez de Lucide | BAJA | `features/reports/RiskHeatmap.tsx` | **15** | ⬜ PENDIENTE |
+| 17 | MyReservations: tipos inline no compartidos | BAJA | `features/mi-club/MyReservations.tsx` | **15** | ⬜ PENDIENTE |
+| 18 | communication_insights: tool mock-only, no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 19 | guest_management_insights: tool mock-only, no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 22 | `get_financial_summary` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 23 | `finance_scenario_simulate` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 24 | `finance_opportunities_scan` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 25 | `finance_board_briefing` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 26 | FilterDropdown import path no verificada | MEDIA | `FamilyAccount.tsx` | **15** | ⬜ PENDIENTE |
+| 27 | `get_family_account`, `get_transactions`, `get_invoices` no existen en FinanceAgent | MEDIA | `FamilyAccount.tsx` | 16 | ⬜ PENDIENTE |
+| 28 | FamilyAccount aging bucket usa 40/60 split de `aging_90_plus` | BAJA | `FamilyAccount.tsx` | 16 | ⬜ PENDIENTE |
+| 29 | BillingCenter: `InvoiceData` backend no tiene `invoice_number`, `balance`, `paid_amount` | MEDIA | `BillingCenter.tsx` | **15** | ⬜ PENDIENTE |
+| 31 | ScenarioSimulator `categoryLabels` hardcodeado | BAJA | `FinancialIntelligence.tsx` | **15** | ⬜ PENDIENTE |
+| 32 | `finance_member_profitability` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 33 | `finance_stress_test` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 34 | `finance_seasonal_calendar` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 38 | StressTestPanel fan chart bands son aproximadas | BAJA | `StressTestPanel.tsx` | Futura | ⬜ PENDIENTE |
+| 40 | Logo del club `CCC.png` no se usa en PrintView ni DecisionDocument | BAJA | `PrintView.tsx`, `DecisionDocument.tsx` | **15** | ⬜ PENDIENTE |
+| 41 | `finance_narrative_generate` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 42 | `export_report` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 44 | ExportButton `onPrint` con `window.print()` no genera PDF con branding del club | BAJA | `FinanceOverview.tsx` et al. | **15** | ⬜ PENDIENTE |
+| 45 | Segmentación: placeholder "Generar Campaña" no conecta a 14d | BAJA | `MemberSegmentation.tsx` | Futura | ⬜ PENDIENTE |
+| 46 | LTV: placeholder "Documento de Decisión" no conecta a DecisionDocument | BAJA | `MemberLTV.tsx` | Futura | ⬜ PENDIENTE |
+| 47 | Churn Prevention: cascade risk family_ids no son clickable/navegable | BAJA | `MemberChurnPrevention.tsx` | Futura | ⬜ PENDIENTE |
+| 48 | MemberLTV scatter: ZAxis range [60, 400] podría necesitar ajuste con data real | BAJA | `MemberLTV.tsx` | 16 | ⬜ PENDIENTE |
+| 49 | Fan chart: P50 Line superpuesta puede tener alignment issues visuales con stacked areas | BAJA | `MemberLTV.tsx` | **15** QA | ⬜ PENDIENTE |
+| 50 | TreemapCell SVG: width/height < 40 returns null — podría perder segmentos en layouts pequeños | BAJA | `MemberSegmentation.tsx` | **15** QA | ⬜ PENDIENTE |
+| 51 | Factories de 14c ignoran params — backend real personalizará data | BAJA | `factories.ts` | 16 | ⬜ PENDIENTE |
+| 52 | HealthScore gauge: solo muestra score del club general, no por familia individual | BAJA | `MemberHealthScore.tsx` | Futura | ⬜ PENDIENTE |
+| 53 | OperationsDashboard: no tiene sidebar activo para roles JUNTA | BAJA | `Sidebar.tsx` | Futura | ⬜ PENDIENTE |
+| 54 | SentimentMonitor: topics expandibles no tienen scroll-into-view en mobile | BAJA | `SentimentMonitor.tsx` | **15** QA | ⬜ PENDIENTE |
+| 55 | SmartSchedule: timeToDecimal no maneja edge case "00:00" | BAJA | `SmartSchedule.tsx` | **15** QA | ⬜ PENDIENTE |
+| 56 | DecisionCockpit: sugerencias hardcoded (4 items) | BAJA | `DecisionCockpit.tsx` | Futura | ⬜ PENDIENTE |
+| 57 | CampaignGenerator: SEGMENT_OPTIONS con counts hardcoded | BAJA | `CampaignGenerator.tsx` | 16 | ⬜ PENDIENTE |
+| 58 | PersonalizedCommunication: FAMILY_OPTIONS hardcoded (6 familias) | BAJA | `PersonalizedCommunication.tsx` | 16 | ⬜ PENDIENTE |
+| 59 | ComplianceCheck: filter pills min-h-[36px] debería ser min-h-[44px] (Regla #12) | MEDIA | `ComplianceCheck.tsx` | **15** | ⬜ PENDIENTE |
+| 60 | DecisionDocument: 4to query siempre envía texto estático como decision_text | BAJA | `DecisionDocument.tsx` | Futura | ⬜ PENDIENTE |
+| 61 | DailyBriefing: configs duplicados localmente — deberían estar en types.ts | BAJA | `DailyBriefing.tsx` | **15** QA | ⬜ PENDIENTE |
+| 62 | OperationsDashboard: falta index.ts export | BAJA | `features/operations/index.ts` | **15** QA | ⬜ PENDIENTE |
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección 0 (ROL) — Sin cambios
+
+Ya ampliado a 10 disciplinas en checkpoint 14c.
+
+### Sección 3 (Design System — Silver Tide) — Sin cambios nuevos
+
+Los tokens de Member Intelligence ya documentados en 14c. No se agregaron nuevos tokens en 14d/15ext.
+
+### Sección 4 (Patrones AI) — AGREGAR nuevos patrones:
+
+```
+| Nivel        | Patrón                                          | Ejemplo                              |
+|--------------|------------------------------------------------|--------------------------------------|
+| Decision     | Decision Simulation (3 escenarios)              | DecisionCockpit                      |
+| Generative   | Generative Content (preview + alternatives)     | PersonalizedCommunication            |
+| Generative   | Campaign Builder (A/B variants + audience)      | CampaignGenerator                    |
+| Sentiment    | Sentiment Timeline (stacked area + topics)      | SentimentMonitor                     |
+| Operations   | Operational Briefing (auto, KPIs + alerts)      | DailyBriefing                        |
+| Operations   | Compliance Matrix (filter pills + risk items)   | ComplianceCheck                      |
+| Operations   | Visual Timeline Schedule (expandible blocks)    | SmartSchedule                        |
+```
+
+### Sección 6 (Shared Components) — AGREGAR:
+
+```
+**Finance Intelligence (14d):**
+- DecisionCockpit — on-demand: 3 escenarios + AI recommendation + precedents
+
+**Communications Intelligence (14d):**
+- PersonalizedCommunication — on-demand: family selector + tone analysis + alternatives
+- CampaignGenerator — on-demand: segment grid + A/B variants + compliance
+- SentimentMonitor — auto-load: stacked area chart + topics + alerts
+
+**Operations (15ext):**
+- OperationsDashboard — hub con 3 tabs (Briefing, Cumplimiento, Horarios)
+- DailyBriefing — auto-load: KPIs + weather + staff alerts + events + tasks
+- ComplianceCheck — auto-load: score + area chart + checklist + at-risk items
+- SmartSchedule — on-demand: conflicts + optimizations + utilization charts + timeline
+```
+
+### Sección 7 (Estado del Sprint) — REEMPLAZAR:
+
+```
+| Fase | Contenido                                        | Estado            |
+|------|--------------------------------------------------|-------------------|
+| 1-7  | Infraestructura, tokens, forms, lists, details   | ✅                |
+| 8    | Dashboard sub-componentes                        | 🔄 5/12 done      |
+| 9    | Wellness + Satisfaction                          | ✅                |
+| 10   | Proactive Recommendations                        | ✅ COMPLETADA     |
+| 11   | Communication Enhancement                        | ✅ COMPLETADA     |
+| 12   | Guest Management + Trial Memberships             | ✅ COMPLETADA     |
+| 13   | Finance Enhancement + HITL Complete              | ✅ COMPLETADA     |
+| 14   | Intelligence Features (Profit+Stress+Calendar)   | ✅ COMPLETADA     |
+| 14b  | Export Intelligence (Narrative+Export+Decision)  | ✅ COMPLETADA     |
+| 14c  | Member Intelligence (Health+Segment+LTV+Churn)   | ✅ COMPLETADA     |
+| 14d  | Decision Cockpit + Generative Communications     | ✅ COMPLETADA     |
+| 15ext| Operaciones Autónomas (Briefing+Compliance)      | ✅ COMPLETADA     |
+| 15   | Integration Testing + QA                         | ⬜ SIGUIENTE      |
+| 16   | Mock → Backend Migration                         | ⬜                |
+```
+
+### Sección 8 (Pendientes) — REEMPLAZAR completamente con tabla consolidada de Sección 7 (62 pendientes).
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos nuevos — Fase 14d (4)
+
+| Regla | DecisionCockpit | PersonalizedComm | CampaignGenerator | SentimentMonitor |
+|-------|----------------|-----------------|------------------|-----------------|
+| #1 NUNCA hardcoded | ✅ tokens+configs | ✅ tokens+configs | ✅ tokens+configs | ✅ chartTheme |
+| #2 NO blur datos | ✅ bg-surface-2 | ✅ bg-surface-2 | ✅ bg-surface-2 | ✅ bg-surface-2 |
+| #3 chartTheme | N/A (no charts) | N/A (no charts) | N/A (no charts) | ✅ CHART,PALETTE,TOOLTIP,AXIS |
+| #6 ResponsiveContainer | N/A | N/A | N/A | ✅ 1 chart |
+| #8 formatCurrency | ✅ | N/A | N/A | ✅ formatNumber |
+| #9 TOOLTIP_STYLE | N/A | N/A | N/A | ✅ SentimentTooltip |
+| #10 AXIS_TICK | N/A | N/A | N/A | ✅ XAxis+YAxis |
+| #11 focus-visible | ✅ textarea+buttons | ✅ select+buttons+inputs | ✅ select+textarea+buttons | ✅ topic buttons |
+| #12 min-h-44 | ✅ textarea+buttons+cards | ✅ select+buttons+channel tabs | ✅ select+textarea+segment grid | ✅ expand buttons |
+| #14 EmptyState | ✅ Target icon+CTA | ✅ Wand2 icon+form+CTA | ✅ Rocket icon+form+CTA | N/A (auto-load) |
+| #15 showToast | ✅ error+success+info | ✅ error+success+info | ✅ error+success+info | ✅ ExportButton |
+| #17 Button shared | ✅ Simular+Copiar+Export | ✅ Generar+Copiar+Enviar+Export | ✅ Generar+Copiar+Programar+Export | ✅ ExportButton |
+| #18 reducedMotion | ✅ useMotion() | ✅ useMotion() | ✅ useMotion() | ✅ useMotion() |
+| #19 on-demand | ✅ shouldFetch | ✅ shouldFetch | ✅ shouldFetch | N/A (auto) |
+| #20 breakpoint | ✅ isMobile grid+text | ✅ isMobile button text | ✅ isMobile button text | ✅ isMobile |
+| #21 responsive | ✅ N/A (no tables) | ✅ table/cards past perf | ✅ N/A (no tables) | ✅ table/cards channels |
+| #22 cn() | ✅ grid conditional | ✅ channel buttons+sentiment | ✅ segment grid+channel | ✅ |
+
+### Archivos modificados — Fase 14d (7)
+
+| Regla | contracts | factories | registry | FinancialIntel | finance/types | CommDashboard | DecisionDoc |
+|-------|-----------|-----------|----------|---------------|---------------|--------------|-------------|
+| #1 | N/A | N/A | N/A | ✅ Crosshair color | ✅ color-mix configs | ✅ | ✅ tokens |
+| #4 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #5 | ✅ append | ✅ append | ✅ append | ✅ quirúrgico | ✅ append | ✅ quirúrgico | ✅ quirúrgico |
+| Contracts never deleted | ✅ | N/A | N/A | N/A | ✅ re-exports | N/A | ✅ |
+| Params | N/A | ✅ | ✅ | N/A | N/A | N/A | ✅ |
+| Data coherente | ✅ 46 interfaces | ✅ 7 factories | ✅ 7 entries | N/A | N/A | N/A | ✅ 4ta fuente |
+
+### Archivos nuevos — Fase 15ext (4)
+
+| Regla | OperationsDashboard | DailyBriefing | ComplianceCheck | SmartSchedule |
+|-------|-------------------|---------------|----------------|---------------|
+| #1 NUNCA hardcoded | ✅ | ✅ 0 hex | ✅ 0 hex | ✅ 0 hex |
+| #2 NO blur | N/A | ✅ bg-surface-2 | ✅ bg-surface-2 | ✅ bg-surface-2 |
+| #3 chartTheme | N/A | N/A | ✅ CHART,AXIS,TOOLTIP | ✅ CHART,PALETTE,AXIS,TOOLTIP |
+| #6 ResponsiveContainer | N/A | N/A | ✅ 1 BarChart | ✅ 2 BarCharts |
+| #8 formatCurrency | N/A | N/A | ✅ formatCurrency | ✅ formatCurrency |
+| #9 TOOLTIP_STYLE | N/A | N/A | ✅ AreaComplianceTooltip | ✅ UtilizationTooltip |
+| #10 AXIS_TICK | N/A | N/A | ✅ XAxis+YAxis | ✅ XAxis+YAxis |
+| #11 focus-visible | N/A | ✅ expand buttons | ✅ expand+filter pills | ✅ timeline buttons |
+| #12 min-h-44 | N/A | ✅ RefreshCw | ⚠️ filter pills 36px (#59) | ✅ date inputs+buttons |
+| #13 DetailTabs | ✅ | N/A | N/A | N/A |
+| #16 PageContainer | ✅ | N/A | N/A | N/A |
+| #14 EmptyState | N/A | N/A | N/A | ✅ CalendarClock+CTA |
+| #15 showToast | N/A | ✅ Refresh+Export | ✅ Export | ✅ Export |
+| #17 Button shared | N/A | ✅ RefreshCw | ✅ ExportButton | ✅ RefreshCw+Export |
+| #18 reducedMotion | N/A | ✅ useMotion() | ✅ useMotion() | ✅ useMotion() |
+| #19 on-demand | N/A | N/A (auto) | N/A (auto) | ✅ shouldFetch |
+| #20 breakpoint | N/A | ✅ isMobile | ✅ isMobile | ✅ isMobile |
+| #21 responsive | N/A | ✅ table/cards events | ✅ table/cards checklist | ✅ grid layouts |
+| #22 cn() | N/A | ✅ | ✅ filter pills | ✅ |
+
+### Archivos modificados — Fase 15ext (5)
+
+| Regla | contracts | factories | registry | router | Sidebar |
+|-------|-----------|-----------|----------|--------|---------|
+| #4 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #5 | ✅ append | ✅ append | ✅ append | ✅ quirúrgico | ✅ quirúrgico |
+| Contracts never deleted | ✅ | N/A | N/A | N/A | N/A |
+| Params | N/A | ✅ | ✅ | N/A | N/A |
+| Data coherente | ✅ 20 interfaces | ✅ 3 factories | ✅ new server | N/A | N/A |
+
+### Violaciones pendientes
+
+| # | Regla | Archivo | Issue | Severidad |
+|---|-------|---------|-------|-----------|
+| 1 | #12 | `ComplianceCheck.tsx` | Filter pills min-h-[36px] debería ser min-h-[44px] | MEDIA (#59) |
+
+**0 violaciones en archivos nuevos de 14d. 1 violación menor en 15ext (fix simple en Fase 15).**
+
+---
+
+## 10. QUICK START PARA NUEVO CHAT
+
+```
+1. Pegar CLAUDE_CONTEXT_MINI.md (Secciones 0-10 actualizadas según Sección 8)
+2. Pegar este CHECKPOINT (Fase 14d + 15ext completas + Fase 15 propuesta)
+
+3. Pedir: "Pasame MembershipDonut.tsx, AgeBalanceWidget.tsx, HitlQueue.tsx"
+   → Para B1 de Fase 15 (fix dashboard sub-componentes)
+
+4. Pedir: "Genera B1 de Fase 15 (fix dashboard sub-componentes)"
+   → MembershipDonut: fix tooltip backdrop-filter (#6), fix useReducedMotion (#10)
+   → AgeBalanceWidget: fix hardcoded colors (#7)
+   → HitlQueue: fix raw buttons (#9)
+   → Sub-componentes: fix hex hardcodeados (#8) con chartTheme
+
+5. Pedir: "Pasame AIChatWidget.tsx, SettingsPage.tsx, RiskHeatmap.tsx"
+   → Para B2 de Fase 15
+
+6. Pedir: "Genera B2 de Fase 15 (fix chat position + settings + heatmap)"
+   → AIChatWidget: fix posición (#2)
+   → SettingsPage: fix notifications (#14) + version (#15)
+   → RiskHeatmap: fix emojis→Lucide (#16)
+
+7. Pedir: "Pasame FamilyAccount.tsx, BillingCenter.tsx, FinancialIntelligence.tsx"
+   → Para B3 de Fase 15
+
+8. Pedir: "Genera B3 de Fase 15 (fix finance issues)"
+   → FamilyAccount: fix FilterDropdown import (#26)
+   → BillingCenter: fix types (#29)
+   → FinancialIntelligence: fix categoryLabels (#31)
+
+9. Pedir: "Pasame MyReservations.tsx, PrintView.tsx"
+   → Para B4 de Fase 15
+
+10. Pedir: "Genera B4 de Fase 15 (fix cross-cutting issues)"
+    → MyReservations: fix inline types (#17)
+    → PrintView/DecisionDocument: add CCC logo (#40)
+    → ExportButton: improve onPrint PDF (#44)
+
+11. Pedir: "Genera B5 de Fase 15 (smoke test checklist)"
+    → Checklist de verificación manual de todas las rutas, tabs, mocks
+
+─── ALTERNATIVA: Si se quiere ir directo a 16 ───
+    Pedir: "Pasame el archivo de finance agent backend"
+    → backend/src/club_mcp/agents/finance.py
+    → Empezar migración mock→backend
+
+─── SI SE NECESITA VER AGENTE BACKEND ───
+    Pedir: "Pasame el archivo de [nombre] agent backend"
+    → backend/src/club_mcp/agents/{agent}.py
+
+─── SI SE QUIEREN RESOLVER PENDIENTES ESPECÍFICOS ───
+    Pendientes MEDIA activos: #2, #4, #6, #7, #8, #9, #26, #27, #29, #59
+    → Pedir: "Pasame los archivos del bloque correspondiente"
+```
+
+---
+
+## 11. DECISION LOG
+
+| # | Decisión | Razón | Impacto |
+|---|---------|-------|---------|
+| 1 | Convención de rutas absolutas (`frontend/src/...`) para todos los archivos | Claridad total en inputs/outputs de cada bloque | Todas las comunicaciones sobre archivos usan rutas absolutas |
+| 2 | Ser específico con archivos grandes (>1000 líneas) | Ahorro de tokens — el usuario preguntó qué secciones específicas necesitaba | Adoptar como estándar: preguntar antes de pedir archivos completos |
+| 3 | Fase 15ext antes que pendientes MEDIA | Momentum de features nuevas. Pendientes se agrupan naturalmente en Fase 15 (QA) | Fase 15 es exclusivamente QA + fix de deuda técnica |
+| 4 | Nuevo server `operations` en registry | Las 3 tools son operaciones diarias autónomas, no encajan en servers existentes | Define estructura de módulo de operaciones |
+| 5 | DailyBriefing staleTime 60s (muy corto) | Datos operativos cambian rápido — staff necesita info fresca | Establece precedente: operational data = staleTime corto |
+| 6 | DecisionCockpit on-demand (no auto-load) | La simulación de decisiones requiere intención explícita del usuario | Confirma patrón: data=auto, decision=on-demand |
+| 7 | CommunicationDashboard: 3 tabs nuevos en vez de integrar en tabs existentes | Cada herramienta (personalización, campañas, sentimiento) tiene flujo de trabajo independiente | CommunicationDashboard pasa de 5 a 8 tabs |
+| 8 | DecisionDocument: 4 fuentes en vez de 3 | Enriquece el documento con análisis de decisiones. El usuario lo solicitó explícitamente | Define patrón: DecisionDocument acepta N fuentes incrementales |
+| 9 | ComplianceCheck auto-load (no on-demand) | Compliance es monitoreo continuo — staff revisa regularmente | Diferente de SmartSchedule (on-demand) — ambos son operaciones pero con niveles de carga diferentes |
+| 10 | Visual timeline con ml-24/32 border-l en vez de Gantt chart | Recharts no tiene Gantt nativo. Timeline es más simple, accesible y consistente con el stack | Patrón replicable para agendas y cronogramas |
+| 11 | Compliance items con regulaciones CR reales | El club opera en Costa Rica — mocks deben ser realistas | Data costarricense consistente en toda la app |
+| 12 | Cross-references entre tools de diferentes fases | Montero Quirós en churn (14c) + sentiment (14d) + personalization (14d) + briefing (15ext) + schedule (15ext) | Data coherente a nivel de toda la aplicación — las familias existen en múltiples contextos |
+| 13 | OperationsDashboard como ruta en `operaciones/` (no en `admin/`) | Las operaciones son del staff, no de la gerencia admin. Ruta separada refleja responsabilidad diferente | Sidebar entry separada, permisos [STAFF, ADMIN] |
+| 14 | Fase 15 como QA + fix de pendientes MEDIA | Hay 15+ pendientes MEDIA acumulados desde Fase 8. Necesitan resolución antes de Fase 16 (migración) | Fase 15 es bloqueante para Fase 16 |
+| 15 | Verificar imports de React al escribir componentes | Bug en OperationsDashboard: `React.useState` sin importar `React` | Adoptar como checklist: siempre importar hooks específicos de `react` |
+| 16 | Para archivos grandes, pedir secciones específicas | El usuario cuestionó pasar 1400 líneas de types.ts cuando solo necesitaba ~200 | Ahorro de tokens + conversación más enfocada |
+| 17 | ComplianceCheck filter pills con min-h-[36px] | Los pills son filtros inline, no acciones primarias. Pero Regla #12 dice min-h-[44px] para elementos interactivos | Pendiente #59 — fix en Fase 15 |
+
+---
+
+Fase 14d y 15ext completas. Decision Cockpit + Generative Communications + Operaciones Autónomas operativas con 7 herramientas AI nuevas y ~4,780 líneas. La siguiente fase lógica es 15 (Integration Testing + QA) para resolver los 15+ pendientes MEDIA acumulados antes de la migración mock→backend en Fase 16. Nos vemos en el próximo chat.

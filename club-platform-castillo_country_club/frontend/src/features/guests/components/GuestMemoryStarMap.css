@@ -1,0 +1,669 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/GuestMemoryStarMap.css
+   Phase 34 "The Gateway" — Capa 4: Memory Constellation
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-starmap
+   Glass: .glass-gst-starmap
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-starmap {
+  --glass-gst-starmap-version: 1;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-starmap-bg: rgba(8, 8, 15, 0.9);
+  --gst-starmap-border: rgba(255, 255, 255, 0.04);
+  --gst-starmap-text-primary: #f0ece4;
+  --gst-starmap-text-muted: #7a7570;
+  --gst-starmap-radius: 16px;
+  --gst-starmap-tooltip-bg: rgba(18, 18, 26, 0.92);
+  --gst-starmap-tooltip-border: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Base ── */
+.gst-starmap {
+  position: relative;
+  background: var(--gst-starmap-bg);
+  border: 1px solid var(--gst-starmap-border);
+  border-radius: var(--gst-starmap-radius);
+  padding: 24px;
+  overflow: hidden;
+  opacity: 0;
+  animation: gst-starmap-fadeIn 0.6s ease 0.4s forwards;
+}
+
+.gst-starmap[data-state="empty"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  animation: none;
+  opacity: 1;
+}
+
+.gst-starmap__empty-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 15px;
+  color: var(--gst-starmap-text-muted);
+  margin: 0;
+}
+
+/* ── Header ── */
+.gst-starmap__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.gst-starmap__title {
+  font-family: var(--font-display, "Italiana");
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--gst-starmap-text-primary);
+  margin: 0;
+}
+
+.gst-starmap__subtitle {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 12px;
+  color: var(--gst-starmap-text-muted);
+}
+
+/* ── Canvas Container ── */
+.gst-starmap__canvas-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gst-starmap__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  outline: none;
+}
+
+.gst-starmap__canvas:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+/* ── Tooltip ── */
+.gst-starmap__tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background: var(--gst-starmap-tooltip-bg);
+  border: 1px solid var(--gst-starmap-tooltip-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  min-width: 160px;
+  max-width: 220px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 10;
+}
+
+.gst-starmap__tooltip[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gst-starmap__tooltip-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gst-starmap-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.gst-starmap__tooltip-temp {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 6px 0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.gst-starmap__tooltip-temp[data-temperature="blazing"] {
+  color: var(--gst-temp-blazing);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.gst-starmap__tooltip-temp[data-temperature="hot"] {
+  color: var(--gst-temp-hot);
+  background: rgba(255, 167, 38, 0.1);
+}
+
+.gst-starmap__tooltip-temp[data-temperature="warm"] {
+  color: var(--gst-temp-warm);
+  background: rgba(212, 168, 83, 0.1);
+}
+
+.gst-starmap__tooltip-temp[data-temperature="cool"] {
+  color: var(--gst-temp-cool);
+  background: rgba(78, 205, 196, 0.1);
+}
+
+.gst-starmap__tooltip-temp[data-temperature="cold"] {
+  color: var(--gst-temp-cold);
+  background: rgba(144, 164, 174, 0.1);
+}
+
+.gst-starmap__tooltip-temp[data-temperature="frozen"] {
+  color: var(--gst-temp-frozen);
+  background: rgba(120, 144, 156, 0.1);
+}
+
+.gst-starmap__tooltip-stat {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  color: var(--gst-starmap-text-muted);
+  margin: 0 0 2px 0;
+}
+
+.gst-starmap__tooltip-vip {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gst-accent);
+  margin: 6px 0 0 0;
+}
+
+.gst-starmap__tooltip-dormant {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gst-temp-cold);
+  margin: 6px 0 0 0;
+}
+
+/* ── Legend ── */
+.gst-starmap__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  justify-content: center;
+}
+
+.gst-starmap__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gst-starmap__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.gst-starmap__legend-dot[data-temperature="blazing"] {
+  background: var(--gst-temp-blazing);
+}
+
+.gst-starmap__legend-dot[data-temperature="hot"] {
+  background: var(--gst-temp-hot);
+}
+
+.gst-starmap__legend-dot[data-temperature="warm"] {
+  background: var(--gst-temp-warm);
+}
+
+.gst-starmap__legend-dot[data-temperature="cool"] {
+  background: var(--gst-temp-cool);
+}
+
+.gst-starmap__legend-dot[data-temperature="cold"] {
+  background: var(--gst-temp-cold);
+}
+
+.gst-starmap__legend-dot[data-temperature="frozen"] {
+  background: var(--gst-temp-frozen);
+}
+
+.gst-starmap__legend-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  text-transform: capitalize;
+  color: var(--gst-starmap-text-muted);
+}
+
+/* ── Overflow Indicator ── */
+.gst-starmap__overflow {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  color: var(--gst-starmap-text-muted);
+  text-align: center;
+  margin: 8px 0 0 0;
+}
+
+/* ── Animations ── */
+@keyframes gst-starmap-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-starmap {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-starmap__tooltip {
+  transition: none;
+}
+
+/* ── Light Mode ── */
+.light .gst-starmap {
+  --gst-starmap-bg: rgba(245, 243, 240, 0.95);
+  --gst-starmap-border: rgba(0, 0, 0, 0.06);
+  --gst-starmap-text-primary: #1a1a2e;
+  --gst-starmap-text-muted: #6b6b78;
+  --gst-starmap-tooltip-bg: rgba(255, 255, 255, 0.95);
+  --gst-starmap-tooltip-border: rgba(0, 0, 0, 0.08);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-starmap {
+    padding: 16px;
+  }
+
+  .gst-starmap__header {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .gst-starmap__title {
+    font-size: 18px;
+  }
+
+  .gst-starmap__canvas-container {
+    height: 280px;
+  }
+
+  .gst-starmap__legend {
+    gap: 10px;
+  }
+
+  .gst-starmap__tooltip {
+    min-width: 140px;
+    max-width: 180px;
+    padding: 8px 10px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-starmap__canvas-container {
+    height: 340px;
+  }
+
+  .gst-starmap__title {
+    font-size: 20px;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-starmap {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+  }
+
+  .gst-starmap__canvas-container {
+    height: 200px;
+  }
+
+  .gst-starmap__tooltip {
+    display: none;
+  }
+
+  .gst-starmap__legend-dot {
+    border: 1px solid #333;
+  }
+}
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/GuestMemoryStarMap.css
+   Phase 34 "The Gateway" — Capa 4: Memory Constellation
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-starmap
+   Glass: .glass-gst-starmap
+
+   Updated: legend data-type attributes, tooltip data-type
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-starmap {
+  --glass-gst-starmap-version: 2;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-starmap-bg: rgba(8, 8, 15, 0.9);
+  --gst-starmap-border: rgba(255, 255, 255, 0.04);
+  --gst-starmap-text-primary: #f0ece4;
+  --gst-starmap-text-muted: #7a7570;
+  --gst-starmap-radius: 16px;
+  --gst-starmap-tooltip-bg: rgba(18, 18, 26, 0.92);
+  --gst-starmap-tooltip-border: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Base ── */
+.gst-starmap {
+  position: relative;
+  background: var(--gst-starmap-bg);
+  border: 1px solid var(--gst-starmap-border);
+  border-radius: var(--gst-starmap-radius);
+  padding: 24px;
+  overflow: hidden;
+  opacity: 0;
+  animation: gst-starmap-fadeIn 0.6s ease 0.4s forwards;
+}
+
+.gst-starmap[data-state="empty"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  animation: none;
+  opacity: 1;
+}
+
+.gst-starmap__empty-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 15px;
+  color: var(--gst-starmap-text-muted);
+  margin: 0;
+}
+
+/* ── Header ── */
+.gst-starmap__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.gst-starmap__title {
+  font-family: var(--font-display, "Italiana");
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--gst-starmap-text-primary);
+  margin: 0;
+}
+
+.gst-starmap__subtitle {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 12px;
+  color: var(--gst-starmap-text-muted);
+}
+
+/* ── Canvas Container ── */
+.gst-starmap__canvas-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gst-starmap__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  outline: none;
+}
+
+.gst-starmap__canvas:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+/* ── Tooltip ── */
+.gst-starmap__tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background: var(--gst-starmap-tooltip-bg);
+  border: 1px solid var(--gst-starmap-tooltip-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  min-width: 160px;
+  max-width: 240px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 10;
+}
+
+.gst-starmap__tooltip[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gst-starmap__tooltip-type {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 4px 0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.gst-starmap__tooltip[data-type="stage_anchor"] .gst-starmap__tooltip-type {
+  color: var(--gst-starmap-text-muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gst-starmap__tooltip[data-type="guest_quickwin"] .gst-starmap__tooltip-type {
+  color: var(--gst-accent);
+  background: rgba(212, 168, 83, 0.1);
+}
+
+.gst-starmap__tooltip[data-type="guest_referrer"] .gst-starmap__tooltip-type {
+  color: var(--gst-temp-cool);
+  background: rgba(78, 205, 196, 0.1);
+}
+
+.gst-starmap__tooltip[data-type="guest_proposal"] .gst-starmap__tooltip-type {
+  color: var(--gst-temp-hot);
+  background: rgba(255, 167, 38, 0.1);
+}
+
+.gst-starmap__tooltip-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gst-starmap-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.gst-starmap__tooltip-desc {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  color: var(--gst-starmap-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Legend ── */
+.gst-starmap__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  justify-content: center;
+}
+
+.gst-starmap__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gst-starmap__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.gst-starmap__legend-dot[data-type="stage_anchor"] {
+  background: #ffffff;
+  opacity: 0.5;
+}
+
+.gst-starmap__legend-dot[data-type="guest_quickwin"] {
+  background: #d4a853;
+}
+
+.gst-starmap__legend-dot[data-type="guest_referrer"] {
+  background: #4ecdc4;
+}
+
+.gst-starmap__legend-dot[data-type="guest_proposal"] {
+  background: #ffa726;
+}
+
+.gst-starmap__legend-dot[data-type="bottleneck"] {
+  background: #e74c3c;
+  box-shadow: 0 0 4px rgba(231, 76, 60, 0.5);
+}
+
+.gst-starmap__legend-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  color: var(--gst-starmap-text-muted);
+}
+
+/* ── Animations ── */
+@keyframes gst-starmap-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-starmap {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-starmap__tooltip {
+  transition: none;
+}
+
+/* ── Light Mode ── */
+.light .gst-starmap {
+  --gst-starmap-bg: rgba(245, 243, 240, 0.95);
+  --gst-starmap-border: rgba(0, 0, 0, 0.06);
+  --gst-starmap-text-primary: #1a1a2e;
+  --gst-starmap-text-muted: #6b6b78;
+  --gst-starmap-tooltip-bg: rgba(255, 255, 255, 0.95);
+  --gst-starmap-tooltip-border: rgba(0, 0, 0, 0.08);
+}
+
+.light .gst-starmap__legend-dot[data-type="stage_anchor"] {
+  background: #1a1a2e;
+  opacity: 0.3;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-starmap {
+    padding: 16px;
+  }
+
+  .gst-starmap__header {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .gst-starmap__title {
+    font-size: 18px;
+  }
+
+  .gst-starmap__canvas-container {
+    height: 280px;
+  }
+
+  .gst-starmap__legend {
+    gap: 10px;
+  }
+
+  .gst-starmap__tooltip {
+    min-width: 140px;
+    max-width: 180px;
+    padding: 8px 10px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-starmap__canvas-container {
+    height: 340px;
+  }
+
+  .gst-starmap__title {
+    font-size: 20px;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-starmap {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+  }
+
+  .gst-starmap__canvas-container {
+    height: 200px;
+  }
+
+  .gst-starmap__tooltip {
+    display: none;
+  }
+}

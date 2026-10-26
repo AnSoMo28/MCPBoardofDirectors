@@ -1,0 +1,259 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/SocialSportMap.css
+   §B3.8 — Social Sport Map Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  isolated pulse via canvas animation
+   2. REACCIÓN:     hover highlight via canvas redraw
+   3. MEMORIA:      edge thickness = relationship strength
+   4. INTENCIÓN:    suggestion for isolated members
+   5. SINIESTRÍA:   isolated red border + pulse
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-socialmap {
+  --spt-sm-accent: var(--color-teal-400, #2a9ab5);
+  --spt-sm-glow: rgba(42, 154, 181, 0.15);
+  --spt-sm-surface: var(--color-surface-1, #1a1a1a);
+  --spt-sm-border: rgba(255, 255, 255, 0.06);
+  --spt-sm-text: var(--color-silver-100, #f0ece4);
+  --spt-sm-text-muted: var(--color-silver-400, #8a8580);
+
+  background: var(--spt-sm-surface);
+  border: 1px solid var(--spt-sm-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+}
+
+/* ── §0.1 — Mode (LP 6: Empatía) ──────────────────────── */
+
+.spt-socialmap[data-mode="calm"] {
+  --spt-sm-accent: var(--color-teal-400, #2a9ab5);
+  --spt-sm-glow: rgba(42, 154, 181, 0.15);
+}
+
+.spt-socialmap[data-mode="alert"] {
+  --spt-sm-accent: var(--color-amber-400, #d4a017);
+  --spt-sm-glow: rgba(212, 160, 23, 0.2);
+}
+
+.spt-socialmap[data-mode="critical"] {
+  --spt-sm-accent: var(--color-rose-400, #e54d4d);
+  --spt-sm-glow: rgba(229, 77, 77, 0.25);
+}
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-socialmap__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spt-socialmap__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.1rem;
+  color: var(--spt-sm-text);
+  margin: 0;
+}
+
+.spt-socialmap__count {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 8px;
+  background: var(--spt-sm-glow);
+  color: var(--spt-sm-accent);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* ── §2 — Canvas ───────────────────────────────────────── */
+
+.spt-socialmap__canvas {
+  width: 100%;
+  height: 340px;
+  border-radius: 8px;
+}
+
+/* ── §3 — Tooltip ──────────────────────────────────────── */
+
+.spt-socialmap__tooltip {
+  position: absolute;
+  z-index: 10;
+  min-width: 160px;
+  max-width: 220px;
+  background: var(--color-surface-2, #222);
+  border: 1px solid var(--spt-sm-border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: spt-sm-tooltip-enter 0.15s ease;
+}
+
+@keyframes spt-sm-tooltip-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-socialmap__tooltip[data-isolated="true"] {
+  border-left: 3px solid var(--color-rose-400, #e54d4d);
+}
+
+.spt-socialmap__tooltip-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--spt-sm-text);
+  margin: 0 0 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.spt-socialmap__tooltip-iso {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(229, 77, 77, 0.2);
+  color: var(--color-rose-400, #e54d4d);
+}
+
+.spt-socialmap__tooltip-stat {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  color: var(--spt-sm-text-muted);
+  margin: 0 0 0.15rem;
+}
+
+.spt-socialmap__tooltip-stat strong {
+  color: var(--spt-sm-text);
+}
+
+.spt-socialmap__tooltip-sports {
+  font-size: 0.65rem;
+  color: var(--spt-sm-text-muted);
+  margin: 0.3rem 0 0;
+  opacity: 0.7;
+}
+
+/* ── §4 — Footer ───────────────────────────────────────── */
+
+.spt-socialmap__footer {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-sm-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.spt-socialmap__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.85rem;
+  color: var(--spt-sm-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-sm-accent);
+  transition: border-color 0.4s ease;
+}
+
+.spt-socialmap__alert {
+  font-size: 0.8rem;
+  color: var(--color-amber-400, #d4a017);
+  margin: 0;
+}
+
+.spt-socialmap__clusters {
+  font-size: 0.75rem;
+  color: var(--spt-sm-text-muted);
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.spt-socialmap__cluster-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: var(--spt-sm-glow);
+  color: var(--spt-sm-accent);
+  font-weight: 600;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* ── §5 — Light Mode ───────────────────────────────────── */
+
+.light .spt-socialmap {
+  --spt-sm-surface: rgba(255, 255, 255, 0.7);
+  --spt-sm-border: rgba(0, 0, 0, 0.08);
+  --spt-sm-text: #1a1a1a;
+  --spt-sm-text-muted: #6b7280;
+}
+
+.light .spt-socialmap__tooltip {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.light .spt-socialmap__tooltip-name {
+  color: #1a1a1a;
+}
+
+.light .spt-socialmap__tooltip-stat {
+  color: #6b7280;
+}
+
+.light .spt-socialmap__tooltip-stat strong {
+  color: #1a1a1a;
+}
+
+.light .spt-socialmap__narrative {
+  color: #6b7280;
+}
+
+/* ── §6 — Responsive ───────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .spt-socialmap__canvas {
+    height: 260px;
+  }
+
+  .spt-socialmap__tooltip {
+    min-width: 140px;
+    max-width: 180px;
+  }
+}
+
+/* ── §7 — Print ────────────────────────────────────────── */
+
+@media print {
+  .spt-socialmap {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .spt-socialmap__canvas {
+    display: none;
+  }
+
+  .spt-socialmap__tooltip {
+    display: none;
+  }
+}

@@ -1,0 +1,480 @@
+/**
+ * PermissionDenied.css
+ * src/shared/components/auth/PermissionDenied.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .perm-denied-*
+ * @keyframes   2 (perm-denied-icon-in, perm-denied-breathe)
+ * @signature   Superficie glass de denegación con acento lateral
+ *              dorado (continuidad de marca con el legacy §9 de
+ *              PermissionGate.css que reemplaza) + superficie
+ *              REACTIVA al estado del CTA.
+ *
+ * MIGRACIÓN G10 (cierre de la deuda declarada en PermissionGate.css
+ * v2.1 §9): el bloque legacy .glass-perm-denied* se elimina de
+ * PermissionGate.css v2.2; este archivo es su reemplazo canónico,
+ * modernizado con lo último de la industria (con propósito):
+ * [x] @property — custom property tipada y TRANSICIONABLE
+ *     (--perm-denied-glow: <number>) → el glass responde con glow
+ *     real ante hover/foco del CTA, sin keyframes extra.
+ * [x] Container query nombrado + unidades cqi — icono y tipografía
+ *     escalan contra el ancho REAL del card (overlay ≠ página);
+ *     el viewport deja de ser la única dimensión de diseño.
+ *     ⚠️ El contenedor no puede estilarse a sí mismo dentro de su
+ *     propia @container: los ajustes de densidad por ancho van a
+ *     los DESCENDENTES (§5); el padding del card lo gobierna el
+ *     modificador --compact (semántica) — separación deliberada.
+ * [x] :has() — superficie reactiva: hover/focus-visible del CTA
+ *     eleva el card (translate + borde + glow) DESDE el padre.
+ * [x] color-mix(in oklab) — tintes dorados perceptualmente
+ *     uniformes derivados del token, con fallback rgba previo.
+ * [x] Propiedades individuales translate/scale/rotate — sin hacks
+ *     de transform compuesto (baseline 2022, ubícuo en 2027).
+ * [x] text-wrap: balance / pretty — microtipografía 2027.
+ * [x] forced-colors + prefers-contrast — accesibilidad a nivel OS
+ *     (más allá del mínimo D10/D12 de la casa).
+ * NOTA authoring: selectores PLANOS (sin nesting nativo) para
+ * mantener la consistencia house y la compatibilidad con el
+ * tooling de verificación de cobertura de clases del paquete.
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  backdrop blur + saturate + sheen ::before (z -1)
+ * D2 Stagger  ✗  Superficie única (not applicable)
+ * D3 Easing   ✓  var(--ease-apple) en todas las transiciones
+ * D4 Typo     ✓  font-display (title) + font-ui (detail) + balance/pretty
+ * D5 Color    ✓  Tokens gold/silver + color-mix(in oklab) derivados
+ * D6 Pseudo   ✓  ::before sheen (bajo contenido, sobre el glass)
+ * D7 Interact ✓  hover/active/focus-visible + :has() reactivo del padre
+ * D8 Density  ✓  Modificador --compact + container query < 18rem
+ * D9 Response ✓  cqi fluido + @container (no solo viewport)
+ * D10 A11y    ✓  Roles/aria en TSX; outline jamás removido;
+ *                forced-colors (Windows High Contrast)
+ * D11 Light   ✓  .light overrides (§6)
+ * D12 Motion  ✓  reduced-motion + print completos (§7/§8)
+ * D13 Frames  ✓  2 keyframes namespaced al final (§10)
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  PROPIEDAD REGISTRADA (@property) — glow transicionable
+   ═══════════════════════════════════════════════════════════════ */
+
+/* inherits: true → el ::before del card la hereda (pseudo-elementos
+   heredan del elemento originante SOLO si la propiedad hereda) */
+@property --perm-denied-glow {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  BLOQUE — glass + acento lateral + superficie reactiva
+   ═══════════════════════════════════════════════════════════════ */
+
+.perm-denied {
+  /* Container nombrado: los DESCENDENTES escalan contra este ancho */
+  container: perm-denied / inline-size;
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 28px;
+  max-width: 420px;
+  margin-inline: auto;
+  text-align: center;
+  overflow: hidden;
+
+  color: var(--color-silver-100, #f0ece4);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  backdrop-filter: blur(12px) saturate(1.05);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--color-gold-400, #c9a96e);
+  border-radius: 14px;
+
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.55);
+  translate: 0 0;
+
+  transition:
+    translate 0.3s var(--ease-apple, ease),
+    box-shadow 0.3s var(--ease-apple, ease),
+    border-color 0.3s var(--ease-apple, ease),
+    --perm-denied-glow 0.35s var(--ease-apple, ease);
+}
+
+/* Superficie reactiva (D7): el card ELEVA cuando su CTA recibe
+   hover — :has() proyecta el estado del hijo al ancestro. */
+.perm-denied:has(.perm-denied__request:hover) {
+  --perm-denied-glow: 1;
+  border-color: rgba(201, 169, 110, 0.35);
+  border-left-color: var(--color-gold-400, #c9a96e);
+  translate: 0 -2px;
+}
+
+.perm-denied:has(.perm-denied__request:focus-visible) {
+  --perm-denied-glow: 1;
+  box-shadow:
+    0 18px 40px -24px rgba(0, 0, 0, 0.55),
+    0 0 0 2px rgba(201, 169, 110, 0.55);
+}
+
+/* Sheen (D6): barrido de luz bajo el contenido, sobre el glass.
+   z-index: -1 + isolation: isolate en el bloque → pinta tras el
+   texto pero sobre el background del card. */
+.perm-denied::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: var(--perm-denied-glow);
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(201, 169, 110, 0.16) 50%,
+    transparent 60%
+  );
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    color-mix(in oklab, var(--color-gold-400, #c9a96e) 16%, transparent) 50%,
+    transparent 60%
+  );
+  background-size: 220% 100%;
+  background-position-x: 0%;
+  transition: background-position-x 0.8s var(--ease-apple, ease);
+}
+
+.perm-denied:has(.perm-denied__request:hover)::before {
+  background-position-x: 100%;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  ICONO — fluido contra el ancho del card (cqi)
+   ═══════════════════════════════════════════════════════════════ */
+
+.perm-denied__icon-wrap {
+  /* cqi resuelve contra el container .perm-denied (§1) — el tamaño
+     del icono depende del ANCHO REAL del card, no del viewport */
+  --icon-size: clamp(2.5rem, 20cqi, 3rem);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--icon-size) * 1.55);
+  height: calc(var(--icon-size) * 1.55);
+  border-radius: 50%;
+
+  color: var(--color-gold-400, #c9a96e);
+  background: rgba(201, 169, 110, 0.08);
+  border: 1px solid rgba(201, 169, 110, 0.15);
+
+  animation:
+    perm-denied-icon-in 0.45s var(--ease-apple, ease) both,
+    perm-denied-breathe 3s ease-in-out 0.45s infinite;
+}
+
+.perm-denied__icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  TEXTO — microtipografía 2027
+   ═══════════════════════════════════════════════════════════════ */
+
+.perm-denied__title {
+  margin: 0;
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--color-silver-100, #f0ece4);
+  text-wrap: balance;
+}
+
+.perm-denied__detail {
+  margin: 0;
+  max-width: 36ch;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-silver-400, #a09a92);
+  text-wrap: pretty;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  CTA — "Solicitar acceso"
+   ═══════════════════════════════════════════════════════════════ */
+
+.perm-denied__request {
+  -webkit-tap-highlight-color: transparent;
+  margin-top: 4px;
+  padding: 8px 20px;
+
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--color-gold-400, #c9a96e);
+
+  background: rgba(201, 169, 110, 0.08);
+  background: color-mix(in oklab, var(--color-gold-400, #c9a96e) 8%, transparent);
+  border: 1px solid rgba(201, 169, 110, 0.2);
+  border-color: color-mix(in oklab, var(--color-gold-400, #c9a96e) 20%, transparent);
+  border-radius: 8px;
+  cursor: pointer;
+
+  translate: 0 0;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    letter-spacing 0.3s ease,
+    translate 0.16s ease;
+}
+
+.perm-denied__request:hover {
+  background: rgba(201, 169, 110, 0.15);
+  background: color-mix(in oklab, var(--color-gold-400, #c9a96e) 15%, transparent);
+  border-color: rgba(201, 169, 110, 0.35);
+  border-color: color-mix(in oklab, var(--color-gold-400, #c9a96e) 35%, transparent);
+  letter-spacing: 0.04em;
+}
+
+.perm-denied__request:active {
+  translate: 0 1px;
+}
+
+.perm-denied__request:focus-visible {
+  outline: 2px solid var(--color-gold-400, #c9a96e);
+  outline-offset: 2px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  DENSIDAD — modificador compact + container query
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Semántica: overlay del dim-mode — densidad independiente del ancho */
+.perm-denied--compact {
+  gap: 8px;
+  padding: 24px 20px;
+  max-width: 320px;
+  border-left-width: 2px;
+  border-radius: 12px;
+}
+
+.perm-denied--compact .perm-denied__icon-wrap {
+  --icon-size: clamp(1.75rem, 16cqi, 2.25rem);
+}
+
+.perm-denied--compact .perm-denied__title {
+  font-size: 15px;
+}
+
+.perm-denied--compact .perm-denied__detail {
+  font-size: 12px;
+  max-width: 30ch;
+}
+
+/* Fluida (D9): slot angosto (columna lateral) — SOLO descendientes:
+   el contenedor no puede estilizarse dentro de su propia query. */
+@container perm-denied (width < 18rem) {
+  .perm-denied__icon-wrap {
+    --icon-size: clamp(1.75rem, 18cqi, 2.25rem);
+  }
+
+  .perm-denied__title {
+    font-size: 15px;
+  }
+
+  .perm-denied__detail {
+    font-size: 12px;
+    max-width: 30ch;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .perm-denied {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.08);
+  border-left-color: var(--color-gold-400, #c9a96e);
+  box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.25);
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .perm-denied__title {
+  color: var(--color-silver-800, #2c2a27);
+}
+
+.light .perm-denied__detail {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .perm-denied__icon-wrap {
+  background: rgba(201, 169, 110, 0.1);
+  border-color: rgba(201, 169, 110, 0.2);
+}
+
+.light .perm-denied__request {
+  background: rgba(201, 169, 110, 0.1);
+  border-color: rgba(201, 169, 110, 0.25);
+  color: #8b7340;
+}
+
+.light .perm-denied__request:hover {
+  background: rgba(201, 169, 110, 0.18);
+  border-color: rgba(201, 169, 110, 0.4);
+}
+
+.light .perm-denied:has(.perm-denied__request:focus-visible) {
+  box-shadow:
+    0 10px 30px -18px rgba(15, 23, 42, 0.25),
+    0 0 0 2px rgba(139, 115, 64, 0.5);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  REDUCED MOTION + CONTRASTE + FORCED COLORS
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .perm-denied,
+  .perm-denied__request {
+    transition: none;
+    translate: 0 0;
+  }
+
+  .perm-denied__icon-wrap {
+    animation: none;
+  }
+
+  .perm-denied::before {
+    transition: none;
+  }
+}
+
+/* Alto contraste preferido (acceso OS-level) */
+@media (prefers-contrast: more) {
+  .perm-denied {
+    border-color: var(--color-gold-400, #c9a96e);
+    border-left-color: var(--color-gold-400, #c9a96e);
+  }
+
+  .perm-denied__detail {
+    color: var(--color-silver-200, #d4cfc7);
+  }
+}
+
+/* Windows High Contrast / forced colors (2027: no negociable) */
+@media (forced-colors: active) {
+  .perm-denied {
+    background: Canvas;
+    border-color: CanvasText;
+    border-left-color: Highlight;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  .perm-denied__icon-wrap {
+    background: none;
+    border-color: CanvasText;
+  }
+
+  .perm-denied__request {
+    background: ButtonFace;
+    border-color: ButtonText;
+    color: ButtonText;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .perm-denied__request {
+    display: none !important;
+  }
+
+  .perm-denied {
+    background: none;
+    border-color: #000;
+    border-left-color: #000;
+    color: #000;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    translate: 0 0;
+  }
+
+  .perm-denied__title {
+    color: #000;
+  }
+
+  .perm-denied__detail {
+    color: #333;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  RESPONSIVE (D9) — viewport de último recurso
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .perm-denied {
+    padding: 28px 20px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §10 KEYFRAMES (D13) — ALL at end, ALL perm-denied-* namespaced.
+       Count: 2.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Entrada del icono — propiedades individuales (scale/rotate) */
+@keyframes perm-denied-icon-in {
+  from {
+    opacity: 0;
+    scale: 0.6;
+    rotate: -8deg;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    rotate: 0deg;
+  }
+}
+
+/* Respiración con glow dorado — firma de la familia perm-* */
+@keyframes perm-denied-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(201, 169, 110, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(201, 169, 110, 0.3);
+  }
+}

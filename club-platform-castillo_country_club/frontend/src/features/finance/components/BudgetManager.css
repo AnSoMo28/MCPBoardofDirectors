@@ -1,0 +1,155 @@
+/**
+ * @component BudgetManager (Fase 19g)
+ * @namespace .glass-budget-*
+ * @depends globals.css (glass tokens, color-mix, font tokens)
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   Fase 19g — Budget Manager Glass
+   Summary · gauge · burn rate · category glass
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Budget Summary (Propuestas 1+2) ── */
+
+.glass-budget-summary {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-budget-summary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.04) 0%, transparent 30%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Status glow variants */
+.glass-budget-summary--healthy {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-emerald-400) 5%, transparent);
+}
+
+.glass-budget-summary--warning {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-amber-400) 5%, transparent);
+}
+
+.glass-budget-summary--over {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-rose-400) 5%, transparent);
+}
+
+/* ── Glass Budget KPI (Propuesta 1) ── */
+
+.glass-budget-kpi {
+  position: relative;
+  padding: 16px;
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.glass-budget-kpi::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+/* ── Semi-circular Gauge (Propuesta 2) ── */
+
+.glass-budget-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.glass-budget-gauge__label {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Glass Category Card (Propuesta 4) ── */
+
+.glass-budget-category {
+  position: relative;
+  padding: 16px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.glass-budget-category::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.02) 0%, transparent 30%);
+  pointer-events: none;
+}
+
+.glass-budget-category:hover {
+  border-color: var(--glass-border-hover);
+}
+
+/* Category status glow */
+.glass-budget-category--over {
+  border-left: 3px solid var(--color-rose-400);
+  box-shadow: inset 2px 0 16px color-mix(in srgb, var(--color-rose-400) 3%, transparent);
+}
+
+.glass-budget-category--warning {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+/* ── Light Mode Overrides ── */
+
+.light .glass-budget-summary {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-budget-summary--healthy,
+.light .glass-budget-summary--warning,
+.light .glass-budget-summary--over {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-budget-kpi {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-budget-category {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-budget-category--over {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}

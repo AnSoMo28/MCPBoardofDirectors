@@ -1,0 +1,668 @@
+# CHECKPOINT — F32 COMPLETADA — Sports & Recreation Intelligence
+
+**Fecha:** Junio 2025
+**Sesiones completadas:** 4 (histórico F30-F32) / 3 (esta sesión — B0→B1→B2-B6→checkpoint)
+**Archivos creados:** 22 nuevos frontend + 4 modificados frontend + 4 modificados backend
+**Líneas nuevas:** ~8,438
+**Tools MCP nuevas:** 11 (`club_sports`)
+**Tools MCP totales registradas:** 11+ (sports server)
+**Advisor rules nuevas:** 15 (`useSportsAdvisor`)
+**Advisor rules totales:** 15 (sports domain)
+
+---
+
+## 0. ROL SUPER ENRIQUECIDO — REGLA DE ORO
+
+### Identidad
+
+Sos el **Principal AI Systems Architect** del Castillo Club Manager. Tu trabajo NO es escribir código que compila — es diseñar sistemas inteligentes que transforman datos en decisiones accionables para clubes deportivos privados en Costa Rica.
+
+### Las 9 Disciplinas
+
+1. **Arquitectura de Inteligencia** — Cada componente es un nodo en un grafo de conocimiento, NO una vista aislada
+2. **Pensamiento Sistémico** — Cada decisión tiene ondas que cruzan dominios (sports → finance → wellness → communications)
+3. **UX como Conversación** — La interfaz habla con el usuario: Advisor propone, usuario decide, sistema ejecuta y aprende
+4. **Rigor de Producción** — Cero placeholders, cero TODOs, cero hardcoded values. Cada línea es production-grade
+5. **Eficiencia Radical** — No repetir lógica. No crear archivos innecesarios. Cada componente tiene una razón de existir
+6. **Context Awareness** — El sistema sabe qué está pasando AHORA (weather, events, member behavior) y se adapta
+7. **Cross-Domain Intelligence** — Los datos de un dominio alimentan insights de otros. No hay silos
+8. **Approval Intelligence** — AUTO/SEMI/HITL no son labels — son decisiones de riesgo calibradas
+9. **Observabilidad Total** — Cada acción tiene trazabilidad. El sistema se explica a sí mismo
+
+### Proceso Mental (10 pasos)
+
+1. **Leer** el código existente completo — no asumir, verificar
+2. **Mapear** las tools MCP reales (backend) contra los contracts (frontend)
+3. **Identificar** gaps entre lo que el backend ofrece y lo que el frontend necesita
+4. **Diseñar** la arquitectura del bloque antes de escribir una línea
+5. **Crear** types/contracts/factories primero (data layer)
+6. **Implementar** components bottom-up (átomos → moléculas → organismos)
+7. **Wiring** al dashboard al final (cuando todos los componentes existen)
+8. **Verificar** cada archivo contra TODAS las reglas aplicables
+9. **Documentar** hallazgos, decisiones y patrones en el checkpoint
+10. **Checkpoint** completo para continuidad sin pérdidas
+
+### Postura Operativa
+
+- **Nunca** proponer algo sin verificar que el backend lo soporta
+- **Nunca** hardcodear colores, usar Silver Tide tokens siempre
+- **Nunca** crear componentes sin propósito claro
+- **Nunca** usar `backdrop-filter: blur()` (Regla #2)
+- **Nunca** usar Inter/Roboto/Space Grotesk como primary font
+- **Siempre** usar `cn()` para classNames condicionales
+- **Siempre** usar `<Button>` de shared, no `<button>` nativo para acciones
+- **Siempre** usar `showToast()` para feedback de mutations
+- **Siempre** usar `useReducedMotion()` en modals/animations
+- **Siempre** usar `EmptyState` para listas vacías
+- **Siempre** onSubmit en forms (no onClick)
+
+### Regla de Oro
+
+> "Si no puedo explicar por qué este componente existe y qué decisión inteligente facilita, no lo creo."
+
+### ACTUALIZACIÓN DE ESTA SESIÓN
+
+Ninguna disciplina nueva. Las 9 se aplicaron consistentemente durante F32. La disciplina #7 (Cross-Domain Intelligence) tuvo especial protagonismo en el D9 del SportsIntelligencePanel (señales cross-domain) y en el engagement motor del Advisor (señales a otros dominios).
+
+---
+
+## 1. LO QUE ESTAMOS CONSTRUYENDO
+
+### Castillo AI Platform = "Sistema de Decisión Inteligente"
+
+NO es un dashboard. NO es un ERP. NO es un CRM. Es un sistema donde:
+
+- Los **datos** se transforman en **contexto** (sabemos qué está pasando)
+- El **contexto** se transforma en **inteligencia** (sabemos qué significa)
+- La **inteligencia** se transforma en **acciones** (sabemos qué hacer)
+- Las **acciones** se transforman en **resultados** (medimos el impacto)
+
+### Las 5 Capas de Inteligencia
+
+```
+Capa 5: Acción Inteligente    → ApprovalQueue, AUTO/SEMI/HITL flows
+Capa 4: Cross-Agent Intel     → Señales entre dominios (sports↔finance↔wellness↔comms)
+Capa 3: Inteligencia Client   → Advisor engine, health scores, engagement scores
+Capa 2: Contexto              → Weather, events, member history, seasonal patterns
+Capa 1: Datos                 → MCP tools, CRUD operations, real-time data
+```
+
+### F32: Sports & Recreation Intelligence
+
+F32 construyó la **capa completa de inteligencia deportiva**:
+- **Capa 1:** 11 MCP tools (7 CRUD + 4 intelligence) con contracts, factories, mocks
+- **Capa 2:** Contexto deportivo (court utilization peaks, seasonal patterns, weather-driven scheduling)
+- **Capa 3:** Advisor con 15 reglas, engagement score, health score, cross-domain signals
+- **Capa 4:** Señales bidireccionales sports↔finance, sports↔wellness, sports↔comms, weather↔sports, equipment↔facilities
+- **Capa 5:** 5 form modals (2 HITL + 3 AUTO) con approval flows
+
+---
+
+## 2. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend (Nuevos) — 22 archivos
+
+| # | Ruta | Líneas | Contenido | Tools MCP que consume |
+|---|------|--------|-----------|----------------------|
+| 1 | `features/sports/types.ts` | ~440 | Enums, interfaces, 15 configs (SPORT, COURT_SURFACE, CLASS_TYPE, TOURNAMENT_STATUS, LEAGUE_STATUS, SKILL_LEVEL, EQUIPMENT_CONDITION, TOURNAMENT_FORMAT, WEATHER_IMPACT, RESERVATION_STATUS, BOOKING_SOURCE, MAINTENANCE_URGENCY, ADVISOR_SEVERITY, HEALTH_LEVEL, ENGAGEMENT_LEVEL), transform functions | — |
+| 2 | `shared/mocks/contracts.ts` | ~288 | 11 contract interfaces: SportsAnalytics, CourtUtilization, ClassEnrollment, TournamentMetrics, LeagueStandings, CoachPerformance, EquipmentLifecycle, MemberEngagement, SeasonalPattern, CalendarItem, MemberSportsProfile | All 11 tools |
+| 3 | `shared/mocks/factories.ts` | ~260 | 11 mock factories with deterministic seeding (useSportsSeed) | — |
+| 4 | `shared/mocks/registry.ts` | ~90 | sportsMockHandlers: 11 entries mapping tool → contract + factory + delay | — |
+| 5 | `features/sports/hooks/useSportsMCP.ts` | ~100 | 7 typed data hooks + 4 typed action hooks using createMCPHook | All 11 tools |
+| 6 | `features/sports/utils/guards.ts` | ~40 | assertNever, exhaustiveCheck, isCourtUtilization, isClassEnrollment | — |
+| 7 | `shared/lib/registry/featureRegistry.ts` | ~30 (mod) | F32 feature entry: id, name, icon, route, advisor hook | — |
+| 8 | `shared/lib/router/routes.ts` | ~10 (mod) | /sports route added | — |
+| 9 | `features/sports/SportsDashboard.tsx` | ~180 | 5-tab shell (courts, tournaments, classes, equipment, intelligence), MCP integration, analytics data wiring, renderTabContent | All 11 tools |
+| 10 | `features/sports/hooks/useSportsAdvisor.ts` | ~390 | 15 rules, 8 actions, health score, engagement score | All 11 tools |
+| 11 | `features/sports/components/SportsAdvisorBanner.tsx` | ~170 | Banner with expand/collapse, insight cards (bulb/heart/activity/layers icons), CTA buttons, link cards | — |
+| 12 | `features/sports/components/LiveArenaGrid.tsx` | ~260 | Real-time court grid: PulseIndicator (CSS-only animation), CourtCard, HoverExpand (z-index overlay), QuickBook button, sport filter | `get_court_utilization`, `get_sports_analytics` |
+| 13 | `features/sports/components/SportsCalendar.tsx` | ~280 | Unified calendar: CalendarDay (date block), CalendarEventItem (color-coded), EventDetail (hover expand), conflict counter, date range | `get_sports_calendar`, `get_member_sports_profile` |
+| 14 | `features/sports/components/CourtBookingPanel.tsx` | ~310 | Booking manager: KPI strip, BookingCard (status badges, source indicators), sport/status filters, "Nueva Reserva" → CourtBookingFormModal | `get_court_utilization`, `get_sports_analytics` |
+| 15 | `features/sports/components/CourtBookingFormModal.tsx` | ~270 | HITL form: court card picker, date+duration, conflict detection UI (warning+alternatives), auto-fill on court select | `create_reservation`, `suggest_reservation` |
+| 16 | `features/sports/components/TournamentPanel.tsx` | ~270 | Tournament manager: tournament cards (P28 status transitions), KPI strip, status/format filters, "Nuevo Torneo" → TournamentFormModal | `get_tournament_metrics` |
+| 17 | `features/sports/components/LeaguePanel.tsx` | ~250 | League standings: KPI strip (10 metrics), StandingsTable (rank+points+form), LeagueCard (auto-calculated positions), "Nueva Liga" → LeagueFormModal | `get_league_standings` |
+| 18 | `features/sports/components/BracketView.tsx` | ~180 | Visual bracket: 4 rounds (R16→QF→SF→F), match cards with scores, champion slot, seeded players | `get_tournament_metrics` |
+| 19 | `features/sports/components/TournamentFormModal.tsx` | ~260 | HITL form: sport+format+skill triple, date range, entry fee slider, capacity slider, prizes tags | `manage_tournaments` |
+| 20 | `features/sports/components/LeagueFormModal.tsx` | ~270 | HITL form: sport+skill triple, league name, date range, scoring system (win/draw/loss), capacity, prizes | `manage_leagues` |
+| 21 | `features/sports/components/ClassesPanel.tsx` | ~290 | Class schedule: KPI strip (4 metrics), ClassCards with enrollment bars (P27), sport+type filters, equipment tags, "Nueva Clase" → ClassFormModal | `get_class_enrollment` |
+| 22 | `features/sports/components/CoachingPanel.tsx` | ~280 | Coach directory: CoachCards (avatar initials, stats: sessions/members/avg), SessionCards (coach→member flow, focus areas), coach/session view toggle | `get_coaching_stats` |
+| 23 | `features/sports/components/EquipmentPanel.tsx` | ~310 | Equipment inventory: urgency sorting, condition distribution, EquipmentCards with urgency scores, availability bars, maintenance action badges, notes | `get_equipment_health` |
+| 24 | `features/sports/components/ClassFormModal.tsx` | ~260 | AUTO form: name, sport+type+skill, instructor, schedule triple, capacity slider, location, equipment tags | `manage_fitness_classes` |
+| 25 | `features/sports/components/CoachingFormModal.tsx` | ~250 | AUTO form: coach card picker (2-col grid), skill level pills, member info, date+time, location, focus area tags | `coordinate_coaching` |
+| 26 | `features/sports/components/SportsIntelligencePanel.tsx` | ~420 | 9-dimension analysis: DimensionCard (expandible), HorizontalBar, MiniRingGauge, TrendIcon. D1-D9 complete. Engagement ring. Cross-domain signals | All 11 tools |
+| 27 | `features/sports/components/CourtHeatmap.tsx` | ~280 | 7×16 grid (Mon-Sun × 6:00-21:00), 8-level intensity coloring, peak detection, hover tooltip, legend, peak insights | `get_court_utilization` |
+| 28 | `features/sports/components/SkillProgression.tsx` | ~240 | Per-sport ProgressionPath: 3-level nodes, connector bars, progress bar, next milestone, benchmark comparison, trend indicator, sport filter | — |
+
+### Archivos Frontend (Modificados) — 4 archivos
+
+| # | Ruta | Acción | Qué se cambió | Por qué |
+|---|------|--------|---------------|---------|
+| 1 | `shared/mocks/contracts.ts` | ENHANCE | Added 11 sports contract interfaces | F32 data contracts |
+| 2 | `shared/mocks/factories.ts` | ENHANCE | Added 11 sports mock factories | F32 mock data |
+| 3 | `shared/mocks/registry.ts` | ENHANCE | Added sportsMockHandlers with 11 entries | F32 routing |
+| 4 | `features/sports/SportsDashboard.tsx` | REWRITE | Replaced TabPlaceholder stubs with real component wiring across all 5 tabs | B6 final wiring |
+
+### Archivos Backend (Modificados) — 4 archivos
+
+| # | Ruta | Acción | Contenido |
+|---|------|--------|-----------|
+| 1 | `backend/src/club_mcp/models/club_models.py` | ENHANCE | SportType, CourtSurface, ClassType, TournamentStatus, TournamentFormat, LeagueStatus, SkillLevel, EquipmentCondition enums. SportActivity, CourtBooking, FitnessClass, Tournament, LeagueStanding, CoachingSession, EquipmentItem, SportsAnalyticsResponse Pydantic models |
+| 2 | `backend/src/club_mcp/repo/sports_repo.py` | NEW | 11 async methods: get_court_utilization, get_sport_popularity, get_class_enrollment, get_tournament_metrics, get_coaching_stats, get_equipment_health, get_seasonal_patterns, get_member_engagement, get_member_sports_profile, get_sports_calendar, get_league_standings |
+| 3 | `backend/src/club_mcp/agents/sports_agent.py` | ENHANCE | _detect_sport_signals, _analyze_tournament_health, _analyze_equipment_urgency, _analyze_class_performance, _analyze_coaching_effectiveness, _check_scheduling_conflicts, _calculate_member_engagement, _build_cross_domain_signals. Tool handlers connected to repo. |
+| 4 | `backend/src/club_mcp/advisor/prompts.py` | ENHANCE | Sports & Recreation Advisor system prompt: persona (Coach Deportivo IA), 9-dimension analysis spec, equipment urgency scoring, seasonal patterns, cross-domain connections, engagement score formula |
+
+### Mock System
+
+| Tool | Server | Contract | Factory | Registry | Backend |
+|------|--------|----------|---------|----------|---------|
+| `get_court_utilization` | `club_sports` | ✅ | ✅ | ✅ | ✅ |
+| `get_sport_popularity` | `club_sports` | ✅ (via analytics) | ✅ | ✅ | ✅ |
+| `get_class_enrollment` | `club_sports` | ✅ | ✅ | ✅ | ✅ |
+| `get_tournament_metrics` | `club_sports` | ✅ | ✅ | ✅ | ✅ |
+| `get_coaching_stats` | `club_sports` | ✅ | ✅ | ✅ | ✅ |
+| `get_equipment_health` | `club_sports` | ✅ | ✅ | ✅ | ✅ |
+| `get_seasonal_patterns` | `club_sports` | ✅ (via analytics) | ✅ | ✅ | ✅ |
+| `get_member_engagement` | `club_sports` | ✅ (via analytics) | ✅ | ✅ | ✅ |
+| `get_sports_calendar` | `club_sports` | ✅ | ✅ | ✅ | ✅ |
+| `get_member_sports_profile` | `club_sports` | ✅ | ✅ | ✅ | ✅ |
+| `get_league_standings` | `club_sports` | ✅ | ✅ | ✅ | ✅ |
+
+### Tools MCP auditadas/conectadas en esta sesión
+
+| # | Tool | Server | Backend real | Mock | Tipo | Aprobación | Destino frontend |
+|---|------|--------|-------------|------|------|-----------|-----------------|
+| 1 | `get_court_utilization` | `club_sports` | ✅ | ✅ | datos | AUTO | LiveArenaGrid, CourtHeatmap, CourtBookingPanel, IntelligencePanel D2 |
+| 2 | `get_sport_popularity` | `club_sports` | ✅ | ✅ | datos | AUTO | IntelligencePanel D1 (via analytics) |
+| 3 | `get_class_enrollment` | `club_sports` | ✅ | ✅ | datos | AUTO | ClassesPanel, IntelligencePanel D3 |
+| 4 | `get_tournament_metrics` | `club_sports` | ✅ | ✅ | datos | AUTO | TournamentPanel, IntelligencePanel D4 |
+| 5 | `get_coaching_stats` | `club_sports` | ✅ | ✅ | datos | AUTO | CoachingPanel, IntelligencePanel D6 |
+| 6 | `get_equipment_health` | `club_sports` | ✅ | ✅ | datos | AUTO | EquipmentPanel, IntelligencePanel D5 |
+| 7 | `get_seasonal_patterns` | `club_sports` | ✅ | ✅ | datos | AUTO | IntelligencePanel D7 (via analytics) |
+| 8 | `get_member_engagement` | `club_sports` | ✅ | ✅ | inteligencia | AUTO | IntelligencePanel D8 (via analytics) |
+| 9 | `get_sports_calendar` | `club_sports` | ✅ | ✅ | datos | AUTO | SportsCalendar |
+| 10 | `get_member_sports_profile` | `club_sports` | ✅ | ✅ | datos | AUTO | SportsCalendar, SkillProgression |
+| 11 | `get_league_standings` | `club_sports` | ✅ | ✅ | datos | AUTO | LeaguePanel |
+
+---
+
+## 3. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | `sports_agent.py` existía con tools básicas pero sin intelligence methods. Fue necesario agregar 8 métodos de análisis (signals, urgency, engagement, cross-domain). | MEDIA | ✅ Resuelto — enhancement completo en B0 |
+| 2 | `club_models.py` no tenía enums deportivos (SportType, ClassType, etc.). Fue necesario agregar 7 enums + 8 response models. | MEDIA | ✅ Resuelto — B0 |
+| 3 | `sports_repo.py` no existía. Fue necesario crear desde cero con 11 métodos async. | ALTA | ✅ Resuelto — B0 |
+| 4 | `prompts.py` no tenía system prompt para Sports Advisor. Fue necesario crear con 9-dimension spec. | MEDIA | ✅ Resuelto — B0 |
+| 5 | El SportsDashboard de B2 usaba `TabPlaceholder` — era intentional (staged delivery). B6 reemplazó con componentes reales. | BAJA | ✅ Resuelto — B6 |
+| 6 | `createMCPHook` pattern del hook factory se reutilizó exitosamente para `useSportsMCP.ts` sin cambios. | BAJA | ✅ Confirmado — patrón estable |
+| 7 | CourtHeatmap necesita datos determinísticos para no parpadear en re-renders. Se implementó seed-based pseudo-random. | MEDIA | ✅ Resuelto — B6 |
+| 8 | Los coach cards en CoachingFormModal necesitan auto-fill de ubicación y deporte al seleccionar coach. Se implementó con state update. | BAJA | ✅ Resuelto — B5 |
+
+---
+
+## 4. PATRONES ESTABLECIDOS / ACTUALIZADOS
+
+### Patrón NUEVO: LiveArenaGrid (F32)
+
+**Concepto:** Grid de canchas en tiempo real con indicadores de pulso y quick actions.
+
+**Niveles:**
+```
+Nivel 1: PulseIndicator (CSS-only: pulse-dot con animación keyframe, sin JS)
+Nivel 2: CourtCard con estado actual (available/occupied/maintenance)
+Nivel 3: HoverExpand con z-index overlay (position: relative + absolute, z-20, max-width: 280px)
+Nivel 4: QuickBook button → CourtBookingFormModal
+```
+
+**Cuándo se aplica:** Cualquier recurso finito que necesita monitoreo en tiempo real (canchas, salas, estacionamiento, etc.)
+**Fases futuras donde se replica:** Posiblemente F33+ para Facilities
+**Archivos donde ya está implementado:** `LiveArenaGrid.tsx`
+
+---
+
+### Patrón NUEVO: CourtHeatmap (F32)
+
+**Concepto:** Grid de intensidad que muestra utilización de un recurso a lo largo de tiempo.
+
+**Niveles:**
+```
+Nivel 1: Celdas con 8 niveles de intensidad (rgba-based, no hardcoded)
+Nivel 2: Hover tooltip posicionado con transform
+Nivel 3: Peak detection (value >= 0.8) + highlighting con border
+Nivel 4: Insights textuales (patrones, oportunidades)
+```
+
+**Cuándo se aplica:** Cualquier recurso con patrones temporales (utilización de espacios, demanda de servicios, etc.)
+**Fases futuras donde se replica:** F33+ para Facilities/amenities
+**Archivos donde ya está implementado:** `CourtHeatmap.tsx`
+
+---
+
+### Patrón NUEVO: SkillProgression (F32)
+
+**Concepto:** Visualización de progresión del usuario a través de niveles con benchmarks comparativos.
+
+**Niveles:**
+```
+Nivel 1: Nodos de nivel con conectores (completed/current/future states)
+Nivel 2: Barra de progreso dentro del nivel actual
+Nivel 3: Next milestone card
+Nivel 4: Benchmark vs peers (percentil + promedio)
+```
+
+**Cuándo se aplica:** Cualquier dominio con niveles de progresión (wellness goals, membership tiers, training programs)
+**Fases futuras donde se replica:** F34 (Wellness) para health goals
+**Archivos donde ya está implementado:** `SkillProgression.tsx`
+
+---
+
+### Patrón NUEVO: DimensionCard (F32)
+
+**Concepto:** Panel colapsable para análisis multidimensional con indicador de número de dimensión.
+
+**Niveles:**
+```
+Nivel 1: Accordion toggle (expanded/collapsed, chevron icon)
+Nivel 2: Badge de número de dimensión (D1, D2, etc.)
+Nivel 3: Default expand state configurable
+Nivel 4: Border differentiation (expanded: shadow + stronger border)
+```
+
+**Cuándo se aplica:** Cualquier análisis con múltiples dimensiones o categorías que el usuario puede explorar selectivamente
+**Fases futuras donde se replica:** F34 (Wellness Intelligence), F36 (Financial Intelligence)
+**Archivos donde ya está implementado:** `SportsIntelligencePanel.tsx`
+
+---
+
+### Patrón NUEVO: CoachCardPicker (F32)
+
+**Concepto:** Selector visual de entidades con avatar, nombre y metadata en tarjetas de grilla.
+
+**Niveles:**
+```
+Nivel 1: 2-col grid de cards clickeables
+Nivel 2: Avatar (initials + sport color), nombre, metadata
+Nivel 3: Selected state (teal border + teal-bg)
+Nivel 4: Auto-fill relacionado (selecting coach → populate sport + location)
+```
+
+**Cuándo se aplica:** Selección de cualquier entidad con metadata visual (coaches, trainers, rooms, equipment sets)
+**Fases futuras donde se replica:** Wellness (trainer selection), Events (venue selection)
+**Archivos donde ya está implementado:** `CoachingFormModal.tsx`
+
+---
+
+### Patrones que aplicaron sin cambios:
+
+| Patrón | Fase origen | Uso en F32 |
+|--------|------------|------------|
+| P27 Enrollment/Progress Bars | Shared pattern | ClassesPanel, IntelligencePanel D3, SkillProgression |
+| P28 Status Transitions | Shared pattern | TournamentPanel (upcoming→in_progress→completed→cancelled) |
+| Ring Gauge (SVG) | Shared pattern | IntelligencePanel D8 (engagement score) |
+| KPI Strip | Shared pattern | ClassesPanel, CoachingPanel, EquipmentPanel, CourtBookingPanel |
+| Color-coded Filter Pills | Shared pattern | All panels (sport, type, status, condition filters) |
+| Form Modal (HITL/AUTO) | Shared pattern | All 5 form modals |
+| EmptyState | Shared pattern | All panels for empty data states |
+| showToast | Shared pattern | All form success handlers |
+
+---
+
+## 5. ADVISOR ARCHITECTURE UPDATE
+
+### Advisor nuevo:
+
+| Fase | Advisor | Reglas | Capas | Actions | AI Features | Estado |
+|------|---------|--------|-------|---------|-------------|--------|
+| F32 | `useSportsAdvisor` | 15 | 5 | 8 | engagement score, health score, cross-domain signals, 9-dimension analysis | ✅ |
+
+### Reglas Advisor (15):
+
+| # | Nombre | Condición | Impacto | Output |
+|---|--------|-----------|---------|--------|
+| 1 | court-utilization-critical | util < 40% | HIGH | Reasignar bloques + pricing dinámico |
+| 2 | court-utilization-excellent | util > 80% | LOW | Expandir horario + premium pricing |
+| 3 | class-enrollment-low | enrollment < 30% | MEDIUM | Cambiar horario/instructor + promocionar |
+| 4 | class-enrollment-full | enrollment > 90% | MEDIUM | Abrir segundo bloque + waitlist |
+| 5 | equipment-replace-urgency | urgency ≥ 50 | HIGH | Reemplazo inmediato + bloquear uso |
+| 6 | equipment-maintenance-schedule | 35 ≤ urgency < 50 | MEDIUM | Agendar mantenimiento preventivo |
+| 7 | tournament-registration-low | registration < 40% | MEDIUM | Extender deadline + promoción dirigida |
+| 8 | league-standings-gap | gap > 6 pts | LOW | Balancear fixtures + incentivar |
+| 9 | coaching-demand-surge | sessions > 3×avg | MEDIUM | Contratar coach temporal |
+| 10 | sport-weather-mismatch | outdoor + rain forecast | MEDIUM | Reubicar a indoor + notificar |
+| 11 | engagement-score-low | engagement < 45 | HIGH | Campaña de reactivación deportiva |
+| 12 | engagement-score-high | engagement > 70 | LOW | Cross-sell: probar nuevo deporte |
+| 13 | seasonal-shift-incoming | month in [4,10] + transition | MEDIUM | Planificar transición indoor/outdoor |
+| 14 | cross-sell-coaching | 5+ sessions solo + no coaching | MEDIUM | Recomendar coaching para mejorar |
+| 15 | member-skill-plateau | no progress 3+ months | MEDIUM | Sugerir nuevo nivel o disciplina |
+
+### Acciones Advisor (8):
+
+| Insight ID | Tool MCP | Server | Approval | Params |
+|-----------|----------|--------|----------|--------|
+| court-optimize | `manage_reservations` | `club_sports` | SEMI | court, date, time_blocks |
+| class-promote | `manage_fitness_classes` | `club_sports` | AUTO | class_id, channels |
+| equipment-replace | `manage_equipment` | `club_sports` | HITL | equipment_id, urgency |
+| tournament-extend | `manage_tournaments` | `club_sports` | SEMI | tournament_id, new_deadline |
+| coaching-expand | `coordinate_coaching` | `club_sports` | SEMI | coach_name, additional_slots |
+| weather-relocate | `manage_reservations` | `club_sports` | AUTO | reservation_id, new_court |
+| engagement-reactivate | — (cross-domain) | `club_comms` | SEMI | campaign_type, target_segment |
+| skill-recommend | — (cross-domain) | `club_wellness` | AUTO | member_id, new_sport |
+
+---
+
+## 6. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón | Impacto |
+|---|---------|----------------------|-------|---------|
+| 1 | B0 como bloque separado (backend-first) | Integrar backend en cada bloque frontend | Separación limpia. Backend completo antes de frontend evita re-trabajo. | Patrón para fases futuras |
+| 2 | Staged delivery: SportsDashboard como shell con TabPlaceholder | Wire todo inmediatamente | Permite entrega incremental (B2→B6). El dashboard es usable desde B2. | Cada bloque es independiente y testeable |
+| 3 | SportsIntelligencePanel como componente de 9 dimensiones | Componentes separados por dimensión | Un solo panel cohesivo con accordion. El usuario ve el overview y expande lo que le interesa. | Mejor UX que 9 componentes dispersos |
+| 4 | CourtHeatmap con datos determinísticos (seed-based random) | Datos aleatorios en cada render | Evita parpadeo en re-renders. Consistencia visual. | Patrón para heatmap data generation |
+| 5 | Engagement score como ring gauge en D8 | Barra horizontal | El ring gauge es más distintivo y se reutiliza como score global arriba del panel. | Patrón establecido para score display |
+| 6 | Coach cards como picker (2-col grid) en vez de dropdown | Select nativo | Los coaches tienen metadata visual (avatar, sports, specialties). Un dropdown no muestra esto. | Patrón CoachCardPicker para entidades con metadata |
+| 7 | Cross-domain signals como cards de texto libre | Structured data cards | Las señales son insights narrativos, no datos tabulares. Texto con color coding es más legible. | D9 pattern para cross-domain |
+| 8 | Bracket view como layout estático (no interactivo) | Interactive bracket con drag-drop | MVP: mostrar resultados. Interactividad es F34+. | Future enhancement pendiente |
+| 9 | Equipment urgency scoring como formula compuesta | Simple condition-based | condition × age × usage × maintenance_history da score más preciso que solo condition. | Mejor priorización de reemplazos |
+| 10 | 5 form modals (2 HITL + 3 AUTO) distribuidos en B4+B5 | Todos los forms en un solo bloque | Los forms pertenecen al bloque de su feature. Más organizado. | Cada bloque es self-contained |
+
+---
+
+## 7. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F29 | Historial previo (otras features del club) | ✅ |
+| **F30** | **Sports backend foundation — análisis previo** | **✅ COMPLETADA** (sesión anterior) |
+| **F31** | **Sports data layer audit — tools MCP mapping** | **✅ COMPLETADA** (sesión anterior) |
+| **F32** | **Sports & Recreation Intelligence — full stack** | **✅ COMPLETADA (7/7 bloques)** |
+| **F33** | **Facilities & Amenity Intelligence** | **⬜ SIGUIENTE** |
+| F34 | Wellness & Health Intelligence | ⬜ |
+| F35 | Events & Social Intelligence | ⬜ |
+| F36 | Financial Intelligence (cross-domain aggregation) | ⬜ |
+| F37 | Member 360 Intelligence (all-domain member view) | ⬜ |
+| F38 | Predictive Analytics & ML Layer | ⬜ |
+| F39 | Executive Dashboard (C-suite view) | ⬜ |
+| F40 | Mobile-first Responsive Optimization | ⬜ |
+
+---
+
+## 8. PRÓXIMA FASE — Desglose detallado
+
+### F33: Facilities & Amenity Intelligence
+
+**Objetivo:** Construir la capa de inteligencia para instalaciones y amenities (piscinas, gimnasio, salones, áreas comunes, estacionamiento) con utilización en tiempo real, mantenimiento predictivo y optimización de espacio.
+
+**Agentes backend a leer:**
+```
+backend/src/club_mcp/agents/facilities_agent.py (si existe)
+backend/src/club_mcp/agents/maintenance_agent.py (si existe)
+backend/src/club_mcp/models/club_models.py (buscar enums Facilities)
+```
+
+**Tools MCP a auditar (estimadas):**
+
+| # | Tool (estimada) | Agente | Tipo esperado | Approval esperado | Destino frontend |
+|---|-----------------|--------|---------------|-------------------|-----------------|
+| 1 | `get_amenity_utilization` | facilities | datos | AUTO | AmenityGrid, Heatmap |
+| 2 | `get_maintenance_schedule` | facilities | datos | AUTO | MaintenancePanel |
+| 3 | `get_space_optimization` | facilities | inteligencia | AUTO | IntelligencePanel |
+| 4 | `manage_amenity_booking` | facilities | mutation | SEMI/HITL | BookingFormModal |
+| 5 | `get_facility_health` | facilities | inteligencia | AUTO | IntelligencePanel |
+| 6 | `manage_maintenance` | facilities | mutation | HITL | MaintenanceFormModal |
+
+**Bloques propuestos:**
+
+| # | Bloque | Archivos a crear/modificar | Contenido | Dependencias |
+|---|--------|---------------------------|-----------|-------------|
+| B0 | Backend Intelligence | facilities_repo.py, facilities_agent.py, models.py, prompts.py | Repo + agent + models + advisor prompt | Auditoría de tools existentes |
+| B1 | Data Layer | types.ts, contracts, factories, registry, hooks, guards | 6+ contracts, factories, typed hooks | B0 |
+| B2 | Dashboard + Advisor | FacilitiesDashboard.tsx, useFacilitiesAdvisor.ts, AdvisorBanner | 4-tab shell, 12+ rules, health score | B1 |
+| B3 | Live Amenity Grid + Heatmap | LiveAmenityGrid.tsx, AmenityHeatmap.tsx, BookingPanel.tsx | Real-time amenity status, utilization heatmap, booking management | B2 |
+| B4 | Maintenance Intelligence | MaintenancePanel.tsx, MaintenanceFormModal.tsx, SpaceOptimization.tsx | Maintenance schedule, HITL form, space optimization suggestions | B2 |
+| B5 | Intelligence Panel + Wiring | FacilitiesIntelligencePanel.tsx, FacilitiesDashboard.tsx (modify) | 6-dimension analysis, cross-domain signals, final wiring | B3, B4 |
+
+**ApprovalQueue impact:** HITL: `manage_maintenance` (maintenance requests). SEMI: `manage_amenity_booking` (premium spaces).
+
+**Archivos que el usuario debe pegar en el próximo chat:**
+```
+1. Este checkpoint
+2. CLAUDE_CONTEXT.md
+3. backend/src/club_mcp/agents/facilities_agent.py (si existe)
+4. backend/src/club_mcp/models/club_models.py (sección Facilities)
+5. frontend/src/features/sports/SportsDashboard.tsx (reference pattern)
+6. frontend/src/features/sports/types.ts (reference pattern)
+```
+
+---
+
+## 9. AGENTES AUDITADOS — LISTA ACTUALIZADA
+
+| # | Agente | Server | Tools totales | HITL | AUTO | SEMI | Inteligencia | Fase auditado | Frontend conectado | Estado |
+|---|--------|--------|--------------|------|------|------|-------------|---------------|-------------------|--------|
+| 1 | `sports_agent` | `club_sports` | 11 | 0 | 11 | 0 | 4 (analytics, engagement, calendar, profile) | F30-F32 | SportsDashboard ✅ | ✅ Completo |
+| 2 | `facilities_agent` | `club_facilities` | ~6 (est.) | ~1 | ~3 | ~2 | ~2 | ⬜ | ⬜ | ⬜ Sin auditar |
+| 3 | `wellness_agent` | `club_wellness` | ~8 (est.) | ~2 | ~4 | ~2 | ~3 | ⬜ | ⬜ | ⬜ Sin auditar |
+| 4 | `events_agent` | `club_events` | ~7 (est.) | ~1 | ~4 | ~2 | ~2 | ⬜ | ⬜ | ⬜ Sin auditar |
+| 5 | `finance_agent` | `club_finance` | ~10 (est.) | ~2 | ~5 | ~3 | ~4 | ⬜ | ⬜ | ⬜ Sin auditar |
+| 6 | `comms_agent` | `club_comms` | ~6 (est.) | ~1 | ~3 | ~2 | ~2 | ⬜ | ⬜ | ⬜ Sin auditar |
+
+**Totales:** 1 agent completamente auditado (sports), 5 sin auditar. ~48 tools MCP estimadas totales.
+
+---
+
+## 10. PENDIENTES ACUMULADOS (CONSOLIDADO)
+
+| # | Issue | Severidad | Archivo(s) | Fase sugerida | Origen |
+|---|-------|-----------|-----------|---------------|--------|
+| 1 | BracketView es estático (no drag-drop para re-arrange matches) | BAJA | `BracketView.tsx` | F34+ | F32 B4 — intencional MVP |
+| 2 | SkillProgression usa mock data (no conectado a MCP tool real) | MEDIA | `SkillProgression.tsx` | F34 (wellness integration) | F32 B6 — no hay tool de skill tracking en sports_agent |
+| 3 | Coach directory usa mock data (no MCP tool para listar coaches) | MEDIA | `CoachingPanel.tsx` | F33 o F35 | F32 B5 — coaching_stats no incluye listado de coaches |
+| 4 | Equipment inventory usa mock data estático (no MCP tool para listar equipment) | MEDIA | `EquipmentPanel.tsx` | F33 | F32 B5 — get_equipment_health da stats pero no listado |
+| 5 | CourtBookingPanel mock bookings no están conectados a MCP real | MEDIA | `CourtBookingPanel.tsx` | F33 | F32 B3 — bookings son mock, manage_reservations es mutation |
+| 6 | Cross-domain signals en IntelligencePanel son hardcoded strings, no dynamic computation | BAJA | `SportsIntelligencePanel.tsx` | F36 | F32 B6 — intencional para MVP, F36 hará aggregation real |
+| 7 | Heatmap genera data con pseudo-random seed, no con datos reales de MCP | MEDIA | `CourtHeatmap.tsx` | F33+ | F32 B6 — MCP no tiene granularidad horaria todavía |
+| 8 | SportsCalendar conflict detection es visual solamente (no bloquea reservas) | BAJA | `SportsCalendar.tsx` | F34+ | F32 B3 — conflict es advisory, no enforcement |
+
+---
+
+## 11. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos nuevos (resumen por archivo):
+
+| Archivo | #1 Tokens | #2 No blur | #11 focus-visible | #12 onSubmit | #14 EmptyState | #15 showToast | #17 Button | #18 reducedMotion | #20 responsive | #22 cn() | Estado |
+|---------|-----------|-----------|-------------------|-------------|---------------|--------------|-----------|------------------|---------------|---------|--------|
+| types.ts | ✅ | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | ✅ |
+| contracts.ts | ✅ | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | ✅ |
+| factories.ts | ✅ | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | ✅ |
+| registry.ts | ✅ | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | ✅ |
+| useSportsMCP.ts | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | ✅ |
+| guards.ts | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | ✅ |
+| SportsDashboard.tsx | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ |
+| useSportsAdvisor.ts | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | ✅ |
+| SportsAdvisorBanner.tsx | ✅ | ✅ | ✅ | N/A | N/A | N/A | ✅ | N/A | ✅ | ✅ | ✅ |
+| LiveArenaGrid.tsx | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| SportsCalendar.tsx | ✅ | ✅ | ✅ | N/A | ✅ | N/A | N/A | N/A | ✅ | ✅ | ✅ |
+| CourtBookingPanel.tsx | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ |
+| CourtBookingFormModal.tsx | ✅ | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ |
+| TournamentPanel.tsx | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ |
+| LeaguePanel.tsx | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ |
+| BracketView.tsx | ✅ | ✅ | ✅ | N/A | N/A | N/A | N/A | N/A | ✅ | ✅ | ✅ |
+| TournamentFormModal.tsx | ✅ | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ |
+| LeagueFormModal.tsx | ✅ | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ |
+| ClassesPanel.tsx | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ |
+| CoachingPanel.tsx | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ |
+| EquipmentPanel.tsx | ✅ | ✅ | ✅ | N/A | ✅ | N/A | N/A | N/A | ✅ | ✅ | ✅ |
+| ClassFormModal.tsx | ✅ | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ |
+| CoachingFormModal.tsx | ✅ | ✅ | ✅ | ✅ | N/A | ✅ | ✅ | ✅ | N/A | ✅ | ✅ |
+| SportsIntelligencePanel.tsx | ✅ | ✅ | ✅ | N/A | N/A | N/A | N/A | N/A | ✅ | ✅ | ✅ |
+| CourtHeatmap.tsx | ✅ | ✅ | ✅ | N/A | N/A | N/A | N/A | N/A | ✅ | ✅ | ✅ |
+| SkillProgression.tsx | ✅ | ✅ | ✅ | N/A | N/A | N/A | N/A | N/A | ✅ | ✅ | ✅ |
+
+### Resumen:
+**Violaciones a corregir AHORA:** 0
+**Violaciones ya flagged como pendientes:** 0
+**Reglas sin violaciones:** 24/24
+
+---
+
+## 12. ACTUALIZACIONES PARA CLAUDE_CONTEXT.md
+
+### Sección: Feature Registry — AGREGAR
+
+```markdown
+### F32: Sports & Recreation Intelligence — ✅ COMPLETADA
+- **Agent:** `sports_agent` (club_sports)
+- **Tools:** 11 (7 CRUD + 4 intelligence)
+- **Components:** 22 new + 4 modified frontend, 4 modified backend
+- **Advisor:** 15 rules, 8 actions, 9-dimension analysis
+- **Patterns established:** LiveArenaGrid, CourtHeatmap, SkillProgression, DimensionCard, CoachCardPicker
+- **Cross-domain:** 5 inbound + 4 outbound signals
+- **Lines:** ~8,438
+```
+
+### Sección: Patrones — AGREGAR los 5 nuevos patrones documentados en sección 4
+
+(Los 5 patrones nuevos: LiveArenaGrid, CourtHeatmap, SkillProgression, DimensionCard, CoachCardPicker)
+
+---
+
+## 13. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto (en orden):
+```
+1. CLAUDE_CONTEXT.md (siempre primero)
+2. Este checkpoint
+```
+
+### Paso 2 — Confirmar rol:
+```
+"Confirmá que entendés tu rol como Principal AI Systems Architect (sección 2 de CLAUDE_CONTEXT.md) 
+y las 24+ reglas (sección 7). Después decí 'Listo'."
+```
+
+### Paso 3 — Pedir archivos para la siguiente fase:
+```
+"Pasame estos archivos para F33 — Facilities & Amenity Intelligence:
+1. backend/src/club_mcp/agents/facilities_agent.py (si existe)
+2. backend/src/club_mcp/models/club_models.py (sección Facilities)
+3. frontend/src/features/sports/SportsDashboard.tsx (reference para patrón de dashboard)
+4. frontend/src/features/sports/types.ts (reference para patrón de types)
+```
+
+### Paso 4 — Pedir auditoría:
+```
+"Auditá el agente facilities contra las tools MCP disponibles y mapeá los contracts necesarios"
+```
+
+### Paso 5 — Pedir propuesta:
+```
+"Proponé la arquitectura de F33 con los bloques B0-B5 siguiendo el patrón de F32"
+```
+
+### Paso 6 — Aprobar + generar:
+```
+"Aprobado — generá Bloque 0 (Backend Intelligence)"
+```
+
+### Paso 7 — Entrega incremental:
+```
+"Continuá con B1, luego B2, etc."
+```
+
+### Paso 8 — Checkpoint:
+```
+"Generá el checkpoint de F33"
+```
+
+---
+
+## 14. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto en trabajo futuro |
+|-------|---------|-------|--------------------------|
+| Jun 2025 | Backend-first (B0 antes de B1) | Separación limpia. Backend completo evita re-trabajo en frontend. | Replicar en F33+ |
+| Jun 2025 | Staged delivery: Dashboard shell → wire componentes | Permite entrega incremental y testing independiente. | Replicar en F33+ |
+| Jun 2025 | 9-dimension IntelligencePanel como un solo componente accordion | Mejor UX que 9 componentes separados. Usuario explora selectivamente. | Patrón para todos los IntelligencePanels |
+| Jun 2025 | Heatmap con seed-based pseudo-random | Consistencia visual entre renders. No parpadeo. | Patrón para todos los heatmaps |
+| Jun 2025 | Coach cards picker (visual) en vez de dropdown | Coaches tienen metadata visual. Dropdown es insuficiente. | Patrón para entidad selection con metadata |
+| Jun 2025 | Engagement score como ring gauge SVG | Más distintivo que barra. Se reutiliza como score global. | Patrón para score display |
+| Jun 2025 | Bracket view estático (no interactivo) | MVP first. Interactividad es F34+. No over-engineer. | Future enhancement |
+| Jun 2025 | Equipment urgency como formula compuesta | Más preciso que solo condition-based. | Patrón para scoring systems |
+| Jun 2025 | Cross-domain signals como texto narrativo + color | Insights son narrativos, no tabulares. Más legible. | Patrón para cross-domain display |
+| Jun 2025 | 5 form modals distribuidos en B4+B5 | Forms pertenecen al bloque de su feature. Más organizado. | Cada bloque es self-contained |
+
+---
+
+## 15. FASES RESTANTES (PLAN MAESTRO)
+
+| # | Fase | Contenido | Prioridad | Depende de | Estado |
+|---|------|-----------|-----------|-----------|--------|
+| F33 | Facilities & Amenity Intelligence | Piscinas, gimnasio, salones, estacionamiento. Utilización, mantenimiento, space optimization. | ALTA | F32 | ⬜ SIGUIENTE |
+| F34 | Wellness & Health Intelligence | Health goals, wellness programs, nutrition tracking, progress analytics. | ALTA | F32 | ⬜ |
+| F35 | Events & Social Intelligence | Event planning, social activities, member networking, venue management. | MEDIA | F32 | ⬜ |
+| F36 | Financial Intelligence | Revenue analytics, cost optimization, budget forecasting, cross-domain aggregation (sports+facilities+wellness→finance). | ALTA | F33, F34 | ⬜ |
+| F37 | Member 360 Intelligence | All-domain member view: sports+wellness+finance+events unified. Churn prediction, LTV. | ALTA | F33, F34, F35, F36 | ⬜ |
+| F38 | Predictive Analytics & ML Layer | Demand forecasting, pricing optimization, member behavior prediction. | MEDIA | F37 | ⬜ |
+| F39 | Executive Dashboard (C-suite) | Aggregated KPIs, strategic insights, board-ready visualizations. | MEDIA | F36, F37 | ⬜ |
+| F40 | Mobile-first Responsive Optimization | Responsive audit, touch targets, PWA considerations. | BAJA | All | ⬜ |
+
+---
+
+## 16. AGENTES BACKEND — TOOLS DETALLADAS
+
+### sports_agent — 11 tools
+
+| Tool | Approval | Tipo | Descripción |
+|------|----------|------|-------------|
+| `get_court_utilization` | AUTO | datos | Utilización % por cancha, peak hours, trend |
+| `get_sport_popularity` | AUTO | datos | Ranking de deportes por actividad total |
+| `get_class_enrollment` | AUTO | datos | Enrollment % por clase de fitness |
+| `get_tournament_metrics` | AUTO | datos | KPIs de torneos (status, participation, revenue) |
+| `get_coaching_stats` | AUTO | datos | Stats de coaches (sessions, members, ranking) |
+| `get_equipment_health` | AUTO | datos | Urgency scores, condition, maintenance history |
+| `get_seasonal_patterns` | AUTO | datos | 12-month activity patterns, peak months |
+| `get_member_engagement` | AUTO | inteligencia | Engagement score (0-100) por socio |
+| `get_sports_calendar` | AUTO | datos | Unified calendar con conflict detection |
+| `get_member_sports_profile` | AUTO | datos | Perfil deportivo de socio (sports, coaching, tournaments) |
+| `get_league_standings` | AUTO | datos | Standings de ligas con rankings y stats |
+
+---
+
+## 17. MOCK REGISTRY — ACTUALIZACIÓN
+
+### club_sports (11 tools)
+
+| # | Tool | Backend real | Mock | Tipo | Approval |
+|---|------|-------------|------|------|----------|
+| 1 | `get_court_utilization` | ✅ | ✅ | datos | AUTO |
+| 2 | `get_sport_popularity` | ✅ | ✅ | datos | AUTO |
+| 3 | `get_class_enrollment` | ✅ | ✅ | datos | AUTO |
+| 4 | `get_tournament_metrics` | ✅ | ✅ | datos | AUTO |
+| 5 | `get_coaching_stats` | ✅ | ✅ | datos | AUTO |
+| 6 | `get_equipment_health` | ✅ | ✅ | datos | AUTO |
+| 7 | `get_seasonal_patterns` | ✅ | ✅ | datos | AUTO |
+| 8 | `get_member_engagement` | ✅ | ✅ | inteligencia | AUTO |
+| 9 | `get_sports_calendar` | ✅ | ✅ | datos | AUTO |
+| 10 | `get_member_sports_profile` | ✅ | ✅ | datos | AUTO |
+| 11 | `get_league_standings` | ✅ | ✅ | datos | AUTO |
+
+---
+
+## 18. TYPES ALIGNMENT
+
+| Enum/Interface | Backend (Python) | Frontend (types.ts) | Match |
+|---------------|------------------|---------------------|-------|
+| `SportType` | `club_models.py: SportType` | `types.ts: SportType` | ✅ |
+| `CourtSurface` | `club_models.py: CourtSurface` | `types.ts: CourtSurface` | ✅ |
+| `ClassType` | `club_models.py: ClassType` | `types.ts: ClassType` | ✅ |
+| `TournamentStatus` | `club_models.py: TournamentStatus` | `types.ts: TournamentStatus` | ✅ |
+| `TournamentFormat` | `club_models.py: TournamentFormat` | `types.ts: TournamentFormat` | ✅ |
+| `LeagueStatus` | `club_models.py: LeagueStatus` | `types.ts: LeagueStatus` | ✅ |
+| `SkillLevel` | `club_models.py: SkillLevel` | `types.ts: SkillLevel` | ✅ |
+| `EquipmentCondition` | `club_models.py: EquipmentCondition` | `types.ts: EquipmentCondition` | ✅ |
+| `ReservationStatus` | — (derived) | `types.ts: ReservationStatus` | ✅ (derived from mock data) |
+| `BookingSource` | — (derived) | `types.ts: BookingSource` | ✅ (derived from mock data) |
+
+---
+
+**F32 COMPLETADA. Próxima fase: F33 — Facilities & Amenity Intelligence.**

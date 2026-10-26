@@ -1,0 +1,512 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/SportsCalendar.css
+   §B4.16 — Sports Calendar V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  day columns stagger on load
+   2. REACCIÓN:     hover on calendar items, today highlight
+   3. MEMORIA:      items, filters, conflicts persist
+   4. INTENCIÓN:    conflict badges, weather overlay, filters
+   5. SINIESTRÍA:   data-type colors on items, data-weather,
+                    data-is-today highlight, data-has-conflict
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-cal {
+  --spt-ca-accent: var(--color-teal-400, #2a9ab5);
+  --spt-ca-surface: var(--color-surface-1, #1a1a1a);
+  --spt-ca-border: rgba(255, 255, 255, 0.06);
+  --spt-ca-text: var(--color-silver-100, #f0ece4);
+  --spt-ca-text-muted: var(--color-silver-400, #8a8580);
+  --spt-ca-text-dim: var(--color-silver-500, #7a7570);
+}
+
+.spt-cal[data-mode="calm"]    { --spt-ca-accent: var(--color-teal-400, #2a9ab5); }
+.spt-cal[data-mode="alert"]   { --spt-ca-accent: var(--color-amber-400, #d4a017); }
+.spt-cal[data-mode="critical"]{ --spt-ca-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Icon sizes ───────────────────────────────────── */
+
+.spt-cal__icon-xs {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.spt-cal__icon-sm {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* ── §2 — Header ───────────────────────────────────────── */
+
+.spt-cal__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .spt-cal__header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.spt-cal__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.spt-cal__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.05rem;
+  color: var(--spt-ca-text);
+  margin: 0;
+}
+
+.spt-cal__header-stat {
+  font-size: 0.65rem;
+  color: var(--spt-ca-text-dim);
+}
+
+.spt-cal__header-conflict {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  background: var(--color-rose-bg, rgba(229, 77, 77, 0.08));
+  color: var(--color-rose-400);
+}
+
+/* ── §3 — Filters ──────────────────────────────────────── */
+
+.spt-cal__filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spt-cal__select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--spt-ca-border);
+  border-radius: 5px;
+  background: var(--color-surface-2, #222);
+  font-size: 0.7rem;
+  color: var(--spt-ca-text-muted);
+  min-height: 28px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.spt-cal__select:focus {
+  outline: none;
+  border-color: var(--spt-ca-accent);
+}
+
+/* ── §4 — Weather Legend ────────────────────────────────── */
+
+.spt-cal__weather-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.spt-cal__weather-legend-label {
+  color: var(--spt-ca-text-dim);
+}
+
+.spt-cal__weather-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--spt-ca-text-muted);
+}
+
+.spt-cal__weather-legend-item .spt-cal__icon-sm:first-child {
+  color: inherit;
+}
+
+.spt-cal__weather-legend-item:nth-child(2) { color: var(--color-emerald-400); }
+.spt-cal__weather-legend-item:nth-child(3) { color: var(--color-amber-400); }
+.spt-cal__weather-legend-item:nth-child(4) { color: var(--color-rose-400); }
+
+.spt-cal__weather-legend-item span {
+  color: var(--spt-ca-text-muted);
+}
+
+.spt-cal__weather-legend-note {
+  margin-left: auto;
+  color: var(--spt-ca-text-dim);
+}
+
+/* ── §5 — Calendar Grid ────────────────────────────────── */
+
+.spt-cal__grid-wrapper {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.spt-cal__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  min-width: 300px;
+}
+
+@media (min-width: 640px) {
+  .spt-cal__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .spt-cal__grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+/* ── §6 — Day Column (LP 1+2: Respiración + Reacción) ──── */
+
+.spt-cal__day {
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  border-radius: 8px;
+  background: var(--spt-ca-surface);
+  border: 1px solid var(--spt-ca-border);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.spt-cal__day[data-is-today="true"] {
+  border-color: rgba(42, 154, 181, 0.3);
+  box-shadow: 0 0 12px rgba(42, 154, 181, 0.08);
+}
+
+/* ── §6.1 — Day Header ─────────────────────────────────── */
+
+.spt-cal__day-header {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--spt-ca-border);
+  border-radius: 8px 8px 0 0;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.spt-cal__day-header[data-is-today="true"] {
+  background: rgba(42, 154, 181, 0.06);
+}
+
+.spt-cal__day-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.spt-cal__day-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.spt-cal__day-name {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--spt-ca-text-muted);
+  transition: color 0.4s ease;
+}
+
+.spt-cal__day-name[data-is-today="true"] {
+  color: var(--spt-ca-accent);
+}
+
+.spt-cal__day-num {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--spt-ca-text);
+  transition: color 0.4s ease;
+}
+
+.spt-cal__day-num[data-is-today="true"] {
+  color: var(--spt-ca-accent);
+}
+
+.spt-cal__day-month {
+  font-size: 0.6rem;
+  color: var(--spt-ca-text-dim);
+}
+
+.spt-cal__day-weather {
+  display: flex;
+  align-items: center;
+  transition: color 0.4s ease;
+}
+
+.spt-cal__day-weather[data-weather="low"]    { color: var(--color-emerald-400); }
+.spt-cal__day-weather[data-weather="medium"] { color: var(--color-amber-400); }
+.spt-cal__day-weather[data-weather="high"]   { color: var(--color-rose-400); }
+
+.spt-cal__day-count {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.spt-cal__day-count-text {
+  font-size: 0.6rem;
+  color: var(--spt-ca-text-dim);
+}
+
+.spt-cal__day-conflict-count {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--color-rose-400);
+}
+
+/* ── §6.2 — Day Body ───────────────────────────────────── */
+
+.spt-cal__day-body {
+  flex: 1;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.spt-cal__day-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 60px;
+}
+
+.spt-cal__day-empty-text {
+  font-size: 0.6rem;
+  color: var(--spt-ca-text-dim);
+}
+
+/* ── §7 — Calendar Item Card (LP 5: Siniestría — data-type) */
+
+.spt-cal__item {
+  padding: 0.5rem;
+  border-radius: 5px;
+  border-left: 2px solid var(--spt-ca-border);
+  background: rgba(0, 0, 0, 0.1);
+  transition: background 0.2s ease, border-color 0.4s ease;
+}
+
+.spt-cal__item:hover {
+  background: var(--color-surface-2, #222);
+}
+
+/* Type colors via data-attribute (LP 5: Siniestría) */
+.spt-cal__item[data-type="reservation"] { border-left-color: var(--color-teal-400); }
+.spt-cal__item[data-type="tournament"]  { border-left-color: var(--color-gold-400); }
+.spt-cal__item[data-type="class"]       { border-left-color: var(--color-emerald-400); }
+.spt-cal__item[data-type="coaching"]    { border-left-color: var(--color-teal-300); }
+.spt-cal__item[data-type="league"]      { border-left-color: var(--color-terracotta-400); }
+
+/* Conflict ring */
+.spt-cal__item[data-has-conflict="true"] {
+  box-shadow: inset 0 0 0 1px rgba(229, 77, 77, 0.25);
+}
+
+.spt-cal__item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+}
+
+.spt-cal__item-time {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.6rem;
+  font-weight: 600;
+  transition: color 0.4s ease;
+}
+
+.spt-cal__item-time[data-type="reservation"] { color: var(--color-teal-400); }
+.spt-cal__item-time[data-type="tournament"]  { color: var(--color-gold-400); }
+.spt-cal__item-time[data-type="class"]       { color: var(--color-emerald-400); }
+.spt-cal__item-time[data-type="coaching"]    { color: var(--color-teal-300); }
+.spt-cal__item-time[data-type="league"]      { color: var(--color-terracotta-400); }
+
+.spt-cal__item-sport-icon {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.spt-cal__item-conflict-icon {
+  color: var(--color-rose-400);
+}
+
+.spt-cal__item-weather-icon[data-weather="high"]   { color: var(--color-rose-400); }
+.spt-cal__item-weather-icon[data-weather="medium"] { color: var(--color-amber-400); }
+
+.spt-cal__item-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--spt-ca-text);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.spt-cal__item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+  font-size: 0.6rem;
+  color: var(--spt-ca-text-dim);
+}
+
+.spt-cal__item-location {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-cal__item-dot {
+  flex-shrink: 0;
+}
+
+/* ── §8 — Footer: Legends + Narrative (LP 7) ───────────── */
+
+.spt-cal__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-ca-border);
+}
+
+.spt-cal__type-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.spt-cal__type-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6rem;
+  color: var(--spt-ca-text-muted);
+}
+
+.spt-cal__type-legend-swatch {
+  width: 0.5rem;
+  height: 1rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.spt-cal__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-ca-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-ca-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §9 — Light Mode ───────────────────────────────────── */
+
+.light .spt-cal {
+  --spt-ca-surface: rgba(255, 255, 255, 0.7);
+  --spt-ca-border: rgba(0, 0, 0, 0.08);
+  --spt-ca-text: #1a1a1a;
+  --spt-ca-text-muted: #6b7280;
+  --spt-ca-text-dim: #9ca3af;
+}
+
+.light .spt-cal__day {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.light .spt-cal__day[data-is-today="true"] {
+  box-shadow: 0 0 12px rgba(42, 154, 181, 0.06);
+}
+
+.light .spt-cal__day-header {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-cal__day-header[data-is-today="true"] {
+  background: rgba(42, 154, 181, 0.04);
+}
+
+.light .spt-cal__item {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .spt-cal__item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.light .spt-cal__select {
+  background: #f5f5f5;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .spt-cal__header-conflict {
+  background: rgba(229, 77, 77, 0.06);
+}
+
+/* ── §10 — Reduced Motion ──────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-cal__day,
+  .spt-cal__item,
+  .spt-cal__day-name,
+  .spt-cal__day-num,
+  .spt-cal__day-weather,
+  .spt-cal__item-time,
+  .spt-cal__narrative {
+    transition: none;
+  }
+}
+
+/* ── §11 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-cal {
+    break-inside: avoid;
+  }
+
+  .spt-cal__filters {
+    display: none;
+  }
+
+  .spt-cal__day {
+    break-inside: avoid;
+  }
+}

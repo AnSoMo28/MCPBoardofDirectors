@@ -1,0 +1,270 @@
+/**
+ * CulturalTasteGenome — "The Genome"
+ *
+ * Hexagonal SVG radar with animated DNA polygon reveal.
+ * Dark background, glowing vertices, subtle grid.
+ * Signature aesthetic: data as identity.
+ */
+
+.cultural-taste-genome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: 'DM Mono', monospace;
+  width: fit-content;
+}
+
+/* ── Header ── */
+.cultural-taste-genome__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+}
+
+.cultural-taste-genome__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.cultural-taste-genome__confidence {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── SVG ── */
+.cultural-taste-genome__svg {
+  overflow: visible;
+}
+
+/* ── Grid ── */
+.cultural-taste-genome__grid {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 0.75;
+}
+
+.cultural-taste-genome__grid[data-ratio="1.0"] {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 1;
+}
+
+/* ── Axis lines ── */
+.cultural-taste-genome__axis {
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 0.5;
+}
+
+/* ── DNA Polygon ── */
+.cultural-taste-genome__dna {
+  fill: rgba(167, 139, 250, 0.12);
+  stroke: rgba(167, 139, 250, 0.6);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  transition: fill 0.4s ease, stroke 0.4s ease;
+}
+
+.cultural-taste-genome__dna--animated {
+  opacity: 0;
+  animation: genome-reveal 1.2s ease forwards;
+}
+
+@keyframes genome-reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+    transform-origin: center;
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Vertices ── */
+.cultural-taste-genome__vertex-target {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.cultural-taste-genome__vertex {
+  transition: r 0.2s ease, opacity 0.2s ease;
+  filter: drop-shadow(0 0 3px currentColor);
+}
+
+.cultural-taste-genome__vertex--hovered {
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* ── Labels ── */
+.cultural-taste-genome__label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  fill: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: fill 0.2s ease;
+}
+
+.cultural-taste-genome__label--hovered {
+  fill: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
+
+.cultural-taste-genome__label-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  fill: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Tooltip ── */
+.cultural-taste-genome__tooltip {
+  pointer-events: none;
+  animation: tooltip-fade-in 0.15s ease;
+}
+
+@keyframes tooltip-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Composite Scores ── */
+.cultural-taste-genome__maturity-dot {
+  fill: rgba(255, 255, 255, 0.7);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+}
+
+.cultural-taste-genome__engagement-dot {
+  fill: rgba(255, 255, 255, 0.5);
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.2));
+}
+
+.cultural-taste-genome__composite-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  fill: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.06em;
+}
+
+/* ── Legend ── */
+.cultural-taste-genome__legend {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem 0.75rem;
+  width: 100%;
+}
+
+.cultural-taste-genome__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.4rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  font-family: 'DM Mono', monospace;
+}
+
+.cultural-taste-genome__legend-item:hover,
+.cultural-taste-genome__legend-item--hovered {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.cultural-taste-genome__legend-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cultural-taste-genome__legend-label {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.55);
+  flex: 1;
+}
+
+.cultural-taste-genome__legend-value {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── Genre chips ── */
+.cultural-taste-genome__genres {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cultural-taste-genome__genres-title {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.cultural-taste-genome__genres-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.cultural-taste-genome__genre-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+}
+
+.cultural-taste-genome__genre-name {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.cultural-taste-genome__genre-score {
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Footer meta ── */
+.cultural-taste-genome__meta {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  justify-content: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cultural-taste-genome__meta span {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.04em;
+}

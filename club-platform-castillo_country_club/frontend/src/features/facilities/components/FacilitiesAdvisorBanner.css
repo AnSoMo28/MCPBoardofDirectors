@@ -1,0 +1,412 @@
+/* src/features/facilities/components/FacilitiesAdvisorBanner.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* FACILITIES ADVISOR BANNER — "El Oráculo Menor"                */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — entry stagger, action pulse          */
+/*   SENSE 2: REACCIÓN — card hover translateY(-2px)             */
+/*   SENSE 3: MEMORIA — confidence %, layer encoding             */
+/*   SENSE 4: INTENCIÓN — Ejecutar button letter-spacing         */
+/*   SENSE 5: SINIESTRÍA — high impact cards dominant            */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — banner summary                         */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.fac-advisor {
+  border-radius: 14px;
+  overflow: hidden;
+  background:
+    color-mix(in srgb, var(--color-gold-400) 4%, var(--color-surface)),
+    var(--color-surface);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  padding: 20px;
+  /* Sense 1: entry */
+  opacity: 0;
+  animation: fac-advisor-enter 0.5s ease-out forwards;
+}
+
+@keyframes fac-advisor-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fac-advisor--empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+  border-color: color-mix(in srgb, var(--color-border) 15%, transparent);
+}
+
+/* ═══ HEADER ══════════════════════════════════════════════════ */
+
+.fac-advisor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.fac-advisor__header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fac-advisor__sparkle-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  flex-shrink: 0;
+}
+
+.fac-advisor__sparkle-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-gold-400);
+}
+
+.fac-advisor__header-text {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.fac-advisor__title {
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-gold-400);
+}
+
+.fac-advisor__subtitle {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+}
+
+.fac-advisor__empty-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-silver-500);
+  flex-shrink: 0;
+}
+
+.fac-advisor__empty-text {
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+
+.fac-advisor__narrative {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--color-surface) 35%, transparent);
+  border-radius: 6px;
+  border-left: 2px solid color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+}
+
+/* ═══ INSIGHT GRID ════════════════════════════════════════════ */
+
+.fac-advisor__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* ═══ INSIGHT CARD (Sense 2 + 5) ═════════════════════════════ */
+
+.fac-advisor__card {
+  padding: 14px;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 12%, transparent);
+  border-radius: 10px;
+  /* Sense 1: stagger */
+  opacity: 0;
+  animation: fac-advisor-card-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s + 0.15s);
+  /* Sense 2: hover */
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@keyframes fac-advisor-card-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fac-advisor__card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-border) 30%, transparent);
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.2);
+}
+
+/* Sense 5: High impact = left border accent */
+.fac-advisor__card[data-impact="high"] {
+  border-left: 3px solid var(--color-rose-400);
+}
+
+.fac-advisor__card[data-impact="medium"] {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+.fac-advisor__card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Impact badge (CSS-driven) */
+.fac-advisor__impact {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.fac-advisor__impact[data-impact="high"] {
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+  color: var(--color-rose-400);
+}
+
+.fac-advisor__impact[data-impact="medium"] {
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+  color: var(--color-amber-400);
+}
+
+.fac-advisor__impact[data-impact="low"] {
+  background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+  color: var(--color-silver-400);
+}
+
+/* Card body */
+.fac-advisor__card-body {
+  min-width: 0;
+}
+
+.fac-advisor__card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.fac-advisor__layer-icon {
+  width: 13px;
+  height: 13px;
+  color: var(--color-silver-500);
+  flex-shrink: 0;
+}
+
+.fac-advisor__layer-label {
+  font-size: 10px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fac-advisor__confidence {
+  font-size: 10px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+  margin-left: auto;
+}
+
+.fac-advisor__card-title {
+  font-size: 13px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  line-height: 1.3;
+  margin: 0 0 4px;
+}
+
+.fac-advisor__card-reasoning {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ═══ ACTION BUTTON (Sense 4: INTENCIÓN) ═════════════════════ */
+
+.fac-advisor__card-action {
+  flex-shrink: 0;
+}
+
+.fac-advisor__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  color: var(--color-gold-400);
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.2s ease, letter-spacing 0.3s ease, transform 0.2s ease;
+  min-height: 32px;
+}
+
+.fac-advisor__action-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-gold-400) 16%, transparent);
+  letter-spacing: 0.06em;
+  transform: translateY(-1px);
+}
+
+.fac-advisor__action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fac-advisor__action-btn[data-loading="true"] {
+  /* Sense 1: loading pulse */
+  animation: fac-advisor-action-pulse 1s ease-in-out infinite;
+}
+
+@keyframes fac-advisor-action-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+.fac-advisor__action-btn-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.fac-advisor__action-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+  color: var(--color-emerald-400);
+  border: 1px solid color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+  min-height: 32px;
+}
+
+.fac-advisor__action-done-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* ═══ TOGGLE BUTTON ═══════════════════════════════════════════ */
+
+.fac-advisor__toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 12px auto 0;
+  padding: 6px 16px;
+  border: none;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--color-silver-400);
+  font-size: 11px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.fac-advisor__toggle:hover {
+  color: var(--color-silver-200);
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+}
+
+.fac-advisor__toggle-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .fac-advisor {
+  background:
+    color-mix(in srgb, var(--color-gold-400) 3%, var(--color-surface)),
+    var(--color-surface);
+}
+
+.light .fac-advisor__card {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+.light .fac-advisor__card-title {
+  color: var(--color-silver-800);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fac-advisor {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-advisor__card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-advisor__card:hover {
+    transform: none;
+  }
+
+  .fac-advisor__action-btn:hover:not(:disabled) {
+    letter-spacing: 0.02em;
+    transform: none;
+  }
+
+  .fac-advisor__action-btn[data-loading="true"] {
+    animation: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .fac-advisor__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .fac-advisor__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fac-advisor__header-text {
+    flex-direction: column;
+    gap: 2px;
+  }
+}

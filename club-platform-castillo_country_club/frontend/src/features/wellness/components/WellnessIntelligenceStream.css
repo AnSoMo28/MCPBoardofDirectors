@@ -1,0 +1,234 @@
+/* ═══════════════════════════════════════════════════════════════
+   Wellness Intelligence Stream — CSS
+   Namespace: .glass-wis
+   Keyframes prefix: wst*
+   ═══════════════════════════════════════════════════════════════ */
+
+.glass-wis {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  padding-left: 18px;
+}
+
+/* ── Heartbeat (P2) ── */
+.wis__heartbeat {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-gold-400);
+  opacity: 0.3;
+  border-radius: 2px;
+  animation: wstHeartbeat 4s ease-in-out infinite;
+}
+
+.glass-wis[data-mode="alert"] .wis__heartbeat {
+  animation-duration: 2s;
+  opacity: 0.5;
+}
+
+.glass-wis[data-mode="critical"] .wis__heartbeat {
+  animation-duration: 1s;
+  opacity: 0.8;
+  background: var(--color-red-400);
+}
+
+@keyframes wstHeartbeat {
+  0%, 100% { opacity: 0.2; }
+  25% { opacity: 0.6; }
+  30% { opacity: 0.15; }
+  35% { opacity: 0.5; }
+  50% { opacity: 0.2; }
+}
+
+/* ── Header ── */
+.wis__header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wis__stream-title {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--color-silver-200);
+}
+
+.wis__stream-count {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-silver-400);
+}
+
+/* ── Stream ── */
+.wis__stream {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Block ── */
+.wis__block {
+  display: flex;
+  gap: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-surface-1) 90%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  opacity: 0;
+  animation: wstBlockIn 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+}
+
+@keyframes wstBlockIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.wis__pulse-bar {
+  width: 3px;
+  flex-shrink: 0;
+}
+
+.wis__content {
+  flex: 1;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Block header ── */
+.wis__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wis__impact-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.wis__layer {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+
+.wis__confidence {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  margin-left: auto;
+}
+
+/* ── Title ── */
+.wis__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  line-height: 1.3;
+}
+
+/* ── Expand ── */
+.wis__expand {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--color-silver-500);
+  padding: 2px 0;
+  transition: color 0.2s ease;
+}
+
+.wis__expand:hover { color: var(--color-silver-300); }
+
+.wis__reasoning {
+  font-size: 11px;
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  padding: 4px 0;
+}
+
+/* ── Actions ── */
+.wis__actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.wis__nav-btn {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  color: var(--color-silver-300);
+  transition: border-color 0.2s ease;
+}
+
+.wis__nav-btn:hover {
+  border-color: var(--color-gold-400);
+  color: var(--color-gold-400);
+}
+
+.wis__exec-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  cursor: pointer;
+  color: var(--color-gold-400);
+  transition: background 0.2s ease;
+}
+
+.wis__exec-btn:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+
+.wis__exec-btn svg { color: var(--color-gold-400); }
+
+.wis__done {
+  font-size: 10px;
+  color: var(--color-emerald-400);
+  font-weight: 500;
+}
+
+/* ═══ Reduced Motion ═══ */
+@media (prefers-reduced-motion: reduce) {
+  .wis__heartbeat { animation: none; opacity: 0.3; }
+  .wis__block { animation: none; opacity: 1; }
+}
+
+/* ═══ Light Mode ═══ */
+.light .wis__heartbeat { background: var(--color-gold-400); }
+.light .wis__block {
+  background: color-mix(in srgb, #ffffff 94%, transparent);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .wis__title { color: var(--color-silver-800); }
+.light .wis__reasoning { color: var(--color-silver-600); }
+.light .wis__nav-btn { color: var(--color-silver-600); border-color: rgba(0, 0, 0, 0.1); }
+.light .wis__exec-btn { color: var(--color-gold-500); }

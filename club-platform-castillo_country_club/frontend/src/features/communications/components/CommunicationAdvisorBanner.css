@@ -1,0 +1,626 @@
+/* src/features/communications/components/CommunicationAdvisorBanner.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Communication Advisor Banner — V2 Rewrite                   */
+/* Phase 31 — Silver Tide Glass UI                            */
+/* Namespace: .glass-comm-banner                              */
+/* ═══════════════════════════════════════════════════════════ */
+
+.glass-comm-banner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-xl, 1rem);
+  padding: var(--space-4, 1rem);
+  backdrop-filter: blur(8px);
+}
+
+/* ── Empty State ──────────────────────────────────────── */
+
+.banner__empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-2, 0.5rem) 0;
+}
+
+.banner__empty-icon {
+  color: var(--color-emerald-400);
+  flex-shrink: 0;
+}
+
+.banner__empty-title {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.banner__empty-desc {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted, #7a7570);
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+.banner__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.banner__header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  color: var(--color-amber-400);
+}
+
+.banner__header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.banner__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+}
+
+.banner__subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted, #7a7570);
+}
+
+.banner__count-critical {
+  color: var(--color-rose-400);
+  font-weight: 600;
+}
+
+.banner__count-medium {
+  color: var(--color-amber-400);
+  font-weight: 500;
+}
+
+.banner__urgency-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.banner__urgency-badge[data-urgency="none"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+.banner__urgency-badge[data-urgency="low"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+}
+.banner__urgency-badge[data-urgency="medium"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+.banner__urgency-badge[data-urgency="high"] {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+.banner__urgency-badge[data-urgency="critical"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+  animation: banner-urgency-pulse 2s ease-in-out infinite;
+}
+
+/* ── Intelligence Strip ───────────────────────────────── */
+
+.banner__intel-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  flex-wrap: wrap;
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-md, 0.5rem);
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.banner__sparkline {
+  width: 5rem;
+  height: auto;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.banner__sparkline-curve {
+  stroke: var(--color-teal-400);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.banner__sparkline-curve[data-zone="thriving"] { stroke: var(--color-emerald-400); }
+.banner__sparkline-curve[data-zone="concerned"] { stroke: var(--color-amber-400); }
+.banner__sparkline-curve[data-zone="at_risk"] { stroke: var(--color-gold-400); }
+.banner__sparkline-curve[data-zone="crisis"] { stroke: var(--color-rose-400); }
+
+.banner__intel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  padding: 2px var(--space-2, 0.5rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.banner__intel-badge[data-zone="thriving"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+.banner__intel-badge[data-zone="stable"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+.banner__intel-badge[data-zone="concerned"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.banner__intel-badge[data-zone="at_risk"] {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+.banner__intel-badge[data-zone="crisis"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+
+.banner__intel-badge[data-silence="quiet"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.banner__intel-badge[data-silence="alert"] {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+.banner__intel-badge[data-silence="critical"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+
+.banner__intel-badge[data-fatigue="elevated"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.banner__intel-badge[data-fatigue="saturated"] {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+.banner__intel-badge[data-fatigue="overloaded"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+
+.banner__intel-velocity {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-muted, #7a7570);
+}
+
+.banner__intel-velocity[data-direction="up"] {
+  color: var(--color-emerald-400);
+}
+
+.banner__intel-velocity[data-direction="down"] {
+  color: var(--color-rose-400);
+}
+
+.banner__intel-narrative {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px var(--space-2, 0.5rem);
+  border-radius: var(--radius-sm, 0.25rem);
+}
+
+.banner__intel-narrative[data-health="strong"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 8%, transparent);
+}
+.banner__intel-narrative[data-health="fragile"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+}
+.banner__intel-narrative[data-health="breaking"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+  animation: banner-narrative-pulse 2s ease-in-out infinite;
+}
+
+/* ── Insight Cards ────────────────────────────────────── */
+
+.banner__insights {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 0.75rem);
+}
+
+.insight-card {
+  position: relative;
+  border-radius: var(--radius-lg, 0.75rem);
+  background: color-mix(in srgb, var(--color-surface-2, #222) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  overflow: hidden;
+  opacity: 0;
+  animation: banner-card-appear 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+}
+
+.insight-card__accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  background: var(--color-silver-500);
+}
+
+.insight-card__accent[data-severity="critical"] { background: var(--color-rose-400); }
+.insight-card__accent[data-severity="high"] { background: var(--color-rose-400); opacity: 0.7; }
+.insight-card__accent[data-severity="medium"] { background: var(--color-amber-400); }
+.insight-card__accent[data-severity="low"] { background: var(--color-silver-500); }
+.insight-card__accent[data-severity="info"] { background: var(--color-teal-400); }
+
+.insight-card__body {
+  padding: var(--space-3, 0.75rem);
+  padding-left: var(--space-4, 1rem);
+}
+
+.insight-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2, 0.5rem);
+}
+
+.insight-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: var(--radius-sm, 0.25rem);
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+}
+
+.insight-card__icon[data-severity="critical"],
+.insight-card__icon[data-severity="high"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+}
+
+.insight-card__icon[data-severity="medium"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+
+.insight-card__sev-badge {
+  padding: 2px var(--space-2, 0.5rem);
+  border-radius: 9999px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.insight-card__sev-badge[data-severity="critical"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+}
+.insight-card__sev-badge[data-severity="high"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+.insight-card__sev-badge[data-severity="medium"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.insight-card__sev-badge[data-severity="low"] {
+  color: var(--color-silver-500);
+  background: color-mix(in srgb, var(--color-silver-500) 10%, transparent);
+}
+.insight-card__sev-badge[data-severity="info"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+
+.insight-card__metric {
+  padding: 2px var(--space-1, 0.25rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  font-size: 0.58rem;
+  font-weight: 500;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted, #7a7570);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.insight-card__category {
+  padding: 2px var(--space-1, 0.25rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  font-size: 0.58rem;
+  font-weight: 500;
+  color: var(--text-muted, #7a7570);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.insight-card__title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1, 0.25rem) 0;
+}
+
+.insight-card__reasoning {
+  font-size: 0.78rem;
+  color: var(--text-muted, #7a7570);
+  line-height: 1.45;
+  margin: 0 0 var(--space-3, 0.75rem) 0;
+}
+
+/* ── Action Buttons ───────────────────────────────────── */
+
+.insight-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem);
+}
+
+.insight-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 32px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.insight-action-btn:hover {
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.insight-action-btn[data-action="navigate"] {
+  color: var(--color-gold-400);
+  border-color: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+}
+.insight-action-btn[data-action="navigate"]:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+
+.insight-action-btn[data-action="analysis"] {
+  color: var(--color-amber-400);
+  border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+}
+.insight-action-btn[data-action="analysis"]:hover {
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+}
+
+.insight-action-btn[data-action="approve"] {
+  color: var(--color-emerald-400);
+  border-color: color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+}
+.insight-action-btn[data-action="approve"]:hover {
+  background: color-mix(in srgb, var(--color-emerald-400) 8%, transparent);
+}
+
+.insight-action-btn[data-action="postpone"] {
+  color: var(--color-amber-400);
+  border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+}
+.insight-action-btn[data-action="postpone"]:hover {
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+}
+
+.insight-action-btn[data-action="delegate"] {
+  color: var(--color-teal-400);
+  border-color: color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+}
+.insight-action-btn[data-action="delegate"]:hover {
+  background: color-mix(in srgb, var(--color-teal-400) 8%, transparent);
+}
+
+.insight-action-btn[data-action="discard"] {
+  color: var(--color-rose-400);
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+}
+.insight-action-btn[data-action="discard"]:hover {
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+}
+
+/* ── Expanded Analysis ────────────────────────────────── */
+
+.insight-card__analysis {
+  margin-top: var(--space-3, 0.75rem);
+  padding-top: var(--space-3, 0.75rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+  animation: banner-expand 0.3s ease;
+}
+
+.insight-analysis__block {
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-md, 0.5rem);
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+
+.insight-analysis__label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #7a7570);
+  margin-bottom: 2px;
+}
+
+.insight-analysis__text {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ── Show More ────────────────────────────────────────── */
+
+.banner__show-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2, 0.5rem);
+  width: 100%;
+  padding: var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+  background: transparent;
+  font-size: 0.78rem;
+  color: var(--text-muted, #7a7570);
+  cursor: pointer;
+  min-height: 40px;
+  transition: background 0.2s ease;
+}
+
+.banner__show-more:hover {
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+
+/* ── Escape Countdown ─────────────────────────────────── */
+
+.banner__countdown {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-md, 0.5rem);
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+  border-left: 3px solid var(--color-amber-400);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-amber-400);
+}
+
+.banner__countdown[data-critical="true"] {
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+  border-left-color: var(--color-rose-400);
+  color: var(--color-rose-400);
+  animation: banner-countdown-pulse 2s ease-in-out infinite;
+}
+
+/* ── Fatigue Warning ──────────────────────────────────── */
+
+.banner__fatigue-warning {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-md, 0.5rem);
+  background: color-mix(in srgb, var(--color-amber-400) 6%, transparent);
+  border-left: 3px solid var(--color-amber-400);
+  font-size: 0.78rem;
+  color: var(--color-amber-400);
+}
+
+/* ── Animations ───────────────────────────────────────── */
+
+@keyframes banner-urgency-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes banner-narrative-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes banner-card-appear {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes banner-expand {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 20rem; }
+}
+
+@keyframes banner-countdown-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ── Light Mode ───────────────────────────────────────── */
+
+.light .glass-comm-banner {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .banner__intel-strip {
+  background: color-mix(in srgb, #000000 3%, transparent);
+  border-color: color-mix(in srgb, #000000 6%, transparent);
+}
+
+.light .insight-card {
+  background: color-mix(in srgb, #ffffff 50%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .insight-card__body {
+  background: transparent;
+}
+
+.light .insight-action-btn {
+  border-color: color-mix(in srgb, #000000 10%, transparent);
+}
+
+.light .insight-analysis__block {
+  background: color-mix(in srgb, #000000 3%, transparent);
+  border-color: color-mix(in srgb, #000000 5%, transparent);
+}
+
+/* ── Reduced Motion ───────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .banner__urgency-badge,
+  .banner__intel-narrative[data-health="breaking"],
+  .banner__countdown[data-critical="true"] {
+    animation: none !important;
+  }
+
+  .insight-card {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .insight-card__analysis {
+    animation: none !important;
+  }
+}

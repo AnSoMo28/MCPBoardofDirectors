@@ -1,0 +1,352 @@
+/**
+ * @component NotificationCenter (Fase 21)
+ * @namespace .glass-notification-*
+ * @depends globals.css (glass tokens, font tokens, radius tokens)
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   NotificationCenter — Silver Tide
+   Fase 21 · Glass · Severity · Actions
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Bell trigger ── */
+.glass-notification-bell {
+  cursor: pointer;
+}
+.custom-cursor-active .glass-notification-bell {
+  cursor: none;
+}
+
+/* ── Badge ── */
+.glass-notification-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-abyss, #0a0e14);
+  background-color: var(--color-rose-400);
+}
+.glass-notification-badge--pulse {
+  animation: notif-badge-pulse 0.5s ease;
+}
+@keyframes notif-badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.35); }
+}
+
+/* ── Unread dot ── */
+.glass-notification-unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-gold-400);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+/* ── Dropdown panel ── */
+.glass-notification-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  width: 380px;
+  max-height: 520px;
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  z-index: 50;
+  background: rgba(18, 24, 38, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ── Dropdown header ── */
+.glass-notification-dropdown__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+}
+
+/* ── Mark all read button ── */
+.glass-notification-markall {
+  font-size: 11px;
+  color: var(--color-gold-400);
+  font-family: var(--font-ui);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease;
+}
+.glass-notification-markall:hover {
+  color: var(--color-gold-200);
+}
+
+/* ── Group header ── */
+.glass-notification-group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 4px;
+}
+.glass-notification-group__header p {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+}
+.glass-notification-group__count {
+  font-size: 10px;
+  color: var(--color-silver-600);
+  font-family: var(--font-mono);
+}
+
+/* ── Item ── */
+.glass-notification-item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  border-left: 3px solid transparent;
+  transition: background-color 0.15s ease;
+}
+.glass-notification-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Severity left borders ── */
+.glass-notification-item--approval {
+  border-left-color: var(--color-amber-400);
+}
+.glass-notification-item--event {
+  border-left-color: var(--color-teal-400);
+}
+.glass-notification-item--anomaly {
+  border-left-color: var(--color-rose-400);
+}
+.glass-notification-item--info {
+  border-left-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Critical anomaly pulse ── */
+.glass-notification-item--critical {
+  animation: notif-critical-pulse 2.5s ease-in-out infinite;
+}
+@keyframes notif-critical-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(228, 90, 100, 0); }
+  50% { box-shadow: inset 3px 0 16px -4px rgba(228, 90, 100, 0.12); }
+}
+
+/* ── Read state ── */
+.glass-notification-item--read {
+  opacity: 0.45;
+}
+
+/* ── Item content (clickable) ── */
+.glass-notification-item__content {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  min-width: 0;
+  text-align: left;
+}
+.glass-notification-item__content:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
+/* ── Item icon container ── */
+.glass-notification-item__icon {
+  flex-shrink: 0;
+  padding: 6px;
+  border-radius: 8px;
+  margin-top: 2px;
+}
+
+/* ── Item body ── */
+.glass-notification-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Quick actions rail ── */
+.glass-notification-item__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border-left: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+}
+
+/* ── Quick action buttons ── */
+.glass-notification-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  color: var(--color-silver-400);
+}
+.glass-notification-quick-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-silver-200);
+}
+.glass-notification-quick-btn--approve {
+  color: var(--color-emerald-400);
+}
+.glass-notification-quick-btn--approve:hover {
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--color-emerald-300);
+}
+.glass-notification-quick-btn--dismiss:hover {
+  background: rgba(228, 90, 100, 0.08);
+  color: var(--color-rose-400);
+}
+
+/* ── Skeleton ── */
+.glass-notification-skeleton {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  animation: notif-skeleton-fade 1.5s ease-in-out infinite;
+}
+.glass-notification-skeleton__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+}
+.glass-notification-skeleton__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 2px;
+}
+.glass-notification-skeleton__title {
+  width: 65%;
+  height: 10px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.glass-notification-skeleton__desc {
+  width: 85%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+}
+@keyframes notif-skeleton-fade {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.7; }
+}
+
+/* ── Empty state ── */
+.glass-notification-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  gap: 12px;
+}
+.glass-notification-empty__icon {
+  color: var(--color-silver-600);
+  animation: notif-empty-breathe 3s ease-in-out infinite;
+}
+@keyframes notif-empty-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.06); opacity: 0.6; }
+}
+.glass-notification-empty__text {
+  font-size: 12px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════════════════════════ */
+
+.light .glass-notification-dropdown {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.light .glass-notification-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .glass-notification-item--critical {
+  animation: none;
+}
+
+.light .glass-notification-unread-dot {
+  background: var(--color-gold-500);
+}
+
+.light .glass-notification-skeleton__icon {
+  background: rgba(0, 0, 0, 0.04);
+}
+.light .glass-notification-skeleton__title {
+  background: rgba(0, 0, 0, 0.06);
+}
+.light .glass-notification-skeleton__desc {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .glass-notification-empty__icon {
+  color: var(--color-silver-400);
+}
+
+.light .glass-notification-quick-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+.light .glass-notification-quick-btn--approve:hover {
+  background: rgba(52, 211, 153, 0.08);
+}
+.light .glass-notification-quick-btn--dismiss:hover {
+  background: rgba(228, 90, 100, 0.06);
+}
+
+.light .glass-notification-badge {
+  background-color: var(--color-rose-500);
+}
+/* ── Notification type variants (Fase 22) ── */
+.glass-notification-item--reservation {
+  border-left-color: var(--color-teal-400);
+}
+.glass-notification-item--maintenance {
+  border-left-color: var(--color-rose-400);
+}
+.glass-notification-item--alert {
+  border-left-color: var(--color-rose-400);
+}

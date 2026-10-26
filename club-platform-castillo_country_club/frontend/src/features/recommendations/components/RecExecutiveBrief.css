@@ -1,0 +1,418 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   RecExecutiveBrief — Glass namespace .glass-reb
+   Keyframes prefix: reb*
+
+   Agent-driven 3-state: dormant → processing → presenting
+   Typing effect: 18ms/char, 600ms sentence gap, cursor blink
+   Metrics strip on narrative completion
+
+   Attributes: data-agent-state, data-mode, data-health,
+               data-done, data-active, data-variant
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ─────────────────────────────────────────────────────────────── */
+
+.glass-reb {
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.reb-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+}
+
+.reb-header-icon {
+  color: var(--color-violet-400);
+  flex-shrink: 0;
+}
+
+.reb-header-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.reb-header-badge {
+  margin-left: auto;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.reb-header-badge[data-health="rich"] {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-emerald-400);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.reb-header-badge[data-health="moderate"] {
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--color-amber-400);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.reb-header-badge[data-health="sparse"] {
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--color-silver-400);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.reb-header-badge[data-health="empty"] {
+  background: rgba(148, 163, 184, 0.05);
+  color: var(--color-silver-500);
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DORMANT STATE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.reb-dormant {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.reb-dormant-text {
+  font-size: 0.875rem;
+  color: var(--color-silver-500);
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PROCESSING STATE — Step sequence with stagger
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.reb-processing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.reb-step {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: rebStepReveal 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 100ms);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.reb-step[data-active] {
+  border-color: var(--color-violet-400);
+  background: rgba(139, 92, 246, 0.04);
+}
+
+.reb-step[data-done] {
+  opacity: 1;
+  transform: none;
+  border-color: var(--color-emerald-400);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.reb-step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  flex-shrink: 0;
+}
+
+.reb-step[data-active] .reb-step-indicator {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--color-violet-400);
+  animation: rebPulse 1s ease-in-out infinite;
+}
+
+.reb-step[data-done] .reb-step-indicator {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-emerald-400);
+}
+
+.reb-step-label {
+  font-size: 0.8125rem;
+  color: var(--color-silver-400);
+}
+
+.reb-step[data-active] .reb-step-label {
+  color: var(--color-silver-100);
+  font-weight: 500;
+}
+
+.reb-step[data-done] .reb-step-label {
+  color: var(--color-silver-300);
+  text-decoration: line-through;
+  text-decoration-color: rgba(16, 185, 129, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRESENTING STATE — Narrative with typing effect
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.reb-narrative {
+  padding: 1.25rem 1rem;
+}
+
+.reb-narrative-text {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-silver-100);
+  margin: 0;
+  font-family: "Cormorant Garamond", "Georgia", serif;
+  letter-spacing: 0.01em;
+}
+
+/* ── Cursor blink ─────────────────────────────────────────────────────── */
+
+.reb-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--color-violet-400);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: rebCursorBlink 0.6s step-end infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   KEY METRICS STRIP — Appears after typing completes
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.reb-metrics {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--color-border-subtle);
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: rebFadeIn 0.4s ease 0.2s forwards;
+}
+
+.reb-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 8px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.reb-metric svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.reb-metric-value {
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-variant-numeric: tabular-nums;
+}
+
+.reb-metric-label {
+  color: var(--color-silver-500);
+  font-weight: 400;
+}
+
+/* ── Metric variant colors ────────────────────────────────────────────── */
+
+.reb-metric[data-variant="opportunities"] svg {
+  color: var(--color-gold-400);
+}
+
+.reb-metric[data-variant="critical"] svg {
+  color: var(--color-rose-400);
+}
+
+.reb-metric[data-variant="sources"] svg {
+  color: var(--color-teal-400);
+}
+
+.reb-metric[data-variant="health"] svg {
+  color: var(--color-emerald-400);
+}
+
+/* ── Mode-dependent density ───────────────────────────────────────────── */
+
+.glass-reb[data-mode="act"] .reb-narrative {
+  padding: 1rem 0.875rem;
+}
+
+.glass-reb[data-mode="act"] .reb-narrative-text {
+  font-size: 0.875rem;
+}
+
+.glass-reb[data-mode="observe"] .reb-narrative {
+  padding: 1.5rem 1.25rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes rebStepReveal {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes rebPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0);
+  }
+}
+
+@keyframes rebCursorBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes rebFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: light) {
+  .glass-reb {
+    background: #ffffff;
+    border-color: #e8e5df;
+  }
+
+  .reb-header {
+    background: #f8f7f4;
+    border-bottom-color: #e8e5df;
+  }
+
+  .reb-header-title {
+    color: #1a1814;
+  }
+
+  .reb-step {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+  }
+
+  .reb-step[data-active] {
+    background: rgba(124, 58, 237, 0.04);
+    border-color: #7c3aed;
+  }
+
+  .reb-step[data-done] {
+    background: rgba(5, 150, 105, 0.04);
+    border-color: #059669;
+  }
+
+  .reb-step-label {
+    color: #6b6560;
+  }
+
+  .reb-step[data-active] .reb-step-label {
+    color: #1a1814;
+  }
+
+  .reb-narrative-text {
+    color: #1a1814;
+  }
+
+  .reb-cursor {
+    background: #7c3aed;
+  }
+
+  .reb-metrics {
+    border-top-color: #e8e5df;
+  }
+
+  .reb-metric {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+  }
+
+  .reb-metric-value {
+    color: #1a1814;
+  }
+
+  .reb-metric-label {
+    color: #8a8580;
+  }
+
+  .reb-dormant-text {
+    color: #8a8580;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .reb-step {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .reb-step[data-active] .reb-step-indicator {
+    animation: none;
+  }
+
+  .reb-cursor {
+    animation: none;
+    opacity: 1;
+  }
+
+  .reb-metrics {
+    animation: none;
+    opacity: 1;
+  }
+}

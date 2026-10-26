@@ -1,0 +1,313 @@
+/* src/features/engagement/components/EngagementGravityWell.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Glass namespace: glass-eng-gravity                          */
+/* "The Gravity Well" — Retention physics visualization        */
+/* ═══════════════════════════════════════════════════════════ */
+
+[data-glass-eng-gravity] {
+  --local-surface: var(--color-surface-1, #1a1a1a);
+  --local-border: rgba(255, 255, 255, 0.06);
+  --local-text: var(--color-silver-200, #e0dcd4);
+  --local-text-muted: var(--color-silver-400, #8a8580);
+  --local-text-dim: var(--color-silver-500, #6a6560);
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
+
+.eng-gravity {
+  background: var(--local-surface);
+  border: 1px solid var(--local-border);
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  animation: eng-grav-fadeUp 0.6s ease forwards;
+  animation-delay: 0.3s;
+}
+
+/* ── State accent ───────────────────────────────────────── */
+
+[data-glass-eng-gravity][data-state="escape_trajectory"] {
+  border-left: 3px solid var(--color-rose-400);
+}
+
+[data-glass-eng-gravity][data-state="drifting"] {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+[data-glass-eng-gravity][data-state="deep_well"] {
+  border-left: 3px solid var(--color-emerald-400);
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.eng-gravity__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--local-border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.eng-gravity__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--local-text);
+}
+
+.eng-gravity__header-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eng-gravity__state-badge {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.eng-gravity__days-badge {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+/* ── SVG Canvas ─────────────────────────────────────────── */
+
+.eng-gravity__canvas {
+  flex: 1;
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eng-gravity__canvas svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ── Rings ──────────────────────────────────────────────── */
+
+.eng-gravity__ring-circle {
+  transition: stroke-width 0.3s ease, stroke-opacity 0.3s ease;
+}
+
+.eng-gravity__ring-label {
+  transition: font-size 0.2s ease, fill 0.2s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Core ───────────────────────────────────────────────── */
+
+.eng-gravity__core-circle {
+  animation: eng-grav-core-breathe 4s ease-in-out infinite;
+}
+
+/* ── Escape zone ────────────────────────────────────────── */
+
+.eng-gravity__escape-zone {
+  animation: eng-grav-escape-rotate 20s linear infinite;
+  transform-origin: center;
+}
+
+/* ── Perturbation waves ─────────────────────────────────── */
+
+.eng-gravity__perturbation {
+  animation: eng-grav-perturbation 3s ease-out infinite;
+  transform-origin: center;
+}
+
+/* ── Exit arrow ─────────────────────────────────────────── */
+
+.eng-gravity__arrow-line {
+  animation: eng-grav-arrow-pulse 2s ease-in-out infinite;
+}
+
+/* ── Metrics Strip ──────────────────────────────────────── */
+
+.eng-gravity__metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--local-border);
+  margin-top: 12px;
+}
+
+.eng-gravity__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eng-gravity__metric-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 9px;
+  color: var(--local-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.eng-gravity__metric-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--local-text);
+  line-height: 1;
+}
+
+.eng-gravity__metric-value--danger {
+  color: var(--color-rose-400);
+}
+
+.eng-gravity__metric-value--safe {
+  color: var(--color-emerald-400);
+}
+
+.eng-gravity__metric-sub {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 9px;
+  color: var(--local-text-dim);
+}
+
+.eng-gravity__metric-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.eng-gravity__metric-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.8s ease;
+}
+
+/* ── Keyframes ──────────────────────────────────────────── */
+
+@keyframes eng-grav-fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes eng-grav-core-breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.85;
+  }
+}
+
+@keyframes eng-grav-escape-rotate {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 20;
+  }
+}
+
+@keyframes eng-grav-perturbation {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.5);
+  }
+}
+
+@keyframes eng-grav-arrow-pulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ── Light Mode ─────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  [data-glass-eng-gravity] {
+    --local-surface: #ffffff;
+    --local-border: rgba(0, 0, 0, 0.08);
+    --local-text: #1a1a1a;
+    --local-text-muted: #5a5550;
+    --local-text-dim: #8a8580;
+  }
+}
+
+/* ── Reduced Motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .eng-gravity {
+    animation: none;
+    opacity: 1;
+  }
+
+  .eng-gravity__core-circle {
+    animation: none;
+  }
+
+  .eng-gravity__escape-zone {
+    animation: none;
+  }
+
+  .eng-gravity__perturbation {
+    animation: none;
+    opacity: 0.2;
+  }
+
+  .eng-gravity__arrow-line {
+    animation: none;
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .eng-gravity {
+    padding: 16px;
+  }
+
+  .eng-gravity__canvas {
+    min-height: 220px;
+  }
+
+  .eng-gravity__metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .eng-gravity__metric-value {
+    font-size: 16px;
+  }
+}

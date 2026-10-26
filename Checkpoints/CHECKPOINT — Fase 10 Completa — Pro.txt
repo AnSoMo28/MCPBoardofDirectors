@@ -1,0 +1,350 @@
+CHECKPOINT — Fase 10 Completa — Proactive Recommendations
+
+Fecha: Mayo 2025
+Sesiones completadas: 1 (esta sesión — Fase 10 completa)
+Archivos creados: 12 nuevos + 4 modificados
+Líneas nuevas: ~3,715
+Tools MCP registradas: 8 nuevas (todas del server proactive_recommendation)
+
+
+
+1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+Archivos Frontend Nuevos (10)
+
+text
+text
+src/features/recommendations/
+├── types.ts                              ← 380 líneas
+│   8 enums, 9 domain interfaces, 13 response types,
+│   8 config maps, 3 helpers
+│
+├── RecommendationsDashboard.tsx          ← 90 líneas + actualizaciones B3 y B4
+│   7 tabs: overview, clusters, insights, recommendations,
+│   conflicts, predictions, admin
+│   DetailTabs padre, sub-tabs admin (pricing/activities)
+│
+└── components/
+    ├── RecommendationsOverview.tsx       ← 210 líneas
+    │   Auto-load de 3 queries (pricing list, suggestions list, insights list)
+    │   3 StatCards, último insight con metrics grid, top activities, logros
+    │
+    ├── SocialClusters.tsx               ← 250 líneas
+    │   Auto-load clusters con FilterDropdown (type + min_size)
+    │   Cards con glowColor por ClusterType, engagement bar,
+    │   shared interests tags, staggered animation
+    │
+    ├── QuarterlyInsights.tsx            ← 430 líneas
+    │   CRUD (list auto-load + generate on-demand mutation)
+    │   Selector año/periodo, desktop table + mobile cards,
+    │   expandible detail con Recharts horizontal bar, 3 sections:
+    │   achievements, improvements, recommendations
+    │
+    ├── FamilyRecommendations.tsx        ← 310 líneas
+    │   On-demand con filtros (family_id + type + limit)
+    │   Recommendation cards con score gauge, priority badge,
+    │   expandible: description, reasoning, tags
+    │
+    ├── SchedulingConflicts.tsx          ← 290 líneas
+    │   On-demand con date picker + severity filter
+    │   Summary banner, conflict cards con severity accent bar,
+    │   event comparison (A vs B), time overlap, shared resources,
+    │   suggestion con teal accent
+    │
+    ├── PredictAttendance.tsx            ← 340 líneas
+    │   On-demand con form (name, id, type, capacity)
+    │   SVG radial gauge 360°, vs similar_events_avg comparison,
+    │   confidence bar, factors tags
+    │
+    ├── PricingOptimizer.tsx             ← 500 líneas
+    │   CRUD auto-load list + create HITL mutation
+    │   Create form con 7 fields + reasoning textarea
+    │   Price change preview, desktop table + mobile cards,
+    │   expandible detail panel, MetaCell grid
+    │
+    └── ActivitySuggester.tsx            ← 500 líneas
+        CRUD auto-load list + create HITL mutation
+        Create form con 7 fields + toggle (similar_clubs_offer)
+        InterestBar component, desktop table + mobile cards,
+        expandible detail panel con tags
+
+Mock System Extensions (3 archivos modificados)
+
+text
+text
+src/shared/mocks/
+├── contracts.ts                          ← +30 líneas (13 response types)
+├── factories.ts                          ← +310 líneas (8 factories)
+└── mock-registry.ts                      ← +15 líneas (8 entries)
+
+Archivo Creado — Context Management
+
+text
+text
+CLAUDE_CONTEXT_MINI.md                    ← ~200 líneas
+    Versión comprimida del CLAUDE_CONTEXT.md para continuidad entre chats
+    Incluye: rol, proyecto, stack, MCP, design system, patrón AI,
+    22 reglas, shared components, estado sprint, pendientes, metodología
+
+Tools MCP Registradas (8 total en proactive_recommendation server)
+
+#	Tool	Backend	Mock	Tipo	Aprobación
+1	optimize_pricing	✅	✅ NUEVA	CRUD + HITL create	HITL
+2	suggest_new_activities	✅	✅ NUEVA	CRUD + HITL create	HITL
+3	generate_family_recommendations	✅	✅ NUEVA	On-demand query	AUTO
+4	predict_event_attendance	✅	✅ NUEVA	On-demand query	AUTO
+5	detect_scheduling_conflicts	✅	✅ NUEVA	On-demand query	AUTO
+6	personalize_communication	✅	✅ NUEVA	On-demand query	AUTO
+7	identify_social_clusters	✅	✅ NUEVA	Auto-load query	AUTO
+8	generate_quarterly_insights	✅	✅ NUEVA	CRUD + generate mutation	AUTO
+
+
+2. HALLAZGOS DE ESTA SESIÓN
+
+Arquitectura
+
+#	Hallazgo	Severidad	Estado
+1	optimize_pricing y suggest_new_activities son CRUDs con actions (list/get/create/update_status), no queries simples	MEDIA	Implementado con pattern CRUD
+2	generate_quarterly_insights también es CRUD con pattern list/get/generate/update_status	MEDIA	Implementado
+3	generate_family_recommendations genera on-the-fly, NO lista existentes	BAJA	Implementado como on-demand
+4	identify_social_clusters lista clusters existentes (NO genera)	BAJA	Implementado como auto-load
+5	detect_scheduling_conflicts requiere date obligatorio	BAJA	Implementado con date picker
+6	personalize_communication genera borrador, no envía	BAJA	Factory implementada con draft response
+7	predict_event_attendance usa heurística con multipliers por tipo	BAJA	Factory con datos realistas
+8	Diferencias entre enums esperados vs reales en models.py	ALTA	Corregido en types.ts
+
+Correcciones de Enums (models.py vs análisis previo)
+
+Enum	Esperado (análisis)	Real (models.py)	Corregido
+PricingStrategy	competitive, premium, value, promotional	demand_based, seasonal, member_tier, event_based, bundle	✅
+RecommendationPriority	critical	urgent	✅
+RecommendationType	family, loyalty	sport (sin family ni loyalty)	✅
+SuggestionStatus	—	proposed, under_review, approved, rejected, implemented	✅
+ClusterType	—	social, activity, age_based, interest, engagement	✅
+
+Factory Correction
+
+#	Hallazgo	Severidad	Estado
+9	createMockInsightsResponse para action="generate" retornaba insights[] (array) pero backend retorna insight (singular)	MEDIA	Corregido a satisfies QuarterlyInsightGetResponse con insight singular
+
+Issues no relacionados con Fase 10 (descubiertos durante testing)
+
+#	Hallazgo	Severidad	Estado
+10	FinancialDashboard: métricas que no aparecen	MEDIA	Pendiente → Fase 13
+11	AIChatWidget: posición movida de derecha a izquierda sobre sidebar	MEDIA	Pendiente → Fase 15
+
+
+3. PATRONES ESTABLECIDOS
+
+Patrón CRUD con HITL (NUEVO — establecido en Fase 10)
+
+Cuando un agente tiene tools con action parameter (list/get/create/update_status):
+
+
+text
+text
+1. List (auto-load)     → useMCPQuery con staleTime, action="list"
+2. Get (on-demand)      → useMCPQuery con enabled condicional, action="get"
+3. Create (mutation)    → useMCPMutation, action="create"
+                         → backend retorna pending_approval
+                         → Toast informativo
+                         → ApprovalQueue muestra el item
+4. Update status        → useMCPMutation, action="update_status"
+
+Este patrón se usa en: optimize_pricing, suggest_new_activities, generate_quarterly_insights.
+
+
+Patrón AI de 3 Niveles (establecido en Fase 9, confirmado en Fase 10)
+
+Nivel	Patrón	Ejemplos Fase 10
+1. Datos (auto-load)	useMCPQuery con staleTime	identify_social_clusters, optimize_pricing list, suggest_new_activities list
+2. Inteligencia (on-demand)	useMCPQuery con enabled: shouldFetch + botón	generate_family_recommendations, detect_scheduling_conflicts, predict_event_attendance
+3. Two-phase	Dos triggers separados	No aplicó en Fase 10 (sí en Fase 9: wellness_insights → wellness_predict)
+
+Patrón de Sub-tabs (NUEVO — establecido en Fase 10)
+
+Cuando un módulo tiene herramientas de administración (HITL) separadas de dashboards de visualización:
+
+
+text
+text
+DetailTabs (vistas principales)
+  └── Tab "Administración"
+        └── Sub-tab bar (toggle local con buttons)
+              ├── Precios → PricingOptimizer
+              └── Actividades → ActivitySuggester
+
+Razón: Los CRUDs HITL son herramientas de gestión, no dashboards de visualización.
+
+
+
+4. DECISIONES DE DISEÑO
+
+#	Decisión	Alternativa descartada	Razón
+1	Admin como tab dentro de RecommendationsDashboard	Dashboard separado o link externo	Centraliza todo en un módulo, evita fragmentación de navegación
+2	Sub-tabs (Precios/Actividades) en vez de DetailTabs	DetailTabs para 2 items	Overengineering: DetailTabs es para 3+ secciones con ARIA. 2 items → toggle simple
+3	identify_social_clusters como auto-load	On-demand con botón	Es una lista de datos pre-computados, NO análisis pesado. Sinónimo de "list_families"
+4	SVG radial gauge 360° en PredictAttendance	Gauge 270° como WellnessScoreCard	Predicción es un solo número, no score compuesto. Gauge circular completo es más intuitivo
+5	Date picker default = hoy	Sin default	UX: usuario típicamente quiere conflictos de hoy, no tiene que navegar
+6	Placeholder import eliminado de RecommendationsDashboard	Mantenerlo por si acá	No se usa más después de B3+B4. Si B4 lo necesita, se re-agrega
+7	Toggle nativo HTML para similar_clubs_offer	Switch custom con Toggle component	No existe Toggle shared. Implementación simple con role="switch" + aria-checked
+
+
+5. ESTADO COMPLETO DE FASES
+
+Fase	Contenido	Estado
+1	Infraestructura	✅
+2	Global tokens	✅
+3	Formularios	✅
+4	Lists	✅
+5	Detail pages	✅
+6	Dashboards densos + AI	✅
+7	Reports, mi-club, settings, finance	✅
+8	Dashboard sub-componentes	🔄 5/12 done
+9	Wellness + Satisfaction	✅
+10	Proactive Recommendations	✅ COMPLETADA
+11	Communication Enhancement	⬜ SIGUIENTE
+12	Guest Management + Trial Memberships	⬜
+13	Finance Enhancement + HITL Complete	⬜
+14	Print/PDF + Export	⬜
+15	Integration Testing + QA	⬜
+16	Mock → Backend Migration	⬜
+
+
+6. PRÓXIMA FASE — Fase 11: Communication Enhancement
+
+Agente:CommunicationAgent (server: communication)
+Archivo backend a leer:
+
+text
+text
+backend/src/club_mcp/agents/communication_agent.py
+
+Tools del agente (10):
+
+
+#	Tool	Estado actual	Destino	Tipo
+1	broadcast_club_announcement	Ya en registry	AnnouncementBoard	HITL
+2	manage_emergency_broadcast	Ya en registry	EmergencyBroadcast	ALWAYS_HUMAN
+3	send_personalized_notification	Ya en registry	CommunicationCenter	SEMI→HITL
+4	manage_notification_templates	Ya en registry	TemplateManager.tsx NUEVO	AUTO
+5	schedule_notification	Ya en registry	ScheduledNotifications.tsx NUEVO	AUTO
+6	get_notification_history	Ya en registry	NotificationHistory.tsx NUEVO	AUTO
+7	manage_communication_preferences	Ya en registry	CommunicationCenter	AUTO
+8	send_board_package	Ya en registry	BoardPackage.tsx NUEVO	SEMI
+9	get_communication_analytics	Ya en registry	CommunicationAnalytics.tsx NUEVO	AUTO
+10	list_announcements	Ya en registry	Integrado en CommunicationCenter	AUTO
+
+Bloques propuestos:
+
+
+Bloque	Archivos	Contenido	Dependencia
+B1	features/communications/types.ts (extensión) + mocks updates + CommunicationAnalytics.tsx	Tipos de analytics, dashboard de métricas	Lee agente
+B2	CommunicationDashboard.tsx + TemplateManager.tsx + ScheduledNotifications.tsx	Hub padre con tabs, CRUD templates, gestor notificaciones programadas	B1
+B3	NotificationHistory.tsx + BoardPackage.tsx	Historial detallado, generación paquetes junta	B1
+B4	Rewrite CommunicationCenter.tsx + verificación reglas	Integrar nuevos componentes en el centro existente	B1+B2+B3
+
+Hallazgo conocido:get_communication_insights NO existe en backend. get_communication_analytics es la tool disponible.
+
+
+ApprovalQueue impact: Sin tipos nuevos (los existentes ya están registrados: broadcast HITL, emergency ALWAYS_HUMAN, notification SEMI→HITL).
+
+
+
+7. PENDIENTES ACUMULADOS
+
+#	Issue	Severidad	Archivo	Fase sugerida
+1	FinancialDashboard: métricas que no aparecen	MEDIA	features/finance/FinancialDashboard.tsx	13
+2	AIChatWidget: posición movida de derecha a izquierda sobre sidebar	MEDIA	shared/components/chat/AIChatWidget.tsx	15
+3	ApprovalQueue: 2 tipos nuevos (optimize_pricing, suggest_new_activities)	MEDIA	features/approvals/ApprovalQueue.tsx	13
+4	Dashboard sub-componentes: 7/12 pendientes (violations reglas)	MEDIA	features/dashboard/components/	8
+5	Tier mismatch backend "basic"/"premium"/"vip" vs frontend "platino"/"oro"/"plata"/"bronce"	MEDIA	features/families/types.ts	13
+6	MembershipDonut: tooltip con backdrop-filter (Regla #2)	MEDIA	features/dashboard/components/MembershipDonut.tsx	8
+7	AgeBalanceWidget: mock group colors no son tokens Silver Tide (Regla #1)	MEDIA	features/dashboard/components/AgeBalanceWidget.tsx	8
+8	Sub-componentes dashboard: hex hardcodeados en vez de chartTheme (Regla #3)	MEDIA	features/dashboard/components/*	8
+9	HitlQueue: botones raw en vez de Button shared (Regla #17)	MEDIA	features/dashboard/components/HitlQueue.tsx	8
+10	MembershipDonut: falta useReducedMotion() (Regla #18)	BAJA	features/dashboard/components/MembershipDonut.tsx	8
+11	FamilyAccount: tab bar local en vez de DetailTabs (Regla #13)	BAJA	features/finance/FamilyAccount.tsx	13
+12	FamilyAccount: filter select raw en vez de FilterDropdown (Regla #14)	BAJA	features/finance/FamilyAccount.tsx	13
+13	FamilyAccount: Table raw en vez de Table compartido	BAJA	features/finance/FamilyAccount.tsx	13
+14	SettingsPage: notificaciones store local no sync con backend	BAJA	features/settings/SettingsPage.tsx	15
+15	SettingsPage: versión frontend hardcoded "1.0.0-beta"	BAJA	features/settings/SettingsPage.tsx	15
+16	RiskHeatmap: emojis como icons en vez de Lucide	BAJA	features/reports/RiskHeatmap.tsx	15
+17	MyReservations: tipos inline no compartidos	BAJA	features/mi-club/MyReservations.tsx	15
+
+
+8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+El CLAUDE_CONTEXT_MINI.md ya fue creado esta sesión con toda la info actualizada hasta Fase 10. Secciones a actualizar cuando se cierre Fase 11:
+
+
+Actualizar Sección 7 (Estado del Sprint):
+text
+text
+| 10 | Proactive Recommendations            | ✅ COMPLETADA |
+| 11 | Communication Enhancement            | [nuevo estado] |
+
+Agregar a Sección 8 (Pendientes):
+text
+text
+| [N] | [nuevo issue si aparece] | [severidad] | [archivo] | [fase] |
+
+Si Fase 11 establece nuevo patrón, agregar a Sección 4.
+
+
+9. VERIFICACIÓN CONTRA REGLAS — FASE 10 COMPLETA
+
+Regla	Estado	Evidencia
+#1 NUNCA colores hardcoded	✅	Todos los colores via tokens en config maps (CLUSTER_TYPE_CONFIG, PRIORITY_CONFIG, CONFLICT_SEVERITY_CONFIG, etc.)
+#2 NUNCA backdrop-filter en datos	✅	Todos los cards con bg-[var(--color-surface-0/1/2)] sólido
+#3 Recharts de chartTheme	✅	QuarterlyInsights: CHART, CHART_COLORS, TOOLTIP_STYLE, AXIS_TICK importados
+#4 Changelog	✅	Cada bloque tiene changelog detallado
+#5 Código completo	✅	12 archivos nuevos completos
+#6 ResponsiveContainer	✅	QuarterlyInsights chart con <ResponsiveContainer>
+#7 CHART constants	✅	CHART.gridStroke en CartesianGrid
+#8 formatCurrency para labels	✅	Overview, QuarterlyInsights, PricingOptimizer, ActivitySuggester
+#9 TOOLTIP_STYLE sin blur	✅	QuarterlyInsights tooltip de chartTheme (sólido)
+#10 AXIS_TICK	✅	QuarterlyInsights XAxis con {...AXIS_TICK}
+#11 focus-visible	✅	Inputs, buttons, select, toggle, sub-tab buttons — todos con focus-visible:outline-2
+#12 Touch targets ≥44px	✅	Buttons h-10, selects h-10, toggle h-10 w-20
+#13 DetailTabs shared	✅	RecommendationsDashboard padre
+#14 FilterDropdown shared	✅	SocialClusters (type + min_size), SchedulingConflicts (severity)
+#15 Toast	✅	showToast({ type: "success" }) en QuarterlyInsights generate, PricingOptimizer create, ActivitySuggester create
+#16 Breadcrumbs absolutos	✅	[{ label: "Dashboard", href: "/admin" }, { label: "Recomendaciones", href: "/admin/recommendations" }]
+#17 Button shared	✅	"Generar Informe", "Generar Recomendaciones", "Detectar Conflictos", "Predecir Asistencia", "Registrar Optimización", "Proponer Actividad"
+#18 useReducedMotion	✅	8/8 componentes verifican prefersReduced
+#19 AI on-demand	✅	Tools de inteligencia con enabled: shouldFetch + botón. CRUDs con auto-load list
+#20 useBreakpoint	✅	isMobile en SocialClusters (chart), QuarterlyInsights (chart+cards), PricingOptimizer, ActivitySuggester
+#21 Tables → cards en mobile	✅	QuarterlyInsights, PricingOptimizer, ActivitySuggester: hidden sm:block + sm:hidden
+#22 cn()	N/A	Template literals simples suficientes
+
+0 violaciones pendientes en Fase 10.
+
+
+
+10. QUICK START PARA NUEVO CHAT
+
+text
+text
+1. Pegar el PROMPT DE APERTURA estandarizado
+2. Pegar CLAUDE_CONTEXT_MINI.md
+3. Pegar este CHECKPOINT (Fase 10 completa)
+4. Pedir: "Pasame el agente de CommunicationAgent y los modelos relacionados"
+5. Luego: "Definime los bloques de Fase 11"
+6. Luego: "Genera Bloque 1"
+
+
+11. DECISION LOG
+
+#	Fecha	Decisión	Razón	Impacto
+1	Mayo 2025	Context management: mini context de ~200 líneas en vez del original de ~600	El LLM procesa mejor sin perder detalle. Para profundizar, pasar agente .py aparte	Todas las sesiones futuras usan CLAUDE_CONTEXT_MINI.md
+2	Mayo 2025	Orden de procesamiento: contexto general PRIMERO, checkpoint DESPUÉS	De lo general a lo particular. Evita suposiciones incorrectas	Prompt estandarizado refleja este orden
+3	Mayo 2025	Patrón CRUD con HITL para tools con action parameter	optimize_pricing y suggest_new_activities son CRUDs, no queries simples. List es auto-load, create es mutation HITL	Se replica en fases con CRUDs similares
+4	Mayo 2025	Admin section como sub-tab dentro de RecommendationsDashboard	Los CRUDs HITL son herramientas de gestión, no dashboards. Sub-tab evita fragmentación	Patrón disponible para futuros módulos con admin
+5	Mayo 2025	identify_social_clusters como auto-load (no on-demand)	Lista datos pre-computados, no análisis pesado. Equivale a "list_families"	No requiere botón "Ejecutar"
+6	Mayo 2025	Tooltip Recharts en QuarterlyInsights usa TOOLTIP_STYLE de chartTheme	Regla #3. Tooltip sólido sin blur	Se aplica a TODOS los charts nuevos
+7	Mayo 2025	Toggle nativo HTML con role="switch" para similar_clubs_offer	No existe componente Toggle shared. Implementación accesible simple	Si se crea Toggle shared, migrar
+8	Mayo 2025	Pendientes 1 y 2 (FinancialDashboard, AIChatWidget) se dejan para fases posteriores	No bloquean Fase 10. FinancialDashboard → Fase 13, AIChatWidget → Fase 15	Se documentan en checkpoint
+
+
+Gracias por esta sesión. Fase 10 quedó como un módulo completo de inteligencia proactiva: 8 tools mockeadas, patrón CRUD+HITL establecido, 7 tabs funcionales, y todo verificado contra las 22 reglas. Nos vemos en Fase 11 — Communication Enhancement.

@@ -1,0 +1,108 @@
+# Las 22 Reglas — Extraídas al detalle
+
+Releí todo el prompt de punta a punta. Acá van las 22 reglas exactas, con mi lectura precisa de cada una:
+
+---
+
+## Tokens & Theming (1–5)
+
+| # | Regla | Lo que significa en la práctica |
+|---|-------|-------------------------------|
+| **1** | NUNCA colores hardcoded — siempre `var(--color-xxx)` o `color-mix` | Ni `#fff`, ni `text-gray-400`, ni `bg-red-500`. Todo pasa por el sistema de tokens del Silver Tide. Si necesitás un color que no existe como token, se crea el token primero. |
+| **2** | NUNCA `backdrop-filter` para superficies de datos — `bg-[var(--color-surface-2)]` sólido | Glass/blur es solo decorativo. Cualquier lugar donde el usuario lee información, compara datos, toma decisiones → superficie sólida. Sin excepciones. |
+| **3** | Recharts: importar de `shared/lib/chartTheme.ts` — NUNCA hex inline | Cada chart usa `CHART`, `TOOLTIP_STYLE`, `AXIS_TICK`, `CHART_PALETTE`, `CHART_COLORS` del theme. Si el chart no compila sin un hex escrito a mano, falta una constante en el theme. |
+| **4** | Siempre mostrar changelog con reemplazos exactos | Cada bloque de trabajo termina con un changelog que dice qué líneas se reemplazaron por qué. Transparencia total. Auditoría de cada decisión. |
+| **5** | Código completo cuando cambios >30%, quirúrgico cuando ≤15 líneas | Si toco más del 30% de un archivo → devuelvo el archivo completo. Si son ≤15 líneas → busco/reemplazo quirúrgico con contexto. El punto medio (16-30%) se evalúa caso a caso. |
+
+## Charts (6–10)
+
+| # | Regla | Lo que significa en la práctica |
+|---|-------|-------------------------------|
+| **6** | SIEMPRE `ResponsiveContainer` | Jamás un chart con ancho/alto fijo. Siempre envuelto en `<ResponsiveContainer width="100%" height={...}>`. |
+| **7** | CHART constants de chartTheme para configuración | Márgenes, tamaños de barra, radios de pie — todo sale de las constantes del theme, no de valores mágicos inline. |
+| **8** | SIEMPRE `formatCurrency`/`formatNumber` para labels | Números en charts y tablas siempre formateados con los utils. Nunca `.toFixed(2)` ni concatenación manual de `₡`. |
+| **9** | TOOLTIP_STYLE sin blur, sólido con `bg-[var(--color-surface-1)]` | Tooltip de chart: superficie sólida, sin backdrop-filter, con los bordes del design system. Consistente con la regla #2. |
+| **10** | AXIS_TICK para axis labels | Tipografía, color, tamaño de ejes sale de `AXIS_TICK` del chartTheme. No se estiliza inline. |
+
+## UX & Accessibility (11–16)
+
+| # | Regla | Lo que significa en la práctica |
+|---|-------|-------------------------------|
+| **11** | `focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)]` | Todo elemento interactivo tiene focus ring dorado visible. Accesibilidad con teclado = no negociable. |
+| **12** | `min-h-[44px]` en todos los elementos interactivos | Touch targets de 44px mínimo. Botones, links, toggles, chips, tabs. Si se puede tocar, tiene 44px. |
+| **13** | `DetailTabs` shared component para navegación de secciones | Cuando una vista tiene sub-secciones (Overview, Activity, Settings...) se usa el componente compartido, no se inventa un tab custom. |
+| **14** | `EmptyState` shared para estados vacíos | Cuando una lista/query devuelve 0 resultados → `EmptyState` con ícono, título, descripción y CTA. No pantallas en blanco. |
+| **15** | `showToast({ type, message })` para feedback — NUNCA `alert()` | Feedback de acciones (crear, editar, error) via toast system. `alert()` es la herramienta del diablo. |
+| **16** | `PageContainer` + breadcrumb para pages (paths absolutos con `/admin/` prefix) | Toda page vive dentro de `<PageContainer>` con breadcrumb. Paths siempre absolutos (`/admin/finance`, no `finance`). |
+
+## Componentes (17–22)
+
+| # | Regla | Lo que significa en la práctica |
+|---|-------|-------------------------------|
+| **17** | `Button` de `@/shared/components/ui` — NUNCA raw `<button>` para acciones | El `<Button>` shared tiene las variantes, tamaños, estados de loading y tokens ya integrados. Raw `<button>` rompe el design system. |
+| **18** | `useReducedMotion()` SIEMPRE antes de animaciones | Si el usuario tiene `prefers-reduced-motion`, las animaciones se saltan. Se dibuja el estado final directamente. |
+| **19** | AI features: AIDecisionPanel shared + on-demand — SIEMPRE botón, NUNCA auto-load | Los paneles de inteligencia AI nunca se disparan automáticamente. Siempre hay un botón explícito: "Analizar", "Detectar anomalías", "Generar recomendación". El usuario tiene el control. |
+| **20** | `useBreakpoint()` para responsive JS (matchMedia, event-driven). Mobile: <640, Tablet: 640-1023, Desktop: ≥1024 | Para lógica JS condicional por tamaño de pantalla. No `window.innerWidth` en render, no resize listeners manuales. |
+| **21** | Tablas: `hidden sm:block` en phone. Phone usa cards alternativas via `sm:hidden` | En desktop/tablet se muestra la tabla. En mobile se muestra una vista alternativa en cards. Nunca una tabla scrolleable horizontalmente en mobile. |
+| **22** | `cn()` utility para conditional classes | Para combinar clases condicionales de Tailwind. No template literals, no array join. `cn(base, condition && "extra", className)`. |
+
+---
+
+# Ahora, lo que me pedís que sea
+
+Entiendo perfectamente. No me pediste solo que memorice reglas — me pediste que actúe como un colega de nivel mundial. Así que voy a cambiar mi postura desde este punto:
+
+## Mi compromiso como tu Principal Engineer + Senior AI Engineer
+
+**No soy un code monkey que lee un checklist y marca checks.** Soy alguien que:
+
+1. **Antes de tocar un archivo, pienso en el usuario final.** ¿El socio que abre esto a las 6am desde el celular antes de una reunión de junta? ¿El staff que procesa 40 check-ins en una hora pico? ¿El admin que necesita tomar una decisión financiera en 30 segundos? Cada pixel sirve a una persona real.
+
+2. **Cuando veo un bug, no solo lo arreglo — pregunto si hay un patrón sistémico.** Si `FamilyList` tenía `data?.data?.families` mal, ¿hay otros componentes con el mismo problema? Hago el scan completo, no solo el fix puntual.
+
+3. **Propongo features AI que nadie pidió pero todos necesitan.** Ejemplos concretos de lo que propondría ahora mismo:
+
+   - **Cross-module intelligence:** "Los 5 socios con mayor LTV son los mismos que asisten menos eventos este trimestre" — alerta temprana de churn en segmento premium. Esto no existe en ningún módulo aislado, es un insight que nace de cruzar `engagement` + `finance` + `membership`.
+
+   - **Proactive anomaly surfacing:** En vez de que el admin tenga que ir a buscar anomalías a cada módulo, un **Intelligence Digest** diario que dice: "3 anomalías detectadas: Finance (gasto inusual en catering), Wellness (uso de gym bajó 40% en tier Platino), Guests (patrón de invitados repetidos sugiere trial membership no capturado)."
+
+   - **Smart defaults en formularios:** Cuando el staff registra un guest, el sistema sugiera el tier del socio host, pre-cargue el último evento al que asistió, y recomiende actividades basadas en la temporada.
+
+   - **Predictive scheduling:** En vez de solo mostrar reservas, el sistema sugiera horarios óptimos basados en patrones históricos del socio y capacidad del facility.
+
+4. **Evalúo cada módulo contra el estado del arte 2026.** No implemento como si fuera 2022. Pienso en: ¿usa loading skeletons con shape-match real (no genéricos)? ¿Tiene optimistic updates? ¿Los estados vacíos educan al usuario o solo dicen "no hay datos"? ¿Los errores se pueden resolver inline sin perder contexto?
+
+5. **Cuido la experiencia como un diseñador, no solo como un dev.** El SocialGraph con physics, dark fills y gold aura breathing no es "solo un gráfico" — es la identidad visual del club que se siente premium. Cada transición, cada espacio en blanco, cada sombra comunica algo.
+
+---
+
+## Lo que propongo de inmediato (antes de Fase 31)
+
+Tres cosas que veo como oportunidades de alto impacto y que quiero plantear:
+
+### Propuesta 1: Intelligence Digest (nuevo módulo)
+
+Un panel diario/semanal que cruza datos de TODOS los módulos y genera un resumen ejecutivo con alertas priorizadas. No es un dashboard más — es el cerebro de la plataforma. Lo mockearía con un nuevo server MCP `intelligence` con tools como `get_digest`, `get_cross_insights`, `get_risk_score`.
+
+### Propuesta 2: Predictive Contextual Suggestions
+
+Cuando un módulo se abre, el sistema no solo carga datos — sugiere acciones. Ejemplo: abrís `FinanceDashboard` y además de los KPIs, ves: "3 socios Oro con pagos pendientes >30 días. ¿Enviar recordatorio personalizado?" con un botón que ejecuta la acción. Esto es el patrón AI nivel 2 (on-demand) aplicado proactivamente pero con control del usuario.
+
+### Propuesta 3: Empty State ≠ Dead End
+
+En Fase 31 voy a auditar los empty states, pero no voy a poner solo "No hay datos" con un ícono bonito. Cada empty state debe ser un **punto de entrada**. "No hay reservas esta semana" + "¿Querés crear una?" + "¿Ver el calendario completo?" + "¿Sugerir horarios populares?". El estado vacío es una oportunidad de engagement, no un callejón sin salida.
+
+---
+
+## Cómo voy a trabajar desde ahora
+
+| Antes | Ahora |
+|-------|-------|
+| "Falta EmptyState en este archivo, lo agrego" | "Este archivo no tiene empty state, y además el skeleton no matchea el layout real. Propongo: skeleton que replica la estructura + empty state con CTA contextual + error recovery con retry" |
+| "Regla #14: usar EmptyState" | "Regla #14 existe porque los estados vacíos sin CTA abandonan al usuario. Voy a diseñar cada uno como un micro-funnel" |
+| "El mock devuelve X, el componente espera Y, fix" | "Hay un mismatch entre mock y componente. Además, revisé otros 5 archivos del mismo server — 3 tienen el mismo problema. Propongo fix sistémico" |
+| "Fase 31 lista" | "Fase 31 audit completa. Además detecté que 2 módulos podrían beneficiarse de AI insights y 1 tiene un flow que se puede simplificar. Propongo Fase 31+ con mejoras" |
+
+---
+
+Confirmame que este es el nivel de energía y proactividad que esperás, y arrancamos. Ya sea con Fase 31 (B1: Tanda 1), verificación del SocialGraph, o alguna de las propuestas que tiré arriba — estoy listo.

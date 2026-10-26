@@ -1,0 +1,277 @@
+Análisis Estratégico Integral — Castillo Country Club Frontend
+
+
+1. Estado actual del sistema
+
+Hasta ahora hemos tomado un enfoque reactivo — arreglando problemas de responsive uno por uno a medida que aparecen. Esto genera:
+
+
+Tres rondas de correcciones sobre los mismos archivos
+Inconsistencia entre componentes migrados en sesiones distintas
+Fix superficial sin resolver el patrón de fondo
+
+Lo que realmente necesitamos es consolidar todo de una sola vez: responsive + Aurora Glow + mejoras de UX premium + accesibilidad + performance — en un solo pase coherente.
+
+
+
+2. Hallazgos del trabajo ya hecho
+
+Categoría	Hallazgo	Impacto
+Patrón roto recurrente	6 de 6 componentes de layout tenían paddings/gaps fijos sin escala responsive. Esto indica que ningún componente nuevo va a ser responsive por defecto — cada uno requiere intervención manual	Alto — deuda técnica perpetua
+No hay mixin/abstract para responsive padding	Cada componente repite p-4 sm:p-6 o variantes ad-hoc. No hay consistencia	Medio — drift visual
+Stat cards de FacilityMap no tenían padding	Bug visual en producción. Sugiere que el QA post-migración no está siendo riguroso	Alto — calidad
+Tablas sin estrategia mobile	Table.tsx usa min-w-[640px] para forzar scroll horizontal. Funcional pero no es la mejor UX para mobile — un card layout sería superior	Medio
+Calendarios rompen en mobile	EventCalendar defaultea a lista en mobile (bien), pero ReservationCalendar muestra week view con scroll horizontal — forzando al usuario a hacer scroll para ver un solo día	Medio
+Botones y cards genéricos	Los componentes Button y Card no tienen tratamiento de glow, border animation, ni variants premium	Alto — Sprint 11F
+Sin sistema de breakpoint consistente	No hay hook centralizado useBreakpoint() o constantes de breakpoint compartidas. Cada componente inventa su propia lógica	Medio
+Forms sin validación visual consistente	Los formularios que vi (EventCalendar QuickAdd) usan showToast para errores. Necesita inline validation con mensajes debajo del campo	Alto
+Accesibilidad mínima	Solo encontré aria-label en botones de icono. Faltan: role, aria-live para estados dinámicos, aria-expanded, focus management en modales/drawers, skip navigation	Alto
+Performance: framer-motion en listas	EventListView anima cada card con motion.div individual + delay: index * 0.04. Con 20 eventos = 800ms de animación escalonada. AnimatePresence + initial/animate en loops grandes es costoso	Medio
+
+
+3. Propuesta de Mejoras
+
+3.1 — Infraestructura de Responsive (prioridad: CRÍTICA)
+
+Problema de fondo: Estamos parchando responsive en cada componente individualmente. Necesitamos resolver esto en el design system layer.
+
+
+Propuesta:
+
+
+a) Hook useBreakpoint() centralizado
+
+text
+text
+shared/hooks/useBreakpoint.ts
+Retorna { isMobile, isTablet, isDesktop } con matchMedia. Un solo hook, importado donde se necesite. Elimina los useIsMobile ad-hoc que estamos creando.
+
+
+b) Utility classes de padding responsive
+En global.css, definir tokens de spacing responsive que se apliquen consistentemente:
+
+
+text
+text
+--space-page-x: 1rem          (mobile)  → sm: 1.5rem → lg: 2rem
+--space-page-y: 1.25rem       (mobile)  → sm: 1.5rem → lg: 2rem
+--space-card: 0.75rem         (mobile)  → sm: 1rem   → lg: 1.5rem
+--space-section: 1.25rem      (mobile)  → sm: 1.5rem → lg: 1.5rem
+
+Con clases Tailwind reutilizables: responsive-px, responsive-py, responsive-card-padding.
+
+
+c) Grid responsive predefinido
+Definir breakpoints de grid consistentes:
+
+Stats/cards: grid-cols-2 md:grid-cols-3 lg:grid-cols-4
+Listings: grid-cols-1 md:grid-cols-2 lg:grid-cols-3
+Detail: grid-cols-1 lg:grid-cols-[1fr_360px]
+
+3.2 — Aurora Glow System (Sprint 11F — prioridad: ALTA)
+
+Propuesta técnica:
+
+
+a) Botones con glow recorrido (GlowButton)
+
+CSS @keyframes con conic-gradient que rota alrededor del borde
+Un solo componente que reemplaza todos los botones primarios
+Variant: glow="gold" (default), glow="emerald", glow="teal", glow="activity" (según tipo de actividad)
+Solo aplica en desktop con pointer: fine. En mobile, el botón mantiene el color sólido sin animación (performance)
+
+b) Cards con glow por actividad (ActivityCard)
+
+Borde con box-shadow animado que pulsa suavemente
+Color del glow determinado por el tipo de actividad (paleta del checkpoint)
+El glow es sutil — opacidad 0.15-0.25, no un neón
+Implementado como prop en el componente Card existente: glowColor + glow={true}
+
+c) Dónde aplicar el glow:
+
+Tarjetas de instalaciones en FacilityMap → color según facility.type
+Tarjetas de eventos en EventListView → color según event.type
+Cards de actividades en MiClubLanding
+Botón "Nuevo evento", "Nueva reserva", "Crear" → glow gold recorrido
+Sidebar nav items activos → sutil glow lateral
+
+3.3 — Mejoras UX Premium (prioridad: ALTA)
+
+a) Empty states premium
+Los EmptyState actuales son funcionales pero genéricos. Propuesta:
+
+Ilustración SVG temática en lugar de solo un icono
+Acción sugerida más prominente
+Tono de voz concierge: "No hay eventos programados aún. ¿Qué tal si organizamos algo especial?"
+En lugar de "Sin datos" → contexto emocional alineado al club
+
+b) Estados de carga con skeletons mejorados
+
+Skeletons que imitan la forma real del contenido (no solo rectángulos)
+Para el calendario: grid de celdas skeleton
+Para las cards: avatar circle + line widths que varían
+Transición suave skeleton → contenido real con fade
+
+c) Navegación cross-module
+
+Desde un evento → ver instalación asociada con un click
+Desde una familia → ver sus reservas activas
+Desde una instalación → ver eventos programados ahí
+Breadcrumbs clickeables en todos los detail views
+
+d) Filtros mobile-first
+
+Los selects nativos están bien para mobile (ya los usamos)
+Pero los filtros deberían estar en un drawer/collapse en mobile en vez de ocupar espacio vertical
+Patrón: botón "Filtros" → abre bottom sheet con todos los filtros + "Aplicar"
+
+e) Microinteracciones
+
+Hover en cards: elevación + sutil scale (ya lo hacemos parcialmente)
+Click en botón: ripple effect CSS-only
+Page transitions: fade + slide-up al navegar entre rutas
+Toggle switches con spring animation
+Badge counters con pop-in animation
+
+3.4 — Accesibilidad WCAG AA (prioridad: ALTA)
+
+Área	Estado actual	Propuesta
+Color contrast	Silver-400 (#8A95A5) sobre surface-2 (#1C2230) = ratio ~3.8:1. FALLA AA para texto normal	Subir a silver-300 (#B8C0CC) para texto body. Mantener silver-400 solo para texto large (18px+)
+Focus indicators	Solo focus:outline-2 focus:outline-gold en inputs. Botones y links no tienen focus visible	Agregar focus-visible:ring-2 ring-gold-400/60 ring-offset-2 ring-offset-abyss universal
+Touch targets	Algunos iconos son 15px con padding 9px = ~33px. FALTA el mínimo de 44px	Mínimo 44×44 en todos los elementos interactivos. Ya lo hacemos en botones pero no en icon buttons
+Skip navigation	No existe	Agregar skip link al inicio del layout
+Live regions	No hay aria-live para notificaciones	Toast y estados dinámicos necesitan aria-live="polite"
+Modal focus trap	Modal tiene document.addEventListener("keydown") para Escape pero no trapea el focus	Implementar focus trap con firstFocusableElement.focus() al abrir
+Reduced motion	No hay respeto por prefers-reduced-motion	Envolver animaciones Framer Motion con check de media query
+
+3.5 — Performance (prioridad: MEDIA)
+
+Área	Propuesta
+Lazy loading de rutas	React.lazy() para cada feature page. Solo cargar lo que el usuario visita
+Framer Motion	Usar LazyMotion + domAnimation en vez de importar todo el bundle. Reducir ~30KB
+Calendar animations	Reducir delay escalonado de 0.04s a 0.02s. Max 10 items animados, el resto aparece instant
+WebGL background	Verificar que tiene will-change y se pausa cuando no es visible (IntersectionObserver)
+Icon tree-shaking	Lucide ya soporta imports individuales. Verificar que el bundler lo está haciendo
+
+3.6 — Mejoras de Negocio / Premium Club
+
+Mejora	Valor para el club
+Quick booking flow	Desde el dashboard, reservar cancha/piscina en 2 taps. Sin navegar a módulo de instalaciones
+Smart suggestions	"La cancha de tennis está libre hoy de 4-6pm. ¿Reservar?" — basado en historial
+Family activity feed	En Mi Club, ver las últimas actividades de la familia (reservas, asistencias, puntos)
+Push notification preview	En el header, dropdown de notificaciones con acciones rápidas (confirmar reserva, ver evento)
+Print-optimized views	Board reports y financial dashboard con CSS @media print optimizado
+Búsqueda global	Command palette (Cmd+K) para buscar familias, eventos, instalaciones desde cualquier lugar
+
+
+4. Riesgos
+
+Riesgo	Probabilidad	Impacto	Mitigación
+Cambios en design system rompen componentes no migrados	Alta	Alto	Migrar TODO en un solo sprint, no gradualmente
+Aurora Glow en mobile causa jank	Media	Medio	Desactivar animaciones glow en pointer: coarse
+Over-scope — intentar arreglar todo y no entregar nada	Alta	Alto	Priorizar: responsive crítico → glow → accesibilidad → perf
+Hooks centralizados rompen componentes que ya funcionan	Baja	Alto	Testing visual post-migración
+
+
+5. Plan de Implementación Propuesto
+
+Sprint 12A+11F Fusionado — "Silver Tide Complete"
+
+
+Fase 1: Infraestructura (4 archivos nuevos)
+
+1.shared/hooks/useBreakpoint.ts — hook centralizado
+2.shared/styles/responsive.css — tokens de spacing responsive + utility classes
+3.shared/components/ui/GlowButton.tsx — botón con glow recorrido
+4.Extender Card.tsx con props glowColor + glow
+
+Fase 2: Layout y Shared Components (8 archivos)
+5. DashboardLayout.tsx — ya hecho, verificar
+6. Sidebar.tsx — OK, agregar focus-visible universal
+7. Header.tsx — ya hecho, agregar notification dropdown
+8. PageContainer.tsx — ya hecho, integrar responsive tokens
+9. StatCard.tsx — ya hecho, integrar responsive tokens
+10. Table.tsx — ya hecho, verificar mobile card layout alternativo
+11. Modal.tsx — ya hecho, agregar focus trap
+12. global.css — tokens responsive + focus-visible universal + reduced-motion
+
+
+Fase 3: Feature Pages — Forms (3 archivos)
+13. FamilyForm.tsx
+14. EventForm.tsx
+15. GuestRegistration.tsx
+
+
+Fase 4: Feature Pages — Lists (3 archivos)
+16. FamilyList.tsx
+17. GuestList.tsx
+18. DocumentRepository.tsx
+
+
+Fase 5: Feature Pages — Details (3 archivos)
+19. FamilyDetail.tsx
+20. FacilityDetail.tsx
+21. EventDetail.tsx
+
+
+Fase 6: Feature Pages — Dashboards (4 archivos)
+22. FinancialDashboard.tsx
+23. EngagementDashboard.tsx
+24. CommunicationCenter.tsx
+25. ApprovalQueue.tsx
+
+
+Fase 7: Feature Pages — Resto (6 archivos)
+26. BoardReportViewer.tsx
+27. RiskHeatmap.tsx
+28. MiClubLanding.tsx
+29. MyReservations.tsx
+30. SettingsPage.tsx
+31. FamilyAccount.tsx
+
+
+Fase 8: Dashboard sub-components (11 archivos)
+32-42. Todos los componentes de features/dashboard/components/
+
+
+Fase 9: Shared UI (8 archivos)
+43. AIChatWidget.tsx
+44. Badge.tsx, Button.tsx, Card.tsx, Input.tsx
+45. FrostedGlassCard.tsx, Skeleton.tsx, Toast.tsx, EmptyState.tsx
+
+
+Fase 10: QA + cross-check
+46. Verificar todos los archivos no tocados siguen funcionando
+47. Test visual mobile/tablet/desktop de cada módulo
+48. Accesibilidad audit con axe-core
+
+
+
+6. Impacto Esperado
+
+Dimensión	Antes	Después
+Mobile usability	App rota en phones. Calendarios ilegibles. Padding desborda	App 100% funcional en mobile con layout adaptativo
+Premium feel	UI genérica dark-mode. Sin distinción visual	Aurora glow en botones/cards. Animaciones sutiles. Sensación de exclusividad
+Accesibilidad	WCAG ~50% (faltan focus, contrast, touch targets, live regions)	WCAG ~85% AA compliance
+Consistencia	Cada componente con padding/gap ad-hoc	Design tokens centralizados. Patrón único
+Performance	Animaciones en todos los elementos sin optimización	Lazy loading, reduced motion, icono tree-shaking
+Developer experience	Cada componente responsive requiere intervención manual	Hook + tokens = responsive por defecto
+Mantenibilidad	Cambio de spacing requiere tocar 40+ archivos	Cambio de token = app-wide update
+
+
+7. Pendientes Confirmados
+
+Sprint	Feature	Estado
+11D	/operaciones/mantenimiento	Pendiente — necesita backend/src/club_mcp/models/facility_management.py
+11E	/junta/estrategia	Deferido
+
+
+Esperando Aprobación
+
+Necesito que me confirmes:
+
+
+1.¿Aprobás el plan de fusión 12A+11F? — Hacer responsive + glow + accesibilidad en un solo pase
+2.¿Prioridad de fases? — ¿Empezamos por la infraestructura (hooks, tokens, GlowButton) y luego los archivos por orden de batches? ¿O querés que reordene?
+3.¿Algo que quieras agregar o quitar del scope? — El search global (Cmd+K), el notification dropdown en header, y los page transitions están en la lista como "nice to have". ¿Los incluimos o los dejamos para después?
+4.¿Me pasás los archivos del Batch 2? — FamilyForm.tsx, EventForm.tsx, GuestRegistration.tsx para cuando estemos en Fase 3

@@ -1,0 +1,1126 @@
+# VISIÓN AI COMPLETA — Fase 14c, 14d, 15 Extendida
+
+Documentación completa de toda la lógica de pensamiento, propuestas, arquitectura y detalles de implementación para las fases restantes del roadmap AI del Castillo Country Club.
+
+---
+
+## CONTEXTO ESTRATÉGICO — El Cambio de Paradigma
+
+La propuesta original de Fase 14b era "Print/PDF + Export" genérico. Lo que construimos fue "Export Intelligence" — un sistema donde la AI genera contenido inteligente antes de exportar. Ese mismo principio se aplica a todo lo que sigue.
+
+**La pregunta guía para cada fase no es "¿cómo mostramos datos?" sino "¿cómo convertimos datos en inteligencia que la junta no puede ignorar?"**
+
+La diferencia entre un PDF con tablas y un documento que cambia la dirección del club es **la capa de razonamiento AI entre los datos y el papel**.
+
+---
+
+## MAPA DE IMPLEMENTACIÓN PROGRESIVA
+
+| Etapa | Fase | Qué se entrega | Impacto |
+|-------|------|----------------|---------|
+| 1. Fundación AI | **14b** ✅ | Export/PDF + Narrative Engine + Print CSS + Decision Document | La junta recibe briefings narrativos en vez de tablas crudas |
+| 2. Inteligencia de Socios | **14c** ⬜ | Member Health Score + Segmentation + LTV Predictivo | El club SABE quién está en riesgo y POR QUÉ antes de que se vayan |
+| 3. Decisiones Informadas | **14d** ⬜ | Decision Cockpit + Campaign Generator | La junta puede simular cualquier decisión y recibir análisis en minutos |
+| 4. Operaciones Autónomas | **15 ext** ⬜ | Daily Briefing + Compliance Guardian + Smart Schedule | El club opera proactivamente en vez de reactivamente |
+
+---
+
+# ETAPA 2: Fase 14c — Member Intelligence Hub
+
+## El Problema Real
+
+El club sabe cuánto paga cada socio. No sabe POR QUÉ un socio dejó de venir, qué experiencia lo haría renovar entusiasmado, ni qué servicio adicional pagaría.
+
+## La Solución AI
+
+Un sistema de inteligencia de socios que cruza TODAS las fuentes de datos:
+
+```
+Datos transaccionales     →  Patrones de gasto, frecuencia, estacionalidad
+Datos de reservas         →  Qué actividades prefiere, cuándo visita, con quién
+Datos de huéspedes        →  Red social del socio (¿trae gente nueva?)
+Datos de comunicación     →  Abre emails? Responde? Se queja? Elogia?
+Datos operativos          →  Usa el gym? La piscina? El restaurante?
+```
+
+## 4 Herramientas Concretas
+
+### 14c-1: Member Health Score — "El semáforo de retención"
+
+**No es el churn risk simple que ya tenemos.** Es un score compuesto que mide 5 dimensiones:
+
+| Dimensión | Métrica | Peso |
+|-----------|---------|------|
+| Engagement | Frecuencia de visita últimos 90d vs. histórico | 30% |
+| Financiero | Tendencia de gasto, aging de pagos | 25% |
+| Social | Huéspedes traídos, eventos asistidos | 20% |
+| Comunicacional | Interacción con comunicaciones del club | 15% |
+| Satisfacción | Quejas, elogios, NPS implícito | 10% |
+
+**Visualización propuesta:** Cada familia en un "reloj" radial (spider/radar chart) con las 5 dimensiones.
+
+- Una familia sana es un pentágono grande y equilibrado
+- Una familia en riesgo es un pentágono deforme y pequeño
+- Colores por dimensión: engagement=teal, financiero=gold, social=emerald, comunicación=silver, satisfacción=amber
+- Click en cada dimensión → detail card con métricas específicas
+- Health Score global como número grande con semáforo (verde >70, amarillo 40-70, rojo <40)
+
+**Tool MCP propuesta:** `members_health_score`
+
+```typescript
+// Contract shape
+interface HealthScoreDimension {
+  name: string;           // "Engagement", "Financiero", etc.
+  score: number;          // 0-100
+  weight: number;         // 0.30, 0.25, etc.
+  metrics: Array<{
+    name: string;
+    value: number;
+    trend: "up" | "down" | "stable";
+    benchmark: number;    // promedio del club
+  }>;
+}
+
+interface MemberHealthScoreData {
+  families: Array<{
+    family_id: string;
+    family_name: string;
+    tier: string;
+    overall_score: number;           // 0-100 weighted
+    grade: "A" | "B" | "C" | "D" | "F";
+    dimensions: HealthScoreDimension[];
+    trend_30d: number;               // cambio últimos 30 días
+    trend_90d: number;               // cambio últimos 90 días
+    ai_summary: string;              // resumen narrativo por familia
+    recommended_action: string;
+    risk_level: "low" | "moderate" | "high" | "critical";
+  }>;
+  club_average: number;
+  distribution: {
+    grade_a: number;  // count
+    grade_b: number;
+    grade_c: number;
+    grade_d: number;
+    grade_f: number;
+  };
+  top_risk: string[];  // family_ids en riesgo crítico
+}
+```
+
+**Aprobación:** AUTO (data, no mutation)
+
+**Componente propuesto:** `MemberHealthScorePanel.tsx`
+
+```
+Layout:
+├── Club overview: health score promedio + distribución por grade (bar chart horizontal)
+├── Family cards grid (desktop) / list (mobile, Rule #21)
+│   ├── Score grande con semáforo color
+│   ├── 5 dimensiones como mini bars
+│   ├── Tier badge + trend arrow
+│   └── Click → detail card con:
+│       ├── Radar chart 5 dimensiones
+│       ├── Métricas específicas por dimensión
+│       ├── AI summary narrativo
+│       └── Recommended action con botón
+├── Top Risk section: familias con score <40, ordenadas por severidad
+└── AI Commentary box con insights del club completo
+```
+
+### 14c-2: Micro-Segmentation Engine — "Clusters de comportamiento"
+
+**El problema:** El club tiene 3 tiers (Básico/Premium/VIP) que no reflejan cómo los socios realmente USAN el club.
+
+**La solución:** La AI descubre **clusters naturales** de comportamiento:
+
+```
+"Los Deportivos"     → Usan canchas 4x/semana, ignoran eventos culturales
+                       Ticket promedio: ₡45K/mes en deporte, ₡8K en F&B
+                       Visitas: 16/mes, fines de semana + martes/jueves
+
+"Los Sociales"       → Rara vez deporte, asisten a TODOS los eventos
+                       Ticket promedio: ₡12K deporte, ₡68K en F&B + eventos
+                       Visitas: 8/mes, viernes/sábados noche
+                       Traen 3.2 huéspedes promedio/mes
+
+"Los Ejecutivos"     → Visita fines de semana, alto gasto en restaurante
+                       Ticket promedio: ₡85K/mes en F&B premium
+                       Visitas: 4/mes, viernes a domingo
+                       Baja frecuencia pero alto ticket
+
+"Los Familiares"     → Viernes y sábados con niños
+                       Ticket promedio: ₡52K/mes, pool + kids club
+                       Visitas: 6/mes, casi exclusivamente fines de semana
+                       Referidos: 2.8 nuevos socios potenciales/mes
+
+"Los Invisibles"     → Pagan pero no vienen
+                       Ticket promedio: ₡5K/mes (solo cuota)
+                       Visitas: 0.8/mes
+                       Churn inminente si no se interviene
+```
+
+**Cada segmento recibe:**
+- Comunicaciones personalizadas (diferente tono, diferente canal)
+- Recomendaciones de actividades específicas
+- Pricing óptimo por segmento
+- Estrategia de retención específica
+
+**Tool MCP propuesta:** `members_segmentation`
+
+```typescript
+// Contract shape
+interface MemberSegment {
+  segment_id: string;
+  name: string;                    // "Los Deportivos", etc.
+  description: string;
+  family_count: number;
+  avg_monthly_spend: number;
+  avg_visits_per_month: number;
+  avg_guests_per_month: number;
+  top_activities: string[];
+  preferred_times: string[];       // "mañana", "tarde", "noche"
+  preferred_days: string[];        // "lunes", "viernes", etc.
+  churn_risk_avg: number;
+  communication_preference: "email" | "whatsapp" | "phone" | "in_person";
+  growth_potential: "high" | "medium" | "low";
+  ai_strategy: string;             // estrategia recomendada por segmento
+}
+
+interface MemberSegmentationData {
+  segments: MemberSegment[];
+  families: Array<{
+    family_id: string;
+    family_name: string;
+    segment_id: string;
+    segment_fit_score: number;     // qué tan bien encaja (0-100)
+    secondary_segment?: string;    // overlap opcional
+  }>;
+  total_families: number;
+  silhouette_score: number;        // calidad del clustering (0-1)
+  insights: string[];              // insights generales del análisis
+}
+```
+
+**Aprobación:** AUTO AI
+
+**Componente propuesto:** `MemberSegmentationPanel.tsx`
+
+```
+Layout:
+├── Segment overview: cards con nombre, count, avg spend, churn risk
+│   Cada card con color identificativo y icono
+├── Segment detail (click en card):
+│   ├── Radar chart comparativo (este segmento vs promedio club)
+│   ├── Top activities + preferred times (bar chart)
+│   ├── Family list perteneciente al segmento
+│   ├── AI strategy narrativo
+│   └── Communication preference + recommended channel
+├── Family-to-segment mapping:
+│   ├── Tabla sortable con segment badge por familia
+│   ├── Filter por segmento (chips toggleables)
+│   └── "Segment fit score" como progress bar
+└── Cross-segment insights:
+    "8 socios del cluster Deportivos no han probado pádel"
+    "Los Ejecutivos gastan 3x más los viernes que el promedio"
+```
+
+### 14c-3: Predictive LTV — "El valor real de cada socio"
+
+**No es lo que un socio HA pagado. Es lo que PAGARÁ si lo retenemos los próximos 5 años.**
+
+Modelado por:
+- Tier actual + probabilidad de upgrade
+- Patrón de gasto incremental por actividad nueva
+- Tasa de referidos estimada
+- Riesgo de churn
+
+**La junta puede preguntar:** *"¿Cuánto vale retener a los 10 socios en riesgo?"* y la AI responde con el LTV proyectado vs. costo de retención.
+
+**Tool MCP propuesta:** `members_lifetime_value`
+
+```typescript
+// Contract shape
+interface FamilyLTV {
+  family_id: string;
+  family_name: string;
+  tier: string;
+  current_annual_value: number;
+  projected_5y_ltv: number;
+  ltv_breakdown: {
+    base_membership: number;         // cuota proyectada 5 años
+    incremental_spend: number;       // gasto adicional estimado
+    referral_value: number;          // valor de referidos esperados
+    upgrade_probability: number;     // 0-1
+    upgrade_value: number;           // revenue adicional si upgrade
+  };
+  churn_probability: number;         // 0-1
+  churn_cost: number;               // LTV perdido si churnea
+  retention_roi: number;            // costo_retención vs LTV_saved
+  recommended_retention_budget: number;
+  ai_insight: string;
+}
+
+interface MemberLTVData {
+  families: FamilyLTV[];
+  club_total_ltv: number;
+  avg_ltv: number;
+  ltv_by_tier: Record<string, number>;
+  top_value_families: string[];    // top 10 by LTV
+  top_risk_value_families: string[]; // highest churn_cost
+  total_churn_exposure: number;    // sum of churn_cost for at-risk
+  retention_budget_recommendation: number;
+}
+```
+
+**Aprobación:** AUTO AI
+
+**Componente propuesto:** `MemberLTVPanel.tsx`
+
+```
+Layout:
+├── Club LTV Overview:
+│   ├── Total LTV proyectado (5 años) — número grande
+│   ├── LTV por tier (stacked bar chart)
+│   ├── Churn exposure total (monto en riesgo)
+│   └── Retention budget recommendation
+├── Family LTV Table (desktop) / Cards (mobile):
+│   ├── Sortable: LTV, churn probability, retention ROI
+│   ├── LTV como barra horizontal proporcional
+│   ├── Churn probability como semáforo
+│   ├── "Retention ROI" como badge (alto ROI = acción prioritaria)
+│   └── Click → detail card con:
+│       ├── LTV breakdown (pie chart: base + incremental + referral + upgrade)
+│       ├── Churn cost vs retention budget
+│       ├── AI insight narrativo
+│       └── Botón "Contactar" (simulado)
+├── Top Value at Risk:
+│   Top 10 familias con mayor churn_cost
+│   "Si perdemos estas 10 familias, perdemos ₡X en LTV"
+└── Retention Simulator:
+    Slider: "¿Qué % de churn podemos prevenir?"
+    → Impacto en LTV total del club
+```
+
+### 14c-4: Churn Prevention — "Estrategia personalizada de retención"
+
+**Para cada familia en riesgo, la AI genera una estrategia específica basada en:**
+- Por qué están en riesgo (engagement bajo, quejas, aging, etc.)
+- Qué los motiva (historial de actividades, eventos asistidos, etc.)
+- Qué canal usar (email personal, llamada, invitación presencial)
+- Cuándo contactar (timing óptimo basado en patrones de visita)
+- Qué ofrecer (descuento, experiencia, reconocimiento)
+
+**Tool MCP propuesta:** `members_churn_prevention`
+
+```typescript
+// Contract shape
+interface ChurnPreventionStrategy {
+  family_id: string;
+  family_name: string;
+  churn_risk: number;               // 0-100
+  risk_factors: Array<{
+    factor: string;
+    severity: "high" | "medium" | "low";
+    detail: string;
+  }>;
+  prevention_plan: {
+    primary_action: string;          // "Llamada personal del gerente"
+    channel: "email" | "whatsapp" | "phone" | "in_person";
+    timing: string;                  // "Esta semana", "Antes del viernes"
+    offer: string;                   // "Cena de bienvenida sin costo"
+    estimated_cost: number;          // costo de la acción
+    estimated_retention_probability: number; // 0-1
+    roi: number;                     // (ltv_saved - cost) / cost
+  };
+  historical_context: string;        // "Familia similar (Vargas Q.) churneó en 2024..."
+  escalation_needed: boolean;
+  escalation_reason?: string;
+}
+
+interface ChurnPreventionData {
+  strategies: ChurnPreventionStrategy[];
+  summary: {
+    total_at_risk: number;
+    total_ltv_at_risk: number;
+    total_prevention_cost: number;
+    expected_saves: number;
+    expected_roi: number;
+  };
+  priority_order: string[];  // family_ids en orden de acción
+}
+```
+
+**Aprobación:** SEMI (la AI sugiere, el staff ejecuta)
+
+**Componente propuesto:** `ChurnPreventionPanel.tsx`
+
+```
+Layout:
+├── Summary: X familias en riesgo, ₡Y LTV en juego, Z% expected saves
+├── Priority list (ordenada por ROI):
+│   Cada familia como card expandible:
+│   ├── Risk score + tier badge + churn probability
+│   ├── Risk factors como tags con severity colors
+│   ├── Prevention plan:
+│   │   ├── Acción recomendada (grande, destacada)
+│   │   ├── Canal + timing
+│   │   ├── Oferta específica
+│   │   ├── Costo estimado vs LTV saved
+│   │   └── ROI como badge (verde si >3x, amarillo si 1-3x, rojo si <1x)
+│   ├── Historical context narrativo
+│   └── Botones: "Ejecutar" / "Posponer" / "Escalar a Junta"
+├── Bulk actions:
+│   "Contactar todos los alta prioridad" → genera lista de contactos
+│   "Exportar plan de retención" → usa ExportButton
+└── AI Commentary: patrones generales de churn, recomendaciones sistémicas
+```
+
+### Tools MCP Resumen 14c
+
+| # | Tool | Server | Tipo | Aprobación | Backend |
+|---|------|--------|------|------------|---------|
+| 1 | `members_health_score` | member_engagement | Data auto | AUTO | ⬜ mock-only |
+| 2 | `members_segmentation` | member_engagement | AI auto | AUTO | ⬜ mock-only |
+| 3 | `members_lifetime_value` | member_engagement | AI auto | AUTO | ⬜ mock-only |
+| 4 | `members_churn_prevention` | member_engagement | AI on-demand | SEMI | ⬜ mock-only |
+
+### Bloques Propuestos 14c
+
+| Bloque | Contenido | Dependencia |
+|--------|-----------|-------------|
+| B0 | Contracts + factories + registry para 4 tools de members | Ninguna |
+| B1 | MemberHealthScorePanel (radar chart + score cards + family list) | B0 |
+| B2 | MemberSegmentationPanel (clusters + segment detail + family mapping) | B0 |
+| B3 | MemberLTVPanel + ChurnPreventionPanel + integración en hub | B1, B2 |
+
+### Ubicación en la UI (recomendación)
+
+**Módulo independiente:** `features/members/` → `MemberIntelligenceDashboard.tsx`
+- Razón: Member Intelligence es suficientemente grande para justificar su propio espacio
+- No sub-tab de FinancialIntelligence (no es puramente financiero)
+- No sub-tab de EngagementDashboard (es más profundo que engagement)
+- Nuevo entry en DetailTabs del sidebar
+
+Alternativa considerada: Sub-tab en EngagementDashboard. Descartada porque la inteligencia de socios cruza finanzas + engagement + operaciones — no pertenece a un solo módulo.
+
+---
+
+# ETAPA 3: Fase 14d — Decisiones Informadas
+
+## El Problema Real
+
+La junta dice *"¿y si subimos la cuota un 8%?"* y nadie sabe la respuesta real. Tienen que esperar al próximo ciclo para medir el impacto.
+
+## La Solución AI
+
+Dos herramientas transformadoras:
+
+### 14d-1: Decision Cockpit — "El Simulador de Consecuencias"
+
+Un panel donde la junta puede plantear **cualquier decisión** en lenguaje natural y el sistema:
+
+1. Modela el escenario con datos reales del club
+2. Simula consecuencias en cascada (financieras, membership, operativas, reputacionales)
+3. Muestra trade-offs visuales con probabilidades
+4. Genera un documento formal de "Análisis de Decisión" listo para archivar
+
+**Escenarios que la junta podría simular:**
+
+| Decisión | Lo que la AI modela |
+|----------|-------------------|
+| "Subir cuota 8%" | Impacto en churn por tier, recaudación neta, comparativa con histórico, probabilidad de objeciones de junta |
+| "Abrir el club a bodas externas" | Revenue adicional, impacto en exclusividad percibida, costos operativos, conflictos con eventos de socios |
+| "Cerrar la piscina 3 meses para remodelación" | Ahorro en mantenimiento, impacto en satisfacción, timeline óptimo (temporada baja), comunicación necesaria |
+| "Agregar cancha de pádel" | CAPEX, ROI proyectado, demanda estimada por segmento, impacto en retención |
+| "Cambiar proveedor de catering" | Ahorro, riesgo de calidad, cláusulas contractuales, período de transición |
+
+**Visualización innovadora — Decision Tree Interactivo:**
+
+```
+                    ┌─── Escenario Optimista (30%) → +₡2.4M revenue, -2% churn
+                    │
+"Subir cuota 8%" ───┼─── Escenario Base (50%) → +₡1.8M revenue, +3% churn
+                    │
+                    └─── Escenario Pesimista (20%) → +₡0.9M revenue, +8% churn
+                    
+Net Expected Value: +₡1.65M
+Risk Score: MEDIO (6.2/10)
+Recomendación: Ejecutar con comunicación personalizada a Top 10 familias primero
+```
+
+**Interacción:**
+1. Usuario escribe la decisión en lenguaje natural en un textarea
+2. La AI interpreta la decisión y la clasifica (financiera, operativa, membership, etc.)
+3. Genera 3 escenarios automáticamente (optimista, base, pesimista)
+4. Cada escenario muestra:
+   - Impacto financiero (revenue, gastos, neto, cash flow)
+   - Impacto en membership (churn estimado, satisfacción)
+   - Impacto operativo (staff, instalaciones, timeline)
+   - Probabilidad estimada
+5. El usuario puede ajustar parámetros (sliders) para explorar variaciones
+6. Botón "Generar Documento de Decisión" → exporta usando DecisionDocument de 14b
+
+**Tool MCP propuesta:** `finance_decision_simulate`
+
+```typescript
+// Contract shape
+interface DecisionScenario {
+  name: string;           // "Optimista", "Base", "Pesimista"
+  probability: number;    // 0-1
+  financial_impact: {
+    revenue_change: number;
+    expense_change: number;
+    net_change: number;
+    cash_flow_12m_change: number;
+  };
+  membership_impact: {
+    churn_change_pct: number;
+    satisfaction_change: number;
+    families_affected: number;
+  };
+  operational_impact: {
+    staff_change: number;
+    timeline_months: number;
+    facility_changes: string[];
+  };
+}
+
+interface DecisionSimulateData {
+  decision_text: string;
+  decision_category: string;
+  scenarios: DecisionScenario[];
+  expected_value: {
+    revenue: number;
+    net: number;
+    churn_risk: number;
+  };
+  risk_score: number;          // 0-10
+  risk_factors: string[];
+  recommendation: string;
+  historical_precedent: string; // "En 2023, el club subió 5% y el churn fue 2.1%"
+  ai_commentary: string;
+  confidence: number;
+}
+```
+
+**Aprobación:** AUTO AI (es simulación, no ejecuta nada)
+
+**Componente propuesto:** `DecisionCockpit.tsx`
+
+```
+Layout:
+├── Input section:
+│   ├── Textarea grande: "¿Qué decisión quiere analizar?"
+│   ├── Quick presets: chips con decisiones comunes
+│   │   ("Subir cuota", "Nuevo evento", "Cierre mantenimiento", etc.)
+│   └── Botón "Analizar" con loading state
+├── Results:
+│   ├── Decision classification badge
+│   ├── Decision Tree visual (3 branches con probabilidades)
+│   │   Cada branch expandible con detail cards
+│   ├── Expected Value summary (3 KPIs)
+│   ├── Risk Score gauge (0-10)
+│   ├── Historical precedent box
+│   ├── AI Commentary con border-l gold
+│   └── Risk factors list
+├── Parameter Explorer:
+│   Sliders para ajustar variables del escenario
+│   → Re-simula en tiempo real (debounced)
+└── Export:
+    ExportButton → "Documento de Decisión" ya conecta con DecisionDocument de 14b
+    Pero ahora DecisionDocument fetcha finance_decision_simulate además de los 3 existentes
+```
+
+### 14d-2: Generative Communications — "Marketing que se Escribe Solo"
+
+**Tres sub-herramientas:**
+
+#### a) Comunicación Hiper-Personalizada
+
+La AI conoce a cada familia (Member Intelligence de 14c) y genera mensajes **únicos por socio**:
+
+```
+GENÉRICO (hoy):
+"Estimado socio, lo invitamos al Día de la Familia el 15 de junio..."
+
+AI-GENERADO (para la familia Castillo Montero):
+"Doña María, sabemos que los viernes son su día favorito en el club. 
+Este sábado 15 tenemos algo especial: el Día de la Familia con 
+degustación de vinos chilenos (recuerdo que disfrutó la cata de marzo) 
+y actividades para los nietos en el kids club. Como siempre, 
+tenemos reservada su mesa preferida en la terraza. ¿Confirmamos 
+para 6 personas?"
+
+AI-GENERADO (para la familia Vargas Rojas — en riesgo de churn):
+"Don Carlos, ha pasado un tiempo desde su última visita y lo 
+extrañamos. Hemos renovado el menú del restaurante con el nuevo 
+chef y queremos invitarlo a una cena privada de bienvenida. 
+Sin costo, por supuesto. ¿Le gustaría el viernes o el sábado?"
+```
+
+**Esto no es un email merge.** Es un agente de AI que:
+1. Analiza el historial de la familia
+2. Detecta qué los motiva
+3. Genera el mensaje con el tono correcto
+4. Sugiere el canal (email, WhatsApp, llamada personal)
+5. Propone el timing óptimo
+6. Escala a HITL si el socio es high-value o high-risk
+
+**Tool MCP propuesta:** `communications_generate_personalized`
+
+```typescript
+interface PersonalizedMessage {
+  family_id: string;
+  family_name: string;
+  segment: string;
+  channel: "email" | "whatsapp" | "phone" | "in_person";
+  subject?: string;           // para email
+  body: string;
+  tone: "formal" | "casual" | "warm" | "urgent";
+  timing: string;             // "Hoy", "Viernes 6pm", "Próxima semana"
+  personalization_elements: string[]; // qué datos usó para personalizar
+  escalation_needed: boolean;
+  approval_status: "auto" | "needs_review";
+}
+```
+
+#### b) Campaign Generator
+
+El staff describe la intención en lenguaje natural:
+
+> *"Queremos promocionar la nueva cancha de pádel y que se inscriban al menos 30 socios en junio"*
+
+La AI genera:
+- 3 versiones del email (una por segmento: deportivos, sociales, familiares)
+- Copy para WhatsApp (versión corta)
+- Texto para el display del lobby
+- Landing page draft para /mi-club
+- Métricas de éxito esperadas
+- Schedule de envío óptimo por segmento
+
+**Tool MCP propuesta:** `communications_campaign_generate`
+
+```typescript
+interface CampaignDraft {
+  campaign_name: string;
+  objective: string;
+  target_segments: string[];
+  channels: Array<{
+    channel: "email" | "whatsapp" | "lobby_display" | "mi_club";
+    content: string;
+    variant_for_segment?: string;
+  }>;
+  schedule: {
+    send_date: string;
+    send_time_per_segment: Record<string, string>;
+  };
+  expected_metrics: {
+    open_rate_pct: number;
+    response_rate_pct: number;
+    conversion_target: number;
+    conversion_unit: string;
+  };
+  ai_commentary: string;
+}
+```
+
+#### c) Sentiment Monitor
+
+Análisis continuo de todas las comunicaciones entrantes:
+- Emails de socios → sentimiento + topic classification
+- Quejas → auto-categorizadas + prioridad + sugerencia de respuesta
+- Elogios → detectados y archivados para testimonios
+- Tendencias → "3 socios del cluster 'Deportivos' mencionaron que la cancha de tenis necesita mantenimiento"
+
+**Tool MCP propuesta:** `communications_sentiment_analyze`
+
+### Tools MCP Resumen 14d
+
+| # | Tool | Server | Tipo | Aprobación | Backend |
+|---|------|--------|------|------------|---------|
+| 1 | `finance_decision_simulate` | finance | AI on-demand | AUTO | ⬜ mock-only |
+| 2 | `communications_generate_personalized` | communications | AI on-demand | SEMI | ⬜ mock-only |
+| 3 | `communications_campaign_generate` | communications | AI on-demand | SEMI | ⬜ mock-only |
+| 4 | `communications_sentiment_analyze` | communications | AI auto | AUTO | ⬜ mock-only |
+
+### Bloques Propuestos 14d
+
+| Bloque | Contenido | Dependencia |
+|--------|-----------|-------------|
+| B0 | Contracts + factories + registry para 4 tools | Ninguna |
+| B1 | DecisionCockpit (input + tree + scenarios + parameter explorer) | B0 |
+| B2 | PersonalizedCommunication + CampaignGenerator | B0 |
+| B3 | SentimentMonitor + integración en hubs existentes | B1, B2 |
+
+### Impacto en DecisionDocument de 14b
+
+Cuando 14d esté lista, `DecisionDocument.tsx` se actualiza para fetchar `finance_decision_simulate` como 4ta fuente de datos. El documento combinado pasa de 3 a 4 secciones:
+1. Situación (narrative_generate)
+2. Escenarios (scenario_simulate)
+3. Resiliencia (stress_test)
+4. **Análisis de Decisión** (decision_simulate) ← NUEVA
+
+---
+
+# ETAPA 4: Fase 15 Extendida — Operaciones Autónomas
+
+## El Problema Real
+
+El staff opera reactivamente. Se entera de problemas cuando un socio se queja. Las oportunidades se pierden porque nadie conectó los puntos.
+
+## La Solución AI
+
+Un centro de operaciones inteligente que **proactivamente** alerta y recomienda:
+
+### 15ext-1: Daily Briefing Automático
+
+Cada mañana a las 6am, el gerente recibe:
+
+```
+BRIEFING DIARIO — 24 Mayo 2026
+
+🟢 OPERACIONES: Todo normal. 47 reservas hoy (promedio: 42).
+   Staff completo. Temperatura piscina: 28°C.
+
+🟡 ATENCIONES:
+   • Familia Quesada Vargas — reserva cancelada 3ra vez este mes.
+     Patrón sugiere desinterés. Sugerencia: llamada personal hoy.
+   • Catering evento junta directiva sábado — confirmar menú.
+     2 asistentes reportaron alergia a mariscos (acta anterior).
+   • Cancha de tenis #3 — 2 reportes de iluminación deficiente.
+     Programar mantenimiento antes del torneo del 28.
+
+🔴 URGENTE:
+   • Aging >60 días: ₡2.1M en 4 familias. Priorizar cobro.
+   • Invitado de ayer (Sr. Williams, huésped de Montero Quirós) 
+     tiene estacionamiento irregular — verificar cámara.
+
+OPORTUNIDAD:
+   • 8 socios del cluster "Deportivos" no han probado pádel.
+     Campaña targeted podría generar ₡480K en lecciones.
+   • Mayo es el mes más bajo de uso del restaurante.
+     Propuesta: "Martes de Parrilla" — margen estimado 65%.
+```
+
+**El briefing cruza TODOS los módulos:** finance + membership + facilities + events + communications + guests + wellness.
+
+**Tool MCP propuesta:** `operations_daily_briefing`
+
+```typescript
+interface DailyBriefingSection {
+  id: string;
+  type: "operations" | "attention" | "urgent" | "opportunity";
+  icon: string;              // emoji o referencia a Lucide
+  title: string;
+  items: Array<{
+    text: string;
+    source_module: string;   // "finance", "membership", etc.
+    action_suggested?: string;
+    priority: "high" | "medium" | "low";
+  }>;
+}
+
+interface DailyBriefingData {
+  date: string;
+  generated_at: string;
+  sections: DailyBriefingSection[];
+  metrics_today: {
+    reservations: number;
+    reservations_vs_avg: number;
+    staff_on_duty: number;
+    events_today: number;
+    guests_expected: number;
+  };
+  ai_summary: string;       // 2-3 oraciones del estado general
+}
+```
+
+**Componente propuesto:** `DailyBriefingPanel.tsx`
+
+```
+Layout:
+├── Header: fecha + "Generado: 6:00am" + botón "Regenerar"
+├── Quick metrics strip (4 KPIs de hoy)
+├── Sections con color coding:
+│   🟢 Operaciones (verde) — todo normal
+│   🟡 Atenciones (amarillo) — items que requieren gestión hoy
+│   🔴 Urgente (rojo) — acción inmediata necesaria
+│   💡 Oportunidades (gold) — revenue/engagement potencial
+├── Cada item expandible con más detail + acción sugerida
+├── AI summary narrativo
+└── ExportButton → PDF del briefing diario
+```
+
+### 15ext-2: Compliance Guardian
+
+Monitoreo automático de:
+
+| Categoría | Qué monitorea | Alerta |
+|-----------|--------------|--------|
+| Fiscal | Reportes para Hacienda con deadline approaching | 30/15/7 días antes |
+| Laboral | Reportes MTSS, planilla, aguinaldos | Fechas límite |
+| Seguridad | Registro de huéspedes completo | Huéspedes sin registrar |
+| Contractual | Contratos de proveedores por vencer | 60/30/15 días antes |
+| Seguros | Pólizas de seguro | 90/60/30 días antes |
+| Governance | Actas de junta que necesitan firma | Pendientes > 7 días |
+| Regulatorio | Licencias y permisos | Fechas de renovación |
+
+**Tool MCP propuesta:** `operations_compliance_check`
+
+```typescript
+interface ComplianceItem {
+  id: string;
+  category: "fiscal" | "laboral" | "seguridad" | "contractual" | "seguros" | "governance" | "regulatorio";
+  title: string;
+  description: string;
+  deadline: string;
+  days_remaining: number;
+  status: "on_track" | "at_risk" | "overdue";
+  responsible: string;
+  action_required: string;
+  priority: "high" | "medium" | "low";
+}
+
+interface ComplianceData {
+  items: ComplianceItem[];
+  summary: {
+    total_items: number;
+    on_track: number;
+    at_risk: number;
+    overdue: number;
+    next_deadline: string;
+    next_deadline_days: number;
+  };
+  ai_commentary: string;
+}
+```
+
+### 15ext-3: Smart Scheduling
+
+La AI sugiere la programación óptima de:
+- **Eventos:** cuándo hay máxima probabilidad de asistencia (basado en patrones históricos + segmentación)
+- **Mantenimiento:** cuándo hay mínima demanda (basado en calendario estacional + reservas)
+- **Staff scheduling:** ajustado a demanda predicha (weather + eventos + tendencias)
+- **Pricing dinámico:** actividades con precio ajustado a temporada alta/baja
+
+**Tool MCP propuesta:** `operations_smart_schedule`
+
+```typescript
+interface ScheduleSuggestion {
+  type: "event" | "maintenance" | "staff" | "pricing";
+  title: string;
+  description: string;
+  suggested_date: string;
+  suggested_time?: string;
+  rationale: string;
+  confidence: number;
+  estimated_impact: number;
+  conflicting_items: string[];
+}
+
+interface SmartScheduleData {
+  suggestions: ScheduleSuggestion[];
+  demand_forecast: Array<{
+    date: string;
+    predicted_demand: number;     // 0-100
+    factors: string[];
+  }>;
+  optimal_windows: Array<{
+    activity_type: string;
+    best_dates: string[];
+    worst_dates: string[];
+  }>;
+}
+```
+
+### Tools MCP Resumen 15ext
+
+| # | Tool | Server | Tipo | Aprobación | Backend |
+|---|------|--------|------|------------|---------|
+| 1 | `operations_daily_briefing` | (nuevo server "operations" o executive_dashboard) | AI auto | AUTO | ⬜ mock-only |
+| 2 | `operations_compliance_check` | (mismo server) | Data auto | AUTO | ⬜ mock-only |
+| 3 | `operations_smart_schedule` | (mismo server) | AI auto | AUTO | ⬜ mock-only |
+
+### Bloques Propuestos 15ext
+
+| Bloque | Contenido | Dependencia |
+|--------|-----------|-------------|
+| B0 | Contracts + factories + registry para 3 tools de operations | Ninguna |
+| B1 | DailyBriefingPanel (secciones con color coding + metrics) | B0 |
+| B2 | ComplianceGuardian (timeline + alerts + actions) | B0 |
+| B3 | SmartScheduler (demand forecast + suggestions + pricing) | B1, B2 |
+
+### Ubicación en la UI
+
+**Nuevo módulo:** `features/operations/` → `OperationsDashboard.tsx`
+- Opción A: Entry en el sidebar como módulo independiente
+- Opción B: Sub-module dentro del ExecutiveDashboard existente
+
+Mi recomendación: **Opción A** — las operaciones son el día a día del club, merecen su propio espacio accesible desde el sidebar.
+
+---
+
+# VISIÓN INTEGRADA — Cómo se Conecta Todo
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CASTILLO AI PLATFORM                         │
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │   MEMBER      │  │  FINANCIAL   │  │   OPERATIONS         │  │
+│  │ INTELLIGENCE  │──│ INTELLIGENCE │──│   CENTER             │  │
+│  │   (14c)       │  │   (14/14b)   │  │     (15ext)          │  │
+│  │              │  │              │  │                      │  │
+│  │ Health Score │  │ Narrative    │  │ Daily Briefing       │  │
+│  │ Segmentation │  │ Decision     │  │ Smart Schedule       │  │
+│  │ LTV Predict  │  │ Cockpit (14d)│  │ Compliance           │  │
+│  │ Churn Prev.  │  │ Stress Test  │  │                      │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘  │
+│         │                 │                      │              │
+│         └────────┬────────┴──────────────────────┘              │
+│                  │                                              │
+│         ┌───────▼──────────┐                                   │
+│         │   GENERATIVE      │                                   │
+│         │   COMMUNICATIONS  │                                   │
+│         │      (14d)        │                                   │
+│         │                   │                                   │
+│         │  Personalized Msg │                                   │
+│         │  Campaign Gen     │                                   │
+│         │  Sentiment Mon.   │                                   │
+│         └───────┬───────────┘                                   │
+│                 │                                               │
+│         ┌───────▼───────────┐                                   │
+│         │   EXPORT           │                                   │
+│         │   INTELLIGENCE     │                                   │
+│         │      (14b) ✅      │                                   │
+│         │                    │                                   │
+│         │  Narrative Engine  │                                   │
+│         │  Decision Doc      │                                   │
+│         │  Print/CSV/Excel   │                                   │
+│         └────────────────────┘                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Flujo de datos entre módulos:**
+
+```
+Member Intelligence (14c)
+  ├── Health Score → alimenta → Narrative Engine (14b) como sección "Membresía"
+  ├── Segmentation → alimenta → Campaign Generator (14d) para targeting
+  ├── LTV → alimenta → Decision Cockpit (14d) para modelar impacto de cambios
+  └── Churn Prevention → alimenta → Daily Briefing (15ext) como alertas
+
+Financial Intelligence (14/14b/14d)
+  ├── Narrative → se exporta via ExportButton (14b)
+  ├── Decision Cockpit → se exporta via DecisionDocument (14b)
+  └── Scenario Simulate → alimenta → Daily Briefing (15ext) como oportunidades
+
+Operations (15ext)
+  ├── Daily Briefing → incluye alertas de Compliance Guardian
+  ├── Smart Schedule → sugiere timing para Campaign Generator (14d)
+  └── Compliance → alertas automáticas al gerente
+
+Communications (14d)
+  ├── Personalized Messages → usan Health Score + Segmentation de (14c)
+  ├── Campaigns → usan Segmentation para targeting
+  └── Sentiment → alimenta Health Score como dimensión de satisfacción
+```
+
+---
+
+# ARQUITECTURA TÉCNICA COMPARTIDA
+
+## Pattern: Context Engineering para Tools AI
+
+Para que las respuestas de la AI sean realmente útiles y no texto genérico, cada tool de AI necesita **context engineering** — alimentar al modelo con los datos correctos de la forma correcta:
+
+```
+Prompt Context Structure (aplica a TODAS las tools AI):
+├── Club Profile (estático)
+│   ├── Nombre, ubicación, fundación
+│   ├── Tiers y pricing actual
+│   └── Amenidades y servicios
+│
+├── Module-Specific Data (período seleccionado)
+│   ├── Financial: revenue, expenses, cash flow, aging
+│   ├── Membership: count, distribution, engagement, churn
+│   ├── Operations: reservations, events, complaints, incidents
+│   └── Wellness/Satisfaction: scores, trends, NPS
+│
+├── Comparativas (automáticas)
+│   ├── vs. período anterior
+│   ├── vs. mismo período año pasado
+│   └── vs. presupuesto
+│
+└── Instrucciones de formato
+    ├── Tono: consultor ejecutivo, no académico
+    ├── Máximo 5 insights principales
+    ├── Cada insight con recomendación accionable
+    ├── Incluir estimaciones de impacto en colones
+    └── Formato: Markdown con headers, bullets, bold
+```
+
+## Pattern: Server Assignment para Tools Nuevas
+
+| Server existente | Tools que van ahí | Razón |
+|-----------------|-------------------|-------|
+| `finance` | decision_simulate | Pertenece a financial intelligence |
+| `member_engagement` | health_score, segmentation, lifetime_value, churn_prevention | Pertenece a member intelligence |
+| `communications` | generate_personalized, campaign_generate, sentiment_analyze | Pertenece a communications |
+| `executive_dashboard` | export_report (ya ahí) | Cross-module |
+| **Nuevo: `operations`** | daily_briefing, compliance_check, smart_schedule | Módulo nuevo merece server propio |
+
+## Pattern: Zustand Store para Variables Compartidas entre Sub-tabs
+
+Problema identificado (#43): Scenario variables no se comparten entre sub-tabs de FinancialIntelligence. DecisionDocument usa defaults.
+
+Solución para 14d+:
+
+```typescript
+// src/stores/finance-variables.store.ts
+import { create } from "zustand";
+
+interface FinanceVariablesState {
+  scenarioVariables: Record<string, number>;
+  setScenarioVariables: (vars: Record<string, number>) => void;
+  resetScenarioVariables: () => void;
+  // Para Decision Cockpit:
+  currentDecision: string;
+  setCurrentDecision: (d: string) => void;
+}
+
+export const useFinanceVariablesStore = create<FinanceVariablesState>((set) => ({
+  scenarioVariables: {},
+  setScenarioVariables: (vars) => set({ scenarioVariables: vars }),
+  resetScenarioVariables: () => set({ scenarioVariables: {} }),
+  currentDecision: "",
+  setCurrentDecision: (d) => set({ currentDecision: d }),
+}));
+```
+
+ScenarioSimulator escribe al store. DecisionDocument lee del store. Variables compartidas sin prop drilling.
+
+---
+
+# HERRAMIENTAS DE AI — Context Engineering Detallado
+
+## Para Narrative Engine (14b) — ya implementado
+
+El backend recibe este contexto estructurado, lo inyecta al LLM como system prompt + user data, y devuelve una narrativa coherente. El mock simula exactamente esta estructura.
+
+## Para Member Health Score (14c)
+
+```
+System Prompt: "Eres un consultor especializado en retención de socios 
+en clubs de campo de alto nivel en Costa Rica. Analizas patrones de 
+comportamiento y generas insights accionables."
+
+User Data: {family_health_scores, club_averages, historical_trends}
+
+Instruction: "Para cada familia con score <60, genera un resumen de 
+2-3 oraciones explicando POR QUÉ su score es bajo y QUÉ se puede hacer. 
+Tono: directo, empático, con datos específicos. Ejemplo: 'La familia 
+X ha reducido sus visitas de 12 a 3 por mes en los últimos 90 días. 
+Su gasto en F&B cayó 67%. Recomendamos una llamada personal del 
+gerente esta semana para identificar la causa.'"
+```
+
+## Para Decision Cockpit (14d)
+
+```
+System Prompt: "Eres un consultor estratégico especializado en gestión 
+de clubs de campo en Costa Rica. Analizas decisiones de negocio y 
+modelas consecuencias con probabilidades realistas."
+
+User Data: {decision_text, current_financials, membership_data, 
+historical_changes, seasonal_calendar}
+
+Instruction: "Dada la siguiente decisión: '{decision_text}', genera 
+3 escenarios (optimista, base, pesimista) con probabilidades y 
+impactos cuantificados en colones costarricenses. Usa datos reales 
+del club para modelar. Cada escenario debe incluir impacto financiero, 
+impacto en membresía, y riesgos específicos. Finaliza con una 
+recomendación clara y un precedent histórico si existe."
+```
+
+## Para Campaign Generator (14d)
+
+```
+System Prompt: "Eres un especialista en marketing de hospitality para 
+clubs de campo en Costa Rica. Generas campañas de comunicación 
+personalizadas por segmento de socios."
+
+User Data: {objective, target_segments, segment_profiles, 
+historical_campaign_performance, upcoming_events}
+
+Instruction: "Genera una campaña completa para: '{objective}'. 
+Incluye: 1) Copy para email (una versión por segmento), 2) Copy 
+para WhatsApp (versión corta), 3) Texto para lobby display, 
+4) Schedule óptimo por segmento, 5) Métricas de éxito esperadas. 
+Tono: exclusivo, personal, nunca genérico."
+```
+
+## Para Daily Briefing (15ext)
+
+```
+System Prompt: "Eres el asistente operativo de un club de campo de 
+alto nivel en Costa Rica. Generas briefing diarios para el gerente 
+general priorizados por urgencia."
+
+User Data: {todays_reservations, active_alerts, aging_accounts, 
+upcoming_events, maintenance_schedule, compliance_deadlines, 
+staff_schedule, recent_complaints, weather_forecast}
+
+Instruction: "Genera el briefing del día organizando la información 
+en 4 secciones: 🟢 Operaciones (todo normal), 🟡 Atenciones 
+(requieren gestión hoy), 🔴 Urgente (acción inmediata), 
+💡 Oportunidades (revenue/engagement potencial). Cada item debe 
+ser conciso (1-2 oraciones) con acción sugerida específica."
+```
+
+---
+
+# MÉTRICAS DE ÉXITO POR FASE
+
+| Fase | Métrica de éxito | Target |
+|------|-----------------|--------|
+| 14b ✅ | La junta lee los briefings | Feedback positivo en próxima reunión |
+| 14c | Se identifican familias en riesgo ANTES de que churneen | 2+ saves en primer trimestre |
+| 14d | La junta simula decisiones antes de tomarlas | 3+ decisiones simuladas en primer mes |
+| 15ext | El gerente opera proactivamente | 50% reducción en "issues que llegan tarde" |
+
+---
+
+# NOTAS DE IMPLEMENTACIÓN
+
+## Priorización de Mocks
+
+Para cada fase, el orden es siempre:
+1. Contracts (source of truth de la API)
+2. Factories (data costarricense rica y realista)
+3. Registry (conexión factory → tool)
+4. Components (consumen via useMCPQuery)
+5. Integración en hubs existentes
+
+## Cuándo Cada Tool se Mueve de Mock a Backend Real
+
+| Criterio | Ejemplo |
+|----------|---------|
+| Backend tiene el agente implementado | member_engagement agent con health_score tool |
+| Backend response matchea el contract | Verificar contra contracts.ts |
+| El registry key se elimina | callMCPTool falla through a /api/agents/... |
+| 0 cambios en componentes | El componente sigue llamando useMCPQuery igual |
+
+## Risk Register para Fases Futuras
+
+| Riesgo | Probabilidad | Impacto | Mitigación |
+|--------|-------------|---------|------------|
+| AI genera contenido incorrecto o misleading | Media | Alto | Siempre mostrar confidence score. SEMI/HITL para decisiones críticas |
+| Performance de 3 queries simultáneas en DecisionDocument | Baja | Medio | staleTime agresivo, loading states, progressive rendering |
+| Demasiadas tabs en FinancialIntelligence (>7) | Media | Bajo | Agrupar en sub-sub-tabs o restructurar como hub independiente |
+| Mock data diverge de backend real | Alta | Medio | Contracts como source of truth. Fase 16 migration plan |
+| Users no descubren Narrative Engine (tab escondido) | Media | Medio | Considerar badge "Nuevo" o highlight en primer uso |
+
+---
+
+Toda la lógica de pensamiento capturada. Esto junto con el checkpoint de Fase 14b da continuidad total para retomar en cualquier punto del roadmap. Nos vemos en el próximo chat.

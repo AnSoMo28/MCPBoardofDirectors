@@ -1,0 +1,825 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/SportsDashboard.css
+   §B3 — Sports Dashboard V2 · "La Arena"
+   Level 5+ Apple/Xiaomi · Phase 33
+
+   Adaptive Morphism: 3 modes × entrance choreography
+   Celebration state: happy path
+   Progressive disclosure: 3 KPI layers
+   Hero dramatic entrance: clip-path + glow pulses
+   Stage transitions: cross-fade via key remount
+   Pulse breathing: speed responds to mode
+   Container queries: layout adapts to available space
+
+   Living Protocol: 7/7
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root Variables ──────────────────────────────── */
+
+.spt-dashboard {
+  --spt-accent: var(--color-teal-400, #2a9ab5);
+  --spt-glow: rgba(42, 154, 181, 0.15);
+  --spt-gap: 24px;
+  --spt-pad: 20px;
+  --spt-radius: 12px;
+  --spt-bg: var(--color-surface-0, #0d0d0d);
+  --spt-surface: var(--color-surface-1, #1a1a1a);
+  --spt-border: rgba(255, 255, 255, 0.06);
+  --spt-text: var(--color-silver-100, #f0ece4);
+  --spt-text-muted: var(--color-silver-400, #8a8580);
+  --spt-text-dim: var(--color-silver-500, #7a7570);
+
+  position: relative;
+  min-height: 80vh;
+  container-type: inline-size;
+}
+
+/* ── §0.1 — Mode Variables (Adaptive Morphism) ────────── */
+
+.spt-dashboard[data-mode="calm"] {
+  --spt-accent: var(--color-teal-400, #2a9ab5);
+  --spt-glow: rgba(42, 154, 181, 0.15);
+  --spt-gap: 24px;
+  --spt-pad: 20px;
+}
+
+.spt-dashboard[data-mode="alert"] {
+  --spt-accent: var(--color-amber-400, #d4a017);
+  --spt-glow: rgba(212, 160, 23, 0.2);
+  --spt-gap: 16px;
+  --spt-pad: 16px;
+}
+
+.spt-dashboard[data-mode="critical"] {
+  --spt-accent: var(--color-rose-400, #e54d4d);
+  --spt-glow: rgba(229, 77, 77, 0.25);
+  --spt-gap: 8px;
+  --spt-pad: 12px;
+}
+
+/* ── §0.2 — Celebration Variables ─────────────────────── */
+
+.spt-dashboard[data-celebration="true"] {
+  --spt-glow: rgba(61, 170, 112, 0.12);
+}
+
+/* ── §1 — Content Wrapper ─────────────────────────────── */
+
+.spt-dashboard__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spt-gap);
+  padding: var(--spt-pad);
+  padding-bottom: 2rem;
+  transition: gap 0.4s ease, padding 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2 — ENTRANCE CHOREOGRAPHY
+   Sequential reveal: Pulse → Health → KPIs → Hero → Main
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §2.1 — Pulse area (T+200ms) ──────────────────────── */
+
+.spt-dashboard__pulse-area {
+  animation: spt-section-enter 0.4s ease both;
+  animation-delay: 200ms;
+}
+
+/* ── §2.2 — Health gauge (T+400ms) ────────────────────── */
+
+.spt-dashboard__health {
+  min-width: 0;
+  animation: spt-section-enter 0.5s ease both;
+  animation-delay: 400ms;
+}
+
+/* ── §2.3 — KPI cards (staggered T+500ms) ─────────────── */
+
+.spt-dashboard__kpi {
+  animation: spt-card-enter 0.5s ease both;
+}
+
+.spt-dashboard__kpi:nth-child(1) { animation-delay: 500ms; }
+.spt-dashboard__kpi:nth-child(2) { animation-delay: 600ms; }
+.spt-dashboard__kpi:nth-child(3) { animation-delay: 700ms; }
+.spt-dashboard__kpi:nth-child(4) { animation-delay: 800ms; }
+
+/* ── §2.4 — Hero insight (T+700ms) ────────────────────── */
+
+.spt-dashboard__hero-area {
+  animation: spt-hero-reveal 1s ease both;
+  animation-delay: 700ms;
+}
+
+/* ── §2.5 — Main grid (T+900ms) ───────────────────────── */
+
+.spt-dashboard__main {
+  animation: spt-section-enter 0.5s ease both;
+  animation-delay: 900ms;
+}
+
+/* ── §2.6 — Footer (T+1200ms) ─────────────────────────── */
+
+.spt-dashboard__footer {
+  animation: spt-section-enter 0.4s ease both;
+  animation-delay: 1200ms;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3 — KEYFRAMES
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §3.1 — Generic section enter ─────────────────────── */
+
+@keyframes spt-section-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── §3.2 — Card enter (KPIs) ─────────────────────────── */
+
+@keyframes spt-card-enter {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── §3.3 — Hero dramatic reveal ──────────────────────── */
+
+@keyframes spt-hero-reveal {
+  0% {
+    clip-path: inset(100% 0 0 0);
+    opacity: 0;
+  }
+  25% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  40% {
+    box-shadow: 0 0 24px 8px var(--spt-glow);
+  }
+  60% {
+    box-shadow: 0 0 0 0 var(--spt-glow);
+  }
+  75% {
+    box-shadow: 0 0 24px 8px var(--spt-glow);
+  }
+  100% {
+    box-shadow: 0 0 8px 2px var(--spt-glow);
+  }
+}
+
+/* ── §3.4 — Stage cross-fade enter ────────────────────── */
+
+@keyframes spt-stage-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── §3.5 — Shimmer loading ───────────────────────────── */
+
+@keyframes spt-shimmer {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.7; }
+}
+
+/* ── §3.6 — Score count-up glow ───────────────────────── */
+
+@keyframes spt-score-glow {
+  0%, 100% { text-shadow: 0 0 0 transparent; }
+  50%      { text-shadow: 0 0 12px var(--spt-glow); }
+}
+
+/* ── §3.7 — Celebration shimmer ───────────────────────── */
+
+@keyframes spt-celebration-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4 — METRICS ROW
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard__metrics {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--spt-gap);
+  transition: gap 0.4s ease, grid-template-columns 0.5s ease;
+}
+
+.spt-dashboard__metrics > .spt-dashboard__recommendations {
+  grid-column: 1 / -1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5 — HEALTH GAUGE
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard__gauge {
+  background: var(--spt-surface);
+  border: 1px solid var(--spt-border);
+  border-radius: var(--spt-radius);
+  padding: var(--spt-pad);
+  transition: padding 0.4s ease;
+}
+
+.spt-dashboard__gauge-score-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-bottom: 0.2rem;
+}
+
+.spt-dashboard__gauge-score {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--spt-text);
+  line-height: 1;
+  animation: spt-score-glow 4s ease-in-out infinite;
+}
+
+.spt-dashboard[data-celebration="true"] .spt-dashboard__gauge-score {
+  color: var(--color-emerald-400);
+  text-shadow: 0 0 12px rgba(61, 170, 112, 0.25);
+}
+
+.spt-dashboard__gauge-slash {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 1rem;
+  color: var(--spt-text-dim);
+}
+
+.spt-dashboard__gauge-trend {
+  font-size: 1.1rem;
+  font-weight: 700;
+  transition: color 0.4s ease;
+}
+
+.spt-dashboard__gauge-trend[data-trend="up"]     { color: var(--color-emerald-400); }
+.spt-dashboard__gauge-trend[data-trend="down"]   { color: var(--color-rose-400); }
+.spt-dashboard__gauge-trend[data-trend="stable"] { color: var(--spt-text-dim); }
+
+.spt-dashboard__gauge-level {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--spt-accent);
+  margin-bottom: 0.75rem;
+  display: block;
+  transition: color 0.4s ease;
+}
+
+.spt-dashboard__gauge-factors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.spt-dashboard__gauge-factor {
+  display: grid;
+  grid-template-columns: 1fr 3fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.spt-dashboard__gauge-factor-name {
+  font-size: 0.65rem;
+  color: var(--spt-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-dashboard__gauge-bar-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.spt-dashboard__gauge-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease, background 0.4s ease;
+}
+
+.spt-dashboard__gauge-bar-fill[data-status="good"]    { background: var(--color-emerald-400); }
+.spt-dashboard__gauge-bar-fill[data-status="warning"] { background: var(--color-amber-400); }
+.spt-dashboard__gauge-bar-fill[data-status="critical"] { background: var(--color-rose-400); }
+
+.spt-dashboard__gauge-factor-score {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  min-width: 1.5rem;
+  text-align: right;
+  transition: color 0.4s ease;
+}
+
+.spt-dashboard__gauge-factor-score[data-status="good"]    { color: var(--color-emerald-400); }
+.spt-dashboard__gauge-factor-score[data-status="warning"] { color: var(--color-amber-400); }
+.spt-dashboard__gauge-factor-score[data-status="critical"] { color: var(--color-rose-400); }
+
+.spt-dashboard__gauge-alerts {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.spt-dashboard__gauge-alert {
+  font-size: 0.7rem;
+  color: var(--color-amber-400);
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6 — KPI GRID + PROGRESSIVE DISCLOSURE
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  align-content: start;
+}
+
+.spt-dashboard__kpi {
+  background: var(--spt-surface);
+  border: 1px solid var(--spt-border);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease,
+              padding 0.3s ease;
+}
+
+.spt-dashboard__kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.spt-dashboard__kpi:focus-visible {
+  outline: 2px solid var(--spt-accent);
+  outline-offset: 2px;
+}
+
+.spt-dashboard__kpi[data-impact="high"] {
+  border-left: 3px solid var(--color-rose-400, #e54d4d);
+}
+
+.spt-dashboard__kpi[data-impact="medium"] {
+  border-left: 3px solid var(--color-amber-400, #d4a017);
+}
+
+.spt-dashboard__kpi-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.spt-dashboard__kpi-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--spt-accent);
+  transition: color 0.4s ease;
+}
+
+.spt-dashboard__kpi-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--spt-text-muted);
+  font-weight: 500;
+}
+
+.spt-dashboard__kpi-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--spt-text);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.spt-dashboard__kpi-subtitle {
+  font-size: 0.7rem;
+  color: var(--spt-text-muted);
+  margin: 0.2rem 0 0;
+}
+
+/* ── §6.1 — Deep disclosure (progressive) ─────────────── */
+
+.spt-dashboard__kpi-deep {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease, margin-top 0.3s ease;
+  margin-top: 0;
+}
+
+.spt-dashboard__kpi[data-expanded="true"] .spt-dashboard__kpi-deep {
+  max-height: 60px;
+  opacity: 1;
+  margin-top: 0.5rem;
+}
+
+.spt-dashboard__kpi-deep-text {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.7rem;
+  color: var(--spt-accent);
+  line-height: 1.4;
+  margin: 0;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--spt-border);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7 — RECOMMENDATIONS
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard__recommendations {
+  background: var(--spt-surface);
+  border: 1px solid var(--spt-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.spt-dashboard__recommendations-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--spt-text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.spt-dashboard__recommendations-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.spt-dashboard__recommendations-item {
+  font-size: 0.8rem;
+  color: var(--spt-text-muted);
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8 — HERO INSIGHT
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard__hero-area {
+  position: relative;
+  border-radius: var(--spt-radius);
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9 — MAIN GRID
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard__main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spt-gap);
+  transition: gap 0.4s ease, grid-template-columns 0.5s ease;
+}
+
+.spt-dashboard[data-mode="critical"] .spt-dashboard__main {
+  grid-template-columns: 1fr;
+}
+
+/* ── §9.1 — Stage area (cross-fade on stage change) ───── */
+
+.spt-dashboard__stage-area {
+  min-width: 0;
+  animation: spt-stage-enter 0.35s ease both;
+}
+
+/* ── §9.2 — Sidebar ───────────────────────────────────── */
+
+.spt-dashboard__sidebar {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spt-gap);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10 — CROSS-TAB SUGGESTION
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard__cross-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.spt-dashboard__cross-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1px dashed var(--spt-border);
+  border-left: 3px solid var(--spt-accent);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--spt-text-muted);
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease;
+}
+
+.spt-dashboard__cross-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--spt-accent);
+  color: var(--spt-text);
+}
+
+.spt-dashboard__cross-tab-btn:focus-visible {
+  outline: 2px solid var(--spt-accent);
+  outline-offset: 2px;
+}
+
+.spt-dashboard__cross-tab-arrow {
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  color: var(--spt-accent);
+  transition: color 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11 — FOOTER + NARRATIVE (LP 7)
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard__footer {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--spt-border);
+}
+
+.spt-dashboard__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.85rem;
+  color: var(--spt-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12 — SKELETON LOADING
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.spt-dashboard__skeleton-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+}
+
+.spt-dashboard__skeleton-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.spt-dashboard__skeleton-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+}
+
+.spt-dashboard__skeleton-block {
+  border-radius: 8px;
+  background: var(--spt-surface);
+  animation: spt-shimmer 1.5s ease-in-out infinite;
+}
+
+.spt-dashboard__skeleton-block--pulse  { height: 48px; border-radius: 10px; }
+.spt-dashboard__skeleton-block--health { height: 200px; }
+.spt-dashboard__skeleton-block--kpi    { height: 80px; }
+.spt-dashboard__skeleton-block--hero   { height: 120px; }
+.spt-dashboard__skeleton-block--stage  { height: 400px; }
+.spt-dashboard__skeleton-block--stream { height: 400px; }
+
+/* ═══════════════════════════════════════════════════════════
+   §13 — ERROR STATE
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard__error {
+  padding: 2rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §14 — CONTAINER QUERIES (layout adapts to space)
+   ═══════════════════════════════════════════════════════════ */
+
+@container (max-width: 1023px) {
+  .spt-dashboard__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .spt-dashboard__main {
+    grid-template-columns: 1fr;
+  }
+
+  .spt-dashboard__sidebar {
+    order: -1;
+  }
+}
+
+@container (max-width: 767px) {
+  .spt-dashboard__kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §15 — CELEBRATION STATE
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard[data-celebration="true"] .spt-dashboard__gauge {
+  border-color: rgba(61, 170, 112, 0.15);
+}
+
+.spt-dashboard[data-celebration="true"] .spt-dashboard__gauge-level {
+  color: var(--color-emerald-400);
+}
+
+.spt-dashboard[data-celebration="true"] .spt-dashboard__narrative {
+  border-left-color: var(--color-emerald-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §16 — LIGHT MODE
+   ═══════════════════════════════════════════════════════════ */
+
+.light .spt-dashboard {
+  --spt-bg: #fafaf8;
+  --spt-surface: rgba(255, 255, 255, 0.7);
+  --spt-border: rgba(0, 0, 0, 0.08);
+  --spt-text: #1a1a1a;
+  --spt-text-muted: #6b7280;
+  --spt-text-dim: #9ca3af;
+}
+
+.light .spt-dashboard__kpi:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-dashboard__gauge {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.light .spt-dashboard__gauge-bar-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-dashboard__cross-tab-btn {
+  border-style: dashed;
+}
+
+.light .spt-dashboard__cross-tab-btn:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .spt-dashboard__skeleton-block {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §17 — REDUCED MOTION
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard[data-prefers-reduced="true"],
+.spt-dashboard[data-prefers-reduced="true"] *,
+.spt-dashboard[data-prefers-reduced="true"] *::before,
+.spt-dashboard[data-prefers-reduced="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §18 — RESPONSIVE (fallback for browsers without CQ)
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .spt-dashboard__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .spt-dashboard__main {
+    grid-template-columns: 1fr;
+  }
+
+  .spt-dashboard__sidebar {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .spt-dashboard__kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .spt-dashboard__gauge-score {
+    font-size: 1.75rem;
+  }
+
+  .spt-dashboard__skeleton-row,
+  .spt-dashboard__skeleton-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .spt-dashboard__kpis {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §19 — PRINT
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .spt-dashboard__content {
+    gap: 0.5rem;
+    padding: 0;
+  }
+
+  .spt-dashboard__recommendations {
+    break-inside: avoid;
+    border: 1px solid #ccc;
+  }
+
+  .spt-dashboard__gauge {
+    break-inside: avoid;
+  }
+
+  .spt-dashboard__kpi {
+    animation: none;
+    break-inside: avoid;
+  }
+
+  .spt-dashboard__hero-area {
+    animation: none;
+    break-inside: avoid;
+  }
+
+  .spt-dashboard__cross-tab {
+    display: none;
+  }
+
+  .spt-dashboard__footer {
+    break-inside: avoid;
+  }
+
+  .spt-dashboard__skeleton-block {
+    animation: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §20 — FOCUS VISIBLE (global)
+   ═══════════════════════════════════════════════════════════ */
+
+.spt-dashboard *:focus:not(:focus-visible) {
+  outline: none;
+}

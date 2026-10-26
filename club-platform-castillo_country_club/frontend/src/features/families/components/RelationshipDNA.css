@@ -1,0 +1,692 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/RelationshipDNA.css
+   Phase 34+ Migration — "The Genetic Helix"
+   Level 6+ Agency · Production Grade
+
+   SIGNATURE VISUAL ELEMENTS:
+   1. DNA helix bond line with strength-to-thickness mapping
+   2. Context identity chip with activity category color
+   3. Trajectory marker at bond center (5 states)
+   4. Recency color coding (fresh/recent/aging/stale)
+   5. Bond depth mosaic (activity teal + event gold bars)
+   6. Member avatar with initials + context-colored border
+   7. Network health summary with status dots
+   8. Strand hover expansion
+
+   CSS STANDARD: 13 Dimensions Applied
+     D1  Glass morphism (subtle wrapper, context glow on hover)
+     D2  Stagger (strand cascade via --strand-index)
+     D3  Cubic-bezier easing on strand reveal
+     D4  Mono for scores/data, UI for labels, mono-uppercased for sections
+     D5  Context-driven dynamic colors via CSS vars (--strand-color)
+     D6  Pseudo-element depth (helix line center dot, strand glow)
+     D7  Hover on strands (expand, brighten border)
+     D8  Dense (compact metadata row, tight depth mosaic)
+     D9  Responsive (strand helix stacks vertically on narrow)
+     D10 role="region", aria-label
+     D11 Light mode complete
+     D12 Reduced motion + print
+     D13 fm-dna* namespaced keyframes (4)
+
+   Keyframes: fm-dnaStrandReveal, fm-dnaBarGrow,
+              fm-dnaHelixPulse, fm-dnaFadeIn
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root
+   D1: Subtle glass wrapper (this lives inside FamilyDetail)
+   D8: Gap 8px between strands
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dna {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    168deg,
+    rgba(180, 190, 210, 0.03) 0%,
+    rgba(12, 16, 24, 0.97) 40%,
+    rgba(8, 12, 18, 0.98) 100%
+  );
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+}
+
+/* Inset top highlight */
+.fm-dna::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 30%,
+    rgba(255, 255, 255, 0.03) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Content above pseudo-elements */
+.fm-dna > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Header
+   D4-02: Mono 8px uppercase label
+   D2-07: Stagger delay 0s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dna__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  animation: fm-dnaStrandReveal 0.25s ease 0s forwards;
+}
+
+.fm-dna__label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-silver-400);
+}
+
+.fm-dna__header-icon {
+  color: var(--color-silver-600);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Health Summary
+   D4-01: Mono for stats
+   D5: Status colors via data-attribute
+   D2-07: Stagger delay 0.05s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dna__health {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  opacity: 0;
+  animation: fm-dnaStrandReveal 0.25s ease 0.05s forwards;
+}
+
+.fm-dna__health-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fm-dna__health-stat {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-400);
+}
+
+.fm-dna__health-stat--strong {
+  color: var(--color-emerald-400);
+}
+
+.fm-dna__health-stat--weak {
+  color: var(--color-rose-400);
+}
+
+.fm-dna__health-stat--dormant {
+  color: var(--color-silver-600);
+}
+
+.fm-dna__health-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.fm-dna__health-avg {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Bond Strand — The DNA Unit
+   D5: Context-driven color via --strand-color CSS var
+   D6: Helix bond line, center dot
+   D7: Hover expand + brighten
+   D2: Cascade stagger via --strand-index
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dna__strand {
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-left: 3px solid var(--strand-color, rgba(255, 255, 255, 0.06));
+  background: rgba(255, 255, 255, 0.01);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  animation: fm-dnaStrandReveal 0.3s ease forwards;
+  animation-delay: calc(var(--strand-index, 0) * 80ms + 0.1s);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.fm-dna__strand:hover {
+  background: rgba(255, 255, 255, 0.018);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--strand-color, transparent) 6%, transparent);
+}
+
+/* ── Helix: Member A — line — Member B ── */
+
+.fm-dna__helix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fm-dna__node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  min-width: 44px;
+}
+
+.fm-dna__node-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--strand-color, rgba(255, 255, 255, 0.1));
+  background: var(--strand-bg, rgba(255, 255, 255, 0.03));
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--strand-color, var(--color-silver-300));
+}
+
+.fm-dna__node-name {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  color: var(--color-silver-400);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bond line */
+.fm-dna__bond-line {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 20px;
+}
+
+.fm-dna__bond-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: var(--strand-weight, 2px);
+  background: var(--strand-color, rgba(255, 255, 255, 0.15));
+  opacity: var(--strand-opacity, 0.5);
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+/* D6: Center dot on bond line */
+.fm-dna__bond-fill::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--strand-color, rgba(255, 255, 255, 0.2));
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
+}
+
+/* Trajectory marker at center */
+.fm-dna__trend-marker {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(12, 16, 24, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--color-silver-400);
+}
+
+.fm-dna__strand[data-trajectory="strengthening"] .fm-dna__trend-marker {
+  color: var(--color-emerald-400);
+  border-color: color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+}
+
+.fm-dna__strand[data-trajectory="weakening"] .fm-dna__trend-marker {
+  color: var(--color-rose-400);
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+}
+
+.fm-dna__strand[data-trajectory="dormant"] .fm-dna__trend-marker {
+  color: var(--color-silver-600);
+}
+
+.fm-dna__strand[data-trajectory="new"] .fm-dna__trend-marker {
+  color: var(--color-teal-400);
+  border-color: color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Metadata Row
+   D4: Mono scores, UI labels
+   D5: Colors via data-attributes and CSS vars
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dna__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fm-dna__context-chip {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--strand-bg, rgba(255, 255, 255, 0.03));
+  color: var(--strand-color, var(--color-silver-400));
+  letter-spacing: 0.03em;
+}
+
+.fm-dna__strength-score {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--strand-color, var(--color-silver-300));
+}
+
+.fm-dna__traj-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+}
+
+.fm-dna__traj-label[data-trajectory="strengthening"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-dna__traj-label[data-trajectory="weakening"] {
+  color: var(--color-rose-400);
+}
+
+.fm-dna__traj-label[data-trajectory="dormant"] {
+  color: var(--color-silver-600);
+}
+
+.fm-dna__traj-label[data-trajectory="new"] {
+  color: var(--color-teal-400);
+}
+
+/* D5: Recency via data-attribute */
+.fm-dna__recency {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  margin-left: auto;
+}
+
+.fm-dna__recency[data-recency="fresh"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-dna__recency[data-recency="recent"] {
+  color: var(--color-gold-400);
+}
+
+.fm-dna__recency[data-recency="aging"] {
+  color: var(--color-amber-400);
+}
+
+.fm-dna__recency[data-recency="stale"] {
+  color: var(--color-rose-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Bond Depth Mosaic
+   D8: Dense layout
+   D6: Bar fill animation
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dna__depth {
+  display: flex;
+  gap: 8px;
+}
+
+.fm-dna__depth-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fm-dna__depth-icon {
+  flex-shrink: 0;
+  color: var(--color-silver-600);
+}
+
+.fm-dna__depth-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--color-silver-500);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fm-dna__depth-bar-track {
+  flex: 1;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.fm-dna__depth-bar-fill {
+  height: 100%;
+  border-radius: 1px;
+  width: var(--depth-width, 0%);
+  opacity: 0;
+  animation: fm-dnaBarGrow 0.5s ease 0.3s forwards;
+}
+
+.fm-dna__depth-bar-fill--activity {
+  background: var(--color-teal-400);
+}
+
+.fm-dna__depth-bar-fill--event {
+  background: var(--color-gold-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Relationship Label (AI-inferred)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dna__relationship-label {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-style: italic;
+  color: var(--color-silver-500);
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Health Label + Empty State
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-dna__health-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  margin: 0;
+  text-align: center;
+  line-height: 1;
+}
+
+.fm-dna__empty {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-500);
+  text-align: center;
+  padding: 16px 0;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Keyframes — fm-dna* namespaced
+   D13-01: All at end
+   D13-02: All namespaced
+   Total: 4 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-dnaStrandReveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-dnaBarGrow {
+  from {
+    opacity: 0;
+    width: 0;
+  }
+  to {
+    opacity: 1;
+    width: var(--depth-width, 100%);
+  }
+}
+
+@keyframes fm-dnaHelixPulse {
+  0%, 100% {
+    opacity: var(--strand-opacity, 0.5);
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes fm-dnaFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Light Mode
+   D11: Complete
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-dna {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.light .fm-dna::before {
+  display: none;
+}
+
+.light .fm-dna__health {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-dna__strand {
+  background: rgba(0, 0, 0, 0.008);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-dna__strand:hover {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: none;
+}
+
+.light .fm-dna__node-avatar {
+  border-color: var(--strand-color, rgba(0, 0, 0, 0.08));
+  background: var(--strand-bg, rgba(0, 0, 0, 0.02));
+}
+
+.light .fm-dna__trend-marker {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-dna__context-chip {
+  background: var(--strand-bg, rgba(0, 0, 0, 0.03));
+}
+
+.light .fm-dna__depth-bar-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-dna__health-dot {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.light .fm-dna__bond-fill::after {
+  background: var(--strand-color, rgba(0, 0, 0, 0.15));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Reduced Motion
+   D12-05: opacity: 1 on all stagger
+   D12-06: All animations disabled
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-dna__header,
+  .fm-dna__health,
+  .fm-dna__strand {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .fm-dna__depth-bar-fill {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-dna__strand {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Responsive
+   D9: Helix stacks vertically on narrow screens
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .fm-dna {
+    padding: 12px 14px;
+  }
+
+  .fm-dna__helix {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .fm-dna__bond-line {
+    width: 2px;
+    height: 32px;
+    flex-direction: column;
+  }
+
+  .fm-dna__bond-fill {
+    width: var(--strand-weight, 2px);
+    height: auto;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+
+  .fm-dna__depth {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Print
+   D12-01: break-inside avoid
+   D12-02: White bg
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-dna {
+    background: white;
+    border: 1px solid #ccc;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  .fm-dna::before {
+    display: none;
+  }
+
+  .fm-dna__header,
+  .fm-dna__health,
+  .fm-dna__strand {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-dna__depth-bar-fill {
+    animation: none;
+    opacity: 1;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-dna__strand {
+    break-inside: avoid;
+  }
+
+  .fm-dna__node-avatar,
+  .fm-dna__context-chip {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

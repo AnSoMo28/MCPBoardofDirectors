@@ -1,0 +1,551 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/MemberCard.css
+   Phase 34+ Migration — Member Card Styles
+   Level 6+ Agency · Production Grade
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-memberCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(
+    135deg,
+    rgba(180, 190, 210, 0.04) 0%,
+    rgba(15, 20, 30, 0.95) 40%,
+    rgba(10, 14, 20, 0.97) 100%
+  );
+  backdrop-filter: blur(10px) saturate(1.2);
+  overflow: hidden;
+  opacity: 0;
+  animation: mcFadeUp 0.4s ease calc(var(--mc-anim-index, 0) * 50ms) forwards;
+}
+
+.fm-memberCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.04) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.fm-memberCard[data-interactive] {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fm-memberCard[data-interactive]:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.fm-memberCard[data-interactive]:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Compact Mode
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-memberCard--compact {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  animation: none;
+  opacity: 1;
+}
+
+.fm-memberCard--compact::before {
+  display: none;
+}
+
+.fm-memberCard--compact:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.fm-memberCard__compact-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fm-memberCard__compact-name {
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Presence Ring — Animated engagement ring
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-memberCard__ring {
+  position: relative;
+  width: var(--ring-size, 56px);
+  height: var(--ring-size, 56px);
+  flex-shrink: 0;
+}
+
+.fm-memberCard__ring-svg {
+  position: absolute;
+  inset: -4px;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+}
+
+.fm-memberCard__ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 2;
+}
+
+.fm-memberCard__ring-fill {
+  fill: none;
+  stroke: var(--ring-color, var(--color-silver-400));
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: var(--ring-dasharray, 0);
+  stroke-dashoffset: var(--ring-dashoffset, 0);
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.fm-memberCard__ring[data-zone="burning"] .fm-memberCard__ring-fill {
+  animation: mcRingPulse 2s ease-in-out infinite;
+}
+
+.fm-memberCard__ring-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-memberCard__avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.fm-memberCard__avatar-initials {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: white;
+  background-color: var(--mc-journey-color, var(--color-silver-400));
+}
+
+.fm-memberCard__avatar-initials--sm {
+  font-size: 0.625rem;
+}
+
+.fm-memberCard__avatar-initials--lg {
+  font-size: 1.125rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Status Dot
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-memberCard__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-silver-500);
+  flex-shrink: 0;
+}
+
+.fm-memberCard__status-dot[data-active] {
+  background-color: var(--color-emerald-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Header
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-memberCard__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.fm-memberCard__header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-memberCard__header-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.fm-memberCard__name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.fm-memberCard__header-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Age Journey Badge
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-memberCard__journey-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--mc-journey-color, var(--color-silver-400));
+  background: var(--mc-journey-bg, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Engagement Section
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-memberCard__engagement {
+  margin-bottom: 16px;
+}
+
+.fm-memberCard__engagement-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.fm-memberCard__engagement-label {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  margin: 0;
+}
+
+.fm-memberCard__engagement-score {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--mc-zone-color, var(--color-silver-400));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Activities — Categorized chips
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-memberCard__activities {
+  margin-bottom: 16px;
+}
+
+.fm-memberCard__activities-label {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  margin: 0 0 8px;
+}
+
+.fm-memberCard__activities-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fm-memberCard__activity-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  color: var(--mc-chip-color, var(--color-silver-400));
+  background: var(--mc-chip-bg, rgba(255, 255, 255, 0.04));
+}
+
+.fm-memberCard__activity-chip--overflow {
+  color: var(--color-silver-400);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Contact Footer
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-memberCard__contact {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+}
+
+.fm-memberCard__contact-item {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.fm-memberCard__contact-item--shrink {
+  flex-shrink: 0;
+  flex: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Quick Actions — Hover overlay
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-memberCard__actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 8px 12px;
+  background: linear-gradient(
+    to top,
+    rgba(10, 14, 20, 0.95) 0%,
+    rgba(10, 14, 20, 0.8) 60%,
+    transparent 100%
+  );
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.fm-memberCard:hover .fm-memberCard__actions,
+.fm-memberCard:focus-within .fm-memberCard__actions {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.fm-memberCard__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  color: var(--color-gold-400);
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+  min-height: 28px;
+}
+
+.fm-memberCard__action-btn:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+
+.fm-memberCard__action-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes mcFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mcRingPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Light Mode
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-memberCard {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.light .fm-memberCard::before {
+  display: none;
+}
+
+.light .fm-memberCard:hover {
+  border-color: var(--color-border-default);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-memberCard__ring-track {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-memberCard__contact {
+  border-top-color: var(--color-border-default);
+}
+
+.light .fm-memberCard__actions {
+  background: linear-gradient(
+    to top,
+    var(--color-surface-0) 0%,
+    color-mix(in srgb, var(--color-surface-0) 80%, transparent) 60%,
+    transparent 100%
+  );
+}
+
+.light .fm-memberCard__action-btn {
+  background: color-mix(in srgb, var(--color-gold-400) 6%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Reduced Motion
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-memberCard {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-memberCard__ring-fill {
+    transition: none;
+  }
+
+  .fm-memberCard__actions {
+    transition: none;
+    opacity: 0;
+  }
+
+  .fm-memberCard:hover .fm-memberCard__actions,
+  .fm-memberCard:focus-within .fm-memberCard__actions {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Responsive: ≤768px
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fm-memberCard__header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .fm-memberCard__header-name-row {
+    justify-content: center;
+  }
+
+  .fm-memberCard__header-badges {
+    justify-content: center;
+  }
+
+  .fm-memberCard__contact {
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §14  Print
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-memberCard {
+    break-inside: avoid;
+    border: 1px solid #ccc;
+    background: white;
+    backdrop-filter: none;
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-memberCard::before {
+    display: none;
+  }
+
+  .fm-memberCard__actions {
+    display: none;
+  }
+
+  .fm-memberCard__ring-fill {
+    stroke: #333 !important;
+  }
+
+  .fm-memberCard__ring-track {
+    stroke: #ddd !important;
+  }
+}

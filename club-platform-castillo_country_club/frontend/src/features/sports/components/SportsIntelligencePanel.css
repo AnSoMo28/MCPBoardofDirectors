@@ -1,0 +1,897 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/SportsIntelligencePanel.css
+   §B4.3 — Sports Intelligence Panel V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  ring gauge fg animation
+   2. REACCIÓN:     hover on dimension cards, coach rows
+   3. MEMORIA:      scores, KPIs, bar values persist
+   4. INTENCIÓN:    alerts, engagement level desc
+   5. SINIESTRÍA:   level/engagement/severity colors
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-intel {
+  --spt-i-accent: var(--color-teal-400, #2a9ab5);
+  --spt-i-surface: var(--color-surface-1, #1a1a1a);
+  --spt-i-border: rgba(255, 255, 255, 0.06);
+  --spt-i-text: var(--color-silver-100, #f0ece4);
+  --spt-i-text-muted: var(--color-silver-400, #8a8580);
+  --spt-i-text-dim: var(--color-silver-500, #7a7570);
+}
+
+.spt-intel[data-mode="calm"]    { --spt-i-accent: var(--color-teal-400, #2a9ab5); }
+.spt-intel[data-mode="alert"]   { --spt-i-accent: var(--color-amber-400, #d4a017); }
+.spt-intel[data-mode="critical"]{ --spt-i-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-intel__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.spt-intel__header-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--spt-i-accent);
+  flex-shrink: 0;
+  transition: color 0.4s ease;
+}
+
+.spt-intel__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.1rem;
+  color: var(--spt-i-text);
+  margin: 0;
+}
+
+.spt-intel__subtitle {
+  font-size: 0.6rem;
+  color: var(--spt-i-text-dim);
+  margin: 0;
+}
+
+/* ── §2 — Engagement Hero ──────────────────────────────── */
+
+.spt-intel__engage-hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--spt-i-border);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.spt-intel__engage-hero-text {
+  flex: 1;
+}
+
+.spt-intel__engage-hero-score {
+  font-size: 0.85rem;
+  color: var(--spt-i-text-muted);
+  margin: 0 0 0.2rem;
+}
+
+.spt-intel__engage-hero-score strong {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-weight: 700;
+}
+
+.spt-intel__engage-hero-score strong[data-engagement-level="excellent"] { color: var(--color-emerald-400); }
+.spt-intel__engage-hero-score strong[data-engagement-level="good"]      { color: var(--color-teal-400); }
+.spt-intel__engage-hero-score strong[data-engagement-level="fair"]      { color: var(--color-amber-400); }
+.spt-intel__engage-hero-score strong[data-engagement-level="poor"]      { color: var(--color-rose-400); }
+
+.spt-intel__engage-hero-desc {
+  font-size: 0.75rem;
+  color: var(--spt-i-text-muted);
+  margin: 0 0 0.15rem;
+}
+
+.spt-intel__engage-hero-meta {
+  font-size: 0.6rem;
+  color: var(--spt-i-text-dim);
+  margin: 0;
+}
+
+/* ── §3 — Mini Ring Gauge ──────────────────────────────── */
+
+.spt-intel__ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.spt-intel__ring-container {
+  position: relative;
+}
+
+.spt-intel__ring-svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.spt-intel__ring-bg {
+  stroke: rgba(255, 255, 255, 0.04);
+  opacity: 0.5;
+}
+
+.spt-intel__ring-fg {
+  transition: stroke 0.4s ease;
+}
+
+.spt-intel__ring-fg[data-engagement-level="excellent"] { stroke: var(--color-emerald-400); }
+.spt-intel__ring-fg[data-engagement-level="good"]      { stroke: var(--color-teal-400); }
+.spt-intel__ring-fg[data-engagement-level="fair"]      { stroke: var(--color-amber-400); }
+.spt-intel__ring-fg[data-engagement-level="poor"]      { stroke: var(--color-rose-400); }
+
+.spt-intel__ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spt-intel__ring-score {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: color 0.4s ease;
+}
+
+.spt-intel__ring-score[data-engagement-level="excellent"] { color: var(--color-emerald-400); }
+.spt-intel__ring-score[data-engagement-level="good"]      { color: var(--color-teal-400); }
+.spt-intel__ring-score[data-engagement-level="fair"]      { color: var(--color-amber-400); }
+.spt-intel__ring-score[data-engagement-level="poor"]      { color: var(--color-rose-400); }
+
+.spt-intel__ring-label {
+  font-size: 0.6rem;
+  color: var(--spt-i-text-muted);
+  margin-top: 0.35rem;
+  text-align: center;
+}
+
+/* ── §4 — Dimension Card ───────────────────────────────── */
+
+.spt-intel__dim {
+  background: var(--spt-i-surface);
+  border: 1px solid var(--spt-i-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.spt-intel__dim[data-expanded="true"] {
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.spt-intel__dim-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.spt-intel__dim-header:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.spt-intel__dim-header:focus-visible {
+  outline: 2px solid var(--spt-i-accent);
+  outline-offset: -2px;
+}
+
+.spt-intel__dim-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spt-intel__dim-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.spt-intel__dim-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(42, 154, 181, 0.12);
+  color: var(--spt-i-accent);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+.spt-intel__dim-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--spt-i-text);
+}
+
+.spt-intel__dim-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--spt-i-text-muted);
+  flex-shrink: 0;
+}
+
+.spt-intel__dim-content {
+  padding: 0 1rem 1rem;
+  border-top: 1px solid var(--spt-i-border);
+  animation: spt-i-content-enter 0.3s ease;
+}
+
+@keyframes spt-i-content-enter {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── §5 — Horizontal Bar ───────────────────────────────── */
+
+.spt-intel__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.spt-intel__bar-label {
+  font-size: 0.7rem;
+  color: var(--spt-i-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 7rem;
+  flex-shrink: 0;
+}
+
+.spt-intel__bar-track {
+  flex: 1;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.spt-intel__bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease, background 0.4s ease;
+}
+
+.spt-intel__bar-fill[data-level="high"]     { background: var(--color-emerald-400); }
+.spt-intel__bar-fill[data-level="medium"]   { background: var(--color-teal-400); }
+.spt-intel__bar-fill[data-level="low"]      { background: var(--color-amber-400); }
+.spt-intel__bar-fill[data-level="critical"] { background: var(--color-rose-400); }
+
+.spt-intel__bar-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-align: right;
+  min-width: 4rem;
+  flex-shrink: 0;
+  transition: color 0.4s ease;
+}
+
+.spt-intel__bar-value[data-level="high"]     { color: var(--color-emerald-400); }
+.spt-intel__bar-value[data-level="medium"]   { color: var(--color-teal-400); }
+.spt-intel__bar-value[data-level="low"]      { color: var(--color-amber-400); }
+.spt-intel__bar-value[data-level="critical"] { color: var(--color-rose-400); }
+
+/* ── §6 — Bar Group (with meta) ────────────────────────── */
+
+.spt-intel__dim-bar-group {
+  margin-bottom: 0.35rem;
+}
+
+.spt-intel__dim-bar-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+  margin-left: 7rem;
+  font-size: 0.55rem;
+  color: var(--spt-i-text-dim);
+}
+
+.spt-intel__trend-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.spt-intel__trend-icon[data-trend="increasing"] { color: var(--color-emerald-400); }
+.spt-intel__trend-icon[data-trend="decreasing"] { color: var(--color-rose-400); }
+.spt-intel__trend-icon[data-trend="stable"]     { color: var(--spt-i-text-dim); }
+
+/* ── §7 — Bars container ───────────────────────────────── */
+
+.spt-intel__dim-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 0.65rem;
+}
+
+/* ── §8 — Class Row ────────────────────────────────────── */
+
+.spt-intel__class-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.spt-intel__class-info {
+  min-width: 7rem;
+  flex-shrink: 0;
+}
+
+.spt-intel__class-name {
+  font-size: 0.7rem;
+  color: var(--spt-i-text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-intel__class-sport {
+  font-size: 0.5rem;
+  color: var(--spt-i-text-dim);
+  margin: 0;
+}
+
+/* ── §9 — Legend ────────────────────────────────────────── */
+
+.spt-intel__dim-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  font-size: 0.6rem;
+  color: var(--spt-i-text-muted);
+}
+
+.spt-intel__dim-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.spt-intel__dim-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.spt-intel__dim-legend-dot[data-level="high"]     { background: var(--color-emerald-400); }
+.spt-intel__dim-legend-dot[data-level="medium"]   { background: var(--color-teal-400); }
+.spt-intel__dim-legend-dot[data-level="low"]      { background: var(--color-amber-400); }
+.spt-intel__dim-legend-dot[data-level="critical"] { background: var(--color-rose-400); }
+
+/* ── §10 — KPI Grid ────────────────────────────────────── */
+
+.spt-intel__kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.spt-intel__kpi-grid--compact {
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 0.5rem;
+}
+
+.spt-intel__kpi-card {
+  text-align: center;
+  padding: 0.5rem 0.4rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--spt-i-border);
+  border-radius: 6px;
+}
+
+.spt-intel__kpi-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.spt-intel__kpi-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--spt-i-text);
+  margin: 0.2rem 0 0.1rem;
+  transition: color 0.4s ease;
+}
+
+.spt-intel__kpi-value[data-color="accent"]  { color: var(--spt-i-accent); }
+.spt-intel__kpi-value[data-color="success"] { color: var(--color-emerald-400); }
+.spt-intel__kpi-value[data-color="gold"]    { color: var(--color-gold-400, #d4af37); }
+.spt-intel__kpi-value[data-color="default"] { color: var(--spt-i-text); }
+
+.spt-intel__kpi-label {
+  font-size: 0.5rem;
+  color: var(--spt-i-text-dim);
+  margin: 0;
+}
+
+/* ── §11 — Status Row ──────────────────────────────────── */
+
+.spt-intel__dim-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  font-size: 0.6rem;
+}
+
+.spt-intel__dim-status-label {
+  color: var(--spt-i-text-dim);
+}
+
+.spt-intel__dim-status-item {
+  color: var(--spt-i-text-muted);
+}
+
+.spt-intel__dim-status-item strong {
+  font-family: var(--font-mono, "DM Mono", monospace);
+}
+
+/* ── §12 — Equipment ───────────────────────────────────── */
+
+.spt-intel__eq-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.65rem;
+}
+
+.spt-intel__eq-badge {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+.spt-intel__eq-badge[data-level="high"]     { background: rgba(61,170,112,0.1); color: var(--color-emerald-400); }
+.spt-intel__eq-badge[data-level="medium"]   { background: rgba(212,160,23,0.1); color: var(--color-amber-400); }
+.spt-intel__eq-badge[data-level="critical"] { background: rgba(229,77,77,0.1); color: var(--color-rose-400); }
+
+.spt-intel__eq-badge strong {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-weight: 700;
+}
+
+.spt-intel__eq-group {
+  margin-bottom: 0.5rem;
+}
+
+.spt-intel__eq-group-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+}
+
+.spt-intel__eq-group-label[data-severity="critical"] { color: var(--color-rose-400); }
+.spt-intel__eq-group-label[data-severity="warning"]  { color: var(--color-amber-400); }
+
+.spt-intel__eq-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 5px;
+  font-size: 0.65rem;
+  margin-bottom: 0.25rem;
+}
+
+.spt-intel__eq-item[data-severity="critical"] {
+  background: rgba(229, 77, 77, 0.06);
+  border: 1px solid rgba(229, 77, 77, 0.12);
+}
+
+.spt-intel__eq-item[data-severity="warning"] {
+  background: rgba(212, 160, 23, 0.06);
+  border: 1px solid rgba(212, 160, 23, 0.12);
+}
+
+.spt-intel__eq-item-name {
+  color: var(--spt-i-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.spt-intel__eq-item-urgency {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.6rem;
+  color: var(--color-rose-400);
+  flex-shrink: 0;
+}
+
+.spt-intel__eq-item-action {
+  font-size: 0.6rem;
+  color: var(--color-amber-400);
+  flex-shrink: 0;
+}
+
+/* ── §13 — Coach List ──────────────────────────────────── */
+
+.spt-intel__coach-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.spt-intel__coach-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.65rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--spt-i-border);
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.spt-intel__coach-row:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.spt-intel__coach-rank {
+  font-size: 0.85rem;
+  font-weight: 700;
+  width: 1.5rem;
+  text-align: center;
+  flex-shrink: 0;
+  font-family: var(--font-mono, "DM Mono", monospace);
+}
+
+.spt-intel__coach-rank[data-rank="first"] { color: var(--color-gold-400, #d4af37); }
+.spt-intel__coach-rank[data-rank="other"] { color: var(--spt-i-text-dim); }
+
+.spt-intel__coach-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.spt-intel__coach-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--spt-i-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-intel__coach-sports {
+  font-size: 0.6rem;
+  color: var(--spt-i-text-dim);
+  margin: 0;
+}
+
+.spt-intel__coach-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.6rem;
+  color: var(--spt-i-text-muted);
+  flex-shrink: 0;
+}
+
+.spt-intel__coach-stat strong {
+  font-family: var(--font-mono, "DM Mono", monospace);
+}
+
+.spt-intel__coach-stat strong[data-color="accent"]  { color: var(--spt-i-accent); }
+.spt-intel__coach-stat strong[data-color="success"] { color: var(--color-emerald-400); }
+.spt-intel__coach-stat strong[data-color="gold"]    { color: var(--color-gold-400, #d4af37); }
+
+/* ── §14 — Season Chart ────────────────────────────────── */
+
+.spt-intel__season-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.25rem;
+  height: 8rem;
+  margin-bottom: 0.5rem;
+}
+
+.spt-intel__season-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.spt-intel__season-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.45rem;
+  color: var(--spt-i-text-dim);
+}
+
+.spt-intel__season-fill {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.5s ease, background 0.4s ease;
+  min-height: 4px;
+}
+
+.spt-intel__season-fill[data-level="high"]     { background: var(--color-gold-400, #d4af37); }
+.spt-intel__season-fill[data-level="medium"]   { background: var(--color-teal-400); }
+.spt-intel__season-fill[data-level="low"]      { background: var(--spt-i-text-dim); }
+
+.spt-intel__season-label {
+  font-size: 0.45rem;
+  color: var(--spt-i-text-dim);
+}
+
+/* ── §15 — Engagement Layout ───────────────────────────── */
+
+.spt-intel__engage-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.spt-intel__engage-content {
+  flex: 1;
+}
+
+/* ── §16 — Cross-Domain Signals ────────────────────────── */
+
+.spt-intel__signals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.spt-intel__signal {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--spt-i-border);
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+.spt-intel__signal[data-level="high"]     { border-left: 3px solid var(--color-emerald-400); }
+.spt-intel__signal[data-level="medium"]   { border-left: 3px solid var(--color-teal-400); }
+.spt-intel__signal[data-level="critical"] { border-left: 3px solid var(--color-rose-400); }
+
+.spt-intel__signal-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: color 0.4s ease;
+}
+
+.spt-intel__signal-icon[data-level="high"]     { color: var(--color-emerald-400); }
+.spt-intel__signal-icon[data-level="medium"]   { color: var(--color-teal-400); }
+.spt-intel__signal-icon[data-level="critical"] { color: var(--color-rose-400); }
+
+.spt-intel__signal-from {
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin: 0 0 0.15rem;
+  transition: color 0.4s ease;
+}
+
+.spt-intel__signal-from[data-level="high"]     { color: var(--color-emerald-400); }
+.spt-intel__signal-from[data-level="medium"]   { color: var(--color-teal-400); }
+.spt-intel__signal-from[data-level="critical"] { color: var(--color-rose-400); }
+
+.spt-intel__signal-text {
+  font-size: 0.7rem;
+  color: var(--spt-i-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── §17 — Shared text utilities ────────────────────────── */
+
+.spt-intel__dim-insight {
+  font-size: 0.65rem;
+  color: var(--spt-i-text-dim);
+  margin: 0.5rem 0 0;
+  line-height: 1.5;
+}
+
+.spt-intel__dim-alert {
+  font-size: 0.65rem;
+  color: var(--color-amber-400, #d4a017);
+  margin: 0.5rem 0 0;
+}
+
+.spt-intel__dim-empty {
+  font-size: 0.75rem;
+  color: var(--spt-i-text-dim);
+  margin: 0;
+}
+
+.spt-intel__dim-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  font-size: 0.6rem;
+  color: var(--spt-i-text-dim);
+}
+
+.spt-intel__dim-stats-row strong {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  color: var(--spt-i-text-muted);
+}
+
+.spt-intel__dim-stats-row strong[data-color="gold"] {
+  color: var(--color-gold-400, #d4af37);
+}
+
+/* ── §18 — Skeleton Loading ────────────────────────────── */
+
+.spt-intel__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.spt-intel__skeleton-block {
+  border-radius: 8px;
+  background: var(--spt-i-surface);
+  animation: spt-i-shimmer 1.5s ease-in-out infinite;
+}
+
+.spt-intel__skeleton-block--header { height: 32px; width: 60%; }
+.spt-intel__skeleton-block--ring   { height: 100px; width: 100%; }
+.spt-intel__skeleton-block--dim    { height: 60px; width: 100%; }
+
+@keyframes spt-i-shimmer {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.7; }
+}
+
+/* ── §19 — Footer: Narrative (LP 7) ────────────────────── */
+
+.spt-intel__footer {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-i-border);
+}
+
+.spt-intel__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-i-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-i-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §20 — Light Mode ──────────────────────────────────── */
+
+.light .spt-intel {
+  --spt-i-surface: rgba(255, 255, 255, 0.7);
+  --spt-i-border: rgba(0, 0, 0, 0.08);
+  --spt-i-text: #1a1a1a;
+  --spt-i-text-muted: #6b7280;
+  --spt-i-text-dim: #9ca3af;
+}
+
+.light .spt-intel__engage-hero {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-intel__ring-bg {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-intel__kpi-card {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-intel__coach-row {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-intel__coach-row:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.light .spt-intel__signal {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-intel__bar-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ── §21 — Reduced Motion ──────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-intel__dim-content {
+    animation: none;
+  }
+
+  .spt-intel__skeleton-block {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* ── §22 — Responsive ──────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .spt-intel__engage-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .spt-intel__kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .spt-intel__coach-row {
+    flex-wrap: wrap;
+  }
+
+  .spt-intel__coach-stats {
+    width: 100%;
+    margin-left: 2.1rem;
+    margin-top: 0.2rem;
+  }
+}
+
+/* ── §23 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-intel__dim {
+    break-inside: avoid;
+    border: 1px solid #ddd;
+  }
+
+  .spt-intel__dim-content {
+    animation: none;
+  }
+
+  .spt-intel__dim[data-expanded="false"] {
+    display: none;
+  }
+}

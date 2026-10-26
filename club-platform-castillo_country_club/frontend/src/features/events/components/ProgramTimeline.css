@@ -1,0 +1,689 @@
+/* src/features/events/components/ProgramTimeline.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Events Domain — Program Timeline                            */
+/*                                                              */
+/* @namespace  ptl-*                                            */
+/* @keyframes  5 (ptlReveal, ptlPulse, ptlRailFill,            */
+/*              ptlRingFill, ptlChevronRotate)                  */
+/* @signature  Now progress rail + active glow + gap types     */
+/*             + CSS-only expand + completion ring              */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Root */
+/* §1 Header + Completion Ring */
+/* §2 Track + Progress Rail */
+/* §3 Gap Segments */
+/* §4 Timeline Item */
+/* §5 Item Dot */
+/* §6 Item Node */
+/* §7 Item Badges */
+/* §8 Item Details (CSS-only expand) */
+/* §9 Chevron */
+/* §10 Empty State */
+/* §11 Keyframes */
+/* §12 Light Mode */
+/* §13 Reduced Motion */
+/* §14 Responsive */
+/* §15 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Root                                                     */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: ptlReveal 0.4s var(--ease-apple) forwards;
+  opacity: 0;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Header + Completion Ring                                 */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 12px);
+  background: color-mix(in srgb, var(--color-surface-2) 40%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ptl__ring-wrap {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.ptl__ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ptl__ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 3;
+}
+
+.ptl__ring-fill {
+  fill: none;
+  stroke: var(--color-gold-400);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 94.25;
+  stroke-dashoffset: calc(94.25 - (94.25 * var(--ring-pct, 0%)) / 100);
+  transition: stroke-dashoffset 0.6s var(--ease-apple);
+}
+
+.ptl__ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--color-gold-400);
+}
+
+.ptl__header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ptl__header-title {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  line-height: 1.3;
+}
+
+.ptl__header-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 Track + Progress Rail                                    */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl__track {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 20px;
+}
+
+.ptl__rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 7px;
+  width: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ptl__rail-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--tl-progress, 0%);
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--color-gold-400) 0%, var(--color-teal-400) 100%);
+  transition: height 0.6s var(--ease-apple);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 Gap Segments                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl-gap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 8px 16px;
+  opacity: 0;
+  animation: ptlReveal 0.3s var(--ease-apple) forwards;
+  animation-delay: calc(var(--item-i, 0) * 60ms);
+}
+
+.ptl-gap__icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ptl-gap__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.ptl-gap--short .ptl-gap__icon {
+  color: var(--color-silver-600);
+}
+.ptl-gap--short .ptl-gap__label {
+  color: var(--color-silver-600);
+}
+
+.ptl-gap--long .ptl-gap__icon {
+  color: var(--color-amber-400);
+}
+.ptl-gap--long .ptl-gap__label {
+  color: var(--color-amber-400);
+}
+
+.ptl-gap--meal .ptl-gap__icon {
+  color: var(--color-gold-400);
+}
+.ptl-gap--meal .ptl-gap__label {
+  color: var(--color-gold-400);
+  font-weight: 700;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 Timeline Item                                            */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl-item {
+  position: relative;
+  padding: 2px 0;
+  opacity: 0;
+  animation: ptlReveal 0.3s var(--ease-apple) forwards;
+  animation-delay: calc(var(--item-i, 0) * 60ms);
+}
+
+/* Past items — muted */
+.ptl-item--past {
+  opacity: 0.6;
+}
+.ptl-item--past:hover {
+  opacity: 0.8;
+}
+
+/* Active — gold ambient glow */
+.ptl-item--active {
+  opacity: 1;
+}
+.ptl-item--active::before {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-gold-400);
+  animation: ptlPulse 2s ease-in-out infinite;
+  z-index: 2;
+}
+
+/* Next — teal subtle indicator */
+.ptl-item--next {
+  opacity: 1;
+}
+.ptl-item--next::before {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-teal-400);
+  opacity: 0.5;
+  z-index: 2;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Item Dot                                                 */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl-item__dot {
+  position: absolute;
+  left: -17px;
+  top: 14px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-silver-600);
+  border: 2px solid var(--color-surface-1);
+  z-index: 3;
+  transition: background 0.2s var(--ease-apple), transform 0.2s var(--ease-apple);
+}
+
+.ptl-item--active .ptl-item__dot {
+  width: 13px;
+  height: 13px;
+  left: -19px;
+  top: 12px;
+  background: var(--color-gold-400);
+  animation: ptlPulse 2s ease-in-out infinite;
+}
+
+.ptl-item--next .ptl-item__dot {
+  background: var(--color-teal-400);
+}
+
+.ptl-item--past .ptl-item__dot {
+  background: var(--color-silver-700);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Item Node                                                */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl-item__node {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md, 10px);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  position: relative;
+  transition:
+    background 0.15s var(--ease-apple),
+    border-color 0.15s var(--ease-apple);
+}
+.ptl-item__node:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.04);
+}
+.ptl-item__node:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.ptl-item--active .ptl-item__node {
+  background: color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+
+.ptl-item--next .ptl-item__node {
+  background: color-mix(in srgb, var(--color-teal-400) 3%, transparent);
+  border-color: color-mix(in srgb, var(--color-teal-400) 8%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Item Badges                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl-item__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ptl-item__time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-gold-400);
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+.ptl-item__title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  line-height: 1.3;
+}
+
+.ptl-item__badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.ptl-item__badge--now {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  animation: ptlPulse 2s ease-in-out infinite;
+}
+
+.ptl-item__badge--next {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 8%, transparent);
+}
+
+.ptl-item__desc {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-silver-400);
+  line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Item Details (CSS-only expand/collapse)                  */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl-item__details {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s var(--ease-apple);
+}
+.ptl-item__details[data-state="open"] {
+  grid-template-rows: 1fr;
+}
+
+.ptl-item__details-inner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ptl-item__detail {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-500);
+  line-height: 1.3;
+}
+
+.ptl-item__detail-icon {
+  flex-shrink: 0;
+  color: var(--color-silver-600);
+}
+
+.ptl-item__notes {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-amber-400);
+  line-height: 1.4;
+  padding-top: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Chevron                                                  */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl-item__chevron {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: var(--color-silver-600);
+  transition: transform 0.2s var(--ease-apple);
+  pointer-events: none;
+}
+
+.ptl-item__node[aria-expanded="true"] .ptl-item__chevron {
+  transform: rotate(180deg);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §10 Empty State                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.ptl__empty-icon {
+  width: 48px;
+  height: 48px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §11 Keyframes                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes ptlReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ptlPulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+@keyframes ptlRailFill {
+  from { height: 0%; }
+  to   { height: var(--tl-progress, 0%); }
+}
+
+@keyframes ptlRingFill {
+  from { stroke-dashoffset: 94.25; }
+  to   { stroke-dashoffset: calc(94.25 - (94.25 * var(--ring-pct, 0%)) / 100); }
+}
+
+@keyframes ptlChevronRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(180deg); }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §12 Light Mode                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .ptl__header {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .ptl__header-title {
+  color: var(--color-silver-800);
+}
+.light .ptl__header-sub {
+  color: var(--color-silver-500);
+}
+.light .ptl__ring-track {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+.light .ptl__ring-fill {
+  stroke: var(--color-gold-500);
+}
+.light .ptl__ring-label {
+  color: var(--color-gold-500);
+}
+.light .ptl__rail {
+  background: rgba(0, 0, 0, 0.06);
+}
+.light .ptl__rail-fill {
+  background: linear-gradient(180deg, var(--color-gold-500) 0%, var(--color-teal-500) 100%);
+}
+.light .ptl-item__dot {
+  background: var(--color-silver-400);
+  border-color: white;
+}
+.light .ptl-item--active .ptl-item__dot {
+  background: var(--color-gold-500);
+}
+.light .ptl-item--next .ptl-item__dot {
+  background: var(--color-teal-500);
+}
+.light .ptl-item--past .ptl-item__dot {
+  background: var(--color-silver-300);
+}
+.light .ptl-item__node:hover {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+.light .ptl-item--active .ptl-item__node {
+  background: color-mix(in srgb, var(--color-gold-400) 4%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+.light .ptl-item--next .ptl-item__node {
+  background: color-mix(in srgb, var(--color-teal-400) 3%, transparent);
+  border-color: color-mix(in srgb, var(--color-teal-400) 6%, transparent);
+}
+.light .ptl-item__title {
+  color: var(--color-silver-700);
+}
+.light .ptl-item__desc {
+  color: var(--color-silver-500);
+}
+.light .ptl-item__detail {
+  color: var(--color-silver-600);
+}
+.light .ptl-item__detail-icon {
+  color: var(--color-silver-500);
+}
+.light .ptl-item__notes {
+  color: #92400e;
+}
+.light .ptl-item__badge--now {
+  color: #92400e;
+  background: color-mix(in srgb, #b45309 8%, transparent);
+}
+.light .ptl-item__badge--next {
+  color: #0f766e;
+  background: color-mix(in srgb, #0d9488 8%, transparent);
+}
+.light .ptl-gap--short .ptl-gap__icon,
+.light .ptl-gap--short .ptl-gap__label {
+  color: var(--color-silver-500);
+}
+.light .ptl-gap--long .ptl-gap__icon,
+.light .ptl-gap--long .ptl-gap__label {
+  color: #b45309;
+}
+.light .ptl-gap--meal .ptl-gap__icon,
+.light .ptl-gap--meal .ptl-gap__label {
+  color: #92400e;
+}
+.light .ptl-item__chevron {
+  color: var(--color-silver-500);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §13 Reduced Motion                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ptl,
+  .ptl-item,
+  .ptl-gap {
+    animation: none !important;
+    opacity: 1;
+  }
+  .ptl-item--active::before {
+    animation: none;
+    opacity: 0.8;
+  }
+  .ptl-item--active .ptl-item__dot {
+    animation: none;
+  }
+  .ptl-item__badge--now {
+    animation: none;
+  }
+  .ptl-item__details {
+    transition: none;
+  }
+  .ptl-item__chevron {
+    transition: none;
+  }
+  .ptl__rail-fill {
+    transition: none;
+  }
+  .ptl__ring-fill {
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §14 Responsive                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .ptl-item__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .ptl-item__badge {
+    align-self: flex-start;
+  }
+  .ptl-item__chevron {
+    top: 14px;
+    right: 8px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §15 Print                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  .ptl {
+    animation: none;
+    opacity: 1;
+  }
+  .ptl__header {
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+  }
+  .ptl__header-title {
+    color: #111;
+  }
+  .ptl__ring-fill {
+    stroke: #111;
+  }
+  .ptl__rail {
+    background: #d1d5db;
+  }
+  .ptl__rail-fill {
+    background: #111;
+  }
+  .ptl-item,
+  .ptl-gap {
+    animation: none;
+    opacity: 1;
+  }
+  .ptl-item--active::before {
+    display: none;
+  }
+  .ptl-item--active .ptl-item__node {
+    border-color: #111;
+    background: #f9fafb;
+  }
+  .ptl-item__title {
+    color: #111;
+  }
+  .ptl-item__desc {
+    color: #444;
+  }
+  .ptl-item__detail {
+    color: #555;
+  }
+  .ptl-item__notes {
+    color: #92400e;
+  }
+  .ptl-item__time {
+    color: #111;
+  }
+  .ptl-item__dot {
+    border-color: white;
+  }
+  .ptl-item__chevron {
+    display: none;
+  }
+}

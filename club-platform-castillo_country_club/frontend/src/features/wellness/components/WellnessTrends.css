@@ -1,0 +1,382 @@
+/* ═══════════════════════════════════════════════════════════════
+   Wellness Trends — CSS
+   Castillo Country Club — Silver Tide Glass UI
+   Namespace: .glass-wt
+   Keyframes prefix: wtr*
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Root ── */
+.glass-wt {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ═══ Dashboard Strip (P4) ═══ */
+.wt__strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .wt__strip {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 479px) {
+  .wt__strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .wt__strip > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    min-width: 150px;
+  }
+
+  /* Fade edge hint (P4) */
+  .wt__strip::after {
+    content: "";
+    position: sticky;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(90deg, transparent, var(--color-surface-0));
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+}
+
+/* ═══ Chart Card (P3) ═══ */
+.wt__chart-card {
+  background: color-mix(in srgb, var(--color-surface-1) 92%, transparent);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Sky glow (P3) */
+.wt__chart-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    color-mix(in srgb, var(--color-gold-400) 3%, transparent),
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wt__chart-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.wt__chart-title {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--color-silver-100);
+}
+
+.wt__chart-period {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--color-silver-400);
+}
+
+.wt__chart-body {
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══ Tooltip (P3) ═══ */
+.wt__tooltip {
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-surface-2) 95%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.wt__tooltip-title {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  color: var(--color-silver-100);
+}
+
+.wt__tooltip-body {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wt__tooltip-body p {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--color-silver-400);
+}
+
+/* ═══ Details Row ═══ */
+.wt__details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .wt__details {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── Top Activity Spotlight (P7) ── */
+.wt__top-card {
+  background: color-mix(in srgb, var(--color-surface-1) 92%, transparent);
+  backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px 18px;
+  position: relative;
+}
+
+.wt__top-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.wt__top-name {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--color-silver-100);
+  background: linear-gradient(135deg, var(--color-silver-100), var(--color-gold-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.wt__top-rank {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border-radius: 8px;
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  animation: wtrRankPulse 3s ease-in-out infinite;
+}
+
+@keyframes wtrRankPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.wt__top-sub {
+  font-size: 12px;
+  color: var(--color-silver-400);
+  margin-top: 2px;
+  margin-bottom: 12px;
+}
+
+/* Mini bars */
+.wt__top-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wt__top-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wt__top-bar-label {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  min-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wt__top-bar-track {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.wt__top-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.wt__top-bar-count {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+  min-width: 24px;
+  text-align: right;
+}
+
+/* ═══ Goals Card (P5) ═══ */
+.wt__goals-card {
+  background: color-mix(in srgb, var(--color-surface-1) 92%, transparent);
+  backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.wt__goals-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: var(--color-gold-400);
+}
+
+.wt__goals-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wt__pulse-rings {
+  width: 100%;
+  max-width: 200px;
+  display: block;
+  margin: 0 auto;
+}
+
+.wt__pulse-ring {
+  animation: wtrPulseRing 4s ease-in-out infinite;
+}
+
+@keyframes wtrPulseRing {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.65; }
+}
+
+.wt__pulse-count {
+  fill: var(--color-silver-200);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.wt__pulse-label {
+  fill: var(--color-silver-500);
+  font-family: var(--font-ui);
+  font-size: 5px;
+}
+
+.wt__goals-empty {
+  font-size: 13px;
+  color: var(--color-silver-500);
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* ═══ Reduced Motion ═══ */
+@media (prefers-reduced-motion: reduce) {
+  .wt__rank,
+  .wt__pulse-ring {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .wt__top-bar-fill {
+    transition: none;
+  }
+}
+
+/* ═══ Light Mode ═══ */
+.light .wt__chart-card {
+  background: color-mix(in srgb, #ffffff 95%, transparent);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .wt__chart-card::before {
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    color-mix(in srgb, var(--color-gold-400) 2%, transparent),
+    transparent 60%
+  );
+}
+
+.light .wt__chart-title { color: var(--color-silver-900); }
+.light .wt__chart-period { color: var(--color-silver-500); }
+
+.light .wt__tooltip {
+  background: color-mix(in srgb, #ffffff 96%, transparent);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.light .wt__tooltip-title { color: var(--color-silver-900); }
+.light .wt__tooltip-body p { color: var(--color-silver-600); }
+
+.light .wt__top-card,
+.light .wt__goals-card {
+  background: color-mix(in srgb, #ffffff 95%, transparent);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .wt__top-name {
+  background: linear-gradient(135deg, var(--color-silver-900), var(--color-gold-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.light .wt__top-rank {
+  color: var(--color-gold-500);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+
+.light .wt__top-bar-track { background: rgba(0, 0, 0, 0.04); }
+.light .wt__top-label,
+.light .wt__goals-label { color: var(--color-silver-500); }
+.light .wt__top-sub { color: var(--color-silver-500); }
+.light .wt__top-bar-label { color: var(--color-silver-500); }
+.light .wt__top-bar-count { color: var(--color-silver-400); }
+.light .wt__goals-empty { color: var(--color-silver-400); }
+.light .wt__pulse-count { fill: var(--color-silver-800); }
+.light .wt__pulse-label { fill: var(--color-silver-500); }

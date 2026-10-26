@@ -1,0 +1,736 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/GuestList.css
+   Phase 34 "The Gateway" — Guest List Page (Rewrite)
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-list
+   Glass: .glass-gst-list
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-list {
+  --glass-gst-list-version: 1;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-list-bg: rgba(18, 18, 26, 0.5);
+  --gst-list-border: rgba(255, 255, 255, 0.06);
+  --gst-list-text-primary: #f0ece4;
+  --gst-list-text-muted: #7a7570;
+  --gst-list-radius: 16px;
+  --gst-list-card-radius: 12px;
+  --gst-list-surface: rgba(255, 255, 255, 0.02);
+  --gst-list-surface-border: rgba(255, 255, 255, 0.04);
+
+  /* Status colors */
+  --gst-list-emerald: var(--color-emerald-400, #4ecdc4);
+  --gst-list-teal: var(--color-teal-400, #26a69a);
+  --gst-list-amber: var(--color-amber-400, #f5a623);
+  --gst-list-gold: var(--color-gold-400, #d4a853);
+  --gst-list-rose: var(--color-rose-400, #e74c3c);
+  --gst-list-silver: var(--color-silver-400, #9e9e9e);
+}
+
+/* ═══════════════════════════════════════
+   §1 — BASE
+   ═══════════════════════════════════════ */
+
+.gst-list {
+  position: relative;
+}
+
+/* ═══════════════════════════════════════
+   §2 — STATS
+   ═══════════════════════════════════════ */
+
+.gst-list__stats {
+  margin-bottom: 24px;
+}
+
+.gst-list__stats-loading {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.gst-list__skeleton-stat {
+  height: 96px;
+  border-radius: var(--gst-list-card-radius);
+  overflow: hidden;
+}
+
+.gst-list__skeleton-inner {
+  width: 100%;
+  height: 100%;
+}
+
+.gst-list__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  opacity: 0;
+  animation: gst-list-stagger-in 0.4s ease 0.1s forwards;
+}
+
+.gst-list__stat {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px;
+  border-radius: var(--gst-list-card-radius);
+  border: 1px solid var(--gst-list-surface-border);
+  background: var(--gst-list-surface);
+}
+
+.gst-list__stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gst-list__stat-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  color: var(--gst-list-text-muted);
+  margin: 0;
+}
+
+.gst-list__stat-value {
+  font-family: var(--font-display, "Italiana");
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--gst-list-text-primary);
+  margin: 0;
+}
+
+.gst-list__stat-icon-wrap {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gst-list__stat-icon-wrap[data-stat="present"] {
+  background: rgba(78, 205, 196, 0.12);
+  color: var(--gst-list-emerald);
+}
+
+.gst-list__stat-icon-wrap[data-stat="registered"] {
+  background: rgba(212, 168, 83, 0.12);
+  color: var(--gst-list-gold);
+}
+
+.gst-list__stat-icon-wrap[data-stat="departed"] {
+  background: rgba(158, 158, 158, 0.12);
+  color: var(--gst-list-silver);
+}
+
+.gst-list__stat-icon-wrap[data-stat="facilities"] {
+  background: rgba(38, 166, 154, 0.12);
+  color: var(--gst-list-teal);
+}
+
+.gst-list__stat-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* ═══════════════════════════════════════
+   §3 — TABS
+   ═══════════════════════════════════════ */
+
+.gst-list__tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--gst-list-border);
+  margin-bottom: 16px;
+}
+
+.gst-list__tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gst-list-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  min-height: 44px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  outline: none;
+  margin-bottom: -1px;
+}
+
+.gst-list__tab:hover {
+  color: var(--gst-list-text-primary);
+}
+
+.gst-list__tab:focus-visible {
+  outline: 2px solid var(--gst-list-gold);
+  outline-offset: -2px;
+  border-radius: 4px 4px 0 0;
+}
+
+.gst-list__tab[data-active="true"] {
+  color: var(--gst-list-text-primary);
+  border-bottom-color: var(--gst-list-gold);
+}
+
+.gst-list__tab-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.gst-list__tab-badge {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--gst-list-emerald);
+  color: var(--color-abyss, #0d0d0d);
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════
+   §4 — PANELS
+   ═══════════════════════════════════════ */
+
+.gst-list__panel {
+  opacity: 0;
+  animation: gst-list-panel-in 0.25s ease forwards;
+}
+
+/* ═══════════════════════════════════════
+   §5 — FILTER BAR
+   ═══════════════════════════════════════ */
+
+.gst-list__filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.gst-list__filter-count {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  color: var(--gst-list-text-muted);
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════════
+   §6 — GUEST CARDS
+   ═══════════════════════════════════════ */
+
+.gst-list__guest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gst-list__guest-card {
+  padding: 16px;
+  border-radius: var(--gst-list-card-radius);
+  border: 1px solid var(--gst-list-surface-border);
+  background: var(--gst-list-surface);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  opacity: 0;
+  animation: gst-list-card-in 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.05s);
+}
+
+.gst-list__guest-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.gst-list__guest-card[data-status="active"] {
+  border-left: 3px solid var(--gst-list-emerald);
+}
+
+.gst-list__guest-card[data-status="departed"] {
+  border-left: 3px solid var(--gst-list-silver);
+}
+
+.gst-list__guest-card[data-status="no_show"] {
+  border-left: 3px solid var(--gst-list-rose);
+}
+
+.gst-list__guest-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* ── Avatar ── */
+.gst-list__avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.gst-list__avatar-text {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gst-list-text-primary);
+}
+
+.gst-list__guest-info {
+  min-width: 0;
+}
+
+.gst-list__guest-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gst-list-text-primary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gst-list__guest-host {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 13px;
+  color: var(--gst-list-text-muted);
+  margin: 2px 0 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Guest Meta ── */
+.gst-list__guest-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  color: var(--gst-list-text-muted);
+}
+
+.gst-list__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gst-list__meta-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Status Badge ── */
+.gst-list__status-badge {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  color: var(--badge-color, var(--gst-list-text-muted));
+  background: var(--badge-bg, rgba(255, 255, 255, 0.06));
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════
+   §7 — TRIAL CARDS
+   ═══════════════════════════════════════ */
+
+.gst-list__trial-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gst-list__trial-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--gst-list-card-radius);
+  border: 1px solid var(--gst-list-surface-border);
+  background: var(--gst-list-surface);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  opacity: 0;
+  animation: gst-list-card-in 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.05s);
+}
+
+.gst-list__trial-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.gst-list__trial-card[data-status="active"] {
+  border-left: 3px solid var(--gst-list-teal);
+}
+
+.gst-list__trial-card[data-status="converted"] {
+  border-left: 3px solid var(--gst-list-emerald);
+}
+
+.gst-list__trial-card[data-status="expired"] {
+  border-left: 3px solid var(--gst-list-silver);
+}
+
+.gst-list__trial-card[data-status="cancelled"] {
+  border-left: 3px solid var(--gst-list-rose);
+}
+
+.gst-list__trial-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.gst-list__trial-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.gst-list__trial-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gst-list-text-primary);
+  margin: 0;
+}
+
+.gst-list__trial-host {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 13px;
+  color: var(--gst-list-text-muted);
+  margin: 0 0 8px 0;
+}
+
+.gst-list__trial-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  color: var(--gst-list-text-muted);
+}
+
+/* ── Trial Aside ── */
+.gst-list__trial-aside {
+  flex-shrink: 0;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.gst-list__countdown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gst-list__countdown-value {
+  font-family: var(--font-display, "Italiana");
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--gst-list-text-primary);
+  margin: 0;
+}
+
+.gst-list__countdown[data-level="critical"] .gst-list__countdown-value {
+  color: var(--gst-list-rose);
+}
+
+.gst-list__countdown[data-level="attention"] .gst-list__countdown-value {
+  color: var(--gst-list-amber);
+}
+
+.gst-list__countdown-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  color: var(--gst-list-text-muted);
+  margin: 0;
+}
+
+.gst-list__probability {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gst-list__probability-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  color: var(--gst-list-text-muted);
+  margin: 0;
+}
+
+.gst-list__probability-value {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.gst-list__probability[data-level="high"] .gst-list__probability-value {
+  color: var(--gst-list-emerald);
+}
+
+.gst-list__probability[data-level="medium"] .gst-list__probability-value {
+  color: var(--gst-list-amber);
+}
+
+.gst-list__probability[data-level="low"] .gst-list__probability-value {
+  color: var(--gst-list-rose);
+}
+
+/* ═══════════════════════════════════════
+   §8 — CONVERSION BANNER
+   ═══════════════════════════════════════ */
+
+.gst-list__conversion-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--gst-list-card-radius);
+  border: 1px solid rgba(212, 168, 83, 0.15);
+  background: rgba(212, 168, 83, 0.06);
+  margin-bottom: 16px;
+}
+
+.gst-list__conversion-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--gst-list-gold);
+  flex-shrink: 0;
+}
+
+.gst-list__conversion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gst-list__conversion-rate {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gst-list-text-primary);
+  margin: 0;
+}
+
+.gst-list__conversion-active {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--gst-list-text-muted);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════
+   §9 — SKELETON / EMPTY
+   ═══════════════════════════════════════ */
+
+.gst-list__skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gst-list__skeleton-card {
+  height: 96px;
+  border-radius: var(--gst-list-card-radius);
+  overflow: hidden;
+}
+
+.gst-list__empty {
+  padding: 24px 0;
+}
+
+/* ═══════════════════════════════════════
+   §10 — PAGINATION
+   ═══════════════════════════════════════ */
+
+.gst-list__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gst-list-border);
+}
+
+.gst-list__pagination-total {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  color: var(--gst-list-text-muted);
+  margin: 0;
+}
+
+.gst-list__pagination-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════
+   §11 — ANIMATIONS
+   ═══════════════════════════════════════ */
+
+@keyframes gst-list-stagger-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gst-list-panel-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes gst-list-card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════
+   §12 — REDUCED MOTION
+   ═══════════════════════════════════════ */
+
+[data-prefers-reduced="true"] .gst-list__stats-grid,
+[data-prefers-reduced="true"] .gst-list__panel,
+[data-prefers-reduced="true"] .gst-list__guest-card,
+[data-prefers-reduced="true"] .gst-list__trial-card {
+  animation: none;
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════
+   §13 — LIGHT MODE
+   ═══════════════════════════════════════ */
+
+.light .gst-list {
+  --gst-list-bg: rgba(255, 255, 255, 0.85);
+  --gst-list-border: rgba(0, 0, 0, 0.08);
+  --gst-list-text-primary: #1a1a2e;
+  --gst-list-text-muted: #6b6b78;
+  --gst-list-surface: rgba(0, 0, 0, 0.02);
+  --gst-list-surface-border: rgba(0, 0, 0, 0.04);
+}
+
+.light .gst-list__guest-card {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.light .gst-list__trial-card {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* ═══════════════════════════════════════
+   §14 — RESPONSIVE
+   ═══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .gst-list__stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .gst-list__stat {
+    padding: 12px;
+  }
+
+  .gst-list__stat-value {
+    font-size: 22px;
+  }
+
+  .gst-list__tab {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .gst-list__guest-card {
+    padding: 12px;
+  }
+
+  .gst-list__guest-meta {
+    gap: 8px;
+  }
+
+  .gst-list__trial-card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .gst-list__trial-aside {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 16px;
+  }
+
+  .gst-list__countdown-value {
+    font-size: 22px;
+  }
+
+  .gst-list__pagination {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-list__stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════
+   §15 — PRINT
+   ═══════════════════════════════════════ */
+
+@media print {
+  .gst-list__guest-card,
+  .gst-list__trial-card {
+    background: white;
+    border-color: #ddd;
+    animation: none;
+    opacity: 1;
+  }
+
+  .gst-list__tabs {
+    display: none;
+  }
+
+  .gst-list__pagination {
+    display: none;
+  }
+}

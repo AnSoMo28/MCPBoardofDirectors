@@ -1,0 +1,545 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/GuestManagementDashboard.css
+   Phase 34 "The Gateway" — "La Gran Sala"
+   Level 6+ Agency · Production Grade
+
+   The living room of guest intelligence.
+   Mode-adaptive layout that reorganizes based on urgency.
+
+   BEM: .gst-dashboard
+   Glass: .glass-gst-dashboard
+
+   Checklist: CSS-1 through CSS-40, ORCH-1 through ORCH-10
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-dashboard {
+  --glass-gst-dashboard-version: 1;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-dash-content-gap: 20px;
+  --gst-dash-visuals-gap: 16px;
+  --gst-dash-tab-skeleton-height: 300px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §A — BASE STRUCTURE
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Root container — holds canvas + content ── */
+.gst-dashboard {
+  position: relative;
+  min-height: 60vh;
+  overflow: hidden;
+}
+
+/* ── Content layer — sits above the canvas ── */
+.gst-dashboard__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gst-dash-content-gap);
+}
+
+/* ── Section wrapper — each intelligence layer ── */
+.gst-dashboard__section {
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §B — VISUALS GRID (River + StarMap)
+   Mode-adaptive: column ratios change per mode.
+   This is the heart of the living layout.
+   ═══════════════════════════════════════════════════════════ */
+
+.gst-dashboard__visuals {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: var(--gst-dash-visuals-gap);
+  transition: grid-template-columns 0.4s ease;
+}
+
+/* ── CALM: balanced view ── */
+.gst-dashboard__visuals[data-mode="calm"] {
+  grid-template-columns: 7fr 5fr;
+}
+
+/* ── ALERT: river dominates ── */
+.gst-dashboard__visuals[data-mode="alert"] {
+  grid-template-columns: 8fr 4fr;
+}
+
+/* ── CRITICAL: river ONLY — stars hidden ── */
+.gst-dashboard__visuals[data-mode="critical"] {
+  grid-template-columns: 1fr;
+}
+
+.gst-dashboard__visuals[data-mode="critical"] > [data-layer="starmap"] {
+  display: none;
+}
+
+/* ── CELEBRATION: stars dominate ── */
+.gst-dashboard__visuals[data-mode="celebration"] {
+  grid-template-columns: 5fr 7fr;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §C — TABS SECTION
+   ═══════════════════════════════════════════════════════════ */
+
+.gst-dashboard__tabs-nav {
+  position: relative;
+}
+
+.gst-dashboard__tab-content {
+  position: relative;
+}
+
+/* ── Tab panel skeleton ── */
+.gst-dashboard__tab-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 24px;
+}
+
+.gst-dashboard__skeleton-heading {
+  height: 32px;
+  width: 180px;
+  border-radius: 6px;
+}
+
+.gst-dashboard__skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.gst-dashboard__skeleton-card {
+  height: 100px;
+  border-radius: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §D — LOADING STATE
+   ═══════════════════════════════════════════════════════════ */
+
+.gst-dashboard[data-state="loading"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+}
+
+.gst-dashboard__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.gst-dashboard__loading-spinner {
+  width: 32px;
+  height: 32px;
+  color: var(--gst-accent);
+  animation: gst-dashboard-spin 1s linear infinite;
+}
+
+.gst-dashboard__loading-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 14px;
+  color: var(--gst-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §E — ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes gst-dashboard-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §F — REDUCED MOTION
+   ═══════════════════════════════════════════════════════════ */
+
+[data-prefers-reduced="true"] .gst-dashboard__loading-spinner {
+  animation: none;
+}
+
+[data-prefers-reduced="true"] .gst-dashboard__visuals {
+  transition: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §G — LIGHT MODE
+   ═══════════════════════════════════════════════════════════ */
+
+.light .gst-dashboard__loading-spinner {
+  color: #8b6914;
+}
+
+.light .gst-dashboard__loading-text {
+  color: #6b6b78;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §H — RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Tablet: stack visuals vertically ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-dashboard__visuals {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .gst-dashboard__skeleton-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Mobile: everything stacked, full width ── */
+@media (max-width: 768px) {
+  .gst-dashboard__content {
+    gap: 16px;
+  }
+
+  .gst-dashboard__visuals {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Stars always visible on mobile (override critical hide) */
+  .gst-dashboard__visuals[data-mode="critical"] > [data-layer="starmap"] {
+    display: block;
+  }
+
+  .gst-dashboard__skeleton-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §I — PRINT
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .gst-dashboard {
+    min-height: auto;
+  }
+
+  .gst-dashboard__loading {
+    display: none;
+  }
+
+  .gst-dashboard__visuals {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/GuestManagementDashboard.css
+   Phase 34 "The Gateway" — "La Gran Sala" (merged)
+   Level 6+ Agency · Production Grade
+
+   Merges original component layout with new Concierge layers.
+
+   BEM: .gst-dashboard
+   Glass: .glass-gst-dashboard
+
+   Checklist: CSS-1 through CSS-40, ORCH-1 through ORCH-10
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-dashboard {
+  --glass-gst-dashboard-version: 2;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-dash-content-gap: 20px;
+  --gst-dash-visuals-gap: 16px;
+  --gst-dash-summary-gap: 16px;
+  --gst-dash-tab-skeleton-height: 300px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §A — BASE STRUCTURE
+   ═══════════════════════════════════════════════════════════ */
+
+.gst-dashboard {
+  position: relative;
+  min-height: 60vh;
+  overflow: hidden;
+}
+
+.gst-dashboard__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gst-dash-content-gap);
+}
+
+.gst-dashboard__section {
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §B — SUMMARY (Health Score + Pipeline Predictor)
+   Side by side on desktop, stacked on mobile.
+   ═══════════════════════════════════════════════════════════ */
+
+.gst-dashboard__summary {
+  display: grid;
+  grid-template-columns: 4fr 8fr;
+  gap: var(--gst-dash-summary-gap);
+}
+
+.gst-dashboard__health {
+  position: relative;
+}
+
+.gst-dashboard__predictor {
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §C — VISUALS GRID (River + StarMap)
+   Mode-adaptive: column ratios change per urgency mode.
+   ═══════════════════════════════════════════════════════════ */
+
+.gst-dashboard__visuals {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: var(--gst-dash-visuals-gap);
+  transition: grid-template-columns 0.4s ease;
+}
+
+/* ── CALM: balanced view ── */
+.gst-dashboard__visuals[data-mode="calm"] {
+  grid-template-columns: 7fr 5fr;
+}
+
+/* ── ALERT: river dominates ── */
+.gst-dashboard__visuals[data-mode="alert"] {
+  grid-template-columns: 8fr 4fr;
+}
+
+/* ── CRITICAL: river ONLY — stars hidden ── */
+.gst-dashboard__visuals[data-mode="critical"] {
+  grid-template-columns: 1fr;
+}
+
+.gst-dashboard__visuals[data-mode="critical"] > [data-layer="starmap"] {
+  display: none;
+}
+
+/* ── CELEBRATION: stars dominate ── */
+.gst-dashboard__visuals[data-mode="celebration"] {
+  grid-template-columns: 5fr 7fr;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §D — TABS
+   ═══════════════════════════════════════════════════════════ */
+
+.gst-dashboard__tabs-nav {
+  position: relative;
+}
+
+.gst-dashboard__tab-content {
+  position: relative;
+}
+
+/* ── Tab panel skeleton ── */
+.gst-dashboard__tab-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 24px;
+}
+
+.gst-dashboard__skeleton-heading {
+  height: 32px;
+  width: 180px;
+  border-radius: 6px;
+}
+
+.gst-dashboard__skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.gst-dashboard__skeleton-grid-wide {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.gst-dashboard__skeleton-card {
+  height: 100px;
+  border-radius: 12px;
+}
+
+.gst-dashboard__skeleton-card-lg {
+  height: 140px;
+  border-radius: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §E — LOADING STATE
+   ═══════════════════════════════════════════════════════════ */
+
+.gst-dashboard[data-state="loading"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+}
+
+.gst-dashboard__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.gst-dashboard__loading-spinner {
+  width: 32px;
+  height: 32px;
+  color: var(--gst-accent);
+  animation: gst-dashboard-spin 1s linear infinite;
+}
+
+.gst-dashboard__loading-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 14px;
+  color: var(--gst-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §F — ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes gst-dashboard-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §G — REDUCED MOTION
+   ═══════════════════════════════════════════════════════════ */
+
+[data-prefers-reduced="true"] .gst-dashboard__loading-spinner {
+  animation: none;
+}
+
+[data-prefers-reduced="true"] .gst-dashboard__visuals {
+  transition: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §H — LIGHT MODE
+   ═══════════════════════════════════════════════════════════ */
+
+.light .gst-dashboard__loading-spinner {
+  color: #8b6914;
+}
+
+.light .gst-dashboard__loading-text {
+  color: #6b6b78;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §I — RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Tablet ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-dashboard__summary {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .gst-dashboard__visuals {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .gst-dashboard__skeleton-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gst-dashboard__skeleton-grid-wide {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .gst-dashboard__content {
+    gap: 16px;
+  }
+
+  .gst-dashboard__summary {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .gst-dashboard__visuals {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Stars always visible on mobile (override critical hide) */
+  .gst-dashboard__visuals[data-mode="critical"] > [data-layer="starmap"] {
+    display: block;
+  }
+
+  .gst-dashboard__skeleton-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gst-dashboard__skeleton-grid-wide {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §J — PRINT
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .gst-dashboard {
+    min-height: auto;
+  }
+
+  .gst-dashboard__loading {
+    display: none;
+  }
+
+  .gst-dashboard__summary {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .gst-dashboard__visuals {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}

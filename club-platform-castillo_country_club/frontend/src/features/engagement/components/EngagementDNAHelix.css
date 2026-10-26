@@ -1,0 +1,342 @@
+/* src/features/engagement/components/EngagementDNAHelix.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Glass namespace: glass-eng-dna                              */
+/* "The DNA Helix" — Engagement profile evolution (SIGNATURE)  */
+/* ═══════════════════════════════════════════════════════════ */
+
+[data-glass-eng-dna] {
+  --local-surface: var(--color-surface-1, #1a1a1a);
+  --local-surface-hover: var(--color-surface-2, #222222);
+  --local-border: rgba(255, 255, 255, 0.06);
+  --local-text: var(--color-silver-200, #e0dcd4);
+  --local-text-muted: var(--color-silver-400, #8a8580);
+  --local-text-dim: var(--color-silver-500, #6a6560);
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
+
+.eng-dna {
+  background: var(--local-surface);
+  border: 1px solid var(--local-border);
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  animation: eng-dna-fadeUp 0.6s ease forwards;
+  animation-delay: 0.4s;
+}
+
+/* ── State accent ───────────────────────────────────────── */
+
+[data-glass-eng-dna][data-trend="mutating"] {
+  border-left: 3px solid var(--color-terracotta-400);
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.eng-dna__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--local-border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.eng-dna__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--local-text);
+}
+
+.eng-dna__header-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eng-dna__mutation-count {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-terracotta-400);
+  background: color-mix(in srgb, var(--color-terracotta-400) 10%, transparent);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.eng-dna__mutation-alert {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+  padding: 3px 10px;
+  border-radius: 999px;
+  animation: eng-dna-alert-pulse 2s ease-in-out infinite;
+}
+
+/* ── SVG Canvas ─────────────────────────────────────────── */
+
+.eng-dna__canvas {
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eng-dna__canvas svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ── Strands ────────────────────────────────────────────── */
+
+.eng-dna__strand {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.eng-dna__strand--activity {
+  animation: eng-dna-strand-draw 2s ease forwards;
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+}
+
+.eng-dna__strand--preference {
+  animation: eng-dna-strand-draw 2s ease forwards;
+  animation-delay: 0.3s;
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+}
+
+/* ── Mutation diamonds ──────────────────────────────────── */
+
+.eng-dna__diamond {
+  transition: fill-opacity 0.2s ease, stroke-width 0.2s ease;
+}
+
+.eng-dna__mutation:hover .eng-dna__diamond {
+  fill-opacity: 0.9;
+  stroke-width: 2;
+}
+
+/* ── Legend ──────────────────────────────────────────────── */
+
+.eng-dna__legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--local-border);
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.eng-dna__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  color: var(--local-text-muted);
+}
+
+.eng-dna__legend-strand {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.eng-dna__legend-strand--activity {
+  background: var(--color-teal-400);
+}
+
+.eng-dna__legend-strand--preference {
+  background: var(--color-gold-400);
+}
+
+.eng-dna__legend-diamond {
+  width: 8px;
+  height: 8px;
+  background: var(--color-terracotta-400);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+/* ── Mutation List ──────────────────────────────────────── */
+
+.eng-dna__mutation-list {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--local-border);
+}
+
+.eng-dna__mutation-list-title {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--local-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.eng-dna__mutation-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+}
+
+.eng-dna__mutation-item:hover {
+  background: var(--local-surface-hover);
+  border-color: var(--local-border);
+}
+
+.eng-dna__mutation-item:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.eng-dna__mutation-severity {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.eng-dna__mutation-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eng-dna__mutation-family {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--local-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eng-dna__mutation-shift {
+  font-size: 11px;
+  color: var(--local-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eng-dna__mutation-confidence {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+}
+
+/* ── Keyframes ──────────────────────────────────────────── */
+
+@keyframes eng-dna-fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes eng-dna-strand-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes eng-dna-alert-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ── Light Mode ─────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  [data-glass-eng-dna] {
+    --local-surface: #ffffff;
+    --local-surface-hover: #f5f3f0;
+    --local-border: rgba(0, 0, 0, 0.08);
+    --local-text: #1a1a1a;
+    --local-text-muted: #5a5550;
+    --local-text-dim: #8a8580;
+  }
+}
+
+/* ── Reduced Motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .eng-dna {
+    animation: none;
+    opacity: 1;
+  }
+
+  .eng-dna__strand--activity,
+  .eng-dna__strand--preference {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .eng-dna__mutation-alert {
+    animation: none;
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .eng-dna {
+    padding: 16px;
+  }
+
+  .eng-dna__canvas {
+    min-height: 180px;
+  }
+
+  .eng-dna__legend {
+    gap: 10px;
+  }
+
+  .eng-dna__legend-item {
+    font-size: 9px;
+  }
+
+  .eng-dna__mutation-item {
+    padding: 6px 8px;
+  }
+}

@@ -1,0 +1,176 @@
+/**
+ * @component ThePulse
+ * @namespace .glass-pulse-*
+ * @depends globals.css (glass tokens, keyframes: halo-breathe, critical-halo-breathe)
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   THE PULSE — Glass cards + Halos + Glow + Animations
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Expanded grid card ── */
+.glass-pulse-card {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.glass-pulse-card:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glass-pulse-card--global {
+  border-color: rgba(201, 169, 110, 0.20);
+}
+
+.glass-pulse-card--global:hover {
+  border-color: rgba(201, 169, 110, 0.35);
+  box-shadow: 0 8px 32px rgba(201, 169, 110, 0.15);
+}
+
+.glass-pulse-card--critical {
+  border-color: rgba(196, 100, 112, 0.20);
+}
+
+.glass-pulse-card--critical:hover {
+  border-color: rgba(196, 100, 112, 0.35);
+  box-shadow: 0 8px 32px rgba(196, 100, 112, 0.15);
+}
+
+.light .glass-pulse-card {
+  background: rgba(255, 255, 255, 0.80);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-pulse-card:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+/* ── Halo glow (behind card) ── */
+.glass-pulse-card__halo {
+  position: absolute;
+  inset: -12px;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at center, var(--halo-color, rgba(255, 255, 255, 0.03)) 0%, transparent 70%);
+  opacity: 0.4;
+  animation: halo-breathe 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform, opacity;
+}
+
+.glass-pulse-card__halo--critical {
+  animation: critical-halo-breathe 2s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+/* ── Hover glow (inside card, on hover) ── */
+.glass-pulse-card__hover-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 50%, var(--glow-color, rgba(255, 255, 255, 0.04)) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glass-pulse-card:hover .glass-pulse-card__hover-glow {
+  opacity: 1;
+}
+
+/* ── Gauge glow (drop-shadow on SVG container) ── */
+.glass-pulse-gauge--critical {
+  filter: drop-shadow(0 0 8px rgba(196, 100, 112, 0.5));
+}
+
+.glass-pulse-gauge--global {
+  filter: drop-shadow(0 0 8px rgba(201, 169, 110, 0.5));
+}
+
+/* ── Compact mode wrapper ── */
+.glass-pulse-compact {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.light .glass-pulse-compact {
+  background: rgba(255, 255, 255, 0.80);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* ── Compact breathing ambient ── */
+.glass-pulse-compact__breath {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 100%, rgba(201, 169, 110, 0.04) 0%, transparent 60%);
+  animation: halo-breathe 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Glass separator (on-demand toggle) ── */
+.glass-pulse-separator {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.glass-pulse-separator:hover {
+  opacity: 0.8;
+}
+
+.glass-pulse-separator:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.glass-pulse-separator__line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-border-hover), transparent);
+}
+
+/* ── Critical badge pulse ── */
+@keyframes badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.glass-pulse-badge--critical {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* ── Trend arrow bounce-in ── */
+@keyframes trend-bounce {
+  0% { opacity: 0; transform: scale(0.5) translateY(4px); }
+  60% { opacity: 1; transform: scale(1.2) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.glass-pulse-trend-enter {
+  animation: trend-bounce 0.4s ease-out forwards;
+}

@@ -1,0 +1,137 @@
+/**
+ * CulturalPulse — Heartbeat indicator
+ *
+ * Animated SVG pulse with severity counts.
+ * The pulse "breathes" at the speed of the current dashboard mode.
+ * Urgent mode adds a rapid flash effect.
+ */
+
+.cultural-pulse {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  font-family: 'DM Mono', monospace;
+}
+
+.cultural-pulse:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.cultural-pulse--urgent {
+  border-color: rgba(239, 68, 68, 0.3);
+  animation: pulse-urgent-flash 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-urgent-flash {
+  0%, 100% { border-color: rgba(239, 68, 68, 0.3); }
+  50% { border-color: rgba(239, 68, 68, 0.6); }
+}
+
+/* ── SVG ── */
+.cultural-pulse__svg {
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.cultural-pulse__glow-ring {
+  animation: pulse-ring-expand var(--pulse-speed, 2s) ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes pulse-ring-expand {
+  0%, 100% {
+    r: 18;
+    opacity: 0.2;
+  }
+  50% {
+    r: 22;
+    opacity: 0.05;
+  }
+}
+
+.cultural-pulse__circle {
+  animation: pulse-breathe var(--pulse-speed, 2s) ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes pulse-breathe {
+  0%, 100% {
+    r: 14;
+    opacity: 0.12;
+  }
+  50% {
+    r: 16;
+    opacity: 0.2;
+  }
+}
+
+.cultural-pulse__core {
+  animation: pulse-core-glow var(--pulse-speed, 2s) ease-in-out infinite;
+}
+
+@keyframes pulse-core-glow {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
+}
+
+.cultural-pulse__ecg {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: pulse-ecg-draw calc(var(--pulse-speed, 2s) * 2) linear infinite;
+}
+
+@keyframes pulse-ecg-draw {
+  0% { stroke-dashoffset: 120; }
+  50% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -120; }
+}
+
+/* ── Info ── */
+.cultural-pulse__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.cultural-pulse__label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--pulse-color, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.cultural-pulse__counts {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.cultural-pulse__count {
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.cultural-pulse__count--high {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.cultural-pulse__count--medium {
+  color: #fde68a;
+  background: rgba(234, 179, 8, 0.12);
+}
+
+.cultural-pulse__count--low {
+  color: #93c5fd;
+  background: rgba(96, 165, 250, 0.1);
+}

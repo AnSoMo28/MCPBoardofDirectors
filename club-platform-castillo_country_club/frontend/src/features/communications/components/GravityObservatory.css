@@ -1,0 +1,392 @@
+/* src/features/communications/components/GravityObservatory.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Gravity Observatory — Retention Physics                     */
+/* Phase 31 — Silver Tide Glass UI                            */
+/* Namespace: .glass-comm-observatory                         */
+/* ═══════════════════════════════════════════════════════════ */
+
+.glass-comm-observatory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-xl, 1rem);
+  padding: var(--space-4, 1rem);
+  backdrop-filter: blur(8px);
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+.observatory__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.observatory__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+}
+
+.observatory__escape-badge {
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.observatory__escape-badge[data-risk="safe"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 12%, transparent);
+}
+.observatory__escape-badge[data-risk="drifting"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+.observatory__escape-badge[data-risk="approaching"] {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+.observatory__escape-badge[data-risk="critical"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+  animation: observatory-pulse 2s ease-in-out infinite;
+}
+
+/* ── Visual ───────────────────────────────────────────── */
+
+.observatory__visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+}
+
+.observatory__svg {
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  overflow: visible;
+}
+
+/* Gravity field gradient */
+.observatory__field-inner { stop-color: var(--color-teal-400); }
+.observatory__field-mid { stop-color: var(--color-teal-400); }
+.observatory__field-outer { stop-color: transparent; }
+
+.glass-comm-observatory[data-escape-risk="approaching"] .observatory__field-inner { stop-color: var(--color-gold-400); }
+.glass-comm-observatory[data-escape-risk="approaching"] .observatory__field-mid { stop-color: var(--color-gold-400); }
+.glass-comm-observatory[data-escape-risk="critical"] .observatory__field-inner { stop-color: var(--color-rose-400); }
+.glass-comm-observatory[data-escape-risk="critical"] .observatory__field-mid { stop-color: var(--color-rose-400); }
+
+/* Gravity rings */
+.observatory__gravity-ring {
+  stroke: var(--color-silver-500);
+  stroke-width: 0.8;
+}
+
+/* Escape threshold */
+.observatory__escape-threshold {
+  stroke: var(--color-rose-400);
+  stroke-width: 1.5;
+  stroke-dasharray: "4 3";
+  opacity: 0.4;
+}
+
+.observatory__escape-threshold[data-active="true"] {
+  opacity: 0.8;
+  animation: observatory-threshold-pulse 3s ease-in-out infinite;
+}
+
+/* Retention zone */
+.observatory__retention-zone {
+  fill: var(--color-teal-400);
+  opacity: 0.12;
+  transition: r 1s ease, opacity 0.5s ease;
+}
+
+.observatory__retention-zone[data-risk="drifting"] { fill: var(--color-amber-400); opacity: 0.1; }
+.observatory__retention-zone[data-risk="approaching"] { fill: var(--color-gold-400); opacity: 0.1; }
+.observatory__retention-zone[data-risk="critical"] {
+  fill: var(--color-rose-400);
+  opacity: 0.08;
+  animation: observatory-shrink 4s ease-in-out infinite;
+}
+
+/* Member dot */
+.observatory__member-dot {
+  fill: var(--color-teal-400);
+  opacity: 0.4;
+}
+
+.observatory__member-dot[data-risk="approaching"] { fill: var(--color-gold-400); }
+.observatory__member-dot[data-risk="critical"] { fill: var(--color-rose-400); }
+
+.observatory__member-core {
+  fill: var(--color-teal-400);
+}
+
+.observatory__member-core[data-risk="safe"] { fill: var(--color-emerald-400); }
+.observatory__member-core[data-risk="drifting"] { fill: var(--color-amber-400); }
+.observatory__member-core[data-risk="approaching"] { fill: var(--color-gold-400); }
+.observatory__member-core[data-risk="critical"] { fill: var(--color-rose-400); }
+
+/* Social connections */
+.observatory__connection-line {
+  stroke: var(--color-silver-500);
+  stroke-width: 0.8;
+  opacity: 0.2;
+  stroke-dasharray: "2 4";
+}
+
+.observatory__connection-line[data-risk="critical"] {
+  stroke: var(--color-rose-400);
+  opacity: 0.35;
+}
+
+.observatory__connection-dot {
+  fill: var(--color-silver-400);
+  opacity: 0.5;
+}
+
+.observatory__retention-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.7;
+}
+
+/* ── Escape Velocity Gauge ────────────────────────────── */
+
+.observatory__velocity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  width: 100%;
+  max-width: 200px;
+}
+
+.observatory__velocity-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #7a7570);
+  white-space: nowrap;
+}
+
+.observatory__velocity-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.observatory__velocity-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--color-emerald-400);
+  transition: width 1s ease, background 0.5s ease;
+}
+
+.observatory__velocity-fill[data-risk="drifting"] { background: var(--color-amber-400); }
+.observatory__velocity-fill[data-risk="approaching"] { background: var(--color-gold-400); }
+.observatory__velocity-fill[data-risk="critical"] { background: var(--color-rose-400); }
+
+.observatory__velocity-threshold {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: 10px;
+  background: var(--color-rose-400);
+  opacity: 0.5;
+}
+
+.observatory__velocity-value {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  min-width: 2rem;
+  text-align: right;
+}
+
+.observatory__velocity-value[data-risk="critical"] { color: var(--color-rose-400); }
+.observatory__velocity-value[data-risk="approaching"] { color: var(--color-gold-400); }
+
+/* ── Stats Strip ──────────────────────────────────────── */
+
+.observatory__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2, 0.5rem);
+  padding-top: var(--space-3, 0.75rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.observatory__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.observatory__stat-value {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.observatory__stat-value[data-silence="alert"] { color: var(--color-gold-400); }
+.observatory__stat-value[data-silence="critical"] { color: var(--color-rose-400); }
+.observatory__stat-value[data-risk="approaching"] { color: var(--color-gold-400); }
+.observatory__stat-value[data-risk="critical"] { color: var(--color-rose-400); }
+
+.observatory__stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+  text-align: center;
+}
+
+/* ── Cascade Risk ─────────────────────────────────────── */
+
+.observatory__cascade {
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-md, 0.5rem);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  border-left: 3px solid var(--color-gold-400);
+}
+
+.observatory__cascade[data-mechanism="social_influence"] {
+  border-left-color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+}
+
+.observatory__cascade-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-gold-400);
+  margin-bottom: 2px;
+}
+
+.observatory__cascade[data-mechanism="social_influence"] .observatory__cascade-label {
+  color: var(--color-rose-400);
+}
+
+.observatory__cascade-text {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* ── Silence Timeline ─────────────────────────────────── */
+
+.observatory__timeline {
+  padding-top: var(--space-3, 0.75rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.observatory__timeline-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #7a7570);
+  margin-bottom: var(--space-2, 0.5rem);
+}
+
+.observatory__timeline-strip {
+  display: flex;
+  gap: 1px;
+  height: 12px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.observatory__timeline-block {
+  border-radius: 2px;
+  opacity: 0;
+  animation: observatory-block-appear 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.04s);
+  min-width: 3px;
+}
+
+.observatory__timeline-block[data-type="activity"] {
+  background: var(--color-teal-400);
+  opacity: 0.7;
+}
+
+.observatory__timeline-block[data-type="silence"] {
+  background: color-mix(in srgb, var(--text-primary) 15%, transparent);
+}
+
+.observatory__timeline-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-1, 0.25rem);
+  font-size: 0.65rem;
+  color: var(--text-muted, #7a7570);
+}
+
+/* ── Animations ───────────────────────────────────────── */
+
+@keyframes observatory-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes observatory-threshold-pulse {
+  0%, 100% { opacity: 0.4; stroke-width: 1.5; }
+  50% { opacity: 0.9; stroke-width: 2.5; }
+}
+
+@keyframes observatory-shrink {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.15; }
+}
+
+@keyframes observatory-block-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Light Mode ───────────────────────────────────────── */
+
+.light .glass-comm-observatory {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .observatory__retention-zone { opacity: 0.1; }
+.light .observatory__gravity-ring { stroke: #ccc; }
+.light .observatory__connection-line { stroke: #bbb; }
+
+/* ── Reduced Motion ───────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .observatory__escape-badge[data-risk="critical"],
+  .observatory__escape-threshold,
+  .observatory__retention-zone[data-risk="critical"] {
+    animation: none !important;
+  }
+
+  .observatory__timeline-block {
+    animation: none !important;
+    opacity: 1;
+  }
+}

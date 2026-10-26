@@ -1,0 +1,728 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/FamilyForm.css
+   Phase 34+ Migration — Family Form Wizard Styles
+   Level 6+ Agency · Production Grade
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Layout — Form + Sidebar
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+.fm-familyForm__form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Step Panel
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__step {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fm-formFadeUp 0.35s ease forwards;
+}
+
+.fm-familyForm__panel {
+  animation: fm-formFadeUp 0.3s ease forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Form Controls
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-0);
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fm-familyForm__input::placeholder {
+  color: var(--color-silver-600);
+}
+
+.fm-familyForm__input:focus {
+  outline: none;
+  border-color: var(--color-gold-400);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+
+.fm-familyForm__input[data-error] {
+  border-color: var(--color-rose-400);
+}
+
+.fm-familyForm__input[data-error]:focus {
+  border-color: var(--color-rose-400);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+}
+
+.fm-familyForm__select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-0);
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  appearance: auto;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.fm-familyForm__select:focus {
+  outline: none;
+  border-color: var(--color-gold-400);
+}
+
+.fm-familyForm__textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-0);
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  resize: none;
+  transition: border-color 0.15s ease;
+}
+
+.fm-familyForm__textarea::placeholder {
+  color: var(--color-silver-600);
+}
+
+.fm-familyForm__textarea:focus {
+  outline: none;
+  border-color: var(--color-gold-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Tier Selection Grid
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.fm-familyForm__tier-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-0);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+
+.fm-familyForm__tier-card:hover {
+  border-color: var(--form-tier-color, var(--color-silver-400));
+  background: color-mix(in srgb, var(--form-tier-color, var(--color-silver-400)) 5%, var(--color-surface-0));
+}
+
+.fm-familyForm__tier-card[data-active] {
+  border-color: var(--form-tier-color, var(--color-gold-400));
+  background: color-mix(in srgb, var(--form-tier-color, var(--color-gold-400)) 8%, var(--color-surface-0));
+  box-shadow: 0 0 0 1px var(--form-tier-color, var(--color-gold-400));
+}
+
+.fm-familyForm__tier-label {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--form-tier-color, var(--color-silver-200));
+}
+
+.fm-familyForm__tier-desc {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  color: var(--color-silver-500);
+  line-height: 1.4;
+}
+
+.fm-familyForm__tier-check {
+  color: var(--color-gold-400);
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Member Cards
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__member-card {
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+  animation: fm-formFadeUp 0.3s ease calc(var(--member-index, 0) * 0.05s) forwards;
+  opacity: 0;
+}
+
+.fm-familyForm__member-card[data-titular] {
+  border-color: color-mix(in srgb, var(--color-gold-400) 30%, transparent);
+  background: color-mix(in srgb, var(--color-gold-400) 3%, var(--color-surface-1));
+}
+
+.fm-familyForm__member-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.fm-familyForm__member-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fm-familyForm__member-name {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.fm-familyForm__member-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Add Member Button
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__add-member {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--color-border-subtle);
+  background: transparent;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.fm-familyForm__add-member:hover {
+  border-color: var(--color-gold-400);
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+}
+
+.fm-familyForm__add-member:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-gold-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Error Message
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: var(--color-rose-400);
+}
+
+.fm-familyForm__error-icon {
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Duplicate Warning
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__duplicate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+  animation: fm-formFadeUp 0.3s ease forwards;
+}
+
+.fm-familyForm__duplicate-icon {
+  flex-shrink: 0;
+  color: var(--color-amber-400);
+}
+
+.fm-familyForm__duplicate-text {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: var(--color-silver-200);
+  margin: 0;
+}
+
+.fm-familyForm__duplicate-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--color-silver-500);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.fm-familyForm__duplicate-dismiss:hover {
+  color: var(--color-silver-200);
+  background: var(--color-surface-3);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Navigation
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Review Section
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__review-section {
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.fm-familyForm__review-heading {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 12px;
+}
+
+.fm-familyForm__review-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.fm-familyForm__review-label {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  color: var(--color-silver-500);
+}
+
+.fm-familyForm__review-value {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--color-silver-200);
+}
+
+.fm-familyForm__review-members {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fm-familyForm__review-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-3);
+}
+
+.fm-familyForm__review-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--color-gold-400);
+  color: var(--color-abyss);
+  flex-shrink: 0;
+}
+
+.fm-familyForm__review-member-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-familyForm__review-member-name {
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.fm-familyForm__review-member-detail {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  margin: 2px 0 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Preview Sidebar
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__preview {
+  position: sticky;
+  top: 24px;
+}
+
+.fm-familyForm__preview-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+  text-align: center;
+}
+
+.fm-familyForm__preview-card[data-complete] {
+  border-color: color-mix(in srgb, var(--color-emerald-400) 25%, transparent);
+}
+
+.fm-familyForm__preview-title {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-500);
+}
+
+.fm-familyForm__preview-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-abyss);
+  background-color: var(--form-tier-color, var(--color-surface-3));
+  transition: background-color 0.3s ease;
+}
+
+.fm-familyForm__preview-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.fm-familyForm__preview-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+}
+
+.fm-familyForm__preview-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.fm-familyForm__preview-status[data-status="ready"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+
+.fm-familyForm__preview-status[data-status="editing"] {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+
+.fm-familyForm__preview-status[data-status="progress"] {
+  color: var(--color-silver-500);
+  background: color-mix(in srgb, var(--color-silver-500) 8%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Loading Skeleton
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fm-familyForm__loading-skeleton {
+  height: 120px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-2);
+  animation: fm-formPulse 1.5s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Spinner
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-familyForm__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid color-mix(in srgb, var(--color-abyss) 30%, transparent);
+  border-top-color: var(--color-silver-100);
+  border-radius: 50%;
+  animation: fm-formSpin 0.6s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §14  Keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-formFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-formPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes fm-formSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §15  Responsive: ≤1024px
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .fm-familyForm__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .fm-familyForm__preview {
+    position: static;
+    order: -1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §16  Responsive: ≤768px
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fm-familyForm__tier-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .fm-familyForm__member-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .fm-familyForm__layout {
+    gap: 16px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §17  Responsive: ≤480px
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .fm-familyForm__tier-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fm-familyForm__preview-card {
+    padding: 16px;
+  }
+
+  .fm-familyForm__preview-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §18  Light Mode
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-familyForm__member-card {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+}
+
+.light .fm-familyForm__member-card[data-titular] {
+  border-color: color-mix(in srgb, var(--color-gold-400) 25%, var(--color-border-default));
+  background: color-mix(in srgb, var(--color-gold-400) 3%, var(--color-surface-0));
+}
+
+.light .fm-familyForm__tier-card {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+}
+
+.light .fm-familyForm__tier-card:hover {
+  background: var(--color-surface-1);
+}
+
+.light .fm-familyForm__tier-card[data-active] {
+  background: var(--color-surface-0);
+}
+
+.light .fm-familyForm__preview-card {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+}
+
+.light .fm-familyForm__review-section {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+}
+
+.light .fm-familyForm__review-member {
+  background: var(--color-surface-1);
+}
+
+.light .fm-familyForm__input,
+.light .fm-familyForm__select,
+.light .fm-familyForm__textarea {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §19  Reduced Motion
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-familyForm__step,
+  .fm-familyForm__panel,
+  .fm-familyForm__member-card,
+  .fm-familyForm__duplicate {
+    animation: none;
+  }
+
+  .fm-familyForm__member-card {
+    opacity: 1;
+  }
+
+  .fm-familyForm__loading-skeleton {
+    animation: none;
+  }
+
+  .fm-familyForm__preview-avatar {
+    transition: none;
+  }
+
+  .fm-familyForm__spinner {
+    animation: none;
+    border-top-color: transparent;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §20  Print
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-familyForm__preview,
+  .fm-familyForm__nav,
+  .fm-familyForm__duplicate,
+  .fm-familyForm__add-member {
+    display: none;
+  }
+
+  .fm-familyForm__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .fm-familyForm__member-card,
+  .fm-familyForm__review-section {
+    break-inside: avoid;
+  }
+}

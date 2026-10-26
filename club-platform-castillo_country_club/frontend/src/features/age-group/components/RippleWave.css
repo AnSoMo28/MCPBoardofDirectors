@@ -1,0 +1,343 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/age-group/components/RippleWave.css
+   Phase 34+ Migration — Ripple Wave Styles (v2)
+   "The Seismic Reading" — Level 6+ Agency · Production Grade
+
+   CONSUMES FROM globals.css:
+     Tokens:    --color-gold-400, --color-silver-*, --color-surface-*
+                --line-color, --glass-bg, --glass-border, --radius-*
+     Keyframes: slideUp (replaces ag-ripple-fadeUp)
+     Glass:     .glass-card consumed by parent
+
+   FEATURE KEYFRAMES: 4
+     ag-ripple-nodeIn, ag-ripple-nodePulse,
+     ag-ripple-iconGlow, ag-ripple-waveDash
+   REUSED KEYFRAMES: 1 (slideUp)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────
+   §0  Block
+   ────────────────────────────────────────────────────────── */
+
+.ag-ripple {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--color-surface-1, #111827);
+  border: 1px solid var(--line-color, rgba(255, 255, 255, 0.06));
+  overflow: hidden;
+  position: relative;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §1  Track — 7 nodes in a row
+   ────────────────────────────────────────────────────────── */
+
+.ag-ripple__track {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §2  Node — Bracket measurement point
+   ────────────────────────────────────────────────────────── */
+
+.ag-ripple__node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  position: relative;
+  padding: 0.5rem 0.25rem;
+  border-radius: var(--radius-md, 8px);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+  opacity: 0;
+  animation: ag-ripple-nodeIn 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s + 0.1s);
+}
+
+.ag-ripple__node:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateY(-1px);
+}
+
+/* Source node: affected by ripple */
+.ag-ripple__node[data-source] {
+  background: color-mix(in srgb, var(--node-color, var(--color-gold-400, #C9A96E)) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--node-color, var(--color-gold-400, #C9A96E)) 20%, transparent);
+}
+
+/* Source pulse ring */
+.ag-ripple__node-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: calc(var(--radius-md, 8px) + 2px);
+  border: 1.5px solid var(--node-color, var(--color-gold-400, #C9A96E));
+  opacity: 0;
+  animation: ag-ripple-nodePulse 2s ease-out infinite;
+}
+
+/* Icon container */
+.ag-ripple__node-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--node-gradient-start, var(--color-surface-2, #1a2035)),
+    var(--node-gradient-end, var(--color-surface-3, #243049))
+  );
+  color: var(--color-silver-100, #F0F2F5);
+}
+
+.ag-ripple__node[data-source] .ag-ripple__node-icon {
+  box-shadow: 0 0 8px color-mix(in srgb, var(--node-color, var(--color-gold-400, #C9A96E)) 40%, transparent);
+  animation: ag-ripple-iconGlow 2s ease-in-out infinite;
+}
+
+/* Label */
+.ag-ripple__node-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--color-silver-500, #5C6978);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.ag-ripple__node[data-source] .ag-ripple__node-label {
+  color: var(--node-color, var(--color-gold-400, #C9A96E));
+  font-weight: 600;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §3  Wave SVG
+   ────────────────────────────────────────────────────────── */
+
+.ag-ripple__wave-svg {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 24px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.ag-ripple__wave-path {
+  stroke: var(--color-gold-400, #C9A96E);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  fill: none;
+  animation: ag-ripple-waveDash var(--wave-speed, 1s) linear infinite;
+}
+
+.ag-ripple__wave-path[data-velocity="fast"] {
+  stroke-width: 2.5;
+  opacity: 1;
+}
+
+.ag-ripple__wave-path[data-velocity="slow"] {
+  stroke-width: 1.5;
+  opacity: 0.5;
+  stroke-dasharray: 4 6;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §4  Descriptions
+   ────────────────────────────────────────────────────────── */
+
+.ag-ripple__descriptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ag-ripple__desc {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.75rem;
+  color: var(--color-silver-300, #B8C0CC);
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+  opacity: 0;
+  animation: slideUp 0.4s ease forwards;
+  animation-delay: 0.5s;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §5  Keyframes (feature-specific: 4)
+   ────────────────────────────────────────────────────────── */
+
+@keyframes ag-ripple-nodeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ag-ripple-nodePulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+@keyframes ag-ripple-iconGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px color-mix(in srgb, var(--node-color, var(--color-gold-400, #C9A96E)) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 16px color-mix(in srgb, var(--node-color, var(--color-gold-400, #C9A96E)) 60%, transparent);
+  }
+}
+
+@keyframes ag-ripple-waveDash {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -20; }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §6  Responsive
+   ────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .ag-ripple__track {
+    gap: 0.125rem;
+  }
+
+  .ag-ripple__node-icon {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ag-ripple {
+    padding: 0.75rem;
+  }
+
+  .ag-ripple__track {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .ag-ripple__node:nth-child(n+5) {
+    display: none;
+  }
+
+  .ag-ripple__wave-svg {
+    display: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §7  Light Mode
+   ────────────────────────────────────────────────────────── */
+
+.light .ag-ripple {
+  background: var(--color-warm-canvas, #f5f3ee);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .ag-ripple__node[data-source] {
+  background: color-mix(in srgb, var(--node-color, var(--color-gold-500, #B8942D)) 6%, transparent);
+  border-color: color-mix(in srgb, var(--node-color, var(--color-gold-500, #B8942D)) 15%, transparent);
+}
+
+.light .ag-ripple__node:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .ag-ripple__node-label {
+  color: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-ripple__node[data-source] .ag-ripple__node-label {
+  color: var(--node-color, var(--color-gold-500, #B8942D));
+}
+
+.light .ag-ripple__node-icon {
+  color: var(--color-abyss, #080B12);
+}
+
+.light .ag-ripple__desc {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-silver-700, #374151);
+}
+
+.light .ag-ripple__wave-path {
+  stroke: var(--color-gold-500, #B8942D);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §8  Reduced Motion
+   ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-ripple__node,
+  .ag-ripple__desc {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .ag-ripple__node-pulse,
+  .ag-ripple__node[data-source] .ag-ripple__node-icon {
+    animation: none !important;
+  }
+
+  .ag-ripple__wave-path {
+    animation: none !important;
+    stroke-dasharray: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §9  Print
+   ────────────────────────────────────────────────────────── */
+
+@media print {
+  .ag-ripple {
+    border: 1px solid #ccc;
+    background: #fff;
+  }
+
+  .ag-ripple__node-pulse,
+  .ag-ripple__wave-svg {
+    display: none;
+  }
+
+  .ag-ripple__node,
+  .ag-ripple__desc {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .ag-ripple__node-label {
+    color: #333;
+  }
+}

@@ -1,0 +1,811 @@
+# CHECKPOINT — Fase 9 Completa — WellnessAI Intelligence System
+
+**Fecha:** Mayo 2025
+**Sesiones completadas:** 1 (esta sesión — Fase 9 completa)
+**Archivos creados:** 11 nuevos + 3 modificados
+**Líneas nuevas:** ~3,255
+**Tools MCP registradas:** 11 (7 backend + 4 inteligencia nueva)
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend Nuevos (9)
+
+```
+src/features/wellness/
+├── types.ts                              ← 340 líneas
+│   7 enums, 13 domain interfaces, 10 response types,
+│   4 intelligence types, 3 config maps,
+│   calculateWellnessScore() engine
+│
+├── WellnessDashboard.tsx                 ← 300 líneas (REWRITE FINAL)
+│   7 tabs: overview, trends, alerts, advisor, goals, family, business
+│   DetailTabs padre, 4 queries MCP auto-load, skeleton, empty states
+│
+└── components/
+    ├── WellnessScoreCard.tsx              ← 340 líneas
+    │   Radial gauge SVG 270°, 5 dimension bars, count-up animation,
+    │   trend badge, empty state, full a11y
+    │
+    ├── WellnessTrends.tsx                ← 260 líneas
+    │   Horizontal bar chart (Recharts), 4 TrendStatCards con deltas,
+    │   top activity card, goals summary, custom tooltip
+    │
+    ├── WellnessRiskRadar.tsx             ← 340 líneas
+    │   On-demand anomaly detection, severity summary,
+    │   alert banners, anomaly cards con severity bar,
+    │   expected/actual comparison, suggested actions
+    │
+    ├── WellnessAIAdvisor.tsx             ← 470 líneas
+    │   TWO-PHASE on-demand (insights → predictions),
+    │   compact health gauge, executive summary,
+    │   key findings grid, trend analysis, critical insights
+    │   con confidence bars, 30/60/90 forecast cards,
+    │   risk factors, interventions con urgency badges
+    │
+    ├── WellnessGoals.tsx                 ← 380 líneas
+    │   Goals overview, visual goal type selector (8 types),
+    │   creation form con FormField pattern, unit suggestions,
+    │   useMCPMutation, validation, auto-focus
+    │
+    ├── WellnessFamilyMap.tsx             ← 370 líneas
+    │   Family profile landscape, fitness level bar,
+    │   preferred activities grid, activity breakdown,
+    │   health info sections, emergency contact
+    │
+    └── WellnessBusinessInsights.tsx      ← 460 líneas
+        On-demand business analysis, 3 correlation cards,
+        segment insights grid, activity value ranking chart,
+        business action items derivados de datos
+```
+
+### Mock System Extensions (3 archivos modificados)
+
+```
+src/shared/mocks/
+├── contracts.ts                          ← +80 líneas (10 contracts)
+├── factories.ts                          ← +300 líneas (10 factories)
+└── mock-registry.ts                      ← +15 líneas (10 entries)
+```
+
+### Tools MCP Registradas (11 total en wellness server)
+
+| # | Tool | Backend | Mock | Tipo | Aprobación |
+|---|------|---------|------|------|------------|
+| 1 | `wellness_report` | ✅ | ✅ (existía) | Datos | AUTO |
+| 2 | `wellness_profile_get` | ✅ | ✅ NUEVA | Datos | AUTO |
+| 3 | `wellness_profile_update` | ✅ | ✅ NUEVA | Mutation | SEMI |
+| 4 | `wellness_activity_log` | ✅ | ✅ NUEVA | Mutation | AUTO |
+| 5 | `wellness_goal_set` | ✅ | ✅ NUEVA | Mutation | SEMI |
+| 6 | `wellness_recommendations` | ✅ | ✅ NUEVA | Datos | AUTO |
+| 7 | `wellness_schedule_class` | ✅ | ✅ NUEVA | Mutation | HITL |
+| 8 | `wellness_predict` | ⬜ NUEVA | ✅ NUEVA | Inteligencia | AUTO |
+| 9 | `wellness_anomalies` | ⬜ NUEVA | ✅ NUEVA | Inteligencia | AUTO |
+| 10 | `wellness_correlate` | ⬜ NUEVA | ✅ NUEVA | Inteligencia | AUTO |
+| 11 | `wellness_insights` | ⬜ NUEVA | ✅ NUEVA | Inteligencia | AUTO |
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+### Arquitectura
+
+| # | Hallazgo | Severidad | Estado |
+|---|----------|-----------|--------|
+| 1 | El backend NO tiene motor de inteligencia wellness — solo datos crudos. Las 4 tools nuevas (predict, anomalies, correlate, insights) se mockean como herramientas de decisión. | ALTA | Resuelto con mocks |
+| 2 | `activity_breakdown` en `WellnessReport` es `list[dict[str, Any]]` — shape no definido. Se definió como `ActivityBreakdownItem` en types.ts | MEDIA | Resuelto en contract |
+| 3 | `goals_summary` es `dict[str, int]` — mapping GoalStatus → count | BAJA | Definido |
+| 4 | `callMCPTool` recibe `agent` y `tool` por separado. El registry usa formato nested: `server.tool → factory`. Keys dentro de `wellness:` deben ser solo el nombre de tool, NO `wellness.toolname` | ALTA | Corregido |
+
+### Patrón de Implementación AI (NUEVO — importante para futuras fases)
+
+El patrón que establecimos en WellnessAI es **el estándar para todas las fases futuras**:
+
+```
+1. Datos (auto-load)    → useMCPQuery con staleTime
+2. Inteligencia (on-demand) → useMCPQuery con enabled: shouldFetch
+3. Two-phase cuando hay análisis pesado → trigger separado para insights y predictions
+4. AIDecisionPanel      → se reutiliza como wrapper (scope: "wellness")
+5. Contracts como source of truth → nunca se borran
+```
+
+---
+
+## 3. CÓMO ESTAMOS TRABAJANDO
+
+### Metodología por Bloques (3 archivos por bloque)
+
+| Bloque | Contenido | Patrón |
+|--------|-----------|--------|
+| 1 | types.ts + mocks + primer componente visual | Fundacional — define todos los types y mocks |
+| 2 | Dashboard padre + charts + radar | Core — layout y componentes de datos |
+| 3 | AI Advisor + metas + familia | Inteligencia — motor de decisiones |
+| 4 | Business insights + integración + rewrite padre | Cierre — todo junto + verificación reglas |
+
+### Principios
+
+1. **Yo propongo y analizo ANTES de escribir código**
+2. **El usuario aprueba antes de generar**
+3. **Changelog detallado al final de cada bloque**
+4. **Verificación contra las 22 reglas en cada bloque**
+5. **Los contracts NUNCA se borran — son el source of truth**
+6. **Las 4 tools de inteligencia nuevas se mockean primero, backend las implementa después**
+7. **Cada componente AI tiene botón "Ejecutar" — NUNCA auto-load**
+
+---
+
+## 4. SCORE ENGINE — Wellness Composite Score
+
+```
+Composite Score = (
+  Activity    × 0.30  +   // target 12/month (3/week)
+  Consistency × 0.25  +   // streak vs 14-day benchmark
+  Variety     × 0.15  +   // unique types / 6 max
+  Social      × 0.15  +   // proportion group activities
+  Trend       × 0.15      // current vs previous × 50
+)
+```
+
+Resultado con datos mock (Familia Rodríguez Vargas):
+- 15 actividades, streak 12d, 4 tipos → **Score 80 = "Bueno"**
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| 1 | Infraestructura | ✅ |
+| 2 | Global tokens | ✅ |
+| 3 | Formularios | ✅ |
+| 4 | Lists | ✅ |
+| 5 | Detail pages | ✅ |
+| 6 | Dashboards densos + AI | ✅ (en checkpoint anterior) |
+| 7 | Reports/mi-club/settings/finance | ✅ |
+| 8 | Dashboard sub-componentes | 🔄 5/12 done |
+| 9 | Wellness + Satisfaction | ✅ COMPLETADA (esta sesión) |
+| 10 | Proactive Recommendations | ⬜ SIGUIENTE |
+
+---
+
+## 6. PRÓXIMAS FASES — Desglose Completo
+
+### FASE 10 — Proactive Recommendations
+
+**Agente:** `ProactiveRecommendationAgent` (server: `proactive_recommendation`)
+
+**Archivo backend a leer:**
+```
+backend/src/club_mcp/agents/proactive_recommendation_agent.py
+```
+
+**Tools del agente (8):**
+
+| Tool | Aprobación | Destino Frontend | Tipo |
+|------|------------|------------------|------|
+| `identify_social_clusters` | AUTO | Dashboard | Datos + Inteligencia |
+| `generate_family_recommendations` | AUTO | Dashboard + MiClub | Datos + Inteligencia |
+| `generate_quarterly_insights` | AUTO | Dashboard | Inteligencia |
+| `predict_event_attendance` | AUTO | EventCalendar (ya existe) | Inteligencia |
+| `detect_scheduling_conflicts` | AUTO | Dashboard | Inteligencia |
+| `personalize_communication` | AUTO | CommunicationCenter (ya existe) | Datos |
+| `optimize_pricing` | **HITL** | ApprovalQueue | Mutation |
+| `suggest_new_activities` | **HITL** | ApprovalQueue | Mutation |
+
+**Bloques propuestos:**
+
+| Bloque | Archivos | Contenido |
+|--------|----------|-----------|
+| 1 | `features/recommendations/types.ts` + mocks (contracts/factories/registry) + `RecommendationsScoreCard.tsx` | Tipos derivados del agente, 8 tools mockeadas, score card de recomendaciones |
+| 2 | `RecommendationsDashboard.tsx` + `SocialClusters.tsx` + `QuarterlyInsights.tsx` | Dashboard padre con DetailTabs, visualización de clusters sociales (force-directed o treemap), insights trimestrales con AI |
+| 3 | `FamilyRecommendations.tsx` + `SchedulingConflicts.tsx` + `PredictAttendance.tsx` | Motor de recomendaciones por familia, detector de conflictos de agenda, predicción de asistencia a eventos |
+| 4 | `PricingOptimizer.tsx` + integración ApprovalQueue + rewrite padre | Optimizador de precios (HITL), integración con ApprovalQueue para 2 tools HITL, verificación reglas |
+
+**Tools nuevas a mockear (si no existen):**
+- `identify_social_clusters` — contract + factory + registry
+- `generate_family_recommendations` — contract + factory + registry
+- `generate_quarterly_insights` — contract + factory + registry
+- `predict_event_attendance` — contract + factory + registry
+- `detect_scheduling_conflicts` — contract + factory + registry
+- `personalize_communication` — contract + factory + registry
+- `optimize_pricing` — contract + factory + registry (HITL)
+- `suggest_new_activities` — contract + factory + registry (HITL)
+
+**ApprovalQueue impact:** `optimize_pricing` (HITL, Alto), `suggest_new_activities` (HITL, Medio)
+
+---
+
+### FASE 11 — Communication Enhancement
+
+**Agente:** `CommunicationAgent` (server: `communication`)
+
+**Archivo backend a leer:**
+```
+backend/src/club_mcp/agents/communication_agent.py
+```
+
+**Tools a integrar (las que faltan del agente):**
+
+| Tool | Estado actual | Destino |
+|------|--------------|---------|
+| `get_communication_analytics` | Ya en registry (Fase 6) | `CommunicationAnalytics.tsx` NUEVO |
+| `manage_notification_templates` | Ya en registry | `TemplateManager.tsx` NUEVO |
+| `schedule_notification` | Ya en registry | `ScheduledNotifications.tsx` NUEVO |
+| `get_notification_history` | Ya en registry | `NotificationHistory.tsx` NUEVO |
+| `list_announcements` | Ya en registry | Integrado en CommunicationCenter |
+| `send_board_package` | Ya en registry | `BoardPackage.tsx` NUEVO (SEMI) |
+
+**Bloques propuestos:**
+
+| Bloque | Archivos | Contenido |
+|--------|----------|-----------|
+| 1 | `features/communications/types.ts` (extensión) + mocks updates + `CommunicationAnalytics.tsx` | Tipos de analytics, dashboard de métricas de comunicación |
+| 2 | `features/communications/CommunicationDashboard.tsx` + `TemplateManager.tsx` + `ScheduledNotifications.tsx` | Hub padre con tabs, CRUD templates, gestor de notificaciones programadas |
+| 3 | `NotificationHistory.tsx` + `BoardPackage.tsx` + integración | Historial detallado, generación de paquetes para junta |
+| 4 | Rewrite `CommunicationCenter.tsx` (integrar nuevos componentes) + verificación | Integrar todo en el centro existente |
+
+**Hallazgo importante:** `get_communication_insights` NO existe en backend. `get_communication_analytics` es la tool disponible.
+
+---
+
+### FASE 12 — Guest Management + Trial Memberships
+
+**Agente:** `GuestManagementAgent` (server: `guest_management`)
+
+**Archivo backend a leer:**
+```
+backend/src/club_mcp/agents/guest_management_agent.py
+```
+
+**Tools (5):**
+
+| Tool | Aprobación | Frontend |
+|------|------------|----------|
+| `get_guest_analytics` | AUTO | `GuestAnalytics.tsx` NUEVO |
+| `manage_guest_privileges` | AUTO | `GuestPrivileges.tsx` NUEVO |
+| `register_guest` | SEMI→HITL (>4/día) | `GuestRegistration.tsx` REWRITE |
+| `plan_private_event` | HITL | `PrivateEventPlanner.tsx` NUEVO |
+| `manage_trial_memberships` | HITL | `TrialMembershipManager.tsx` NUEVO |
+
+**Bloques propuestos:**
+
+| Bloque | Archivos | Contenido |
+|--------|----------|-----------|
+| 1 | `features/guests/types.ts` (extensión) + mocks + `GuestAnalytics.tsx` | Tipos, 5 tools mockeadas, analytics de invitados |
+| 2 | `features/guests/GuestDashboard.tsx` + `GuestPrivileges.tsx` + `GuestRegistration.tsx` rewrite | Dashboard padre, gestión de privilegios, fix escalación condicional |
+| 3 | `PrivateEventPlanner.tsx` + `TrialMembershipManager.tsx` | Planificador HITL, gestor de trials HITL |
+| 4 | Integración ApprovalQueue (3 tipos nuevos) + verificación | 3 tools a ApprovalQueue |
+
+**Patrón de escalación:** `register_guest` escala a HITL si >4 invitados/día
+
+---
+
+### FASE 13 — Finance Enhancement + HITL Complete
+
+**Agentes:** `FinanceAgent` (server: `finance`) + `HITLAgent` (server: `hitl`)
+
+**Archivos backend a leer:**
+```
+backend/src/club_mcp/agents/finance.py
+backend/src/club_mcp/agents/base.py (HITL pattern)
+```
+
+**Tools Finance (7):**
+
+| Tool | Aprobación | Frontend |
+|------|------------|----------|
+| `finance_budget_check` | AUTO | `BudgetManager.tsx` NUEVO |
+| `finance_account_status` | AUTO | Ya en FamilyAccount |
+| `finance_report_generate` | SEMI | Ya en FinancialDashboard |
+| `finance_expense_create` | HITL | `ExpenseCreator.tsx` NUEVO |
+| `finance_invoice_create` | HITL | `InvoiceManager.tsx` NUEVO |
+| `finance_payment_process` | HITL | `PaymentProcessor.tsx` NUEVO |
+| `finance_category_update` | SEMI | En BudgetManager |
+
+**Bloques propuestos:**
+
+| Bloque | Archivos | Contenido |
+|--------|----------|-----------|
+| 1 | `features/finance/types.ts` (extensión) + mocks + `BudgetManager.tsx` | Tipos, budget checking, category management |
+| 2 | `ExpenseCreator.tsx` + `InvoiceManager.tsx` | Formularios HITL para gastos y facturas |
+| 3 | `PaymentProcessor.tsx` + `FinancialDashboard.tsx` verify | Procesador de pagos HITL, verificar Fase 3 |
+| 4 | `ApprovalQueue.tsx` verify — consolidar los 17 tipos | Verificar que los 17 tipos HITL renderizan correctamente |
+
+---
+
+### FASE 14 — Print/PDF + Export
+
+**Sin agente MCP específico.**
+
+| Bloque | Archivos | Contenido |
+|--------|----------|-----------|
+| 1 | `shared/lib/pdfExport.ts` + `shared/components/ui/ExportButton.tsx` | Utilidad de exportación, botón compartido |
+| 2 | `features/dashboard/components/PrintView.tsx` rewrite | Vista de impresión del dashboard |
+| 3 | `features/reports/PrintView.tsx` rewrite | Vista de impresión de reportes |
+| 4 | Integración en todos los dashboards + verificación | ExportButton en WellnessDashboard, FinancialDashboard, etc. |
+
+**Dependency:** `html2pdf.js` o `@react-pdf/renderer` (decidir)
+
+---
+
+### FASE 15 — Integration Testing + Responsive QA
+
+| Archivo/Acción | Contenido |
+|----------------|-----------|
+| Todos los features | Smoke test: cada componente carga sin errores con mock registry |
+| Todos los features | Responsive test: 320px, 375px, 768px, 1280px |
+| Todos los features | a11y audit: focus-visible, aria-*, min-h-[44px], useReducedMotion |
+| `shared/mocks/` | Verify contracts: todos los tools del registry devuelven datos válidos |
+| `ApprovalQueue.tsx` | HITL flow test: los 17 tipos renderizan correctamente |
+| Charts (todos) | Recharts verify: TOOLTIP_STYLE, AXIS_TICK, CHART_PALETTE, ResponsiveContainer |
+
+---
+
+### FASE 16 — Mock → Backend Migration
+
+**Orden de migración (por dependencia):**
+
+| Prioridad | Tools | Razón |
+|-----------|-------|-------|
+| 1 | `get_pending_approvals`, `approve_request`, `reject_request` | HITL ya está en backend |
+| 2 | `get_executive_summary` + tools ExecutiveDashboard | Dashboard es vista principal |
+| 3 | `get_financial_summary` + tools Finance | Finanzas son core |
+| 4 | `get_engagement_dashboard` + tools Engagement | Engagement alimenta múltiples vistas |
+| 5 | Resto de tools | En orden de uso |
+
+**Proceso por tool:**
+1. Verificar que backend response matchea el contract
+2. Eliminar la key de MOCK_REGISTRY
+3. Eliminar de mock-data.ts si existe (legacy)
+4. Testear que callMCPTool() hace fetch al backend
+5. Marcar como migrado
+6. **0 cambios en componentes**
+
+---
+
+## 7. PROMPT PARA NUEVO CHAT
+
+```markdown
+Eres MiMo, Principal FullStack Engineer del Castillo Country Club. Tu rol es reescribir, fixear y crear TODOS los componentes frontend siguiendo 22 reglas estrictas de diseño, accesibilidad y arquitectura.
+
+## CONTEXTO DEL PROYECTO
+
+Aplicación web React para gestión integral del Castillo Country Club, club de campo de alto nivel en Costa Rica.
+
+**Tech Stack:** React 19 + TypeScript, React Router v7, TanStack Query (useMCPQuery/useMCPMutation), Zustand, Framer Motion, Lucide React, Tailwind CSS 4, Vite.
+
+**Backend:** NO es REST API. Son agentes autónomos MCP (Model Context Protocol). Cada agente tiene tools que el frontend invoca:
+```
+useMCPQuery(serverName, toolName, params, options)
+useMCPMutation(serverName, toolName, options)
+```
+
+**Mock System (contracts → factories → registry):**
+```
+src/shared/mocks/
+├── contracts.ts     ← Shape EXACTO de cada tool response (NUNCA se borran)
+├── factories.ts     ← Factory functions que satisfacen contracts
+└── mock-registry.ts ← Registry nested: { server: { tool: factory } }
+```
+Resolución en api.ts: registry → legacy → backend real. Para migrar: eliminar key del registry, 0 cambios en componentes.
+
+## ARQUITECTURA DE INTELIGENCIA ARTIFICIAL (PATRÓN ESTABLECIDO)
+
+En Fase 9 establecimos un patrón de AI que debes seguir en TODAS las fases futuras:
+
+### El Patrón de 3 Niveles:
+
+**Nivel 1 — Datos (auto-load):** Queries MCP que se cargan automáticamente con staleTime.
+```typescript
+const { data } = useMCPQuery('server', 'tool', params, { staleTime: 60_000 });
+```
+
+**Nivel 2 — Inteligencia (on-demand):** Queries MCP que requieren botón "Ejecutar".
+```typescript
+const [shouldFetch, setShouldFetch] = useState(false);
+const { data } = useMCPQuery('server', 'tool', params, { enabled: shouldFetch });
+// Botón: <Button onClick={() => setShouldFetch(true)}>Ejecutar Análisis</Button>
+```
+
+**Nivel 3 — Two-phase on-demand:** Cuando hay análisis pesado, separar en dos triggers.
+```typescript
+const [insightsTriggered, setInsightsTriggered] = useState(false);
+const [predictionsTriggered, setPredictionsTriggered] = useState(false);
+// Fase 1: Insights (botón principal)
+// Fase 2: Predictions (botón separado dentro del componente)
+```
+
+### Las 4 Herramientas de Inteligencia (mockeadas, backend pendiente):
+
+Estas 4 tools NO existen en el backend aún. Se mockean con datos realistas:
+
+1. **`wellness_predict`** — Predicción de engagement 30/60/90 días con risk_factors y recommended_interventions
+2. **`wellness_anomalies`** — Detección de patrones anómalos (sudden_drop, gradual_decline, monotony, social_isolation, etc.)
+3. **`wellness_correlate`** — Correlaciones wellness ↔ negocio (retención, revenue, satisfacción) con segment_insights y activity_value_ranking
+4. **`wellness_insights`** — Motor de decisiones: health_score, executive_summary, key_findings, trend_analysis, critical_insights, predictions
+
+**Este patrón se replica para cada fase:**
+- Fase 10: `recommendations_insights`, `cluster_analysis`, `attendance_predict`, `conflict_detect`
+- Fase 11: `communication_insights` (si es necesario)
+- Fase 13: `financial_insights`, `budget_forecast`
+
+### Wellness Score Engine (implementado en types.ts):
+
+```
+Composite = Activity(30%) + Consistency(25%) + Variety(15%) + Social(15%) + Trend(15%)
+
+Activity    = min(100, total_activities / 12 × 100)     // 12/month target
+Consistency = min(100, streak_days / 14 × 100)          // 14-day benchmark
+Variety     = min(100, unique_types / 6 × 100)          // 6 types max
+Social      = social_count / total_count × 100          // group activities ratio
+Trend       = current / previous × 50                   // 50 = neutral
+```
+
+### Decisiones de Diseño AI:
+
+| Decisión | Estándar |
+|----------|----------|
+| Gauge visual | SVG radial 270° con threshold markers |
+| Confidence bars | Barra horizontal con color por nivel |
+| Severity indicators | Left border color + Badge variant |
+| Trend indicators | Icon + color + text (up/down/flat) |
+| Staggered reveals | CSS opacity+translateY con animation-delay por index |
+| Empty states | EmptyState shared con icon semántico |
+| Error states | EmptyState con botón Reintentar |
+| Loading states | Skeleton con shapes aproximados |
+
+## DESIGN SYSTEM — "Silver Tide"
+
+Dark-first cinematic. Tokens en global.css.
+
+### REGLA DE ORO: NUNCA colores hardcoded. SIEMPRE tokens.
+
+**Token Map:**
+```
+--color-abyss:        #080B12     (fondo base)
+--color-surface-0:    #0D1117     (superficies base)
+--color-surface-1:    #151B24     (nivel 1)
+--color-surface-2:    #1C2230     (nivel 2 — datos/cards)
+--color-surface-3:    #242C3A     (nivel 3)
+
+--color-silver-100:   #F0F2F5     (texto bright)
+--color-silver-200:   #D8DCE4     (texto principal)
+--color-silver-300:   #B8C0CC     (texto secondary)
+--color-silver-400:   #8A95A5     (texto muted)
+--color-silver-500:   #5C6978     (placeholder)
+--color-silver-600:   #3D4755     (disabled)
+
+--color-gold-400:     #C9A96E     (acento primario)
+--color-teal-400:     #2A9AB5     (funcional/datos)
+--color-emerald-400:  #3DAA70     (éxito)
+--color-amber-400:    #D4A840     (warning)
+--color-rose-400:     #C46470     (error)
+--color-terracotta-400: #D47A5A   (tierra/charts)
+--color-sage-400:     #5B8A6A     (verde elegante)
+```
+
+**Patrones de superficie:**
+```
+bgColors:  color-mix(in srgb, var(--color-xxx) 12%, transparent)
+Bordes:    border-white/[0.06] sutil | [0.08] medio | [0.12] emphasis
+Shadows:   var(--shadow-card) | var(--shadow-elevated)
+```
+
+**Tipografía:** Cormorant Garamond (display), Source Serif 4 (body), DM Sans (UI), DM Mono (data)
+
+**Recharts:** SIEMPRE importar de shared/lib/chartTheme.ts — NUNCA hex inline
+
+**Glass card:** backdrop-filter solo para superficies DECORATIVAS, nunca para datos
+
+## 22 REGLAS DE TRABAJO
+
+### Tokens & Theming (1-5)
+1. NUNCA colores hardcoded — siempre var(--color-xxx) o color-mix
+2. NUNCA backdrop-filter para superficies de datos — bg-[var(--color-surface-2)] sólido
+3. Recharts: importar de shared/lib/chartTheme.ts — NUNCA hex inline
+4. Siempre mostrar changelog con reemplazos exactos
+5. Código completo cuando cambios >30%, quirúrgico cuando ≤15 líneas
+
+### Charts (6-10)
+6. SIEMPRE ResponsiveContainer
+7. CHART constants de chartTheme para configuración
+8. SIEMPRE formatCurrency/formatNumber para labels
+9. TOOLTIP_STYLE sin blur, sólido con bg-[var(--color-surface-1)]
+10. AXIS_TICK para axis labels
+
+### UX & Accessibility (11-16)
+11. focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)]
+12. min-h-[44px] en todos los elementos interactivos
+13. DetailTabs shared component para navegación de secciones
+14. EmptyState shared para estados vacíos
+15. showToast({ type, message }) para feedback — NUNCA alert()
+16. PageContainer + breadcrumb para pages
+
+### Componentes (17-22)
+17. Button de @/shared/components/ui — NUNCA raw <button> para acciones
+18. useReducedMotion() SIEMPRE antes de animaciones
+19. AI features: AIDecisionPanel shared + generate_ai_analysis por scope — SIEMPRE on-demand
+20. useBreakpoint() para responsive JS
+21. Tablas: hidden en phone, visible desktop/tablet. Phone usa cards.
+22. cn() utility para conditional classes
+
+## ARQUITECTURA MCP
+
+### Execution Flow
+```
+Frontend → useMCPQuery/useMCPMutation → callMCPTool (api.ts)
+                                              ↓
+                              getMockResponse() busca en REGISTRY
+                                              ↓
+                              ¿Existe mock? → Devuelve mock
+                              No existe → Fetch al backend (/api/agents/{server}/{tool})
+```
+
+### 18 MCP Servers con sus Tools:
+
+**executive_dashboard:** get_executive_summary, get_financial_overview, get_membership_health, get_operational_pulse, detect_anomalies, get_age_group_balance, generate_quarterly_board_report, export_report
+
+**finance:** finance_budget_check, finance_account_status, finance_report_generate, finance_expense_create, finance_invoice_create, finance_payment_process, finance_category_update
+
+**member_engagement:** get_engagement_dashboard, get_engagement_insights, submit_feedback, manage_referrals, design_reactivation_campaign, manage_loyalty_rewards
+
+**communication:** broadcast_club_announcement, manage_emergency_broadcast, send_personalized_notification, manage_notification_templates, schedule_notification, get_notification_history, manage_communication_preferences, send_board_package, get_communication_analytics, list_announcements
+
+**proactive_recommendation:** identify_social_clusters, generate_family_recommendations, generate_quarterly_insights, predict_event_attendance, detect_scheduling_conflicts, personalize_communication, optimize_pricing, suggest_new_activities
+
+**satisfaction:** get_satisfaction_trends, analyze_event_satisfaction, get_survey_for_event, get_satisfaction_questions, generate_satisfaction_report, submit_satisfaction_survey
+
+**wellness:** wellness_profile_get, wellness_activity_log, wellness_recommendations, wellness_schedule_class, wellness_report, wellness_profile_update, wellness_goal_set + NUEVAS: wellness_predict, wellness_anomalies, wellness_correlate, wellness_insights
+
+**guest_management:** get_guest_analytics, manage_guest_privileges, register_guest, plan_private_event, manage_trial_memberships
+
+**families:** list_families, get_family
+**facilities:** list_facilities, get_facility, get_reservations
+**events:** list_events, get_event, update_event_status
+**guests:** get_today_guests, get_today_summary, list_trial_memberships, checkout_guest
+**documents:** search_documents
+**reports:** get_board_report, get_risk_matrix
+**hitl:** get_pending_approvals, approve_request, reject_request
+**auth:** (REST excepción)
+**chat:** (REST POST /api/chat/)
+
+### Roles de Usuario
+| Frontend | Backend | Acceso |
+|----------|---------|--------|
+| ADMIN | "admin" | Acceso total |
+| STAFF | "staff" | Operaciones diarias |
+| JUNTA | "junta" | Directiva, dashboard ejecutivo |
+| SOCIO | "socio" | Portal /mi-club |
+
+### Shared Components Disponibles
+PageContainer, StatCard, EmptyState, Card, CardHeader, Badge, Button, Skeleton, Table, Modal, FilterDropdown, DetailTabs, GlowButton, Toast, FormField, WizardStepper, AIDecisionPanel
+
+### Hooks Disponibles
+useMCPQuery, useMCPMutation, useBreakpoint, useReducedMotion
+
+### Utils Disponibles
+cn, formatCurrency, formatPercent, formatNumber, formatUSD, getGreeting, timeAgo, roleLabel
+
+## ESTADO ACTUAL DEL SPRINT
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| 1-5 | Infraestructura, tokens, forms, lists, details | ✅ |
+| 6 | Dashboards densos + AI | ✅ |
+| 7 | Reports, mi-club, settings, finance | ✅ |
+| 8 | Dashboard sub-componentes | 🔄 5/12 done |
+| 9 | Wellness + Satisfaction | ✅ COMPLETADA |
+| 10 | Proactive Recommendations | ⬜ SIGUIENTE |
+| 11 | Communication Enhancement | ⬜ |
+| 12 | Guest Management | ⬜ |
+| 13 | Finance + HITL Complete | ⬜ |
+| 14 | Print/PDF + Export | ⬜ |
+| 15 | Integration Testing + QA | ⬜ |
+| 16 | Mock → Backend Migration | ⬜ |
+
+## FASE 10 — PRÓXIMA (Proactive Recommendations)
+
+**Agente:** ProactiveRecommendationAgent (server: proactive_recommendation)
+**Archivo backend:** backend/src/club_mcp/agents/proactive_recommendation_agent.py
+
+**8 Tools:**
+- identify_social_clusters (AUTO) → SocialClusters.tsx
+- generate_family_recommendations (AUTO) → FamilyRecommendations.tsx
+- generate_quarterly_insights (AUTO) → QuarterlyInsights.tsx
+- predict_event_attendance (AUTO) → PredictAttendance.tsx
+- detect_scheduling_conflicts (AUTO) → SchedulingConflicts.tsx
+- personalize_communication (AUTO) → ya en CommunicationCenter
+- optimize_pricing (HITL) → PricingOptimizer.tsx → ApprovalQueue
+- suggest_new_activities (HITL) → ApprovalQueue
+
+**Bloques propuestos:**
+- B1: types.ts + mocks + RecommendationsScoreCard
+- B2: RecommendationsDashboard + SocialClusters + QuarterlyInsights
+- B3: FamilyRecommendations + SchedulingConflicts + PredictAttendance
+- B4: PricingOptimizer + integración + verificación
+
+**Tools nuevas a crear en el mock system (8).**
+
+**ApprovalQueue impact:** optimize_pricing (HITL, Alto), suggest_new_activities (HITL, Medio)
+
+## METODOLOGÍA DE TRABAJO
+
+1. Leer el agente backend completo (tools, models, enums)
+2. Proponer la visión de arquitectura ANTES de código
+3. Usuario aprueba
+4. Generar en bloques de 3 archivos
+5. Changelog detallado al final de cada bloque
+6. Verificación contra las 22 reglas
+7. Tools de inteligencia nuevas se mockean primero
+8. Contracts NUNCA se borran
+
+## QUICK START
+
+1. Pedir: "Pasame el agente de ProactiveRecommendation y los modelos relacionados"
+2. Luego: "Definime los bloques para Fase 10"
+3. Luego: "Genera Bloque 1"
+```
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT.md
+
+Estas secciones deben AGREGARSE al archivo existente:
+
+### AGREGAR en Sección 3 (Design System):
+
+```markdown
+### 3.9 Wellness Score Engine
+
+Archivo: features/wellness/types.ts
+
+Composite Wellness Score — multi-dimensional engine calculado client-side.
+
+Dimensiones:
+- Activity (30%): target 12/month (3/week)
+- Consistency (25%): streak vs 14-day benchmark
+- Variety (15%): unique types / 6 max
+- Social (15%): proportion group activities
+- Trend (15%): current vs previous × 50 (50 = neutral)
+
+Niveles: critical (0-30), low (30-50), moderate (50-70), good (70-85), excellent (85-100)
+
+Helper: calculateWellnessScore(report, previousReport) → WellnessScoreData
+Helper: getWellnessLevel(score) → WellnessLevel
+Helper: classifyActivitySocial(type) → boolean
+```
+
+### AGREGAR en Sección 4 (Estructura de Archivos):
+
+```markdown
+├── features/
+│   ├── wellness/                        ← Agent: WellnessAgent (wellness)
+│   │   ├── types.ts                     ✅ (NUEVO Fase 9 — tipos + score engine)
+│   │   ├── WellnessDashboard.tsx        ✅ (REWRITE Fase 9 — 7 tabs)
+│   │   └── components/
+│   │       ├── WellnessScoreCard.tsx    ✅ (NUEVO Fase 9 — radial gauge)
+│   │       ├── WellnessTrends.tsx       ✅ (NUEVO Fase 9 — charts históricos)
+│   │       ├── WellnessRiskRadar.tsx    ✅ (NUEVO Fase 9 — detección anomalías)
+│   │       ├── WellnessAIAdvisor.tsx    ✅ (NUEVO Fase 9 — AI two-phase)
+│   │       ├── WellnessGoals.tsx        ✅ (NUEVO Fase 9 — metas + form)
+│   │       ├── WellnessFamilyMap.tsx    ✅ (NUEVO Fase 9 — perfil familiar)
+│   │       └── WellnessBusinessInsights.tsx ✅ (NUEVO Fase 9 — correlaciones)
+```
+
+### AGREGAR en Sección 5 (Arquitectura MCP) — Wellness tools:
+
+```markdown
+wellness (11 tools — 7 backend + 4 inteligencia nueva)
+
+| Tool | Aprobación | Tipo |
+|------|------------|------|
+| wellness_profile_get | AUTO | Datos |
+| wellness_profile_update | SEMI | Mutation |
+| wellness_activity_log | AUTO | Mutation |
+| wellness_goal_set | SEMI | Mutation |
+| wellness_recommendations | AUTO | Datos |
+| wellness_schedule_class | HITL | Mutation |
+| wellness_report | AUTO | Datos |
+| wellness_predict | AUTO | Inteligencia (NUEVA) |
+| wellness_anomalies | AUTO | Inteligencia (NUEVA) |
+| wellness_correlate | AUTO | Inteligencia (NUEVA) |
+| wellness_insights | AUTO | Inteligencia (NUEVA) |
+```
+
+### AGREGAR nueva sección después de Sección 12 (Metodología):
+
+```markdown
+## 12B. PATRÓN DE IMPLEMENTACIÓN AI (Estándar desde Fase 9)
+
+### Niveles de Carga de Datos:
+
+| Nivel | Patrón | Ejemplo |
+|-------|--------|---------|
+| 1. Datos (auto-load) | useMCPQuery con staleTime | wellness_report, wellness_profile_get |
+| 2. Inteligencia (on-demand) | useMCPQuery con enabled: shouldFetch | wellness_anomalies, wellness_correlate |
+| 3. Two-phase (on-demand doble) | Dos triggers separados | wellness_insights (fase 1) + wellness_predict (fase 2) |
+
+### Herramientas de Inteligencia (mockeadas, backend pendiente):
+
+Cada módulo puede tener hasta 4 tools de inteligencia:
+1. `{module}_predict` — Predicciones a 30/60/90 días
+2. `{module}_anomalies` — Detección de patrones anómalos
+3. `{module}_correlate` — Correlaciones con métricas de negocio
+4. `{module}_insights` — Motor de decisiones con executive_summary, key_findings, critical_insights
+
+Backend NO implementa estas tools aún. Se mockean con datos realistas. Cuando el backend las implemente, solo se quitan del registry.
+
+### Contracts como Source of Truth:
+
+Los contracts en shared/mocks/contracts.ts definen el shape de TODA tool response.
+NUNCA se borran — son la documentación viva de la API.
+Los componentes dependen del shape del contract, NO del backend directamente.
+```
+
+### AGREGAR a Fases del Sprint (Sección 13):
+
+```markdown
+| 9  | Wellness + Satisfaction             | ✅ COMPLETADA |
+| 10 | Proactive Recommendations            | ⬜ SIGUIENTE  |
+| 11 | Communication Enhancement            | ⬜            |
+| 12 | Guest Management + Trial Memberships | ⬜            |
+| 13 | Finance Enhancement + HITL Complete  | ⬜            |
+| 14 | Print/PDF + Export                   | ⬜            |
+| 15 | Integration Testing + QA             | ⬜            |
+| 16 | Mock → Backend Migration             | ⬜            |
+```
+
+### AGREGAR a Mapeo: Archivos → Agentes (Sección 8):
+
+```markdown
+#### 8.X WellnessAgent (wellness MCP)
+
+| Archivo | Uso |
+|---------|-----|
+| features/wellness/WellnessDashboard.tsx | Padre — consolida 7 tabs |
+| features/wellness/components/WellnessScoreCard.tsx | Score compuesto de wellness_report |
+| features/wellness/components/WellnessTrends.tsx | Charts de wellness_report |
+| features/wellness/components/WellnessRiskRadar.tsx | wellness_anomalies (on-demand) |
+| features/wellness/components/WellnessAIAdvisor.tsx | wellness_insights + wellness_predict (two-phase) |
+| features/wellness/components/WellnessGoals.tsx | wellness_goal_set mutation |
+| features/wellness/components/WellnessFamilyMap.tsx | wellness_profile_get + wellness_report |
+| features/wellness/components/WellnessBusinessInsights.tsx | wellness_correlate (on-demand) |
+| features/mi-club/MiClubLanding.tsx | Futuro — wellness_score en portal socio |
+```
+
+### AGREGAR a Hallazgos Pendientes:
+
+```markdown
+## HALLAZGOS FASE 9
+
+| # | Hallazgo | Severidad | Estado |
+|---|----------|-----------|--------|
+| 1 | Backend no tiene motor de inteligencia wellness — solo datos crudos | ALTA | Resuelto con 4 mocks nuevas |
+| 2 | activity_breakdown shape no definido (list[dict[str, Any]]) | MEDIA | Definido como ActivityBreakdownItem |
+| 3 | Registry keys deben ser tool name only, NO server.toolname (formato nested) | ALTA | Corregido |
+
+## TOOLS DE INTELIGENCIA NUEVAS (Mockeadas)
+
+| Tool | Server | Contract | Factory | Registry | Backend |
+|------|--------|----------|---------|----------|---------|
+| wellness_predict | wellness | ✅ | ✅ | ✅ | ⬜ |
+| wellness_anomalies | wellness | ✅ | ✅ | ✅ | ⬜ |
+| wellness_correlate | wellness | ✅ | ✅ | ✅ | ⬜ |
+| wellness_insights | wellness | ✅ | ✅ | ✅ | ⬜ |
+```
+
+---
+
+## 9. QUICK START PARA NUEVO CHAT
+
+```
+1. Pegar el PROMPT DE CONTEXTO completo de la Sección 7
+2. Pedir: "Pasame el agente de ProactiveRecommendationAgent y los modelos"
+3. Luego: "Definime los bloques de Fase 10"
+4. Luego: "Genera Bloque 1"
+```
+
+---
+
+Gracias por esta sesión. El WellnessAI quedó como un motor de inteligencia real, no un dashboard decorativo. Cada componente tiene propósito de decisión, datos sustentan las recomendaciones, y el patrón two-phase on-demand se puede replicar en todas las fases siguientes. Nos vemos en Fase 10.

@@ -1,0 +1,565 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/EquipmentPanel.css
+   §B4.6 — Equipment Panel V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  card stagger entry
+   2. REACCIÓN:     hover translateY on cards
+   3. MEMORIA:      stats, condition dist, equipment list
+   4. INTENCIÓN:    filters, urgency badges, attention flags
+   5. SINIESTRÍA:   data-condition colors, data-action colors
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-equip {
+  --spt-eq-accent: var(--color-teal-400, #2a9ab5);
+  --spt-eq-surface: var(--color-surface-1, #1a1a1a);
+  --spt-eq-border: rgba(255, 255, 255, 0.06);
+  --spt-eq-text: var(--color-silver-100, #f0ece4);
+  --spt-eq-text-muted: var(--color-silver-400, #8a8580);
+  --spt-eq-text-dim: var(--color-silver-500, #7a7570);
+}
+
+.spt-equip[data-mode="calm"]    { --spt-eq-accent: var(--color-teal-400, #2a9ab5); }
+.spt-equip[data-mode="alert"]   { --spt-eq-accent: var(--color-amber-400, #d4a017); }
+.spt-equip[data-mode="critical"]{ --spt-eq-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Title ────────────────────────────────────────── */
+
+.spt-equip__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.05rem;
+  color: var(--spt-eq-text);
+  margin: 0 0 0.75rem;
+}
+
+/* ── §2 — Stats Grid ───────────────────────────────────── */
+
+.spt-equip__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.spt-equip__stat-card {
+  text-align: center;
+  padding: 0.5rem 0.4rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--spt-eq-border);
+  border-radius: 6px;
+}
+
+.spt-equip__stat-label {
+  font-size: 0.55rem;
+  color: var(--spt-eq-text-dim);
+  margin: 0 0 0.15rem;
+}
+
+.spt-equip__stat-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  transition: color 0.4s ease;
+}
+
+.spt-equip__stat-value[data-level="default"] { color: var(--spt-eq-text); }
+.spt-equip__stat-value[data-level="success"] { color: var(--color-emerald-400); }
+.spt-equip__stat-value[data-level="warning"] { color: var(--color-amber-400); }
+.spt-equip__stat-value[data-level="accent"]  { color: var(--spt-eq-accent); }
+
+/* ── §3 — Condition Distribution ────────────────────────── */
+
+.spt-equip__cond-dist {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.spt-equip__cond-dist-label {
+  font-size: 0.6rem;
+  color: var(--spt-eq-text-dim);
+}
+
+.spt-equip__cond-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.spt-equip__cond-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.4s ease;
+}
+
+.spt-equip__cond-dot[data-condition="new"]          { background: var(--color-emerald-400); }
+.spt-equip__cond-dot[data-condition="good"]         { background: var(--color-teal-400); }
+.spt-equip__cond-dot[data-condition="fair"]         { background: var(--color-amber-400); }
+.spt-equip__cond-dot[data-condition="needs_repair"] { background: var(--color-rose-400); }
+.spt-equip__cond-dot[data-condition="retired"]      { background: var(--color-silver-500); }
+
+.spt-equip__cond-text {
+  font-size: 0.6rem;
+  color: var(--spt-eq-text-muted);
+}
+
+/* ── §4 — Filters ──────────────────────────────────────── */
+
+.spt-equip__filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.spt-equip__select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--spt-eq-border);
+  border-radius: 5px;
+  background: var(--color-surface-2, #222);
+  font-size: 0.7rem;
+  color: var(--spt-eq-text-muted);
+  min-height: 28px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.spt-equip__select:focus {
+  outline: none;
+  border-color: var(--spt-eq-accent);
+}
+
+.spt-equip__sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: auto;
+  padding: 0.2rem 0.4rem;
+  border: none;
+  background: transparent;
+  font-size: 0.6rem;
+  color: var(--spt-eq-text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.spt-equip__sort-btn:hover {
+  color: var(--spt-eq-text);
+}
+
+.spt-equip__sort-btn:focus-visible {
+  outline: 2px solid var(--spt-eq-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.spt-equip__sort-icon {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.3s ease;
+}
+
+.spt-equip__sort-btn[data-sort="name"] .spt-equip__sort-icon {
+  transform: rotate(180deg);
+}
+
+.spt-equip__filter-count {
+  font-size: 0.6rem;
+  color: var(--spt-eq-text-dim);
+  flex-shrink: 0;
+}
+
+/* ── §5 — Equipment List ───────────────────────────────── */
+
+.spt-equip__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ── §6 — Equipment Card (LP 1+2: Respiración + Reacción) */
+
+.spt-equip__card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--spt-eq-border);
+  border-radius: 8px;
+  transition: border-color 0.2s ease,
+              transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease;
+  /* Stagger entry */
+  animation: spt-eq-card-enter 0.4s ease both;
+  animation-delay: calc(var(--stagger-i, 0) * 60ms);
+}
+
+@keyframes spt-eq-card-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-equip__card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Attention flag: colored left border (LP 5: Siniestría) */
+.spt-equip__card[data-attention="true"] {
+  border-left: 3px solid;
+  transition: border-color 0.4s ease;
+}
+
+.spt-equip__card[data-attention="true"][data-condition="new"]          { border-left-color: var(--color-emerald-400); }
+.spt-equip__card[data-attention="true"][data-condition="good"]         { border-left-color: var(--color-teal-400); }
+.spt-equip__card[data-attention="true"][data-condition="fair"]         { border-left-color: var(--color-amber-400); }
+.spt-equip__card[data-attention="true"][data-condition="needs_repair"] { border-left-color: var(--color-rose-400); }
+.spt-equip__card[data-attention="true"][data-condition="retired"]      { border-left-color: var(--color-silver-500); }
+
+/* ── §6.1 — Card Icon ──────────────────────────────────── */
+
+.spt-equip__card-icon {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  background: var(--color-surface-2, #222);
+}
+
+/* ── §6.2 — Card Body ──────────────────────────────────── */
+
+.spt-equip__card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.spt-equip__card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.spt-equip__card-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--spt-eq-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-equip__card-brand {
+  font-size: 0.55rem;
+  color: var(--spt-eq-text-dim);
+  flex-shrink: 0;
+}
+
+.spt-equip__card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+
+.spt-equip__card-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.6rem;
+  color: var(--spt-eq-text-dim);
+}
+
+.spt-equip__card-meta-icon {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+/* ── §6.3 — Availability Bar ───────────────────────────── */
+
+.spt-equip__card-avail-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.35rem;
+}
+
+.spt-equip__card-avail-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease, background 0.4s ease;
+}
+
+.spt-equip__card-avail-fill[data-avail-level="high"]     { background: var(--color-emerald-400); }
+.spt-equip__card-avail-fill[data-avail-level="medium"]   { background: var(--color-teal-400); }
+.spt-equip__card-avail-fill[data-avail-level="low"]      { background: var(--color-amber-400); }
+.spt-equip__card-avail-fill[data-avail-level="critical"] { background: var(--color-rose-400); }
+
+/* ── §6.4 — Badges ─────────────────────────────────────── */
+
+.spt-equip__card-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.spt-equip__card-condition-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.55rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.04);
+  transition: color 0.4s ease;
+}
+
+.spt-equip__card-condition-badge[data-condition="new"]          { color: var(--color-emerald-400); }
+.spt-equip__card-condition-badge[data-condition="good"]         { color: var(--color-teal-400); }
+.spt-equip__card-condition-badge[data-condition="fair"]         { color: var(--color-amber-400); }
+.spt-equip__card-condition-badge[data-condition="needs_repair"] { color: var(--color-rose-400); }
+.spt-equip__card-condition-badge[data-condition="retired"]      { color: var(--color-silver-500); }
+
+.spt-equip__card-action-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.55rem;
+  font-weight: 600;
+  transition: color 0.4s ease, background 0.4s ease;
+}
+
+.spt-equip__card-action-badge[data-action="replace_urgent"] {
+  color: var(--color-rose-400);
+  background: rgba(229, 77, 77, 0.1);
+}
+
+.spt-equip__card-action-badge[data-action="replace_soon"] {
+  color: var(--color-amber-400);
+  background: rgba(212, 160, 23, 0.1);
+}
+
+.spt-equip__card-action-badge[data-action="maintain"] {
+  color: var(--color-teal-400);
+  background: rgba(42, 154, 181, 0.1);
+}
+
+.spt-equip__card-action-icon {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.spt-equip__card-urgency {
+  margin-left: auto;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.55rem;
+  color: var(--spt-eq-text-dim);
+}
+
+/* ── §6.5 — Notes ──────────────────────────────────────── */
+
+.spt-equip__card-notes {
+  font-size: 0.6rem;
+  color: var(--spt-eq-text-dim);
+  font-style: italic;
+  margin: 0.3rem 0 0;
+  line-height: 1.4;
+}
+
+/* ── §7 — Shimmer Skeleton ─────────────────────────────── */
+
+.spt-equip__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.spt-equip__skeleton-block {
+  border-radius: 8px;
+  background: var(--spt-eq-surface);
+  animation: spt-eq-shimmer 1.5s ease-in-out infinite;
+}
+
+.spt-equip__skeleton-block--stat { height: 48px; width: 100%; }
+.spt-equip__skeleton-block--card { height: 80px; width: 100%; }
+
+@keyframes spt-eq-shimmer {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.7; }
+}
+
+/* ── §8 — Footer: Narrative (LP 7) ─────────────────────── */
+
+.spt-equip__footer {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-eq-border);
+}
+
+.spt-equip__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-eq-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-eq-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §9 — Light Mode ───────────────────────────────────── */
+
+.light .spt-equip {
+  --spt-eq-surface: rgba(255, 255, 255, 0.7);
+  --spt-eq-border: rgba(0, 0, 0, 0.08);
+  --spt-eq-text: #1a1a1a;
+  --spt-eq-text-muted: #6b7280;
+  --spt-eq-text-dim: #9ca3af;
+}
+
+.light .spt-equip__stat-card {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-equip__card {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .spt-equip__card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-equip__card-avail-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-equip__select {
+  background: #f5f5f5;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .spt-equip__card-condition-badge {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .spt-equip__card-action-badge[data-action="replace_urgent"] {
+  background: rgba(229, 77, 77, 0.06);
+}
+
+.light .spt-equip__card-action-badge[data-action="replace_soon"] {
+  background: rgba(212, 160, 23, 0.06);
+}
+
+.light .spt-equip__card-action-badge[data-action="maintain"] {
+  background: rgba(42, 154, 181, 0.06);
+}
+
+/* ── §10 — Reduced Motion ──────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-equip__card {
+    animation: none;
+  }
+
+  .spt-equip__card:hover {
+    transform: none;
+  }
+
+  .spt-equip__card,
+  .spt-equip__card-avail-fill,
+  .spt-equip__stat-value,
+  .spt-equip__card-condition-badge,
+  .spt-equip__card-action-badge,
+  .spt-equip__card[data-attention="true"],
+  .spt-equip__cond-dot,
+  .spt-equip__narrative,
+  .spt-equip__sort-icon {
+    transition: none;
+  }
+
+  .spt-equip__skeleton-block {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* ── §11 — Responsive ──────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .spt-equip__stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .spt-equip__filters {
+    flex-wrap: wrap;
+  }
+
+  .spt-equip__sort-btn {
+    margin-left: 0;
+  }
+
+  .spt-equip__filter-count {
+    width: 100%;
+  }
+
+  .spt-equip__card-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+}
+
+/* ── §12 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-equip {
+    break-inside: avoid;
+  }
+
+  .spt-equip__card {
+    animation: none;
+  }
+
+  .spt-equip__card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .spt-equip__filters {
+    display: none;
+  }
+
+  .spt-equip__skeleton-block {
+    animation: none;
+  }
+}

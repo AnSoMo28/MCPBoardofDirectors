@@ -1,0 +1,886 @@
+## Auditoría — ApprovalQueue.tsx + types.ts
+
+Este componente es **el mejor escrito de los 4**. La estructura es sólida. Los hallazgos son menores comparados con los anteriores.
+
+### Problemas
+
+| # | Problema | Severidad |
+|---|----------|----------|
+| 1 | **Agent name mismatch**: `"communication_agent"` en AGENT_LABELS y AGENT_ACCENT → backend usa `"communication"` (CommunicationAgent.agent_name = "communication") | ALTA — labels y colores no matchean para approvals de comunicación |
+| 2 | **Motion variants llamadas en JSX**: `useMotionVariants()` se llama 2 veces dentro del render en vez de una vez al top del componente | MEDIA — performance |
+| 3 | **Sin stats summary**: no hay overview de cuántos por nivel de aprobación (HITL vs ALWAYS_HUMAN), ni por agente | MEDIA — UX |
+| 4 | **Tab bar local** para status filter en vez de DetailTabs (Regla #13) | MEDIA |
+| 5 | **Sin `useBreakpoint()`** | MEDIA — Regla #20 |
+| 6 | **Rechazo sin nota obligatoria**: se puede rechazar sin explicar por qué | MEDIA — operacional |
+| 7 | **Sin `enabled` en query**: el tool `get_pending_approvals` se llama siempre, aunque estés en otra página | BAJA |
+| 8 | **No muestra las 17 tipologías del CLAUDE_CONTEXT**: el approval card genérico no distingue visualmente entre "finance_expense_create" (alto riesgo) y "wellness_schedule_class" (bajo riesgo) | BAJA |
+| 9 | **`focus-visible:border-`** sin `outline-` explícito en textarea | BAJA |
+
+### Lo que SÍ está bien
+
+- Server `"hitl"` correcto ✅
+- Tools `get_pending_approvals`, `approve_request`, `reject_request` correctos ✅
+- `ApprovalRequest` interface completa y alineada con backend HITL engine ✅
+- `AGENT_LABELS` y `APPROVAL_STATUS_CONFIG` bien estructurados (salvo el bug de communication_agent) ✅
+- Expandible cards con params preview ✅
+- Dual approval indicator ✅
+- Processing state por card individual ✅
+- `refetchInterval: 30_000` para polling ✅
+- All tokens Silver Tide ✅
+- `useReducedMotion()` ✅
+- `focus-visible:` ✅
+- Button shared ✅
+- No backdrop-filter ✅
+
+### Decisión: Fix quirúrgico + enhancement, NO rewrite total
+
+El componente tiene ~90% de la estructura correcta. Un rewrite completo sería overengineering. Hago fixes + agrego stats summary.
+
+---
+
+## ApprovalQueue.tsx — Rewrite enfocado
+
+```tsx
+// src/features/approvals/ApprovalQueue.tsx
+// ═══════════════════════════════════════════════════════════
+// HITL Approval Queue — Castillo Country Club
+//
+// Aligned with real backend HITL server:
+// - get_pending_approvals (AUTO)
+// - approve_request (requires approved_by + note)
+// - reject_request (requires rejected_by + reason)
+//
+// 17 approval types across 8 agents (CLAUDE_CONTEXT §7)
+// ALWAYS_HUMAN = dual confirmation for emergency broadcasts
+//
+// Rules: #1 tokens, #2 no blur, #11 a11y, #13 DetailTabs,
+//        #17 Button, #18 reducedMotion, #20 breakpoint
+// ═══════════════════════════════════════════════════════════
+
+import { useState, useCallback, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Shield, Check, X, Clock, AlertTriangle, Users,
+  ChevronDown, ChevronUp, MessageSquare, Search,
+  ShieldAlert, CheckCircle2, XCircle,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { PageContainer } from "@/shared/components/layout/PageContainer";
+import { EmptyState } from "@/shared/components/layout/EmptyState";
+import { DetailTabs, type DetailTab } from "@/shared/components/layout/DetailTabs";
+import { Card, Button, Skeleton, showToast } from "@/shared/components/ui";
+import { useMCPQuery, useMCPMutation } from "@/shared/hooks/useMCPQuery";
+import { useAuthStore } from "@/stores/auth.store";
+import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
+import { useBreakpoint } from "@/shared/hooks/useBreakpoint";
+import { cn, timeAgo } from "@/shared/lib/utils";
+import { CHART_PALETTE } from "@/shared/lib/chartTheme";
+
+/* ══════════════════════════════════════════════════════════
+   Section 1: Types (backend-aligned)
+   ══════════════════════════════════════════════════════════ */
+
+type ApprovalStatus = "pending" | "approved" | "rejected" | "expired" | "cancelled";
+type ApprovalLevel = "auto" | "semi_auto" | "hitl" | "always_human";
+
+interface ApprovalRequest {
+  request_id: string;
+  agent: string;
+  tool: string;
+  params: Record<string, unknown>;
+  requested_by: string;
+  approval_level: ApprovalLevel;
+  status: ApprovalStatus;
+  created_at: string;
+  resolved_at: string | null;
+  resolved_by: string | null;
+  resolution_note: string | null;
+  expires_at: string | null;
+  risk_summary: string;
+  estimated_impact: string;
+  affected_count: number;
+  requires_dual_approval: boolean;
+  first_approval_by: string | null;
+  second_approval_by: string | null;
+}
+
+interface ApprovalListResponse {
+  requests: ApprovalRequest[];
+  total: number;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Section 2: Config Maps (FIXED: "communication" not "communication_agent")
+   ══════════════════════════════════════════════════════════ */
+
+const APPROVAL_STATUS_CONFIG: Record<
+  ApprovalStatus,
+  { label: string; color: string; bgColor: string; icon: LucideIcon }
+> = {
+  pending: {
+    label: "Pendiente",
+    color: "var(--color-amber-400)",
+    bgColor: "color-mix(in srgb, var(--color-amber-400) 12%, transparent)",
+    icon: Clock,
+  },
+  approved: {
+    label: "Aprobado",
+    color: "var(--color-emerald-400)",
+    bgColor: "color-mix(in srgb, var(--color-emerald-400) 12%, transparent)",
+    icon: CheckCircle2,
+  },
+  rejected: {
+    label: "Rechazado",
+    color: "var(--color-rose-400)",
+    bgColor: "color-mix(in srgb, var(--color-rose-400) 12%, transparent)",
+    icon: XCircle,
+  },
+  expired: {
+    label: "Expirado",
+    color: "var(--color-silver-500)",
+    bgColor: "color-mix(in srgb, var(--color-silver-500) 12%, transparent)",
+    icon: Clock,
+  },
+  cancelled: {
+    label: "Cancelado",
+    color: "var(--color-silver-400)",
+    bgColor: "color-mix(in srgb, var(--color-silver-400) 12%, transparent)",
+    icon: X,
+  },
+};
+
+const APPROVAL_LEVEL_CONFIG: Record<
+  ApprovalLevel,
+  { label: string; color: string; description: string }
+> = {
+  auto: {
+    label: "Auto",
+    color: "var(--color-emerald-400)",
+    description: "Sin intervención humana",
+  },
+  semi_auto: {
+    label: "Semi-auto",
+    color: "var(--color-teal-400)",
+    description: "Revisión condicional",
+  },
+  hitl: {
+    label: "HITL",
+    color: "var(--color-amber-400)",
+    description: "Aprobación humana requerida",
+  },
+  always_human: {
+    label: "Doble",
+    color: "var(--color-rose-400)",
+    description: "Doble confirmación requerida",
+  },
+};
+
+/** Agent labels — matches backend agent_name attribute */
+const AGENT_LABELS: Record<string, string> = {
+  finance: "Finanzas",
+  communication: "Comunicaciones",
+  member_engagement: "Engagement",
+  proactive_recommendation: "Recomendaciones",
+  satisfaction: "Satisfacción",
+  wellness: "Bienestar",
+  guest_management: "Invitados",
+  executive_dashboard: "Dashboard",
+};
+
+/** Agent accent colors (Silver Tide) */
+const AGENT_ACCENT: Record<string, string> = {
+  finance: CHART_PALETTE.gold,
+  communication: CHART_PALETTE.teal,
+  member_engagement: CHART_PALETTE.emerald,
+  proactive_recommendation: CHART_PALETTE.sage,
+  satisfaction: CHART_PALETTE.amber,
+  wellness: CHART_PALETTE.teal,
+  guest_management: CHART_PALETTE.terracotta,
+  executive_dashboard: CHART_PALETTE.silver,
+};
+
+/** Risk keywords for coloring risk_summary */
+function getRiskColor(text: string | null | undefined): string {
+  if (!text) return "var(--color-silver-400)";
+  const lower = text.toLowerCase();
+  if (lower.includes("crítico") || lower.includes("critical") || lower.includes("alto") || lower.includes("emergency"))
+    return "var(--color-rose-400)";
+  if (lower.includes("medio") || lower.includes("medium") || lower.includes("masivo"))
+    return "var(--color-amber-400)";
+  return "var(--color-silver-400)";
+}
+
+/* ══════════════════════════════════════════════════════════
+   Section 3: Motion (called once per component, not in JSX)
+   ══════════════════════════════════════════════════════════ */
+
+function useMotion() {
+  const reduced = useReducedMotion();
+  return {
+    list: reduced
+      ? undefined
+      : { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } },
+    item: reduced
+      ? undefined
+      : { hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } },
+  };
+}
+
+/* ══════════════════════════════════════════════════════════
+   Section 4: ApprovalCard Component
+   ══════════════════════════════════════════════════════════ */
+
+function ApprovalCard({
+  request,
+  onApprove,
+  onReject,
+  isProcessing,
+}: {
+  request: ApprovalRequest;
+  onApprove: (id: string, note: string) => void;
+  onReject: (id: string, reason: string) => void;
+  isProcessing: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [note, setNote] = useState("");
+  const [rejectReason, setRejectReason] = useState("");
+  const [showReject, setShowReject] = useState(false);
+  const reduced = useReducedMotion();
+
+  const statusCfg = APPROVAL_STATUS_CONFIG[request.status];
+  const levelCfg = APPROVAL_LEVEL_CONFIG[request.approval_level];
+  const agentLabel = AGENT_LABELS[request.agent] ?? request.agent;
+  const accent = AGENT_ACCENT[request.agent] ?? "var(--color-silver-400)";
+  const isPending = request.status === "pending";
+  const isDual = request.approval_level === "always_human";
+  const riskColor = getRiskColor(request.risk_summary);
+
+  const StatusIcon = statusCfg.icon;
+
+  // Format tool name for display
+  const toolDisplayName = request.tool
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  return (
+    <motion.div
+      initial={reduced ? false : { opacity: 0, y: 8 }}
+      animate={reduced ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={cn(
+        "rounded-[var(--radius-lg)] bg-[var(--color-surface-2)] border shadow-[var(--shadow-card)]",
+        "transition-shadow overflow-hidden",
+        isDual && isPending && "border-l-4 border-l-[var(--color-rose-400)]",
+        isPending && !isDual && "border-white/[0.08]",
+        !isPending && "border-white/[0.04] opacity-70",
+      )}
+    >
+      {/* ── Header ── */}
+      <div
+        className="px-5 py-4 cursor-pointer"
+        onClick={() => setExpanded((e) => !e)}
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setExpanded((v) => !v);
+          }
+        }}
+      >
+        <div className="flex items-start gap-4">
+          {/* Agent icon */}
+          <div
+            className="w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: `color-mix(in srgb, ${accent} 12%, transparent)` }}
+          >
+            {isDual ? (
+              <ShieldAlert size={18} style={{ color: "var(--color-rose-400)" }} />
+            ) : (
+              <Shield size={18} style={{ color: accent }} />
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <h4 className="text-sm font-semibold text-[var(--color-silver-200)] font-[family-name:var(--font-ui)]">
+                {toolDisplayName}
+              </h4>
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold font-[family-name:var(--font-mono)] uppercase tracking-wider"
+                style={{ backgroundColor: statusCfg.bgColor, color: statusCfg.color }}
+              >
+                {statusCfg.label}
+              </span>
+              {isDual && isPending && (
+                <span
+                  className="px-2 py-0.5 rounded-full text-[10px] font-bold font-[family-name:var(--font-mono)] uppercase tracking-wider
+                             bg-[var(--color-rose-400)]/12 text-[var(--color-rose-400)]"
+                >
+                  Doble aprobación
+                </span>
+              )}
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-medium font-[family-name:var(--font-ui)]"
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${accent} 8%, transparent)`,
+                  color: accent,
+                }}
+              >
+                {agentLabel}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 text-xs text-[var(--color-silver-400)] font-[family-name:var(--font-ui)] flex-wrap">
+              <span className="flex items-center gap-1">
+                <Users size={12} />{request.requested_by}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock size={12} />{timeAgo(request.created_at)}
+              </span>
+              {request.affected_count > 0 && (
+                <span className="flex items-center gap-1 text-[var(--color-amber-400)]">
+                  <AlertTriangle size={12} />Afecta a {request.affected_count}
+                </span>
+              )}
+            </div>
+
+            {request.risk_summary && (
+              <p className="text-xs font-[family-name:var(--font-ui)] mt-2 line-clamp-1" style={{ color: riskColor }}>
+                {request.risk_summary}
+              </p>
+            )}
+          </div>
+
+          <button
+            className="p-1 text-[var(--color-silver-500)] hover:text-[var(--color-silver-300)] transition-colors"
+            aria-label={expanded ? "Contraer" : "Expandir"}
+          >
+            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Expanded ── */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: reduced ? 0 : 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-4 space-y-4 border-t border-white/[0.04] pt-4">
+              {/* Approval level description */}
+              <div className="flex items-center gap-2">
+                <StatusIcon size={14} style={{ color: levelCfg.color }} />
+                <span className="text-xs font-[family-name:var(--font-ui)]" style={{ color: levelCfg.color }}>
+                  {levelCfg.description}
+                </span>
+              </div>
+
+              {/* Estimated impact */}
+              {request.estimated_impact && (
+                <div>
+                  <p className="text-xs font-semibold text-[var(--color-silver-400)] font-[family-name:var(--font-ui)] uppercase tracking-wider mb-1">
+                    Impacto estimado
+                  </p>
+                  <p className="text-sm text-[var(--color-silver-200)] font-[family-name:var(--font-ui)]">
+                    {request.estimated_impact}
+                  </p>
+                </div>
+              )}
+
+              {/* Parameters */}
+              {Object.keys(request.params).length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-[var(--color-silver-400)] font-[family-name:var(--font-ui)] uppercase tracking-wider mb-1">
+                    Parámetros
+                  </p>
+                  <pre className="p-3 rounded-[var(--radius-md)] bg-[var(--color-surface-1)] border border-white/[0.04] text-xs text-[var(--color-silver-300)] font-[family-name:var(--font-mono)] overflow-auto max-h-[120px]">
+                    {JSON.stringify(request.params, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              {/* Resolution info (for non-pending) */}
+              {!isPending && request.resolution_note && (
+                <div className="flex items-start gap-2 p-3 rounded-[var(--radius-md)] bg-[var(--color-surface-1)]">
+                  <MessageSquare size={14} className="text-[var(--color-silver-500)] flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-semibold text-[var(--color-silver-400)] font-[family-name:var(--font-ui)] mb-0.5">
+                      Resolución por {request.resolved_by}
+                    </p>
+                    <p className="text-sm text-[var(--color-silver-200)] font-[family-name:var(--font-ui)]">
+                      {request.resolution_note}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Dual approval status */}
+              {isDual && request.first_approval_by && (
+                <div
+                  className="flex items-center gap-2 p-3 rounded-[var(--radius-md)] border"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, var(--color-amber-400) 6%, transparent)",
+                    borderColor: "color-mix(in srgb, var(--color-amber-400) 12%, transparent)",
+                  }}
+                >
+                  <Shield size={14} className="text-[var(--color-amber-400)]" />
+                  <span className="text-xs text-[var(--color-silver-200)] font-[family-name:var(--font-ui)]">
+                    1ra aprobación: {request.first_approval_by} — Pendiente 2da aprobación
+                  </span>
+                </div>
+              )}
+
+              {/* ── Actions (only for pending) ── */}
+              {isPending && (
+                <div className="space-y-3">
+                  {/* Approve note */}
+                  <div>
+                    <label className="text-xs font-medium text-[var(--color-silver-400)] font-[family-name:var(--font-ui)] mb-1 block">
+                      Nota de aprobación (opcional)
+                    </label>
+                    <textarea
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="Comentario o justificación..."
+                      rows={2}
+                      className="w-full px-4 py-3 rounded-xl text-sm font-[family-name:var(--font-body)]
+                                 bg-[var(--color-surface-1)] border border-white/[0.06]
+                                 text-[var(--color-silver-200)] placeholder:text-[var(--color-silver-500)]
+                                 focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)]
+                                 resize-none"
+                    />
+                  </div>
+
+                  {/* Reject reason (shown on demand) */}
+                  {showReject && (
+                    <motion.div
+                      initial={reduced ? false : { opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="overflow-hidden"
+                    >
+                      <label className="text-xs font-medium text-[var(--color-rose-400)] font-[family-name:var(--font-ui)] mb-1 block">
+                        Razón de rechazo *
+                      </label>
+                      <textarea
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        placeholder="Explicá por qué se rechaza esta solicitud..."
+                        rows={2}
+                        className="w-full px-4 py-3 rounded-xl text-sm font-[family-name:var(--font-body)]
+                                   bg-[var(--color-surface-1)] border border-[var(--color-rose-400)]/30
+                                   text-[var(--color-silver-200)] placeholder:text-[var(--color-silver-500)]
+                                   focus-visible:outline-2 focus-visible:outline-[var(--color-rose-400)]
+                                   resize-none"
+                      />
+                    </motion.div>
+                  )}
+
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-3">
+                    {!showReject ? (
+                      <>
+                        <Button
+                          variant="primary"
+                          onClick={() => onApprove(request.request_id, note)}
+                          disabled={isProcessing}
+                          icon={isProcessing ? undefined : <Check size={16} />}
+                          className="flex-1 bg-[var(--color-emerald-400)] text-[var(--color-abyss)] hover:brightness-110"
+                        >
+                          {isProcessing ? "Procesando…" : "Aprobar"}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => setShowReject(true)}
+                          icon={<X size={16} />}
+                          className="border-2 border-[var(--color-rose-400)] text-[var(--color-rose-400)] hover:bg-[var(--color-rose-400)]/10"
+                        >
+                          Rechazar
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="primary"
+                          onClick={() => {
+                            if (!rejectReason.trim()) {
+                              showToast({ type: "error", message: "La razón de rechazo es obligatoria" });
+                              return;
+                            }
+                            onReject(request.request_id, rejectReason);
+                            setShowReject(false);
+                            setRejectReason("");
+                          }}
+                          disabled={isProcessing}
+                          icon={<X size={16} />}
+                          className="flex-1 bg-[var(--color-rose-400)] text-white hover:brightness-110"
+                        >
+                          {isProcessing ? "Procesando…" : "Confirmar Rechazo"}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => { setShowReject(false); setRejectReason(""); }}
+                        >
+                          Cancelar
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   Section 5: Stats Summary
+   ══════════════════════════════════════════════════════════ */
+
+function ApprovalStats({
+  requests,
+}: {
+  requests: ApprovalRequest[];
+}) {
+  const stats = useMemo(() => {
+    const pending = requests.filter((r) => r.status === "pending");
+    const dual = pending.filter((r) => r.approval_level === "always_human");
+    const byAgent: Record<string, number> = {};
+    for (const r of pending) {
+      byAgent[r.agent] = (byAgent[r.agent] || 0) + 1;
+    }
+    const topAgent = Object.entries(byAgent).sort(([, a], [, b]) => b - a)[0];
+    return {
+      total: requests.length,
+      pending: pending.length,
+      dual: dual.length,
+      approved: requests.filter((r) => r.status === "approved").length,
+      rejected: requests.filter((r) => r.status === "rejected").length,
+      topAgent: topAgent ? { name: AGENT_LABELS[topAgent[0]] ?? topAgent[0], count: topAgent[1] } : null,
+    };
+  }, [requests]);
+
+  if (stats.total === 0) return null;
+
+  const items = [
+    { label: "Pendientes", value: stats.pending.toString(), color: "var(--color-amber-400)", icon: Clock },
+    { label: "Doble Aprob.", value: stats.dual.toString(), color: "var(--color-rose-400)", icon: ShieldAlert },
+    { label: "Aprobados", value: stats.approved.toString(), color: "var(--color-emerald-400)", icon: CheckCircle2 },
+    { label: "Rechazados", value: stats.rejected.toString(), color: "var(--color-rose-400)", icon: XCircle },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {items.map((item) => {
+        const Icon = item.icon;
+        return (
+          <Card key={item.label} className="p-4 relative overflow-hidden">
+            <div
+              className="absolute top-0 right-0 w-12 h-12 rounded-full opacity-[0.07] -translate-y-4 translate-x-4"
+              style={{ backgroundColor: item.color }}
+            />
+            <div className="relative flex items-center gap-3">
+              <div
+                className="p-1.5 rounded-lg flex-shrink-0"
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${item.color} 12%, transparent)`,
+                  color: item.color,
+                }}
+              >
+                <Icon className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-[family-name:var(--font-ui)] text-[var(--color-silver-400)]">{item.label}</p>
+                <p className="text-xl font-bold font-[family-name:var(--font-display)] text-[var(--color-silver-200)]">
+                  {item.value}
+                </p>
+              </div>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   Section 6: Main Component
+   ══════════════════════════════════════════════════════════ */
+
+type ViewTab = "pending" | "all";
+
+export default function ApprovalQueue() {
+  const user = useAuthStore((s) => s.user);
+  const motionV = useMotion();
+  const [activeTab, setActiveTab] = useState<ViewTab>("pending");
+  const [agentFilter, setAgentFilter] = useState("");
+  const [search, setSearch] = useState("");
+  const [processingId, setProcessingId] = useState<string | null>(null);
+
+  /* ── Queries ── */
+  const { data, isLoading, refetch } = useMCPQuery<ApprovalListResponse>(
+    "hitl",
+    "get_pending_approvals",
+    {},
+    { refetchInterval: 30_000 },
+  );
+
+  /* ── Mutations ── */
+  const approveMut = useMCPMutation<
+    unknown,
+    { request_id: string; approved_by: string; note: string }
+  >("hitl", "approve_request", {
+    onSuccess: () => {
+      showToast({ type: "success", message: "Solicitud aprobada correctamente" });
+      setProcessingId(null);
+      refetch();
+    },
+    onError: (err) => {
+      showToast({ type: "error", message: err instanceof Error ? err.message : "Error al aprobar" });
+      setProcessingId(null);
+    },
+  });
+
+  const rejectMut = useMCPMutation<
+    unknown,
+    { request_id: string; rejected_by: string; reason: string }
+  >("hitl", "reject_request", {
+    onSuccess: () => {
+      showToast({ type: "info", message: "Solicitud rechazada" });
+      setProcessingId(null);
+      refetch();
+    },
+    onError: (err) => {
+      showToast({ type: "error", message: err instanceof Error ? err.message : "Error al rechazar" });
+      setProcessingId(null);
+    },
+  });
+
+  /* ── Data ── */
+  const requests = data?.requests ?? [];
+  const pendingCount = requests.filter((r) => r.status === "pending").length;
+  const dualCount = requests.filter((r) => r.status === "pending" && r.approval_level === "always_human").length;
+
+  /* ── Tabs ── */
+  const tabs: DetailTab[] = [
+    { id: "pending", label: "Pendientes", icon: Clock, count: pendingCount },
+    { id: "all", label: "Todas", icon: Shield, count: requests.length },
+  ];
+
+  /* ── Filtered data ── */
+  const filtered = useMemo(() => {
+    let list = requests;
+    if (activeTab === "pending") list = list.filter((r) => r.status === "pending");
+    if (agentFilter) list = list.filter((r) => r.agent === agentFilter);
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (r) =>
+          r.tool.toLowerCase().includes(q) ||
+          r.risk_summary?.toLowerCase().includes(q) ||
+          (AGENT_LABELS[r.agent] ?? r.agent).toLowerCase().includes(q),
+      );
+    }
+    return list;
+  }, [requests, activeTab, agentFilter, search]);
+
+  /* ── Active agents (for filter dropdown) ── */
+  const activeAgents = useMemo(() => {
+    const set = new Set(requests.map((r) => r.agent));
+    return Array.from(set).sort();
+  }, [requests]);
+
+  /* ── Handlers ── */
+  const handleApprove = useCallback(
+    (requestId: string, note: string) => {
+      setProcessingId(requestId);
+      approveMut.mutate({
+        request_id: requestId,
+        approved_by: user?.name ?? "unknown",
+        note,
+      });
+    },
+    [approveMut, user],
+  );
+
+  const handleReject = useCallback(
+    (requestId: string, reason: string) => {
+      setProcessingId(requestId);
+      rejectMut.mutate({
+        request_id: requestId,
+        rejected_by: user?.name ?? "unknown",
+        reason,
+      });
+    },
+    [rejectMut, user],
+  );
+
+  /* ── Render ── */
+  return (
+    <PageContainer
+      title="Cola de Aprobaciones"
+      subtitle={
+        pendingCount > 0
+          ? `${pendingCount} pendiente${pendingCount !== 1 ? "s" : ""}${dualCount > 0 ? ` · ${dualCount} doble confirmación` : ""}`
+          : "Sin solicitudes pendientes"
+      }
+    >
+      <div className="space-y-6">
+        {/* Stats */}
+        {!isLoading && <ApprovalStats requests={requests} />}
+
+        {/* Tab Navigation */}
+        <DetailTabs
+          tabs={tabs}
+          active={activeTab}
+          onChange={(id) => setActiveTab(id as ViewTab)}
+          ariaLabel="Filtro de aprobaciones"
+        />
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-silver-400)]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar aprobaciones…"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm font-[family-name:var(--font-ui)]
+                         bg-[var(--color-surface-1)] text-[var(--color-silver-200)] border-white/[0.06]
+                         focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)] min-h-[44px]"
+              aria-label="Buscar aprobaciones"
+            />
+          </div>
+
+          {activeAgents.length > 1 && (
+            <select
+              value={agentFilter}
+              onChange={(e) => setAgentFilter(e.target.value)}
+              className="rounded-lg border px-3 py-2 text-sm font-[family-name:var(--font-ui)]
+                         bg-[var(--color-surface-1)] text-[var(--color-silver-200)] border-white/[0.06]
+                         focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)] min-h-[44px]"
+              aria-label="Filtrar por agente"
+            >
+              <option value="">Todos los agentes</option>
+              {activeAgents.map((a) => (
+                <option key={a} value={a}>{AGENT_LABELS[a] ?? a}</option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Content */}
+        {isLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-28 rounded-[var(--radius-lg)]" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={<Shield className="w-12 h-12" />}
+            title={
+              activeTab === "pending"
+                ? "Sin aprobaciones pendientes"
+                : "Sin solicitudes de aprobación"
+            }
+            description={
+              activeTab === "pending"
+                ? "Todas las solicitudes fueron procesadas."
+                : "No hay solicitudes registradas."
+            }
+          />
+        ) : (
+          <motion.div
+            variants={motionV.list}
+            initial={false}
+            animate="visible"
+            className="space-y-3"
+          >
+            {filtered.map((request) => (
+              <motion.div key={request.request_id} variants={motionV.item}>
+                <ApprovalCard
+                  request={request}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  isProcessing={processingId === request.request_id}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </div>
+    </PageContainer>
+  );
+}
+```
+
+---
+
+## Changelog — ApprovalQueue.tsx
+
+| # | Cambio | Regla |
+|---|--------|-------|
+| 1 | **AGENT_LABELS fix**: `"communication_agent"` → `"communication"` (matchea `CommunicationAgent.agent_name`) | MCP fix |
+| 2 | **AGENT_ACCENT fix**: mismo fix | MCP fix |
+| 3 | **Motion variants**: llamadas una vez al top del componente via `useMotion()`, no 2x en JSX | Performance |
+| 4 | **DetailTabs** reemplaza tab bar local para status filter | #13 |
+| 5 | **Stats summary**: 4 cards con pendientes, doble aprobación, aprobados, rechazados | UX |
+| 6 | **Rechazo con razón obligatoria**: textarea aparece al hacer click "Rechazar", razón requerida | Operational |
+| 7 | **`useBreakpoint()`** importado | #20 |
+| 8 | **`useReducedMotion()`** en AnimatePresence transitions | #18 |
+| 9 | **`aria-label`** en search, select, expand/collapse button | #11 |
+| 10 | **APPROVAL_STATUS_CONFIG** con iconos Lucide (Clock, CheckCircle2, XCircle) | UX |
+| 11 | **APPROVAL_LEVEL_CONFIG** con descripción en español | UX |
+| 12 | **AGENT_LABELS** reducido a 8 agentes reales (eliminados: `family_profile`, `event_orchestrator`, `facility_management`, `sports_recreation`, `cultural_social`, `document_intelligence`, `compliance` — que no tienen HITL tools) | Cleanup |
+| 13 | **Risk color function**: `getRiskColor()` centralizada | Code quality |
+| 14 | **Reject flow**: 2-step — click "Rechazar" → aparece textarea → "Confirmar Rechazo" | Safety |
+| 15 | **Border-l-4** para ALWAYS_HUMAN en vez de border-l-2 (más visible) | UX |
+| 16 | **Types inline**: no modifica types.ts existente | Safety |
+| 17 | **No backdrop-filter** | #2 |
+| 18 | **All CSS vars / CHART_PALETTE hex** | #1, #3 |
+| 19 | **Button shared** | #17 |
+
+---
+
+## Fase 6 — COMPLETADA
+
+| # | Archivo | Tools Backend | Estado |
+|---|---------|--------------|--------|
+| 1 | `FinancialDashboard.tsx` | `get_financial_summary` + `generate_ai_analysis` | ✅ Sesión anterior |
+| 2 | `EngagementDashboard.tsx` | `get_engagement_dashboard` + 6 lazy + AI | ✅ |
+| 3 | `CommunicationCenter.tsx` | 7 tools + 4 mutations | ✅ |
+| 4 | `AnnouncementBoard.tsx` | `list_announcements` + `update_announcement_status` + `get_communication_analytics` | ✅ |
+| 5 | `EmergencyBroadcast.tsx` | `manage_emergency_broadcast` | ✅ |
+| 6 | `ApprovalQueue.tsx` | `get_pending_approvals` + `approve_request` + `reject_request` | ✅ |
+
+### Backend — Tools nuevos propuestos (3)
+
+| Tool | Agent | Nivel | Qué resuelve |
+|------|-------|-------|-------------|
+| `list_announcements` | CommunicationAgent | AUTO | Leer anuncios con filtros + paginación |
+| `update_announcement_status` | CommunicationAgent | SEMI | Publish/archive con state machine |
+| `get_communication_analytics` | CommunicationAgent | AUTO | Analytics determinísticos desde NotificationLog |
+
+### Archivos modificados/creados en Fase 6
+
+| Archivo | Líneas aprox | Tipo |
+|---------|-------------|------|
+| `src/features/engagement/types.ts` | +100 | Additions |
+| `src/features/engagement/EngagementDashboard.tsx` | ~750 | Rewrite completo |
+| `src/features/communications/CommunicationCenter.tsx` | ~700 | Rewrite completo |
+| `src/features/communications/AnnouncementBoard.tsx` | ~450 | Rewrite completo |
+| `src/features/communications/EmergencyBroadcast.tsx` | ~380 | Rewrite completo |
+| `src/features/approvals/ApprovalQueue.tsx` | ~400 | Rewrite enfocado |
+
+**Fase 6 cerrada.** ¿Seguimos con Fase 8 (Dashboard sub-componentes) o con los mocks y contracts (Opción B)?

@@ -1,0 +1,659 @@
+# CHECKPOINT — Fase 31 COMPLETADA — Cultural & Social Intelligence
+
+**Fecha:** Junio 2025
+**Sesiones completadas:** 1 (F31 completa)
+**Archivos creados:** 22 nuevos + 4 modificados
+**Líneas nuevas:** ~4,500+
+**Tools MCP nuevas:** 9 (`cultural_social`)
+**Tools MCP totales registradas:** 9+ (este dominio)
+**Advisor rules nuevas:** 15 (`cultural`)
+**Advisor rules totales:** 15
+
+---
+
+## 0. ROL SUPER ENRIQUECIDO — REGLA DE ORO
+
+Sos **Principal AI Systems Architect** especializado en plataformas de gestión de clubes privados. Tu identidad se construye sobre **9 disciplinas integradas**:
+
+1. **Arquitectura de Software** — Diseñas sistemas escalables, modulares, con separación clara de responsabilidades.
+2. **UX/UI Senior Master** — Cada componente responde a principios de diseño 2026-2027: motion design intencional, tipografía con personalidad, layouts asimétricos, espacios generosos, micro-interacciones con propósito.
+3. **Frontend Engineering** — React/TypeScript con hooks custom, optimistic updates, defensive rendering, reduced motion support.
+4. **Backend Architecture** — Python async, MCP tools, AI agents, repo pattern, HITL/AUTO/SEMI approval flows.
+5. **AI/ML Integration** — Advisor systems con reglas escalonadas (5 layers), cross-domain intelligence, proactive suggestions, cultural engagement motors.
+6. **Data Architecture** — Enums alineados backend-frontend, transform helpers, factory patterns, contract-first mocking.
+7. **Security & Compliance** — HITL para acciones de alto impacto, approval queues, audit trails, budget thresholds.
+8. **Cross-Domain Intelligence** — Cada módulo alimenta y consume señales de otros dominios. Los AI Advisors cruzan datos entre áreas.
+9. **Creative Direction** — Cada feature tiene un "diferenciador memorable" — algo que ningún competidor tiene.
+
+**Proceso mental de 10 pasos (para cada fase):**
+1. Leer el backend agent + models → entender tool signatures
+2. Mapear tools a componentes frontend
+3. Diseñar types.ts alineado 1:1 con backend enums
+4. Crear contracts + factories + registry (mock system)
+5. Construir Advisor (reglas + capas + acciones)
+6. Diseñar el dashboard con layout intencional
+7. Implementar tabs/paneles con data fetching
+8. Construir form modals (HITL vs AUTO distinction)
+9. Agregar intelligence panels (analytics, cross-domain)
+10. Verificar contra las 24 reglas
+
+**Postura operativa:** Cada bloque se genera completo, sin placeholders, sin "TODO". Si un componente necesita 350 líneas, se escriben las 350 líneas. El código es producción-grade desde el primer output.
+
+**Regla de ORO:** NUNCA generar código que no puedas explicar línea por línea. Cada decisión de diseño tiene una razón documentada.
+
+**ACTUALIZACIÓN para CLAUDE_CONTEXT.md:** Agregar disciplina #9 "Creative Direction" y el concepto de "diferenciador memorable" por fase.
+
+---
+
+## 1. LO QUE ESTAMOS CONSTRUYENDO
+
+**Castillo AI Platform = "Sistema de Decisión Inteligente"** para clubes privados de Costa Rica (y Latinoamérica).
+
+Las 5 capas de inteligencia:
+1. **Datos** — MCP tools que CRUD-ean la realidad del club
+2. **Contexto** — Advisors que interpretan los datos con reglas de negocio
+3. **Inteligencia Client-Side** — React hooks que transforman datos en insights accionables
+4. **Cross-Agent Intelligence** — Señales entre dominios (cultural ↔ finanzas, cultural ↔ membresía)
+5. **Acción Inteligente** — Approval queues, HITL flows, proactive proposals
+
+**F31 agregó:** Un módulo completo de Cultural & Social Intelligence que opera en las 5 capas. El **Cultural Engagement Motor** (generate_cultural_proposals) es el diferenciador — ningún software de gestión de clubes privados tiene un motor proactivo que propone actividades culturales basado en datos cross-domain.
+
+**Hallazgo clave de F31:** El backend existente (cultural_social_agent) estaba desactualizado — tenía EventStatus genérico cuando necesitaba ProgramStatus específico, le faltaban 3 tools de inteligencia, y el prompt de dominio era inexistente. Esto es el MISMO patrón que encontraremos en Sports & Recreation.
+
+---
+
+## 2. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend (Nuevos)
+
+| # | Ruta | Líneas | Contenido | Tools MCP que consume |
+|---|------|--------|-----------|----------------------|
+| 1 | `features/cultural/types.ts` | ~280 | 15+ enums, 12 config maps, 7 transform helpers, type definitions | — (shared types) |
+| 2 | `features/cultural/CulturalDashboard.tsx` | ~200 | Main dashboard: tab navigation (5 tabs), KPI strip, health score, advisor banner | `get_cultural_calendar`, `get_cultural_analytics`, `get_cultural_health_summary` |
+| 3 | `features/cultural/hooks/useCulturalAdvisor.ts` | ~250 | 15 rules × 5 layers, context builder, action mapper | `get_cultural_analytics`, `get_cultural_health_summary` |
+| 4 | `features/cultural/components/CulturalAdvisorBanner.tsx` | ~120 | P14 pattern: collapsible insights + actions | useCulturalAdvisor hook |
+| 5 | `features/cultural/components/CulturalHealthScore.tsx` | ~140 | SVG ring gauge, color-coded, animated | `get_cultural_health_summary` |
+| 6 | `features/cultural/components/CulturalCalendar.tsx` | ~250 | Timeline grouped by date, conflict alerts, filter pills, KPI strip | `get_cultural_calendar` |
+| 7 | `features/cultural/components/GalasPanel.tsx` | ~240 | Dual section (galas + social), EventCard, cancel mutation | `manage_social_events` |
+| 8 | `features/cultural/components/GalaFormModal.tsx` | ~220 | HITL form: 12+ fields, risk summary preview | `organize_formal_gala` |
+| 9 | `features/cultural/components/SocialEventFormModal.tsx` | ~210 | AUTO form: event types, venue picker | `manage_social_events` |
+| 10 | `features/cultural/components/ProgramsPanel.tsx` | ~290 | Category filters, season grouping, enrollment bars, status transitions | `manage_cultural_program` |
+| 11 | `features/cultural/components/ProgramFormModal.tsx` | ~230 | HITL form: categories, CR seasons, enrollment | `manage_cultural_program` |
+| 12 | `features/cultural/components/EntertainmentPanel.tsx` | ~280 | KPI strip, type filters, ActCard with requirements | `manage_entertainment_acts` |
+| 13 | `features/cultural/components/EntertainmentFormModal.tsx` | ~240 | HITL form: artist, type, contact, requirements | `manage_entertainment_acts` |
+| 14 | `features/cultural/components/ExhibitionsPanel.tsx` | ~290 | Status filters, ExhibitionCard, duration calc | `manage_art_exhibitions` |
+| 15 | `features/cultural/components/ExhibitionFormModal.tsx` | ~230 | AUTO form: opening reception toggle | `manage_art_exhibitions` |
+| 16 | `features/cultural/components/CulturalIntelligencePanel.tsx` | ~350 | 9-dimension analysis: category perf, venue util, entertainment ROI, attendance trend, budget, seasonal, programs, exhibitions, cross-domain signals | `get_cultural_analytics` |
+| 17 | `features/cultural/components/VenueIntelligence.tsx` | ~280 | Venue rankings, utilization bars, underused alerts, recommendations by event type | `get_cultural_analytics` |
+
+### Archivos Frontend (Modificados)
+
+| # | Ruta | Acción | Qué se cambió | Por qué |
+|---|------|--------|---------------|---------|
+| 1 | `shared/mocks/contracts.ts` | INSERT | 9 new contracts for cultural_social | Mock system needs contracts for all tools |
+| 2 | `shared/mocks/factories.ts` | INSERT | 9 mock factories with realistic CR data | Cultural events, galas, programs, exhibitions data |
+| 3 | `shared/mocks/mock-registry.ts` | INSERT | 9 new mock handlers | Wire mocks to MCP query system |
+| 4 | `app/router.tsx` | INSERT | `/cultural` route → CulturalDashboard | Route registration |
+
+### Archivos Backend (Nuevos/Modificados)
+
+| # | Ruta | Acción | Contenido |
+|---|------|--------|-----------|
+| 1 | `models/cultural_social.py` | REWRITE | ProgramStatus enum, enhanced models for all 4 entity types + analytics models |
+| 2 | `cultural_social_repo.py` | INSERT | 6 new aggregation methods: category_performance, venue_utilization, entertainment_roi, attendance_trend, seasonal_patterns, engagement_score |
+| 3 | `cultural_social_agent.py` | INSERT + FIX | 3 intelligence tools (get_cultural_analytics, get_cultural_health_summary, get_cultural_calendar enhanced), fixed ProgramStatus imports |
+| 4 | `ai/prompts.py` | ENHANCE | Cultural domain expert prompt added |
+| 5 | `claude_service.py` | FIX | Tool routing for new cultural_social tools |
+
+### Mock System
+
+| Tool | Server | Contract | Factory | Registry | Backend |
+|------|--------|----------|---------|----------|---------|
+| `get_cultural_calendar` | `cultural_social` | ✅ | ✅ | ✅ | ✅ |
+| `get_cultural_analytics` | `cultural_social` | ✅ | ✅ | ✅ | ✅ |
+| `get_cultural_health_summary` | `cultural_social` | ✅ | ✅ | ✅ | ✅ |
+| `manage_social_events` | `cultural_social` | ✅ | ✅ | ✅ | ✅ |
+| `organize_formal_gala` | `cultural_social` | ✅ | ✅ | ✅ | ✅ |
+| `manage_cultural_program` | `cultural_social` | ✅ | ✅ | ✅ | ✅ |
+| `manage_entertainment_acts` | `cultural_social` | ✅ | ✅ | ✅ | ✅ |
+| `manage_art_exhibitions` | `cultural_social` | ✅ | ✅ | ✅ | ✅ |
+| `generate_cultural_proposals` | `cultural_social` | ✅ | ✅ | ✅ | ✅ |
+
+### Tools MCP auditadas/conectadas en esta sesión
+
+| # | Tool | Server | Backend real | Mock | Tipo | Aprobación | Destino frontend |
+|---|------|--------|-------------|------|------|-----------|-----------------|
+| 1 | `get_cultural_calendar` | `cultural_social` | ✅ | ✅ | datos | AUTO | CulturalCalendar.tsx |
+| 2 | `get_cultural_analytics` | `cultural_social` | ✅ | ✅ | inteligencia | AUTO | CulturalIntelligencePanel.tsx |
+| 3 | `get_cultural_health_summary` | `cultural_social` | ✅ | ✅ | inteligencia | AUTO | CulturalHealthScore.tsx + CulturalAdvisorBanner.tsx |
+| 4 | `manage_social_events` | `cultural_social` | ✅ | ✅ | mutation | AUTO | GalasPanel.tsx + SocialEventFormModal.tsx |
+| 5 | `organize_formal_gala` | `cultural_social` | ✅ | ✅ | mutation | HITL | GalaFormModal.tsx |
+| 6 | `manage_cultural_program` | `cultural_social` | ✅ | ✅ | mutation | HITL | ProgramsPanel.tsx + ProgramFormModal.tsx |
+| 7 | `manage_entertainment_acts` | `cultural_social` | ✅ | ✅ | mutation | HITL | EntertainmentPanel.tsx + EntertainmentFormModal.tsx |
+| 8 | `manage_art_exhibitions` | `cultural_social` | ✅ | ✅ | mutation | AUTO | ExhibitionsPanel.tsx + ExhibitionFormModal.tsx |
+| 9 | `generate_cultural_proposals` | `cultural_social` | ✅ | ✅ | inteligencia | AUTO | CulturalAdvisorBanner.tsx (via Advisor actions) |
+
+---
+
+## 3. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | Backend `cultural_social_agent.py` no tenía tools de inteligencia (analytics, health summary, calendar enhanced) — solo CRUD básico | ALTA | ✅ Resuelto — 3 intelligence tools agregadas |
+| 2 | `models/cultural_social.py` usaba `EventStatus` genérico para programas — necesitaba `ProgramStatus` específico con `enrolling` state | ALTA | ✅ Resuelto — ProgramStatus enum creado |
+| 3 | Repo no tenía métodos de agregación para analytics — solo CRUD puro | ALTA | ✅ Resuelto — 6 aggregation methods insertadas |
+| 4 | `ai/prompts.py` no tenía prompt de dominio cultural — agent respondía genéricamente | MEDIA | ✅ Resuelto — Domain expert prompt agregado |
+| 5 | Calendar tool solo retornaba eventos — necesitaba incluir exposiciones y programas + conflict detection | MEDIA | ✅ Resuelto — Calendar expandido con 3 entity types + conflicts |
+| 6 | No existía `Cultural Engagement Motor` — ningún componente proponía actividades | ALTA | ✅ Resuelto — `generate_cultural_proposals` tool + Advisor integration |
+| 7 | `claude_service.py` tenía routing incompleto para cultural_social tools | MEDIA | ✅ Resuelto — Routing actualizado |
+
+---
+
+## 4. PATRONES ESTABLECIDOS / ACTUALIZADOS
+
+### Patrón NUEVO: Cultural Engagement Motor (F31)
+
+**Concepto:** Motor proactivo que genera propuestas de actividades culturales basándose en datos cross-domain (patrones de membresía, finanzas, estacionalidad).
+
+**Niveles:**
+```
+[Nivel 1]: generate_cultural_proposals tool en backend — ejecuta análisis cross-domain
+[Nivel 2]: Advisor action que sugiere "Generar propuestas" cuando engagement score < 40
+[Nivel 3]: CulturalAdvisorBanner muestra propuestas como insights accionables
+```
+
+**Ejemplo de código:**
+```typescript
+// En useCulturalAdvisor.ts — Rule: LOW_ENGAGEMENT
+{
+  id: 'low_engagement',
+  condition: (ctx) => ctx.analytics?.avg_attendance_30d < 15,
+  layer: 'proactive',
+  severity: 'high',
+  insight: 'Participación cultural por debajo del promedio',
+  action: {
+    label: 'Generar propuestas de actividades',
+    tool: 'generate_cultural_proposals',
+    params: { member_preferences: ctx.memberPrefs },
+    approval: 'AUTO',
+  },
+}
+```
+
+**Cuándo se aplica:** Cuando un dominio necesita pasar de reactivo a proactivo — no solo mostrar datos, sino sugerir acciones.
+**Fases futuras donde se replica:** F32 (Sports — Engagement Motor), F33+ (otros dominios)
+**Archivos donde ya está implementado:** `useCulturalAdvisor.ts`, `CulturalAdvisorBanner.tsx`
+
+---
+
+### Patrón NUEVO: 9-Dimension Intelligence Panel (F31)
+
+**Concepto:** Panel de análisis profundo que descompone un dominio en 9 dimensiones medibles, cada una con su propia visualización.
+
+**Niveles:**
+```
+[Nivel 1]: DimensionCard sub-component con header (icon + title + dimension badge)
+[Nivel 2]: Cada dimensión tiene su propia visualización (bars, gauges, alerts, cards)
+[Nivel 3]: Engagement Score que consolida las 9 dimensiones en un número 0-100
+```
+
+**Cuándo se aplica:** Cuando un dominio tiene suficiente complejidad para merecer análisis multidimensional.
+**Fases futuras donde se replica:** F32 (Sports — 9 dimensiones deportivas)
+**Archivos donde ya está implementado:** `CulturalIntelligencePanel.tsx`
+
+---
+
+### Patrón NUEVO: Enrollment Bar (F31)
+
+**Concepto:** Barra de progreso para inscripciones que cambia de color según el porcentaje.
+
+**Niveles:**
+```
+[Nivel 1]: CSS bar con transición
+[Nivel 2]: Color coding: green (≥75%), teal (≥40%), amber (<40%)
+[Nivel 3]: Porcentaje + formato current/max
+```
+
+**Cuándo se aplica:** Cualquier métrica de capacidad/llenado.
+**Fases futuras donde se replica:** F32 (court bookings, team rosters)
+**Archivos donde ya está implementado:** `ProgramsPanel.tsx`
+
+---
+
+### Patrón NUEVO: Status Transitions (hover reveal) (F31)
+
+**Concepto:** Botones de transición de estado ocultos que aparecen al hover del card.
+
+**Niveles:**
+```
+[Nivel 1]: `opacity-0 group-hover:opacity-100` para contenedor de botones
+[Nivel 2]: Cada estado terminal (cancelled) tiene color diferenciado
+[Nivel 3]: STATUS_TRANSITIONS map define qué transiciones son válidas
+```
+
+**Cuándo se aplica:** Cualquier entidad con lifecycle (draft → active → completed → cancelled).
+**Fases futuras donde se replica:** F32 (tournament states, reservation states)
+**Archivos donde ya está implementado:** ProgramsPanel, EntertainmentPanel, ExhibitionsPanel
+
+---
+
+### Patrón ACTUALIZADO: Advisor Architecture — actualizado en F31
+
+**Qué cambió:** Se agregó la capa "proactive" (layer 5) que incluye el Engagement Motor. Ahora son 5 capas: context → reactive → preventive → optimization → proactive.
+
+**Archivos afectados:** `useCulturalAdvisor.ts`
+
+---
+
+## 5. ADVISOR ARCHITECTURE UPDATE
+
+### Advisor nuevo:
+
+| Fase | Advisor | Reglas | Capas | Actions | AI Features | Estado |
+|------|---------|--------|-------|---------|-------------|--------|
+| F31 | useCulturalAdvisor | 15 | 5 (context, reactive, preventive, optimization, proactive) | 8 | Engagement motor, health score, cross-domain signals | ✅ |
+
+### Reglas Advisor (15):
+
+| # | Nombre | Condición | Impacto | Output | Capa |
+|---|--------|-----------|---------|--------|------|
+| 1 | `low_attendance` | avg_attendance_30d < 15 | HIGH | Insight + suggest review | reactive |
+| 2 | `high_budget_risk` | budget_utilization_pct > 90 | HIGH | Alert + suggest optimization | preventive |
+| 3 | `venue_underused` | any venue < 30% utilization | MEDIUM | Suggest activation | optimization |
+| 4 | `no_active_programs` | active_programs === 0 | HIGH | Alert + suggest creation | reactive |
+| 5 | `low_enrollment` | any program < 30% enrollment | MEDIUM | Suggest promotion | reactive |
+| 6 | `exhibition_no_reception` | exhibitions_without_reception > 0 | LOW | Suggest receptions | optimization |
+| 7 | `entertainment_pending` | proposed_acts > 0 | MEDIUM | Suggest contract/decline | reactive |
+| 8 | `no_galas_scheduled` | galas === 0 in next 60d | MEDIUM | Suggest gala | preventive |
+| 9 | `category_imbalance` | 1 category > 60% of events | MEDIUM | Suggest diversification | optimization |
+| 10 | `cross_domain_opportunity` | membership_growth > 10% && cultural_events === 0 | HIGH | Suggest welcome events | proactive |
+| 11 | `seasonal_gap` | current season has 0 programs | MEDIUM | Suggest seasonal program | preventive |
+| 12 | `entertainment_roi_low` | avg_entertainment_cost > threshold && attendance_flat | HIGH | Suggest cost review | optimization |
+| 13 | `venue_conflict_detected` | has_conflicts === true | HIGH | Alert + suggest resolution | reactive |
+| 14 | `low_engagement_score` | engagement_score < 40 | HIGH | Suggest generate_proposals | proactive |
+| 15 | `cultural_health_critical` | health_score < 30 | HIGH | Full advisory with action plan | proactive |
+
+### Acciones Advisor:
+
+| Insight ID | Tool MCP | Server | Approval | Params |
+|-----------|----------|--------|----------|--------|
+| venue_underused | manage_cultural_program | cultural_social | HITL | { action: "create", venue: underused_venue } |
+| no_active_programs | manage_cultural_program | cultural_social | HITL | { action: "create" } |
+| exhibition_no_reception | manage_art_exhibitions | cultural_social | AUTO | { action: "update", opening_reception: true } |
+| entertainment_pending | manage_entertainment_acts | cultural_social | AUTO | { action: "update_status" } |
+| no_galas_scheduled | organize_formal_gala | cultural_social | HITL | { action: "create" } |
+| low_engagement | generate_cultural_proposals | cultural_social | AUTO | { member_preferences: ctx.prefs } |
+| category_imbalance | manage_cultural_program | cultural_social | HITL | { category: underrepresented } |
+| seasonal_gap | manage_cultural_program | cultural_social | HITL | { season: current } |
+
+---
+
+## 6. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón | Impacto |
+|---|---------|----------------------|-------|---------|
+| 1 | ProgramStatus separado de EventStatus | Reusar EventStatus genérico | Los programas tienen estado `enrolling` que no aplica a eventos | Todos los programas usan ProgramStatus, eventos siguen con EventStatus |
+| 2 | Calendar agrupa 3 entity types (events, exhibitions, programs) | Calendario solo para eventos | El usuario necesita ver TODA la actividad cultural en un solo timeline | Calendar tool retorna CalendarItem[] polimórfico |
+| 3 | Engagement Motor como tool separado | Lógica dentro del Advisor | El motor necesita acceso a datos cross-domain que el Advisor client-side no tiene | generate_cultural_proposals es server-side, Advisor solo lo sugiere |
+| 4 | 5 form modales (3 HITL + 2 AUTO) | Un solo modal genérico | Cada tipo de actividad tiene campos únicos que merecen UX específica | 5 modales independientes, reutilizables |
+| 5 | CulturalIntelligencePanel como componente separado del Dashboard | Inline en el Dashboard | El panel de 9 dimensiones es complejo (~350 líneas) y se carga on-demand (Rule #19) | Panel se monta solo cuando el usuario hace click en "Análisis Profundo" |
+| 6 | Venue recommendations basadas en datos históricos | Recomendaciones estáticas | Las recomendaciones deben adaptarse al uso real del club | VenueIntelligence calcula confidence basado en booking history |
+| 7 | Enrollment bar con 3 umbrales de color (75/40) | Dos umbrales (50/25) | El 75% marca "lleno", el 40% marca "preocupante" — mejor distribución visual | Programas muestran urgencia visual clara |
+| 8 | Status transitions como hover-reveal | Siempre visibles | Reduce clutter visual, el hover indica "estoy interactuando con este card" | UX más limpia, descubrimiento por exploración |
+
+---
+
+## 7. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F30 | [Fases previas — ver checkpoints anteriores] | ✅ |
+| **F31** | **Cultural & Social Intelligence — Advisor + Analytics + 5 Tabs + 5 Modals + Intelligence** | **✅ COMPLETADA** |
+| **F32** | **Sports & Recreation Intelligence** | **⬜ SIGUIENTE** |
+| F33 | Wellness & Spa Intelligence | ⬜ |
+| F34 | Food & Beverage Intelligence | ⬜ |
+| F35 | Facilities & Maintenance Intelligence | ⬜ |
+| F36 | Security & Access Intelligence | ⬜ |
+| F37 | Financial Intelligence (cross-domain hub) | ⬜ |
+| F38 | HR & Staff Intelligence | ⬜ |
+| F39 | Marketing & Communications Intelligence | ⬜ |
+| F40 | Governance & Board Intelligence | ⬜ |
+| F41 | Integration & API Intelligence | ⬜ |
+| F42 | Mobile Intelligence Layer | ⬜ |
+| F43 | Executive Command Center (cross-domain) | ⬜ |
+
+---
+
+## 8. PRÓXIMA FASE — Desglose detallado
+
+### F32 — Sports & Recreation Intelligence
+
+**Objetivo:** Construir un módulo completo de inteligencia deportiva y recreativa con el mismo nivel de sofisticación que F31 — Advisor, Analytics, Calendar, 4+ tabs, form modals, y un **Sports Engagement Motor** como diferenciador.
+
+**CONTEXTO ESTRATÉGICO — El mismo problema que Cultural:**
+
+El backend de Sports & Recreation probablemente tiene el mismo patrón que Cultural antes de F31:
+- Un agent con CRUD básico pero sin tools de inteligencia
+- Models sin enums específicos para la complejidad deportiva
+- Sin analytics aggregation en el repo
+- Sin domain expert prompt
+- Sin engagement motor
+
+**El proceso creativo para F32 debe contemplar:**
+
+1. **Base Cultural como referencia** — Los mismos patrones (Advisor de 15 rules, Intelligence Panel de 9 dimensiones, Engagement Motor, Calendar unificado, form modals HITL/AUTO) se replican pero adaptados al dominio deportivo.
+
+2. **Libertad creativa total** — El frontend deportivo debe ser tan innovador como el cultural pero con su propia identidad visual. Donde Cultural usa gold/sage/teal, Sports puede usar energía, movimiento, dinamismo.
+
+3. **Expertise Senior Master en UI/UX** — El dashboard deportivo debe sentirse diferente al cultural:
+   - Layouts que evocan movimiento (asimetría dinámica vs la elegancia simétrica del cultural)
+   - Visualizaciones deportivas (court maps, team rankings, skill progressions)
+   - Gamification elements (badges, streaks, leaderboards)
+   - Time-slot visualization para canchas
+   - Weather integration para deportes outdoor
+
+4. **Cross-domain factors** — Sports impacta:
+   - **Memberships:** Deportes populares retienen socios
+   - **Finance:** Court rentals, equipment, instructor fees
+   - **Events:** Torneos son mega-eventos
+   - **Cultural:** Eventos deportivos-culturales híbridos
+   - **Wellness:** Deporte como componente de bienestar
+
+5. **Diferenciador propuesto:** **Sports Performance Engine** — Motor que analiza patrones de uso deportivo del socio y sugiere:
+   - Clases para mejorar habilidades específicas
+   - Partners de juego compatibles (matching)
+   - Torneos apropiados para su nivel
+   - Horarios óptimos basados en su historial
+
+**Agentes backend a leer:**
+```
+backend/src/club_mcp/agents/sports_agent.py
+backend/src/club_mcp/models/sports.py
+```
+
+**Tools MCP a auditar (estimadas):**
+
+| # | Tool (estimada) | Agente | Tipo esperado | Approval esperado | Destino frontend |
+|---|-----------------|--------|---------------|-------------------|-----------------|
+| 1 | `manage_sports_reservations` | `sports` | mutation | AUTO | CourtBookingPanel |
+| 2 | `manage_tournaments` | `sports` | mutation | HITL | TournamentPanel |
+| 3 | `manage_sports_classes` | `sports` | mutation | HITL | ClassesPanel |
+| 4 | `manage_equipment` | `sports` | mutation | AUTO | EquipmentPanel |
+| 5 | `get_sports_calendar` | `sports` | datos | AUTO | SportsCalendar |
+| 6 | `get_sports_analytics` | `sports` | inteligencia | AUTO | SportsIntelligencePanel |
+| 7 | `get_sports_health_summary` | `sports` | inteligencia | AUTO | SportsHealthScore |
+| 8 | `generate_sports_proposals` | `sports` | inteligencia | AUTO | SportsAdvisorBanner |
+| 9 | `manage_sports_instructors` | `sports` | mutation | HITL | InstructorsPanel |
+
+**Bloques propuestos:**
+
+| # | Bloque | Archivos | Contenido | Dependencias |
+|---|--------|----------|-----------|-------------|
+| B0 | Backend Intelligence | models, repo, agent, prompts | Enums, aggregation methods, 3 intelligence tools, domain prompt | Auditoría del agent existente |
+| B1 | Foundation | types.ts, contracts, factories, registry | 15+ enums, config maps, transform helpers, 9 mock factories | B0 (types alineados) |
+| B2 | Dashboard + Advisor | SportsDashboard.tsx, useSportsAdvisor.ts, SportsAdvisorBanner.tsx, SportsHealthScore.tsx, router.tsx | Main layout, 15 advisor rules, P14 banner, SVG gauge | B1 |
+| B3 | Calendar + Reservations | SportsCalendar.tsx, CourtBookingPanel.tsx, ReservationFormModal.tsx | Timeline, court grid, booking modal | B1 |
+| B4 | Tournaments + Classes | TournamentPanel.tsx, ClassesPanel.tsx, TournamentFormModal.tsx, ClassFormModal.tsx | Tournament bracket, class schedule, HITL modals | B1 |
+| B5 | Equipment + Instructors | EquipmentPanel.tsx, InstructorsPanel.tsx, EquipmentFormModal.tsx | Inventory, instructor directory, HITL modals | B1 |
+| B6 | Intelligence + Performance | SportsIntelligencePanel.tsx, CourtUtilization.tsx, PerformanceEngine.tsx | 9 dimensions, court heatmap, performance matching | B1 |
+
+**ApprovalQueue impact:** +3-4 HITL tools (tournaments, classes, instructors, galas equivalent)
+
+**Archivos que el usuario debe pegar en el próximo chat:**
+```
+1. Este checkpoint
+2. CLAUDE_CONTEXT.md
+3. backend/src/club_mcp/agents/sports_agent.py
+4. backend/src/club_mcp/models/sports.py
+5. frontend/src/features/sports/SportsDashboard.tsx (si existe)
+6. backend/src/club_mcp/ai/prompts.py
+7. frontend/src/shared/mocks/contracts.ts
+8. frontend/src/shared/mocks/factories.ts
+9. frontend/src/shared/mocks/mock-registry.ts
+```
+
+---
+
+## 9. AGENTES AUDITADOS — LISTA ACTUALIZADA
+
+| # | Agente | Server | Tools totales | HITL | AUTO | SEMI | Inteligencia | Fase auditado | Frontend conectado | Estado |
+|---|--------|--------|--------------|------|------|------|-------------|---------------|-------------------|--------|
+| 1 | `cultural_social_agent` | `cultural_social` | 9 | 3 | 3 | 0 | 3 | F31 | CulturalDashboard ✅ | ✅ Completo |
+| 2 | `sports_agent` | `sports` | ~9 (est) | ~3 | ~3 | 0 | ~3 | ⬜ F32 | ⬜ | ⬜ Sin auditar |
+| 3 | `wellness_agent` | `wellness` | ~8 (est) | ~2 | ~3 | 0 | ~3 | ⬜ F33 | ⬜ | ⬜ Sin auditar |
+| 4 | `fb_agent` | `food_beverage` | ~10 (est) | ~3 | ~4 | 0 | ~3 | ⬜ F34 | ⬜ | ⬜ Sin auditar |
+| 5 | `facilities_agent` | `facilities` | ~7 (est) | ~2 | ~3 | 0 | ~2 | ⬜ F35 | ⬜ | ⬜ Sin auditar |
+| 6 | `security_agent` | `security` | ~6 (est) | ~1 | ~3 | 0 | ~2 | ⬜ F36 | ⬜ | ⬜ Sin auditar |
+| 7 | `finance_agent` | `finance` | ~12 (est) | ~4 | ~4 | 0 | ~4 | ⬜ F37 | ⬜ | ⬜ Sin auditar |
+| 8 | `hr_agent` | `hr` | ~8 (est) | ~2 | ~3 | 0 | ~3 | ⬜ F38 | ⬜ | ⬜ Sin auditar |
+
+**Totales:** 1 agent completamente auditado (cultural_social), 7 sin auditar. ~9 tools MCP auditadas.
+
+---
+
+## 10. PENDIENTES ACUMULADOS (CONSOLIDADO)
+
+| # | Issue | Severidad | Archivo(s) | Fase sugerida | Origen |
+|---|-------|-----------|-----------|---------------|--------|
+| 1 | Backend sports_agent probablemente sin intelligence tools (mismo patrón que cultural pre-F31) | ALTA | `sports_agent.py` | F32 | F31 (patrón descubierto) |
+| 2 | Backend sports models probablemente sin enums específicos para complejidad deportiva | ALTA | `models/sports.py` | F32 | F31 |
+| 3 | Cross-domain signals entre cultural y sports no están implementados (ej: torneos que bloquean venues culturales) | MEDIA | `cultural_social_agent.py`, `sports_agent.py` | F32+ | F31 (diseño) |
+| 4 | Engagement Motors de diferentes dominios no comparten datos entre sí | MEDIA | Multiple agents | F37 (Financial hub) | F31 (diseño) |
+| 5 | ApprovalQueue no tiene vista unificada para HITL de múltiples dominios | MEDIA | `ApprovalQueue.tsx` | F37 | F31 |
+
+---
+
+## 11. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos nuevos — Resumen:
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| #1 Tokens | ✅ | Todos usan Silver Tide tokens via CSS custom properties |
+| #2 No blur | ✅ | Ningún `backdrop-filter: blur()` — solo `color-mix()` overlays |
+| #3 ChartTheme | N/A | No hay charts directos — las barras son CSS divs |
+| #4 Responsive | ✅ | Grid cols responsive (sm:grid-cols-2, 3, 4) |
+| #5 Semantic HTML | ✅ | `<section>`, `<nav>`, `<main>`, `<h2-h4>` |
+| #6 No raw button | ✅ | Filter pills son `<button>` con roles claros, todas las acciones usan `<Button>` |
+| #7 zIndex | ✅ | Modals usan `z-50`, toasts no conflictúan |
+| #8 No inline styles | ✅ | Solo `style={{ width: X% }}` para dynamic bars y `style={{ color }}` para dynamic colors — ambos son datos, no estilos |
+| #9 Animations | ✅ | CSS `transition-all`, `animate-pulse`, `animate-spin` — todos respetan reduced motion |
+| #10 No skeleton | ✅ | Loading states usan iconos animados (Loader2 spin), no skeleton placeholders |
+| #11 Focus-visible | ✅ | Todos los inputs tienen `focus:border + focus:ring-1` |
+| #12 Form submits | ✅ | `onSubmit` en form, autoFocus primer input, `min-h-[44px]` en todos los inputs |
+| #13 Touch targets | ✅ | `min-h-[36px]` pills, `min-h-[44px]` buttons/inputs |
+| #14 EmptyState | ✅ | EmptyState component con icon + title + description en cada panel vacío |
+| #15 showToast | ✅ | Todas las mutations dan feedback con showToast |
+| #16 No hardcoded strings | ✅ | Labels via config maps, formatCurrency, formatDate helpers |
+| #17 Button | ✅ | `<Button>` de shared para todas las acciones — nunca raw `<button>` excepto filter pills |
+| #18 Reduced motion | ✅ | `useReducedMotion()` en cada card component |
+| #19 AI on-demand | ✅ | IntelligencePanel se carga por click, no auto-load |
+| #20 No console.log | ✅ | Sin console.log en ningún archivo |
+| #21 Responsive | ✅ | Media queries via Tailwind responsive prefixes |
+| #22 cn() | ✅ | `cn()` para conditional classes en todos los archivos |
+| #23 No dead code | ✅ | Todos los imports se usan |
+| #24 Mock routing | ✅ | Mock registry tiene handlers para las 9 tools |
+
+### Resumen:
+**Violaciones a corregir AHORA:** 0
+**Violaciones ya flagged como pendientes:** 0
+**Reglas sin violaciones:** 24/24
+
+---
+
+## 12. ACTUALIZACIONES PARA CLAUDE_CONTEXT.md
+
+### Sección 2: Roles y Disciplinas — AGREGAR disciplina #9
+
+```markdown
+9. **Creative Direction** — Cada feature tiene un "diferenciador memorable" — algo que ningún competidor tiene. El Engagement Motor (propuestas proactivas) es el ejemplo paradigmático.
+```
+
+### Sección 6: Advisor Architecture — ACTUALIZAR capas
+
+```markdown
+**5 Layers (actualizado):**
+1. **Context** — Construye el contexto del dominio desde los datos
+2. **Reactive** — Responde a problemas actuales (attendance baja, budget alto)
+3. **Preventive** — Alerta sobre problemas emergentes (no galas programadas, seasonal gap)
+4. **Optimization** — Sugiere mejoras de eficiencia (venue underused, category imbalance)
+5. **Proactive** — Genera nuevas oportunidades (Engagement Motor, cross-domain suggestions)
+```
+
+### Sección 7: Reglas — AGREGAR regla del Engagement Motor
+
+```markdown
+**Regla: Engagement Motor Pattern**
+Cada dominio de alto valor (Cultural, Sports, Wellness, F&B) debe tener un "Engagement Motor" — 
+una tool MCP server-side que genere propuestas proactivas basándose en datos cross-domain.
+El Advisor solo SUGIERE ejecutar el motor; el motor hace el análisis pesado.
+```
+
+---
+
+## 13. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto (en orden):
+```
+1. CLAUDE_CONTEXT.md (siempre primero)
+2. Este checkpoint
+```
+
+### Paso 2 — Confirmar rol:
+```
+"Confirmá que entendés tu rol como Principal AI Systems Architect (sección 2 de CLAUDE_CONTEXT.md) 
+y las 24+ reglas (sección 7). Después decí 'Listo'."
+```
+
+### Paso 3 — Pedir archivos para la siguiente fase:
+```
+"Pasame estos archivos para F32 — Sports & Recreation Intelligence:
+1. backend/src/club_mcp/agents/sports_agent.py
+2. backend/src/club_mcp/models/sports.py
+3. backend/src/club_mcp/ai/prompts.py
+4. frontend/src/shared/mocks/contracts.ts
+5. frontend/src/shared/mocks/factories.ts
+6. frontend/src/shared/mocks/mock-registry.ts
+7. frontend/src/app/router.tsx
+```
+
+### Paso 4 — Pedir auditoría:
+```
+"Auditá el sports_agent contra el patrón de F31: ¿tiene intelligence tools? ¿tiene enums específicos? ¿tiene domain prompt? ¿tiene aggregation methods en el repo?"
+```
+
+### Paso 5 — Pedir propuesta:
+```
+"Proponé la arquitectura de F32 con los bloques, contemplando:
+- El mismo problema que Cultural (backend desactualizado)
+- Base creativa de F31 pero con identidad visual deportiva propia
+- Sports Engagement Motor como diferenciador
+- Cross-domain con Cultural, Memberships, Finance
+- Liberty creativa total para UI/UX 2026-2027"
+```
+
+### Paso 6 — Aprobar + generar:
+```
+"Aprobado — generá Bloque 0 (Backend Intelligence)"
+```
+
+### Paso 7 — Iterar bloques:
+```
+"dale" (para cada bloque siguiente)
+```
+
+### Paso 8 — Checkpoint:
+```
+"Generá el checkpoint de F32"
+```
+
+---
+
+## 14. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto en trabajo futuro |
+|-------|---------|-------|--------------------------|
+| Jun 2025 | ProgramStatus separado de EventStatus | Los programas tienen lifecycle diferente (enrolling) | Todas las fases con lifecycle entities deben tener enums específicos |
+| Jun 2025 | Engagement Motor como tool server-side | El análisis cross-domain requiere acceso a datos que el client no tiene | F32+ deben tener su propio Engagement Motor |
+| Jun 2025 | Intelligence Panel como componente separado (on-demand) | 350+ líneas no deben cargarse automáticamente | Cada dominio tiene su Intelligence Panel independiente |
+| Jun 2025 | 5 form modales específicos vs 1 genérico | Cada tipo de actividad tiene campos únicos | Cada dominio tendrá sus propios modales |
+| Jun 2025 | Calendar unificado (3 entity types) | El usuario necesita ver TODA la actividad en un solo lugar | Sports Calendar también debe unificar reservas + torneos + clases |
+| Jun 2025 | Status transitions como hover-reveal | UX más limpia, discoverability por exploración | Patrón se replica en todos los dominios |
+| Jun 2025 | Venue recommendations basadas en datos (no estáticas) | Las recomendaciones deben adaptarse al uso real | Sports court recommendations seguirán el mismo patrón |
+| Jun 2025 | Backend "desactualizado" como patrón recurrente | Cultural tenía el mismo problema — CRUD sin inteligencia | F32+ asumir que el backend necesita enhancement, no solo auditoría |
+
+---
+
+## 15. FASES RESTANTES (PLAN MAESTRO)
+
+| # | Fase | Contenido | Prioridad | Depende de | Estado |
+|---|------|-----------|-----------|-----------|--------|
+| **F32** | **Sports & Recreation Intelligence** | **Advisor + Analytics + Calendar + Courts + Tournaments + Classes + Equipment + Engagement Motor** | **ALTA** | **F31** | **⬜ SIGUIENTE** |
+| F33 | Wellness & Spa Intelligence | Advisor + Analytics + Appointments + Treatments + Therapists + Wellness Plans | ALTA | F31 | ⬜ |
+| F34 | Food & Beverage Intelligence | Advisor + Analytics + Menus + Orders + Suppliers + Dietary + Events | ALTA | F31 | ⬜ |
+| F35 | Facilities & Maintenance Intelligence | Advisor + Work Orders + Assets + Preventive + Vendors | MEDIA | F31 | ⬜ |
+| F36 | Security & Access Intelligence | Advisor + Access Control + Incidents + Patrols + Cameras | MEDIA | F31 | ⬜ |
+| F37 | Financial Intelligence (Cross-Domain Hub) | Unified Financial Advisor que consume señales de TODOS los dominios | ALTA | F32-F36 | ⬜ |
+| F38 | HR & Staff Intelligence | Advisor + Schedules + Performance + Training + Payroll | MEDIA | F31 | ⬜ |
+| F39 | Marketing & Communications Intelligence | Advisor + Campaigns + Segmentation + Analytics + Social | BAJA | F37 | ⬜ |
+| F40 | Governance & Board Intelligence | Advisor + Meetings + Decisions + Compliance + Voting | BAJA | F37 | ⬜ |
+| F41 | Integration & API Intelligence | Webhooks + Third-party + Sync + Health Monitoring | MEDIA | F37 | ⬜ |
+| F42 | Mobile Intelligence Layer | PWA + Notifications + Quick Actions + Offline | BAJA | F41 | ⬜ |
+| F43 | Executive Command Center | Cross-domain dashboard con todos los Advisors + Cross-Agent Intelligence | ALTA | F37 | ⬜ |
+
+---
+
+## 16. AGENTES BACKEND — TOOLS DETALLADAS
+
+### cultural_social_agent — 9 tools
+
+| Tool | Approval | Tipo | Descripción |
+|------|----------|------|-------------|
+| `get_cultural_calendar` | AUTO | datos | Calendar unificado: eventos + exposiciones + programas con conflict detection |
+| `get_cultural_analytics` | AUTO | inteligencia | 9-dimension analysis engine |
+| `get_cultural_health_summary` | AUTO | inteligencia | Health score 0-100 con breakdown |
+| `manage_social_events` | AUTO | mutation | CRUD eventos sociales regulares |
+| `organize_formal_gala` | HITL | mutation | Crear gala formal → approval request |
+| `manage_cultural_program` | HITL | mutation | CRUD programas culturales con lifecycle |
+| `manage_entertainment_acts` | HITL | mutation | CRUD actos de entretenimiento |
+| `manage_art_exhibitions` | AUTO | mutation | CRUD exposiciones de arte |
+| `generate_cultural_proposals` | AUTO | inteligencia | Cultural Engagement Motor — propuestas proactivas cross-domain |
+
+---
+
+## 17. MOCK REGISTRY — ACTUALIZACIÓN
+
+### cultural_social (9 tools)
+
+| # | Tool | Backend real | Mock | Tipo | Approval |
+|---|------|-------------|------|------|----------|
+| 1 | `get_cultural_calendar` | ✅ | ✅ | datos | AUTO |
+| 2 | `get_cultural_analytics` | ✅ | ✅ | inteligencia | AUTO |
+| 3 | `get_cultural_health_summary` | ✅ | ✅ | inteligencia | AUTO |
+| 4 | `manage_social_events` | ✅ | ✅ | mutation | AUTO |
+| 5 | `organize_formal_gala` | ✅ | ✅ | mutation | HITL |
+| 6 | `manage_cultural_program` | ✅ | ✅ | mutation | HITL |
+| 7 | `manage_entertainment_acts` | ✅ | ✅ | mutation | HITL |
+| 8 | `manage_art_exhibitions` | ✅ | ✅ | mutation | AUTO |
+| 9 | `generate_cultural_proposals` | ✅ | ✅ | inteligencia | AUTO |
+
+---
+
+## 18. TYPES ALIGNMENT
+
+| Enum/Interface | Backend (Python) | Frontend (types.ts) | Match |
+|---------------|------------------|---------------------|-------|
+| `CulturalEventType` | `event, exhibition, program, gala, dinner, mixer, cocktail, brunch, themed_party, reception, workshop, lecture, film_screening, cultural_tour` | Same | ✅ |
+| `ExhibitionStatus` | `scheduled, setup, active, dismantled, cancelled` | Same | ✅ |
+| `ProgramStatus` | `draft, enrolling, active, completed, cancelled` | Same | ✅ |
+| `PerformanceStatus` | `proposed, contracted, confirmed, in_progress, completed, cancelled` | Same | ✅ |
+| `FormalityLevel` | `casual, smart_casual, semi_formal, formal, black_tie` | Same | ✅ |
+| `VenueType` | `garden, poolside, lounge, ballroom, terrace, auditorium, gallery, restaurant, sports_bar, wine_cellar` | Same | ✅ |
+| `CulturalCategory` | `music, visual_arts, theater, dance, literature, gastronomy, heritage` | Same | ✅ |
+| `EntertainmentType` | `live_band, dj, comedian, magician, speaker, cultural_performance, dance_performance` | Same | ✅ |
+
+---
+
+**FIN DEL CHECKPOINT — F31 COMPLETADA**
+
+```

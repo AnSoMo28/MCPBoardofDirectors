@@ -1,0 +1,420 @@
+/* src/features/facilities/components/FacilitiesHealthScore.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* FACILITIES HEALTH SCORE — "El Pulso Vital"                    */
+/*                                                                */
+/* @property enables CSS animation TO custom properties.          */
+/* Supported: Chrome 85+, Firefox 128+, Safari 15.4+             */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — ring fill, bar fill stagger          */
+/*   SENSE 2: REACCIÓN — factor hover, ring hover scale          */
+/*   SENSE 3: MEMORIA — score + trend + factor details            */
+/*   SENSE 4: INTENCIÓN — alert urgency encoding                  */
+/*   SENSE 5: SINIESTRÍA — critical pulse border                  */
+/*   SENSE 6: EMPATÍA — data-mode responsive                      */
+/*   SENSE 7: NARRATIVA — health summary sentence                 */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── @property for ring animation ── */
+@property --ring-offset {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 238.76;
+}
+
+/* ── @property for factor bar animation ── */
+@property --factor-pct {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+/* ── Container ── */
+.fac-health {
+  padding: 20px;
+  background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 20%, transparent);
+  border-radius: 14px;
+  /* Sense 1: entry */
+  opacity: 0;
+  animation: fac-health-enter 0.5s ease-out 0.1s forwards;
+}
+
+@keyframes fac-health-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Sense 5: Critical gets pulse border */
+.fac-health[data-status="critical"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+  animation: fac-health-enter 0.5s ease-out 0.1s forwards,
+             fac-health-critical-pulse 2.5s ease-in-out 0.6s infinite;
+}
+
+@keyframes fac-health-critical-pulse {
+  0%, 100% { border-color: color-mix(in srgb, var(--color-rose-400) 15%, transparent); }
+  50% { border-color: color-mix(in srgb, var(--color-rose-400) 40%, transparent); }
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+
+.fac-health__narrative {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--color-surface) 35%, transparent);
+  border-radius: 6px;
+  border-left: 2px solid color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+}
+
+.fac-health[data-status="warning"] .fac-health__narrative {
+  border-left-color: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+}
+
+.fac-health[data-status="critical"] .fac-health__narrative {
+  border-left-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+}
+
+/* ═══ TOP ROW: RING + META ════════════════════════════════════ */
+
+.fac-health__top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+/* ── Ring Gauge ── */
+.fac-health__ring-wrap {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  /* Sense 2: hover scale */
+  transition: transform 0.3s ease;
+}
+
+.fac-health__ring-wrap:hover {
+  transform: scale(1.05);
+}
+
+.fac-health__ring-svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.fac-health__ring-bg {
+  stroke: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  stroke-width: 6;
+}
+
+.fac-health__ring-fill {
+  stroke: var(--color-teal-400);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 238.76;
+  stroke-dashoffset: 238.76;
+  /* Sense 1: ring fill animation via @property */
+  animation: fac-health-ring-fill 1.2s ease-out 0.3s forwards;
+}
+
+@keyframes fac-health-ring-fill {
+  to { stroke-dashoffset: var(--ring-offset); }
+}
+
+.fac-health__ring-fill[data-status="warning"] {
+  stroke: var(--color-amber-400);
+}
+
+.fac-health__ring-fill[data-status="critical"] {
+  stroke: var(--color-rose-400);
+}
+
+.fac-health__ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fac-health__ring-score {
+  font-size: 24px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-teal-400);
+}
+
+.fac-health__ring-score[data-status="warning"] {
+  color: var(--color-amber-400);
+}
+
+.fac-health__ring-score[data-status="critical"] {
+  color: var(--color-rose-400);
+}
+
+.fac-health__ring-label {
+  font-size: 9px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+/* ── Meta (grade, level, trend) ── */
+.fac-health__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.fac-health__grade-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.fac-health__grade {
+  font-size: 20px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-teal-400);
+}
+
+.fac-health__grade[data-status="warning"] {
+  color: var(--color-amber-400);
+}
+
+.fac-health__grade[data-status="critical"] {
+  color: var(--color-rose-400);
+}
+
+.fac-health__level {
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+}
+
+/* Trend */
+.fac-health__trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-400);
+}
+
+.fac-health__trend[data-trend="up"] {
+  color: var(--color-emerald-400);
+}
+
+.fac-health__trend[data-trend="down"] {
+  color: var(--color-rose-400);
+}
+
+.fac-health__trend-icon {
+  font-size: 14px;
+}
+
+/* Alerts (Sense 4: urgency) */
+.fac-health__alerts {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fac-health__alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-rose-400);
+  line-height: 1.4;
+}
+
+.fac-health__alert-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-rose-400);
+  flex-shrink: 0;
+  /* Sense 1: alert dot pulse */
+  animation: fac-health-dot-pulse 2s ease-in-out infinite;
+}
+
+@keyframes fac-health-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ═══ FACTORS BREAKDOWN ═══════════════════════════════════════ */
+
+.fac-health__factors {
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Factor Row ── */
+.fac-health__factor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  /* Sense 1: stagger */
+  opacity: 0;
+  animation: fac-health-factor-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.08s + 0.4s);
+  /* Sense 2: hover */
+  transition: background 0.2s ease;
+  border-radius: 4px;
+}
+
+@keyframes fac-health-factor-enter {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.fac-health__factor:hover {
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+}
+
+.fac-health__factor-name {
+  width: 112px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fac-health__factor-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  overflow: hidden;
+}
+
+.fac-health__factor-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--color-teal-400);
+  /* Sense 1: bar fill animation via @property */
+  width: 0%;
+  animation: fac-health-bar-fill 0.8s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.08s + 0.5s);
+}
+
+@keyframes fac-health-bar-fill {
+  to { width: var(--factor-pct); }
+}
+
+.fac-health__factor-fill[data-status="warning"] {
+  background: var(--color-amber-400);
+}
+
+.fac-health__factor-fill[data-status="critical"] {
+  background: var(--color-rose-400);
+}
+
+.fac-health__factor-value {
+  width: 32px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-teal-400);
+}
+
+.fac-health__factor-value[data-status="warning"] {
+  color: var(--color-amber-400);
+}
+
+.fac-health__factor-value[data-status="critical"] {
+  color: var(--color-rose-400);
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .fac-health {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+.light .fac-health__ring-bg {
+  stroke: color-mix(in srgb, var(--color-surface) 95%, transparent);
+}
+
+.light .fac-health__ring-score {
+  color: var(--color-teal-600);
+}
+
+.light .fac-health__grade {
+  color: var(--color-teal-600);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fac-health {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-health[data-status="critical"] {
+    animation: none;
+  }
+
+  .fac-health__ring-fill {
+    animation: none;
+    stroke-dashoffset: var(--ring-offset);
+  }
+
+  .fac-health__ring-wrap:hover {
+    transform: none;
+  }
+
+  .fac-health__factor {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-health__factor-fill {
+    animation: none;
+    width: var(--factor-pct);
+  }
+
+  .fac-health__alert-dot {
+    animation: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fac-health__top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .fac-health__factor-name {
+    width: 80px;
+  }
+}

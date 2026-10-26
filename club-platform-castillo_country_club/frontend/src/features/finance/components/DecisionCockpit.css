@@ -1,0 +1,227 @@
+/**
+ * @component DecisionCockpit (Fase 19k)
+ * @namespace .glass-decision-*
+ * @depends globals.css (glass tokens, color-mix, font tokens)
+ * @note --scenario-color se setea inline via style={} en el TSX
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   Fase 19k — Decision Cockpit Glass
+   Surface · scenario · confidence · pills · timeline
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Decision Panel (Propuesta 1) ── */
+
+.glass-decision-panel {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-decision-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Scenario Glass Card (Propuesta 1) ── */
+
+.glass-decision-scenario {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-top: 2px solid var(--scenario-color, var(--color-silver-500));
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 20px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-decision-scenario::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+}
+
+.glass-decision-scenario:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--scenario-color, transparent) 8%, transparent);
+}
+
+/* Recommended scenario glow */
+.glass-decision-scenario--recommended {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--scenario-color, var(--color-gold-400)) 10%, transparent);
+  border-top-width: 3px;
+}
+
+/* ── Scenario Diff Bars (Propuesta 2) ── */
+
+.glass-decision-diff-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 20px;
+  position: relative;
+}
+
+.glass-decision-diff-bar__track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  position: relative;
+}
+
+.glass-decision-diff-bar__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* ── Confidence Radial Gauge (Propuesta 3) ── */
+
+.glass-decision-confidence {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Glass Suggestion Pills (Propuesta 4) ── */
+
+.glass-decision-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  min-height: 40px;
+}
+
+.glass-decision-pill:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.12);
+  color: var(--color-silver-200);
+}
+
+/* ── Historical Timeline (Propuesta 5) ── */
+
+.glass-decision-timeline {
+  position: relative;
+  padding-left: 24px;
+}
+
+.glass-decision-timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 8px;
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(201, 169, 110, 0.3), rgba(201, 169, 110, 0.05));
+}
+
+.glass-decision-timeline__node {
+  position: relative;
+  padding: 12px;
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.glass-decision-timeline__node::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: -20px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-gold-400);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-gold-400) 30%, transparent);
+}
+
+.glass-decision-timeline__node::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: -12px;
+  width: 12px;
+  height: 1px;
+  background: rgba(201, 169, 110, 0.3);
+}
+
+/* ── Decision Radar Mini (Propuesta 6) ── */
+
+.glass-decision-radar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Light Mode Overrides ── */
+
+.light .glass-decision-panel {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-decision-scenario {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-decision-scenario--recommended {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-decision-pill {
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-decision-timeline__node {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-decision-timeline__node::before {
+  box-shadow: none;
+}

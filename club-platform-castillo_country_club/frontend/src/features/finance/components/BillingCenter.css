@@ -1,0 +1,298 @@
+/**
+ * @component BillingCenter (Fase 19i)
+ * @namespace .glass-billing-*
+ * @depends globals.css (glass tokens, color-mix, font tokens)
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   Fase 19i — Billing Center Glass
+   Account · KPI · overdue pulse · invoice items · tabs
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Billing Panel (Propuesta 1) ── */
+
+.glass-billing-panel {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-billing-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Glass Billing KPI (Propuesta 3) ── */
+
+.glass-billing-kpi {
+  position: relative;
+  padding: 16px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.glass-billing-kpi::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.glass-billing-kpi--danger {
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-rose-400) 6%, transparent);
+}
+
+.glass-billing-kpi--positive {
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-emerald-400) 6%, transparent);
+}
+
+/* ── Account Health Gauge (Propuesta 2) ── */
+
+.glass-billing-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Overdue Urgency Pulse (Propuesta 4) ── */
+
+.glass-billing-overdue {
+  position: relative;
+  padding: 16px;
+  border-radius: 12px;
+  border-left: 4px solid var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 6%, transparent);
+  animation: billing-overdue-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes billing-overdue-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-rose-400) 0%, transparent); }
+  50% { box-shadow: 0 0 12px 0 color-mix(in srgb, var(--color-rose-400) 10%, transparent); }
+}
+
+/* ── Invoice Item Glass (Propuesta 5) ── */
+
+.glass-billing-item {
+  position: relative;
+  padding: 12px;
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.glass-billing-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.02) 0%, transparent 30%);
+  pointer-events: none;
+}
+
+/* ── Invoice Card Glass ── */
+
+.glass-billing-invoice {
+  position: relative;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.glass-billing-invoice:hover {
+  border-color: var(--glass-border-hover);
+}
+
+.glass-billing-invoice::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.02) 0%, transparent 20%);
+  pointer-events: none;
+}
+
+/* ── Billing Tab Bar (Propuesta 6) ── */
+
+.glass-billing-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-billing-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+  min-height: 44px;
+}
+
+.glass-billing-tab:hover {
+  color: var(--color-silver-200);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.glass-billing-tab--active {
+  color: var(--color-silver-200);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Billing Totals Glass ── */
+
+.glass-billing-totals {
+  position: relative;
+  padding: 16px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.glass-billing-totals::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.02) 0%, transparent 30%);
+  pointer-events: none;
+}
+
+/* ── Family Preset Glass ── */
+
+.glass-billing-preset {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  min-height: 44px;
+}
+
+.glass-billing-preset:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.12);
+  color: var(--color-silver-200);
+}
+
+.glass-billing-preset--active {
+  border-color: var(--color-gold-400);
+  background: rgba(201, 169, 110, 0.12);
+  color: var(--color-gold-400);
+}
+
+/* ── Light Mode Overrides ── */
+
+.light .glass-billing-panel {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-billing-kpi {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-billing-kpi--danger,
+.light .glass-billing-kpi--positive {
+  box-shadow: none;
+}
+
+.light .glass-billing-overdue {
+  animation: none;
+}
+
+.light .glass-billing-item {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-billing-invoice {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+}
+
+.light .glass-billing-tabs {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-billing-tab:hover,
+.light .glass-billing-tab--active {
+  background: var(--color-surface-1);
+}
+
+.light .glass-billing-totals {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-billing-preset {
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-billing-preset--active {
+  background: rgba(201, 169, 110, 0.08);
+}

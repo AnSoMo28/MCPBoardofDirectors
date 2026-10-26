@@ -1,0 +1,575 @@
+# CHECKPOINT — Fase 14b Completada — Export Intelligence (Narrative Engine + Export System + Decision Document)
+
+**Fecha:** Mayo 2025
+**Sesiones completadas:** 1 (esta sesión — Fase 14b completa)
+**Archivos creados:** 4 nuevos + 9 modificados + 1 borrado
+**Líneas nuevas:** ~2,150
+**Tools MCP registradas:** 2 nuevas (finance_narrative_generate + export_report)
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend Nuevos (4)
+
+```
+src/shared/
+├── services/
+│   └── exportService.ts                    ← ~140 líneas
+│     Export engine: generateFilename, downloadBlob,
+│     formatNarrativeAsText (plain text para clipboard),
+│     formatNarrativeAsCSV (structured CSV con sections),
+│     escapeCSV helper. Sin dependencias externas.
+│     Tools: Ninguna directa — es utilidad pura
+│
+├── components/
+│   └── export/
+│       ├── ExportButton.tsx                ← ~185 líneas
+│       │   Dropdown reutilizable: Imprimir/PDF, Copiar texto,
+│       │   CSV, Excel, Documento de Decisión (tag "AI").
+│       │   Props: module, data, onPrint, onDecisionDocument.
+│       │   Click outside / Escape to close. aria-haspopup.
+│       │   Tools: Ninguna directa — delega a callbacks
+│       │
+│       ├── PrintView.tsx                   ← ~180 líneas (rewrite B3)
+│       │   Wrapper del PrintView existente de dashboard.
+│       │   Renderiza NarrativeGenerateData dentro de
+│       │   PrintViewWrapper (features/dashboard/components/PrintView).
+│       │   Estilos inline print-safe (HEX) para secciones.
+│       │   Sections: Executive Summary, Insights, Comparisons,
+│       │   Recommendations, Risk Alerts, Detailed Sections.
+│       │   Tools: Ninguna directa — recibe data via props
+│       │
+│       └── DecisionDocument.tsx            ← ~360 líneas
+│           Overlay full-screen: documento combinado que fetcha
+│           3 MCP tools simultáneamente al abrir (on-demand):
+│           1. finance_narrative_generate → situación + insights
+│           2. finance_scenario_simulate → impacto de escenarios
+│           3. finance_stress_test → resiliencia financiera
+│           6 secciones: Situación, Escenarios, Stress Test,
+│           Insights, Recomendaciones, Alertas de Riesgo.
+│           Print con window.print() nativo.
+│           Tools: finance_narrative_generate, finance_scenario_simulate,
+│           finance_stress_test (las 3 on-demand, enabled: isOpen)
+```
+
+### Archivos Modificados (9)
+
+| # | Archivo | Qué se cambió | Líneas afectadas | Por qué |
+|---|---------|---------------|------------------|---------|
+| 1 | `shared/mocks/contracts.ts` | +2 tool contracts (10 interfaces) | ~95 líneas append | Contracts para finance_narrative_generate y export_report |
+| 2 | `shared/mocks/factories.ts` | +2 factories con data CR rica | ~260 líneas append | createMockNarrativeGenerate (5 insights, 4 recs, 3 alerts, 5 comparisons) + createMockExportReport |
+| 3 | `shared/mocks/mock-registry.ts` | **REWRITE completo** — fix 8 bugs + 2 new entries | ~190 líneas totales | Fixes #35, #36, #37, NEW-A→E + imports/entries para nuevos tools |
+| 4 | `features/finance/types.ts` | +10 re-exports + 7 configs | ~115 líneas append | NARRATIVE_PERIOD/AUDIENCE/DETAIL/INSIGHT_TYPE/CATEGORY/RISK_SEVERITY + EXPORT_FORMAT configs |
+| 5 | `features/finance/components/FinancialIntelligence.tsx` | +lazy import NarrativeEngine, +tab type "narrative", +tab entry, +content block | ~20 líneas quirúrgico | Integrar Narrative Engine como sub-tab #7 "Motor de Narrativa" |
+| 6 | `features/finance/components/NarrativeEngine.tsx` | +3 imports (ExportButton, PrintView, DecisionDocument), +2 overlay states, reemplazo 3 botones por ExportButton, +2 overlays al final del return | ~30 líneas netas | Conectar sistema de exportación |
+| 7 | `features/finance/components/FinanceOverview.tsx` | +1 import (ExportButton), reemplazo botón placeholder "Exportar Resumen" → ExportButton | ~8 líneas quirúrgico | Eliminar placeholder, conectar export real |
+| 8 | `features/finance/components/ReportGenerator.tsx` | +1 import (ExportButton), +ExportButton alongside "Generar Reporte" | ~8 líneas quirúrgico | Complementar mutation con export |
+| 9 | `features/finance/components/MemberProfitabilityMatrix.tsx` | +1 import (ExportButton), +ExportButton en chart header | ~10 líneas quirúrgico | Resolver pendiente #39 |
+
+### Archivo Borrado (1)
+
+| Archivo | Razón |
+|---------|-------|
+| `shared/styles/print.css` | Creado en B2, eliminado en B3 — conflicto con PrintView existente de dashboard. 3 utility classes movidas a globals.css |
+
+### Archivos NO creados (correcciones de plan)
+
+| Archivo planeado | Por qué no se creó |
+|-----------------|-------------------|
+| `shared/styles/print.css` | PrintView existente ya tiene inline `<style>` con @media print. Utility classes van en globals.css |
+| Cambios a `main.tsx` | No hay archivo externo que importar |
+| Cambios a `CommunicationCenter.tsx` | No tiene botón de exportación (asunción incorrecta) |
+
+### Mock System
+
+**Contracts nuevos (2):**
+
+| Tool | Server | Contract interfaces |
+|------|--------|-------------------|
+| `finance_narrative_generate` | finance | NarrativeInsight, NarrativeRecommendation, NarrativeComparison, NarrativeSection, NarrativeRiskAlert, NarrativeGenerateData, FinanceNarrativeGenerateResponse |
+| `export_report` | executive_dashboard | ExportSectionIncluded, ExportReportData, ExportReportResponse |
+
+**Factories nuevas (2):**
+
+| Factory | Data costarricense |
+|---------|-------------------|
+| `createMockNarrativeGenerate` | Período mayo 2026. 5 insights (F&B crecimiento 12.3%, aging ₡2.1M, base 142 socios, contrato bebidas vencimiento julio, boom gimnasio 18%). 4 recomendaciones (Martes de Parrilla ₡1.2M/mes, contacto aging >60d ₡2.1M, renegociar F&B ₡680K, mantenimiento piscina). 5 comparativas (Ingresos, Gastos, Neto, Socios, Satisfacción). 3 risk alerts (presión caja nov ₡3.5M, Vargas Rojas churn 65%, contrato bebidas). Confidence 87%, 847 words, 4 min read |
+| `createMockExportReport` | Formato PDF/Excel/CSV. Filename convention inteligente. 8 pages PDF, 4 sections (Resumen, Financiero, Membresía, Recomendaciones). Watermark "CONFIDENCIAL" para audiencia externa |
+
+**Registry keys nuevas (2):**
+
+| Server | Key | Params |
+|--------|-----|--------|
+| `finance` | `finance_narrative_generate` | period, audience, detail_level |
+| `executive_dashboard` | `export_report` | format, report_type, audience |
+
+### Tools MCP Registradas (nuevas)
+
+| # | Tool | Server | Backend | Mock | Tipo | Aprobación |
+|---|------|--------|---------|------|------|------------|
+| 1 | `finance_narrative_generate` | finance | ⬜ mock-only | ✅ | AI on-demand | SEMI (admin revisa antes de exportar) |
+| 2 | `export_report` | executive_dashboard | ⬜ mock-only | ✅ | HITL | HITL (escalación condicional: audiencia externa) |
+
+**Tools existentes NO tocadas (15 finance + 1 executive):**
+
+| # | Tool | Server | Tipo |
+|---|------|--------|------|
+| 1 | `get_executive_summary` | executive_dashboard | Data auto |
+| 2 | `get_financial_summary` | finance | Bridge mock |
+| 3 | `finance_expense_create` | finance | HITL mutation |
+| 4 | `finance_invoice_create` | finance | HITL mutation |
+| 5 | `finance_budget_check` | finance | AUTO |
+| 6 | `finance_payment_process` | finance | HITL mutation |
+| 7 | `finance_report_generate` | finance | SEMI |
+| 8 | `finance_account_status` | finance | AUTO |
+| 9 | `finance_category_update` | finance | SEMI |
+| 10 | `generate_ai_analysis` | finance | AUTO AI |
+| 11 | `finance_scenario_simulate` | finance | AUTO AI |
+| 12 | `finance_opportunities_scan` | finance | AUTO AI |
+| 13 | `finance_board_briefing` | finance | AUTO AI |
+| 14 | `finance_member_profitability` | finance | AUTO data |
+| 15 | `finance_stress_test` | finance | AUTO AI |
+| 16 | `finance_seasonal_calendar` | finance | AUTO data |
+
+**Total tools finance:** 17 existentes + 1 nueva = 18
+**Total tools executive_dashboard:** 1 existente + 1 nueva = 2
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+### Hallazgos del análisis de archivos existentes
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | `mock-registry.ts` tenía key duplicada `get_financial_summary` — segunda declaración sobreescribe la primera | ALTA → **RESUELTO** B0 | Eliminada declaración muerta |
+| 2 | `mock-registry.ts` tenía import faltante `createMockFinancialSummary` — runtime crash | ALTA → **RESUELTO** B0 | Import agregado |
+| 3 | `mock-registry.ts` tenía 13 imports faltantes de Fase 13 (factories de finance, communication, guest) | ALTA → **RESUELTO** B0 | 58 imports totales organizados por módulo |
+| 4 | `mock-registry.ts` `getMockResponse` llamaba `factory()` sin pasar params — factories con params recibían undefined | ALTA → **RESUELTO** B0 | Cambiado a `factory(params)` |
+| 5 | `mock-registry.ts` tenía 4 imports muertos (`createFinancialSummary`, `createSocialClusters`, `createQuarterlyInsights`, `createSchedulingConflicts`) | BAJA → **RESUELTO** B0 | Eliminados |
+| 6 | `mock-registry.ts` tenía 3 líneas comentadas obsoletas en `proactive_recommendation` | BAJA → **RESUELTO** B0 | Eliminadas |
+| 7 | `mock-registry.ts` type `Record<string, () => unknown>` no aceptaba params | MEDIA → **RESUELTO** B0 | Cambiado a `type MockFactory = (params?) => unknown` |
+| 8 | `mock-registry.ts` referencia obsoleta a `mock-data.ts` en header | BAJA → **RESUELTO** B0 | Eliminada del header |
+
+### Hallazgos de implementación
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 9 | Ya existe `features/dashboard/components/PrintView.tsx` — componente wrapper genérico con branding del club, A4 layout, inline @media print | ALTA → **RESUELTO** B3 | PrintView de export reescrito para usar wrapper existente. No duplicar estilos print |
+| 10 | `CommunicationCenter.tsx` NO tiene botón de exportación — asunción incorrecta del plan original | MEDIA → **RESUELTO** B3 | Eliminado del plan |
+| 11 | `ReportGenerator.tsx` NO tiene botón "Exportar" — tiene "Generar Reporte" que es mutation, no export | MEDIA → **RESUELTO** B3 | ExportButton agregado AL LADO (complementario, no reemplazo) |
+| 12 | `print.css` como archivo externo genera conflicto con inline `<style>` de PrintView existente | MEDIA → **RESUELTO** B3 | Borrado print.css, 3 utility classes movidas a globals.css |
+| 13 | `FinanceOverview.tsx` no necesita wrap de PrintView — ExportButton con `window.print()` directo es suficiente | BAJA → **RESUELTO** B3 | Over-engineering corregido |
+| 14 | Logo del club en `public/CCC.png` — no se implementó en PrintView/DecisionDocument | BAJA | **PENDIENTE** — se puede agregar en Fase 15 QA |
+| 15 | DecisionDocument hace 3 MCP queries simultáneas al abrir | BAJA | Documentado — todas son mocked con staleTime, UX aceptable |
+| 16 | Scenario Simulator variables no se comparten entre sub-tabs — DecisionDocument usa defaults | MEDIA | Documentado — futuro: Zustand store compartido |
+| 17 | `FinancialIntelligence.tsx` el usuario ubicó NarrativeEngine como último tab ("Motor de Narrativa") no como primero | BAJA | Adoptado — "Motor de Narrativa" como label, último tab como culminación del flujo |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón NUEVO: Export Intelligence System
+
+**Cuándo se usa:** Cuando cualquier módulo necesita exportar datos al usuario.
+
+```
+1. ExportButton (shared) — dropdown con opciones contextuales
+   ├── "Imprimir / PDF" → onPrint callback (window.print() o PrintView)
+   ├── "Copiar texto" → formatNarrativeAsText() → clipboard
+   ├── "CSV" → formatNarrativeAsCSV() → downloadBlob
+   ├── "Excel" → CSV blob with .xlsx mime → downloadBlob
+   └── "Documento de Decisión" → onDecisionDocument callback (overlay)
+2. Las opciones se filtran por props proporcionadas:
+   - data prop → habilita text/CSV/Excel
+   - onPrint prop → habilita Imprimir/PDF
+   - onDecisionDocument prop → habilita Documento de Decisión
+3. window.print() directo para módulos sin narrative data
+4. PrintView wrapper para módulos con narrative data estructurada
+5. DecisionDocument para combinación de múltiples MCP tools
+```
+
+**Implementación:**
+- `shared/services/exportService.ts` — utilidades puras (filename, download, text, CSV)
+- `shared/components/export/ExportButton.tsx` — UI dropdown
+- `shared/components/export/PrintView.tsx` — narrative print (usa wrapper de dashboard)
+- `shared/components/export/DecisionDocument.tsx` — documento combinado 3 MCP tools
+
+**Se replica en:** Cualquier módulo que tenga datos exportables (wellness, engagement, communications, guests)
+
+### Patrón NUEVO: Narrative Engine (AI-Generated Executive Briefing)
+
+**Cuándo se usa:** Cuando se necesita convertir datos crudos en inteligencia ejecutiva accionable.
+
+```
+1. Control bar con 3 selectores: Período, Audiencia, Nivel de detalle
+2. Botón "Generar Narrativa" → on-demand query (Rule #19)
+3. Empty state con CTA antes de primera generación
+4. Loading skeleton durante fetch
+5. Meta bar: fecha, read time, word count, confidence bar
+6. ExportButton unificado (replaces 3 botones individuales)
+7. Executive summary con border-l gold accent
+8. Insights grid (2 cols desktop, 1 col mobile) con type badges
+9. Comparatives table (desktop) + cards (mobile, Rule #21)
+10. Recommendations numbered list con priority/category badges
+11. Risk alerts con suggested actions
+12. Detailed sections expandible con AnimatePresence
+13. PrintView overlay (narrative-specific)
+14. DecisionDocument overlay (3 MCP tools combined)
+```
+
+**Ejemplo:** NarrativeEngine.tsx
+**Se replica en:** Futuros engines narrativos (engagement narrative, operational narrative)
+
+### Patrón NUEVO: Multi-Query Decision Document
+
+**Cuándo se usa:** Cuando se necesita combinar datos de múltiples MCP tools en un solo documento.
+
+```
+1. Overlay full-screen (position: fixed, z-100)
+2. Toolbar con status "X/3 módulos cargados"
+3. 3 queries on-demand con enabled: isOpen (Rule #19)
+4. Loading skeletons mientras fetcha
+5. Fallback graceful si un tool no tiene data ("No disponible")
+6. Secciones numeradas: 1. Situación → 2. Escenarios → 3. Stress → 4. Insights → 5. Recs → 6. Risks
+7. Print con window.print() nativo
+8. .no-print en toolbar (se oculta al imprimir)
+```
+
+**Ejemplo:** DecisionDocument.tsx
+**Se replica en:** Futuros documentos combinados (Operational Report, Member Intelligence Report)
+
+### Patrón CONFIRMADO: Reutilización de Componentes de Impresión
+
+```
+PrintView existente (dashboard) es genérico:
+  - Props: children, title, subtitle, printDate, hideTrigger
+  - Renderiza: A4 page con branding del club, header, footer
+  - Estilos: inline <style> con @media print completo
+
+Componentes específicos (narrative, etc.) lo envuelven:
+  - <PrintViewWrapper title="..." subtitle="...">
+      {/* contenido específico renderizado con inline styles print-safe */}
+    </PrintViewWrapper>
+
+NO crear @media print separados — conflicto de especificidad.
+NO crear archivos .css para print — usar inline styles + wrapper existente.
+Utility classes (.page-break-avoid, .no-print) van en globals.css.
+```
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón |
+|---|---------|----------------------|-------|
+| 1 | Fase 14b como "Export Intelligence" con Narrative Engine integrado | Export genérico (PDF/CSV) sin AI | Transforma un PDF genérico en herramienta de toma de decisiones para la junta |
+| 2 | 4 etapas progresivas (14b→14c→14d→15ext) | Todo junto en 14b | Entregable incremental, cada fase tiene valor independiente |
+| 3 | Narrative Engine como sub-tab #7 (último) en FinancialIntelligence | Primer tab | Respeta flujo lógico: explorar datos → simular → analizar → narrar como síntesis |
+| 4 | Label "Motor de Narrativa" (del usuario) | "Narrativa AI" (propuesto) | Más descriptivo y profesional |
+| 5 | Mock-registry rewrite completo en B0 | Fix quirúrgico solo de imports faltantes | 8 bugs encontrados — fix completo evita efecto cascada |
+| 6 | `getMockResponse` pasa `params` a factories | Mantener `factory()` sin params | Todas las factories con params recibían undefined — bug silencioso |
+| 7 | ExportButton dropdown reutilizable | Botones individuales por módulo | Un componente para todos los módulos, opciones contextuales por props |
+| 8 | `window.print()` directo para módulos sin narrative data | PrintView wrapper para todos | FinanceOverview, ReportGenerator, MemberProfitability no necesitan PrintView — el navegador maneja el PDF |
+| 9 | PrintView de export usa wrapper existente de dashboard | PrintView independiente con sus propios @media print | Evita duplicación y conflictos de especificidad CSS |
+| 10 | `print.css` borrado, utility classes en `globals.css` | Archivo externo separado | Conflicto con inline `<style>` de PrintView existente |
+| 11 | ExportButton en ReportGenerator alongside "Generar Reporte" | Reemplazar "Generar Reporte" | "Generar" es mutation, "Exportar" es output — acciones complementarias |
+| 12 | ExportButton en MemberProfitability en chart header | Toolbar separada | Un solo botón no justifica toolbar completa |
+| 13 | DecisionDocument hace 3 queries simultáneas al abrir | Queries secuenciales | Todas son mocked con staleTime, paralelo es más rápido |
+| 14 | FinanceOverview: ExportButton con window.print() directo | Wrap en PrintView con hideTrigger | Over-engineering — no tiene narrative data que renderizar |
+| 15 | CommunicationCenter NO recibe ExportButton | Agregar ExportButton placeholder | No tiene botón existente ni datos exportables claros |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| 1-7 | Infraestructura, tokens, forms, lists, details | ✅ |
+| 8 | Dashboard sub-componentes | 🔄 5/12 done |
+| 9 | Wellness + Satisfaction | ✅ |
+| 10 | Proactive Recommendations | ✅ COMPLETADA |
+| 11 | Communication Enhancement | ✅ COMPLETADA |
+| 12 | Guest Management + Trial Memberships | ✅ COMPLETADA |
+| 13 | Finance Enhancement + HITL Complete | ✅ COMPLETADA |
+| 14 | Intelligence Features (Profitability + Stress + Calendar) | ✅ COMPLETADA |
+| **14b** | **Export Intelligence (Narrative + Export + Decision Doc)** | **✅ COMPLETADA** |
+| **14c** | **Member Intelligence Hub (Health Score + Segmentation + LTV)** | **⬜ SIGUIENTE** |
+| 14d | Decisiones Informadas (Decision Cockpit + Campaign Generator) | ⬜ |
+| 15 ext | Operaciones Autónomas (Daily Briefing + Compliance + Smart Schedule) | ⬜ |
+| 15 | Integration Testing + QA | ⬜ |
+| 16 | Mock → Backend Migration | ⬜ |
+
+---
+
+## 6. PRÓXIMA FASE — Fase 14c: Member Intelligence Hub
+
+**No requiere agente backend específico — se mockea todo.**
+
+### Herramientas propuestas
+
+| # | Herramienta | Descripción | Tool MCP propuesta | Tipo |
+|---|-------------|-------------|-------------------|------|
+| 1 | Member Health Score | Score compuesto 5 dimensiones (engagement 30%, financiero 25%, social 20%, comunicación 15%, satisfacción 10%) | `members_health_score` | Data auto |
+| 2 | Micro-Segmentation Engine | Clustering automático de socios en comportamientos naturales (Deportivos, Sociales, Ejecutivos, Familiares, Invisibles) | `members_segmentation` | AI auto |
+| 3 | Predictive LTV | Lifetime Value predictivo por familia: tier upgrade probabilidad + gasto incremental + tasa referidos + churn risk | `members_lifetime_value` | AI auto |
+| 4 | Churn Prevention | Estrategia personalizada de retención por familia en riesgo | `members_churn_prevention` | AI on-demand |
+
+### Bloques propuestos (tentativo)
+
+| Bloque | Contenido | Dependencia |
+|--------|-----------|-------------|
+| B0 | Contracts + factories + registry para 4 tools de members | Ninguna |
+| B1 | MemberHealthScore component (gauge radial 5 dimensiones) | B0 |
+| B2 | MemberSegmentation component (clusters con cards + detail) | B0 |
+| B3 | MemberLTV + ChurnPrevention + integración en hub | B1, B2 |
+
+### ApprovalQueue impact
+
+Las 4 tools son AUTO o AI auto — no requieren HITL. 0 cambios en ApprovalQueue.
+
+### Dónde vive en la UI
+
+Opciones:
+1. **Nuevo sub-módulo:** `features/members/` → `MemberIntelligenceDashboard.tsx`
+2. **Nuevo sub-tab en EngagementDashboard:** como extensión de engagement existente
+3. **Nuevo tab en FinancialIntelligence:**iéndo frontera financiera/membership
+
+Mi recomendación: **Opción 1** — módulo independiente con sus propios tabs. Member Intelligence es suficientemente grande para justificar su propio espacio.
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+### Pendientes resueltos en esta sesión
+
+| # | Issue | Resolución |
+|---|-------|-----------|
+| 35 | Mock-registry key duplicada `get_financial_summary` | ✅ RESUELTO B0 |
+| 36 | Mock-registry import faltante `createMockFinancialSummary` | ✅ RESUELTO B0 |
+| 37 | Mock-registry 13 imports faltantes de Fase 13 | ✅ RESUELTO B0 |
+| 39 | MemberProfitabilityMatrix no tiene export | ✅ RESUELTO B3 |
+| NEW-A | getMockResponse no pasaba params a factories | ✅ RESUELTO B0 |
+| NEW-B | 4 imports muertos en mock-registry | ✅ RESUELTO B0 |
+| NEW-C | 3 líneas comentadas obsoletas | ✅ RESUELTO B0 |
+| NEW-D | Type incorrecto en registry (sin params) | ✅ RESUELTO B0 |
+| NEW-E | Referencia obsoleta a mock-data.ts | ✅ RESUELTO B0 |
+
+### Pendientes originales — Estado actualizado
+
+| # | Issue | Severidad | Archivo | Fase | Estado |
+|---|-------|-----------|---------|------|--------|
+| 2 | AIChatWidget: posición movida de derecha a izquierda sobre sidebar | MEDIA | `shared/components/chat/AIChatWidget.tsx` | 15 | ⬜ PENDIENTE |
+| 4 | Dashboard sub-componentes: 7/12 pendientes (violations reglas) | MEDIA | `features/dashboard/components/` | 8 | ⬜ PENDIENTE |
+| 6 | MembershipDonut: tooltip con backdrop-filter (Regla #2) | MEDIA | `features/dashboard/components/MembershipDonut.tsx` | 8 | ⬜ PENDIENTE |
+| 7 | AgeBalanceWidget: mock group colors no son tokens Silver Tide (Regla #1) | MEDIA | `features/dashboard/components/AgeBalanceWidget.tsx` | 8 | ⬜ PENDIENTE |
+| 8 | Sub-componentes dashboard: hex hardcodeados en vez de chartTheme (Regla #3) | MEDIA | `features/dashboard/components/*` | 8 | ⬜ PENDIENTE |
+| 9 | HitlQueue: botones raw en vez de Button shared (Regla #17) | MEDIA | `features/dashboard/components/HitlQueue.tsx` | 8 | ⬜ PENDIENTE |
+| 10 | MembershipDonut: falta useReducedMotion() (Regla #18) | BAJA | `features/dashboard/components/MembershipDonut.tsx` | 8 | ⬜ PENDIENTE |
+| 14 | SettingsPage: notificaciones store local no sync con backend | BAJA | `features/settings/SettingsPage.tsx` | 15 | ⬜ PENDIENTE |
+| 15 | SettingsPage: versión frontend hardcoded "1.0.0-beta" | BAJA | `features/settings/SettingsPage.tsx` | 15 | ⬜ PENDIENTE |
+| 16 | RiskHeatmap: emojis como icons en vez de Lucide | BAJA | `features/reports/RiskHeatmap.tsx` | 15 | ⬜ PENDIENTE |
+| 17 | MyReservations: tipos inline no compartidos | BAJA | `features/mi-club/MyReservations.tsx` | 15 | ⬜ PENDIENTE |
+| 18 | communication_insights: tool mock-only, no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 19 | guest_management_insights: tool mock-only, no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 22 | `get_financial_summary` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 23 | `finance_scenario_simulate` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 24 | `finance_opportunities_scan` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 25 | `finance_board_briefing` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 26 | FilterDropdown import path no verificada | MEDIA | `FamilyAccount.tsx` | 15 | ⬜ PENDIENTE |
+| 27 | `get_family_account`, `get_transactions`, `get_invoices` no existen en FinanceAgent | MEDIA | `FamilyAccount.tsx` | 16 | ⬜ PENDIENTE |
+| 28 | FamilyAccount aging bucket usa 40/60 split de `aging_90_plus` | BAJA | `FamilyAccount.tsx` | 16 | ⬜ PENDIENTE |
+| 29 | BillingCenter: `InvoiceData` backend no tiene `invoice_number`, `balance`, `paid_amount` | MEDIA | `BillingCenter.tsx` | 16 | ⬜ PENDIENTE |
+| 31 | ScenarioSimulator `categoryLabels` hardcodeado | BAJA | `FinancialIntelligence.tsx` | Futura | ⬜ PENDIENTE |
+| 32 | `finance_member_profitability` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 33 | `finance_stress_test` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 34 | `finance_seasonal_calendar` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 38 | StressTestPanel fan chart bands son aproximadas | BAJA | `StressTestPanel.tsx` | Futura | ⬜ PENDIENTE |
+
+### Pendientes nuevos de esta sesión
+
+| # | Issue | Severidad | Archivo | Fase sugerida |
+|---|-------|-----------|---------|---------------|
+| 40 | Logo del club `CCC.png` no se usa en PrintView ni DecisionDocument | BAJA | `PrintView.tsx`, `DecisionDocument.tsx` | 15 QA |
+| 41 | `finance_narrative_generate` es mock-only — no existe en backend | BAJA | `shared/mocks/` | 16 |
+| 42 | `export_report` es mock-only — no existe en backend | BAJA | `shared/mocks/` | 16 |
+| 43 | Scenario variables no se comparten entre sub-tabs — DecisionDocument usa defaults | MEDIA | `FinancialIntelligence.tsx` sub-tabs | 14d o Futura |
+| 44 | ExportButton `onPrint` con `window.print()` no genera PDF con branding del club en módulos sin PrintView wrapper | BAJA | `FinanceOverview.tsx`, `ReportGenerator.tsx`, `MemberProfitabilityMatrix.tsx` | 15 QA |
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección 3 (Design System — Silver Tide) — AGREGAR:
+
+```
+### Print System
+- PrintView wrapper genérico: `features/dashboard/components/PrintView.tsx`
+  - Props: children, title, subtitle, printDate, hideTrigger
+  - A4 layout con branding del club (CCC logo, colores gold)
+  - Inline `<style>` con @media print completo
+- Utility classes en globals.css: `.no-print`, `.page-break-before`, `.page-break-avoid`
+- ExportButton shared: dropdown Imprimir/CSV/Excel/Texto/Documento Decisión
+- NUNCA crear archivos .css separados para print
+- NUNCA duplicar @media print rules
+```
+
+### Sección 4 (Patrones AI) — AGREGAR nuevos patrones:
+
+```
+| Nivel        | Patrón                                          | Ejemplo                              |
+|--------------|------------------------------------------------|--------------------------------------|
+| Hub          | DetailTabs + lazy() + Suspense                 | FinancialDashboard, CommunicationDashboard, GuestManagementDashboard |
+| Sub-hub      | Sub-tab bar manual + lazy + Suspense           | FinancialIntelligence (7 tabs)       |
+| Insights     | Quick deterministic + AI auto-load             | FinanceOverview, FinanceAnalytics    |
+| Intelligence | Scenario Simulator con sliders                 | ScenarioSimulator                    |
+| Intelligence | Opportunity Scanner con action flow            | OpportunityScanner                   |
+| Intelligence | Board Briefing con decisiones                  | BoardBriefing                        |
+| Intelligence | Scatter Plot con cuadrantes + detail card      | MemberProfitabilityMatrix            |
+| Intelligence | Fan Chart Monte Carlo + GaugeCards             | StressTestPanel                      |
+| Intelligence | Timeline con capas toggleables + expandible    | SeasonalCalendar                     |
+| Intelligence | Scenario Selector con custom editor            | StressTestPanel                      |
+| Intelligence | Narrative Engine (AI-generated briefing)       | NarrativeEngine                      |
+| Intelligence | Multi-Query Decision Document                  | DecisionDocument                     |
+| Export        | ExportButton dropdown reutilizable             | FinanceOverview, ReportGenerator, etc |
+| Export        | Narrative PrintView (wrapper del existente)    | PrintView (export)                   |
+| Export        | Export Service (text/CSV utilities)            | exportService.ts                     |
+| UI           | Section wrapper expandible con AnimatePresence | FinanceAnalytics (9 secciones)       |
+| UI           | Gauge Card con thresholds                      | StressTestPanel (5 KPIs)             |
+```
+
+### Sección 6 (Shared Components) — AGREGAR:
+
+```
+**Export System:**
+- ExportButton — dropdown reutilizable (Imprimir/CSV/Excel/Texto/Documento Decisión)
+- PrintView (export) — wrapper para narrative data usando PrintView de dashboard
+- DecisionDocument — overlay combinado 3 MCP tools
+
+**Hooks:** useMCPQuery, useMCPMutation, useBreakpoint, useReducedMotion
+
+**Services:**
+- exportService — generateFilename, downloadBlob, formatNarrativeAsText, formatNarrativeAsCSV, escapeCSV
+```
+
+### Sección 7 (Estado del Sprint) — REEMPLAZAR:
+
+```
+| Fase | Contenido                                        | Estado            |
+|------|--------------------------------------------------|-------------------|
+| 1-7  | Infraestructura, tokens, forms, lists, details   | ✅                |
+| 8    | Dashboard sub-componentes                        | 🔄 5/12 done      |
+| 9    | Wellness + Satisfaction                          | ✅                |
+| 10   | Proactive Recommendations                        | ✅ COMPLETADA     |
+| 11   | Communication Enhancement                        | ✅ COMPLETADA     |
+| 12   | Guest Management + Trial Memberships             | ✅ COMPLETADA     |
+| 13   | Finance Enhancement + HITL Complete              | ✅ COMPLETADA     |
+| 14   | Intelligence Features (Profit+Stress+Calendar)   | ✅ COMPLETADA     |
+| 14b  | Export Intelligence (Narrative+Export+Decision)  | ✅ COMPLETADA     |
+| 14c  | Member Intelligence (Health+Segment+LTV)         | ⬜ SIGUIENTE      |
+| 14d  | Decision Cockpit + Campaign Generator            | ⬜                |
+| 15ext| Operaciones Autónomas (Briefing+Compliance)      | ⬜                |
+| 15   | Integration Testing + QA                         | ⬜                |
+| 16   | Mock → Backend Migration                         | ⬜                |
+```
+
+### Sección 8 (Pendientes) — REEMPLAZAR completamente con tabla consolidada de Sección 7 del checkpoint.
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos nuevos (4)
+
+| Regla | ExportButton | PrintView (export) | DecisionDocument | exportService |
+|-------|-------------|-------------------|-----------------|---------------|
+| #1 NUNCA hardcoded | ✅ Tokens en dropdown | ✅ Inline styles solo para print-safe HEX (wrapper maneja screen) | ✅ Tokens Silver Tide | ✅ N/A |
+| #2 NO backdrop-filter | ✅ Dropdown sólido | ✅ Wrapper maneja | ✅ Cards sólidas | ✅ N/A |
+| #3 chartTheme | N/A | N/A | N/A | N/A |
+| #4 Changelog | ✅ | ✅ | ✅ | ✅ |
+| #5 Código completo | ✅ Archivo nuevo | ✅ Rewrite completo | ✅ Archivo nuevo | ✅ Archivo nuevo |
+| #6 ResponsiveContainer | N/A | N/A | N/A | N/A |
+| #7 CHART constants | N/A | N/A | N/A | N/A |
+| #8 formatCurrency | N/A | ✅ Impactos en sections | ✅ Deltas, insights, recs | N/A |
+| #9 TOOLTIP_STYLE | N/A | N/A | N/A | N/A |
+| #10 AXIS_TICK | N/A | N/A | N/A | N/A |
+| #11 focus-visible | ✅ Dropdown items | ✅ N/A | ✅ N/A (overlay) | N/A |
+| #12 min-h-[44px] | ✅ Dropdown items | N/A | ✅ Botones toolbar | N/A |
+| #13 DetailTabs | N/A | N/A | N/A | N/A |
+| #14 EmptyState | N/A | N/A | ✅ "No disponible" messages | N/A |
+| #15 showToast | ✅ Copy/CSV/Excel/Error | N/A | N/A | N/A |
+| #16 PageContainer | N/A | N/A | N/A | N/A |
+| #17 Button shared | ✅ Trigger button | N/A | ✅ Imprimir + Cerrar | N/A |
+| #18 reducedMotion | N/A | N/A | ✅ useMotion() | N/A |
+| #19 on-demand | N/A | N/A | ✅ `enabled: isOpen` 3 queries | N/A |
+| #20 breakpoint | N/A | N/A | ✅ sm:grid-cols responsive | N/A |
+| #21 responsive | N/A | N/A | ✅ Grid responsive | N/A |
+| #22 cn() | ✅ Rotation, styles | ✅ N/A | ✅ Overlay bg | ✅ N/A |
+
+### Archivos modificados (6)
+
+| Regla | NarrativeEngine | FinancialIntelligence | FinanceOverview | ReportGenerator | MemberProfitability | mock-registry |
+|-------|----------------|----------------------|----------------|----------------|--------------------|----|
+| #1 | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
+| #4 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #5 | ✅ quirúrgico | ✅ quirúrgico | ✅ quirúrgico | ✅ quirúrgico | ✅ quirúrgico | ✅ rewrite |
+| #11 | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
+| #12 | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
+| #17 | ✅ | N/A | ✅ | ✅ | ✅ | N/A |
+| #18 | ✅ | ✅ | N/A | N/A | ✅ | N/A |
+| #22 | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
+
+**0 violaciones en archivos nuevos y modificados.**
+
+---
+
+## 10. QUICK START PARA NUEVO CHAT
+
+```
+1. Pegar CLAUDE_CONTEXT_MINI.md (Secciones 1-10 actualizadas)
+2. Pegar este CHECKPOINT (Fase 14b completa)
+3. Pedir: "Definime los bloques de Fase 14c (Member Intelligence Hub)"
+4. Si se necesita ver el agente de engagement:
+   → Pedir: "Pasame el archivo de engagement agent backend"
+5. Confirmar arquitectura:
+   → ¿Módulo independiente features/members/? ¿Sub-tab en Engagement?
+6. Pedir: "Genera Bloque 0 (contracts + factories + registry)"
+7. Pedir: "Genera Bloque 1"
+
+Si se necesita resolver pendientes de mock-registry:
+→ El archivo ya fue reescrito en B0 de esta sesión — 0 bugs conocidos
+
+Si se trabaja en Fase 15 QA:
+→ Pedir: "Pasame los archivos del dashboard que necesitamos fixear"
+→ Componentes: MembershipDonut, AgeBalanceWidget, HitlQueue
+
+Si se quiere agregar logo del club (#40):
+→ Logo en public/CCC.png, agregar <img src="/CCC.png" /> en PrintView y DecisionDocument headers
+```
+
+---
+
+## 11. DECISION LOG
+
+| # | Decisión | Razón | Impacto |
+|---|---------|-------|---------|
+| 1 | 4 etapas AI: 14b→14c→14d→15ext | Entregable incremental, cada fase tiene valor independiente | Define roadmap para siguientes 4 fases |
+| 2 | Narrative Engine como sub-tab #7 "Motor de Narrativa" (último) | Flujo lógico: explorar → simular → narrar como síntesis | El usuario recorre datos antes de generar narrativa |
+| 3 | ExportButton dropdown reutilizable en vez de botones por módulo | Un componente para todos, opciones contextuales por props | Cada módulo nuevo solo agrega `<ExportButton>` |
+| 4 | PrintView de export reutiliza wrapper existente de dashboard | Evita duplicación de @media print y conflictos de especificidad | Nunca crear archivos .css para print ni inline styles duplicados |
+| 5 | `window.print()` directo para módulos sin narrative data | FinanceOverview/ReportGenerator no necesitan PrintView wrapper | Simplicidad > elegancia cuando no hay data narrativa |
+| 6 | print.css borrado, utility classes en globals.css | Conflicto con inline `<style>` de PrintView existente | 3 reglas CSS solamente |
+| 7 | CommunicationCenter eliminado del plan B3 | No tiene botón de exportación | No crear features donde no hay placeholder existente |
+| 8 | ExportButton alongside "Generar Reporte" en vez de reemplazarlo | "Generar" es mutation, "Exportar" es output — complementarios | Mantener funcionalidad existente |
+| 9 | Mock-registry rewrite completo en vez de quirúrgico | 8 bugs encontrados — fix parcial podría enmascarar otros | Base limpia para todas las fases siguientes |
+| 10 | `getMockResponse` pasa params a factories | Todas las factories con params recibían undefined — bug silencioso | Factories que dependen de params ahora funcionan correctamente |
+| 11 | Fase 14c como módulo independiente (recomendación) | Member Intelligence es suficientemente grande para su propio espacio | Decisión pendiente de confirmación del usuario |
+| 12 | Logo del club CCC.png pendiente para Fase 15 QA | No urgente, funcionalidad no afectada | Mejora cosmética para PDFs |
+| 13 | Scenario variables no compartidas entre sub-tabs pendiente para 14d | DecisionDocument usa defaults — suficiente para fase actual | Futuro: Zustand store compartido |
+| 14 | "Motor de Narrativa" como label (decisión del usuario) | Más descriptivo y profesional que "Narrativa AI" | Adoptado definitivamente |
+| 15 | Factories de Narrative Engine ignoran period/audience/detail_level params | Mock devuelve siempre mayo 2026. Backend real personalizará | Se elimina en Fase 16 |
+
+---
+
+Fase 14b completa. Export Intelligence está operativo: Narrative Engine genera briefings ejecutivos, ExportButton distribuye en múltiples formatos, DecisionDocument combina 3 MCP tools en un solo documento imprimible. La siguiente fase lógica es 14c (Member Intelligence Hub). Nos vemos en el próximo chat. Contesta lo que se te pide en el prompt relee para asimilar bien la info ya que es muy extensa. Para la 14c esperate a que te pase toda la info que generamos en otro chat es muy extenso no te lo pego aca va en dos mensajes posteriores despues de eso arrancamos con la 14c

@@ -1,0 +1,494 @@
+# La Visión AI-First para Castillo Country Club — Más Allá de Export
+
+---
+
+## El Cambio de Paradigma
+
+La propuesta original de Fase 14b es **correcta** — exportar datos a PDF/Excel/CSV. Pero es lo que haría cualquier software de gestión en 2022. Para 2026, la pregunta no es *"¿cómo exportamos datos?"* sino **"¿cómo convertimos datos en inteligencia que la junta no puede ignorar?"**
+
+La diferencia entre un PDF con tablas y un documento que cambia la dirección del club es **la capa de razonamiento AI entre los datos y el papel**.
+
+---
+
+## VISIÓN: 5 Herramientas Transformadoras
+
+---
+
+### 1. NARRATIVE ENGINE — "El Analista que Nunca Duerme"
+
+**El problema real:** La junta directiva recibe un PDF de 15 páginas con 40 tablas y 12 gráficos. El gerente del club pasa 4 horas preparándolo. Nadie lo lee completo. Las decisiones se toman por intuición, no por análisis.
+
+**La solución AI:**
+
+En vez de exportar un dashboard → exportar una **narrativa ejecutiva generada por AI** que:
+
+- Lee TODOS los datos financieros, operativos y de membership del período
+- Identifica los 3-5 insights más críticos (no 40 métricas)
+- Escribe un resumen ejecutivo en lenguaje natural con el tono de un consultor de McKinsey especializado en hospitality
+- Genera recomendaciones concretas y accionables con estimación de impacto
+- Incluye comparativas automáticas (vs. período anterior, vs. presupuesto, vs. benchmark de industria)
+- Alerta sobre anomalías que un ojo humano perdería
+
+**Ejemplo concreto — lo que la junta recibe HOY vs. con Narrative Engine:**
+
+```
+HOY (PDF estándar):
+┌─────────────────────────────────────┐
+│ Ingresos Mayo: ₡45,200,000         │
+│ Gastos Mayo: ₡38,100,000           │
+│ Margen: 15.7%                       │
+│ Socios activos: 142                 │
+│ [tabla de 200 filas]                │
+│ [gráfico de barras]                 │
+└─────────────────────────────────────┘
+
+CON NARRATIVE ENGINE:
+┌─────────────────────────────────────────────────┐
+│ BRIEFING EJECUTIVO — MAYO 2026                 │
+│                                                 │
+│ SITUACIÓN: El club cerró mayo con un margen     │
+│ operativo del 15.7%, 3.2 puntos bajo el         │
+│ objetivo del 18.9%. La causa principal no es     │
+│ caída de ingresos (que crecieron 4.1% interanual)│
+│ sino un incremento atípico de ₡2.8M en          │
+│ mantenimiento de piscina, que esperábamos para   │
+│ junio-julio según el calendario estacional.      │
+│                                                 │
+│ IMPACTO: Si no se ajusta, el Q2 cierra con      │
+│ déficit de ₡1.4M contra presupuesto.            │
+│                                                 │
+│ RECOMENDACIÓN: Trasladar ₡1.2M del fondo de     │
+│ reserva (saldo actual: ₡22M, cobertura 8.3     │
+│ meses) y acelerar cobros pendientes de las       │
+│ familias Vargas Rojas (₡890K, aging 62 días)    │
+│ y Solano Brenes (₡340K, aging 45 días).         │
+│                                                 │
+│ ALERTA: La familia Vargas Rojas muestra señales  │
+│ de churn (engagement score: 32/100, reservas    │
+│ últimos 90 días: 2). Recomiendo contacto         │
+│ personal del gerente esta semana.               │
+│                                                 │
+│ [Gráfico de tendencia 12 meses con annotation]  │
+│ [Tabla de anomalías detectadas]                  │
+└─────────────────────────────────────────────────┘
+```
+
+**Eso no es un PDF. Es un briefing que reemplaza 4 horas de trabajo humano.**
+
+**Cómo funciona técnicamente:**
+
+```
+Componente: NarrativeEnginePanel (nuevo sub-tab en FinancialIntelligence)
+├── Input: Período + tipo de reporte + audiencia
+├── useMCPQuery("finance", "finance_narrative_generate", params)
+│   └── Backend: LLM recibe structured data → genera narrativa
+├── Output: Markdown renderizado con charts inline
+├── Editable: La junta puede ajustar el tono, agregar/quitar secciones
+└── Export: PDF con la narrativa + datos de soporte como apéndices
+```
+
+**Tool MCP nueva:** `finance_narrative_generate` — recibe período, audiencia, nivel de detalle → devuelve narrativa estructurada con insights, recomendaciones y alertas.
+
+**Approval:** SEMI — la AI genera, el admin/staff revisa y aprueba antes de exportar.
+
+---
+
+### 2. DECISION COCKPIT — "El Simulador de Consecuencias"
+
+**El problema real:** La junta dice *"¿y si subimos la cuota un 8%?"* y nadie sabe la respuesta real. Tienen que esperar al próximo ciclo para medir el impacto.
+
+**La solución AI:**
+
+Un panel donde la junta puede plantear **cualquier decisión** y el sistema:
+
+1. Modela el escenario con datos reales del club
+2. Simula consecuencias en cascada (financieras, membership, operativas, reputacionales)
+3. Muestra trade-offs visuales con probabilidades
+4. Genera un documento formal de "Análisis de Decisión" listo para archivar
+
+**Escenarios que la junta podría simular:**
+
+| Decisión | Lo que la AI modela |
+|----------|-------------------|
+| "Subir cuota 8%" | Impacto en churn por tier, recaudación neta, comparativa con histórico, probabilidad de objeciones de junta |
+| "Abrir el club a bodas externas" | Revenue adicional, impacto en exclusividad percibida, costos operativos, conflictos con eventos de socios |
+| "Cerrar la piscina 3 meses para remodelación" | Ahorro en mantenimiento, impacto en satisfacción, timeline óptimo (temporada baja), comunicación necesaria |
+| "Agregar cancha de pádel" | CAPEX, ROI proyectado, demanda estimada por segmento, impacto en retención |
+| "Cambiar proveedor de catering" | Ahorro, riesgo de calidad, cláusulas contractuales, período de transición |
+
+**Visualización innovadora — Decision Tree Interactivo:**
+
+```
+                    ┌─── Escenario Optimista (30%) → +₡2.4M revenue, -2% churn
+                    │
+"Subir cuota 8%" ───┼─── Escenario Base (50%) → +₡1.8M revenue, +3% churn
+                    │
+                    └─── Escenario Pesimista (20%) → +₡0.9M revenue, +8% churn
+                    
+Net Expected Value: +₡1.65M
+Risk Score: MEDIO (6.2/10)
+Recomendación: Ejecutar con comunicación personalizada a Top 10 familias primero
+```
+
+**Tool MCP nueva:** `finance_decision_simulate` — recibe la decisión en lenguaje natural + parámetros → devuelve árbol de consecuencias con probabilidades e impactos.
+
+---
+
+### 3. MEMBER INTELLIGENCE HUB — "Conoce a Tus Socios Mejor que Ellos Mismos"
+
+**El problema real:** El club sabe cuánto paga cada socio. No sabe POR QUÉ un socio dejó de venir, qué experiencia lo haría renovar entusiasmado, ni qué servicio adicional pagaría.
+
+**La solución AI:**
+
+Un sistema de inteligencia de socios que cruza TODAS las fuentes de datos:
+
+```
+Datos transaccionales     →  Patrones de gasto, frecuencia, estacionalidad
+Datos de reservas         →  Qué actividades prefiere, cuándo visita, con quién
+Datos de huéspedes        →  Red social del socio (¿trae gente nueva?)
+Datos de comunicación     →  Abre emails? Responde? Se queja? Elogia?
+Datos operativos          →  Usa el gym? La piscina? El restaurante?
+```
+
+**Herramientas concretas:**
+
+#### a) Member Health Score — "El semáforo de retención"
+
+No el churn risk simple que ya tenemos. Un score compuesto que mide:
+
+| Dimensión | Métrica | Peso |
+|-----------|---------|------|
+| Engagement | Frecuencia de visita últimos 90d vs. histórico | 30% |
+| Financiero | Tendencia de gasto, aging de pagos | 25% |
+| Social | Huéspedes traídos, eventos asistidos | 20% |
+| Comunicacional | Interacción con comunicaciones del club | 15% |
+| Satisfacción | Quejas, elogios, NPS implícito | 10% |
+
+**Visualización:** Cada familia en un "reloj" radial con las 5 dimensiones. Una familia sana es un pentágono grande y equilibrado. Una familia en riesgo es un pentágono deforme y pequeño.
+
+#### b) Micro-Segmentation Engine
+
+En vez de 3 tiers (Básico/Premium/VIP), la AI descubre **clusters naturales** de comportamiento:
+
+```
+"Los Deportivos"     → Usan canchas 4x/semana, ignoran eventos culturales
+"Los Sociales"       → Rara vez deporte, asisten a TODOS los eventos, traen huéspedes
+"Los Ejecutivos"     → Visita fines de semana, alto gasto en restaurante, baja frecuencia
+"Los Familiares"     → Viernes y sábados con niños, pool + kids club
+"Los Invisibles"     → Pagan pero no vienen. Churn inminente.
+```
+
+**Cada segmento recibe:**
+- Comunicaciones personalizadas
+- Recomendaciones de actividades
+- Pricing óptimo por segmento
+- Estrategia de retención específica
+
+#### c) Predictive Lifetime Value
+
+No solo lo que un socio ha pagado. Lo que **pagará** si lo retenemos los próximos 5 años, modelado por:
+- Tier actual + probabilidad de upgrade
+- Patrón de gasto incremental por actividad nueva
+- Tasa de referidos estimada
+- Riesgo de churn
+
+**La junta puede preguntar:** *"¿Cuánto vale retener a los 10 socios en riesgo?"* y la AI responde con el LTV proyectado vs. costo de retención.
+
+**Tools MCP nuevas:**
+- `members_health_score` — score compuesto por familia
+- `members_segmentation` — clustering automático
+- `members_lifetime_value` — LTV predictivo por familia
+- `members_churn_prevention` — estrategia personalizada de retención
+
+---
+
+### 4. GENERATIVE COMMUNICATIONS — "Marketing que se Escribe Solo"
+
+**El problema real:** El club manda comunicaciones genéricas. "Estimado socio, lo invitamos al evento..." → tasa de apertura 12%, tasa de asistencia 15%.
+
+**La solución AI:**
+
+#### a) Comunicación Hiper-Personalizada
+
+La AI conoce a cada familia (Member Intelligence Hub) y genera mensajes **únicos por socio**:
+
+```
+GENÉRICO (hoy):
+"Estimado socio, lo invitamos al Día de la Familia el 15 de junio..."
+
+AI-GENERADO (para la familia Castillo Montero):
+"Doña María, sabemos que los viernes son su día favorito en el club. 
+Este sábado 15 tenemos algo especial: el Día de la Familia con 
+degustación de vinos chilenos (recuerdo que disfrutó la cata de marzo) 
+y actividades para los nietos en el kids club. Como siempre, 
+tenemos reservada su mesa preferida en la terraza. ¿Confirmamos 
+para 6 personas?"
+
+AI-GENERADO (para la familia Vargas Rojas — en riesgo de churn):
+"Don Carlos, ha pasado un tiempo desde su última visita y lo 
+extrañamos. Hemos renovado el menú del restaurante con el nuevo 
+chef y queremos invitarlo a una cena privada de bienvenida. 
+Sin costo, por supuesto. ¿Le gustaría el viernes o el sábado?"
+```
+
+**Esto no es un email merge.** Es un agente de AI que:
+1. Analiza el historial de la familia
+2. Detecta qué los motiva
+3. Genera el mensaje con el tono correcto
+4. Sugiere el canal (email, WhatsApp, llamada personal)
+5. Propone el timing óptimo
+6. Escala a HITL si el socio es high-value o high-risk
+
+#### b) Campaign Generator
+
+El staff describe la intención en lenguaje natural:
+
+> *"Queremos promocionar la nueva cancha de pádel y que se inscriban al menos 30 socios en junio"*
+
+La AI genera:
+- 3 versiones del email (una por segmento: deportivos, sociales, familiares)
+- Copy para WhatsApp (versión corta)
+- Texto para el display del lobby
+- Landing page draft para /mi-club
+- Métricas de éxito esperadas
+- Schedule de envío óptimo por segmento
+
+#### c) Sentiment Monitor
+
+Análisis continuo de todas las comunicaciones entrantes:
+- Emails de socios → sentimiento + topic classification
+- Quejas → auto-categorizadas + prioridad + sugerencia de respuesta
+- Elogios → detectados y archivados para testimonios
+- Tendencias → "3 socios del cluster 'Deportivos' mencionaron que la cancha de tenis necesita mantenimiento"
+
+**Tools MCP nuevas:**
+- `communications_generate_personalized` — mensaje único por socio
+- `communications_campaign_generate` — campaña completa desde intención
+- `communications_sentiment_analyze` — análisis de sentimiento continuo
+
+---
+
+### 5. AI OPERATIONS CENTER — "El Gerente Virtual 24/7"
+
+**El problema real:** El staff opera reactivamente. Se entera de problemas cuando un socio se queja. Las oportunidades se pierden porque nadie conectó los puntos.
+
+**La solución AI:**
+
+Un centro de operaciones inteligente que **proactivamente** alerta y recomienda:
+
+#### a) Daily Briefing Automático
+
+Cada mañana a las 6am, el gerente recibe:
+
+```
+BRIEFING DIARIO — 24 Mayo 2026
+
+🟢 OPERACIONES: Todo normal. 47 reservas hoy (promedio: 42).
+   Staff completo. Temperatura piscina: 28°C.
+
+🟡 ATENCIONES:
+   • Familia Quesada Vargas — reserva cancelada 3ra vez este mes.
+     Patrón sugiere desinterés. Sugerencia: llamada personal hoy.
+   • Catering evento junta directiva sábado — confirmar menú.
+     2 asistentes reportaron alergia a mariscos (acta anterior).
+   • Cancha de tenis #3 — 2 reportes de iluminación deficiente.
+     Programar mantenimiento antes del torneo del 28.
+
+🔴 URGENTE:
+   • Aging >60 días: ₡2.1M en 4 familias. Priorizar cobro.
+   • Invitado de ayer (Sr. Williams, huésped de Montero Quirós) 
+     tiene estacionamiento irregular — verificar cámara.
+
+OPORTUNIDAD:
+   • 8 socios del cluster "Deportivos" no han probado pádel.
+     Campaña targeted podría generar ₡480K en lecciones.
+   • Mayo es el mes más bajo de uso del restaurante.
+     Propuesta: "Martes de Parrilla" — margen estimado 65%.
+```
+
+#### b) Smart Scheduling
+
+La AI sugiere la programación óptima de:
+- Eventos (cuándo hay máxima probabilidad de asistencia)
+- Mantenimiento (cuándo hay mínima demanda)
+- Staff scheduling (ajustado a demanda predicha)
+- Pricing dinámico de actividades (temporada alta vs. baja)
+
+#### c) Compliance Guardian
+
+Monitoreo automático de:
+- Reportes para Hacienda/MTSS con deadline approaching
+- Registro de huéspedes completo (preocupación de seguridad)
+- Contratos de proveedores por vencer
+- Pólizas de seguro
+- Actas de junta que necesitan firma
+
+**Tools MCP nuevas:**
+- `operations_daily_briefing` — briefing matutino automático
+- `operations_smart_schedule` — scheduling inteligente
+- `operations_compliance_check` — estado de compliance
+
+---
+
+## CÓMO SE CONECTA TODO — La Visión Integrada
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CASTILLO AI PLATFORM                         │
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │   MEMBER      │  │  FINANCIAL   │  │   OPERATIONS         │  │
+│  │ INTELLIGENCE  │──│ INTELLIGENCE │──│   CENTER             │  │
+│  │              │  │              │  │                      │  │
+│  │ Health Score │  │ Narrative    │  │ Daily Briefing       │  │
+│  │ Segmentation │  │ Decision     │  │ Smart Schedule       │  │
+│  │ LTV Predict  │  │ Cockpit      │  │ Compliance           │  │
+│  │ Churn Prev.  │  │ Stress Test  │  │                      │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘  │
+│         │                 │                      │              │
+│         └────────┬────────┴──────────────────────┘              │
+│                  │                                              │
+│         ┌───────▼──────────┐                                   │
+│         │   GENERATIVE      │                                   │
+│         │   COMMUNICATIONS  │                                   │
+│         │                   │                                   │
+│         │  Personalized Msg │                                   │
+│         │  Campaign Gen     │                                   │
+│         │  Sentiment Mon.   │                                   │
+│         └───────┬───────────┘                                   │
+│                 │                                               │
+│         ┌───────▼───────────┐                                   │
+│         │   NARRATIVE        │                                   │
+│         │   ENGINE           │                                   │
+│         │                    │                                   │
+│         │  Executive Summary │                                   │
+│         │  Board Deck Gen    │                                   │
+│         │  Decision Docs     │                                   │
+│         └────────────────────┘                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## MAPA DE IMPLEMENTACIÓN PROGRESIVA
+
+No todo se construye en Fase 14b. Esto es una **hoja de ruta** que transforma el club en 4 etapas:
+
+| Etapa | Fase(s) | Qué se entrega | Impacto |
+|-------|---------|----------------|---------|
+| **1. Fundación AI** | 14b (actual) | Export/PDF + Narrative Engine básico + Print CSS | La junta recibe briefings narrativos en vez de tablas crudas |
+| **2. Inteligencia de Socios** | 14c (nueva) | Member Health Score + Segmentation + LTV Predictivo | El club SABE quién está en riesgo y POR QUÉ antes de que se vayan |
+| **3. Decisiones Informadas** | 14d (nueva) | Decision Cockpit + Campaign Generator | La junta puede simular cualquier decisión y recibir análisis en minutos |
+| **4. Operaciones Autónomas** | 15 extendida | Daily Briefing + Compliance Guardian + Smart Schedule | El club opera proactivamente en vez de reactivamente |
+
+---
+
+## MI RECOMENDACIÓN PARA EMPEZAR AHORA
+
+De las 5 herramientas, **propongo empezar con una que combine el alcance práctico de Fase 14b con el poder transformador del AI:**
+
+### Fase 14b Revisada: "Export Intelligence"
+
+En vez de "Print/PDF + Export" genérico, construimos **Export Intelligence** — un sistema donde:
+
+1. **Narrative Engine** genera el contenido (resúmenes ejecutivos, insights, recomendaciones)
+2. **PDF Engine** lo presenta profesionalmente (templates, charts, branding)
+3. **Export System** lo distribuye en el formato correcto (PDF/Excel/CSV)
+4. **Decision Snapshot** permite incluir simulaciones dentro de los reportes
+
+**El cambio:** No exportamos DATOS. Exportamos INTELIGENCIA.
+
+**Bloques revisados:**
+
+| Bloque | Contenido | Archivos nuevos |
+|--------|-----------|-----------------|
+| B0 | Mock-registry audit + fix (#36/#37/#35) | 0 nuevos, 1 modificado |
+| B1 | Export Service + Narrative Engine Panel + PDF Foundation | ~6 nuevos |
+| B2 | PDF Templates + Narrative Templates + Decision Snapshot | ~5 nuevos, 4 modificados |
+| B3 | Print CSS + Connectors + Campaign Generator Stub | ~3 nuevos, 5 modificados |
+
+**Tools MCP nuevas para 14b:**
+
+| Tool | Server | Tipo | Aprobación |
+|------|--------|------|------------|
+| `export_report` | executive_dashboard | HITL | Ya existe |
+| `finance_narrative_generate` | finance | SEMI (admin revisa antes de exportar) | **NUEVA** |
+| `finance_decision_snapshot` | finance | AUTO AI | **NUEVA** |
+| `communications_personalize_message` | communications | SEMI | **NUEVA** (stub para 14c) |
+
+---
+
+## HERRAMIENTAS DE AI QUE PROONGO INTEGRAR EN EL CÓDIGO
+
+Para que las respuestas de la AI sean realmente útiles y no texto genérico, cada tool de AI necesita **context engineering** — alimentar al modelo con los datos correctos de la forma correcta:
+
+### Context Architecture para Narrative Engine
+
+```
+Prompt Context Structure:
+├── Club Profile (estático)
+│   ├── Nombre, ubicación, fundación
+│   ├── Tiers y pricing actual
+│   └── Amenidades y servicios
+│
+├── Financial Snapshot (período seleccionado)
+│   ├── Revenue por categoría
+│   ├── Expenses por categoría  
+│   ├── Cash flow mensual
+│   ├── Aging de cuentas por cobrar
+│   └── Presupuesto vs. real
+│
+├── Membership Snapshot
+│   ├── Total activos, nuevos, salidos
+│   ├── Distribución por tier
+│   ├── Engagement scores
+│   └── Churn risk top 10
+│
+├── Operational Snapshot
+│   ├── Reservas del período
+│   ├── Eventos realizados
+│   ├── Quejas y elogios
+│   └── Incidentes operativos
+│
+├── Comparativas (automáticas)
+│   ├── vs. período anterior
+│   ├── vs. mismo período año pasado
+│   └── vs. presupuesto
+│
+└── Instrucciones de formato
+    ├── Tono: consultor ejecutivo, no académico
+    ├── Máximo 5 insights principales
+    ├── Cada insight con recomendación accionable
+    ├── Incluir estimaciones de impacto en colones
+    └── Formato: Markdown con headers, bullets, bold
+```
+
+**Esto significa que `finance_narrative_generate` en el backend recibe este contexto estructurado, lo inyecta al LLM como system prompt + user data, y devuelve una narrativa coherente.** El mock simula exactamente esta estructura.
+
+---
+
+## Tu Decisión
+
+Tenés 3 caminos posibles:
+
+### Opción 1: "Vamos con todo"
+Fase 14b revisada = Export Intelligence con Narrative Engine como pieza central.
+- **Tiempo:** 4 bloques (B0 + B1 + B2 + B3)
+- **Impacto:** La junta recibe briefings que parecen escritos por un consultor senior
+- **Riesgo:** Más ambicioso, más archivos, más mock data
+
+### Opción 2: "Empezamos conservador, escalamos"
+Fase 14b original (Print/PDF) + Narrative Engine como "Phase 14c" aparte.
+- **Tiempo:** Fase 14b = 3 bloques. Fase 14c = 2-3 bloques adicionales
+- **Impacto:** Separación limpia export ≠ AI
+- **Riesgo:** Menor, pero el PDF sin AI sigue siendo "un PDF más"
+
+### Opción 3: "Lo más potente primero"
+Arrancamos directo con Decision Cockpit + Member Intelligence (las herramientas más transformadoras), y el PDF/export queda como output natural de esas herramientas.
+- **Tiempo:** Reestructurar fases 14b→15
+- **Impacto:** Máximo impacto estratégico
+- **Riesgo:** Requiere re-planificación del sprint
+
+**Mi recomendación personal: Opción 1.** La Narrative Engine es el sweet spot — suficientemente ambiciosa para ser transformadora, suficientemente acotada para ser entregable en esta fase. Y el PDF resultante será algo que la junta **realmente querrá leer**.
+
+¿Con cuál arrancamos?

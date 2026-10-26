@@ -1,0 +1,699 @@
+/* src/features/facilities/components/MaintenanceScoring.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* MAINTENANCE SCORING — "La Urgencia"                           */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — card entry stagger                   */
+/*   SENSE 2: REACCIÓN — card hover translateY(-2px),            */
+/*            transition buttons reveal                           */
+/*   SENSE 3: MEMORIA — urgency score, overdue days, cost        */
+/*   SENSE 4: INTENCIÓN — transition buttons (Iniciar, etc.)     */
+/*   SENSE 5: SINIESTRÍA — critical pulse, overdue accent        */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — urgency summary                        */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── @property for urgency ring ── */
+@property --urgency-pct {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+/* ── Keyframes (Sense 1 + 5) ── */
+@keyframes fac-maint-card-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fac-maint-critical-pulse {
+  0%, 100% { border-left-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent); }
+  50% { border-left-color: var(--color-rose-400); }
+}
+
+@keyframes fac-maint-overdue-ping {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes fac-maint-shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+/* ── Container ── */
+.fac-maint {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ═══ HEADER ═══════════════════════════════════════════════════ */
+
+.fac-maint__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fac-maint__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fac-maint__header-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-teal-400);
+}
+
+.fac-maint__title {
+  font-size: 15px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+}
+
+.fac-maint__subtitle {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  margin: 2px 0 0;
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+
+.fac-maint__narrative {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+
+[data-mode="alert"] .fac-maint__narrative {
+  border-left-color: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+}
+
+[data-mode="critical"] .fac-maint__narrative {
+  border-left-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+}
+
+/* ═══ KPI STRIP (Sense 3) ═════════════════════════════════════ */
+
+.fac-maint__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.fac-maint__kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--color-surface) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+  border-radius: 8px;
+}
+
+.fac-maint__kpi[data-kpi-alert="true"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+}
+
+.fac-maint__kpi-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fac-maint__kpi-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.fac-maint__kpi-icon[data-kpi-id="overdue"] {
+  color: var(--color-rose-400);
+}
+.fac-maint__kpi-icon[data-kpi-id="in_progress"] {
+  color: var(--color-amber-400);
+}
+.fac-maint__kpi-icon[data-kpi-id="total_cost"] {
+  color: var(--color-gold-400);
+}
+.fac-maint__kpi-icon[data-kpi-id="avg_urgency"] {
+  color: var(--color-teal-400);
+}
+
+.fac-maint__kpi-label {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+.fac-maint__kpi-value {
+  font-size: 20px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+}
+
+.fac-maint__kpi-value[data-kpi-id="overdue"] {
+  color: var(--color-rose-400);
+}
+.fac-maint__kpi-value[data-kpi-id="in_progress"] {
+  color: var(--color-amber-400);
+}
+.fac-maint__kpi-value[data-kpi-id="total_cost"] {
+  color: var(--color-gold-400);
+}
+.fac-maint__kpi-value[data-kpi-id="avg_urgency"] {
+  color: var(--color-teal-400);
+}
+
+/* Alert KPI: overdue > 0 → make value pulse */
+.fac-maint__kpi[data-kpi-id="overdue"][data-kpi-alert="true"] .fac-maint__kpi-value {
+  animation: fac-maint-critical-pulse 2.5s ease-in-out infinite;
+}
+
+/* ═══ CARD GRID ════════════════════════════════════════════════ */
+
+.fac-maint__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+/* ═══ CARD (Sense 1 + 2 + 5) ══════════════════════════════════ */
+
+.fac-maint__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 12%, transparent);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  /* Sense 1: stagger */
+  opacity: 0;
+  animation: fac-maint-card-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+  /* Sense 2: hover */
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.fac-maint__card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-border) 35%, transparent);
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.2);
+}
+
+/* Sense 5: Urgency tone accents */
+.fac-maint__card[data-urgency-tone="critical"] {
+  border-left: 3px solid var(--color-rose-400);
+  animation: fac-maint-card-enter 0.4s ease-out forwards,
+             fac-maint-critical-pulse 2.5s ease-in-out 0.4s infinite;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s), 0s;
+}
+
+.fac-maint__card[data-urgency-tone="high"] {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+.fac-maint__card[data-urgency-tone="moderate"] {
+  border-left: 3px solid var(--color-teal-400);
+}
+
+/* Overdue accent bar */
+.fac-maint__overdue-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-rose-400);
+}
+
+/* ── Card top layout ── */
+.fac-maint__card-top {
+  display: flex;
+  gap: 12px;
+}
+
+/* ── Urgency badge ── */
+.fac-maint__urgency {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 2px solid color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+}
+
+.fac-maint__urgency[data-urgency-tone="critical"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+}
+
+.fac-maint__urgency[data-urgency-tone="high"] {
+  border-color: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+  background: color-mix(in srgb, var(--color-amber-400) 6%, transparent);
+}
+
+.fac-maint__urgency[data-urgency-tone="moderate"] {
+  border-color: color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+}
+
+.fac-maint__urgency-score {
+  font-size: 18px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-silver-200);
+  line-height: 1;
+}
+
+.fac-maint__urgency[data-urgency-tone="critical"] .fac-maint__urgency-score {
+  color: var(--color-rose-400);
+}
+
+.fac-maint__urgency[data-urgency-tone="high"] .fac-maint__urgency-score {
+  color: var(--color-amber-400);
+}
+
+.fac-maint__urgency[data-urgency-tone="moderate"] .fac-maint__urgency-score {
+  color: var(--color-teal-400);
+}
+
+.fac-maint__urgency[data-urgency-tone="low"] .fac-maint__urgency-score {
+  color: var(--color-emerald-400);
+}
+
+.fac-maint__urgency-label {
+  font-size: 8px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Card body ── */
+.fac-maint__card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.fac-maint__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+/* Priority badges (CSS-driven) */
+.fac-maint__badge {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.fac-maint__badge[data-priority="low"] {
+  color: var(--color-silver-400);
+  background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+}
+.fac-maint__badge[data-priority="medium"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+.fac-maint__badge[data-priority="high"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.fac-maint__badge[data-priority="critical"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+
+/* Type badges (CSS-driven) */
+.fac-maint__badge[data-maint-type="preventive"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+.fac-maint__badge[data-maint-type="corrective"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.fac-maint__badge[data-maint-type="emergency"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+.fac-maint__badge[data-maint-type="renovation"] {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+.fac-maint__badge[data-maint-type="cleaning"] {
+  color: var(--color-silver-400);
+  background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+}
+.fac-maint__badge[data-maint-type="inspection"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+
+/* Status badges (CSS-driven) */
+.fac-maint__badge[data-maint-status="completed"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+.fac-maint__badge[data-maint-status="in_progress"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+.fac-maint__badge[data-maint-status="scheduled"] {
+  color: var(--color-silver-400);
+  background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+}
+.fac-maint__badge[data-maint-status="cancelled"] {
+  color: var(--color-silver-600);
+  background: color-mix(in srgb, var(--color-silver-600) 8%, transparent);
+}
+.fac-maint__badge[data-maint-status="on_hold"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+
+.fac-maint__card-name {
+  font-size: 13px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fac-maint__card-desc {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  margin: 0 0 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Meta row ── */
+.fac-maint__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fac-maint__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+.fac-maint__meta-icon {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+.fac-maint__meta-overdue {
+  color: var(--color-rose-400);
+  font-weight: 600;
+}
+
+.fac-maint__meta-today {
+  color: var(--color-gold-400);
+  font-weight: 600;
+}
+
+.fac-maint__meta-future {
+  color: var(--color-teal-400);
+}
+
+.fac-maint__meta-cost {
+  color: var(--color-gold-400);
+  font-weight: 600;
+}
+
+/* ── Overdue pulse (Sense 5) ── */
+.fac-maint__overdue-pulse {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+}
+
+.fac-maint__overdue-pulse-dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--color-rose-400);
+}
+
+.fac-maint__overdue-pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--color-rose-400);
+  animation: fac-maint-overdue-ping 1.5s ease-out infinite;
+}
+
+/* ── Transition buttons (Sense 4: hover-reveal) ── */
+.fac-maint__transitions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 8%, transparent);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease, margin-top 0.3s ease;
+  margin-top: 0;
+}
+
+.fac-maint__card:hover .fac-maint__transitions {
+  max-height: 50px;
+  opacity: 1;
+  margin-top: 10px;
+}
+
+.fac-maint__transitions-label {
+  font-size: 9px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-600);
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.fac-maint__transition-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  font-size: 9px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-teal-400);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.fac-maint__transition-btn:hover {
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-teal-400) 40%, transparent);
+}
+
+.fac-maint__transition-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-teal-400);
+  outline: none;
+}
+
+.fac-maint__transition-btn[data-terminal="true"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+  color: var(--color-rose-400);
+}
+
+.fac-maint__transition-btn[data-terminal="true"]:hover {
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-rose-400) 40%, transparent);
+}
+
+/* ═══ SKELETON ═════════════════════════════════════════════════ */
+
+.fac-maint__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fac-maint__skeleton-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.fac-maint__skeleton-kpi {
+  height: 64px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-surface) 40%, transparent) 25%,
+    color-mix(in srgb, var(--color-surface) 60%, transparent) 50%,
+    color-mix(in srgb, var(--color-surface) 40%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: fac-maint-shimmer 1.5s ease-in-out infinite;
+}
+
+.fac-maint__skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.fac-maint__skeleton-card {
+  height: 140px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-surface) 40%, transparent) 25%,
+    color-mix(in srgb, var(--color-surface) 60%, transparent) 50%,
+    color-mix(in srgb, var(--color-surface) 40%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: fac-maint-shimmer 1.5s ease-in-out infinite;
+}
+
+.fac-maint__skeleton-card:nth-child(2) { animation-delay: 0.15s; }
+.fac-maint__skeleton-card:nth-child(3) { animation-delay: 0.3s; }
+.fac-maint__skeleton-card:nth-child(4) { animation-delay: 0.45s; }
+
+/* ═══ EMPTY STATE ══════════════════════════════════════════════ */
+
+.fac-maint__empty-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.fac-maint__empty-text {
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  text-align: center;
+  max-width: 300px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .fac-maint__card {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+.light .fac-maint__card-name {
+  color: var(--color-silver-800);
+}
+
+.light .fac-maint__kpi {
+  background: color-mix(in srgb, var(--color-surface) 95%, transparent);
+}
+
+.light .fac-maint__narrative {
+  color: var(--color-silver-600);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fac-maint__card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-maint__card:hover {
+    transform: none;
+  }
+
+  .fac-maint__card[data-urgency-tone="critical"] {
+    animation: none;
+  }
+
+  .fac-maint__kpi[data-kpi-alert="true"] .fac-maint__kpi-value {
+    animation: none;
+  }
+
+  .fac-maint__overdue-pulse-ring {
+    animation: none;
+  }
+
+  .fac-maint__transitions {
+    max-height: 50px;
+    opacity: 1;
+    margin-top: 10px;
+    transition: none;
+  }
+
+  .fac-maint__skeleton-kpi,
+  .fac-maint__skeleton-card {
+    animation: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fac-maint__kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fac-maint__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fac-maint__card-top {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fac-maint__urgency {
+    width: 100%;
+    height: 40px;
+    flex-direction: row;
+    gap: 6px;
+  }
+}

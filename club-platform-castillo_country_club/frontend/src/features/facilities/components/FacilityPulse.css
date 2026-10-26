@@ -1,0 +1,329 @@
+/* src/features/facilities/components/FacilityPulse.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* FACILITY PULSE — "The Heartbeat Bar"                          */
+/*                                                                */
+/* MERGED: Their accent bar + divider structure                   */
+/*         + Our narrative + status encoding + micro-interactions */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — accent bar breathes                  */
+/*   SENSE 2: REACCIÓN — chips scale on hover                    */
+/*   SENSE 3: MEMORIA — utilization status encoding              */
+/*   SENSE 4: INTENCIÓN — signal callout with animation          */
+/*   SENSE 5: SINIESTRÍA — alert/risk chips priority weight      */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — descriptive text                       */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.glass-fac-pulse {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px 12px;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  backdrop-filter: blur(16px) saturate(1.2);
+  z-index: 2;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.glass-fac-pulse::-webkit-scrollbar {
+  display: none;
+}
+
+/* ═══ BOTTOM ACCENT BAR (their version — Sense 1: RESPIRACIÓN) ═ */
+/* 2px bar at bottom that breathes with the ambient accent.      */
+
+.glass-fac-pulse__accent-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--fac-pulse-accent, var(--color-teal-400));
+  animation: glass-fac-pulse-bar-breathe 4s ease-in-out infinite;
+}
+
+@keyframes glass-fac-pulse-bar-breathe {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+[data-mode="alert"] .glass-fac-pulse__accent-bar {
+  animation-duration: 2.5s;
+}
+
+[data-mode="critical"] .glass-fac-pulse__accent-bar {
+  animation-duration: 1.5s;
+  background: var(--fac-pulse-accent, var(--color-rose-400));
+}
+
+/* ═══ MODE INDICATOR ══════════════════════════════════════════ */
+
+.glass-fac-pulse__mode {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.glass-fac-pulse__mode[data-mode="calm"] {
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+  color: var(--color-teal-400);
+}
+
+.glass-fac-pulse__mode[data-mode="alert"] {
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+  color: var(--color-amber-400);
+}
+
+.glass-fac-pulse__mode[data-mode="critical"] {
+  background: color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+  color: var(--color-rose-400);
+  animation: glass-fac-critical-badge-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes glass-fac-critical-badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.glass-fac-pulse__mode-icon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* ═══ NARRATIVE (Sense 7: NARRATIVA) ══════════════════════════ */
+
+.glass-fac-pulse__narrative {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+/* ═══ METRIC CHIPS (Sense 2 + 3 + 5) ═════════════════════════ */
+
+.glass-fac-pulse__chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.glass-fac-pulse__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  color: var(--color-silver-300);
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 25%, transparent);
+  white-space: nowrap;
+  /* Sense 2: REACCIÓN — transition for hover */
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.glass-fac-pulse__chip-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* Sense 2: REACCIÓN — hover micro-movement */
+.glass-fac-pulse__chip:hover {
+  transform: translateY(-1px) scale(1.03);
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+}
+
+/* Sense 3: Utilization status encoding */
+.glass-fac-pulse__chip[data-utilization="critical"] {
+  color: var(--color-rose-400);
+  border-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+}
+
+.glass-fac-pulse__chip[data-utilization="high"] {
+  color: var(--color-amber-400);
+  border-color: color-mix(in srgb, var(--color-amber-400) 30%, transparent);
+}
+
+.glass-fac-pulse__chip[data-utilization="low"] {
+  color: var(--color-silver-400);
+}
+
+/* Sense 5: Alert chips get priority visual weight */
+.glass-fac-pulse__chip[data-has-alerts="true"] {
+  color: var(--color-rose-400);
+  border-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+  font-weight: 600;
+}
+
+/* Sense 5: Risk chips — 3 levels */
+.glass-fac-pulse__chip[data-risk="high"] {
+  color: var(--color-rose-400);
+  border-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+  animation: glass-fac-risk-pulse 2s ease-in-out infinite;
+}
+
+.glass-fac-pulse__chip[data-risk="medium"] {
+  color: var(--color-amber-400);
+  border-color: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+}
+
+.glass-fac-pulse__chip[data-risk="low"] {
+  color: var(--color-silver-400);
+}
+
+@keyframes glass-fac-risk-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+/* ═══ DIVIDER ═════════════════════════════════════════════════ */
+
+.glass-fac-pulse__divider {
+  width: 1px;
+  height: 20px;
+  background: color-mix(in srgb, var(--color-border) 30%, transparent);
+  flex-shrink: 0;
+}
+
+/* ═══ CROSS-DOMAIN SIGNAL (Sense 4: INTENCIÓN) ════════════════ */
+
+.glass-fac-pulse__signal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  background: color-mix(in srgb, var(--color-surface) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 20%, transparent);
+  flex-shrink: 0;
+  max-width: 380px;
+  /* Sense 4: entry animation */
+  animation: glass-fac-signal-enter 0.5s ease-out;
+}
+
+.glass-fac-pulse__signal[data-severity="high"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+}
+
+@keyframes glass-fac-signal-enter {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.glass-fac-pulse__signal-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+  color: var(--color-amber-400);
+  white-space: nowrap;
+}
+
+.glass-fac-pulse__signal-icon {
+  flex-shrink: 0;
+  color: var(--color-amber-400);
+  opacity: 0.8;
+}
+
+.glass-fac-pulse__signal-text {
+  flex: 1;
+  min-width: 0;
+  color: var(--color-silver-300);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glass-fac-pulse__signal-confidence {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-display);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .glass-fac-pulse {
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+}
+
+.light .glass-fac-pulse__chip {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+.light .glass-fac-pulse__signal {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-fac-pulse__accent-bar {
+    animation: none;
+    opacity: 0.8;
+  }
+
+  .glass-fac-pulse__mode[data-mode="critical"] {
+    animation: none;
+  }
+
+  .glass-fac-pulse__chip:hover {
+    transform: none;
+  }
+
+  .glass-fac-pulse__chip[data-risk="high"] {
+    animation: none;
+  }
+
+  .glass-fac-pulse__signal {
+    animation: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .glass-fac-pulse {
+    padding: 8px 12px 10px;
+    gap: 8px;
+  }
+
+  .glass-fac-pulse__narrative {
+    display: none;
+  }
+
+  .glass-fac-pulse__mode-label {
+    display: none;
+  }
+
+  .glass-fac-pulse__signal {
+    max-width: 200px;
+  }
+}

@@ -1,0 +1,259 @@
+/**
+ * Skeleton.css
+ * src/shared/components/ui/Skeleton.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-skeleton
+ * @keyframes   2 (ui-skeleton-shimmer, ui-skeleton-sweep)
+ * @signature   Dual-animation shimmer + sweep, stagger on lists,
+ *              translucent surface with light-mode adaptation
+ *
+ * FIXES v2.1 — Auditoría G9 (Paquete 1):
+ * [x] G9-12 (P1) `.ui-card--static` NO existía en este archivo (ni en
+ *     globals.css) → la prop noAnimation del TSX era un NO-OP total.
+ *     AHORA §2.5 define el bloque estático (shimmer + sweep suprimidos).
+ * [x] G9-13 (P3) Regla muerta `.ui-skeleton-card__body > *` con
+ *     `--skel-index` (el card NUNCA definía esa var; los delays explícitos
+ *     por clase ganaban por orden de fuente) eliminada. Bloques light
+ *     vacíos/duplicados eliminados.
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✗  Loading placeholder (not glass)
+ * D2 Stagger  ✓  explicit per-class delays (card) + --skel-index (table)
+ * D3 Easing   ✓  ease-in-out for continuous shimmer
+ * D4 Typo     ✗  No text (loading placeholder)
+ * D5 Color    ✓  Token-based background
+ * D6 Pseudo   ✓  ::after sweep gradient overlay
+ * D7 Interact ✗  Non-interactive (not applicable)
+ * D8 Density  ✓  Matches card/table spacing
+ * D9 Response ✓  Full-width intrinsic
+ * D10 A11y    ✓  aria-hidden, role="status", aria-label
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  2 namespaced at end
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  PRIMITIVE — .ui-skeleton (D5, D6)
+   Translucent surface with dual animation:
+   1. Shimmer (opacity pulse — breathing)
+   2. Sweep (::after gradient — light beam)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface-3);
+  animation: ui-skeleton-shimmer 2s ease-in-out infinite;
+}
+
+/* D6: Sweep — light beam crossing the skeleton */
+.ui-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 40%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 60%,
+    transparent 100%
+  );
+  animation: ui-skeleton-sweep 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  VARIANTS — Shape modifiers
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-skeleton--text {
+  height: 14px;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.ui-skeleton--circular {
+  border-radius: 50%;
+  /* Consumer must set width + height via className */
+}
+
+.ui-skeleton--rectangular {
+  border-radius: var(--radius-md, 10px);
+  width: 100%;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  CARD SKELETON (D2, D8)
+   Composite: mimics card layout with staggered lines.
+   D2: each line enters sequentially via explicit delays.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-skeleton-card {
+  /* Inherits .glass-card from globals.css §4 */
+  cursor: default;
+}
+
+.ui-skeleton-card:hover {
+  transform: none !important;
+}
+
+.ui-skeleton-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+}
+
+/* D2: Stagger — delays explícitos por clase (G9-13: regla muerta
+   con --skel-index eliminada; aquí manda el orden de fuente) */
+.ui-skeleton-card__title {
+  height: 18px;
+  width: 65%;
+  animation-delay: 0s;
+}
+
+.ui-skeleton-card__subtitle {
+  height: 12px;
+  width: 35%;
+  animation-delay: 0.08s;
+}
+
+.ui-skeleton-card__metric {
+  height: 28px;
+  width: 50%;
+  animation-delay: 0.16s;
+}
+
+.ui-skeleton-card__bar {
+  height: 12px;
+  width: 100%;
+  animation-delay: 0.24s;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2.5  STATIC MODE — .ui-card--static (G9-12)
+   noAnimation: suprime shimmer + sweep (snap inmediato — tests,
+   stories visuales, capturas deterministas).
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-skeleton-card.ui-card--static .ui-skeleton {
+  animation: none;
+}
+
+.ui-skeleton-card.ui-card--static .ui-skeleton::after {
+  animation: none;
+  display: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  TABLE SKELETON (D2, D8)
+   Composite: mimics table with header + staggered rows.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-skeleton-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ui-skeleton-table__header {
+  height: 40px;
+  width: 100%;
+  animation-delay: 0s;
+}
+
+/* D2: Stagger — each row animates sequentially via CSS var */
+.ui-skeleton-table__row {
+  height: 48px;
+  width: 100%;
+  animation-delay: calc(0.08s + var(--skel-index, 0) * 60ms);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-skeleton {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .ui-skeleton::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.02) 40%,
+    rgba(0, 0, 0, 0.04) 50%,
+    rgba(0, 0, 0, 0.02) 60%,
+    transparent 100%
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-skeleton {
+    animation: none;
+  }
+
+  .ui-skeleton::after {
+    animation: none;
+    display: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .ui-skeleton-card__body {
+    padding: 12px;
+  }
+
+  .ui-skeleton-table__row {
+    height: 40px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  KEYFRAMES (D13)
+   ALL at end, ALL ui-skeleton-* namespaced. Count: 2.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Shimmer — opacity breathing pulse */
+@keyframes ui-skeleton-shimmer {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+
+/* Sweep — light beam crossing the skeleton */
+@keyframes ui-skeleton-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-skeleton,
+  .ui-skeleton-card,
+  .ui-skeleton-table {
+    display: none !important;
+  }
+}

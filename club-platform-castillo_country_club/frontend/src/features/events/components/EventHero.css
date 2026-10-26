@@ -1,0 +1,601 @@
+/* src/features/events/components/EventHero.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Events Domain — Event Hero Component                        */
+/*                                                              */
+/* @namespace  evh-*                                            */
+/* @keyframes  5 (evhReveal, evhMetricIn, evhCapFill,          */
+/*              evhStatusPulse, evhAmbientBreath)               */
+/* @signature  Status aura + category ambient + capacity gauge  */
+/*             + lifecycle bar + metric cascade                 */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Root + Ambient */
+/* §1 Status Aura */
+/* §2 Header */
+/* §3 Description */
+/* §4 Metrics Grid */
+/* §5 Capacity Gauge */
+/* §6 Lifecycle Bar */
+/* §7 Actions */
+/* §8 Keyframes */
+/* §9 Light Mode */
+/* §10 Reduced Motion */
+/* §11 Responsive */
+/* §12 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Root + Ambient                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+.evh {
+  position: relative;
+  padding: 20px;
+  overflow: hidden;
+  animation: evhReveal 0.4s var(--ease-apple) forwards;
+  opacity: 0;
+}
+
+.evh__ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.evh__ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 55% 80% at 0% 0%,
+    color-mix(in srgb, var(--cat-color, var(--color-gold-400)) 8%, transparent) 0%,
+    transparent 65%
+  );
+  animation: evhAmbientBreath 6s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Status Aura                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.evh::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--status-color, var(--color-silver-500));
+  border-radius: 3px 0 0 3px;
+  z-index: 2;
+}
+
+.evh--status-draft     { --status-color: var(--color-silver-500); }
+.evh--status-pending   { --status-color: var(--color-sky-400); }
+.evh--status-approved  { --status-color: var(--color-emerald-400); }
+.evh--status-published { --status-color: var(--color-emerald-400); }
+.evh--status-active    { --status-color: var(--color-gold-400); }
+.evh--status-completed { --status-color: var(--color-emerald-400); }
+.evh--status-cancelled { --status-color: var(--color-rose-400); }
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 Header                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+.evh__header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.evh__icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md, 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: var(--icon-bg, var(--color-surface-3));
+  line-height: 1;
+}
+
+.evh__title-block {
+  flex: 1;
+  min-width: 0;
+}
+
+.evh__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.evh__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 3vw, 1.35rem);
+  font-weight: 700;
+  color: var(--color-silver-100);
+  line-height: 1.2;
+}
+
+/* Active status badges get a subtle pulse */
+.evh--status-active .evh__title-row [class*="ui-badge"],
+.evh--status-published .evh__title-row [class*="ui-badge"] {
+  animation: evhStatusPulse 3s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 Description                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.evh__description {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-silver-400);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 Metrics Grid                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.evh__metrics {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.evh__metric {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.evh-stagger {
+  opacity: 0;
+  animation: evhMetricIn 0.3s var(--ease-apple) forwards;
+  animation-delay: calc(200ms + var(--mi, 0) * 60ms);
+}
+
+.evh__metric-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--color-gold-400);
+}
+
+.evh__metric-body {
+  min-width: 0;
+}
+
+.evh__metric-label {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.evh__metric-value {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.evh__metric-note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  margin-left: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Capacity Gauge                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+.evh__intel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.evh-cap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.evh-cap__track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.evh-cap__fill {
+  height: 100%;
+  border-radius: 3px;
+  width: var(--cap-pct, 0%);
+  animation: evhCapFill 0.6s var(--ease-apple) forwards;
+  animation-delay: 500ms;
+  /* Start at 0, animate to target */
+  --cap-pct-anim: var(--cap-pct, 0%);
+}
+.evh-cap__fill--normal   { background: var(--color-emerald-400); }
+.evh-cap__fill--high     { background: var(--color-amber-400); }
+.evh-cap__fill--critical { background: var(--color-rose-400); }
+
+.evh-cap__count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-silver-300);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.evh-cap__pct {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: right;
+}
+.evh-cap__pct--normal   { color: var(--color-emerald-400); }
+.evh-cap__pct--high     { color: var(--color-amber-400); }
+.evh-cap__pct--critical { color: var(--color-rose-400); }
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Lifecycle Bar                                            */
+/* ─────────────────────────────────────────────────────────── */
+
+.evh-lifecycle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.evh-lifecycle__track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.evh-lifecycle__fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--lc-pct, 0%);
+  background: linear-gradient(
+    90deg,
+    var(--color-silver-500) 0%,
+    var(--color-emerald-400) 100%
+  );
+  transition: width 0.5s var(--ease-apple);
+}
+.evh-lifecycle__fill--cancelled {
+  width: 100%;
+  background: var(--color-rose-400);
+}
+
+.evh-lifecycle__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-transform: capitalize;
+}
+.evh-lifecycle__label--cancelled {
+  color: var(--color-rose-400);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Actions                                                  */
+/* ─────────────────────────────────────────────────────────── */
+
+.evh__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.evh-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm, 8px);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s var(--ease-apple), transform 0.12s var(--ease-apple),
+              box-shadow 0.15s var(--ease-apple);
+}
+.evh-action:hover {
+  transform: translateY(-1px);
+}
+.evh-action:active {
+  transform: translateY(0);
+}
+.evh-action:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.evh-action--primary {
+  background: var(--color-gold-400);
+  color: var(--color-abyss);
+}
+.evh-action--primary:hover {
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-gold-400) 30%, transparent);
+}
+
+.evh-action--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-silver-300);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.evh-action--ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.evh-action__icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Keyframes                                                */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes evhReveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes evhMetricIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes evhCapFill {
+  from { width: 0%; }
+  to   { width: var(--cap-pct, 0%); }
+}
+
+@keyframes evhStatusPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.7; }
+}
+
+@keyframes evhAmbientBreath {
+  0%, 100% { opacity: 0.8; }
+  50%      { opacity: 1.3; }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Light Mode                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .evh::before {
+  opacity: 0.8;
+}
+.light .evh__ambient::after {
+  opacity: 0.5;
+}
+.light .evh__title {
+  color: var(--color-silver-800);
+}
+.light .evh__description {
+  color: var(--color-silver-500);
+}
+.light .evh__metric-label {
+  color: var(--color-silver-400);
+}
+.light .evh__metric-value {
+  color: var(--color-silver-700);
+}
+.light .evh__metric-note {
+  color: var(--color-silver-400);
+}
+.light .evh__metric-icon {
+  color: var(--color-gold-500);
+}
+.light .evh__intel {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .evh-cap__track {
+  background: rgba(0, 0, 0, 0.06);
+}
+.light .evh-cap__count {
+  color: var(--color-silver-600);
+}
+.light .evh-cap__fill--normal { background: #047857; }
+.light .evh-cap__fill--high   { background: #b45309; }
+.light .evh-cap__fill--critical { background: #e11d48; }
+.light .evh-lifecycle__track {
+  background: rgba(0, 0, 0, 0.04);
+}
+.light .evh-lifecycle__label {
+  color: var(--color-silver-500);
+}
+.light .evh-lifecycle__label--cancelled {
+  color: #e11d48;
+}
+.light .evh__actions {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .evh-action--primary {
+  color: white;
+}
+.light .evh-action--ghost {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--color-silver-600);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .evh-action--ghost:hover {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §10 Reduced Motion                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .evh {
+    animation: none !important;
+    opacity: 1;
+  }
+  .evh-stagger {
+    animation: none !important;
+    opacity: 1;
+  }
+  .evh__ambient::after {
+    animation: none;
+  }
+  .evh-cap__fill {
+    animation: none;
+    width: var(--cap-pct, 0%);
+  }
+  .evh-lifecycle__fill {
+    transition: none;
+  }
+  .evh-action {
+    transition: none;
+  }
+  .evh--status-active .evh__title-row [class*="ui-badge"],
+  .evh--status-published .evh__title-row [class*="ui-badge"] {
+    animation: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §11 Responsive                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .evh {
+    padding: 24px;
+  }
+  .evh__icon {
+    width: 56px;
+    height: 56px;
+    font-size: 28px;
+  }
+  .evh__header {
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .evh__metrics {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §12 Print                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  .evh {
+    border: 1px solid #ccc;
+    background: white;
+    animation: none;
+    opacity: 1;
+    padding: 16px;
+  }
+  .evh::before {
+    background: #333;
+  }
+  .evh__ambient {
+    display: none;
+  }
+  .evh__title {
+    color: #111;
+  }
+  .evh__description {
+    color: #444;
+  }
+  .evh__metric-label {
+    color: #666;
+  }
+  .evh__metric-value {
+    color: #222;
+  }
+  .evh__metric-icon {
+    color: #333;
+  }
+  .evh__intel {
+    border-color: #ddd;
+  }
+  .evh-cap__track,
+  .evh-lifecycle__track {
+    background: #e5e7eb;
+  }
+  .evh-cap__fill {
+    animation: none;
+  }
+  .evh-stagger {
+    animation: none;
+    opacity: 1;
+  }
+  .evh__actions {
+    border-color: #ddd;
+  }
+  .evh-action--primary {
+    background: #333;
+    color: white;
+  }
+  .evh-action--ghost {
+    background: white;
+    color: #333;
+    border-color: #ccc;
+  }
+}

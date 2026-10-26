@@ -1,0 +1,287 @@
+/**
+ * @component ReportGenerator (Fase 19q)
+ * @namespace .glass-report-*
+ * @depends globals.css (glass tokens, color-mix, font tokens)
+ * @note --glass-shadow-hover pendiente de definicion en globals.css
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   Fase 19q — Report Generator
+   Panel · preview · section · brief · distribution · timeline
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Report Panel ── */
+
+.glass-report-panel {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-report-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Glass Report Card ── */
+
+.glass-report-card {
+  position: relative;
+  backdrop-filter: blur(8px) saturate(1.03);
+  -webkit-backdrop-filter: blur(8px) saturate(1.03);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-report-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glass-report-card:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
+}
+
+/* ── Preview Skeleton Lines ── */
+
+.glass-report-preview-line {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  animation: report-preview-shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes report-preview-shimmer {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+/* ── Smart Section Chip ── */
+
+.glass-report-section-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--color-surface-1);
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 36px;
+}
+
+.glass-report-section-chip:hover {
+  background: var(--color-surface-2);
+  color: var(--color-silver-200);
+}
+
+.glass-report-section-chip--included {
+  border-color: var(--color-gold-400);
+  background: rgba(201, 169, 110, 0.08);
+  color: var(--color-silver-200);
+}
+
+.glass-report-section-chip--suggested {
+  border-color: var(--color-teal-400);
+  animation: report-section-suggest 2s ease-in-out infinite;
+}
+
+@keyframes report-section-suggest {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 8px rgba(42, 154, 181, 0.2); }
+}
+
+/* ── Brief Card ── */
+
+.glass-report-brief {
+  position: relative;
+  backdrop-filter: blur(12px) saturate(1.06);
+  -webkit-backdrop-filter: blur(12px) saturate(1.06);
+  background: rgba(201, 169, 110, 0.04);
+  border: 1px solid rgba(201, 169, 110, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.glass-report-brief::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: 10%;
+  right: 10%;
+  height: 80%;
+  background: radial-gradient(ellipse, rgba(201, 169, 110, 0.06), transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Distribution Channel ── */
+
+.glass-report-channel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 44px;
+  width: 100%;
+  text-align: left;
+}
+
+.glass-report-channel:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.glass-report-channel--active {
+  border-color: var(--color-gold-400);
+  background: rgba(201, 169, 110, 0.06);
+}
+
+/* ── Timeline Node ── */
+
+.glass-report-timeline {
+  position: relative;
+  padding-left: 20px;
+}
+
+.glass-report-timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 7px;
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(201, 169, 110, 0.3), rgba(201, 169, 110, 0.05));
+}
+
+.glass-report-timeline__node {
+  position: relative;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  overflow: hidden;
+}
+
+.glass-report-timeline__node:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.glass-report-timeline__node::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: -17px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-gold-400);
+  box-shadow: 0 0 6px rgba(201, 169, 110, 0.3);
+}
+
+.glass-report-timeline__node::after {
+  content: '';
+  position: absolute;
+  top: 17px;
+  left: -9px;
+  width: 9px;
+  height: 1px;
+  background: rgba(201, 169, 110, 0.3);
+}
+
+/* ── Light Mode Overrides ── */
+
+.light .glass-report-panel {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-report-card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-report-section-chip {
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.light .glass-report-section-chip--included {
+  background: rgba(201, 169, 110, 0.06);
+}
+
+.light .glass-report-section-chip--suggested {
+  animation: none;
+}
+
+.light .glass-report-brief {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+}
+
+.light .glass-report-brief::before {
+  display: none;
+}
+
+.light .glass-report-channel {
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+}
+
+.light .glass-report-channel--active {
+  background: rgba(201, 169, 110, 0.04);
+}
+
+.light .glass-report-timeline__node {
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+}
+
+.light .glass-report-timeline__node::before {
+  box-shadow: none;
+}
+
+.light .glass-report-preview-line {
+  background: rgba(0, 0, 0, 0.06);
+  animation: none;
+  opacity: 0.4;
+}

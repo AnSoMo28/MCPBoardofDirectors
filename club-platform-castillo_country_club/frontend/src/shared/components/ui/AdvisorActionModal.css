@@ -1,0 +1,743 @@
+/**
+ * AdvisorActionModal.css
+ * src/shared/components/ui/AdvisorActionModal.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-aam
+ * @keyframes   4 (ui-aam-contentReveal, ui-aam-hitl-pulse,
+ *                 ui-aam-countdown-spin, ui-aam-spin)
+ * @signature   Approval-level chromatic border + HITL pulse glow
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  backdrop-filter + -webkit + translucent bg
+ * D2 Stagger  ✓  body sections cascade on entrance
+ * D3 Easing   ✓  Apple cubic-bezier(0.32, 0.72, 0, 1)
+ * D4 Typo     ✓  mono labels, display title, ui body
+ * D5 Color    ✓  data-domain, color-mix, tokens only
+ * D6 Pseudo   ✓  ::before edge light, ::after noise texture
+ * D7 Interact ✓  hover, focus-visible, active, disabled
+ * D8 Density  ✓  14px body gap, 10px context gap
+ * D9 Response ✓  768px tablet, 480px bottom sheet
+ * D10 A11y    ✓  focus-visible, aria-live, role
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  4 namespaced at end, before media queries
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  OVERLAY
+   Full-screen backdrop. z-index: 90 (above all chrome).
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.ui-aam__overlay--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  PANEL — Glass Surface (D1, D6, D3)
+   Translucent gradient. Edge light (::before). Noise texture (::after).
+   Apple easing on entrance transition.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__panel {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: var(--radius-lg, 12px);
+  z-index: 1;
+  background: linear-gradient(
+    168deg,
+    rgba(30, 38, 52, 0.96) 0%,
+    rgba(18, 24, 38, 0.97) 40%,
+    rgba(14, 18, 28, 0.98) 100%
+  );
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 3px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  /* Entrance — starts hidden, transitions to visible */
+  opacity: 0;
+  transform: scale(0.95) translateY(8px);
+  transition:
+    opacity 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ui-aam__panel--visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* D6: Edge light — gold gradient at top */
+.ui-aam__panel::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(201, 169, 110, 0.30) 25%,
+    rgba(201, 169, 110, 0.18) 50%,
+    rgba(201, 169, 110, 0.08) 75%,
+    transparent 100%
+  );
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* D6: Noise texture — atmospheric depth */
+.ui-aam__panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  APPROVAL LEVEL VARIANTS (D5)
+   Data-driven border-top color + box-shadow glow.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam--auto {
+  border-top-color: var(--color-emerald-400);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 30px -10px rgba(61, 170, 112, 0.10),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
+
+.ui-aam--semi {
+  border-top-color: var(--color-amber-400);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 30px -10px rgba(212, 168, 64, 0.10),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
+
+.ui-aam--hitl {
+  border-top-color: var(--color-rose-400);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 30px -10px rgba(232, 93, 110, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  animation: ui-aam-hitl-pulse 2.5s ease-in-out infinite;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  CLOSE BUTTON (D7)
+   Hover + focus-visible + active + disabled.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-silver-400);
+  z-index: 10;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ui-aam__close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-silver-200);
+}
+
+.ui-aam__close:active {
+  transform: scale(0.95);
+}
+
+.ui-aam__close:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.ui-aam__close:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  BODY — Stagger Cascade (D2, D8)
+   Content wraps the badge, header, context, state, and actions.
+   Stagger: each section fades in sequentially on panel open.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__body {
+  position: relative;
+  z-index: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* D2: Stagger cascade — each section enters sequentially */
+.ui-aam__panel--visible .ui-aam__badge-row {
+  opacity: 0;
+  animation: ui-aam-contentReveal 0.3s ease forwards;
+  animation-delay: 0.05s;
+}
+
+.ui-aam__panel--visible .ui-aam__header {
+  opacity: 0;
+  animation: ui-aam-contentReveal 0.3s ease forwards;
+  animation-delay: 0.10s;
+}
+
+.ui-aam__panel--visible .ui-aam__context {
+  opacity: 0;
+  animation: ui-aam-contentReveal 0.3s ease forwards;
+  animation-delay: 0.15s;
+}
+
+.ui-aam__panel--visible .ui-aam__actions {
+  opacity: 0;
+  animation: ui-aam-contentReveal 0.3s ease forwards;
+  animation-delay: 0.20s;
+}
+
+/* Dynamic states (error/success) — independent entrance */
+.ui-aam__state {
+  opacity: 0;
+  animation: ui-aam-contentReveal 0.25s ease forwards;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  BADGE (D4, D5)
+   Mono font, compact, color-mix backgrounds per approval level.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-aam__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.ui-aam__badge--auto {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 12%, transparent);
+}
+
+.ui-aam__badge--semi {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+
+.ui-aam__badge--hitl {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  TITLE + REASONING (D4)
+   Display font for title. UI font for reasoning body text.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ui-aam__title {
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--color-silver-100);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.ui-aam__reasoning {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+  line-height: 1.5;
+  margin: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  CONTEXT CARD (D6, D8)
+   Glass sub-surface with gold border-left accent.
+   Dense spacing for label-value rows.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__context {
+  padding: 12px;
+  border-radius: var(--radius-md, 10px);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 3px solid rgba(201, 169, 110, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ui-aam__context-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ui-aam__context-label {
+  font-size: 9px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--color-silver-500);
+  width: 72px;
+  flex-shrink: 0;
+  padding-top: 2px;
+  line-height: 1;
+}
+
+.ui-aam__context-value {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.ui-aam__context-value--insight {
+  color: var(--color-silver-200);
+}
+
+.ui-aam__context-value--impact {
+  color: var(--color-emerald-400);
+  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.ui-aam__context-value--risk {
+  color: var(--color-amber-400);
+  font-size: 12px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  DOMAIN CHIP (D5)
+   Data-attribute driven colors. No inline styles.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__domain-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border: 1px solid;
+  opacity: 0.8;
+}
+
+.ui-aam__domain-chip[data-domain="gold"] {
+  color: var(--color-gold-400);
+  border-color: var(--color-gold-400);
+}
+
+.ui-aam__domain-chip[data-domain="teal"] {
+  color: var(--color-teal-400);
+  border-color: var(--color-teal-400);
+}
+
+.ui-aam__domain-chip[data-domain="amber"] {
+  color: var(--color-amber-400);
+  border-color: var(--color-amber-400);
+}
+
+.ui-aam__domain-chip[data-domain="silver"] {
+  color: var(--color-silver-400);
+  border-color: var(--color-silver-400);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  ERROR / SUCCESS STATES (D5, D10)
+   color-mix backgrounds. Semantic border-left.
+   aria-live ensures screen readers announce changes.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__state {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-md, 10px);
+}
+
+.ui-aam__state p {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.ui-aam__state--error {
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+  color: var(--color-rose-400);
+}
+
+.ui-aam__state--success {
+  background: color-mix(in srgb, var(--color-emerald-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+  color: var(--color-emerald-400);
+}
+
+.ui-aam__timestamp {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §10  ACTIONS (D7, D8)
+   Flex row. Touch-safe targets.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.ui-aam__action-btn {
+  min-height: 44px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §11  COUNTDOWN + SPINNER
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-aam__countdown {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  font-size: 0;
+  animation: ui-aam-countdown-spin 1s linear infinite;
+}
+
+.ui-aam__spinner {
+  animation: ui-aam-spin 0.8s linear infinite;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §12  KEYFRAMES (D13)
+   ALL at end, ALL ui-aam-* namespaced. Count: 4.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Stagger reveal — fade up */
+@keyframes ui-aam-contentReveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* HITL approval — pulsing glow */
+@keyframes ui-aam-hitl-pulse {
+  0%, 100% {
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.5),
+      0 0 30px -10px rgba(232, 93, 110, 0.12),
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  }
+  50% {
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.5),
+      0 0 40px -8px rgba(232, 93, 110, 0.20),
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  }
+}
+
+/* Countdown ring — continuous spin */
+@keyframes ui-aam-countdown-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Loading spinner — continuous spin */
+@keyframes ui-aam-spin {
+  to { transform: rotate(360deg); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §13  LIGHT MODE (D11)
+   .light prefix overrides.
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-aam__panel {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.light .ui-aam__panel::before {
+  display: none;
+}
+
+.light .ui-aam__panel::after {
+  display: none;
+}
+
+.light .ui-aam--auto {
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 0 30px -10px rgba(61, 170, 112, 0.06);
+}
+
+.light .ui-aam--semi {
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 0 30px -10px rgba(212, 168, 64, 0.06);
+}
+
+.light .ui-aam--hitl {
+  animation: none;
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 0 30px -10px rgba(232, 93, 110, 0.08);
+}
+
+.light .ui-aam__close {
+  color: var(--color-silver-500);
+}
+
+.light .ui-aam__close:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-700);
+}
+
+.light .ui-aam__title {
+  color: var(--color-silver-800);
+}
+
+.light .ui-aam__reasoning {
+  color: var(--color-silver-600);
+}
+
+.light .ui-aam__context {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+  border-left-color: rgba(201, 169, 110, 0.2);
+}
+
+.light .ui-aam__context-label {
+  color: var(--color-silver-500);
+}
+
+.light .ui-aam__context-value--insight {
+  color: var(--color-silver-800);
+}
+
+.light .ui-aam__state--error {
+  background: color-mix(in srgb, var(--color-rose-400) 6%, transparent);
+  border-color: color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+}
+
+.light .ui-aam__state--success {
+  background: color-mix(in srgb, var(--color-emerald-400) 6%, transparent);
+  border-color: color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+}
+
+.light .ui-aam__timestamp {
+  color: var(--color-silver-400);
+}
+
+.light .ui-aam__overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §14  REDUCED MOTION (D12)
+   Kill all animations and transitions.
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-aam__overlay {
+    transition: none;
+  }
+
+  .ui-aam__panel {
+    transition: none;
+  }
+
+  .ui-aam__panel--visible .ui-aam__badge-row,
+  .ui-aam__panel--visible .ui-aam__header,
+  .ui-aam__panel--visible .ui-aam__context,
+  .ui-aam__panel--visible .ui-aam__actions,
+  .ui-aam__state {
+    opacity: 1;
+    animation: none;
+    transform: none;
+  }
+
+  .ui-aam--hitl {
+    animation: none;
+  }
+
+  .ui-aam__countdown,
+  .ui-aam__spinner {
+    animation: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §15  RESPONSIVE (D9)
+   768px: tighter padding. 480px: bottom sheet.
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .ui-aam__panel {
+    max-width: 100%;
+    max-height: 90vh;
+  }
+
+  .ui-aam__body {
+    padding: 20px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ui-aam__overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .ui-aam__panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 100%;
+    width: 100%;
+    max-height: 85vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform-origin: bottom center;
+  }
+
+  /* Override entrance for bottom sheet — slide up instead of scale */
+  .ui-aam__panel:not(.ui-aam__panel--visible) {
+    transform: translateY(100%);
+  }
+
+  .ui-aam__panel--visible {
+    transform: translateY(0);
+  }
+
+  .ui-aam__body {
+    padding: 20px 16px;
+  }
+
+  .ui-aam__actions {
+    flex-direction: column;
+  }
+
+  .ui-aam__action-btn {
+    width: 100%;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §16  PRINT (D12)
+   Hide modal during print.
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-aam__overlay {
+    display: none !important;
+  }
+}

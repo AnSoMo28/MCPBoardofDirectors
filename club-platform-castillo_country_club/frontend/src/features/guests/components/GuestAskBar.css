@@ -1,0 +1,522 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/GuestAskBar.css
+   Phase 34 "The Gateway" — Capa 5: Conversation Intelligence
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-askbar
+   Glass: .glass-gst-askbar
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-askbar {
+  --glass-gst-askbar-version: 1;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-askbar-bg: rgba(18, 18, 26, 0.5);
+  --gst-askbar-border: rgba(255, 255, 255, 0.06);
+  --gst-askbar-text-primary: #f0ece4;
+  --gst-askbar-text-muted: #7a7570;
+  --gst-askbar-input-bg: rgba(255, 255, 255, 0.04);
+  --gst-askbar-input-border: rgba(255, 255, 255, 0.08);
+  --gst-askbar-input-focus-border: var(--gst-accent);
+  --gst-askbar-user-bg: rgba(212, 168, 83, 0.08);
+  --gst-askbar-user-border: rgba(212, 168, 83, 0.15);
+  --gst-askbar-concierge-bg: rgba(255, 255, 255, 0.03);
+  --gst-askbar-concierge-border: rgba(255, 255, 255, 0.04);
+  --gst-askbar-radius: 16px;
+  --gst-askbar-message-radius: 12px;
+  --gst-askbar-input-radius: 10px;
+}
+
+/* ── Base ── */
+.gst-askbar {
+  position: relative;
+  background: var(--gst-askbar-bg);
+  border: 1px solid var(--gst-askbar-border);
+  border-radius: var(--gst-askbar-radius);
+  padding: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  max-height: 600px;
+  opacity: 0;
+  animation: gst-askbar-fadeIn 0.5s ease 0.5s forwards;
+}
+
+.gst-askbar[data-state="loading"] {
+  align-items: center;
+  justify-content: center;
+  animation: none;
+  opacity: 1;
+}
+
+/* ── Header ── */
+.gst-askbar__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 20px 24px 12px 24px;
+  border-bottom: 1px solid var(--gst-askbar-border);
+}
+
+.gst-askbar__title {
+  font-family: var(--font-display, "Italiana");
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--gst-askbar-text-primary);
+  margin: 0;
+}
+
+.gst-askbar__exchange-count {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  color: var(--gst-askbar-text-muted);
+}
+
+/* ── Messages Area ── */
+.gst-askbar__messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scroll-behavior: smooth;
+}
+
+.gst-askbar__exchange {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Messages ── */
+.gst-askbar__message {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: var(--gst-askbar-message-radius);
+  opacity: 0;
+  animation: gst-askbar-msg-in 0.3s ease forwards;
+}
+
+.gst-askbar__message[data-role="user"] {
+  align-self: flex-end;
+  background: var(--gst-askbar-user-bg);
+  border: 1px solid var(--gst-askbar-user-border);
+  border-bottom-right-radius: 4px;
+}
+
+.gst-askbar__message[data-role="concierge"] {
+  align-self: flex-start;
+  background: var(--gst-askbar-concierge-bg);
+  border: 1px solid var(--gst-askbar-concierge-border);
+  border-bottom-left-radius: 4px;
+  max-width: 95%;
+}
+
+.gst-askbar__message-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--gst-askbar-text-primary);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ── Typing Cursor ── */
+.gst-askbar__cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--gst-accent);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: gst-askbar-blink 0.7s step-end infinite;
+}
+
+/* ── Data Sources ── */
+.gst-askbar__sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.gst-askbar__source-tag {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--gst-askbar-text-muted);
+}
+
+/* ── Action Buttons ── */
+.gst-askbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gst-askbar__action {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--gst-askbar-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--gst-askbar-text-primary);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  outline: none;
+}
+
+.gst-askbar__action:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--gst-accent);
+}
+
+.gst-askbar__action:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+.gst-askbar__action:active {
+  transform: scale(0.97);
+}
+
+.gst-askbar__action[data-variant="primary"] {
+  background: rgba(212, 168, 83, 0.12);
+  border-color: rgba(212, 168, 83, 0.25);
+  color: var(--gst-accent);
+}
+
+.gst-askbar__action[data-variant="primary"]:hover {
+  background: rgba(212, 168, 83, 0.2);
+  border-color: var(--gst-accent);
+}
+
+/* ── Suggestions ── */
+.gst-askbar__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 24px;
+  justify-content: center;
+}
+
+.gst-askbar__suggestion {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--gst-askbar-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--gst-askbar-text-primary);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, letter-spacing 0.3s ease;
+  outline: none;
+}
+
+.gst-askbar__suggestion:hover {
+  background: rgba(212, 168, 83, 0.08);
+  border-color: var(--gst-accent);
+  letter-spacing: 0.02em;
+}
+
+.gst-askbar__suggestion:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+.gst-askbar__suggestion:active {
+  transform: scale(0.97);
+}
+
+/* ── Input Area ── */
+.gst-askbar__input-area {
+  display: flex;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--gst-askbar-border);
+}
+
+.gst-askbar__input {
+  flex: 1;
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: var(--gst-askbar-input-radius);
+  border: 1px solid var(--gst-askbar-input-border);
+  background: var(--gst-askbar-input-bg);
+  color: var(--gst-askbar-text-primary);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.gst-askbar__input::placeholder {
+  color: var(--gst-askbar-text-muted);
+  opacity: 0.6;
+}
+
+.gst-askbar__input:focus {
+  border-color: var(--gst-askbar-input-focus-border);
+}
+
+.gst-askbar__input:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+.gst-askbar__input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gst-askbar__send {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: var(--gst-askbar-input-radius);
+  border: 1px solid var(--gst-accent);
+  background: rgba(212, 168, 83, 0.12);
+  color: var(--gst-accent);
+  cursor: pointer;
+  transition: background 0.2s ease, letter-spacing 0.3s ease;
+  outline: none;
+  white-space: nowrap;
+}
+
+.gst-askbar__send:hover:not(:disabled) {
+  background: rgba(212, 168, 83, 0.2);
+  letter-spacing: 0.04em;
+}
+
+.gst-askbar__send:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+.gst-askbar__send:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.gst-askbar__send:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: var(--gst-askbar-border);
+  background: transparent;
+  color: var(--gst-askbar-text-muted);
+}
+
+/* ── Loading State ── */
+.gst-askbar__loading-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 14px;
+  color: var(--gst-askbar-text-muted);
+}
+
+/* ── Error State ── */
+.gst-askbar__error {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 13px;
+  color: var(--gst-severity-high);
+  padding: 12px 24px;
+  margin: 0;
+  border-top: 1px solid rgba(231, 76, 60, 0.15);
+}
+
+/* ── Animations ── */
+@keyframes gst-askbar-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gst-askbar-msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gst-askbar-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-askbar {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-askbar__message {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-askbar__cursor {
+  animation: none;
+  display: none;
+}
+
+/* ── Light Mode ── */
+.light .gst-askbar {
+  --gst-askbar-bg: rgba(255, 255, 255, 0.85);
+  --gst-askbar-border: rgba(0, 0, 0, 0.08);
+  --gst-askbar-text-primary: #1a1a2e;
+  --gst-askbar-text-muted: #6b6b78;
+  --gst-askbar-input-bg: rgba(0, 0, 0, 0.03);
+  --gst-askbar-input-border: rgba(0, 0, 0, 0.1);
+  --gst-askbar-user-bg: rgba(139, 105, 20, 0.06);
+  --gst-askbar-user-border: rgba(139, 105, 20, 0.12);
+  --gst-askbar-concierge-bg: rgba(0, 0, 0, 0.02);
+  --gst-askbar-concierge-border: rgba(0, 0, 0, 0.04);
+}
+
+.light .gst-askbar__source-tag {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .gst-askbar__action {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .gst-askbar__action[data-variant="primary"] {
+  background: rgba(139, 105, 20, 0.08);
+  border-color: rgba(139, 105, 20, 0.2);
+  color: #8b6914;
+}
+
+.light .gst-askbar__suggestion {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .gst-askbar__suggestion:hover {
+  background: rgba(139, 105, 20, 0.06);
+}
+
+.light .gst-askbar__send {
+  border-color: #8b6914;
+  background: rgba(139, 105, 20, 0.08);
+  color: #8b6914;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-askbar {
+    min-height: 300px;
+    max-height: 500px;
+  }
+
+  .gst-askbar__header {
+    padding: 16px 16px 10px 16px;
+  }
+
+  .gst-askbar__title {
+    font-size: 17px;
+  }
+
+  .gst-askbar__messages {
+    padding: 12px 16px;
+  }
+
+  .gst-askbar__message {
+    max-width: 95%;
+  }
+
+  .gst-askbar__suggestions {
+    padding: 12px 16px;
+    gap: 6px;
+  }
+
+  .gst-askbar__suggestion {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .gst-askbar__input-area {
+    padding: 12px 16px;
+  }
+
+  .gst-askbar__input {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .gst-askbar__send {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-askbar__title {
+    font-size: 18px;
+  }
+
+  .gst-askbar__message-text {
+    font-size: 13px;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-askbar {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+    min-height: auto;
+    max-height: none;
+  }
+
+  .gst-askbar__input-area {
+    display: none;
+  }
+
+  .gst-askbar__suggestions {
+    display: none;
+  }
+
+  .gst-askbar__message-text {
+    color: #000;
+  }
+
+  .gst-askbar__cursor {
+    display: none;
+  }
+
+  .gst-askbar__action {
+    border-color: #999;
+    color: #333;
+  }
+}

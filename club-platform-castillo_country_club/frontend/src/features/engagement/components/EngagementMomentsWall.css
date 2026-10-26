@@ -1,0 +1,563 @@
+/* src/features/engagement/components/EngagementMomentsWall.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Glass namespace: glass-eng-moments                          */
+/* "The Moments Wall" — Critical relationship moments          */
+/* ═══════════════════════════════════════════════════════════ */
+
+[data-glass-eng-moments] {
+  --local-surface: var(--color-surface-1, #1a1a1a);
+  --local-surface-hover: var(--color-surface-2, #222222);
+  --local-border: rgba(255, 255, 255, 0.06);
+  --local-text: var(--color-silver-200, #e0dcd4);
+  --local-text-muted: var(--color-silver-400, #8a8580);
+  --local-text-dim: var(--color-silver-500, #6a6560);
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
+
+.eng-moments {
+  background: var(--local-surface);
+  border: 1px solid var(--local-border);
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  animation: eng-moments-fadeUp 0.6s ease forwards;
+  animation-delay: 0.5s;
+}
+
+/* ── State accent ───────────────────────────────────────── */
+
+[data-glass-eng-moments][data-outcome="positive"] {
+  border-left: 3px solid var(--color-emerald-400);
+}
+
+[data-glass-eng-moments][data-outcome="negative"] {
+  border-left: 3px solid var(--color-rose-400);
+}
+
+[data-glass-eng-moments][data-outcome="mixed"] {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.eng-moments__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--local-border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.eng-moments__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--local-text);
+}
+
+.eng-moments__header-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eng-moments__stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.eng-moments__stat--positive {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+
+.eng-moments__stat--negative {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+
+.eng-moments__stat--predicted {
+  color: var(--color-silver-400);
+  background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+}
+
+/* ── Timeline ───────────────────────────────────────────── */
+
+.eng-moments__timeline {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Item ───────────────────────────────────────────────── */
+
+.eng-moments__item {
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  animation: eng-moments-slideIn 0.5s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.1s + 0.2s);
+}
+
+.eng-moments__item--predicted {
+  opacity: 0.6;
+  animation-delay: calc(var(--stagger-i, 0) * 0.1s + 0.4s);
+}
+
+/* ── Connector (timeline spine) ─────────────────────────── */
+
+.eng-moments__connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  padding-top: 14px;
+}
+
+.eng-moments__connector-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px color-mix(in srgb, currentColor 30%, transparent);
+}
+
+.eng-moments__connector-dot--predicted {
+  width: 8px;
+  height: 8px;
+  border: 2px dashed var(--color-silver-500);
+  background: transparent;
+  box-shadow: none;
+}
+
+.eng-moments__connector-line {
+  width: 1px;
+  flex: 1;
+  min-height: 12px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.03)
+  );
+}
+
+.eng-moments__connector--predicted .eng-moments__connector-line {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.01)
+  );
+}
+
+/* ── Card ───────────────────────────────────────────────── */
+
+.eng-moments__card {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--local-border);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+}
+
+.eng-moments__card:hover {
+  background: var(--local-surface-hover);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.eng-moments__card:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+/* ── Card: Impact sizing ────────────────────────────────── */
+
+.eng-moments__item[data-impact="xl"] .eng-moments__card {
+  padding: 16px 16px;
+}
+
+.eng-moments__item[data-impact="xl"] .eng-moments__card-description {
+  font-size: 13px;
+}
+
+.eng-moments__item[data-impact="sm"] .eng-moments__card {
+  padding: 8px 12px;
+}
+
+.eng-moments__item[data-impact="sm"] .eng-moments__card-description {
+  font-size: 11px;
+  -webkit-line-clamp: 1;
+}
+
+/* ── Card: Predicted (ghost) ────────────────────────────── */
+
+.eng-moments__card--predicted {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.04);
+  cursor: default;
+}
+
+.eng-moments__card--predicted:hover {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.06);
+  transform: none;
+}
+
+/* ── Card: Header ───────────────────────────────────────── */
+
+.eng-moments__card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.eng-moments__card-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.eng-moments__card-icon--predicted {
+  color: var(--color-silver-400);
+}
+
+.eng-moments__card-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eng-moments__card-type {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.eng-moments__card-type--predicted {
+  color: var(--color-silver-400);
+  font-style: italic;
+}
+
+.eng-moments__card-family {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--local-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eng-moments__card-date {
+  flex-shrink: 0;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.eng-moments__card-date-absolute {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--local-text);
+}
+
+.eng-moments__card-date-relative {
+  font-size: 9px;
+  color: var(--local-text-dim);
+}
+
+/* ── Card: Description ──────────────────────────────────── */
+
+.eng-moments__card-description {
+  font-size: 12px;
+  color: var(--local-text-muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+/* ── Card: Impact + Sentiment strip ─────────────────────── */
+
+.eng-moments__card-strip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.eng-moments__card-impact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.eng-moments__card-impact-label {
+  font-size: 9px;
+  color: var(--local-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.eng-moments__card-impact-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  max-width: 80px;
+}
+
+.eng-moments__card-impact-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+.eng-moments__card-impact-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.eng-moments__card-sentiment {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.eng-moments__card-sentiment-delta {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.eng-moments__card-sentiment-label {
+  font-size: 9px;
+  color: var(--local-text-dim);
+}
+
+.eng-moments__card-confidence {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  color: var(--color-silver-400);
+}
+
+/* ── Card: Expanded details ─────────────────────────────── */
+
+.eng-moments__card-expanded {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--local-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  animation: eng-moments-expandIn 0.2s ease forwards;
+}
+
+.eng-moments__card-expanded-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--local-text-muted);
+}
+
+.eng-moments__card-expanded-row span:last-child {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-weight: 600;
+  color: var(--local-text);
+}
+
+/* ── Expand/Collapse ────────────────────────────────────── */
+
+.eng-moments__expand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: 1px dashed var(--local-border);
+  background: transparent;
+  color: var(--local-text-muted);
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.eng-moments__expand:hover {
+  background: var(--local-surface-hover);
+  color: var(--local-text);
+}
+
+/* ── Summary footer ─────────────────────────────────────── */
+
+.eng-moments__summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid var(--local-border);
+  margin-top: 10px;
+}
+
+.eng-moments__summary-item {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  color: var(--local-text-dim);
+}
+
+.eng-moments__summary-item strong {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  color: var(--local-text);
+  font-weight: 600;
+}
+
+/* ── Keyframes ──────────────────────────────────────────── */
+
+@keyframes eng-moments-fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes eng-moments-slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes eng-moments-expandIn {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 100px;
+  }
+}
+
+/* ── Light Mode ─────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  [data-glass-eng-moments] {
+    --local-surface: #ffffff;
+    --local-surface-hover: #f5f3f0;
+    --local-border: rgba(0, 0, 0, 0.08);
+    --local-text: #1a1a1a;
+    --local-text-muted: #5a5550;
+    --local-text-dim: #8a8580;
+  }
+
+  .eng-moments__connector-line {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.08),
+      rgba(0, 0, 0, 0.02)
+    );
+  }
+}
+
+/* ── Reduced Motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .eng-moments {
+    animation: none;
+    opacity: 1;
+  }
+
+  .eng-moments__item {
+    animation: none;
+    opacity: 1;
+  }
+
+  .eng-moments__item--predicted {
+    opacity: 0.6;
+  }
+
+  .eng-moments__card-expanded {
+    animation: none;
+    opacity: 1;
+  }
+
+  .eng-moments__card:hover {
+    transform: none;
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .eng-moments {
+    padding: 16px;
+  }
+
+  .eng-moments__card {
+    padding: 10px 12px;
+  }
+
+  .eng-moments__card-description {
+    -webkit-line-clamp: 1;
+  }
+
+  .eng-moments__card-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}

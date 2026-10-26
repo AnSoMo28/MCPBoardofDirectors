@@ -1,0 +1,426 @@
+/* src/features/events/components/RsvpBoard.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Events Domain — RSVP Board                                   */
+/*                                                              */
+/* @namespace  rsvpb-*                                          */
+/* @keyframes  2 (rsvpbReveal, rsvpbRowIn)                     */
+/* @signature  Status chips + mini-bars + family avatar         */
+/*             + status left-border + row stagger cascade       */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Root */
+/* §1 Summary Bar + Chips */
+/* §2 Rows Container */
+/* §3 RSVP Row */
+/* §4 Row Avatar */
+/* §5 Row Info */
+/* §6 Row Right (desktop) */
+/* §7 Row Status Borders */
+/* §8 Empty State */
+/* §9 Keyframes */
+/* §10 Light Mode */
+/* §11 Reduced Motion */
+/* §12 Responsive */
+/* §13 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Root                                                     */
+/* ─────────────────────────────────────────────────────────── */
+
+.rsvpb {
+  display: flex;
+  flex-direction: column;
+  animation: rsvpbReveal 0.4s var(--ease-apple) forwards;
+  opacity: 0;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Summary Bar + Chips                                      */
+/* ─────────────────────────────────────────────────────────── */
+
+.rsvpb-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+}
+
+.rsvpb-chip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+  border-radius: var(--radius-sm, 6px);
+  min-width: 100px;
+  flex: 1;
+}
+
+.rsvpb-chip__bar {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.rsvpb-chip__fill {
+  height: 100%;
+  background: color-mix(in srgb, var(--chip-color, var(--color-silver-500)) 8%, transparent);
+  transition: width 0.5s var(--ease-apple);
+}
+
+.rsvpb-chip__content {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.rsvpb-chip__icon {
+  color: var(--chip-color, var(--color-silver-400));
+  flex-shrink: 0;
+}
+
+.rsvpb-chip__count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--chip-color, var(--color-silver-300));
+  line-height: 1;
+}
+
+.rsvpb-chip__label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-500);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 Rows Container                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+.rsvpb__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 RSVP Row                                                 */
+/* ─────────────────────────────────────────────────────────── */
+
+.rsvpb-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 3px solid var(--status-color, transparent);
+  cursor: default;
+  transition:
+    background 0.15s var(--ease-apple),
+    transform 0.15s var(--ease-apple);
+}
+.rsvpb-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+  transform: translateY(-1px);
+}
+.rsvpb-row:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: -2px;
+}
+
+.rsvpb-row:last-child {
+  border-bottom: none;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 Row Avatar                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+.rsvpb-row__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--status-color, var(--color-silver-500)) 12%, transparent);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.rsvpb-row__initials {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--status-color, var(--color-silver-400));
+  line-height: 1;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Row Info                                                 */
+/* ─────────────────────────────────────────────────────────── */
+
+.rsvpb-row__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.rsvpb-row__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.rsvpb-row__name {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.rsvpb-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-400);
+  line-height: 1.3;
+}
+
+.rsvpb-row__meta-desktop {
+  display: none;
+}
+
+.rsvpb-row__notes {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-500);
+  font-style: italic;
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Row Right (desktop only)                                 */
+/* ─────────────────────────────────────────────────────────── */
+
+.rsvpb-row__right {
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.rsvpb-row__cost {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-silver-400);
+  line-height: 1.3;
+}
+
+.rsvpb-row__time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-600);
+  line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Row Status Borders                                       */
+/* ─────────────────────────────────────────────────────────── */
+
+.rsvpb-row--confirmed { --status-color: var(--color-emerald-400); }
+.rsvpb-row--pending   { --status-color: var(--color-amber-400); }
+.rsvpb-row--waitlisted{ --status-color: var(--color-teal-400); }
+.rsvpb-row--declined  { --status-color: var(--color-rose-400); }
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Empty State                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.rsvpb__empty-icon {
+  width: 48px;
+  height: 48px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Keyframes                                                */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes rsvpbReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rsvpbRowIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.rsvpb-row.rsvpb-stagger {
+  opacity: 0;
+  animation: rsvpbRowIn 0.25s var(--ease-apple) forwards;
+  animation-delay: calc(80ms + var(--row-i, 0) * 40ms);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §10 Light Mode                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .rsvpb-summary {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .rsvpb-chip__bar {
+  background: rgba(0, 0, 0, 0.02);
+}
+.light .rsvpb-chip__fill {
+  background: color-mix(in srgb, var(--chip-color, var(--color-silver-500)) 5%, transparent);
+}
+.light .rsvpb-chip__count {
+  color: var(--color-silver-700);
+}
+.light .rsvpb-chip__label {
+  color: var(--color-silver-500);
+}
+.light .rsvpb-row {
+  border-color: rgba(0, 0, 0, 0.06);
+  border-left-color: var(--status-color);
+}
+.light .rsvpb-row:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+.light .rsvpb-row__name {
+  color: var(--color-silver-800);
+}
+.light .rsvpb-row__meta {
+  color: var(--color-silver-500);
+}
+.light .rsvpb-row__notes {
+  color: var(--color-silver-500);
+}
+.light .rsvpb-row__cost {
+  color: var(--color-silver-600);
+}
+.light .rsvpb-row__time {
+  color: var(--color-silver-400);
+}
+.light .rsvpb-row__avatar {
+  background: color-mix(in srgb, var(--status-color, var(--color-silver-500)) 8%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §11 Reduced Motion                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .rsvpb,
+  .rsvpb-row.rsvpb-stagger {
+    animation: none !important;
+    opacity: 1;
+  }
+  .rsvpb-row {
+    transition: none;
+  }
+  .rsvpb-row:hover {
+    transform: none;
+  }
+  .rsvpb-chip__fill {
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §12 Responsive                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .rsvpb-row__meta-desktop {
+    display: inline;
+  }
+  .rsvpb-row__right {
+    display: flex;
+  }
+}
+
+@media (max-width: 639px) {
+  .rsvpb-chip {
+    min-width: 80px;
+  }
+  .rsvpb-chip__label {
+    display: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §13 Print                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  .rsvpb {
+    animation: none;
+    opacity: 1;
+  }
+  .rsvpb-summary {
+    border-color: #e5e7eb;
+  }
+  .rsvpb-chip {
+    border: 1px solid #e5e7eb;
+  }
+  .rsvpb-chip__bar {
+    display: none;
+  }
+  .rsvpb-chip__count {
+    color: #111;
+  }
+  .rsvpb-chip__label {
+    color: #555;
+  }
+  .rsvpb-row {
+    border-color: #e5e7eb;
+    border-left-color: #999;
+    animation: none;
+    opacity: 1;
+  }
+  .rsvpb-row:hover {
+    background: none;
+    transform: none;
+  }
+  .rsvpb-row__name {
+    color: #111;
+  }
+  .rsvpb-row__meta {
+    color: #555;
+  }
+  .rsvpb-row__notes {
+    color: #666;
+  }
+  .rsvpb-row__right {
+    display: flex;
+  }
+  .rsvpb-row__meta-desktop {
+    display: inline;
+  }
+  .rsvpb-row__cost {
+    color: #111;
+  }
+  .rsvpb-row__time {
+    color: #666;
+  }
+}

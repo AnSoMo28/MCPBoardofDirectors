@@ -1,0 +1,478 @@
+/**
+ * WizardStepper.css
+ * src/shared/components/ui/WizardStepper.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-stepper
+ * @keyframes   3 (ui-stepper-check-in, ui-stepper-glow, ui-stepper-shimmer)
+ * @signature   Gold glow ring on active step, spring-like check reveal,
+ *              connector shimmer sweep on completion
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  Circle: translucent bg + border
+ * D2 Stagger  ✓  Steps cascade reveal on mount
+ * D3 Easing   ✓  Apple easing, specific properties
+ * D4 Typo     ✓  Mono number (13px/14px), UI label (13px), UI desc (11px)
+ * D5 Color    ✓  color-mix() for glows, tokens for fills
+ * D6 Pseudo   ✗  Compact stepper (not applicable)
+ * D7 Interact ✗  Display-only (not applicable)
+ * D8 Density  ✓  32px/40px circles, 3px connector, compact text
+ * D9 Response ✓  640px+ labels visible, mobile circles only
+ * D10 A11y    ✓  role="progressbar", aria-current="step", data-testid
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  3 namespaced at end
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  ROOT — .ui-stepper (D8)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stepper {
+  margin-bottom: 24px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  TRACK (D8)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stepper__track {
+  display: flex;
+  align-items: center;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  STEP — Container (D2, D8)
+   D2: Stagger cascade on mount.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stepper__step {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  /* D2: Stagger base */
+  opacity: 0;
+  animation: ui-stepper-reveal 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  animation-delay: calc(var(--step-index, 0) * 0.08s);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  HEAD — Circle + Label group (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stepper__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  CIRCLE (D1, D3, D5)
+   Glass circle. Active = gold fill + glow ring.
+   Completed = gold fill. Default = translucent.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stepper__circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-silver-400);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  /* D3: Specific properties */
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* D5: Active — gold fill + glow ring */
+.ui-stepper__circle--active {
+  background: var(--color-gold-400);
+  color: var(--color-abyss);
+  border-color: var(--color-gold-400);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--color-gold-400) 15%, transparent),
+    0 0 12px color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+  animation: ui-stepper-glow 2.5s ease-in-out infinite;
+}
+
+/* D5: Completed — gold fill */
+.ui-stepper__circle--completed {
+  background: var(--color-gold-400);
+  color: var(--color-abyss);
+  border-color: var(--color-gold-400);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  CHECK ICON — Spring-like scale-in (D3)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stepper__check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-abyss);
+  /* Spring-like entrance */
+  animation: ui-stepper-check-in 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  ICON + NUMBER
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stepper__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: inherit;
+}
+
+.ui-stepper__number {
+  color: inherit;
+  line-height: 1;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  TEXT — Labels (D4, D9)
+   Hidden on mobile (<640px), visible on desktop.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stepper__text {
+  display: none;
+  min-width: 0;
+}
+
+.ui-stepper__label {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  /* D3: Specific property */
+  transition: color 0.3s ease;
+}
+
+.ui-stepper__label--active {
+  color: var(--color-silver-200);
+  font-weight: 600;
+}
+
+.ui-stepper__label--completed {
+  color: var(--color-silver-300);
+}
+
+.ui-stepper__desc {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 2px 0 0 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  CONNECTOR BAR (D5)
+   Glass track + gold fill with shimmer sweep.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stepper__connector {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  margin: 0 8px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  position: relative;
+}
+
+.ui-stepper__connector-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0%;
+  background: linear-gradient(
+    90deg,
+    var(--color-gold-400),
+    var(--color-gold-300)
+  );
+  position: relative;
+  overflow: hidden;
+  /* D3: Apple easing on width transition */
+  transition: width 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ui-stepper__connector-fill--done {
+  width: 100%;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+}
+
+/* Shimmer sweep on completion */
+.ui-stepper__shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 45%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.3) 55%,
+    transparent 100%
+  );
+  animation: ui-stepper-shimmer 2s ease-in-out 1;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-stepper__circle {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: var(--color-silver-500);
+}
+
+.light .ui-stepper__circle--active {
+  background: var(--color-gold-500);
+  color: white;
+  border-color: var(--color-gold-500);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--color-gold-500) 12%, transparent),
+    0 0 10px color-mix(in srgb, var(--color-gold-500) 15%, transparent);
+}
+
+.light .ui-stepper__circle--completed {
+  background: var(--color-gold-500);
+  color: white;
+  border-color: var(--color-gold-500);
+}
+
+.light .ui-stepper__check {
+  color: white;
+}
+
+.light .ui-stepper__label {
+  color: var(--color-silver-500);
+}
+
+.light .ui-stepper__label--active {
+  color: var(--color-abyss);
+}
+
+.light .ui-stepper__label--completed {
+  color: var(--color-silver-600);
+}
+
+.light .ui-stepper__desc {
+  color: var(--color-silver-400);
+}
+
+.light .ui-stepper__connector {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .ui-stepper__connector-fill--done {
+  box-shadow: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §10  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-stepper__step {
+    animation: none;
+    opacity: 1;
+  }
+
+  .ui-stepper__circle {
+    transition: none;
+  }
+
+  .ui-stepper__circle--active {
+    animation: none;
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  }
+
+  .ui-stepper__check {
+    animation: none;
+  }
+
+  .ui-stepper__connector-fill {
+    transition: none;
+  }
+
+  .ui-stepper__shimmer {
+    animation: none;
+    display: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §11  RESPONSIVE (D9)
+   640px: Show labels. 480px: Compact circles.
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (min-width: 640px) {
+  .ui-stepper {
+    margin-bottom: 32px;
+  }
+
+  .ui-stepper__head {
+    gap: 12px;
+  }
+
+  .ui-stepper__circle {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .ui-stepper__text {
+    display: block;
+  }
+
+  .ui-stepper__connector {
+    margin: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ui-stepper__connector {
+    margin: 0 4px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §12  KEYFRAMES (D13)
+   ALL at end, ALL ui-stepper-* namespaced. Count: 3.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Step cascade reveal */
+@keyframes ui-stepper-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Check icon — spring-like scale-in */
+@keyframes ui-stepper-check-in {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Active glow ring — breathing pulse */
+@keyframes ui-stepper-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--color-gold-400) 15%, transparent),
+      0 0 12px color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 6px color-mix(in srgb, var(--color-gold-400) 20%, transparent),
+      0 0 20px color-mix(in srgb, var(--color-gold-400) 35%, transparent);
+  }
+}
+
+/* Connector shimmer sweep */
+@keyframes ui-stepper-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §13  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-stepper__step {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .ui-stepper__circle {
+    border: 2px solid #1a1a1a !important;
+    background: transparent !important;
+    color: #1a1a1a !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+
+  .ui-stepper__circle--active,
+  .ui-stepper__circle--completed {
+    background: #1a1a1a !important;
+    color: white !important;
+    border-color: #1a1a1a !important;
+  }
+
+  .ui-stepper__check {
+    animation: none !important;
+    color: white !important;
+  }
+
+  .ui-stepper__label {
+    color: #1a1a1a !important;
+  }
+
+  .ui-stepper__desc {
+    color: #666 !important;
+  }
+
+  .ui-stepper__connector {
+    background: #ccc !important;
+  }
+
+  .ui-stepper__connector-fill {
+    background: #1a1a1a !important;
+    box-shadow: none !important;
+  }
+
+  .ui-stepper__shimmer {
+    display: none !important;
+  }
+}

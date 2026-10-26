@@ -1,0 +1,322 @@
+/**
+ * @component NarrativeEngine (Fase 19m)
+ * @namespace .glass-narrative-*, .narrative-progress, .narrative-lens-badge
+ * @depends globals.css (glass tokens, color-mix, font tokens)
+ * @note --risk-color se setea inline via style={} en el TSX
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   Fase 19m — Narrative Engine
+   Hero · insight · cascade · impact · presentation · provenance
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Narrative Hero (executive summary) ── */
+
+.glass-narrative-hero {
+  position: relative;
+  backdrop-filter: blur(16px) saturate(1.08);
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+  background: rgba(201, 169, 110, 0.04);
+  border: 1px solid rgba(201, 169, 110, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.glass-narrative-hero::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: 10%;
+  right: 10%;
+  height: 80%;
+  background: radial-gradient(ellipse, rgba(201, 169, 110, 0.08), transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Glass Narrative Insight ── */
+
+.glass-narrative-insight {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-narrative-insight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+}
+
+.glass-narrative-insight:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
+}
+
+/* ── Glass Narrative Cascade (confidence) ── */
+
+.glass-narrative-cascade {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-narrative-cascade::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+}
+
+.glass-narrative-cascade__item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  cursor: default;
+}
+
+.glass-narrative-cascade__item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Glass Narrative Impact Explorer ── */
+
+.glass-narrative-impact {
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.glass-narrative-impact-bar {
+  height: 8px;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* ── Glass Narrative Section (accordion) ── */
+
+.glass-narrative-section {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-narrative-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+}
+
+/* ── Glass Narrative Risk Alert ── */
+
+.glass-narrative-risk {
+  position: relative;
+  border-radius: 12px;
+  border-left: 3px solid var(--risk-color, var(--color-amber-400));
+  background: var(--color-surface-2);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.glass-narrative-risk--critical {
+  animation: narrative-risk-pulse 2.5s ease-in-out infinite;
+}
+
+/* ── Provenance Chip ── */
+
+.glass-narrative-provenance {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(42, 154, 181, 0.08);
+  border: 1px solid rgba(42, 154, 181, 0.15);
+  cursor: help;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.glass-narrative-provenance:hover {
+  background: rgba(42, 154, 181, 0.14);
+  border-color: rgba(42, 154, 181, 0.25);
+}
+
+/* ── Presentation Mode Overlay ── */
+
+.glass-narrative-presentation {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(8, 10, 14, 0.97);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.glass-narrative-presentation__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+}
+
+.glass-narrative-presentation__body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  overflow: hidden;
+}
+
+.glass-narrative-presentation__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+}
+
+.glass-narrative-presentation__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.glass-narrative-presentation__dot--active {
+  background: var(--color-gold-400);
+  transform: scale(1.3);
+}
+
+.glass-narrative-presentation__dot--inactive {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Reading Progress Bar ── */
+
+.narrative-progress {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.narrative-progress__fill {
+  height: 100%;
+  background: var(--color-gold-400);
+  border-radius: 2px;
+  transition: width 0.15s linear;
+}
+
+/* ── Audience Lens Badge ── */
+
+.narrative-lens-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(201, 169, 110, 0.10);
+  border: 1px solid rgba(201, 169, 110, 0.18);
+  transition: background 0.15s ease;
+}
+
+/* ── Keyframes ── */
+
+@keyframes narrative-risk-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 14px rgba(196, 100, 112, 0.22); }
+}
+
+/* ── Light Mode Overrides ── */
+
+.light .glass-narrative-hero {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-narrative-hero::before {
+  display: none;
+}
+
+.light .glass-narrative-insight {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-narrative-cascade {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-narrative-section {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-narrative-risk--critical {
+  animation: none;
+}
+
+.light .glass-narrative-provenance {
+  background: rgba(42, 154, 181, 0.06);
+  border-color: rgba(42, 154, 181, 0.12);
+}
+
+.light .glass-narrative-presentation {
+  background: rgba(255, 255, 255, 0.97);
+}
+
+.light .glass-narrative-presentation__header,
+.light .glass-narrative-presentation__footer {
+  border-color: var(--color-border);
+}
+
+.light .narrative-lens-badge {
+  background: rgba(201, 169, 110, 0.06);
+  border-color: rgba(201, 169, 110, 0.12);
+}

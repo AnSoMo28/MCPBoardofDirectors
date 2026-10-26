@@ -1,0 +1,298 @@
+/**
+ * @component KeyboardHelpModal (Fase 21)
+ * @namespace .glass-kbd-modal, .glass-kbd-row, .glass-kbd
+ * @depends globals.css (glass tokens, font tokens, radius tokens)
+ */
+
+/* ═══════════════════════════════════════
+   KeyboardHelpModal — Silver Tide
+   Fase 21 · Glass · Search · Encoding
+   ═══════════════════════════════════════ */
+
+/* ── Modal panel ── */
+.glass-kbd-modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  border-radius: var(--radius-xl, 16px);
+  overflow: hidden;
+  z-index: 1;
+  background: rgba(18, 24, 38, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ── Header ── */
+.glass-kbd-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+}
+.glass-kbd-modal__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  font-family: var(--font-display);
+}
+.glass-kbd-modal__close {
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--color-silver-400);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.glass-kbd-modal__close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-silver-200);
+}
+
+/* ── Search bar ── */
+.glass-kbd-modal__search {
+  position: relative;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.04));
+}
+.glass-kbd-modal__search-icon {
+  position: absolute;
+  left: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-silver-600);
+  pointer-events: none;
+}
+.glass-kbd-modal__search-input {
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-200);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.glass-kbd-modal__search-input::placeholder {
+  color: var(--color-silver-600);
+}
+.glass-kbd-modal__search-input:focus {
+  border-color: rgba(201, 169, 110, 0.3);
+  background: rgba(255, 255, 255, 0.06);
+}
+.glass-kbd-modal__search-clear {
+  position: absolute;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--color-silver-500);
+  transition: background 0.15s ease;
+}
+.glass-kbd-modal__search-clear:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Content scroll area ── */
+.glass-kbd-modal__content {
+  padding: 16px 20px;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+/* ── Empty state ── */
+.glass-kbd-modal__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 0;
+  text-align: center;
+}
+.glass-kbd-modal__empty p {
+  font-size: 12px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+}
+
+/* ── Group header ── */
+.glass-kbd-modal__group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.glass-kbd-modal__group-header p {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+}
+.glass-kbd-modal__group-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Shortcut row ── */
+.glass-kbd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border-left: 2px solid transparent;
+  transition: background 0.15s ease;
+  margin-bottom: 2px;
+}
+.glass-kbd-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.glass-kbd-row--active {
+  background: rgba(201, 169, 110, 0.08) !important;
+  box-shadow: inset 0 0 12px -4px rgba(201, 169, 110, 0.15);
+}
+.glass-kbd-row__label {
+  font-size: 13px;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+}
+.glass-kbd-row__keys {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.glass-kbd-row__key-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.glass-kbd-row__then {
+  font-size: 9px;
+  color: var(--color-silver-600);
+  font-family: var(--font-ui);
+}
+
+/* ── KBD key pill ── */
+.glass-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--color-silver-300);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  line-height: 1.4;
+}
+
+/* ── Override badge ── */
+.glass-kbd-row__override-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--color-amber-400);
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Footer ── */
+.glass-kbd-modal__footer {
+  padding: 10px 20px;
+  border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.04));
+  text-align: center;
+}
+.glass-kbd-modal__footer p {
+  font-size: 10px;
+  color: var(--color-silver-600);
+  font-family: var(--font-ui);
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-kbd-modal {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.light .glass-kbd-modal__header {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+.light .glass-kbd-modal__title {
+  color: var(--color-abyss, #0a0e14);
+}
+.light .glass-kbd-modal__close {
+  color: var(--color-silver-500);
+}
+.light .glass-kbd-modal__close:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-abyss, #0a0e14);
+}
+
+.light .glass-kbd-modal__search {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+.light .glass-kbd-modal__search-input {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-abyss, #0a0e14);
+}
+.light .glass-kbd-modal__search-input::placeholder {
+  color: var(--color-silver-400);
+}
+.light .glass-kbd-modal__search-input:focus {
+  border-color: rgba(201, 169, 110, 0.4);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-kbd-row:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+.light .glass-kbd-row--active {
+  background: rgba(201, 169, 110, 0.08) !important;
+  box-shadow: inset 0 0 12px -4px rgba(201, 169, 110, 0.1);
+}
+.light .glass-kbd-row__label {
+  color: var(--color-abyss, #0a0e14);
+}
+
+.light .glass-kbd {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: var(--color-silver-700);
+}
+
+.light .glass-kbd-row__override-badge {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.light .glass-kbd-modal__footer {
+  border-top-color: rgba(0, 0, 0, 0.04);
+}
+.light .glass-kbd-modal__footer p {
+  color: var(--color-silver-500);
+}
+.light .glass-kbd-modal__empty p {
+  color: var(--color-silver-400);
+}

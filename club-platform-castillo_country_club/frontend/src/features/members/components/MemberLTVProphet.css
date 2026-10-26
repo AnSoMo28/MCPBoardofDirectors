@@ -1,0 +1,165 @@
+/**
+ * MemberLTVProphet — Monte Carlo Confidence Band Chart
+ * Namespace: .glass-m360-ltv
+ * @phase 30 — Block 3.5
+ */
+
+/* ═══════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-ltv {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.glass-m360-ltv__empty {
+  font-size: 0.75rem;
+  color: var(--color-silver-500);
+  padding: 1rem 0;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SUMMARY CARDS
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-ltv__summary {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.glass-m360-ltv__summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface-0);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 10%, transparent);
+  flex: 1;
+  min-width: 120px;
+}
+
+.glass-m360-ltv__summary-label {
+  font-size: 0.625rem;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.glass-m360-ltv__summary-value {
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-gold-400);
+}
+
+.glass-m360-ltv__summary-band {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-600);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SVG CHART
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-ltv__chart {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* ── P50 line draw animation ── */
+
+.glass-m360-ltv__line-p50 {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: m360-ltv-line-draw 2s ease forwards;
+}
+
+/* ── Band fade-in ── */
+
+.glass-m360-ltv__band-wide {
+  opacity: 0;
+  animation: m360-ltv-band-in 1s ease 0.5s forwards;
+}
+
+.glass-m360-ltv__band-narrow {
+  opacity: 0;
+  animation: m360-ltv-band-in 1s ease 0.8s forwards;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RISK FACTORS
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-ltv__risks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.glass-m360-ltv__risk-badge {
+  font-size: 0.625rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 9999px;
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+  opacity: 0;
+  animation: m360-ltv-badge-in 0.3s ease forwards;
+  animation-delay: calc(1.5s + var(--stagger-i, 0) * 80ms);
+}
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-ltv-line-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes m360-ltv-band-in {
+  to { opacity: 1; }
+}
+
+@keyframes m360-ltv-badge-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360-ltv__summary-card {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360-ltv__line-p50 {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+
+  .glass-m360-ltv__band-wide,
+  .glass-m360-ltv__band-narrow {
+    opacity: 1;
+    animation: none;
+  }
+
+  .glass-m360-ltv__risk-badge {
+    opacity: 1;
+    animation: none;
+  }
+}

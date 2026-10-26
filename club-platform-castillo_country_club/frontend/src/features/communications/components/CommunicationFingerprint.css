@@ -1,0 +1,502 @@
+/* src/features/communications/components/CommunicationFingerprint.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Communication Fingerprint — The Identity of Contact        */
+/* Phase 31 — Silver Tide Glass UI                            */
+/* Namespace: .glass-comm-fingerprint                         */
+/* ═══════════════════════════════════════════════════════════ */
+
+.glass-comm-fingerprint {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-xl, 1rem);
+  padding: var(--space-4, 1rem);
+  backdrop-filter: blur(8px);
+}
+
+.glass-comm-fingerprint[data-has-data="false"] {
+  min-height: 12rem;
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+.fingerprint__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fingerprint__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+}
+
+.fingerprint__confidence {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1, 0.25rem);
+}
+
+.fingerprint__confidence-value {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1.1rem;
+  color: var(--color-teal-400);
+}
+
+.fingerprint__confidence-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+}
+
+.fingerprint__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fingerprint__name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.fingerprint__summary {
+  font-size: 0.78rem;
+  color: var(--text-muted, #7a7570);
+}
+
+.fingerprint__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8, 2rem) 0;
+  font-size: 0.88rem;
+  color: var(--text-muted, #7a7570);
+}
+
+/* ── Sections ─────────────────────────────────────────── */
+
+.fingerprint__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+  padding-top: var(--space-3, 0.75rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.fingerprint__section-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+}
+
+/* ── Channel Radar ────────────────────────────────────── */
+
+.fingerprint__radar-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4, 1rem);
+}
+
+.fingerprint__radar-svg {
+  width: 10rem;
+  height: 10rem;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.fingerprint__radar-grid {
+  stroke: var(--color-silver-500);
+  stroke-width: 0.5;
+  opacity: 0.12;
+}
+
+.fingerprint__radar-axis {
+  stroke: var(--color-silver-500);
+  stroke-width: 0.5;
+  opacity: 0.2;
+}
+
+.fingerprint__radar-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 7.5px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.7;
+}
+
+.fingerprint__radar-label[data-preferred="true"] {
+  fill: var(--color-teal-400);
+  font-weight: 700;
+  opacity: 1;
+}
+
+.fingerprint__radar-polygon {
+  fill: var(--color-teal-400);
+  fill-opacity: 0.1;
+  stroke: var(--color-teal-400);
+  stroke-width: 1.5;
+  stroke-opacity: 0.6;
+  transition: points 0.5s ease;
+}
+
+.fingerprint__radar-dot {
+  fill: var(--color-teal-400);
+  opacity: 0.8;
+}
+
+.fingerprint__radar-dot[data-preferred="true"] {
+  fill: var(--color-gold-400);
+  opacity: 1;
+  r: 5;
+}
+
+/* Ranking list */
+.fingerprint__radar-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 0.25rem);
+}
+
+.fingerprint__rank-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  transition: background 0.2s ease;
+}
+
+.fingerprint__rank-row[data-preferred="true"] {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+
+.fingerprint__rank-pos {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-muted, #7a7570);
+  min-width: 1.2rem;
+}
+
+.fingerprint__rank-label {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.fingerprint__rank-row[data-preferred="true"] .fingerprint__rank-label {
+  color: var(--color-gold-400);
+  font-weight: 600;
+}
+
+.fingerprint__rank-score {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.88rem;
+  color: var(--text-muted, #7a7570);
+}
+
+/* ── Receptivity Curve ────────────────────────────────── */
+
+.fingerprint__receptivity-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.fingerprint__receptivity-grid {
+  stroke: var(--color-silver-500);
+  stroke-width: 0.5;
+  stroke-dasharray: "2 4";
+  opacity: 0.12;
+}
+
+.fingerprint__receptivity-fill-top { stop-color: var(--color-teal-400); }
+.fingerprint__receptivity-fill-bottom { stop-color: transparent; }
+
+.fingerprint__receptivity-curve {
+  stroke: var(--color-teal-400);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+.fingerprint__peak-dot {
+  fill: var(--color-gold-400);
+  opacity: 0.9;
+}
+
+.fingerprint__peak-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 7px;
+  fill: var(--color-gold-400);
+  font-weight: 700;
+}
+
+.fingerprint__hour-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 6.5px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.5;
+}
+
+/* ── Frequency Wave ───────────────────────────────────── */
+
+.fingerprint__frequency-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.fingerprint__frequency-center {
+  stroke: var(--color-silver-500);
+  stroke-width: 0.5;
+  stroke-dasharray: "3 4";
+  opacity: 0.15;
+}
+
+.fingerprint__frequency-wave {
+  stroke: var(--color-teal-400);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  opacity: 0.6;
+  animation: fingerprint-wave-drift 8s linear infinite;
+}
+
+.fingerprint__frequency-marker {
+  stroke: var(--color-gold-400);
+  stroke-width: 0.8;
+  opacity: 0.25;
+}
+
+.fingerprint__frequency-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 7px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.5;
+}
+
+/* ── Tone Spectrum ────────────────────────────────────── */
+
+.fingerprint__tone-spectrum {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+}
+
+.fingerprint__tone-bar {
+  position: relative;
+  height: 24px;
+  border-radius: var(--radius-md, 0.5rem);
+  overflow: visible;
+}
+
+.fingerprint__tone-gradient {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md, 0.5rem);
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--color-teal-400) 30%, transparent),
+    color-mix(in srgb, var(--color-emerald-400) 20%, transparent),
+    color-mix(in srgb, var(--color-amber-400) 20%, transparent),
+    color-mix(in srgb, var(--color-gold-400) 30%, transparent)
+  );
+}
+
+.fingerprint__tone-marker {
+  position: absolute;
+  top: -6px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: left 0.8s ease;
+}
+
+.fingerprint__tone-marker::before {
+  content: "";
+  display: block;
+  width: 3px;
+  height: 36px;
+  border-radius: 1.5px;
+  background: var(--color-teal-400);
+}
+
+.fingerprint__tone-marker[data-tone="formal"]::before { background: var(--color-teal-400); }
+.fingerprint__tone-marker[data-tone="direct"]::before { background: var(--color-emerald-400); }
+.fingerprint__tone-marker[data-tone="narrative"]::before { background: var(--color-amber-400); }
+.fingerprint__tone-marker[data-tone="warm"]::before { background: var(--color-gold-400); }
+
+.fingerprint__tone-marker-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-teal-400);
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+.fingerprint__tone-marker-label[data-tone="formal"] { color: var(--color-teal-400); }
+.fingerprint__tone-marker-label[data-tone="direct"] { color: var(--color-emerald-400); }
+.fingerprint__tone-marker-label[data-tone="narrative"] { color: var(--color-amber-400); }
+.fingerprint__tone-marker-label[data-tone="warm"] { color: var(--color-gold-400); }
+
+.fingerprint__tone-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: var(--text-muted, #7a7570);
+  opacity: 0.5;
+}
+
+/* ── Topic Sensitivity ────────────────────────────────── */
+
+.fingerprint__topics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.fingerprint__topic-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  opacity: 0;
+  animation: fingerprint-topic-appear 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+}
+
+.fingerprint__topic-name {
+  font-size: 0.72rem;
+  color: var(--text-primary);
+  min-width: 5rem;
+  text-transform: capitalize;
+}
+
+.fingerprint__topic-bar-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  overflow: hidden;
+}
+
+.fingerprint__topic-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--color-teal-400);
+  opacity: 0.6;
+  transition: width 0.6s ease;
+}
+
+.fingerprint__topic-bar-fill[data-high="true"] {
+  background: var(--color-emerald-400);
+  opacity: 0.8;
+}
+
+.fingerprint__topic-bar-fill[data-low="true"] {
+  background: var(--color-rose-400);
+  opacity: 0.5;
+}
+
+.fingerprint__topic-score {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.82rem;
+  color: var(--text-muted, #7a7570);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.fingerprint__topic-row[data-high="true"] .fingerprint__topic-score {
+  color: var(--color-emerald-400);
+}
+
+.fingerprint__topic-row[data-low="true"] .fingerprint__topic-score {
+  color: var(--color-rose-400);
+}
+
+/* ── Summary Strip ────────────────────────────────────── */
+
+.fingerprint__summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2, 0.5rem);
+  padding-top: var(--space-3, 0.75rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.fingerprint__summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.fingerprint__summary-value {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.fingerprint__summary-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+  text-align: center;
+}
+
+/* ── Animations ───────────────────────────────────────── */
+
+@keyframes fingerprint-wave-drift {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -40; }
+}
+
+@keyframes fingerprint-topic-appear {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Light Mode ───────────────────────────────────────── */
+
+.light .glass-comm-fingerprint {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .fingerprint__rank-row[data-preferred="true"] {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+
+.light .fingerprint__tone-gradient {
+  opacity: 0.8;
+}
+
+/* ── Reduced Motion ───────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .fingerprint__frequency-wave {
+    animation: none !important;
+    stroke-dasharray: none;
+  }
+
+  .fingerprint__topic-row {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .fingerprint__topic-bar-fill,
+  .fingerprint__tone-marker {
+    transition: none !important;
+  }
+}

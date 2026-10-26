@@ -1,0 +1,424 @@
+Sos el arquitecto de backend senior de Castillo Country Club. El backend MCP está 100% completado con 15 agentes y 103 tools. Ahora necesitamos construir las capas faltantes: Auth + RBAC, API Bridge (FastAPI), Satisfaction Agent (#16), y AI Integration.
+
+═══════════════════════════════════════════════════
+PROYECTO
+═══════════════════════════════════════════════════
+
+Castillo Country Club es un club privado de élite en Costa Rica.
+Backend MCP completado: 15 agentes, 103 tools, Python 3.14, uv, FastMCP, Pydantic v2.
+Frontend React 19 en construcción (Sprint 0 y 1 completados).
+
+═══════════════════════════════════════════════════
+STACK TÉCNICO — BACKEND
+═══════════════════════════════════════════════════
+
+Python 3.14.4
+uv (package management)
+FastMCP (MCP server)
+Pydantic v2
+pytest + pytest-asyncio + pytest-cov
+FastAPI (nuevo — API bridge)
+PyJWT (nuevo — JWT auth)
+bcrypt (nuevo — password hashing)
+Anthropic SDK (nuevo — Claude integration)
+
+═══════════════════════════════════════════════════
+ESTRUCTURA EXISTENTE DEL BACKEND
+═══════════════════════════════════════════════════
+
+backend/src/club_mcp/
+├── agents/              15 agentes heredando BaseAgent
+│   ├── base.py          BaseAgent ABC + MCPTool decorator
+│   ├── family_profile.py
+│   ├── event_orchestrator.py
+│   ├── age_group.py
+│   ├── finance.py
+│   ├── wellness.py
+│   ├── compliance.py
+│   ├── sports_recreation_agent.py
+│   ├── cultural_social_agent.py
+│   ├── communication_agent.py
+│   ├── facility_management_agent.py
+│   ├── member_engagement_agent.py
+│   ├── guest_management_agent.py
+│   ├── proactive_recommendation_agent.py
+│   ├── document_intelligence_agent.py
+│   └── executive_dashboard_agent.py
+├── db/repositories/     15 repos in-memory (dict-based)
+├── models/              ~130+ Pydantic models y enums
+├── hitl/
+│   ├── approval_types.py   ApprovalLevel, ApprovalStatus, ApprovalRequest
+│   └── approval_engine.py  ApprovalEngine (in-memory)
+├── config/
+│   └── club_registry.py
+├── server.py            create_mcp_server() — registra los 15 agentes
+└── (NUEVO)              auth/, api/, ai/
+
+backend/tests/
+├── conftest.py          Fixtures: repo, approval_engine, family_agent, etc.
+└── unit/agents/         15 test files, ~554 tests, ~88% coverage
+
+═══════════════════════════════════════════════════
+PATRÓN EXACTO DE CADA AGENTE (REPETIR PARA #16)
+═══════════════════════════════════════════════════
+
+Paso 1: Modelo → models/{domain}.py
+  - Enums (str, Enum) para estados/categorías
+  - BaseModel con model_config = ConfigDict(from_attributes=True)
+  - Entity schemas, Create schemas, Update schemas separados
+  - SIEMPRE: from datetime import datetime, timezone
+
+Paso 2: Repositorio → db/repositories/{domain}_repo.py
+  - Clase con __init__ que crea dict[str, dict]
+  - _gen_id() con uuid4().hex[:8]
+  - CRUD methods async
+  - SIEMPRE: datetime.now(tz=timezone.utc).isoformat()
+  - Repos NUNCA importan de agents (evitar circular)
+
+Paso 3: Agente → agents/{agent_name}.py
+  - Hereda BaseAgent
+  - Imports: MCPTool de agents.base, ApprovalLevel de hitl.approval_types
+  - SIEMPRE: from datetime import datetime, timezone
+  - @MCPTool(name=..., description=..., approval=..., approver_roles=[...])
+  - Constructor: def __init__(self, repo=None, approval_engine=None, notifier=None) -> None
+  - _register_tools(self) -> None: pass
+  - agent_name y description como class attributes
+  - Mensajes en español con emojis
+  - model_dump(mode="json") para serializar
+
+Paso 4: Tests → tests/unit/agents/test_{agent_name}.py
+  - Fixtures: repo, agent con approval_engine inyectado
+  - Helper async def _seed_{domain}() con defaults neutros
+  - Clase por tool con tests: éxito, error, validación
+  - SIEMPRE @pytest.mark.asyncio
+  - "admin@castillo.cr" como requested_by
+
+Paso 5: Actualizar __init__.py (agents, repos, models)
+Paso 6: Actualizar server.py
+Paso 7: Verificar: uv run pytest -v
+
+═══════════════════════════════════════════════════
+LECCIONES APRENDIDAS (NO REPETIR)
+═══════════════════════════════════════════════════
+
+1. datetime.utcnow() DEPRECATED en Python 3.14
+   SIEMPRE: datetime.now(tz=timezone.utc)
+2. datetime.UTC NO existe → usar timezone.utc
+3. SIEMPRE importar: from datetime import datetime, timezone
+4. from __future__ import annotations NO trae datetime al runtime
+5. Defaults de filtros como string vacío "", NO enums
+6. No testear _approval_level en llamadas directas al método
+7. Crear solo UNA versión de cada archivo
+8. Enums como atributos: verificar que existan en el modelo
+9. Atributos de modelo: verificar cuál modelo tiene qué campo
+
+═══════════════════════════════════════════════════
+AI — ARQUITECTURA (MUY IMPORTANTE)
+═══════════════════════════════════════════════════
+
+QWEN = Motor de inferencia MCP (backend, procesa requests, ejecuta tools)
+Claude = Cliente de integración (conecta al MCP Server via protocol)
+
+NO se mezclan roles. Para el backend:
+- QWEN powers el MCP Server
+- Claude API (Anthropic SDK) se usa para:
+  - Sentiment analysis en encuestas post-evento
+  - Generar recomendaciones narrativas
+  - Analizar comentarios de socios
+  - Redactar reportes para junta directiva
+
+Configuración MCP (.json) apunta a Claude como cliente que conecta al MCP Server.
+El claude_service.py en backend es un servicio auxiliar que llama a la API de Claude
+para análisis, NO reemplaza a QWEN.
+
+═══════════════════════════════════════════════════
+LO QUE HAY QUE CONSTRUIR
+═══════════════════════════════════════════════════
+
+═══ BLOQUE A: AUTH SYSTEM (JWT + RBAC) ═══
+
+Nuevos archivos:
+backend/src/club_mcp/auth/
+├── __init__.py
+├── jwt_service.py         Crear/verificar tokens HS256→RS256
+├── models.py              User, Role, Permission Pydantic models
+├── rbac.py                ROLE_PERMISSIONS matrix
+├── middleware.py           FastAPI dependency injection
+├── password_service.py    bcrypt hashing
+└── seed_users.py          Datos demo: 1 socio, 1 staff, 1 admin, 1 junta
+
+jwt_service.py:
+  - TokenPair: access_token, refresh_token, token_type, expires_in
+  - TokenPayload: sub, role, family_id, name, exp
+  - Access token: 15 min TTL
+  - Refresh token: 7 días TTL
+  - Algorithm: HS256 (dev) → RS256 (prod)
+  - create_token_pair(user_id, role, name, family_id) → TokenPair
+  - verify_token(token) → TokenPayload
+
+rbac.py:
+  - Permission enum con ~30 permisos granulares
+  - ROLE_PERMISSIONS: dict[str, set[Permission]]
+  - Roles: SOCIO (6 perms), STAFF (8 perms), ADMIN (15 perms), JUNTA (5 perms)
+  - check_permission(role, permission) → bool
+  - TOOL_PERMISSION_MAP: dict[str, Permission] — cada tool mapeado a permiso mínimo
+
+models.py:
+  - User model (id, name, email, hashed_password, role, family_id, is_active)
+  - UserCreate, UserLogin schemas
+
+middleware.py:
+  - get_current_user(credentials) → TokenPayload (FastAPI Depends)
+  - require_permission(permission) → dependency factory
+  - require_roles(*roles) → dependency factory
+
+password_service.py:
+  - hash_password(plain) → str
+  - verify_password(plain, hashed) → bool
+
+seed_users.py:
+  - seed_demo_users() → crea 4 usuarios de prueba:
+    carlos@castillo.cr / admin123 → SOCIO
+    maria@castillo.cr / staff123 → STAFF
+    gerente@castillo.cr / admin123 → ADMIN
+    director@castillo.cr / junta123 → JUNTA
+
+Tests: tests/unit/auth/
+  - test_jwt_service.py (create, verify, expired, invalid)
+  - test_rbac.py (permissions por role, tool mapping)
+  - test_password_service.py (hash, verify, wrong password)
+
+
+═══ BLOQUE B: API BRIDGE (FastAPI) ═══
+
+Nuevos archivos:
+backend/src/club_mcp/api/
+├── __init__.py
+├── app.py                 FastAPI app factory
+├── dependencies.py        Auth dependencies (get_current_user, etc.)
+└── routes/
+    ├── __init__.py
+    ├── auth.py            POST /api/auth/login, POST /api/auth/refresh, GET /api/auth/me
+    ├── agents.py          POST /api/agents/{agent_name}/{tool_name}
+    ├── chat.py            POST /api/chat (Claude conversational)
+    └── health.py          GET /api/health
+
+app.py:
+  - create_api_app(mcp_server=None) → FastAPI
+  - CORS middleware: allow localhost:5173
+  - Include all routers
+  - Mount under /api prefix
+
+routes/auth.py:
+  - POST /api/auth/login → validate email/password, return TokenPair
+  - POST /api/auth/refresh → validate refresh token, return new TokenPair
+  - GET /api/auth/me → return current user info
+
+routes/agents.py:
+  - POST /api/agents/{agent_name}/{tool_name}
+  - Body: params dict
+  - Verify JWT token
+  - Check TOOL_PERMISSION_MAP for required permission
+  - Look up agent by name, call tool with params
+  - Return tool response
+
+routes/chat.py:
+  - POST /api/chat
+  - Body: { message, conversation_history }
+  - Verify JWT, get user role
+  - Call ClaudeService.chat()
+  - Return response
+
+routes/health.py:
+  - GET /api/health
+  - Return: { status, agents_count, tools_count, version }
+
+dependencies.py:
+  - Re-export from auth/middleware.py for convenient imports
+
+Tests: tests/unit/api/
+  - test_auth_routes.py
+  - test_agents_routes.py
+  - test_health.py
+
+
+═══ BLOQUE C: SATISFACTION AGENT (#16) ═══
+
+Nuevos archivos:
+backend/src/club_mcp/models/satisfaction.py
+backend/src/club_mcp/db/repositories/satisfaction_repo.py
+backend/src/club_mcp/agents/satisfaction_agent.py
+backend/tests/unit/agents/test_satisfaction_agent.py
+
+Models (satisfaction.py):
+  - SatisfactionCategory(str, Enum): venue, food, service, entertainment,
+    value, organization, ambiance, cleanliness, timing, overall
+  - RatingLevel(int, Enum): 1-5
+  - SurveyQuestion(BaseModel): category, question_text, rating, weight
+  - SatisfactionSurvey(BaseModel): survey_id, event_id, family_id,
+    event_type, event_name, event_date, questions[10], comment,
+    ai_assisted_comment, submitted_at, overall_score, sentiment,
+    sentiment_score
+  - EventSatisfactionReport(BaseModel): report_id, event_id, event_name,
+    total_responses, response_rate_pct, overall_avg, category_averages,
+    sentiment_distribution, sentiment_trend, top_praises, top_improvements,
+    ai_recommendations, key_quotes, generated_at
+
+Repository (satisfaction_repo.py):
+  - save_survey(survey) → SatisfactionSurvey
+  - get_surveys_by_event(event_id) → list[SatisfactionSurvey]
+  - get_surveys_by_family(family_id) → list[SatisfactionSurvey]
+  - save_satisfaction_report(report) → EventSatisfactionReport
+  - get_satisfaction_report(event_id) → EventSatisfactionReport | None
+  - get_satisfaction_trends(months=6) → dict
+
+Agent (satisfaction_agent.py) — 6 tools:
+  🔴 submit_satisfaction_survey    HITL     Socio envía encuesta (auto approve)
+  🟢 get_survey_for_event          AUTO     Obtener encuesta pendiente
+  🟡 analyze_event_satisfaction    SEMI     Generar reporte con sentiment AI
+  🟢 get_satisfaction_trends        AUTO     Tendencias históricas
+  🟡 generate_satisfaction_report  SEMI     Reporte completo para admin
+  🟢 get_satisfaction_questions     AUTO     Las 10 preguntas estándar
+
+Las 10 preguntas del cuestionario:
+  1. venue — "¿Cómo calificaría las instalaciones?"
+  2. food — "¿Qué tal la calidad de comida y bebida?"
+  3. service — "¿Cómo fue la atención del personal?"
+  4. entertainment — "¿El entretenimiento fue de su agrado?"
+  5. value — "¿Siente que valió la pena para el precio?"
+  6. organization — "¿La organización fue adecuada?"
+  7. ambiance — "¿El ambiente y decoración fueron apropiados?"
+  8. cleanliness — "¿Cómo calificaría la limpieza?"
+  9. timing — "¿Los horarios y duración fueron adecuados?"
+  10. overall — "¿Qué tan satisfecho quedó en general?"
+
+Tests:
+  - submit_survey: éxito, validación de 10 preguntas, score calculado
+  - analyze_satisfaction: genera reporte, sentiment correcto
+  - get_trends: tendencia improving/declining
+  - get_questions: devuelve las 10 preguntas
+
+ACTUALIZAR:
+  - agents/__init__.py: agregar SatisfactionAgent
+  - db/repositories/__init__.py: agregar SatisfactionRepository
+  - models/__init__.py: agregar todos los modelos de satisfaction
+  - server.py: instanciar y registrar SatisfactionAgent
+
+
+═══ BLOQUE D: AI INTEGRATION (Claude Service) ═══
+
+Nuevos archivos:
+backend/src/club_mcp/ai/
+├── __init__.py
+├── claude_service.py      Servicio de Claude API
+└── prompts.py             System prompts templates
+
+claude_service.py:
+  - ClaudeService(api_key, model="claude-sonnet-4-20250514")
+  - AsyncAnthropic client
+  - system_prompt con reglas del club, permisos por rol, tono
+  - chat(user_message, user_role, user_name, history, mcp_tools)
+    → dict con content, stop_reason, usage
+  - analyze_satisfaction(event_data, surveys)
+    → dict con trend, praises, improvements, recommendations, quotes
+  - generate_narrative_report(kpis, audience)
+    → str con reporte narrativo
+  - assist_comment(survey_ratings)
+    → str con comentario sugerido basado en ratings
+
+prompts.py:
+  - SYSTEM_PROMPT: rol del asistente, reglas, permisos
+  - SATISFACTION_ANALYSIS_PROMPT: template para análisis de encuestas
+  - NARRATIVE_REPORT_PROMPT: template para reportes narrativos
+  - COMMENT_ASSIST_PROMPT: template para ayudar a redactar comentarios
+  - AGE_BALANCE_PROMPT: template para análisis de distribución etaria
+
+NOTA IMPORTANTE: Claude se usa como servicio auxiliar para análisis,
+NO como motor MCP. QWEN es el motor MCP.
+
+
+═══ BLOQUE E: ACTUALIZACIONES A AGENTES EXISTENTES ═══
+
+ExecutiveDashboardAgent — agregar tool:
+  🟢 get_age_group_balance    AUTO
+  Analiza distribución de actividades por grupo etario.
+  Calcula Gini coefficient. Devuelve balance_score y recomendaciones.
+
+CommunicationAgent — agregar tool:
+  🟢 send_board_package       SEMI
+  Genera board package PDF.
+  Parámetros: quarter, year, recipients (director_only | full_board).
+  Si director_only: envía solo al director primero.
+  Si full_board: envía a toda la junta incluyendo director.
+
+═══════════════════════════════════════════════════
+ARCHIVOS DE REFERENCIA QUE TE PASO
+═══════════════════════════════════════════════════
+
+Para evitar errores de imports, fixtures o firmas necesito que me pidas:
+
+1. agents/base.py — firma exacta de BaseAgent, MCPTool
+2. hitl/approval_types.py — ApprovalLevel, ApprovalStatus
+3. hitl/approval_engine.py — create_request(), approve(), reject()
+4. tests/conftest.py — fixtures existentes
+5. server.py — cómo se instancian y registran agentes
+6. agents/__init__.py — imports actuales
+7. db/repositories/__init__.py — imports actuales
+8. models/__init__.py — imports actuales
+9. Un agente completo como referencia (executive_dashboard_agent.py)
+
+CON ESTOS 9 ARCHIVOS PODÉS GENERAR CUALQUIER COSA SIN ERRORES.
+
+═══════════════════════════════════════════════════
+ORDEN DE EJECUCIÓN
+═══════════════════════════════════════════════════
+
+1. Pedir los 9 archivos de referencia
+2. Bloque A: Auth system (jwt, rbac, middleware, password, seed)
+3. Bloque B: API bridge (FastAPI app + routes)
+4. Bloque C: Satisfaction Agent (#16) completo
+5. Bloque D: AI Integration (Claude service + prompts)
+6. Bloque E: Actualizaciones a agentes existentes
+7. Tests de todo lo nuevo
+8. Verificar: uv run pytest -v --cov
+
+═══════════════════════════════════════════════════
+FORMATO DE ENTREGA
+═══════════════════════════════════════════════════
+
+- Bloques de 2-3 archivos máximo
+- Ruta exacta arriba de cada código
+- Usuario confirma "listo" antes del siguiente bloque
+- Sin loops, sin archivos vacíos, sin versiones duplicadas
+- Tests incluidos con cada agente/ruta nueva
+- Actualizar __init__.py y server.py al final de cada bloque
+
+Empezá pidiendo los 9 archivos de referencia.
+
+
+Archivos que necesitás pasarle (en orden de 3 en 3)
+
+Lote 1:
+
+text
+text
+1. backend/src/club_mcp/agents/base.py
+2. backend/src/club_mcp/hitl/approval_types.py
+3. backend/src/club_mcp/hitl/approval_engine.py
+
+Lote 2:
+
+text
+text
+4. backend/tests/conftest.py
+5. backend/src/club_mcp/server.py
+6. backend/src/club_mcp/agents/executive_dashboard_agent.py
+
+Lote 3:
+
+text
+text
+7. backend/src/club_mcp/agents/__init__.py
+8. backend/src/club_mcp/db/repositories/__init__.py
+9. backend/src/club_mcp/models/__init__.py
+

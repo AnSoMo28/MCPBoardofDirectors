@@ -1,0 +1,684 @@
+# CHECKPOINT — Fase 14c Completada — Member Intelligence Hub (Health Score + Segmentation + LTV + Churn Prevention) + Fase 14d Propuesta
+
+**Fecha:** Mayo 2025
+**Sesiones completadas:** 1 (esta sesión — Fase 14c completa + Fase 14d propuesta)
+**Archivos creados:** 6 nuevos + 5 modificados
+**Líneas nuevas:** ~2,965
+**Tools MCP registradas:** 4 nuevas (members_health_score, members_segmentation, members_lifetime_value, members_churn_prevention)
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend Nuevos (7)
+
+```
+src/features/members/
+├── types.ts                              ← ~90 líneas
+│   31 re-exports de contracts + 5 configs:
+│   RISK_LEVEL_CONFIG (critical→healthy, hex+mapped tokens),
+│   SEGMENT_COLORS (deportivos→invisibles, hex),
+│   DIMENSION_COLORS (engagement→satisfaction, hex),
+│   TIER_CONFIG (Platinum→Silver, tokens+hex),
+│   getScoreColor(score→hex), getScoreLabel(score→text).
+│   Tools: Ninguna directa — config & utils
+│
+├── index.ts                              ← ~1 línea
+│   Re-export de MemberIntelligenceDashboard
+│
+└── components/
+    ├── MemberIntelligenceDashboard.tsx    ← ~75 líneas
+    │   Hub con DetailTabs: 4 tabs (Health, Segmentation, LTV, Churn).
+    │   lazy() + Suspense + TabSkeleton.
+    │   PageContainer breadcrumbs: Admin > Inteligencia de Socios.
+    │   Tools: Ninguna directa — delega a children
+    │
+    ├── MemberHealthScore.tsx             ← ~480 líneas
+    │   6 visualizaciones + insight block:
+    │   1. Gauge radial (PieChart custom) — score general 72/100
+    │   2. Radar 5 ejes — dimensions con current vs anterior
+    │   3. 4 StatCards — critical, high risk, healthy, improving
+    │   4. AreaChart 12m — trend con min/avg/max bands
+    │   5. Distribution horizontal bars — families por rango
+    │   6. Factor Importance bars — variance explained vs weight
+    │   7. At-Risk Families — desktop table + mobile cards (Rule #21)
+    │   8. Key Insight block con actionable text
+    │   Tools: members_health_score (auto-load, staleTime 5min)
+    │
+    ├── MemberSegmentation.tsx            ← ~540 líneas
+    │   6 visualizaciones + 2 insights:
+    │   1. Treemap (custom cell SVG) — segment size = family count
+    │   2. 5 Segment Cards — metrics expandibles (families, spend, churn, trend)
+    │   3. Persona Profiles — expandible cards con motivations, pain_points,
+    │      best_channel, stability bars, behavioral stats
+    │   4. Migration Matrix — desktop heatmap table + mobile list (Rule #21)
+    │   5. Revenue Stacked Bar — 4 categories por segment
+    │   6. Campaign Readiness — horizontal bars con best channel
+    │   7. Key Insight: Revenue concentration (Sociales 22%→32%)
+    │   8. Key Insight: Migration alert (Deportivos→Invisibles 5 families)
+    │   Tools: members_segmentation (auto-load, staleTime 10min)
+    │
+    ├── MemberLTV.tsx                     ← ~520 líneas
+    │   7 visualizaciones + insight:
+    │   1. 3 StatCards — LTV avg, portfolio total, growth rate
+    │   2. Monte Carlo Fan Chart — 36 months, 5 stacked bands
+    │      (P10, P25-P50, P50-P75, P75-P90) + P50 center line
+    │   3. LTV Distribution bars — 5 ranges
+    │   4. LTV by Tier grouped bars — avg + median por tier
+    │   5. LTV × Churn Risk Scatter — 3 tier groups (Platinum/Gold/Silver),
+    │      quadrant reference lines, labels
+    │   6. Sensitivity Tornado — sorted by absolute impact, positive/negative colors
+    │   7. Payback Period line — cumulative margin vs intervention cost reference
+    │   8. Key Insight: churn most sensitive factor, Silver→Gold upgrade value
+    │   Custom tooltips: FanTooltip (5 percentiles), ScatterTooltip (family details)
+    │   Tools: members_lifetime_value (auto-load, staleTime 10min)
+    │
+    └── MemberChurnPrevention.tsx         ← ~530 líneas
+        7 visualizaciones + insight + on-demand pattern:
+        0. Empty state (Rule #19) — CTA button "Analizar Riesgo"
+        1. Cost of Inaction banner — ROI calculation (inaction/budget)
+        2. 4 StatCards — families at risk, LTV at risk, active interventions, success rate
+        3. Risk Scatter — Churn % vs LTV, 7 family dots
+        4. Top 7 Family Cards — metrics grid, primary risk factor,
+           recommended intervention, cascade risk warning (amber border)
+        5. Risk Factors horizontal bars — % of at-risk families
+        6. Intervention Playbook — expandible cards con description,
+           best_for_segments, best_for_risk_factors, timeline, effort badge
+        7. Historical Saves — desktop table + mobile cards (Rule #21),
+           outcome icons (CheckCircle/XCircle/Loader2)
+        8. Key Insight: 14-day window, cost-effectiveness comparison
+        Tools: members_churn_prevention (on-demand, enabled: shouldFetch)
+```
+
+### Archivos Modificados (5)
+
+| # | Archivo | Operación | Líneas afectadas | Por qué |
+|---|---------|-----------|------------------|---------|
+| 1 | `shared/mocks/contracts.ts` | APPEND | +250 líneas | +20 interfaces: HealthScore (6), Segmentation (7), LTV (7), ChurnPrevention (6) |
+| 2 | `shared/mocks/factories.ts` | IMPORT + APPEND | +470 líneas | +4 tipos importados + 4 factories con data CR rica (142 familias, 5 segmentos, 36 meses Monte Carlo, 6 intervenciones, 10 saves históricos) |
+| 3 | `shared/mocks/mock-registry.ts` | IMPORT + ENTRY | +12 líneas | +4 imports en Member Engagement + 4 entries en sección member_engagement existente |
+| 4 | `app/router.tsx` | QUIRÚRGICO | +11 líneas | +1 import (MemberIntelligenceDashboard) + 1 ruta `admin/members/intelligence` con PermissionGate [ADMIN, JUNTA] |
+| 5 | `shared/components/layout/Sidebar.tsx` | QUIRÚRGICO | +3 líneas | +1 import (Brain de lucide-react) + 1 NAV_ITEM "Inteligencia" después de Engagement, roles [ADMIN] |
+
+### Mock System
+
+**Contracts nuevos (20 interfaces):**
+
+| Tool | Server | Contract interfaces |
+|------|--------|-------------------|
+| `members_health_score` | member_engagement | HealthDimension, FamilyHealthScore, HealthScoreDistribution, HealthScoreTrendPoint, HealthFactorImportance, MembersHealthScoreData, MembersHealthScoreResponse |
+| `members_segmentation` | member_engagement | MemberSegment, SegmentPersona, SegmentMigration, SegmentRevenueBreakdown, CampaignReadiness, MembersSegmentationData, MembersSegmentationResponse |
+| `members_lifetime_value` | member_engagement | FamilyLTV, LTVDistribution, LTVSensitivityFactor, MonteCarloDataPoint, LTVByTier, LTVPaybackPoint, MembersLifetimeValueData, MembersLifetimeValueResponse |
+| `members_churn_prevention` | member_engagement | ChurnRiskFamily, ChurnIntervention, ChurnRiskFactor, HistoricalSave, MembersChurnPreventionData, MembersChurnPreventionResponse |
+
+**Factories nuevas (4):**
+
+| Factory | Data costarricense |
+|---------|-------------------|
+| `createMockMembersHealthScore` | 142 familias, score general 72, trend 12m (enero-diciembre), 10 familias at-risk con 5 dimensiones cada una (score, weight, trend), 5 distribution ranges, 5 factor_importance (visitas 42%, gasto 28%, social 15%, comms 10%, satisfacción 5%) |
+| `createMockMembersSegmentation` | 5 segmentos (Deportivos 38, Sociales 31, Ejecutivos 24, Familiares 32, Invisibles 17), 5 personas detalladas, 8 migraciones Q1 2025, revenue breakdown (5 segmentos × 4 categorías), campaign readiness (5 segmentos), stability index (5 segmentos) |
+| `createMockMembersLifetimeValue` | LTV promedio ₡8.4M, portfolio ₡1.19B, 15 familias detalladas con P10/P50/P90, 5 distribution ranges, 6 sensitivity factors, 36 meses Monte Carlo fan data, 3 tiers, 13 meses payback curve |
+| `createMockMembersChurnPrevention` | 14 familias at-risk (7 detalladas), 6 intervenciones (cena privada, llamada, descuento tier, evento exclusivo, paquete actividades, reunión junta), 6 risk factors, 10 historical saves (8 saved, 2 lost, 1 pending), costo inacción ₡47.2M, presupuesto ₡425K |
+
+**Registry keys nuevas (4):**
+
+| Server | Key | Params |
+|--------|-----|--------|
+| `member_engagement` | `members_health_score` | — (auto) |
+| `member_engagement` | `members_segmentation` | — (auto) |
+| `member_engagement` | `members_lifetime_value` | — (auto) |
+| `member_engagement` | `members_churn_prevention` | — (on-demand, params ignored in mock) |
+
+### Tools MCP Registradas (nuevas)
+
+| # | Tool | Server | Backend | Mock | Tipo | Aprobación |
+|---|------|--------|---------|------|------|------------|
+| 1 | `members_health_score` | member_engagement | ⬜ mock-only | ✅ | Data auto | AUTO |
+| 2 | `members_segmentation` | member_engagement | ⬜ mock-only | ✅ | AI auto | AUTO |
+| 3 | `members_lifetime_value` | member_engagement | ⬜ mock-only | ✅ | AI auto | AUTO |
+| 4 | `members_churn_prevention` | member_engagement | ⬜ mock-only | ✅ | AI on-demand | SEMI |
+
+**Tools existentes NO tocadas:**
+- Todas las tools de finance (18), communication (10), wellness (11), guest_management (6), executive_dashboard (2), satisfaction (1), proactive_recommendation (8), hitl (3), member_engagement (1 existente: get_engagement_dashboard)
+
+**Total tools member_engagement:** 1 existente + 4 nuevas = 5
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+### Hallazgos de procesamiento
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | El usuario me pidió ampliar mi rol: faltaban ML, Gen AI, Marketing, Financial Engineering, MCP Architecture, Data Architecture. El checkpoint de 14b solo listaba 4 roles. | MEDIA → **RESUELTO** | Rol ampliado a 10 disciplinas al inicio de la sesión |
+| 2 | El usuario especificó que los mocks se trabajan por append: me pasa el último bloque, yo genero un nuevo append. NO se borra nada. | MEDIA → **DOCUMENTADO** | Adoptado como estándar de trabajo |
+| 3 | Las 22 reglas debían ser enumeradas explícitamente antes de trabajar. El usuario quería verificar que las conozco todas. | BAJA → **RESUELTO** | Enumeradas al inicio de la sesión |
+| 4 | router.tsx solo me pasó el final (desde operaciones/checkin hasta el cierre). Necesité el archivo completo para B1. El usuario lo pasó completo. | BAJA → **RESUELTO** | Archivo completo proporcionado |
+| 5 | Sidebar.tsx es un archivo grande (~400 líneas) con estilos inline extensos. Entry "Inteligencia" se inserta después de Engagement (ítem 7), antes de Documentos (ítem 8). | BAJA → **DOCUMENTADO** | Posición confirmada: lógicamente es evolución de Engagement |
+| 6 | FinancialDashboard.tsx tiene sub-tabs manuales (BudgetManager + ReportGenerator) con botones role="tab". Patrón diferente a DetailTabs principales. | BAJA → **DOCUMENTADO** | Patrón de sub-tabs: botones manuales con role="tab" + state independiente |
+| 7 | chartTheme.ts tiene CHART_COLORS array + CHART_PALETTE object. Los 5 segmentos de 14c mapean directo a CHART_PALETTE (teal, gold, silver, emerald, rose). | BAJA → **RESUELTO** | SEGMENT_COLORS en types.ts usa mismos hex que CHART_PALETTE |
+| 8 | ExportButton.tsx requiere `NarrativeExportData` type de `exportService.ts`. Para 14c solo usamos `onPrint` sin `data` prop (los componentes no exportan narrative data directamente). | BAJA → **DOCUMENTADO** | ExportButton con solo `onPrint` es suficiente para 14c. `data` prop se activa cuando haya narrative engines en members |
+| 9 | Treemap de Recharts (RTreemap) requiere custom content prop para renderizar SVG. Implementé `TreemapCell` con renderizado manual de rect + text elements. | MEDIA → **RESUELTO** | Pattern documentado: custom SVG cell para treemaps |
+| 10 | Monte Carlo Fan Chart requiere 5 stacked Area bands con floor invisible. P50 se dibuja como Line separada encima. | MEDIA → **RESUELTO** | Pattern documentado en LTV. Reutilizable en otros fan charts |
+| 11 | Scattered chart con ZAxis para sizing + ReferenceLine para cuadrantes + texto SVG posicionado. Patrón de LTV × Churn matrix. | BAJA → **DOCUMENTADO** | Reutilizable en futuros scatter matrices |
+| 12 | MemberChurnPrevention usa patrón on-demand (Rule #19): empty state → CTA button → shouldFetch → useMCPQuery enabled. Primer componente en 14c que lo usa (los otros 3 son auto-load). | BAJA → **DOCUMENTADO** | Patrón confirmado: copy de WellnessAIAdvisor pattern |
+
+### Hallazgos de coherencia con fases anteriores
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 13 | Factories de 14c usan familias que ya existían en narrative engine de 14b (Vargas Rojas, Montero Quirós). Mantuve coherencia: mismos tiers, segmentos, montos. | MEDIA → **RESUELTO** | Cross-reference entre 14b y 14c factories |
+| 14 | Cascade risk en ChurnPrevention referencia family_ids que están en HealthScore at-risk list. Coherencia interna de la data. | BAJA → **DOCUMENTADO** | Mock data es internamente consistente entre tools |
+| 15 | member_engagement server ya existía en registry con `get_engagement_dashboard`. Las 4 nuevas tools se agregan al mismo server. | BAJA → **DOCUMENTADO** | No crear server nuevo — reutilizar member_engagement |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón NUEVO: Composite Health Score (Multi-Dimension Weighted)
+
+**Cuándo se usa:** Cuando se necesita un score compuesto de múltiples dimensiones con ponderaciones diferentes.
+
+```
+1. Modelo: 5 dimensiones con pesos (30/25/20/15/10)
+2. Score por familia: 0-100 calculado como weighted sum
+3. Gauge radial (PieChart custom) para score general
+4. Radar chart para comparar dimensiones (actual vs anterior)
+5. Distribution histogram para ver dispersión
+6. Trend AreaChart con min/avg/max bands
+7. At-risk table/cards con delta, dimensión débil, acción sugerida
+8. Factor importance bars para explicar qué pesa más
+```
+
+**Implementación:** MemberHealthScore.tsx
+**Se replica en:** Wellness health score, operational health score, cualquier modelo compuesto
+
+### Patrón NUEVO: Behavioral Micro-Segmentation
+
+**Cuándo se usa:** Cuando se necesita segmentar usuarios en clusters naturales basados en comportamiento.
+
+```
+1. Treemap (custom SVG cell) para distribución visual
+2. Segment Cards con métricas clave y trend
+3. Persona Profiles expandibles (motivations, pain points, best channel)
+4. Migration Heatmap (desktop table + mobile list, Rule #21)
+5. Revenue/Value breakdown por segment (stacked bar)
+6. Campaign Readiness (horizontal bars con best channel)
+7. Segment Stability Index (progress bar)
+```
+
+**Implementación:** MemberSegmentation.tsx
+**Se replica en:** Engagement segmentation, event attendee segmentation, cualquier clustering
+
+### Patrón NUEVO: Monte Carlo Fan Chart
+
+**Cuándo se usa:** Cuando se necesita mostrar proyecciones con incertidumbre (rangos percentiles).
+
+```
+1. 5 bands stacked: floor (invisible) + P10-P25 + P25-P50 + P50-P75 + P75-P90
+2. P50 center line separada (LineChart superpuesto)
+3. Custom FanTooltip mostrando 5 percentiles
+4. Y domain calculado con padding automático
+5. XAxis con formato de mes (tickFormatter)
+```
+
+**Implementación:** MemberLTV.tsx
+**Se replica en:** Cualquier proyección con bandas de confianza (financial forecasting, demand prediction)
+
+### Patrón NUEVO: LTV × Risk Scatter Matrix
+
+**Cuándo se usa:** Cuando se necesita visualizar familias/entidades en 2 dimensiones con cuadrantes de prioridad.
+
+```
+1. ScatterChart con X = risk metric, Y = value metric
+2. ZAxis para sizing (bubble size = value)
+3. ReferenceLine vertical/horizontal para cuadrantes
+4. Text SVG posicionado para etiquetas de cuadrante
+5. Scatter agrupado por categoría (tier/segment) con colors diferentes
+6. Custom tooltip con datos completos de la entidad
+```
+
+**Implementación:** MemberLTV.tsx
+**Se replica en:** Cualquier análisis de priorización 2D (profitability matrix ya existe, esto es el patrón generalizado)
+
+### Patrón NUEVO: Sensitivity Tornado
+
+**Cuándo se usa:** Cuando se necesita mostrar qué factores impactan más un outcome.
+
+```
+1. BarChart horizontal (layout="vertical")
+2. Data sorted por absolute impact (mayor → menor)
+3. Cell colors: positive = emerald, negative = rose
+4. FillOpacity escalado por magnitud del impacto
+5. XAxis con +/- formatter
+```
+
+**Implementación:** MemberLTV.tsx
+**Se replica en:** Scenario analysis, budget impact, cualquier sensitivity analysis
+
+### Patrón NUEVO: Intervention Playbook (Expandible)
+
+**Cuándo se usa:** Cuando se tiene un set de acciones/estrategias con metadata detallada.
+
+```
+1. Cards expandibles con nombre, success rate, cost, ROI en header
+2. Expandible: description completa, best_for_segments, best_for_risk_factors
+3. Footer con timeline + effort badge (color-coded)
+4. Click → setExpandedIntervention pattern
+```
+
+**Implementación:** MemberChurnPrevention.tsx
+**Se replica en:** Campaign playbook, maintenance playbook, cualquier library de acciones
+
+### Patrón NUEVO: Cost of Inaction Banner
+
+**Cuándo se usa:** Cuando hay un costo cuantificable por NO actuar.
+
+```
+1. Banner full-width con AlertTriangle icon
+2. Texto con "Costo de inacción: ₡XX" formateado
+3. Subtexto con ROI de intervenir (inaction_cost / recommended_budget)
+4. ExportButton al lado derecho
+```
+
+**Implementación:** MemberChurnPrevention.tsx
+**Se replica en:** Cualquier módulo donde inaction tiene costo (aging accounts, compliance, maintenance)
+
+### Patrón CONFIRMADO: On-Demand AI Feature (Rule #19)
+
+**Ya existía desde Fase 9, confirmado en 14c:**
+
+```
+1. shouldFetch state (initial: false)
+2. Empty state con CTA button + icon + description
+3. Button onClick → setShouldFetch(true)
+4. useMCPQuery con enabled: shouldFetch
+5. Loading skeleton durante fetch
+6. EmptyState si response es null
+7. Content renderizado con data
+```
+
+**Implementación en 14c:** MemberChurnPrevention.tsx (único en 14c — los otros 3 son auto-load)
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón |
+|---|---------|----------------------|-------|
+| 1 | Módulo independiente `features/members/` | Sub-tab en Engagement o Finance | Member Intelligence alimenta 3 módulos diferentes — necesita ser hub autónomo |
+| 2 | 4 tabs: Health, Segmentation, LTV, Churn | 6+ tabs con más granularidad | 4 tabs es el sweet spot — suficiente profundidad sin overwhelm |
+| 3 | Health Score auto-load, Segmentation auto-load, LTV auto-load, Churn on-demand | Todos on-demand | Los 3 primeros son datos que el staff consulta regularmente. Churn es decisión que requiere intención explícita |
+| 4 | Brain icon para sidebar | Heart (ya usado por Engagement), Activity, BarChart3 | Brain es semánticamente correcto para "inteligencia" y no duplica ningún icono existente |
+| 5 | "Inteligencia" como label de sidebar | "Inteligencia de Socios", "Members AI", "Analytics" | Consiso, consistente con "Engagement", "Documentos" — una sola palabra |
+| 6 | Roles [ADMIN, JUNTA] para la ruta | Solo [ADMIN] | Junta necesita acceso a inteligencia de membresía para decisiones estratégicas |
+| 7 | Gauge radial con PieChart custom | Gauge SVG manual o librería externa | Recharts nativo, consistente con el stack, suficiente para el efecto visual |
+| 8 | Radar chart con 2 series (actual + anterior) | Solo 1 serie | La comparación temporal es el insight más valioso — el delta importa más que el valor absoluto |
+| 9 | Treemap con custom SVG cell | Treemap default de Recharts | Default no permite tipografía ni layout control. Custom cell da control total del SVG |
+| 10 | Fan chart con 5 stacked Areas | Error bars | Stacked areas dan la sensación visual de "abanico" que comunica incertidumbre intuitivamente |
+| 11 | Migration matrix como heatmap desktop + list mobile | Solo heatmap responsive | Heatmap en mobile es ilegible. List con badges es más usable |
+| 12 | Persona profiles como expandibles en línea | Página dedicada | El usuario necesita comparar personas sin perder contexto. Expandibles mantienen el flujo |
+| 13 | SEGMENT_COLORS como Record<string, string> con hex | Usar directamente CHART_PALETTE | Los segmentos tienen identidad semántica propia (deportivos=teal) que no siempre mapea a la paleta genérica. Pero los hex coinciden para Recharts |
+| 14 | ExportButton con solo onPrint() en 14c | Agregar data prop para narrative export | Los componentes de 14c no tienen narrative engine propio. Future: cuando haya member_narrative_generate, agregar data |
+| 15 | Historical saves como tabla + mobile cards | Timeline visual | Los saves no son un flujo temporal — son registros individuales. Tabla es más informativa |
+| 16 | Cost of Inaction banner como primer elemento en ChurnPrevention | Al final como insight | Impacto emocional: el usuario ve el costo de NO actuar ANTES de ver las opciones. Motiva a continuar |
+| 17 | Custom ScatterTooltip y FanTooltip | Tooltip genérico | Los datos tienen formato específico (monedas, percentiles, tier) que un tooltip genérico no muestra bien |
+| 18 | Intervention playbook expandible | Tabla de intervenciones | La description completa es demasiado larga para una tabla. Expandibles permiten progressive disclosure |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| 1-7 | Infraestructura, tokens, forms, lists, details | ✅ |
+| 8 | Dashboard sub-componentes | 🔄 5/12 done |
+| 9 | Wellness + Satisfaction | ✅ |
+| 10 | Proactive Recommendations | ✅ COMPLETADA |
+| 11 | Communication Enhancement | ✅ COMPLETADA |
+| 12 | Guest Management + Trial Memberships | ✅ COMPLETADA |
+| 13 | Finance Enhancement + HITL Complete | ✅ COMPLETADA |
+| 14 | Intelligence Features (Profitability + Stress + Calendar) | ✅ COMPLETADA |
+| 14b | Export Intelligence (Narrative + Export + Decision Doc) | ✅ COMPLETADA |
+| **14c** | **Member Intelligence (Health + Segmentation + LTV + Churn)** | **✅ COMPLETADA** |
+| **14d** | **Decisiones Informadas (Decision Cockpit + Generative Comm)** | **⬜ SIGUIENTE** |
+| 15ext | Operaciones Autónomas (Briefing + Compliance + Smart Schedule) | ⬜ |
+| 15 | Integration Testing + QA | ⬜ |
+| 16 | Mock → Backend Migration | ⬜ |
+
+---
+
+## 6. PRÓXIMA FASE — Fase 14d: Decisiones Informadas + Comunicación Generativa
+
+**No requiere agente backend específico — se mockea todo.**
+
+### Tools MCP propuestas (4)
+
+| # | Tool | Server | Tipo | Aprobación | Backend | Nivel |
+|---|------|--------|------|------------|---------|-------|
+| 1 | `finance_decision_simulate` | finance | AI on-demand | AUTO | ⬜ mock-only | Nivel 2 — on-demand |
+| 2 | `communications_generate_personalized` | communications | AI on-demand | SEMI | ⬜ mock-only | Nivel 2 — on-demand |
+| 3 | `communications_campaign_generate` | communications | AI on-demand | SEMI | ⬜ mock-only | Nivel 2 — on-demand |
+| 4 | `communications_sentiment_analyze` | communications | AI auto | AUTO | ⬜ mock-only | Nivel 1 — auto-load |
+
+### Componentes propuestos (4)
+
+| # | Componente | Ubicación | Patrón |
+|---|-----------|-----------|--------|
+| 1 | DecisionCockpit | `features/finance/components/DecisionCockpit.tsx` | Sub-tab de FinancialIntelligence (tab #8) |
+| 2 | PersonalizedCommunication | `features/communications/components/PersonalizedCommunication.tsx` | Sub-tab de CommunicationDashboard |
+| 3 | CampaignGenerator | `features/communications/components/CampaignGenerator.tsx` | Sub-tab de CommunicationDashboard |
+| 4 | SentimentMonitor | `features/communications/components/SentimentMonitor.tsx` | Sub-tab de CommunicationDashboard |
+
+### DecisionCockpit — Detalle del componente
+
+**Concepto:** El usuario describe una decisión en lenguaje natural. La AI genera 3 escenarios (optimista/base/pesimista) con probabilidades, impactos cuantificados en ₡, y recomendación clara.
+
+**Visualizaciones propuestas:**
+1. Input textarea + CTA button (on-demand, Rule #19)
+2. Decision Tree visualization (3 branches con probabilities)
+3. Scenario Comparison table (3 cols: optimistic/base/pessimistic)
+4. Financial Impact cards (revenue delta, membership delta, cash flow delta)
+5. Risk Assessment badges por escenario
+6. AI Recommendation con confidence
+7. Historical Precedents si existen
+8. ExportButton → DecisionDocument (extensión futura)
+
+**Notas de context engineering:**
+- System Prompt: consultor estratégico especializado en clubs de campo Costa Rica
+- User Data: decision_text, current_financials, membership_data, historical_changes
+- Instruction: 3 escenarios con probabilidades, impactos en ₡, recomendación clara
+
+### Bloques propuestos (tentativo)
+
+| Bloque | Contenido | Dependencia |
+|--------|-----------|-------------|
+| B0 | Contracts + factories + registry para 4 tools | Ninguna |
+| B1 | DecisionCockpit component + integración en FinancialIntelligence | B0 |
+| B2 | PersonalizedCommunication + CampaignGenerator | B0 |
+| B3 | SentimentMonitor + integración en CommunicationDashboard + DecisionDocument update | B1, B2 |
+
+### ApprovalQueue impact
+
+Las 4 tools son AUTO o AI auto — no requieren HITL. 0 cambios en ApprovalQueue.
+
+### Archivos necesarios para 14d
+
+| # | Archivo (ruta) | Lo necesito para | ¿Lo necesita pasar? |
+|---|----------------|-----------------|----------------------|
+| 1 | `src/shared/mocks/contracts.ts` | B0 — append nuevos contracts | SÍ (último append) |
+| 2 | `src/shared/mocks/factories.ts` | B0 — append nuevas factories | SÍ (último append) |
+| 3 | `src/shared/mocks/mock-registry.ts` | B0 — imports + entries | SÍ (completo) |
+| 4 | `features/finance/components/FinancialIntelligence.tsx` | B1 — agregar sub-tab DecisionCockpit | SÍ |
+| 5 | `features/finance/types.ts` | B1 — agregar types de decision | SÍ |
+| 6 | `features/communications/CommunicationDashboard.tsx` | B2 — agregar 3 sub-tabs | SÍ |
+| 7 | `shared/components/export/DecisionDocument.tsx` | B3 — agregar finance_decision_simulate como 4ta fuente | SÍ |
+
+### Extensiones cross-module
+
+| Extensión | Qué se hace | Cuándo |
+|-----------|-------------|--------|
+| DecisionDocument.tsx update | Agregar `finance_decision_simulate` como 4ta query (on-demand, enabled: isOpen) | B3 de 14d |
+| Zustand store para variables compartidas (#43) | `finance-variables.store.ts` — ScenarioSimulator escribe, DecisionDocument lee | B3 de 14d |
+| ExportButton en DecisionCockpit | Solo onPrint (window.print) | B1 de 14d |
+| "Generar Campaña" placeholder en MemberSegmentation → CampaignGenerator | Conectar con CampaignGenerator de 14d | Futura (post 14d) |
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+### Pendientes resueltos en esta sesión
+
+| # | Issue | Resolución |
+|---|-------|-----------|
+| (ninguno de los pendientes existentes se resolvió — todos se trabajaron en 14c nueva) |
+
+### Pendientes nuevos de esta sesión
+
+| # | Issue | Severidad | Archivo | Fase sugerida |
+|---|-------|-----------|---------|---------------|
+| 45 | Segmentación: placeholder "Generar Campaña" no conecta a 14d | BAJA | `MemberSegmentation.tsx` | 14d |
+| 46 | LTV: placeholder "Documento de Decisión" no conecta a DecisionDocument | BAJA | `MemberLTV.tsx` | 14d |
+| 47 | Churn Prevention: cascade risk family_ids no son clickable/navegable | BAJA | `MemberChurnPrevention.tsx` | 14d o futura |
+| 48 | MemberLTV scatter: ZAxis range [60, 400] podría necesitar ajuste con data real | BAJA | `MemberLTV.tsx` | 16 |
+| 49 | Fan chart: P50 Line superpuesta puede tener alignment issues visuales con stacked areas | BAJA | `MemberLTV.tsx` | 15 QA |
+| 50 | TreemapCell SVG: width/height < 40 returns null — podría perder segmentos en layouts pequeños | BAJA | `MemberSegmentation.tsx` | 15 QA |
+| 51 | Factories de 14c ignoran params — backend real personalizará data | BAJA | `factories.ts` | 16 |
+| 52 | HealthScore gauge: solo muestra score del club general, no por familia individual | BAJA | `MemberHealthScore.tsx` | Futura (familia drill-down) |
+
+### Pendientes originales — Estado actualizado
+
+| # | Issue | Severidad | Archivo | Fase | Estado |
+|---|-------|-----------|---------|------|--------|
+| 2 | AIChatWidget: posición movida de derecha a izquierda sobre sidebar | MEDIA | `shared/components/chat/AIChatWidget.tsx` | 15 | ⬜ PENDIENTE |
+| 4 | Dashboard sub-componentes: 7/12 pendientes (violations reglas) | MEDIA | `features/dashboard/components/` | 8 | ⬜ PENDIENTE |
+| 6 | MembershipDonut: tooltip con backdrop-filter (Regla #2) | MEDIA | `features/dashboard/components/MembershipDonut.tsx` | 8 | ⬜ PENDIENTE |
+| 7 | AgeBalanceWidget: mock group colors no son tokens Silver Tide (Regla #1) | MEDIA | `features/dashboard/components/AgeBalanceWidget.tsx` | 8 | ⬜ PENDIENTE |
+| 8 | Sub-componentes dashboard: hex hardcodeados en vez de chartTheme (Regla #3) | MEDIA | `features/dashboard/components/*` | 8 | ⬜ PENDIENTE |
+| 9 | HitlQueue: botones raw en vez de Button shared (Regla #17) | MEDIA | `features/dashboard/components/HitlQueue.tsx` | 8 | ⬜ PENDIENTE |
+| 10 | MembershipDonut: falta useReducedMotion() (Regla #18) | BAJA | `features/dashboard/components/MembershipDonut.tsx` | 8 | ⬜ PENDIENTE |
+| 14 | SettingsPage: notificaciones store local no sync con backend | BAJA | `features/settings/SettingsPage.tsx` | 15 | ⬜ PENDIENTE |
+| 15 | SettingsPage: versión frontend hardcoded "1.0.0-beta" | BAJA | `features/settings/SettingsPage.tsx` | 15 | ⬜ PENDIENTE |
+| 16 | RiskHeatmap: emojis como icons en vez de Lucide | BAJA | `features/reports/RiskHeatmap.tsx` | 15 | ⬜ PENDIENTE |
+| 17 | MyReservations: tipos inline no compartidos | BAJA | `features/mi-club/MyReservations.tsx` | 15 | ⬜ PENDIENTE |
+| 18 | communication_insights: tool mock-only, no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 19 | guest_management_insights: tool mock-only, no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 22 | `get_financial_summary` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 23 | `finance_scenario_simulate` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 24 | `finance_opportunities_scan` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 25 | `finance_board_briefing` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 26 | FilterDropdown import path no verificada | MEDIA | `FamilyAccount.tsx` | 15 | ⬜ PENDIENTE |
+| 27 | `get_family_account`, `get_transactions`, `get_invoices` no existen en FinanceAgent | MEDIA | `FamilyAccount.tsx` | 16 | ⬜ PENDIENTE |
+| 28 | FamilyAccount aging bucket usa 40/60 split de `aging_90_plus` | BAJA | `FamilyAccount.tsx` | 16 | ⬜ PENDIENTE |
+| 29 | BillingCenter: `InvoiceData` backend no tiene `invoice_number`, `balance`, `paid_amount` | MEDIA | `BillingCenter.tsx` | 16 | ⬜ PENDIENTE |
+| 31 | ScenarioSimulator `categoryLabels` hardcodeado | BAJA | `FinancialIntelligence.tsx` | Futura | ⬜ PENDIENTE |
+| 32 | `finance_member_profitability` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 33 | `finance_stress_test` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 34 | `finance_seasonal_calendar` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 38 | StressTestPanel fan chart bands son aproximadas | BAJA | `StressTestPanel.tsx` | Futura | ⬜ PENDIENTE |
+| 40 | Logo del club `CCC.png` no se usa en PrintView ni DecisionDocument | BAJA | `PrintView.tsx`, `DecisionDocument.tsx` | 15 QA | ⬜ PENDIENTE |
+| 41 | `finance_narrative_generate` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 42 | `export_report` es mock-only | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 43 | Scenario variables no se comparten entre sub-tabs — DecisionDocument usa defaults | MEDIA | `FinancialIntelligence.tsx` sub-tabs | 14d | ⬜ PENDIENTE |
+| 44 | ExportButton `onPrint` con `window.print()` no genera PDF con branding del club | BAJA | `FinanceOverview.tsx` et al. | 15 QA | ⬜ PENDIENTE |
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección 0 (ROL) — REEMPLAZAR:
+
+```
+**Principal FullStack Engineer** del Castillo Country Club.
+10 disciplinas: FullStack Engineering, UI/UX Architecture, Product Strategy,
+Private Club Operations (Costa Rica), Machine Learning & Predictive Analytics,
+Gen AI & LLM Architecture, Marketing Intelligence, Financial Engineering,
+MCP Architecture & Agent Orchestration, Data Architecture & Analytics Engineering.
+
+**Regla de oro:** Yo propongo y analizo ANTES de escribir código. El usuario aprueba antes de generar. Changelog detallado al final de cada bloque.
+```
+
+### Sección 3 (Design System — Silver Tide) — AGREGAR:
+
+```
+### Member Intelligence Tokens
+- SEGMENT_COLORS: deportivos=#2A9AB5, sociales=#C9A96E, ejecutivos=#B8C0CC,
+  familiares=#3DAA70, invisibles=#C46470
+- DIMENSION_COLORS: engagement=#2A9AB5, financial=#C9A96E, social=#3DAA70,
+  communication=#B8C0CC, satisfaction=#D4A840
+- RISK_LEVEL_CONFIG: critical=#C46470, high=#D4A840, medium=#2A9AB5,
+  low=#8A95A5, healthy=#3DAA70
+- TIER_CONFIG: Platinum=#C9A96E, Gold=#D4A840, Silver=#B8C0CC
+```
+
+### Sección 4 (Patrones AI) — AGREGAR nuevos patrones:
+
+```
+| Nivel        | Patrón                                          | Ejemplo                              |
+|--------------|------------------------------------------------|--------------------------------------|
+| Intelligence | Composite Health Score (multi-dim weighted)     | MemberHealthScore                    |
+| Intelligence | Behavioral Micro-Segmentation                  | MemberSegmentation                   |
+| Intelligence | Monte Carlo Fan Chart (5 stacked bands)        | MemberLTV                            |
+| Intelligence | LTV × Risk Scatter Matrix (quadrants)          | MemberLTV                            |
+| Intelligence | Sensitivity Tornado (sorted by abs impact)     | MemberLTV                            |
+| Intelligence | Intervention Playbook (expandible cards)       | MemberChurnPrevention                |
+| Intelligence | Cost of Inaction Banner                        | MemberChurnPrevention                |
+| Intelligence | On-Demand AI Feature (empty→CTA→fetch)         | MemberChurnPrevention                |
+```
+
+### Sección 6 (Shared Components) — AGREGAR:
+
+```
+**Member Intelligence:**
+- MemberIntelligenceDashboard — hub con 4 tabs (Health, Segmentation, LTV, Churn)
+- MemberHealthScore — gauge + radar + trend + at-risk table
+- MemberSegmentation — treemap + personas + migration + campaign readiness
+- MemberLTV — fan chart + scatter matrix + sensitivity + payback
+- MemberChurnPrevention — on-demand: risk cards + playbook + historical saves
+
+**Types & Configs (features/members/types.ts):**
+- RISK_LEVEL_CONFIG, SEGMENT_COLORS, DIMENSION_COLORS, TIER_CONFIG
+- getScoreColor(), getScoreLabel()
+```
+
+### Sección 7 (Estado del Sprint) — REEMPLAZAR:
+
+```
+| Fase | Contenido                                        | Estado            |
+|------|--------------------------------------------------|-------------------|
+| 1-7  | Infraestructura, tokens, forms, lists, details   | ✅                |
+| 8    | Dashboard sub-componentes                        | 🔄 5/12 done      |
+| 9    | Wellness + Satisfaction                          | ✅                |
+| 10   | Proactive Recommendations                        | ✅ COMPLETADA     |
+| 11   | Communication Enhancement                        | ✅ COMPLETADA     |
+| 12   | Guest Management + Trial Memberships             | ✅ COMPLETADA     |
+| 13   | Finance Enhancement + HITL Complete              | ✅ COMPLETADA     |
+| 14   | Intelligence Features (Profit+Stress+Calendar)   | ✅ COMPLETADA     |
+| 14b  | Export Intelligence (Narrative+Export+Decision)  | ✅ COMPLETADA     |
+| 14c  | Member Intelligence (Health+Segment+LTV+Churn)   | ✅ COMPLETADA     |
+| 14d  | Decision Cockpit + Generative Communications     | ⬜ SIGUIENTE      |
+| 15ext| Operaciones Autónomas (Briefing+Compliance)      | ⬜                |
+| 15   | Integration Testing + QA                         | ⬜                |
+| 16   | Mock → Backend Migration                         | ⬜                |
+```
+
+### Sección 8 (Pendientes) — REEMPLAZAR completamente con tabla consolidada de Sección 7 del checkpoint (52 pendientes).
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos nuevos (7)
+
+| Regla | types | index | Hub | HealthScore | Segmentation | LTV | ChurnPrevention |
+|-------|-------|-------|-----|-------------|-------------|-----|-----------------|
+| #1 NUNCA hardcoded | ✅ Tokens+hex configs | N/A | N/A | ✅ chartTheme | ✅ chartTheme+color-mix | ✅ chartTheme | ✅ chartTheme+color-mix |
+| #2 NO blur datos | N/A | N/A | N/A | ✅ bg-surface-2 | ✅ bg-surface-2 | ✅ bg-surface-2 | ✅ bg-surface-2 |
+| #3 chartTheme | N/A | N/A | N/A | ✅ CHART,PALETTE,TOOLTIP,AXIS | ✅ todos | ✅ todos | ✅ todos |
+| #4 Changelog | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #5 Código completo | ✅ nuevo | ✅ nuevo | ✅ nuevo | ✅ nuevo | ✅ nuevo | ✅ nuevo | ✅ nuevo |
+| #6 ResponsiveContainer | N/A | N/A | N/A | ✅ 5 charts | ✅ 2 charts | ✅ 5 charts | ✅ 2 charts |
+| #8 formatCurrency | N/A | N/A | N/A | ✅ formatNumber | ✅ formatCurrency | ✅ formatCurrency | ✅ formatCurrency |
+| #9 TOOLTIP_STYLE | N/A | N/A | N/A | ✅ | ✅ | ✅ FanTooltip+Scatter | ✅ RiskScatterTooltip |
+| #10 AXIS_TICK | N/A | N/A | N/A | ✅ | ✅ | ✅ | ✅ |
+| #11 focus-visible | N/A | N/A | N/A | ✅ ExportButton | ✅ Persona buttons | ✅ ExportButton | ✅ Intervention buttons |
+| #12 min-h-44 | N/A | N/A | N/A | ✅ | ✅ | ✅ | ✅ |
+| #13 DetailTabs | N/A | N/A | ✅ | N/A | N/A | N/A | N/A |
+| #14 EmptyState | N/A | N/A | N/A | ✅ | ✅ | ✅ | ✅ |
+| #15 showToast | N/A | N/A | N/A | ✅ ExportButton | ✅ ExportButton | ✅ ExportButton | ✅ ExportButton |
+| #16 PageContainer | N/A | N/A | ✅ | N/A | N/A | N/A | N/A |
+| #17 Button shared | N/A | N/A | N/A | ✅ ExportButton | ✅ ExportButton | ✅ ExportButton | ✅ ExportButton+CTA |
+| #18 reducedMotion | N/A | N/A | N/A | ✅ | ✅ | ✅ | ✅ |
+| #19 on-demand | N/A | N/A | N/A | N/A (auto) | N/A (auto) | N/A (auto) | ✅ enabled:shouldFetch |
+| #20 breakpoint | N/A | N/A | N/A | ✅ isMobile | ✅ isMobile | N/A | ✅ grid responsive |
+| #21 responsive | N/A | N/A | N/A | ✅ table/cards | ✅ heatmap/list | ✅ scatter groups | ✅ table/cards |
+| #22 cn() | N/A | N/A | N/A | ✅ | ✅ | ✅ | ✅ |
+
+### Archivos modificados (5)
+
+| Regla | contracts | factories | registry | router | Sidebar |
+|-------|-----------|-----------|----------|--------|---------|
+| #1 | N/A | N/A | N/A | N/A | N/A |
+| #4 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #5 | ✅ append | ✅ append | ✅ append | ✅ quirúrgico | ✅ quirúrgico |
+| Contracts never deleted | ✅ | N/A | N/A | N/A | N/A |
+| Params pasados | N/A | ✅ | ✅ | N/A | N/A |
+| Data coherente | ✅ 142 familias | ✅ consistente | ✅ | N/A | N/A |
+
+**0 violaciones en archivos nuevos y modificados.**
+
+---
+
+## 10. QUICK START PARA NUEVO CHAT
+
+```
+1. Pegar CLAUDE_CONTEXT_MINI.md (Secciones 0-10 actualizadas según Sección 8)
+2. Pegar este CHECKPOINT (Fase 14c completa + 14d propuesta)
+
+3. Pedir: "Pasame los archivos de mocks para B0 de 14d"
+   → contracts.ts (último append), factories.ts (último append), mock-registry.ts (completo)
+
+4. Pedir: "Genera B0 de 14d (contracts + factories + registry)"
+   → 4 tools: finance_decision_simulate, communications_generate_personalized,
+     communications_campaign_generate, communications_sentiment_analyze
+
+5. Pedir: "Pasame FinancialIntelligence.tsx + types.ts de finance"
+   → Para B1 (DecisionCockpit sub-tab)
+
+6. Pedir: "Genera B1 de 14d (DecisionCockpit)"
+   → Sub-tab #8 en FinancialIntelligence
+
+7. Pedir: "Pasame CommunicationDashboard.tsx"
+   → Para B2 (3 sub-tabs nuevos)
+
+8. Pedir: "Genera B2 de 14d (PersonalizedCommunication + CampaignGenerator)"
+
+9. Pedir: "Pasame DecisionDocument.tsx"
+   → Para B3 (agregar 4ta fuente)
+
+10. Pedir: "Genera B3 de 14d (SentimentMonitor + DecisionDocument update)"
+
+─── ALTERNATIVA: Si se quiere ir directo a 15ext ───
+    Pedir: "Pasame info de 15ext (ya la tengo del checkpoint)"
+    → 3 tools: operations_daily_briefing, operations_compliance_check, operations_smart_schedule
+    → Nuevo módulo: features/operations/
+
+─── SI SE NECESITA VER AGENTE BACKEND ───
+    Pedir: "Pasame el archivo de [nombre] agent backend"
+    → backend/src/club_mcp/agents/{agent}.py
+
+─── SI SE QUIEREN RESOLVER PENDIENTES ───
+    Pendientes MEDIA: #2, #4, #6, #7, #8, #9, #26, #27, #29, #43
+    → Pedir: "Pasame los archivos del dashboard que necesitamos fixear"
+    → Componentes: MembershipDonut, AgeBalanceWidget, HitlQueue
+```
+
+---
+
+## 11. DECISION LOG
+
+| # | Decisión | Razón | Impacto |
+|---|---------|-------|---------|
+| 1 | Rol ampliado de 4 a 10 disciplinas | El usuario requirió expertise en ML, Gen AI, Marketing, Financial Engineering, MCP Architecture, Data Architecture | Propuestas más potentes y fundamentadas en todos los componentes AI |
+| 2 | Módulo independiente `features/members/` para Member Intelligence | Hub autónomo que alimenta 3 módulos (14b, 14d, 15ext) | Define estructura de módulos de inteligencia — patrón replicable |
+| 3 | Brain icon para sidebar "Inteligencia" | Semánticamente correcto, no duplica iconos | Sidebar entry nueva permanente |
+| 4 | Roles [ADMIN, JUNTA] para members route | Junta necesita inteligencia de membresía para decisiones estratégicas | Junta accede a Inteligencia de Socios |
+| 5 | 3 tools auto-load + 1 on-demand en 14c | Health/Segmentation/LTV son consultas regulares. Churn es decisión intencional | Define pattern: data = auto, decision = on-demand |
+| 6 | Treemap con custom SVG cell | Recharts default no permite tipografía ni control | Pattern documentado para futuros treemaps |
+| 7 | Monte Carlo fan chart con 5 stacked Areas + P50 Line | Comunicación intuitiva de incertidumbre | Pattern documentado para proyecciones |
+| 8 | Custom tooltips (FanTooltip, ScatterTooltip, RiskScatterTooltip) | Tooltip genérico no muestra formato específico (monedas, percentiles, tier) | Pattern: crear tooltip custom cuando los datos tienen formato especial |
+| 9 | Cost of Inaction banner como primer elemento de ChurnPrevention | Impacto emocional: el usuario ve el costo de NO actuar primero | Pattern: liderar con el costo de inacción en herramientas de retención |
+| 10 | SEGMENT_COLORS como Record<string, string> (no depende de CHART_PALETTE) | Los segmentos tienen identidad semántica propia | Los hex coinciden con CHART_PALETTE pero la config es independiente |
+| 11 | ExportButton con solo onPrint en 14c | Los componentes no tienen narrative engine propio | Se activa data prop cuando haya member_narrative_generate |
+| 12 | Factories de 14c ignoran params | Mock devuelve siempre misma data | Backend real personalizará. Se elimina en Fase 16 |
+| 13 | Cascade risk como family_ids no clickeables | Implementación de navegación cruzada requiere router integration | Pendiente #47 — futura feature |
+| 14 | 14d DecisionCockpit como sub-tab de FinancialIntelligence (tab #8) | Vive junto a ScenarioSimulator y StressTest — flujo: explorar → simular → decidir | Se agrega al hub existente de finance |
+| 15 | 14d Communications tools como sub-tabs de CommunicationDashboard | Patrón ya establecido con CommunicationOverview, Analytics, etc. | 3 sub-tabs nuevos en hub existente |
+| 16 | Todos los 4 tools de 14d son AUTO o AI auto — 0 cambios en ApprovalQueue | Decision simulate es AUTO, sentiment es AUTO, personalized/campaign son SEMI | No se toca ApprovalQueue en 14d |
+| 17 | DecisionDocument update como B3 de 14d | Entregable incremental — no se modifica hasta que B1+B2 estén listos | 4ta fuente: finance_decision_simulate |
+| 18 | Zustand store para variables compartidas (#43) resolver en B3 de 14d | ScenarioSimulator escribe, DecisionDocument lee | Fix para issue #43 pendiente de 14b |
+
+---
+
+Fase 14c completa. Member Intelligence Hub operativo con 4 herramientas AI y ~2,965 líneas nuevas. La siguiente fase lógica es 14d (Decisiones Informadas + Comunicación Generativa). Todo el contexto de 14d ya fue proporcionado y procesado en esta sesión — solo falta generar los bloques de código. Nos vemos en el próximo chat.

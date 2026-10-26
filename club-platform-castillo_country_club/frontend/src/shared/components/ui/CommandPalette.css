@@ -1,0 +1,532 @@
+/**
+ * CommandPalette.css
+ * src/shared/components/ui/CommandPalette.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-cmd
+ * @keyframes   1 (ui-cmd-spin)
+ * @signature   Full-screen command palette with glass panel, live search,
+ *              grouped results with selection state, keyboard navigation,
+ *              and kbd hint footer. Clean overlay → panel → search →
+ *              results → footer vertical flow.
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  Panel: backdrop-filter + -webkit + gradient bg
+ * D2 Stagger  ✗  Command palette (instant show, no stagger)
+ * D3 Easing   ✓  Apple easing on panel entrance, specific transitions
+ * D4 Typo     ✓  Display panel title, UI body/items, mono kbd/badges
+ * D5 Color    ✓  Gold selection, silver hierarchy, category muted
+ * D6 Pseudo   ✗  Functional component (not applicable)
+ * D7 Interact ✓  hover/focus on items, keyboard navigation, close
+ * D8 Density  ✓  Compact items (10px vertical), 20px horizontal padding
+ * D9 Response ✓  Bottom sheet on mobile
+ * D10 A11y    ✓  role="dialog", aria-modal, data-testid, aria-hidden
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  1 namespaced at end
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  OVERLAY (D3, D9)
+   Fixed full-screen container, centers panel.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-cmd__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 15vh 16px 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.ui-cmd__overlay--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  BACKDROP
+   Dark overlay behind panel.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-cmd__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  PANEL (D1, D3)
+   Glass surface dialog with entrance animation.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-cmd__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 576px;
+  border-radius: var(--radius-xl, 16px);
+  background: linear-gradient(
+    168deg,
+    rgba(28, 36, 50, 0.98) 0%,
+    rgba(16, 22, 36, 0.99) 100%
+  );
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.6),
+    0 0 1px rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  /* Entrance — starts hidden */
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity 0.15s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ui-cmd__panel--visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  SEARCH AREA (D4, D7)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-cmd__search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ui-cmd__search-icon {
+  flex-shrink: 0;
+  color: var(--color-silver-400);
+}
+
+.ui-cmd__search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--color-silver-100);
+  line-height: 1.4;
+}
+
+.ui-cmd__search-input::placeholder {
+  color: var(--color-silver-500);
+}
+
+.ui-cmd__spinner {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 2px solid color-mix(in srgb, var(--color-silver-500) 30%, transparent);
+  border-top-color: var(--color-gold-400);
+  border-radius: 50%;
+  animation: ui-cmd-spin 0.8s linear infinite;
+}
+
+.ui-cmd__kbd--esc {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .ui-cmd__kbd--esc {
+    display: inline-flex;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  RESULTS AREA (D8)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-cmd__results {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 8px 0;
+  scroll-behavior: smooth;
+}
+
+.ui-cmd__results::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ui-cmd__results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ui-cmd__results::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+.ui-cmd__results::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.ui-cmd__empty {
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.ui-cmd__empty p {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--color-silver-400);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  GROUPS (D4)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-cmd__group-header {
+  padding: 12px 20px 6px;
+}
+
+.ui-cmd__group-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-silver-500);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  ITEMS (D5, D7)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-cmd__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: var(--color-silver-300);
+  /* D3: Specific properties */
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.ui-cmd__item:hover {
+  background: var(--color-surface-3);
+}
+
+.ui-cmd__item:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: -2px;
+  border-radius: 2px;
+}
+
+.ui-cmd__item--selected {
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  color: var(--color-gold-400);
+}
+
+.ui-cmd__item--selected:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 14%, transparent);
+}
+
+.ui-cmd__item-icon {
+  flex-shrink: 0;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.ui-cmd__item--selected .ui-cmd__item-icon {
+  opacity: 0.9;
+}
+
+.ui-cmd__item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ui-cmd__item-label {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-cmd__item-desc {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-500);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-cmd__item--selected .ui-cmd__item-desc {
+  color: color-mix(in srgb, var(--color-gold-400) 60%, transparent);
+}
+
+.ui-cmd__item-arrow {
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  FOOTER + KBD (D4, D7)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-cmd__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ui-cmd__hints {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ui-cmd__hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-500);
+}
+
+.ui-cmd__hint--desktop {
+  display: none;
+  color: var(--color-silver-600);
+}
+
+@media (min-width: 640px) {
+  .ui-cmd__hint--desktop {
+    display: flex;
+  }
+}
+
+.ui-cmd__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  color: var(--color-silver-500);
+  background: var(--color-surface-3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-cmd__backdrop {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.light .ui-cmd__panel {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.15),
+    0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.light .ui-cmd__search {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .ui-cmd__search-input {
+  color: var(--color-silver-800);
+}
+
+.light .ui-cmd__search-input::placeholder {
+  color: var(--color-silver-400);
+}
+
+.light .ui-cmd__spinner {
+  border-color: color-mix(in srgb, var(--color-silver-400) 30%, transparent);
+  border-top-color: var(--color-gold-500);
+}
+
+.light .ui-cmd__group-label {
+  color: var(--color-silver-400);
+}
+
+.light .ui-cmd__item {
+  color: var(--color-silver-700);
+}
+
+.light .ui-cmd__item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .ui-cmd__item--selected {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  color: var(--color-gold-600);
+}
+
+.light .ui-cmd__item--selected:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+
+.light .ui-cmd__item-desc {
+  color: var(--color-silver-400);
+}
+
+.light .ui-cmd__item--selected .ui-cmd__item-desc {
+  color: color-mix(in srgb, var(--color-gold-500) 50%, transparent);
+}
+
+.light .ui-cmd__footer {
+  border-top-color: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .ui-cmd__kbd {
+  color: var(--color-silver-500);
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-cmd__overlay {
+    transition: none;
+  }
+
+  .ui-cmd__panel {
+    transition: none;
+  }
+
+  .ui-cmd__item {
+    transition: none;
+  }
+
+  .ui-cmd__spinner {
+    animation-duration: 1.6s;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §10  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .ui-cmd__overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .ui-cmd__panel {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: var(--radius-xl, 16px) var(--radius-xl, 16px) 0 0;
+    transform-origin: bottom center;
+  }
+
+  .ui-cmd__panel:not(.ui-cmd__panel--visible) {
+    transform: translateY(100%);
+  }
+
+  .ui-cmd__panel--visible {
+    transform: translateY(0);
+  }
+
+  .ui-cmd__search {
+    padding: 14px 16px;
+  }
+
+  .ui-cmd__results {
+    max-height: 60vh;
+  }
+
+  .ui-cmd__group-header {
+    padding: 10px 16px 4px;
+  }
+
+  .ui-cmd__item {
+    padding: 10px 16px;
+  }
+
+  .ui-cmd__footer {
+    padding: 10px 16px;
+  }
+
+  .ui-cmd__hints {
+    gap: 12px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §11  KEYFRAMES (D13)
+   ALL at end, ALL ui-cmd-* namespaced. Count: 1.
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes ui-cmd-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §12  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-cmd__overlay {
+    display: none !important;
+  }
+}

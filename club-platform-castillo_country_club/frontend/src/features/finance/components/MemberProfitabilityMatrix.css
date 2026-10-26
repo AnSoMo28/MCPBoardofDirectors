@@ -1,0 +1,211 @@
+/**
+ * @component MemberProfitabilityMatrix (Fase 19l)
+ * @namespace .glass-profit-*, .quadrant-label
+ * @depends globals.css (glass tokens, color-mix, font tokens)
+ * @note --quadrant-color se setea inline via style={} en el TSX
+ * @note --glass-shadow-hover se setea via globals.css o inline
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   Fase 19l — Member Profitability Matrix Glass
+   Surface · scatter · summary · strategy · ranking
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Profitability Panel (Propuesta 1) ── */
+
+.glass-profit-panel {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.glass-profit-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Glass Profitability Card (summary, strategy) ── */
+
+.glass-profit-card {
+  position: relative;
+  backdrop-filter: blur(8px) saturate(1.03);
+  -webkit-backdrop-filter: blur(8px) saturate(1.03);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.glass-profit-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glass-profit-card:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
+  transform: translateY(-1px);
+}
+
+/* Quadrant accent variant — top border color */
+.glass-profit-card--quadrant {
+  border-top: 2px solid var(--quadrant-color, rgba(255,255,255,0.1));
+}
+
+.glass-profit-card--quadrant:hover {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--quadrant-color, transparent) 8%, transparent);
+}
+
+/* Active/filter state */
+.glass-profit-card--active {
+  border-color: var(--color-gold-400);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+
+/* ── Glass Profitability Scatter (chart container) ── */
+
+.glass-profit-scatter {
+  position: relative;
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.glass-profit-scatter::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Glass Profitability Row (ranking table row) ── */
+
+.glass-profit-row {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.glass-profit-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.glass-profit-row--selected {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 3px 0 0 var(--quadrant-color, var(--color-gold-400));
+}
+
+/* ── Glass Mobile Profit Card ── */
+
+.glass-profit-mobile-card {
+  position: relative;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 16px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  min-height: 44px;
+}
+
+.glass-profit-mobile-card:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
+}
+
+.glass-profit-mobile-card--selected {
+  border-color: var(--color-gold-400);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+
+/* ── Quadrant Label (on chart) ── */
+
+.quadrant-label {
+  position: absolute;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  opacity: 0.3;
+  pointer-events: none;
+  text-transform: uppercase;
+  transition: opacity 0.3s ease;
+}
+
+.quadrant-label--active {
+  opacity: 0.7;
+}
+
+/* ── Light Mode Overrides ── */
+
+.light .glass-profit-panel {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-profit-card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-profit-card--active {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-profit-scatter {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-profit-row:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .glass-profit-row--selected {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .glass-profit-mobile-card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}

@@ -1,0 +1,426 @@
+/* src/features/events/components/PulseRing.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Events Domain — PulseRing (Living Capacity Ring)            */
+/*                                                              */
+/* @namespace  pr-*                                             */
+/* @keyframes  7 (prReveal, prHeartbeat, prSonar,              */
+/*              prOrbit, prEndpointPulse, prAmbientBreathe,     */
+/*              prGlowPulse)                                    */
+/* @signature  5-state heartbeat + sonar pulse + orbit ring     */
+/*             + gradient arc + ambient radial + breathing text */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Root + Urgency States */
+/* §1 Ambient Radial Glow */
+/* §2 SVG Ring */
+/* §3 Track */
+/* §4 Progress Arc */
+/* §5 Endpoint Glow Bead */
+/* §6 Sonar Pulse Rings */
+/* §7 Glow Ring (100%) */
+/* §8 Waitlist Orbit */
+/* §9 Center Text */
+/* §10 Status Label */
+/* §11 Keyframes */
+/* §12 Light Mode */
+/* §13 Reduced Motion */
+/* §14 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Root + Urgency States                                    */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  animation: prReveal 0.5s var(--ease-apple) forwards;
+  opacity: 0;
+  /* CSS custom properties set via inline style */
+  --pr-circum: 301.59; /* 2 * PI * 48 */
+}
+
+/* Urgency state modifiers — set heartbeat speed */
+.pr--calm     { --pr-bpm: 4s; }
+.pr--active   { --pr-bpm: 3s; }
+.pr--elevated { --pr-bpm: 2s; }
+.pr--critical { --pr-bpm: 1.2s; }
+.pr--overflow { --pr-bpm: 0.8s; }
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Ambient Radial Glow                                      */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr__ambient {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--pr-size, 120px) * 1.4);
+  height: calc(var(--pr-size, 120px) * 1.4);
+  transform: translate(-50%, -55%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--pr-color) 12%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: prAmbientBreathe var(--pr-bpm, 4s) ease-in-out infinite;
+}
+
+.pr--calm .pr__ambient {
+  opacity: 0.3;
+}
+
+.pr--active .pr__ambient {
+  opacity: 0.4;
+}
+
+.pr--elevated .pr__ambient {
+  opacity: 0.5;
+}
+
+.pr--critical .pr__ambient {
+  opacity: 0.7;
+}
+
+.pr--overflow .pr__ambient {
+  opacity: 0.9;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 SVG Ring                                                 */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr__svg {
+  width: var(--pr-size, 120px);
+  height: var(--pr-size, 120px);
+  transform: rotate(-90deg);
+  position: relative;
+  z-index: 1;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 Track                                                    */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr__track {
+  stroke: rgba(255, 255, 255, 0.06);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 Progress Arc                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr__arc {
+  transition: stroke-dashoffset 0.8s var(--ease-apple);
+  /* Heartbeat scale on the arc */
+  transform-origin: center;
+  animation: prHeartbeat var(--pr-bpm, 4s) ease-in-out infinite;
+}
+
+.pr--calm .pr__arc {
+  animation: none; /* No heartbeat when calm */
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Endpoint Glow Bead                                       */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr__endpoint {
+  filter: blur(2px);
+  opacity: 0.8;
+  animation: prEndpointPulse var(--pr-bpm, 4s) ease-in-out infinite;
+  transform-origin: center;
+}
+
+.pr--calm .pr__endpoint {
+  animation: none;
+  opacity: 0.5;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Sonar Pulse Rings (85%+)                                 */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr__sonar {
+  fill: none;
+  stroke: var(--pr-color, var(--color-amber-400));
+  stroke-width: 1.5;
+  opacity: 0;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.pr__sonar--1 {
+  animation: prSonar 2.4s ease-out infinite;
+}
+.pr__sonar--2 {
+  animation: prSonar 2.4s ease-out infinite;
+  animation-delay: 0.8s;
+}
+.pr__sonar--3 {
+  animation: prSonar 2.4s ease-out infinite;
+  animation-delay: 1.6s;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Glow Ring (100%)                                         */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr__glow-ring {
+  stroke: var(--color-rose-400);
+  opacity: 0.15;
+  transform-origin: center;
+  animation: prGlowPulse 0.8s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Waitlist Orbit                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr__orbit {
+  stroke: var(--color-teal-400);
+  opacity: 0.4;
+  transform-origin: center;
+  animation: prOrbit 12s linear infinite;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Center Text                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 2;
+  animation: prAmbientBreathe var(--pr-bpm, 4s) ease-in-out infinite;
+}
+
+.pr--calm .pr__center {
+  animation: none;
+}
+
+.pr__pct {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 4vw, 22px);
+  font-weight: 700;
+  color: var(--pr-color, var(--color-emerald-400));
+  line-height: 1;
+}
+
+.pr__count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-silver-500);
+  line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §10 Status Label                                            */
+/* ─────────────────────────────────────────────────────────── */
+
+.pr__status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.pr__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pr-color, var(--color-emerald-400));
+  animation: prEndpointPulse var(--pr-bpm, 4s) ease-in-out infinite;
+}
+
+.pr--calm .pr__status-dot {
+  animation: none;
+}
+
+.pr__status-text {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pr-color, var(--color-emerald-400));
+  line-height: 1.3;
+}
+
+.pr__waitlist {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-teal-400);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.3;
+}
+
+.pr__waitlist::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-teal-400);
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §11 Keyframes                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes prReveal {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Heartbeat: small-big-small-pause (cardiac rhythm) */
+@keyframes prHeartbeat {
+  0%   { transform: scale(1); }
+  5%   { transform: scale(1.015); }
+  10%  { transform: scale(1); }
+  15%  { transform: scale(1.025); }
+  25%  { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+/* Sonar: expand outward + fade */
+@keyframes prSonar {
+  0%   { r: 48; opacity: 0.4; stroke-width: 2; }
+  100% { r: 72; opacity: 0; stroke-width: 0.5; }
+}
+
+/* Orbit: full rotation */
+@keyframes prOrbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Endpoint: subtle glow pulse */
+@keyframes prEndpointPulse {
+  0%, 100% { opacity: 0.5; r: 3; }
+  50%      { opacity: 1; r: 5; }
+}
+
+/* Ambient: breathe with heartbeat */
+@keyframes prAmbientBreathe {
+  0%, 100% { opacity: inherit; transform: translate(-50%, -55%) scale(1); }
+  50%      { transform: translate(-50%, -55%) scale(1.08); }
+}
+
+/* Glow ring at 100%: rapid pulse */
+@keyframes prGlowPulse {
+  0%, 100% { opacity: 0.1; }
+  50%      { opacity: 0.25; }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §12 Light Mode                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .pr__track {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+.light .pr__ambient {
+  opacity: 0.15;
+}
+.light .pr--active .pr__ambient   { opacity: 0.2; }
+.light .pr--elevated .pr__ambient { opacity: 0.25; }
+.light .pr--critical .pr__ambient { opacity: 0.35; }
+.light .pr--overflow .pr__ambient { opacity: 0.45; }
+.light .pr__pct {
+  color: var(--color-silver-800);
+}
+.light .pr__count {
+  color: var(--color-silver-500);
+}
+.light .pr__orbit {
+  stroke: var(--color-teal-500);
+  opacity: 0.3;
+}
+.light .pr__sonar {
+  stroke: var(--color-amber-500);
+}
+.light .pr__glow-ring {
+  stroke: var(--color-rose-500);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §13 Reduced Motion                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .pr {
+    animation: none !important;
+    opacity: 1;
+  }
+  .pr__arc,
+  .pr__endpoint,
+  .pr__center,
+  .pr__status-dot {
+    animation: none !important;
+  }
+  .pr__sonar,
+  .pr__orbit,
+  .pr__glow-ring {
+    animation: none !important;
+    display: none;
+  }
+  .pr__ambient {
+    animation: none !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §14 Print                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  .pr {
+    animation: none;
+    opacity: 1;
+  }
+  .pr__ambient,
+  .pr__sonar,
+  .pr__orbit,
+  .pr__glow-ring,
+  .pr__endpoint {
+    display: none;
+  }
+  .pr__track {
+    stroke: #e5e7eb;
+  }
+  .pr__arc {
+    stroke: #111 !important;
+    animation: none;
+  }
+  .pr__pct {
+    color: #111;
+    animation: none;
+  }
+  .pr__count {
+    color: #555;
+  }
+  .pr__center {
+    animation: none;
+  }
+  .pr__status-text {
+    color: #111;
+  }
+  .pr__status-dot {
+    background: #111;
+    animation: none;
+  }
+}

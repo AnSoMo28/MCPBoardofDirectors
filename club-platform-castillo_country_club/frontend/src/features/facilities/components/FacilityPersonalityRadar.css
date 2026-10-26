@@ -1,0 +1,254 @@
+/* src/features/facilities/components/FacilityPersonalityRadar.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* FACILITY PERSONALITY RADAR — "El Alma del Espacio"            */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — area grow-in, dot stagger            */
+/*   SENSE 2: REACCIÓN — dot hover tooltip                       */
+/*   SENSE 3: MEMORIA — value display on hover                   */
+/*   SENSE 4: INTENCIÓN — dominant axis highlighted              */
+/*   SENSE 5: SINIESTRÍA — dominant dot pulses                   */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — name + paragraph                       */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.glass-fac-radar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ═══ RADAR SVG ═══════════════════════════════════════════════ */
+
+.glass-fac-radar__svg {
+  width: 100%;
+  max-width: 280px;
+  display: block;
+}
+
+[data-compact="true"] .glass-fac-radar__svg {
+  max-width: 200px;
+}
+
+/* ── Grid ── */
+.glass-fac-radar__grid {
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-silver-400) 8%, transparent);
+  stroke-width: 0.5;
+}
+
+/* ── Axis lines ── */
+.glass-fac-radar__axis-line {
+  stroke: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+  stroke-width: 0.5;
+  transition: stroke 0.3s ease, opacity 0.3s ease;
+}
+
+/* Sense 4: Dominant axis highlighted */
+.glass-fac-radar__axis-line[data-dominant="true"] {
+  stroke: color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+  stroke-width: 1;
+}
+
+/* ── Value area — Sense 1: animated grow-in ── */
+.glass-fac-radar__area {
+  fill: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+  stroke: color-mix(in srgb, var(--color-teal-400) 50%, transparent);
+  stroke-width: 1.5;
+  animation: glass-fac-radar-grow 0.8s ease-out forwards;
+  transform-origin: center;
+}
+
+@keyframes glass-fac-radar-grow {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Mode-responsive area color (Sense 6) */
+[data-mode="alert"] .glass-fac-radar__area {
+  fill: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+  stroke: color-mix(in srgb, var(--color-amber-400) 50%, transparent);
+}
+
+[data-mode="critical"] .glass-fac-radar__area {
+  fill: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+  stroke: color-mix(in srgb, var(--color-rose-400) 40%, transparent);
+}
+
+/* ═══ VALUE DOTS ══════════════════════════════════════════════ */
+
+.glass-fac-radar__dot-group {
+  cursor: pointer;
+}
+
+.glass-fac-radar__dot {
+  fill: color-mix(in srgb, var(--color-teal-400) 80%, transparent);
+  transition: r 0.2s ease, fill 0.2s ease;
+  /* Sense 1: stagger entry */
+  opacity: 0;
+  animation: glass-fac-radar-dot-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.1s + 0.6s);
+}
+
+@keyframes glass-fac-radar-dot-enter {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Sense 2: hover → bigger dot */
+.glass-fac-radar__dot-group[data-hovered="true"] .glass-fac-radar__dot {
+  fill: var(--color-teal-300);
+}
+
+/* Sense 5: Dominant dot is brighter */
+.glass-fac-radar__dot-group[data-dominant="true"] .glass-fac-radar__dot {
+  fill: var(--color-teal-300);
+}
+
+/* ── Dominant dot pulse ring (Sense 5: SINIESTRÍA) ── */
+.glass-fac-radar__dot-pulse {
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-teal-400) 30%, transparent);
+  stroke-width: 1;
+  animation: glass-fac-radar-dot-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glass-fac-radar-dot-pulse {
+  0%, 100% {
+    r: 8;
+    opacity: 0.6;
+  }
+  50% {
+    r: 14;
+    opacity: 0;
+  }
+}
+
+/* ── Dot tooltip (Sense 2 + 3) ── */
+.glass-fac-radar__dot-tooltip-bg {
+  fill: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  stroke: color-mix(in srgb, var(--color-border) 30%, transparent);
+  stroke-width: 0.5;
+}
+
+.glass-fac-radar__dot-tooltip-text {
+  fill: var(--color-silver-200);
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* ═══ AXIS LABELS ═════════════════════════════════════════════ */
+
+.glass-fac-radar__axis-label {
+  fill: var(--color-silver-500);
+  font-size: 8px;
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  transition: fill 0.2s ease;
+}
+
+/* Sense 4: Dominant label highlighted */
+.glass-fac-radar__axis-label[data-dominant="true"] {
+  fill: var(--color-silver-200);
+  font-weight: 700;
+}
+
+.glass-fac-radar__axis-value {
+  fill: var(--color-silver-300);
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  transition: fill 0.2s ease;
+}
+
+/* Sense 4: Dominant value highlighted */
+.glass-fac-radar__axis-value[data-dominant="true"] {
+  fill: var(--color-teal-400);
+  font-weight: 700;
+}
+
+/* ═══ PERSONALITY NAME (Sense 7) ══════════════════════════════ */
+
+.glass-fac-radar__name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--color-silver-100);
+  text-align: center;
+  margin-top: 16px;
+  animation: glass-fac-radar-name-enter 0.6s ease-out 0.4s both;
+}
+
+@keyframes glass-fac-radar-name-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+
+.glass-fac-radar__narrative {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-silver-400);
+  line-height: 1.7;
+  text-align: center;
+  max-width: 320px;
+  margin: 8px 0 0;
+  animation: glass-fac-radar-name-enter 0.6s ease-out 0.6s both;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .glass-fac-radar__grid {
+  stroke: color-mix(in srgb, var(--color-silver-300) 12%, transparent);
+}
+
+.light .glass-fac-radar__axis-label {
+  fill: var(--color-silver-400);
+}
+
+.light .glass-fac-radar__axis-value {
+  fill: var(--color-silver-600);
+}
+
+.light .glass-fac-radar__name {
+  color: var(--color-silver-800);
+}
+
+.light .glass-fac-radar__narrative {
+  color: var(--color-silver-500);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-fac-radar__area {
+    animation: none;
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .glass-fac-radar__dot {
+    animation: none;
+    opacity: 1;
+  }
+
+  .glass-fac-radar__dot-pulse {
+    animation: none;
+  }
+
+  .glass-fac-radar__name,
+  .glass-fac-radar__narrative {
+    animation: none;
+    opacity: 1;
+  }
+}

@@ -1,0 +1,264 @@
+# RESUMEN EJECUTIVO — Documentos Centralizados
+
+> **NOTA PARA CHECKPOINT Y CLAUDE_CONTEXT.md:** Este resumen DEBE incluirse en el checkpoint final de F33 y en la actualización de CLAUDE_CONTEXT.md como referencia operativa permanente.
+
+---
+
+## 1. domain-enums.ts — Master Source of Truth
+
+### Propósito
+Enum centralizado para TODOS los dominios. Evita que cada `features/*/types.ts` re-defina enums que comparten múltiples dominios.
+
+### Regla absoluta
+> Cross-domain enums → `domain-enums.ts`. Domain-specific enums → `features/*/types.ts`.
+
+### Enums maestros (16 total)
+
+| # | Sección | Enum | Valores count | Consumido por |
+|---|---------|------|--------------|---------------|
+| 1 | Member | `MEMBER_TIERS` | 7 (platino, oro, plata, bronce, basic, premium, vip) | families, dashboard, members, engagement |
+| 2 | Member | `AGE_GROUP_CATEGORIES` | 6 (toddler, kids, teens, young_adults, adults, seniors) | families, dashboard, members |
+| 3 | Member | `LIFECYCLE_STAGES` | 8 (prospect→reactivated) | families, engagement |
+| 4 | Member | `FAMILY_STATUSES` | 4 (active, inactive, suspended, pending_approval) | families |
+| 5 | Member | `MEMBER_ROLES` | 4 (primary, spouse, child, dependent) | families |
+| 6 | Engagement | `ENGAGEMENT_LEVELS` | 7 (champion→inactive) | engagement, communication, advisor |
+| 7 | Engagement | `SENTIMENTS` | 3 (positive, neutral, negative) | satisfaction, communication, engagement |
+| 8 | Events | `EVENT_CATEGORIES` | 8 (sports, cultural, social, private, festive, children, family, corporate) | events, cultural, sports, facilities |
+| 9 | Events | `EVENT_STATUSES` | 7 (draft→cancelled) | events |
+| 10 | Events | `RSVP_STATUSES` | 5 (pending, confirmed, declined, waitlisted, no_show) | events |
+| 11 | Guests | `TRIAL_TYPES` | 3 (day_pass, week_trial, month_trial) | guests |
+| 12 | Guests | `TRIAL_STATUSES` | 6 (pending_approval→cancelled) | guests |
+| 13 | Guests | `GUEST_CHECKIN_STATUSES` | 3 (active, departed, no_show) | guests |
+| 14 | Guests | `GUEST_REGISTRY_STATUSES` | 4 (registered, checked_in, completed, cancelled) | guests |
+| 15 | Shared | `TREND_DIRECTIONS` | 3 (improving, stable, declining) | **F33: utilization trend** |
+| 16 | Shared | `SEVERITY_LEVELS` | 4 (low, medium, high, critical) | **F33: maintenance alerts** |
+
+### Enums maestros adicionales (Shared Patterns)
+
+| # | Enum | Valores | Uso cross-domain |
+|---|------|---------|-----------------|
+| 17 | `CONFIDENCE_LEVELS` | 3 (low, medium, high) | Advisor scoring universal |
+| 18 | `PRIORITY_LEVELS` | 4 (low, medium, high, urgent) | Recommendations, anomalies |
+| 19 | `OPERATION_STATUSES` | 8 (draft→cancelled) | Pricing, suggestions, campaigns |
+| 20 | `APPROVAL_LEVELS` | 4 (auto, semi, hitl, always_human) | HITL system global |
+
+### Display configs (13)
+Cada enum tiene su `*_DISPLAY` record con `label`, `color` (Silver Tide tokens), `bgColor` (color-mix). NUNCA hardcodear colores — usar estos configs.
+
+### Legacy mappings (8)
+Transición segura de valores legacy → master. Útiles durante migración incremental. Documentados con source y target.
+
+### Type guards (8)
+Runtime validation para strings que vienen del backend. Usar en componentes que reciben datos MCP.
+
+---
+
+## 2. ai-intelligence.ts — AI Type System
+
+### Propósito
+Tipos genéricos para TODAS las features AI. Cada dominio extiende estos generics — nunca crea tipos ad-hoc.
+
+### Regla absoluta
+> Generic AI types → `ai-intelligence.ts`. Domain AI aliases → aquí también (Section 4). Component-specific shapes → `features/*/types.ts`.
+
+### AI Primitives (7 tipos base)
+
+| # | Tipo | Propósito | Usado por F33 |
+|---|------|-----------|---------------|
+| 1 | `AIFactor` | Factor individual con impact, direction, weight | Health score factors |
+| 2 | `AIRecommendation` | Recomendación con category, impact, priority, effort | Optimization suggestions |
+| 3 | `AIProjectedMetric` | Métrica proyectada con confidence interval | Utilization forecast |
+| 4 | `AITrendPoint` | Punto time-series con metrics | 7-day utilization data |
+| 5 | `AIAlert` | Alerta con urgency + action_required | Maintenance overdue, capacity overflow |
+| 6 | `AIPositiveTrend` | Tendencia positiva con impact | Operational improvements |
+| 7 | `AIRiskFactor` | Riesgo con severity, probability, mitigation | Structural/compliance risks |
+
+### AI Output Types (8 tipos compuestos)
+
+| # | Tipo | Propósito | Extension F33 |
+|---|------|-----------|---------------|
+| 1 | `AIPrediction<T>` | Predicción genérica con confidence + factors | `AIPrediction<number>` para utilization forecast |
+| 2 | `AIAnalysis` | Reporte multi-dimensión (findings, recommendations, alerts, trends, risks) | Base de `FacilitiesAnalysis` |
+| 3 | `AIHealthScore` | Score compuesto 0-100 con grade, level, factors[] | Facility health composite |
+| 4 | `AIFinding` | Hallazgo con type, severity, evidence | Intelligence panel findings |
+| 5 | `AINarrative` | Narrativa AI (root_cause, benchmark, recommendation) | Advisor "Análisis Profundo" |
+| 6 | `AIScenario` | Escenario de simulación con probability | Space optimization scenarios |
+| 7 | `AISimulation` | 3 escenarios + risk_assessment + recommended | "Simular" button en banner |
+| 8 | `AIActionPlan` / `AIActionPlanItem` | Plan priorizado con items ejecutables | Maintenance prioritization plan |
+
+### Brief Type (1)
+
+| # | Tipo | Propósito |
+|---|------|-----------|
+| 1 | `AIBrief` | Documento ejecutivo con markdown, key_points, talking_points, q_and_a |
+
+### Advisor Types (5)
+
+| # | Tipo | Propósito | Uso F33 |
+|---|------|-----------|---------|
+| 1 | `AdvisorInsightBase` | Base para TODOS los domain insights (id, impact, title, reasoning, confidence, action?) | `FacilitiesAdvisorInsight extends AdvisorInsightBase` |
+| 2 | `AdvisorCommand` | Acción ejecutable (server, tool, params, approval_level, label) | 5 acciones facilities |
+| 3 | `AdvisorActionState` | Estado de ejecución (idle/loading/done/error) | Banner button states |
+| 4 | `AdvisorReaction` | Feedback post-ejecución (source, status, reaction, next_step) | Reaction system |
+| 5 | `AdvisorLayer` | 15 layers posibles (macro, micro, fusion, diagnostic, health, etc.) | health, utilization, maintenance, space, cross_domain |
+
+### Domain AI Aliases (8 existentes → 1 nueva para F33)
+
+| # | Alias | Domain | F33 status |
+|---|-------|--------|-----------|
+| 1 | `EventAttendancePrediction` | events | — |
+| 2 | `FinancialAnalysis` | financial | — |
+| 3 | `SatisfactionAnalysis` | satisfaction | — |
+| 4 | `EngagementAnalysis` | engagement | — |
+| 5 | `CommunicationAnalysis` | communication | — |
+| 6 | `FamilyIntelligence` | family | — |
+| 7 | `WellnessAnalysis` | wellness | — |
+| 8 | `EventOptimization` | events | — |
+| 9 | `ConflictAnalysis` | events | — |
+| **10** | **`FacilitiesAnalysis`** | **facilities** | **NUEVO — crear en F33** |
+
+### AI Domain Registry (12 dominios)
+
+```typescript
+AI_DOMAINS = [
+  "financial", "events", "engagement", "communication",
+  "family", "wellness", "satisfaction", "facilities",    // ← facilities YA registrado
+  "cultural_social", "sports", "executive", "global",
+]
+```
+
+**Nota:** El color de `facilities` en `AI_DOMAIN_DISPLAY` es `silver-300` (gris). Todos los demás dominios activos tienen colores vivos. Considerar upgrade a `teal-400` para F33.
+
+### Helpers (6 funciones)
+
+| # | Función | Propósito | Uso F33 |
+|---|---------|-----------|---------|
+| 1 | `getConfidenceLevel(score)` | Devuelve low/medium/high | Advisor confidence badges |
+| 2 | `getConfidenceDisplay(score)` | Devuelve level + label + color | Advisor banner display |
+| 3 | `sortInsightsByPriority(insights)` | Ordena por impact DESC, confidence DESC | Banner rendering order |
+| 4 | `filterInsightsByImpact(insights, min)` | Filtra por mínimo impact | Banner threshold |
+| 5 | `generateInsightId(domain, rule)` | ID único para insight | Hook rule output |
+| 6 | `generateReactionId()` | ID único para reaction | Post-execution feedback |
+
+---
+
+## 3. Mapeo de reutilización para F33
+
+### De domain-enums.ts → features/facilities/types.ts
+
+| Qué importar | Por qué |
+|---|---|
+| `TREND_DIRECTIONS`, `TREND_DISPLAY` | Utilization trend en intelligence panel |
+| `SEVERITY_LEVELS`, `SEVERITY_DISPLAY` | Maintenance alert severity |
+| `PRIORITY_LEVELS`, `PRIORITY_DISPLAY` | Optimization priority |
+| `CONFIDENCE_LEVELS`, `CONFIDENCE_DISPLAY` | Advisor confidence scoring |
+| `EVENT_CATEGORIES`, `EVENT_CATEGORY_DISPLAY` | Cross-domain con coordinate_event_setup |
+| `DisplayConfig` interface | Facility-specific display configs |
+
+### De ai-intelligence.ts → features/facilities/types.ts
+
+| Qué importar | Por qué |
+|---|---|
+| `AdvisorInsightBase` | Base para `FacilitiesAdvisorInsight` |
+| `AdvisorCommand` | Acciones del advisor (5 facilities actions) |
+| `AdvisorReaction` | Post-execution feedback |
+| `AIHealthScore` | Facility health composite score |
+| `AIAnalysis` | Base para `FacilitiesAnalysis` |
+| `AIPrediction<T>` | Utilization forecast |
+| `AIRecommendation` | Space optimization suggestions |
+| `AITrendPoint` | Utilization time-series |
+| `AIAlert` | Maintenance/capacity alerts |
+| `AIFactor` | Health score factor breakdown |
+| `sortInsightsByPriority()` | Banner insight ordering |
+| `filterInsightsByImpact()` | Banner threshold filtering |
+| `generateInsightId()` | Insight ID generation |
+| `getConfidenceLevel()` | Confidence badge rendering |
+
+### Lo que F33 crea en features/facilities/types.ts (domain-specific)
+
+| Tipo/Enum | Razón de stay domain-specific |
+|---|---|
+| `FacilityType` (13 values) | Como `SportType` — solo facilities |
+| `FacilityStatus` (5 values) | Solo facilities |
+| `MaintenanceType` (6 values) | Solo facilities |
+| `MaintenanceStatus` (5 values) | Solo facilities |
+| `MaintenancePriority` (4 values) | Solo facilities (mapping a SEVERITY_DISPLAY para display) |
+| `SetupStatus` (5 values) | Solo facilities |
+| `InspectionResult` (4 values) | Solo facilities |
+| `FacilitiesAdvisorInsight` | Extiende AdvisorInsightBase con layers domain-specific |
+| `FacilitiesAnalysis` (alias) | Extiende AIAnalysis con campos facilities-specific |
+| Transform helpers | `summaryToKPIs`, `buildOccupancyGrid`, `buildMaintenanceKPIs` |
+| Config maps | `FACILITY_TYPE_DISPLAY`, `FACILITY_STATUS_DISPLAY`, `MAINTENANCE_*_DISPLAY`, etc. |
+
+---
+
+## 4. Anti-duplicación — Checklist antes de crear cualquier tipo
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  CHECKLIST ANTI-DUPLICACIÓN                                 ║
+║                                                              ║
+║  Antes de crear un tipo/enum en features/facilities/types.ts:║
+║                                                              ║
+║  1. ¿Existe en domain-enums.ts?                              ║
+║     → SI: importar, NO re-definir                            ║
+║     → NO: continuar                                          ║
+║                                                              ║
+║  2. ¿Es un AI type genérico?                                 ║
+║     → SI: ¿existe en ai-intelligence.ts?                     ║
+║       → SI: importar                                         ║
+║       → NO: crear en ai-intelligence.ts primero              ║
+║     → NO: continuar                                          ║
+║                                                              ║
+║  3. ¿Es domain-specific (FacilityType, etc.)?               ║
+║     → SI: crear en features/facilities/types.ts              ║
+║     → NO: reconsiderar dónde va                              ║
+║                                                              ║
+║  4. ¿Otro dominio podría necesitarlo?                        ║
+║     → SI: crear en domain-enums.ts o ai-intelligence.ts      ║
+║     → NO: stay en domain types.ts                            ║
+║                                                              ║
+║  5. ¿Los colores usan Silver Tide tokens?                    ║
+║     → SI: proceder                                           ║
+║     → NO: PARAR — usar var(--color-*) o color-mix()         ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## 5. Nota para Checkpoint y CLAUDE_CONTEXT.md
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  ⚠️  INCLUIR EN CHECKPOINT F33 Y CLAUDE_CONTEXT.md              ║
+║                                                                  ║
+║  1. Este resumen ejecutivo como sección nueva                   ║
+║     "Centralized Type System Reference"                          ║
+║                                                                  ║
+║  2. Actualizar domain-enums.ts:                                  ║
+║     - Total enums: 16 → verificar count real                    ║
+║     - Agregar nota: "FacilityType y similares → stay domain"    ║
+║                                                                  ║
+║  3. Actualizar ai-intelligence.ts:                               ║
+║     - Agregar FacilitiesAnalysis alias (Section 4)              ║
+║     - Actualizar AI_DOMAIN_DISPLAY.facilities.color             ║
+║     - Total domain aliases: 8 → 9 (con facilities)             ║
+║                                                                  ║
+║  4. Actualizar CLAUDE_CONTEXT.md sección 4 (Stack):             ║
+║     - Agregar domain-enums.ts como "Master Source of Truth"     ║
+║     - Agregar ai-intelligence.ts como "AI Type System"          ║
+║                                                                  ║
+║  5. Actualizar CLAUDE_CONTEXT.md sección 8 (Mock System):       ║
+║     - Agregar regla: "Before creating types, check              ║
+║       domain-enums.ts y ai-intelligence.ts primero"             ║
+║                                                                  ║
+║  6. Agregar regla #30+ al set de reglas:                        ║
+║     "Cross-domain enums → domain-enums.ts"                      ║
+║     "AI generic types → ai-intelligence.ts"                     ║
+║     "Domain-specific → features/*/types.ts"                     ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+

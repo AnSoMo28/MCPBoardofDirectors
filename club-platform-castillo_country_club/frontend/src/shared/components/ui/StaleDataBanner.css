@@ -1,0 +1,210 @@
+/**
+ * StaleDataBanner.css
+ * src/shared/components/ui/StaleDataBanner.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-stale-banner
+ * @keyframes   1 (ui-stale-banner-spin)
+ * @signature   Amber glass warning banner with slide-in entrance,
+ *              refresh spinning feedback, translucent surface
+ *
+ * FIXES v2.1 — Auditoría G9 (Paquete 1):
+ * [x] G9-10 (P2) `white-space: nowrap` + ellipsis truncaba el MENSAJE DE
+ *     ADVERTENCIA en desktop (la señal más importante del banner). AHORA el
+ *     texto fluye multilínea por defecto; el truncado single-line era un
+ *     anti-patrón UX para contenido de alerta.
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  Translucent amber bg + border via color-mix
+ * D2 Stagger  ✗  Single element (not applicable)
+ * D3 Easing   ✓  Apple easing on entrance + transitions
+ * D4 Typo     ✓  UI font body (12px), compact button (11px)
+ * D5 Color    ✓  color-mix() for amber surface, tokens for text
+ * D6 Pseudo   ✗  Inline banner (not applicable)
+ * D7 Interact ✓  Refresh button hover/focus/disabled, banner refreshing state
+ * D8 Density  ✓  10px 16px padding, compact text
+ * D9 Response ✓  Full-width on mobile
+ * D10 A11y    ✓  role="status", aria-live, aria-hidden, data-testid
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  1 namespaced at end
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  ROOT — .ui-stale-banner (D1, D3, D8)
+   Amber translucent surface. Apple easing entrance.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stale-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md, 10px);
+  background: color-mix(in srgb, var(--color-amber-400) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+  /* D3: Entrance — starts hidden */
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    opacity 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ui-stale-banner--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Refreshing state — dim and disable */
+.ui-stale-banner--refreshing {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  CONTENT (D4, D8)
+   G9-10: el texto fluye multilínea — nunca truncar una advertencia.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stale-banner__content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ui-stale-banner__icon {
+  color: var(--color-amber-400);
+  flex-shrink: 0;
+}
+
+.ui-stale-banner__text {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-silver-300);
+  line-height: 1.4;
+  margin: 0;
+  /* G9-10: sin nowrap/ellipsis — el mensaje completo siempre visible */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  REFRESH BUTTON (D7, D8)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-stale-banner__btn {
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 4px 10px;
+  min-height: 0;
+  height: auto;
+  color: var(--color-amber-400);
+}
+
+/* Refresh icon — spinning on refresh */
+.ui-stale-banner__refresh-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.ui-stale-banner__refresh-icon--spinning {
+  animation: ui-stale-banner-spin 1s linear infinite;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-stale-banner {
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+}
+
+.light .ui-stale-banner__text {
+  color: var(--color-silver-600);
+}
+
+.light .ui-stale-banner__btn {
+  color: var(--color-amber-500);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-stale-banner {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .ui-stale-banner__refresh-icon--spinning {
+    animation: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .ui-stale-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 12px;
+  }
+
+  .ui-stale-banner__btn {
+    align-self: flex-end;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  KEYFRAMES (D13)
+   ALL at end, ALL ui-stale-banner-* namespaced. Count: 1.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Refresh spin */
+@keyframes ui-stale-banner-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-stale-banner {
+    border: 1px solid #b45309 !important;
+    background: transparent !important;
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    break-inside: avoid;
+  }
+
+  .ui-stale-banner__text {
+    color: #1a1a1a !important;
+  }
+
+  .ui-stale-banner__btn {
+    display: none !important;
+  }
+
+  .ui-stale-banner__refresh-icon--spinning {
+    animation: none !important;
+  }
+}

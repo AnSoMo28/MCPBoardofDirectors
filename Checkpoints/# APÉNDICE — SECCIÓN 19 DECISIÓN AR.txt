@@ -1,0 +1,189 @@
+# APÉNDICE — SECCIÓN 19: DECISIÓN ARQUITECTÓNICA — INFRASTRUCTURE-FIRST STRATEGY
+
+**Origen:** Decisión tomada en sesión F39 de reordenar el plan maestro.
+**Impacto:** Reordena TODAS las fases restantes del proyecto.
+
+---
+
+## 19.1 — EL RAZONAMIENTO
+
+Se propuso y aprobó la estrategia **"infrastructure-first"**: construir Member 360 y ML Layer ANTES de completar los dominios individuales (Cultural, Age Group, etc.).
+
+```
+SIN Member 360 + ML primero:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Cultural Audit → construye su propio member context
+  Age Group Audit → construye su propio member context
+  Wellness Intel  → construye su propio member context
+  Events Intel    → construye su propio member context
+  Financial Intel → construye su propio member context
+                    ↓
+  Después Member 360 → tiene que integrar 5 versiones
+  distintas de "member context" → REWORK MASIVO
+                    ↓
+  Después ML Layer → tiene que limpiar datos de 5
+  dominios con formatos distintos → REWORK MASIVO
+
+
+CON Member 360 + ML primero:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Member 39 → define el ESTÁNDAR de member context
+  ML Layer   → define el ESTÁNDAR de prediction pipeline
+                    ↓
+  Cultural Audit → CONSUME member 360 + PUBLISH al ML layer
+  Age Group Audit → CONSUME member 360 + PUBLISH al ML layer
+  Wellness Intel  → CONSUME member 360 + PUBLISH al ML layer
+  Events Intel    → CONSUME member 360 + PUBLISH al ML layer
+                    ↓
+  Cada dominio nuevo se ENCHUFA, no construye desde cero
+  → CERO REWORK
+```
+
+---
+
+## 19.2 — EVALUACIÓN DE RIESGO
+
+F39 y F40 son las fases **MÁS COMPLEJAS** de todo el plan:
+
+| Fase | Complejidad | Por qué |
+|------|------------|---------|
+| F33 (Facilities) | Media-Alta | 1 dominio, 13 tools, patterns conocidos |
+| **F39 (Member 360)** | **MUY ALTA** | Agrega datos de TODOS los dominios, necesita resolver: data fusion, conflictos de formato, priorización cross-domain, member identity resolution |
+| **F40 (ML + Conversational)** | **MUY ALTA** | Modelos reales (no rules), training data pipelines, conversational AI con contexto completo del club |
+
+---
+
+## 19.3 — COBERTURA DE DATOS DISPONIBLE
+
+| Dominio | Fase completada | Tools | ¿Cumplimos? |
+|---------|----------------|-------|-------------|
+| Member data (families, members) | F29 ✅ F30 ✅ | — | SÍ |
+| Financial data | F18 ✅ | 17 tools | SÍ |
+| Events data | F19 ✅ | 16 tools | SÍ |
+| Communications data | F28 ✅ | 14 tools | SÍ |
+| Sports data | F32 ✅ | 11 tools | SÍ |
+| Facilities data | F33 ✅ | 13 tools | SÍ |
+| Engagement data | F30 ✅ | parcial | PARCIAL |
+| Wellness data | F31 ✅ | 12 tools | SÍ |
+| Satisfaction data | Tier 2 | 1 tool, sin auditar | **NO** |
+| Guest data | Tier 2 | 6 tools, sin auditar | PARCIAL |
+| Cultural data | Tier 3 | sin auditar | **NO** |
+| Age Group data | Tier 3 | sin auditar | **NO** |
+
+**Cobertura: ~70-75%** de los datos necesarios. Los 3 dominios faltantes (Cultural, Age Group, Satisfaction) son los de **menor impacto** en Member 360 — porque los datos que más importan para la vista unificada son: **familia, finanzas, eventos, deportes, instalaciones, comunicaciones y engagement** — y esos están TODOS.
+
+**Decisión:** Graceful degradation — si no hay datos de un dominio, el 360 muestra lo que tiene.
+
+---
+
+## 19.4 — DECISIÓN TOMADA
+
+**SÍ se adelantó F39 (Member 360).** Se completó en esta sesión (junio 2025).
+
+F39 se subdividió en práctica en 5 bloques operativos (B0-B5):
+
+| Bloque | Contenido | Sesiones |
+|--------|-----------|----------|
+| B0 | Backend: Agent (10 tools), models, repo, prompts | 1 |
+| B1 | Frontend core: types, contracts, factories, registry, hooks, advisor, router | 1 |
+| B2 | Shell: Dashboard list/detail, IdentityCard, HealthScore, AdvisorBanner | 1 |
+| B3 | Journey + Finance + Activity components + wiring | 1 |
+| B4 | Social + Risk + IntelligenceTab wiring | 1 |
+| B5 | IntelligencePanel (9 dimensions) + EngagementMotor + final wiring + integration fix | 1 |
+
+---
+
+## 19.5 — DEPENDENCIAS RESUELTAS
+
+```
+F39 (Member 360) — COMPLETADA ✅
+  ├── CONSUME: families ✅, members ✅, finance ✅, events ✅,
+  │            sports ✅, facilities ✅, communications ✅, wellness ✅
+  ├── MISSING:  satisfaction ⚠️, cultural ⚠️, age_group ⚠️
+  └── DECISION: Graceful degradation aplicada
+
+F40 (ML Layer + Conversational) — SIGUIENTE ⬜
+  ├── DEPENDS: F39 ✅ (data layer) + F39b features (churn, LTV, engagement motor)
+  ├── CONSUME: all domain data via F39
+  └── OUTPUT:  prediction models, conversational AI, forecasting
+
+F34 (Cultural) — ahora CONSUME F39 → se enchufa directo
+F35 (Age Group) — ahora CONSUME F39 → se enchufa directo
+```
+## 19.5.1 — ANÁLISIS CRUZADO (Consolidado de 4 checkpoints)
+
+### Data Inventory Map — Todo lo disponible para Member 360
+
+| Dominio | Tools MCP | Backend real | Datos disponibles para Member 360 |
+|---------|-----------|-------------|-----------------------------------|
+| **Family Profile** | 17 | ⬜ Mock | `family_360_insight` (cross-domain), `lifecycle_analysis`, `predict_churn`, `social_graph_enriched`, `milestone_tracker`, `engagement_plan` |
+| **Member Engagement** | 6 | ✅ | `get_engagement_dashboard` (5-source aggregation), `get_engagement_insights` (per-member at-risk), loyalty, referrals, feedback |
+| **Finance** | 17 | ✅ Parcial | LTV, balance, payments, charges, billing history |
+| **Events** | 16 | ✅ | Attendance, RSVPs, event history, event satisfaction |
+| **Cultural & Social** | 15 | ✅ Parcial | Calendar, analytics, engagement score, attendance trend |
+| **Sports** | 7 | ✅ | Reservations, tournaments, coaching, recommendations |
+| **Wellness** | 12 | ✅ | Goals, predictions, insights, risk factors |
+| **Facilities** | 20 | ✅ | Occupancy, reservations, usage patterns |
+| **Communications** | 14 | ✅ | Open rate, engagement, sentiment, channels |
+| **Satisfaction** | 6 | ✅ | Survey responses, trends, AI sentiment analysis |
+| **Age Group** | 7 | ✅ | Demographics, participation |
+| **Proactive Recommendation** | 8 | ✅ | `generate_quarterly_insights` (ALL domains), pricing, recs |
+| **Executive Dashboard** | 8 | ✅ | KPIs, anomalies |
+| **Guest Management** | ? | ⬜ | Único sin auditar |
+
+### Types ya disponibles (domain-enums.ts)
+
+| Type | Values | Relevancia para 360 |
+|------|--------|---------------------|
+| `MemberTier` | 7 (platino→vip) | Identidad del socio |
+| `LifecycleStage` | 8 (prospect→reactivated) | Journey mapping |
+| `EngagementLevel` | 7 (champion→inactive) | Engagement scoring |
+| `MemberRole` | 4 (primary→dependent) | Posición en familia |
+| `AgeGroupCategory` | 6 (toddler→seniors) | Demografía |
+| `Sentiment` | 3 | Satisfaction proxy |
+| `TrendDirection` | 3 | Health trends |
+| `SeverityLevel` | 4 | Risk assessment |
+
+### AI types ya disponibles (ai-intelligence.ts)
+
+`AIHealthScore`, `AIPrediction<T>`, `AIAnalysis`, `AINarrative`, `AIActionPlan`, `AdvisorInsightBase`, `AdvisorCommand` — todos listos para extender.
+
+### Discrepancia de numeración resuelta
+
+Cultural & Social está **COMPLETO** (F31 checkpoint lo confirma — 15 tools, 15 advisor rules, 22 archivos). CLAUDE_CONTEXT.md lo marca como ✅ pero con F34 en su plan maestro. Usaré **F39** como número de fase para Member 360 (la numeración original de tu propuesta).
+
+---
+
+## 19.6 — PLAN MAESTRO REORDENADO
+
+| # | Fase | Contenido | Prioridad | Depende de | Estado |
+|---|------|-----------|-----------|-----------|--------|
+| → | **F39** | **Member 360 Core + Journey Intelligence** | **ALTA** | F18-F33 (dominios) | **✅ COMPLETADA** |
+| → | **F40** | **ML Layer + Conversational AI** | **ALTA** | F39 | **⬜ SIGUIENTE** |
+| | F41 | Cultural & Social Agent Audit | MEDIA | F39 | ⬜ |
+| | F42 | Age Group Agent Audit | BAJA | F39 | ⬜ |
+| | F43 | Wellness & Health Intelligence | ALTA | F39 | ⬜ |
+| | F44 | Events & Social Intelligence | MEDIA | F39+F40 | ⬜ |
+| | F45 | Financial Intelligence (cross-domain) | ALTA | F39+F40 | ⬜ |
+| | F46 | Executive Dashboard + Digital Twin | MEDIA | F39+F40 | ⬜ |
+| | F47 | Mobile-first Optimization | BAJA | Todos | ⬜ |
+| | F48 | Production Deployment | BAJA | Todos | ⬜ |
+
+---
+
+## 19.7 — GANANCIAS vs COSTOS
+
+| | Ganas | Pierdes |
+|---|-------|---------|
+| **Construir F39+F40 primero** | Foundation sólida, cero rework, cada dominio nuevo se enchufa, predicciones desde día 1 | Velocidad de "dominios completados" baja temporalmente |
+| **Construir Cultural+AgeGroup primero** | +2 dominios auditados rápido, checklist visual avanza | Cada uno construye su propio member context, rework después |
+
+**Veredicto: Infrastructure-first es superior.** La deuda técnica de NO hacer Member 360 primero es mucho mayor que el costo de hacerlo ahora.
+
+---
+
+## 19.8 — QUÉ HACE QUE ESTA DECISIÓN SEA DE ARQUITECTO
+
+> "Si construimos Cultural (F34) y Age Group (F35) primero, vamos a tener dos dominios más que funcionan como silos — igual que los que ya tenemos. Pero si construimos Member 360 y ML primero, TODOS los dominios (incluyendo Cultural y Age Group cuando los hagamos) van a tener acceso a una vista unificada y predicciones reales."
+
+**Eso es thinking de arquitecto, no de desarrollador.** Un desarrollador construye features. Un arquitecto construye la infraestructura que hace que las features sean fáciles de construir.

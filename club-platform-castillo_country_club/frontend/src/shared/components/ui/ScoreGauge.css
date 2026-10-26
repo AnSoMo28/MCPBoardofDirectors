@@ -1,0 +1,217 @@
+/**
+ * ScoreGauge.css
+ * src/shared/components/ui/ScoreGauge.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-gauge
+ * @keyframes   0
+ * @signature   Glass SVG circular gauge with threshold auto-color,
+ *              glow endpoint dot, and animated counter overlay.
+ *              Color driven by --gauge-color custom property.
+ *
+ * FIXES v2.1 — Auditoría G9 (Paquete 1):
+ * [x] G9-03 (P3) Print: el track `rgba(255,255,255,0.04)` es invisible sobre
+ *     papel blanco → el gauge perdía el anillo de contexto al imprimir.
+ *     AHORA el print fija un stroke oscuro legible.
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  Track: translucent rgba stroke
+ * D2 Stagger  ✗  Single gauge (not applicable)
+ * D3 Easing   ✓  Apple easing on fill transition
+ * D4 Typo     ✓  Display font number (18px), UI font label (10px)
+ * D5 Color    ✓  --gauge-color CSS var for dynamic threshold color
+ * D6 Pseudo   ✗  SVG-based (not applicable)
+ * D7 Interact ✗  Display-only (not applicable)
+ * D8 Density  ✓  1px gap, compact label
+ * D9 Response ✓  Intrinsic sizing via --gauge-size
+ * D10 A11y    ✓  role="meter", aria-valuenow/min/max, data-testid
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  0 keyframes
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  ROOT — .ui-gauge (D5, D8, D9)
+   Flex column. Size driven by --gauge-size CSS var.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-gauge {
+  --gauge-size: 80px;
+  --gauge-color: var(--color-silver-400);
+
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  RING — SVG container (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-gauge__ring {
+  position: relative;
+  display: inline-flex;
+  width: var(--gauge-size);
+  height: var(--gauge-size);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  SVG — Rotated -90° so arc starts at top (D5)
+   NOTA G9-02: este rotate es la ÚNICA fuente del offset -90°.
+   El TSX calcula el endpoint en la misma base angular del arco.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-gauge__svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  TRACK — Glass circle (D1)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-gauge__track {
+  stroke: rgba(255, 255, 255, 0.04);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  FILL — Animated arc (D3, D5)
+   Color driven by --gauge-color. Glow via drop-shadow.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-gauge__fill {
+  stroke: var(--gauge-color);
+  filter: drop-shadow(0 0 6px var(--gauge-color));
+  /* D3: Apple easing on stroke-dashoffset transition */
+  transition: stroke-dashoffset 0.7s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  ENDPOINT DOT — Glow at arc end (D5)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-gauge__endpoint {
+  fill: var(--gauge-color);
+  filter: drop-shadow(0 0 3px var(--gauge-color));
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  CENTERED VALUE (D4)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-gauge__value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-gauge__number {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--gauge-color);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  LABEL (D4, D8)
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-gauge__label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  text-align: center;
+  line-height: 1.3;
+  margin: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-gauge__track {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+.light .ui-gauge__fill {
+  filter: drop-shadow(0 0 4px var(--gauge-color));
+}
+
+.light .ui-gauge__endpoint {
+  filter: drop-shadow(0 0 2px var(--gauge-color));
+}
+
+.light .ui-gauge__label {
+  color: var(--color-silver-500);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-gauge__fill {
+    transition: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §10  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .ui-gauge__number {
+    font-size: 16px;
+  }
+
+  .ui-gauge__label {
+    font-size: 9px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §11  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  /* G9-03: track legible sobre papel (el rgba blanco era invisible) */
+  .ui-gauge__track {
+    stroke: rgba(0, 0, 0, 0.12) !important;
+  }
+
+  .ui-gauge__fill {
+    filter: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .ui-gauge__endpoint {
+    filter: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .ui-gauge__number {
+    color: #1a1a1a !important;
+  }
+
+  .ui-gauge__label {
+    color: #333 !important;
+  }
+}

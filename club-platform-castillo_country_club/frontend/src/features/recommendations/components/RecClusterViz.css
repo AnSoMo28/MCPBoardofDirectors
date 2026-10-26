@@ -1,0 +1,1376 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   RecClusterViz v2 — Glass namespace .glass-rcl
+   Keyframes prefix: rcl*
+
+   SVG constellation map + card grid (dual view).
+   Radial sector layout with cross-cluster opportunity detection.
+   Interactive node selection with detail panel.
+
+   Attributes: data-cluster-type, data-engagement-level, data-selected,
+   data-strength, data-active
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ─────────────────────────────────────────────────────────────── */
+
+.glass-rcl {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LOADING
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rcl-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rcl-skeleton {
+  border-radius: 8px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  position: relative;
+  overflow: hidden;
+}
+
+.rcl-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-surface-2) 50%,
+    transparent 100%
+  );
+  animation: rclSkeletonShimmer 1.5s ease-in-out infinite;
+}
+
+.rcl-skeleton--filters {
+  height: 36px;
+  width: 300px;
+}
+
+.rcl-skeleton--map {
+  height: 400px;
+  border-radius: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOOLBAR (filters + view toggle)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rcl-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rcl-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rcl-select {
+  height: 36px;
+  padding: 0 2rem 0 0.625rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+  color: var(--color-silver-100);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%237a7570' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rcl-select:focus {
+  outline: none;
+  border-color: var(--color-gold-400);
+  box-shadow: 0 0 0 2px rgba(232, 197, 71, 0.15);
+}
+
+.rcl-select option {
+  background: var(--color-surface-1);
+  color: var(--color-silver-100);
+}
+
+/* ── View toggle ──────────────────────────────────────────────────────── */
+
+.rcl-view-toggle {
+  display: flex;
+  gap: 0.25rem;
+  border-radius: 8px;
+  padding: 0.125rem;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.rcl-view-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-silver-500);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.rcl-view-pill:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.rcl-view-pill[data-active] {
+  background: var(--color-surface-2);
+  color: var(--color-silver-100);
+}
+
+.rcl-view-pill:hover:not([data-active]) {
+  color: var(--color-silver-300);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SUMMARY STRIP
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rcl-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rcl-summary-total {
+  font-size: 0.8125rem;
+  color: var(--color-silver-400);
+}
+
+.rcl-summary-stats {
+  display: flex;
+  gap: 0.375rem;
+  margin-left: auto;
+}
+
+.rcl-summary-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-silver-400);
+}
+
+.rcl-summary-stat svg {
+  flex-shrink: 0;
+}
+
+.rcl-summary-stat[data-engagement-level="high"] {
+  color: var(--color-emerald-400);
+  border-color: rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.rcl-summary-stat[data-engagement-level="medium"] {
+  color: var(--color-amber-400);
+  border-color: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.04);
+}
+
+.rcl-summary-stat[data-engagement-level="low"] {
+  color: var(--color-rose-400);
+  border-color: rgba(244, 63, 94, 0.2);
+  background: rgba(244, 63, 94, 0.04);
+}
+
+.rcl-summary-stat--opp {
+  color: var(--color-gold-400);
+  border-color: rgba(232, 197, 71, 0.2);
+  background: rgba(232, 197, 71, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rcl-empty-wrap {
+  padding: 2rem 1rem;
+}
+
+.rcl-empty-icon {
+  color: var(--color-silver-600);
+  opacity: 0.4;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SVG CONSTELLATION MAP
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rcl-map-wrap {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+  opacity: 0;
+  animation: rclMapReveal 0.5s ease forwards;
+}
+
+.rcl-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.rcl-svg-bg {
+  fill: var(--color-surface-0);
+  cursor: default;
+}
+
+.rcl-grid-line {
+  stroke: var(--color-border-subtle);
+  stroke-width: 0.5;
+  opacity: 0.3;
+}
+
+/* ── Sector labels ────────────────────────────────────────────────────── */
+
+.rcl-sector-label {
+  fill: var(--color-silver-600);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
+
+.rcl-sector-label[data-cluster-type="social"] {
+  fill: var(--color-gold-400);
+  opacity: 0.6;
+}
+
+.rcl-sector-label[data-cluster-type="activity"] {
+  fill: var(--color-teal-400);
+  opacity: 0.6;
+}
+
+.rcl-sector-label[data-cluster-type="age_based"] {
+  fill: var(--color-sage-400);
+  opacity: 0.6;
+}
+
+.rcl-sector-label[data-cluster-type="interest"] {
+  fill: var(--color-terracotta-400);
+  opacity: 0.6;
+}
+
+.rcl-sector-label[data-cluster-type="engagement"] {
+  fill: var(--color-emerald-400);
+  opacity: 0.6;
+}
+
+/* ── Edges ────────────────────────────────────────────────────────────── */
+
+.rcl-edge {
+  stroke: var(--color-silver-700);
+  stroke-linecap: round;
+  opacity: 0.2;
+}
+
+.rcl-edge[data-strength="1"] {
+  stroke-width: 0.75;
+}
+
+.rcl-edge[data-strength="2"] {
+  stroke-width: 1.5;
+  opacity: 0.3;
+}
+
+.rcl-edge[data-strength="3"] {
+  stroke-width: 2;
+  opacity: 0.45;
+}
+
+/* ── Opportunity markers ──────────────────────────────────────────────── */
+
+.rcl-opp-shape {
+  fill: var(--color-gold-400);
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+
+.rcl-opp:hover .rcl-opp-shape {
+  opacity: 1;
+}
+
+/* ── Nodes ────────────────────────────────────────────────────────────── */
+
+.rcl-node {
+  cursor: pointer;
+  outline: none;
+}
+
+.rcl-node:focus-visible .rcl-node-circle {
+  stroke-width: 3;
+  stroke: var(--color-gold-400);
+}
+
+.rcl-node-circle {
+  stroke-width: 1.5;
+  transition:
+    stroke-width 0.2s ease,
+    filter 0.2s ease;
+}
+
+/* Type-specific node colors */
+.rcl-node[data-cluster-type="social"] .rcl-node-circle {
+  fill: rgba(232, 197, 71, 0.12);
+  stroke: var(--color-gold-400);
+}
+
+.rcl-node[data-cluster-type="activity"] .rcl-node-circle {
+  fill: rgba(20, 184, 166, 0.12);
+  stroke: var(--color-teal-400);
+}
+
+.rcl-node[data-cluster-type="age_based"] .rcl-node-circle {
+  fill: rgba(134, 184, 134, 0.12);
+  stroke: var(--color-sage-400);
+}
+
+.rcl-node[data-cluster-type="interest"] .rcl-node-circle {
+  fill: rgba(232, 121, 71, 0.12);
+  stroke: var(--color-terracotta-400);
+}
+
+.rcl-node[data-cluster-type="engagement"] .rcl-node-circle {
+  fill: rgba(16, 185, 129, 0.12);
+  stroke: var(--color-emerald-400);
+}
+
+/* Hover */
+.rcl-node:hover .rcl-node-circle {
+  filter: brightness(1.3);
+}
+
+.rcl-node:hover .rcl-node-name {
+  opacity: 1;
+}
+
+/* Selected */
+.rcl-node[data-selected] .rcl-node-circle {
+  stroke-width: 3;
+  filter: brightness(1.4) drop-shadow(0 0 6px rgba(232, 197, 71, 0.3));
+}
+
+.rcl-node[data-selected] .rcl-node-name {
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* Node text */
+.rcl-node-count {
+  fill: var(--color-silver-100);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: monospace;
+  pointer-events: none;
+}
+
+.rcl-node-name {
+  fill: var(--color-silver-400);
+  font-size: 10px;
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CARD GRID (list view)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rcl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 960px) {
+  .rcl-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .rcl-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rcl-card {
+  padding: 0.875rem;
+  border-radius: 12px;
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  outline: none;
+}
+
+.rcl-card:hover {
+  border-color: var(--color-border-default);
+}
+
+.rcl-card:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.rcl-card[data-selected] {
+  border-color: var(--color-gold-400);
+  box-shadow: 0 0 0 1px rgba(232, 197, 71, 0.15);
+}
+
+/* Card type border accent */
+.rcl-card[data-cluster-type="social"] {
+  border-top: 2px solid var(--color-gold-400);
+}
+
+.rcl-card[data-cluster-type="activity"] {
+  border-top: 2px solid var(--color-teal-400);
+}
+
+.rcl-card[data-cluster-type="age_based"] {
+  border-top: 2px solid var(--color-sage-400);
+}
+
+.rcl-card[data-cluster-type="interest"] {
+  border-top: 2px solid var(--color-terracotta-400);
+}
+
+.rcl-card[data-cluster-type="engagement"] {
+  border-top: 2px solid var(--color-emerald-400);
+}
+
+/* Card header */
+.rcl-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rcl-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.rcl-card-icon[data-cluster-type="social"] {
+  color: var(--color-gold-400);
+  background: rgba(232, 197, 71, 0.08);
+  border-color: rgba(232, 197, 71, 0.2);
+}
+
+.rcl-card-icon[data-cluster-type="activity"] {
+  color: var(--color-teal-400);
+  background: rgba(20, 184, 166, 0.08);
+  border-color: rgba(20, 184, 166, 0.2);
+}
+
+.rcl-card-icon[data-cluster-type="age_based"] {
+  color: var(--color-sage-400);
+  background: rgba(134, 184, 134, 0.08);
+  border-color: rgba(134, 184, 134, 0.2);
+}
+
+.rcl-card-icon[data-cluster-type="interest"] {
+  color: var(--color-terracotta-400);
+  background: rgba(232, 121, 71, 0.08);
+  border-color: rgba(232, 121, 71, 0.2);
+}
+
+.rcl-card-icon[data-cluster-type="engagement"] {
+  color: var(--color-emerald-400);
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.rcl-card-title-area {
+  min-width: 0;
+  flex: 1;
+}
+
+.rcl-card-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  margin: 0;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rcl-card-type {
+  display: block;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 0.0625rem;
+  color: var(--color-silver-500);
+}
+
+.rcl-card-type[data-cluster-type="social"] {
+  color: var(--color-gold-400);
+}
+
+.rcl-card-type[data-cluster-type="activity"] {
+  color: var(--color-teal-400);
+}
+
+.rcl-card-type[data-cluster-type="age_based"] {
+  color: var(--color-sage-400);
+}
+
+.rcl-card-type[data-cluster-type="interest"] {
+  color: var(--color-terracotta-400);
+}
+
+.rcl-card-type[data-cluster-type="engagement"] {
+  color: var(--color-emerald-400);
+}
+
+/* Card description */
+.rcl-card-desc {
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Card stats row */
+.rcl-card-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rcl-card-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  color: var(--color-silver-500);
+}
+
+.rcl-card-stat svg {
+  flex-shrink: 0;
+}
+
+.rcl-card-stat strong {
+  color: var(--color-silver-200);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ENGAGEMENT GAUGE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rcl-engagement {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rcl-eng-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rcl-eng-label {
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+}
+
+.rcl-eng-pct {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rcl-engagement[data-engagement-level="high"] .rcl-eng-pct {
+  color: var(--color-emerald-400);
+}
+
+.rcl-engagement[data-engagement-level="medium"] .rcl-eng-pct {
+  color: var(--color-amber-400);
+}
+
+.rcl-engagement[data-engagement-level="low"] .rcl-eng-pct {
+  color: var(--color-rose-400);
+}
+
+.rcl-eng-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+
+.rcl-engagement--full .rcl-eng-track {
+  height: 6px;
+  border-radius: 3px;
+}
+
+.rcl-eng-fill {
+  height: 100%;
+  border-radius: inherit;
+  width: var(--eng-pct, 0%);
+}
+
+.rcl-engagement[data-engagement-level="high"] .rcl-eng-fill {
+  background: var(--color-emerald-400);
+}
+
+.rcl-engagement[data-engagement-level="medium"] .rcl-eng-fill {
+  background: var(--color-amber-400);
+}
+
+.rcl-engagement[data-engagement-level="low"] .rcl-eng-fill {
+  background: var(--color-rose-400);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   INTEREST TAGS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rcl-interests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.rcl-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1875rem;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 999px;
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.rcl-tag svg {
+  flex-shrink: 0;
+  color: var(--color-silver-600);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DETAIL PANEL
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.rcl-detail {
+  padding: 1rem;
+  border-radius: 12px;
+  background: var(--color-surface-0);
+  border: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  opacity: 0;
+  animation: rclDetailReveal 0.35s ease forwards;
+}
+
+/* Type accent on detail */
+.rcl-detail[data-cluster-type="social"] {
+  border-left: 3px solid var(--color-gold-400);
+}
+
+.rcl-detail[data-cluster-type="activity"] {
+  border-left: 3px solid var(--color-teal-400);
+}
+
+.rcl-detail[data-cluster-type="age_based"] {
+  border-left: 3px solid var(--color-sage-400);
+}
+
+.rcl-detail[data-cluster-type="interest"] {
+  border-left: 3px solid var(--color-terracotta-400);
+}
+
+.rcl-detail[data-cluster-type="engagement"] {
+  border-left: 3px solid var(--color-emerald-400);
+}
+
+.rcl-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.rcl-detail-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.rcl-detail-icon[data-cluster-type="social"] {
+  color: var(--color-gold-400);
+  background: rgba(232, 197, 71, 0.08);
+  border-color: rgba(232, 197, 71, 0.2);
+}
+
+.rcl-detail-icon[data-cluster-type="activity"] {
+  color: var(--color-teal-400);
+  background: rgba(20, 184, 166, 0.08);
+  border-color: rgba(20, 184, 166, 0.2);
+}
+
+.rcl-detail-icon[data-cluster-type="age_based"] {
+  color: var(--color-sage-400);
+  background: rgba(134, 184, 134, 0.08);
+  border-color: rgba(134, 184, 134, 0.2);
+}
+
+.rcl-detail-icon[data-cluster-type="interest"] {
+  color: var(--color-terracotta-400);
+  background: rgba(232, 121, 71, 0.08);
+  border-color: rgba(232, 121, 71, 0.2);
+}
+
+.rcl-detail-icon[data-cluster-type="engagement"] {
+  color: var(--color-emerald-400);
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.rcl-detail-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  margin: 0;
+}
+
+.rcl-detail-type {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-500);
+}
+
+.rcl-detail-type[data-cluster-type="social"] {
+  color: var(--color-gold-400);
+}
+
+.rcl-detail-type[data-cluster-type="activity"] {
+  color: var(--color-teal-400);
+}
+
+.rcl-detail-type[data-cluster-type="age_based"] {
+  color: var(--color-sage-400);
+}
+
+.rcl-detail-type[data-cluster-type="interest"] {
+  color: var(--color-terracotta-400);
+}
+
+.rcl-detail-type[data-cluster-type="engagement"] {
+  color: var(--color-emerald-400);
+}
+
+.rcl-detail-desc {
+  font-size: 0.8125rem;
+  color: var(--color-silver-300);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Detail metrics grid */
+.rcl-detail-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+@media (max-width: 540px) {
+  .rcl-detail-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.rcl-dm-cell {
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.rcl-dm-label {
+  display: block;
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+  margin-bottom: 0.125rem;
+}
+
+.rcl-dm-val {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-variant-numeric: tabular-nums;
+}
+
+.rcl-dm-val[data-engagement-level="high"] {
+  color: var(--color-emerald-400);
+}
+
+.rcl-dm-val[data-engagement-level="medium"] {
+  color: var(--color-amber-400);
+}
+
+.rcl-dm-val[data-engagement-level="low"] {
+  color: var(--color-rose-400);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes rclMapReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rclDetailReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rclSkeletonShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: light) {
+  /* Skeletons */
+  .rcl-skeleton {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+  }
+
+  .rcl-skeleton::after {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      #f0ece4 50%,
+      transparent 100%
+    );
+  }
+
+  /* Selects */
+  .rcl-select {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+    color: #1a1814;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23b0a898' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
+  .rcl-select:focus {
+    border-color: #b49632;
+    box-shadow: 0 0 0 2px rgba(180, 150, 50, 0.12);
+  }
+
+  .rcl-select option {
+    background: #ffffff;
+    color: #1a1814;
+  }
+
+  /* View toggle */
+  .rcl-view-toggle {
+    background: #f0ece4;
+    border-color: #e8e5df;
+  }
+
+  .rcl-view-pill {
+    color: #8a8580;
+  }
+
+  .rcl-view-pill[data-active] {
+    background: #ffffff;
+    color: #1a1814;
+  }
+
+  .rcl-view-pill:hover:not([data-active]) {
+    color: #4a4540;
+  }
+
+  /* Summary */
+  .rcl-summary-total {
+    color: #6b6560;
+  }
+
+  .rcl-summary-stat {
+    background: #ffffff;
+    border-color: #e8e5df;
+    color: #6b6560;
+  }
+
+  .rcl-summary-stat[data-engagement-level="high"] {
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.2);
+    background: rgba(5, 150, 105, 0.03);
+  }
+
+  .rcl-summary-stat[data-engagement-level="medium"] {
+    color: #d97706;
+    border-color: rgba(217, 119, 6, 0.2);
+    background: rgba(217, 119, 6, 0.03);
+  }
+
+  .rcl-summary-stat[data-engagement-level="low"] {
+    color: #e11148;
+    border-color: rgba(225, 29, 72, 0.2);
+    background: rgba(225, 29, 72, 0.03);
+  }
+
+  .rcl-summary-stat--opp {
+    color: #b49632;
+    border-color: rgba(180, 150, 50, 0.2);
+    background: rgba(180, 150, 50, 0.03);
+  }
+
+  /* Empty */
+  .rcl-empty-icon {
+    color: #d4d0c8;
+  }
+
+  /* SVG */
+  .rcl-map-wrap {
+    border-color: #e8e5df;
+  }
+
+  .rcl-svg-bg {
+    fill: #ffffff;
+  }
+
+  .rcl-grid-line {
+    stroke: #e8e5df;
+  }
+
+  .rcl-sector-label[data-cluster-type="social"] {
+    fill: #b49632;
+  }
+
+  .rcl-sector-label[data-cluster-type="activity"] {
+    fill: #0d9488;
+  }
+
+  .rcl-sector-label[data-cluster-type="age_based"] {
+    fill: #4d8b4d;
+  }
+
+  .rcl-sector-label[data-cluster-type="interest"] {
+    fill: #c2571a;
+  }
+
+  .rcl-sector-label[data-cluster-type="engagement"] {
+    fill: #059669;
+  }
+
+  .rcl-edge {
+    stroke: #d4d0c8;
+  }
+
+  .rcl-opp-shape {
+    fill: #b49632;
+  }
+
+  .rcl-node[data-cluster-type="social"] .rcl-node-circle {
+    fill: rgba(180, 150, 50, 0.1);
+    stroke: #b49632;
+  }
+
+  .rcl-node[data-cluster-type="activity"] .rcl-node-circle {
+    fill: rgba(13, 148, 136, 0.1);
+    stroke: #0d9488;
+  }
+
+  .rcl-node[data-cluster-type="age_based"] .rcl-node-circle {
+    fill: rgba(77, 139, 77, 0.1);
+    stroke: #4d8b4d;
+  }
+
+  .rcl-node[data-cluster-type="interest"] .rcl-node-circle {
+    fill: rgba(194, 87, 26, 0.1);
+    stroke: #c2571a;
+  }
+
+  .rcl-node[data-cluster-type="engagement"] .rcl-node-circle {
+    fill: rgba(5, 150, 105, 0.1);
+    stroke: #059669;
+  }
+
+  .rcl-node[data-selected] .rcl-node-circle {
+    filter: brightness(1.2) drop-shadow(0 0 4px rgba(180, 150, 50, 0.2));
+  }
+
+  .rcl-node-count {
+    fill: #1a1814;
+  }
+
+  .rcl-node-name {
+    fill: #6b6560;
+  }
+
+  /* Cards */
+  .rcl-card {
+    background: #ffffff;
+    border-color: #e8e5df;
+  }
+
+  .rcl-card:hover {
+    border-color: #d4d0c8;
+  }
+
+  .rcl-card[data-selected] {
+    border-color: #b49632;
+    box-shadow: 0 0 0 1px rgba(180, 150, 50, 0.12);
+  }
+
+  .rcl-card[data-cluster-type="social"] {
+    border-top-color: #b49632;
+  }
+
+  .rcl-card[data-cluster-type="activity"] {
+    border-top-color: #0d9488;
+  }
+
+  .rcl-card[data-cluster-type="age_based"] {
+    border-top-color: #4d8b4d;
+  }
+
+  .rcl-card[data-cluster-type="interest"] {
+    border-top-color: #c2571a;
+  }
+
+  .rcl-card[data-cluster-type="engagement"] {
+    border-top-color: #059669;
+  }
+
+  .rcl-card-icon[data-cluster-type="social"] {
+    color: #b49632;
+    background: rgba(180, 150, 50, 0.06);
+    border-color: rgba(180, 150, 50, 0.15);
+  }
+
+  .rcl-card-icon[data-cluster-type="activity"] {
+    color: #0d9488;
+    background: rgba(13, 148, 136, 0.06);
+    border-color: rgba(13, 148, 136, 0.15);
+  }
+
+  .rcl-card-icon[data-cluster-type="age_based"] {
+    color: #4d8b4d;
+    background: rgba(77, 139, 77, 0.06);
+    border-color: rgba(77, 139, 77, 0.15);
+  }
+
+  .rcl-card-icon[data-cluster-type="interest"] {
+    color: #c2571a;
+    background: rgba(194, 87, 26, 0.06);
+    border-color: rgba(194, 87, 26, 0.15);
+  }
+
+  .rcl-card-icon[data-cluster-type="engagement"] {
+    color: #059669;
+    background: rgba(5, 150, 105, 0.06);
+    border-color: rgba(5, 150, 105, 0.15);
+  }
+
+  .rcl-card-name {
+    color: #1a1814;
+  }
+
+  .rcl-card-type {
+    color: #8a8580;
+  }
+
+  .rcl-card-type[data-cluster-type="social"] {
+    color: #b49632;
+  }
+
+  .rcl-card-type[data-cluster-type="activity"] {
+    color: #0d9488;
+  }
+
+  .rcl-card-type[data-cluster-type="age_based"] {
+    color: #4d8b4d;
+  }
+
+  .rcl-card-type[data-cluster-type="interest"] {
+    color: #c2571a;
+  }
+
+  .rcl-card-type[data-cluster-type="engagement"] {
+    color: #059669;
+  }
+
+  .rcl-card-desc {
+    color: #6b6560;
+  }
+
+  .rcl-card-stat {
+    color: #8a8580;
+  }
+
+  .rcl-card-stat strong {
+    color: #4a4540;
+  }
+
+  /* Engagement */
+  .rcl-eng-label {
+    color: #8a8580;
+  }
+
+  .rcl-engagement[data-engagement-level="high"] .rcl-eng-pct {
+    color: #059669;
+  }
+
+  .rcl-engagement[data-engagement-level="medium"] .rcl-eng-pct {
+    color: #d97706;
+  }
+
+  .rcl-engagement[data-engagement-level="low"] .rcl-eng-pct {
+    color: #e11148;
+  }
+
+  .rcl-eng-track {
+    background: #f0ece4;
+  }
+
+  .rcl-engagement[data-engagement-level="high"] .rcl-eng-fill {
+    background: #059669;
+  }
+
+  .rcl-engagement[data-engagement-level="medium"] .rcl-eng-fill {
+    background: #d97706;
+  }
+
+  .rcl-engagement[data-engagement-level="low"] .rcl-eng-fill {
+    background: #e11148;
+  }
+
+  /* Tags */
+  .rcl-tag {
+    color: #8a8580;
+    background: #f0ece4;
+    border-color: #e8e5df;
+  }
+
+  .rcl-tag svg {
+    color: #b0a898;
+  }
+
+  /* Detail */
+  .rcl-detail {
+    background: #ffffff;
+    border-color: #e8e5df;
+  }
+
+  .rcl-detail[data-cluster-type="social"] {
+    border-left-color: #b49632;
+  }
+
+  .rcl-detail[data-cluster-type="activity"] {
+    border-left-color: #0d9488;
+  }
+
+  .rcl-detail[data-cluster-type="age_based"] {
+    border-left-color: #4d8b4d;
+  }
+
+  .rcl-detail[data-cluster-type="interest"] {
+    border-left-color: #c2571a;
+  }
+
+  .rcl-detail[data-cluster-type="engagement"] {
+    border-left-color: #059669;
+  }
+
+  .rcl-detail-icon[data-cluster-type="social"] {
+    color: #b49632;
+    background: rgba(180, 150, 50, 0.06);
+    border-color: rgba(180, 150, 50, 0.15);
+  }
+
+  .rcl-detail-icon[data-cluster-type="activity"] {
+    color: #0d9488;
+    background: rgba(13, 148, 136, 0.06);
+    border-color: rgba(13, 148, 136, 0.15);
+  }
+
+  .rcl-detail-icon[data-cluster-type="age_based"] {
+    color: #4d8b4d;
+    background: rgba(77, 139, 77, 0.06);
+    border-color: rgba(77, 139, 77, 0.15);
+  }
+
+  .rcl-detail-icon[data-cluster-type="interest"] {
+    color: #c2571a;
+    background: rgba(194, 87, 26, 0.06);
+    border-color: rgba(194, 87, 26, 0.15);
+  }
+
+  .rcl-detail-icon[data-cluster-type="engagement"] {
+    color: #059669;
+    background: rgba(5, 150, 105, 0.06);
+    border-color: rgba(5, 150, 105, 0.15);
+  }
+
+  .rcl-detail-name {
+    color: #1a1814;
+  }
+
+  .rcl-detail-type {
+    color: #8a8580;
+  }
+
+  .rcl-detail-type[data-cluster-type="social"] {
+    color: #b49632;
+  }
+
+  .rcl-detail-type[data-cluster-type="activity"] {
+    color: #0d9488;
+  }
+
+  .rcl-detail-type[data-cluster-type="age_based"] {
+    color: #4d8b4d;
+  }
+
+  .rcl-detail-type[data-cluster-type="interest"] {
+    color: #c2571a;
+  }
+
+  .rcl-detail-type[data-cluster-type="engagement"] {
+    color: #059669;
+  }
+
+  .rcl-detail-desc {
+    color: #4a4540;
+  }
+
+  .rcl-dm-cell {
+    background: #f8f7f4;
+    border-color: #e8e5df;
+  }
+
+  .rcl-dm-label {
+    color: #8a8580;
+  }
+
+  .rcl-dm-val {
+    color: #1a1814;
+  }
+
+  .rcl-dm-val[data-engagement-level="high"] {
+    color: #059669;
+  }
+
+  .rcl-dm-val[data-engagement-level="medium"] {
+    color: #d97706;
+  }
+
+  .rcl-dm-val[data-engagement-level="low"] {
+    color: #e11148;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .rcl-map-wrap {
+    animation: none;
+    opacity: 1;
+  }
+
+  .rcl-detail {
+    animation: none;
+    opacity: 1;
+  }
+
+  .rcl-skeleton::after {
+    animation: none;
+  }
+
+  .rcl-node-circle {
+    transition: none;
+  }
+
+  .rcl-node-name {
+    transition: none;
+  }
+}

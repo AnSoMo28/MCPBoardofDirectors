@@ -1,0 +1,699 @@
+## CommunicationAgent — Desglose Completo
+
+**Archivo:** `backend/src/club_mcp/agents/communication_agent.py`
+**Dependencias:** `CommunicationRepository`, `BaseAgent`, 11 modelos (`AnnouncementStatus`, `AnnouncementType`, `CreateAnnouncement`, `CreateCommunicationPreferences`, `CreateEmergencyBroadcast`, `CreateNotificationTemplate`, `CreatePersonalizedNotification`, `CreateScheduledNotification`, `EmergencyType`, `FrequencyPreference`, `NotificationChannel`, `NotificationStatus`, `TemplateCategory`)
+
+---
+
+### Enums documentados (extraídos del código)
+
+```
+AnnouncementType:          "general" | "event" | "promotion" | "policy_change" | otros
+AnnouncementStatus:        "draft" | "sent" | "scheduled" | "cancelled" | otros
+EmergencyType:             "security" | "weather" | "health" | "evacuation" | otros
+NotificationChannel:       "email" | "push" | "sms" | "whatsapp" | "in_app" | otros
+NotificationStatus:        "sent" | "pending" | "cancelled" | "failed" | otros
+FrequencyPreference:       "realtime" | "daily_digest" | "weekly_digest" | "monthly_digest" | "never" | otros
+TemplateCategory:          "welcome" | "reminder" | "birthday" | "announcement" | "event" | otros
+```
+
+**Constante global:**
+```python
+PERSONALIZED_NOTIFICATION_HITL_THRESHOLD = 100
+```
+
+---
+
+### Tool 1: `broadcast_club_announcement` — 🔴 HITL
+
+**Propósito:** Enviar anuncio masivo a socios del club. Siempre requiere aprobación admin.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Default | Validación | Notas |
+|-------|------|-----------|---------|-----------|-------|
+| title | str | Sí | "" | No vacío | Título del anuncio |
+| body | str | Sí | "" | No vacío | Contenido |
+| announcement_type | str | No | "general" | Validado contra `AnnouncementType` | |
+| channels | str | No | "email" | CSV → `NotificationChannel` enum | Multi-canal via CSV |
+| target_audience | str | No | "all" | Sin validación | **Sin enum — acepta cualquier string** |
+| scheduled_at | str | No | "" | Sin formato | **Si vacío → envío inmediato post-aprobación** |
+| priority | int | No | 1 | Sin validación de rango | 1-5? ¿1 es más alto o más bajo? |
+| requires_acknowledgment | bool | No | False | — | ¿Socio debe confirmar lectura? |
+| notes | str | No | "" | — | |
+
+**Flujo HITL:**
+1. Valida title, body, announcement_type
+2. Parsea channels CSV a lista de `NotificationChannel`
+3. Crea approval request con `approver_roles=["admin"]`
+4. `affected_count=0` — **no sabe cuántos socios recibirán el anuncio**
+5. Post-aprobación → `execute_announcement()` crea y marca como SENT inmediatamente
+
+**Flujo post-aprobación (`execute_announcement`):**
+1. Crea `CreateAnnouncement` con todos los datos
+2. `repo.create_announcement(data)` — persiste
+3. `repo.update_announcement(id, {status: SENT, sent_at: now})` — marca enviado
+4. `repo.create_log(notification_type="announcement", ...)` — crea log
+5. **`recipient_count=0` en el log** — no registra a cuántos se envió
+
+**Shape de respuesta (pending):**
+
+```json
+{
+  "status": "pending_approval",
+  "request_id": "uuid",
+  "message": "📢 Anuncio '{title}' creado. Esperando aprobación del administrador.",
+  "details": {
+    "title": "string",
+    "announcement_type": "general",
+    "channels": ["email"],
+    "target_audience": "all",
+    "priority": 1
+  }
+}
+```
+
+**Shape de respuesta (post-aprobación):**
+
+```json
+{
+  "status": "success",
+  "message": "📢 Anuncio '{title}' enviado exitosamente.",
+  "announcement": {
+    "id": "uuid",
+    "title": "string",
+    "body": "string",
+    "announcement_type": "general",
+    "channels": ["email"],
+    "target_audience": "all",
+    "status": "sent",
+    "sent_at": "ISO datetime",
+    "priority": 1,
+    "requires_acknowledgment": false,
+    "created_by": "string",
+    "created_at": "ISO datetime"
+  }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **`target_audience` no tiene enum ni validación** — acepta "all", "vip", "tier:platino", cualquier cosa | ALTA | Frontend no sabe qué opciones mostrar. Si el repo no filtra, ¿qué pasa? |
+| 2 | **`recipient_count=0` en approval request Y en log** — no hay tracking de alcance real | ALTA | Sin métrica de "a cuántos socios llegó". Imposible calcular open rate |
+| 3 | **`scheduled_at` se ignora en execute** — el anuncio se envía inmediatamente post-aprobación, aunque `scheduled_at` sea en el futuro | ALTA | Si staff programa para mañana y admin aprueba hoy, se envía hoy |
+| 4 | `priority` sin rango definido — ¿1 es urgente o 5 es urgente? | MEDIA | Ambigüedad semántica. Convención no documentada |
+| 5 | `requires_acknowledgment` no se implementa — el campo existe pero no hay tracking de acknowledgments | ALTA | Feature fantasma: el socio nunca ve "confirmar lectura" |
+| 6 | Sin campo `expires_at` — ¿cuándo deja de ser relevante un anuncio? | MEDIA | Anuncios de eventos pasados siguen visibles |
+| 7 | Sin preview/test send — admin aprueba sin ver cómo se verá el anuncio en email/push | MEDIA | Errores de formato llegan directo al socio |
+| 8 | Sin deduplication — mismo anuncio puede aprobarse múltiples veces | BAJA | Doble envío si admin hace click dos veces |
+| 9 | Sin personalización del body — `body` es texto plano, sin template variables `{{name}}`, `{{tier}}` | ALTA | Anuncio masivo sin personalización = spam genérico |
+
+**AnnouncementTypes disponibles (implícito):**
+
+| Tipo | Uso típico | Prioridad sugerida |
+|------|-----------|-------------------|
+| `general` | Avisos generales | 3 |
+| `event` | Anuncios de eventos | 2 |
+| `promotion` | Promociones, descuentos | 4 |
+| `policy_change` | Cambios de reglamento | 1 (alta) |
+
+**Frontend destino:** `AnnouncementBoard.tsx` (listado), `CommunicationCenter.tsx` (crear), `ApprovalQueue.tsx` (pendiente)
+
+---
+
+### Tool 2: `manage_emergency_broadcast` — 🔴 ALWAYS_HUMAN (doble confirmación)
+
+**Propósito:** Alerta de emergencia masiva a TODOS los socios por TODOS los canales. Nivel máximo de aprobación.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Default | Validación |
+|-------|------|-----------|---------|-----------|
+| title | str | Sí | "" | No vacío |
+| body | str | Sí | "" | No vacío |
+| emergency_type | str | No | "security" | Validado contra `EmergencyType` |
+| channels | str | No | "push,sms,whatsapp" | CSV → enum. **Default ya incluye 3 canales** |
+| notes | str | No | "" | — |
+| requested_by | str | No | "system" | — |
+
+**Flujo ALWAYS_HUMAN:**
+1. Valida title, body, emergency_type
+2. Parsea channels (default: push + sms + whatsapp — los canales más inmediatos)
+3. Crea approval request con `ApprovalLevel.ALWAYS_HUMAN`
+4. `affected_count=0` — **again, no sabe cuántos socios**
+5. Post-aprobación → `execute_emergency_broadcast()` envía inmediatamente
+
+**Diferencias clave vs announcement:**
+
+| Aspecto | Announcement | Emergency |
+|---------|-------------|-----------|
+| Aprobación | HITL (1 paso) | ALWAYS_HUMAN (doble confirmación) |
+| Default channels | email | push, sms, whatsapp |
+| Velocidad | Puede programarse | Inmediata siempre |
+| Target | configurable | Todos (implícito) |
+| Prioridad | configurable | Máxima (implícita) |
+
+**Flujo post-aprobación (`execute_emergency_broadcast`):**
+1. Crea `CreateEmergencyBroadcast`
+2. Marca como SENT
+3. Log con `notes=f"EMERGENCY: {emergency_type}"`
+4. `recipient_count=0` — **mismo problema que announcement**
+
+**Shape de respuesta (pending):**
+
+```json
+{
+  "status": "pending_approval",
+  "request_id": "uuid",
+  "message": "🚨 Alerta de emergencia '{title}' creada. Requiere doble confirmación del administrador.",
+  "details": {
+    "title": "string",
+    "emergency_type": "security",
+    "channels": ["push", "sms", "whatsapp"]
+  }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Sin geolocalización** — emergencia de "evacuación" va a TODOS, incluso socios que no están en el club | ALTA | Falso positivo masivo. Socio en su casa recibe alerta de evacuación del club |
+| 2 | **Sin escalación automática** — si el admin no está disponible, la emergencia espera | ALTA | Emergencias reales no pueden esperar aprobación humana. Debería haber auto-approve después de X minutos con override |
+| 3 | **`recipient_count=0`** — no se registra a cuántos llegó la alerta | ALTA | En emergencia real, necesitas saber quién recibió y quién no |
+| 4 | Sin confirmación de recepción (read receipt / acknowledgment) | ALTA | En evacuación, necesitas saber quién confirmó que leyó la alerta |
+| 5 | Sin retry mechanism — si push falla, no reintenta por SMS | ALTA | En emergencia, delivery guarantee es crítico |
+| 6 | Sin template pre-aprobado — se escribe body desde cero cada vez | MEDIA | En emergencia real, no hay tiempo redactar. Debería haber templates pre-aprobados por tipo |
+| 7 | Sin TTL/time-to-live — la alerta queda activa indefinidamente | MEDIA | "Todo claro / All clear" para cancelar la emergencia |
+| 8 | Sin link a mapa o instrucciones de evacuación | MEDIA | Body es texto plano sin attachments |
+
+**EmergencyTypes disponibles (implícito):**
+
+| Tipo | Canales recomendados | Template típico |
+|------|---------------------|-----------------|
+| `security` | push, sms, whatsapp | "Alerta de seguridad: {detalle}. Evacuar área {zona}" |
+| `weather` | push, sms, whatsapp | "Alerta meteorológica: {fenómeno}. Refugio en {lugar}" |
+| `health` | push, email | "Alerta sanitaria: {detalle}. Medidas: {acciones}" |
+| `evacuation` | push, sms, whatsapp | "EVACUACIÓN INMEDIATA: {razón}. Punto de reunión: {lugar}" |
+
+**Frontend destino:** `EmergencyBroadcast.tsx` (crear), `ApprovalQueue.tsx` (doble confirmación — badge rojo pulsante)
+
+---
+
+### Tool 3: `send_personalized_notification` — 🟡→🔴 SEMI_AUTO con escalación condicional
+
+**Propósito:** Notificación personalizada a miembros específicos. Escala a HITL si >100 destinatarios.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Default | Validación |
+|-------|------|-----------|---------|-----------|
+| title | str | Sí | "" | — |
+| body | str | Sí | "" | — |
+| channel | str | No | "email" | **Canal único, no multi-canal** (diferente a broadcast) |
+| recipient_ids | str | Sí | "" | CSV → lista de IDs |
+| notes | str | No | "" | — |
+| requested_by | str | No | "system" | — |
+
+**Flujo de escalación:**
+
+```
+recipient_ids CSV → split por "," → len(recipients)
+  ≤ 100 → AUTO: envía directamente
+  > 100 → HITL: approval_engine → pending → execute post-aprobación
+```
+
+**Flujo AUTO (≤100):**
+1. Parsea recipients
+2. Crea `CreatePersonalizedNotification`
+3. Marca como SENT
+4. Crea log con `recipient_count=len(recipients)`
+
+**Flujo HITL (>100):**
+1. Parsea recipients
+2. Crea approval request con `affected_count=len(recipients)`
+3. Post-aprobación → `execute_personalized_notification()` — mismo flujo que AUTO
+
+**Shape de respuesta (AUTO):**
+
+```json
+{
+  "status": "success",
+  "message": "📬 Notificación '{title}' enviada a X destinatario(s) por email.",
+  "notification": {
+    "id": "uuid",
+    "title": "string",
+    "body": "string",
+    "channel": "email",
+    "recipient_ids": ["uuid", "uuid"],
+    "status": "sent",
+    "sent_at": "ISO datetime",
+    "created_by": "string"
+  }
+}
+```
+
+**Shape de respuesta (HITL):**
+
+```json
+{
+  "status": "pending_approval",
+  "request_id": "uuid",
+  "message": "📬 Notificación '{title}' para X destinatarios. Requiere aprobación (>100).",
+  "details": {
+    "title": "string",
+    "channel": "email",
+    "recipient_count": 150
+  }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Canal único** — broadcast es multi-canal pero personalized es single-channel | MEDIA | Socio que no revisa email no recibe notificación personalizada |
+| 2 | **Sin personalización real del body** — `body` es el mismo texto para todos los destinatarios | ALTA | "Personalized" es un nombre engañoso. Sin `{{name}}`, `{{balance}}`, `{{tier}}` variables |
+| 3 | **`recipient_ids` es CSV string** — con 150 IDs UUID, el string es ~5,500 caracteres | MEDIA | Límite de query params en algunos proxies. Debería ser array |
+| 4 | Sin validación de que recipient_ids existan en la base de socios | MEDIA | Notificación a IDs fantasma |
+| 5 | Sin tracking de delivery por recipient — solo log global con recipient_count | ALTA | No sabes si Juan Pérez recibió o no |
+| 6 | Sin open/click tracking | ALTA | Sin métricas de engagement por notificación |
+| 7 | **Threshold hardcodeado a 100** — no es configurable | BAJA | Cambiar requiere deploy |
+| 8 | Sin rate limiting — puede enviar 100 notificaciones en 1 segundo | MEDIA | Spam a socios, posible bloqueo por email providers |
+
+**Frontend destino:** `CommunicationCenter.tsx` (enviar), `ApprovalQueue.tsx` (si >100)
+
+---
+
+### Tool 4: `manage_notification_templates` — 🟢 AUTO
+
+**Propósito:** CRUD de plantillas de notificación. Sin aprobación.
+
+**Multi-action:**
+
+| Action | Descripción |
+|--------|-------------|
+| `list` | Listar templates (opcionalmente por category, `active_only=False`) |
+| `get` | Obtener template por ID |
+| `create` | Crear nueva plantilla |
+| `update` | Actualizar plantilla existente |
+
+**Parámetros para `create`:**
+
+| Param | Tipo | Requerido | Default | Validación |
+|-------|------|-----------|---------|-----------|
+| name | str | Sí | — | — |
+| category | str | Sí (default "welcome") | Validado contra `TemplateCategory` | |
+| subject | str | Sí | — | Línea de asunto (email) o título (push) |
+| body_template | str | Sí | — | Template con variables |
+| channels | str | No | "email" | CSV → enum |
+| variables | str | No | "" | CSV → lista de variable names |
+| is_active | bool | No | True | Solo en update |
+
+**Shape de respuesta (create):**
+
+```json
+{
+  "status": "success",
+  "message": "📝 Plantilla '{name}' creada exitosamente.",
+  "template": {
+    "id": "uuid",
+    "name": "string",
+    "category": "welcome",
+    "subject": "string",
+    "body_template": "string con {{variables}}",
+    "channels": ["email"],
+    "variables": ["name", "tier", "date"],
+    "is_active": true,
+    "created_at": "ISO datetime"
+  }
+}
+```
+
+**TemplateCategories disponibles (implícito):**
+
+| Categoría | Uso | Variables típicas |
+|-----------|-----|------------------|
+| `welcome` | Bienvenida a nuevos socios | `{{name}}`, `{{tier}}`, `{{family_id}}` |
+| `reminder` | Recordatorios (pago, reserva, evento) | `{{name}}`, `{{date}}`, `{{amount}}`, `{{event}}` |
+| `birthday` | Felicitación de cumpleaños | `{{name}}`, `{{age}}`, `{{gift}}` |
+| `announcement` | Anuncio general | `{{title}}`, `{{body}}` |
+| `event` | Invitación a evento | `{{name}}`, `{{event}}`, `{{date}}`, `{{location}}` |
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Sin preview/render** — no se puede ver cómo se ve el template renderizado con datos de ejemplo | MEDIA | Admin crea template a ciegas |
+| 2 | **Sin versioning** — update sobreescribe el template anterior | MEDIA | Sin historial de cambios, sin rollback |
+| 3 | `variables` es CSV de nombres — no hay validación de sintaxis de variables en `body_template` | MEDIA | Template con `{{nombre}}` pero variable se llama `{{name}}` → nunca se renderiza |
+| 4 | **Sin validación de duplicados por nombre** | BAJA | Dos templates con el mismo nombre |
+| 5 | Sin test send — no se puede enviar un preview a un email de prueba | MEDIA | Error de formato llega al socio |
+| 6 | `list` usa `active_only=False` — devuelve templates inactivos también | BAJA | Comportamiento inesperado si frontend espera solo activos |
+| 7 | Sin multi-idioma — un solo template por categoría, no versión en inglés | BAJA | Club opera en español, bajo impacto |
+
+**Frontend destino:** `CommunicationCenter.tsx` (template management)
+
+---
+
+### Tool 5: `schedule_notification` — 🟢 AUTO
+
+**Propósito:** Programar notificaciones para envío futuro usando templates existentes.
+
+**Multi-action:**
+
+| Action | Descripción |
+|--------|-------------|
+| `list` | Listar notificaciones programadas |
+| `get` | Obtener programación por ID |
+| `create` | Programar nueva notificación |
+| `cancel` | Cancelar programación |
+
+**Parámetros para `create`:**
+
+| Param | Tipo | Requerido | Default | Validación | Notas |
+|-------|------|-----------|---------|-----------|-------|
+| template_id | str | Sí | — | Validado contra repo (existe?) | |
+| recipient_ids | str | Sí | — | CSV → lista | |
+| channel | str | No | "email" | Validado contra enum | Canal único |
+| scheduled_at | str | Sí | — | Sin formato | **Sin validación de fecha futura** |
+| params | str | No | "" | CSV key=value → dict | Variables para renderizar template |
+| notes | str | No | "" | — | |
+
+**Formato de `params`:**
+```
+"nombre=Juan,nivel=platino,fecha=2025-04-15"
+→ {"nombre": "Juan", "nivel": "platino", "fecha": "2025-04-15"}
+```
+
+**Shape de respuesta (create):**
+
+```json
+{
+  "status": "success",
+  "message": "⏰ Notificación programada para {scheduled_at} (X destinatarios).",
+  "scheduled": {
+    "id": "uuid",
+    "template_id": "uuid",
+    "recipient_ids": ["uuid"],
+    "channel": "email",
+    "scheduled_at": "ISO datetime",
+    "params": {"key": "value"},
+    "status": "pending",
+    "notes": "string"
+  }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Sin validación de `scheduled_at` como fecha futura** — puede programar para ayer | MEDIA | Notificación que nunca se envía o se envía inmediatamente |
+| 2 | **Sin motor de ejecución visible** — ¿qué procesa las notificaciones programadas? ¿Cron job? ¿Celery? ¿Nada? | ALTA | Si no hay scheduler, las notificaciones programadas nunca se envían |
+| 3 | `params` como CSV key=value es frágil — valores con comas o "=" rompen el parsing | MEDIA | `notes=Reunión a las 3, confirmar` → split incorrecto |
+| 4 | Sin validación de que las `params` cubren todas las `variables` del template | MEDIA | Template con `{{name}}` pero params no incluye name → variable vacía en el email |
+| 5 | Sin conflict detection — puede programar 50 notificaciones al mismo tiempo | MEDIA | Spike de envío, posible rate limit de email provider |
+| 6 | Sin retry on failure — si el envío falla a la hora programada, no reintenta | ALTA | Notificación perdida silenciosamente |
+| 7 | `cancel` marca como CANCELLED pero ¿qué pasa si ya se envió? | BAJA | Estado inválido: sent + cancelled |
+
+**Frontend destino:** `CommunicationCenter.tsx` (scheduler UI)
+
+---
+
+### Tool 6: `get_notification_history` — 🟢 AUTO
+
+**Propósito:** Consultar historial de notificaciones enviadas. Simple, sin filtros complejos.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Default | Validación |
+|-------|------|-----------|---------|-----------|
+| limit | int | No | 20 | Sin validación de rango |
+
+**Shape de respuesta:**
+
+```json
+{
+  "status": "success",
+  "message": "📋 Historial: X notificación(es) recientes.",
+  "history": [{
+    "id": "uuid",
+    "notification_type": "announcement" | "emergency" | "personalized",
+    "title": "string",
+    "channel": "email",
+    "recipient_count": 150,
+    "status": "sent",
+    "created_by": "string",
+    "created_at": "ISO datetime",
+    "notes": "string"
+  }],
+  "total": 20
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Sin filtros** — no puede filtrar por tipo, canal, fecha, status, creador | ALTA | Con historial grande, no puede encontrar nada específico |
+| 2 | **Sin paginación** — solo `limit`, sin offset/cursor | ALTA | Solo ve los últimos N, no puede ir más atrás |
+| 3 | **Sin métricas de delivery** — `recipient_count` existe pero no open_rate, click_rate, bounce_rate | ALTA | CommunicationCenter necesita analytics, no solo logs |
+| 4 | `total` es `len(logs)` no el total real en DB | MEDIA | Si limit=20 y hay 500, total=20 (incorrecto) |
+| 5 | Sin search por título o contenido | MEDIA | Búsqueda manual en lista |
+
+**Frontend destino:** `CommunicationCenter.tsx` (historial tab)
+
+---
+
+### Tool 7: `manage_communication_preferences` — 🟢 AUTO
+
+**Propósito:** Gestionar preferencias de comunicación por socio. Sin aprobación (el socio decide).
+
+**Multi-action:**
+
+| Action | Descripción |
+|--------|-------------|
+| `get` | Obtener preferencias por `member_id` o `preferences_id` |
+| `create` | Crear preferencias para un socio (si no existen) |
+| `update` | Actualizar preferencias existentes |
+
+**Parámetros para `create` / `update`:**
+
+| Param | Tipo | Default | Descripción |
+|-------|------|---------|-------------|
+| member_id | str | — | Requerido para create |
+| preferences_id | str | — | Requerido para update |
+| email_enabled | bool | True | Canal email |
+| push_enabled | bool | True | Canal push |
+| sms_enabled | bool | False | Canal SMS |
+| whatsapp_enabled | bool | True | Canal WhatsApp |
+| in_app_enabled | bool | True | Canal in-app |
+| announcements | str | "realtime" | Frecuencia para anuncios |
+| events | str | "realtime" | Frecuencia para eventos |
+| promotions | str | "weekly_digest" | Frecuencia para promociones |
+| quiet_hours_start | str | "22:00" | Inicio horario silencioso |
+| quiet_hours_end | str | "07:00" | Fin horario silencioso |
+
+**FrequencyPreference values (implícito):**
+```
+"realtime" | "daily_digest" | "weekly_digest" | "monthly_digest" | "never"
+```
+
+**Shape de respuesta (get):**
+
+```json
+{
+  "status": "success",
+  "preferences": {
+    "id": "uuid",
+    "member_id": "uuid",
+    "email_enabled": true,
+    "push_enabled": true,
+    "sms_enabled": false,
+    "whatsapp_enabled": true,
+    "in_app_enabled": true,
+    "announcements": "realtime",
+    "events": "realtime",
+    "promotions": "weekly_digest",
+    "quiet_hours_start": "22:00",
+    "quiet_hours_end": "07:00",
+    "updated_at": "ISO datetime"
+  }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **No hay mecanismo para que el socio acceda a sus preferencias** — solo admin/staff puede gestionar | ALTA | SettingsPage.tsx tiene notification toggles como store local (useNotificationPrefsStore). Este tool nunca se llama desde el portal socio |
+| 2 | **Quiet hours no se aplican en ningún otro tool** — broadcast, emergency, personalized ignoran quiet hours | ALTA | Feature fantasma: socio configura "no molestar 22:00-07:00" pero recibe notificaciones igual |
+| 3 | `update` requiere `preferences_id` — socio no conoce su preferences_id | MEDIA | Necesita hacer `get(member_id)` primero para obtener el ID |
+| 4 | Sin sync con `useNotificationPrefsStore` del frontend | ALTA | Store local y backend son mundos paralelos. SettingsPage guarda en localStorage, backend en DB |
+| 5 | `create` valida duplicados (si existe → error) — correcto | OK | — |
+| 6 | Sin granularidad por tipo de evento | MEDIA | "Eventos" es todo o nada. Socio quiere notificaciones de tenis pero no de yoga |
+| 7 | Sin opt-out por categoría de anuncio | MEDIA | Socio no puede decir "no quiero promociones pero sí emergencias" (ya existe a nivel frequency, pero no a nivel channel) |
+
+**Frontend destino:** `CommunicationCenter.tsx` (admin view), `SettingsPage.tsx` (socio view — FUTURO, requiere integración)
+
+---
+
+### Tool 8: `send_board_package` — 🟡 SEMI_AUTO
+
+**Propósito:** Generar y enviar board package trimestral a la junta directiva.
+
+**Parámetros de entrada:**
+
+| Param | Tipo | Requerido | Default | Validación |
+|-------|------|-----------|---------|-----------|
+| quarter | str | Sí | "" | Validado: Q1, Q2, Q3, Q4 |
+| year | int | Sí | 0 | Sin validación de rango |
+| recipients | str | No | "full_board" | Validado: "director_only" | "full_board" |
+| requested_by | str | No | "system" | — |
+
+**Contenido del board package (hardcoded):**
+
+```
+1. Resumen Ejecutivo
+2. Reporte Financiero
+3. Estado de Membresía
+4. Pulso Operativo
+5. Satisfacción de Socios
+6. Anomalías Detectadas
+7. Recomendaciones Estratégicas
+```
+
+**Destinatarios hardcoded:**
+
+| director_only | full_board (agrega) |
+|---------------|---------------------|
+| Director de Junta (director@castillo.cr) | + Vicepresidente (vp@castillo.cr) |
+| | + Tesorero (tesorero@castillo.cr) |
+| | + Secretario (secretario@castillo.cr) |
+
+**Shape de respuesta:**
+
+```json
+{
+  "status": "success",
+  "message": "📦 Board Package Q1 2025: Enviado a toda la junta directiva (full_board)",
+  "package": {
+    "package_id": "ab12cd34",
+    "quarter": "Q1",
+    "year": 2025,
+    "recipients": [
+      {"name": "Director de Junta", "email": "director@castillo.cr", "role": "director"},
+      {"name": "Vicepresidente", "email": "vp@castillo.cr", "role": "vicepresident"},
+      {"name": "Tesorero", "email": "tesorero@castillo.cr", "role": "treasurer"},
+      {"name": "Secretario", "email": "secretario@castillo.cr", "role": "secretary"}
+    ],
+    "delivery_mode": "full_board",
+    "generated_at": "ISO datetime",
+    "contents": ["Resumen Ejecutivo", "Reporte Financiero", ...],
+    "status": "sent"
+  }
+}
+```
+
+**Hallazgos:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Emails hardcoded** — director@castillo.cr, vp@castillo.cr, etc. | ALTA | Si cambia la junta, hay que hacer deploy. Debería leerse de la DB por rol "junta" |
+| 2 | **No genera contenido real** — el `contents` es una lista estática de strings, no el reporte generado | ALTA | El board package dice "Resumen Ejecutivo" pero no incluye el resumen ejecutivo real |
+| 3 | **No invoca ExecutiveDashboardAgent** — debería llamar `generate_quarterly_board_report` para generar el contenido | ALTA | Board package es un cascarón vacío sin datos |
+| 4 | **`package_id` es uuid4 hex[:8]** — no es sequential ni referenciable | BAJA | No se puede buscar "board package Q1 2025" fácilmente |
+| 5 | `SEMI_AUTO` pero no hay condición de escalación visible | MEDIA | ¿Cuándo requiere aprobación? El código no tiene HITL path |
+| 6 | Sin attachment — el package es JSON, no PDF | ALTA | Junta directiva espera PDF adjunto en email |
+| 7 | Sin tracking de lectura — ¿el director abrió el email? | MEDIA | Sin confirmación de recepción |
+| 8 | Sin versioning — si se envía Q1 dos veces, hay dos packages sin relación | MEDIA | Sin "reemplaza versión anterior" |
+| 9 | **`send_list` se construye pero nunca se usa para enviar** — solo se incluye en el response JSON | ALTA | No hay `repo.send_email()` ni `notifier.send()`. El tool simula envío sin enviar |
+
+**Frontend destino:** `CommunicationCenter.tsx` (board package section), rol `JUNTA` (recepción)
+
+---
+
+### Resumen Ejecutivo CommunicationAgent
+
+**Arquitectura:**
+- 8 tools: 2 HITL (announcement, emergency), 1 SEMI_AUTO→HITL (personalized), 1 SEMI_AUTO (board package), 4 AUTO (templates, schedule, history, preferences)
+- Patrón multi-action en templates, schedule, preferences
+- Patrón de escalación condicional: `PERSONALIZED_NOTIFICATION_HITL_THRESHOLD = 100`
+- ALWAYS_HUMAN para emergencias (doble confirmación)
+- Repository pattern: `CommunicationRepository`
+
+**Modelos usados (11):**
+
+| Modelo | Uso |
+|--------|-----|
+| `AnnouncementType` | Tipos de anuncio |
+| `AnnouncementStatus` | Estados de anuncio |
+| `EmergencyType` | Tipos de emergencia |
+| `NotificationChannel` | Canales (email, push, sms, whatsapp, in_app) |
+| `NotificationStatus` | Estados de notificación |
+| `FrequencyPreference` | Frecuencias (realtime, daily, weekly, monthly, never) |
+| `TemplateCategory` | Categorías de template |
+| `CreateAnnouncement` | Input model announcement |
+| `CreateEmergencyBroadcast` | Input model emergency |
+| `CreatePersonalizedNotification` | Input model personalized |
+| `CreateNotificationTemplate` | Input model template |
+| `CreateScheduledNotification` | Input model scheduled |
+| `CreateCommunicationPreferences` | Input model preferences |
+
+**Gaps críticos para el frontend:**
+
+| Gap | Impacto | Prioridad |
+|-----|---------|-----------|
+| Sin open/click rate tracking | CommunicationCenter sin analytics reales | ALTA |
+| `recipient_count=0` siempre | Sin métrica de alcance | ALTA |
+| `get_communication_insights` NO existe | Sin KPIs consolidados | ALTA (ya documentado) |
+| Preferencias no accesibles desde portal socio | SettingsPage store local no sync con backend | ALTA |
+| Quiet hours no aplicados | Feature fantasma | ALTA |
+| Board package sin contenido real | Junta recibe cascarón vacío | ALTA |
+| Board package emails hardcoded | Sin dinamismo | ALTA |
+| Sin delivery tracking por recipient | No sabes quién recibió qué | ALTA |
+| Emergency sin retry mechanism | Delivery no garantizado | ALTA |
+| Sin personalización de body (template variables) | Anuncios genéricos | ALTA |
+| scheduled_at ignorado en broadcast | Programación no funciona | ALTA |
+
+**KPIs que el frontend NECESITA y el backend YA provee (vía `get_notification_history`):**
+
+| KPI | Tool fuente | Campo | Limitación |
+|-----|-------------|-------|-----------|
+| Total notificaciones enviadas | get_notification_history | total | Solo últimas 20 por defecto |
+| Notificaciones por tipo | get_notification_history | history[].notification_type | Sin aggregation, hay que contar en frontend |
+| Notificaciones por canal | get_notification_history | history[].channel | Sin aggregation |
+| Recipient count total | get_notification_history | history[].recipient_count | Siempre 0 para announcements/emergencies |
+
+**KPIs que FALTAN (requiere nuevo tool o analytics layer):**
+
+| KPI | Cálculo | Necesidad |
+|-----|---------|-----------|
+| Open Rate | `opens / delivered × 100` | Tracking pixel en emails, evento en push |
+| Click Rate | `clicks / delivered × 100` | Link tracking (UTM params) |
+| Bounce Rate | `bounced / sent × 100` | Email provider feedback loop |
+| Unsubscribe Rate | `unsubscribes / delivered × 100` | Link de desuscripción |
+| Delivery Rate | `delivered / sent × 100` | SMTP/push provider response |
+| Response Time (emergency) | `time_to_last_delivery - sent_at` | Per-recipient delivery timestamp |
+| Channel Effectiveness | `open_rate por canal` | Necesita open tracking por canal |
+| Optimal Send Time | `hora con mayor open_rate` | Histórico de opens por hora |
+| Template Performance | `open_rate por template` | Necesita template_id en logs |
+| NPS from Feedback | `%promoters - %detractors` | Cruzar con SatisfactionAgent |
+
+**Modelos ML aplicables:**
+
+| Modelo | Datos requeridos | Complejidad | Valor |
+|--------|-----------------|-------------|-------|
+| Optimal Send Time | Historial de opens por hora/día por socio | Baja | Maximizar open rate |
+| Channel Preference Prediction | Historial de engagement por canal | Baja | Enviar por el canal que el socio realmente revisa |
+| Unsubscribe Risk | Frecuencia de envío + open rate trend | Media | Reducir frecuencia antes de perder al socio |
+| Template A/B Testing | Dos variantes del mismo template | Media | Optimizar contenido |
+| Content Personalization | Historial de actividades y consumo del socio | Alta | Body adaptado a intereses del socio |
+| Emergency Response Rate | Time-to-read por socio en emergencias previas | Media | Identificar socios que no leen alertas → canal alternativo |
+
+---
+
+Listo. Mandame el siguiente agente.

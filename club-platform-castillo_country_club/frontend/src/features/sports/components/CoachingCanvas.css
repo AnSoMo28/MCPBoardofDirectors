@@ -1,0 +1,305 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/CoachingCanvas.css
+   §B3.11 — Coaching Canvas Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  coach star pulse halo via canvas
+   2. REACCIÓN:     hover highlight connections + scale
+   3. MEMORIA:      athlete count, success rate in tooltip
+   4. INTENCIÓN:    coverage gaps highlighted
+   5. SINIESTRÍA:   uncovered sports have dashed red ring
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-coaching {
+  --spt-cc-accent: var(--color-teal-400, #2a9ab5);
+  --spt-cc-surface: var(--color-surface-1, #1a1a1a);
+  --spt-cc-border: rgba(255, 255, 255, 0.06);
+  --spt-cc-text: var(--color-silver-100, #f0ece4);
+  --spt-cc-text-muted: var(--color-silver-400, #8a8580);
+
+  background: var(--spt-cc-surface);
+  border: 1px solid var(--spt-cc-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  position: relative;
+}
+
+/* ── §0.1 — Mode (LP 6: Empatía) ──────────────────────── */
+
+.spt-coaching[data-mode="calm"]    { --spt-cc-accent: var(--color-teal-400, #2a9ab5); }
+.spt-coaching[data-mode="alert"]   { --spt-cc-accent: var(--color-amber-400, #d4a017); }
+.spt-coaching[data-mode="critical"]{ --spt-cc-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-coaching__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spt-coaching__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.1rem;
+  color: var(--spt-cc-text);
+  margin: 0;
+}
+
+.spt-coaching__count {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 8px;
+  background: rgba(42, 154, 181, 0.12);
+  color: var(--spt-cc-accent);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* ── §2 — Legend ────────────────────────────────────────── */
+
+.spt-coaching__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.spt-coaching__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  color: var(--spt-cc-text-muted);
+}
+
+.spt-coaching__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── §3 — Canvas ───────────────────────────────────────── */
+
+.spt-coaching__canvas {
+  width: 100%;
+  height: 360px;
+  border-radius: 8px;
+}
+
+/* ── §4 — Tooltip ──────────────────────────────────────── */
+
+.spt-coaching__tooltip {
+  position: absolute;
+  z-index: 10;
+  min-width: 170px;
+  max-width: 240px;
+  background: var(--color-surface-2, #222);
+  border: 1px solid var(--spt-cc-border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: spt-cc-tooltip-enter 0.15s ease;
+}
+
+@keyframes spt-cc-tooltip-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-coaching__tooltip-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--spt-cc-text);
+  margin: 0 0 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.spt-coaching__tooltip-style {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(42, 154, 181, 0.15);
+  color: var(--spt-cc-accent);
+}
+
+.spt-coaching__tooltip-style[data-style="drill_sergeant"] {
+  background: rgba(229, 77, 77, 0.15);
+  color: var(--color-rose-400, #e54d4d);
+}
+
+.spt-coaching__tooltip-style[data-style="nurturer"] {
+  background: rgba(42, 181, 160, 0.15);
+  color: #2ab5a0;
+}
+
+.spt-coaching__tooltip-style[data-style="technical"] {
+  background: rgba(42, 154, 181, 0.15);
+  color: var(--color-teal-400, #2a9ab5);
+}
+
+.spt-coaching__tooltip-style[data-style="motivational"] {
+  background: rgba(212, 160, 23, 0.15);
+  color: var(--color-amber-400, #d4a017);
+}
+
+.spt-coaching__tooltip-style[data-style="analytical"] {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+}
+
+.spt-coaching__tooltip-stat {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  color: var(--spt-cc-text-muted);
+  margin: 0 0 0.15rem;
+}
+
+.spt-coaching__tooltip-stat strong {
+  color: var(--spt-cc-text);
+}
+
+.spt-coaching__tooltip-specs {
+  font-size: 0.65rem;
+  color: var(--spt-cc-text-muted);
+  margin: 0.3rem 0 0;
+  opacity: 0.7;
+}
+
+/* ── §5 — Coverage Gaps (LP 4+5) ───────────────────────── */
+
+.spt-coaching__gaps {
+  padding: 0.5rem 0.75rem;
+  background: rgba(229, 77, 77, 0.04);
+  border: 1px solid rgba(229, 77, 77, 0.1);
+  border-radius: 6px;
+}
+
+.spt-coaching__gaps-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-amber-400, #d4a017);
+  margin: 0 0 0.35rem;
+}
+
+.spt-coaching__gaps-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.spt-coaching__gap-badge {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(229, 77, 77, 0.08);
+  border: 1px dashed rgba(229, 77, 77, 0.2);
+  color: var(--color-rose-400, #e54d4d);
+}
+
+/* ── §6 — Footer: Narrative (LP 7) ─────────────────────── */
+
+.spt-coaching__footer {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-cc-border);
+}
+
+.spt-coaching__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-cc-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-cc-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §7 — Light Mode ───────────────────────────────────── */
+
+.light .spt-coaching {
+  --spt-cc-surface: rgba(255, 255, 255, 0.7);
+  --spt-cc-border: rgba(0, 0, 0, 0.08);
+  --spt-cc-text: #1a1a1a;
+  --spt-cc-text-muted: #6b7280;
+}
+
+.light .spt-coaching__tooltip {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.light .spt-coaching__tooltip-name {
+  color: #1a1a1a;
+}
+
+.light .spt-coaching__tooltip-stat {
+  color: #6b7280;
+}
+
+.light .spt-coaching__tooltip-stat strong {
+  color: #1a1a1a;
+}
+
+.light .spt-coaching__gaps {
+  background: rgba(229, 77, 77, 0.03);
+}
+
+.light .spt-coaching__gap-badge {
+  background: rgba(229, 77, 77, 0.05);
+}
+
+/* ── §8 — Responsive ───────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .spt-coaching__canvas {
+    height: 280px;
+  }
+
+  .spt-coaching__tooltip {
+    min-width: 140px;
+    max-width: 190px;
+  }
+
+  .spt-coaching__legend {
+    gap: 0.35rem;
+  }
+
+  .spt-coaching__legend-item {
+    font-size: 0.6rem;
+  }
+}
+
+/* ── §9 — Print ────────────────────────────────────────── */
+
+@media print {
+  .spt-coaching {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .spt-coaching__canvas {
+    display: none;
+  }
+
+  .spt-coaching__tooltip {
+    display: none;
+  }
+}

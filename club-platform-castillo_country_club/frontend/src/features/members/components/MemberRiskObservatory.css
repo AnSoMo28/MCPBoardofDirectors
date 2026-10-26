@@ -1,0 +1,270 @@
+/**
+ * MemberRiskObservatory — SVG Octagonal Radar
+ * Namespace: .glass-m360-risk
+ * @phase 30 — Block 3.3
+ */
+
+/* ═══════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-risk {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .glass-m360-risk {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   RADAR SVG
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-risk__radar-wrap {
+  flex-shrink: 0;
+  width: 200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .glass-m360-risk__radar-wrap {
+    margin: 0;
+  }
+}
+
+.glass-m360-risk__radar {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* ── Risk polygon ── */
+
+.glass-m360-risk__polygon {
+  transition: points 0.5s ease, fill-opacity 0.3s ease;
+}
+
+.glass-m360-risk__polygon:hover {
+  fill-opacity: 0.18;
+}
+
+/* ── Scan line rotation ── */
+
+.glass-m360-risk__scan-group {
+  transform-origin: 100px 100px;
+  animation: m360-risk-scan 6s linear infinite;
+}
+
+/* ── Critical vertex pulse ── */
+
+.glass-m360-risk__vertex--critical {
+  animation: m360-risk-vertex-pulse 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RISK DETAILS
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-risk__details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+/* ── Overall risk ── */
+
+.glass-m360-risk__overall {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface-0);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 10%, transparent);
+}
+
+.glass-m360-risk__overall-label {
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+}
+
+.glass-m360-risk__overall-score {
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.glass-m360-risk__overall-trend {
+  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+  margin-left: auto;
+  text-transform: capitalize;
+}
+
+/* ── Risk factors ── */
+
+.glass-m360-risk__factors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.glass-m360-risk__factors-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.glass-m360-risk__factor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.375rem 0.625rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 8px;
+  background: var(--color-surface-0);
+  border-left: 3px solid var(--color-silver-600);
+  font-size: 0.75rem;
+  opacity: 0;
+  animation: m360-risk-reveal 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 60ms);
+}
+
+.glass-m360-risk__factor[data-severity="critical"] {
+  border-left-color: var(--color-rose-400);
+}
+
+.glass-m360-risk__factor[data-severity="high"] {
+  border-left-color: var(--color-amber-400);
+}
+
+.glass-m360-risk__factor[data-severity="medium"] {
+  border-left-color: var(--color-teal-400);
+}
+
+.glass-m360-risk__factor-source {
+  font-weight: 600;
+  color: var(--color-silver-300);
+  flex-shrink: 0;
+}
+
+.glass-m360-risk__factor-detail {
+  color: var(--color-silver-400);
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-m360-risk__factor-weight {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--color-silver-500);
+  flex-shrink: 0;
+}
+
+.glass-m360-risk__factor-mitigation {
+  width: 100%;
+  font-size: 0.6875rem;
+  color: var(--color-gold-400);
+  font-style: italic;
+}
+
+.glass-m360-risk__empty {
+  font-size: 0.75rem;
+  color: var(--color-silver-500);
+  padding: 0.5rem 0;
+}
+
+/* ── Protective factors ── */
+
+.glass-m360-risk__protective {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-silver-600) 8%, transparent);
+}
+
+.glass-m360-risk__protective-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-emerald-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.glass-m360-risk__protective-factor {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  border-left: 3px solid var(--color-emerald-400);
+}
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-risk-scan {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes m360-risk-vertex-pulse {
+  0%, 100% { r: 3.5; opacity: 1; }
+  50% { r: 5; opacity: 0.7; }
+}
+
+@keyframes m360-risk-reveal {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360-risk__factor {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.light .glass-m360-risk__overall {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-m360-risk__protective {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360-risk__scan-group {
+    animation: none;
+    opacity: 0;
+  }
+
+  .glass-m360-risk__vertex--critical {
+    animation: none;
+  }
+
+  .glass-m360-risk__factor {
+    opacity: 1;
+    animation: none;
+  }
+}

@@ -1,0 +1,691 @@
+/* src/features/facilities/components/LiveOccupancyBoard.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* LIVE OCCUPANCY BOARD — "La Mesa de Control"                   */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — pulse dots, card entry stagger       */
+/*   SENSE 2: REACCIÓN — card hover, action reveal               */
+/*   SENSE 3: MEMORIA — occupancy %, crowd level, maint count    */
+/*   SENSE 4: INTENCIÓN — Reservar ahora / Ver detalle CTAs      */
+/*   SENSE 5: SINIESTRÍA — occupied/maintenance dominant          */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — board summary                          */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.fac-occ {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fac-occ--empty {
+  padding: 40px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+
+.fac-occ__narrative {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+
+/* ═══ STATS BAR ═══════════════════════════════════════════════ */
+
+.fac-occ__stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--color-surface) 35%, transparent);
+  border-radius: 10px;
+}
+
+.fac-occ__stats-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fac-occ__stats-label {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+}
+
+.fac-occ__stats-total {
+  margin-left: auto;
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-500);
+  letter-spacing: 0.02em;
+}
+
+/* ═══ PULSE INDICATOR (Sense 1) ═══════════════════════════════ */
+
+.fac-occ__pulse {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pulse-size, 8px);
+  height: var(--pulse-size, 8px);
+}
+
+.fac-occ__pulse-dot {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--color-silver-500);
+  position: relative;
+  z-index: 1;
+}
+
+.fac-occ__pulse-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-silver-500);
+  opacity: 0;
+  animation: fac-occ-pulse-ring 2s ease-out infinite;
+}
+
+@keyframes fac-occ-pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* Live status → pulse colors */
+.fac-occ__pulse[data-live="available"] .fac-occ__pulse-dot {
+  background: var(--color-emerald-400);
+}
+.fac-occ__pulse[data-live="available"] .fac-occ__pulse-ring {
+  border-color: var(--color-emerald-400);
+}
+
+.fac-occ__pulse[data-live="busy"] .fac-occ__pulse-dot {
+  background: var(--color-amber-400);
+}
+.fac-occ__pulse[data-live="busy"] .fac-occ__pulse-ring {
+  border-color: var(--color-amber-400);
+}
+
+.fac-occ__pulse[data-live="occupied"] .fac-occ__pulse-dot {
+  background: var(--color-rose-400);
+}
+.fac-occ__pulse[data-live="occupied"] .fac-occ__pulse-ring {
+  border-color: var(--color-rose-400);
+}
+
+.fac-occ__pulse[data-live="maintenance"] .fac-occ__pulse-dot {
+  background: var(--color-amber-400);
+}
+.fac-occ__pulse[data-live="maintenance"] .fac-occ__pulse-ring {
+  border-color: var(--color-amber-400);
+}
+
+.fac-occ__pulse[data-live="closed"] .fac-occ__pulse-dot {
+  background: var(--color-silver-600);
+}
+
+/* ═══ CARD GRID ═══════════════════════════════════════════════ */
+
+.fac-occ__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+/* ═══ FACILITY CARD (Sense 2 + 5) ═════════════════════════════ */
+
+.fac-occ__card {
+  position: relative;
+  padding: 16px;
+  background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
+  border-radius: 12px;
+  overflow: hidden;
+  /* Sense 1: stagger */
+  opacity: 0;
+  animation: fac-occ-card-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+  /* Sense 2: hover */
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+@keyframes fac-occ-card-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fac-occ__card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-border) 35%, transparent);
+  box-shadow: 0 4px 20px -6px rgba(0, 0, 0, 0.2);
+}
+
+/* Sense 5: Occupied/maintenance cards get stronger border */
+.fac-occ__card[data-live="occupied"] {
+  border-left: 3px solid var(--color-rose-400);
+}
+
+.fac-occ__card[data-live="maintenance"] {
+  border-left: 3px solid var(--color-amber-400);
+  animation: fac-occ-card-enter 0.4s ease-out forwards,
+             fac-occ-maint-pulse 3s ease-in-out 0.4s infinite;
+}
+
+@keyframes fac-occ-maint-pulse {
+  0%, 100% { border-left-color: color-mix(in srgb, var(--color-amber-400) 40%, transparent); }
+  50% { border-left-color: var(--color-amber-400); }
+}
+
+.fac-occ__card[data-disabled="true"] {
+  opacity: 0.65;
+}
+
+/* Top accent bar */
+.fac-occ__card-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+.fac-occ__card-accent[data-live="available"] {
+  background: var(--color-emerald-400);
+}
+.fac-occ__card-accent[data-live="busy"] {
+  background: var(--color-amber-400);
+}
+.fac-occ__card-accent[data-live="occupied"] {
+  background: var(--color-rose-400);
+}
+.fac-occ__card-accent[data-live="maintenance"] {
+  background: var(--color-amber-400);
+}
+.fac-occ__card-accent[data-live="closed"] {
+  background: var(--color-silver-600);
+}
+
+/* ── Card Header ── */
+.fac-occ__card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.fac-occ__card-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.fac-occ__card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+  color: var(--color-teal-400);
+}
+
+.fac-occ__card-icon[data-category="aquatic"] {
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+  color: var(--color-teal-400);
+}
+.fac-occ__card-icon[data-category="fitness"] {
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+  color: var(--color-amber-400);
+}
+.fac-occ__card-icon[data-category="sports"] {
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  color: var(--color-gold-400);
+}
+.fac-occ__card-icon[data-category="dining"] {
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+  color: var(--color-rose-400);
+}
+.fac-occ__card-icon[data-category="social"] {
+  background: color-mix(in srgb, var(--color-purple-400) 12%, transparent);
+  color: var(--color-purple-400);
+}
+.fac-occ__card-icon[data-category="outdoor"] {
+  background: color-mix(in srgb, var(--color-emerald-400) 12%, transparent);
+  color: var(--color-emerald-400);
+}
+
+.fac-occ__card-icon-svg {
+  width: 18px;
+  height: 18px;
+}
+
+.fac-occ__card-head-text {
+  min-width: 0;
+}
+
+.fac-occ__card-name {
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fac-occ__card-type {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+/* ── Status row ── */
+.fac-occ__card-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.fac-occ__card-status-text {
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.fac-occ__card-status-text[data-live="available"] {
+  color: var(--color-emerald-400);
+}
+.fac-occ__card-status-text[data-live="busy"] {
+  color: var(--color-amber-400);
+}
+.fac-occ__card-status-text[data-live="occupied"] {
+  color: var(--color-rose-400);
+}
+.fac-occ__card-status-text[data-live="maintenance"] {
+  color: var(--color-amber-400);
+}
+.fac-occ__card-status-text[data-live="closed"] {
+  color: var(--color-silver-500);
+}
+
+.fac-occ__card-hours {
+  font-size: 10px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+}
+
+.fac-occ__card-crowd {
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.fac-occ__card-crowd[data-crowd="empty"] {
+  color: var(--color-silver-500);
+  background: color-mix(in srgb, var(--color-silver-500) 8%, transparent);
+}
+.fac-occ__card-crowd[data-crowd="light"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 8%, transparent);
+}
+.fac-occ__card-crowd[data-crowd="moderate"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 8%, transparent);
+}
+.fac-occ__card-crowd[data-crowd="busy"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 8%, transparent);
+}
+.fac-occ__card-crowd[data-crowd="at_capacity"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+}
+
+/* ── Activity ── */
+.fac-occ__card-activity {
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.fac-occ__card-activity-text {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-200);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fac-occ__card-activity-end {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  margin-top: 4px;
+}
+
+.fac-occ__card-activity-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── Maintenance indicator ── */
+.fac-occ__card-maint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--color-amber-400) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-amber-400);
+}
+
+.fac-occ__card-maint-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ═══ CAPACITY BAR ════════════════════════════════════════════ */
+
+.fac-occ__bar {
+  margin-bottom: 10px;
+}
+
+.fac-occ__bar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.fac-occ__bar-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fac-occ__bar-label-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.fac-occ__bar-value {
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.fac-occ__bar-value[data-capacity="low"] {
+  color: var(--color-emerald-400);
+}
+.fac-occ__bar-value[data-capacity="moderate"] {
+  color: var(--color-teal-400);
+}
+.fac-occ__bar-value[data-capacity="high"] {
+  color: var(--color-amber-400);
+}
+.fac-occ__bar-value[data-capacity="critical"] {
+  color: var(--color-rose-400);
+}
+
+.fac-occ__bar-track {
+  height: 4px;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.fac-occ__bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0%;
+  animation: fac-occ-bar-fill 0.8s ease-out 0.3s forwards;
+}
+
+@keyframes fac-occ-bar-fill {
+  to { width: var(--bar-pct); }
+}
+
+.fac-occ__bar-fill[data-capacity="low"] {
+  background: var(--color-emerald-400);
+}
+.fac-occ__bar-fill[data-capacity="moderate"] {
+  background: var(--color-teal-400);
+}
+.fac-occ__bar-fill[data-capacity="high"] {
+  background: var(--color-amber-400);
+}
+.fac-occ__bar-fill[data-capacity="critical"] {
+  background: var(--color-rose-400);
+}
+
+/* ═══ UPCOMING RESERVATIONS ═══════════════════════════════════ */
+
+.fac-occ__card-upcoming {
+  margin-bottom: 10px;
+}
+
+.fac-occ__card-upcoming-title {
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 6px;
+}
+
+.fac-occ__card-upcoming-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+
+.fac-occ__card-upcoming-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-silver-500);
+  flex-shrink: 0;
+}
+
+.fac-occ__card-upcoming-dot[data-res-status="confirmed"] {
+  background: var(--color-teal-400);
+}
+.fac-occ__card-upcoming-dot[data-res-status="pending"] {
+  background: var(--color-amber-400);
+}
+
+.fac-occ__card-upcoming-time {
+  font-size: 10px;
+  font-family: var(--font-display);
+  color: var(--color-silver-400);
+  flex-shrink: 0;
+}
+
+.fac-occ__card-upcoming-name {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fac-occ__card-upcoming-empty {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-600);
+  margin: 0;
+}
+
+/* ═══ ACTION BUTTONS (Sense 4) ════════════════════════════════ */
+
+.fac-occ__card-actions {
+  display: flex;
+  gap: 6px;
+  /* Sense 2: hidden by default, revealed on card hover */
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fac-occ__card:hover .fac-occ__card-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fac-occ__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, letter-spacing 0.3s ease, transform 0.2s ease;
+  min-height: 32px;
+}
+
+.fac-occ__btn:hover {
+  letter-spacing: 0.06em;
+  transform: translateY(-1px);
+}
+
+.fac-occ__btn--book {
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-teal-400) 30%, transparent);
+  color: var(--color-teal-400);
+}
+
+.fac-occ__btn--book:hover {
+  background: color-mix(in srgb, var(--color-teal-400) 22%, transparent);
+}
+
+.fac-occ__btn--view {
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  border-color: color-mix(in srgb, var(--color-border) 25%, transparent);
+  color: var(--color-silver-400);
+}
+
+.fac-occ__btn--view:hover {
+  color: var(--color-silver-200);
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+}
+
+.fac-occ__btn-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .fac-occ__card {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+.light .fac-occ__card-name {
+  color: var(--color-silver-800);
+}
+
+.light .fac-occ__card-activity {
+  background: color-mix(in srgb, var(--color-surface) 95%, transparent);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fac-occ__card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-occ__card:hover {
+    transform: none;
+  }
+
+  .fac-occ__card-actions {
+    opacity: 1;
+    transform: none;
+  }
+
+  .fac-occ__btn:hover {
+    letter-spacing: 0.02em;
+    transform: none;
+  }
+
+  .fac-occ__pulse-ring {
+    animation: none;
+    opacity: 0;
+  }
+
+  .fac-occ__bar-fill {
+    animation: none;
+    width: var(--bar-pct);
+  }
+
+  .fac-occ__card[data-live="maintenance"] {
+    animation: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fac-occ__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fac-occ__stats {
+    gap: 10px;
+  }
+
+  .fac-occ__stats-total {
+    margin-left: 0;
+    width: 100%;
+  }
+}

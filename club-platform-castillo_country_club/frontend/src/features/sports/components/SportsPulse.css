@@ -1,0 +1,197 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/SportsPulse.css
+   §B3.1 — Sports Pulse Header Styles
+   Living Protocol: 1/7 (respiración) + 3/7 (memoria)
+                    + 6/7 (empatía) + 7/7 (narrativa)
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Root ───────────────────────────────────────────────── */
+
+.spt-pulse {
+  --spt-pulse-accent: var(--color-teal-400, #2a9ab5);
+  --spt-pulse-glow: rgba(42, 154, 181, 0.15);
+  --spt-pulse-dur: 6s;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-surface-1, #1a1a1a);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  animation: spt-pulse-breathe var(--spt-pulse-dur) ease-in-out infinite;
+}
+
+/* ── §0.1 — Mode Variables (Living Protocol 6: Empatía) ── */
+
+.spt-pulse[data-mode="calm"] {
+  --spt-pulse-accent: var(--color-teal-400, #2a9ab5);
+  --spt-pulse-glow: rgba(42, 154, 181, 0.15);
+  --spt-pulse-dur: 6s;
+}
+
+.spt-pulse[data-mode="alert"] {
+  --spt-pulse-accent: var(--color-amber-400, #d4a017);
+  --spt-pulse-glow: rgba(212, 160, 23, 0.2);
+  --spt-pulse-dur: 3s;
+}
+
+.spt-pulse[data-mode="critical"] {
+  --spt-pulse-accent: var(--color-rose-400, #e54d4d);
+  --spt-pulse-glow: rgba(229, 77, 77, 0.25);
+  --spt-pulse-dur: 1.5s;
+}
+
+/* ── §1 — Respiración (Living Protocol 1) ───────────────── */
+
+@keyframes spt-pulse-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 var(--spt-pulse-glow); }
+  50%      { box-shadow: 0 0 20px 2px var(--spt-pulse-glow); }
+}
+
+/* ── §2 — Layout ────────────────────────────────────────── */
+
+.spt-pulse__left,
+.spt-pulse__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.spt-pulse__center {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+/* ── §3 — Health Score (Living Protocol 3: Memoria) ─────── */
+
+.spt-pulse__health {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.spt-pulse__score {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--spt-pulse-accent);
+  transition: color 0.4s ease;
+}
+
+.spt-pulse__label {
+  font-size: 0.75rem;
+  color: var(--color-silver-500, #7a7570);
+}
+
+.spt-pulse__icon {
+  width: 14px;
+  height: 14px;
+  color: var(--spt-pulse-accent);
+  transition: color 0.4s ease;
+}
+
+/* ── §4 — Alerts ────────────────────────────────────────── */
+
+.spt-pulse__alerts {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--spt-pulse-accent);
+  transition: color 0.4s ease;
+}
+
+/* ── §5 — Narrative (Living Protocol 7) ─────────────────── */
+
+.spt-pulse__narrative {
+  font-size: 0.7rem;
+  color: var(--color-silver-400, #8a8580);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── §6 — Mode Badge ────────────────────────────────────── */
+
+.spt-pulse__mode {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  background: var(--spt-pulse-glow);
+  color: var(--spt-pulse-accent);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* ── §7 — Season ────────────────────────────────────────── */
+
+.spt-pulse__season {
+  font-size: 0.8rem;
+  color: var(--color-silver-500, #7a7570);
+}
+
+.spt-pulse__season[data-peak="true"] {
+  color: var(--color-emerald-400, #3daa70);
+}
+
+/* ── §8 — Light Mode ────────────────────────────────────── */
+
+.light .spt-pulse {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .spt-pulse__score {
+  color: var(--spt-pulse-accent);
+}
+
+.light .spt-pulse__narrative {
+  color: var(--color-silver-500, #6b7280);
+}
+
+.light .spt-pulse__label,
+.light .spt-pulse__season {
+  color: var(--color-silver-500, #6b7280);
+}
+
+/* ── §9 — Reduced Motion ────────────────────────────────── */
+
+.spt-pulse[data-prefers-reduced="true"] {
+  animation: none;
+  box-shadow: 0 0 12px 1px var(--spt-pulse-glow);
+}
+
+/* ── §10 — Responsive ───────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .spt-pulse {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .spt-pulse__center {
+    display: none;
+  }
+}
+
+/* ── §11 — Print ────────────────────────────────────────── */
+
+@media print {
+  .spt-pulse {
+    animation: none;
+    border: 1px solid #ccc;
+    background: transparent;
+  }
+}

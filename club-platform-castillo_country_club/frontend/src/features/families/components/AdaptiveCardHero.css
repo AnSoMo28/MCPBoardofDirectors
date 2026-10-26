@@ -1,0 +1,262 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/AdaptiveCardHero.css
+   Phase 34+ Migration — Adaptive Card Hero Styles
+   Level 6+ Agency · Production Grade
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — driven by --hero-* custom properties
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-adaptiveHero {
+  position: relative;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--hero-bg, rgba(255, 255, 255, 0.02));
+  border-left: var(--hero-border, 2px) solid var(--hero-color, var(--color-silver-500));
+  overflow: hidden;
+  opacity: 0;
+  animation: fm-heroIn 0.35s ease forwards;
+}
+
+.fm-adaptiveHero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 24px var(--hero-glow, transparent);
+  pointer-events: none;
+  transition: box-shadow 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Header — Icon + Slot Label + Urgency Badge
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-adaptiveHero__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.fm-adaptiveHero__icon-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--hero-color, var(--color-silver-400)) 25%, transparent);
+  background: var(--hero-bg, transparent);
+  color: var(--hero-color, var(--color-silver-400));
+  flex-shrink: 0;
+}
+
+.fm-adaptiveHero__slot-label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--hero-color, var(--color-silver-400));
+  flex: 1;
+}
+
+.fm-adaptiveHero__urgency-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 100px;
+  border: 1px solid;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Urgency badge colors — data-attribute driven */
+.fm-adaptiveHero[data-urgency="immediate"] .fm-adaptiveHero__urgency-badge {
+  color: var(--color-rose-400);
+  border-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+}
+
+.fm-adaptiveHero[data-urgency="today"] .fm-adaptiveHero__urgency-badge {
+  color: var(--color-amber-400);
+  border-color: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+}
+
+.fm-adaptiveHero[data-urgency="this_week"] .fm-adaptiveHero__urgency-badge {
+  color: var(--color-gold-400);
+  border-color: color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+}
+
+.fm-adaptiveHero[data-urgency="upcoming"] .fm-adaptiveHero__urgency-badge {
+  color: var(--color-silver-500);
+  border-color: color-mix(in srgb, var(--color-silver-500) 20%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  AI Reason — narrative text (P1)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-adaptiveHero__reason {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--color-silver-300);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Suggested Action — CTA (P3)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-adaptiveHero__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  margin-top: 6px;
+  border-radius: 100px;
+  border: 1px solid color-mix(in srgb, var(--hero-color, var(--color-silver-400)) 25%, transparent);
+  background: var(--hero-bg, transparent);
+  color: var(--hero-color, var(--color-silver-400));
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, letter-spacing 0.2s ease;
+}
+
+.fm-adaptiveHero__action:hover {
+  background: var(--hero-glow, transparent);
+  letter-spacing: 0.08em;
+}
+
+.fm-adaptiveHero__action:focus-visible {
+  outline: 2px solid var(--hero-color, var(--color-gold-400));
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Urgency Variants — visual intensity
+   ═══════════════════════════════════════════════════════════ */
+
+/* Immediate: gradient glow overlay */
+.fm-adaptiveHero[data-urgency="immediate"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--hero-glow, transparent) 100%
+  );
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* Immediate: pulse animation */
+.fm-adaptiveHero[data-urgency="immediate"] {
+  animation:
+    fm-heroIn 0.35s ease forwards,
+    fm-heroPulse 2s ease-in-out 0.5s infinite;
+}
+
+/* Upcoming: no inset glow */
+.fm-adaptiveHero[data-urgency="upcoming"]::before {
+  box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-heroIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-heroPulse {
+  0%, 100% {
+    border-left-color: var(--hero-color, var(--color-rose-400));
+  }
+  50% {
+    border-left-color: color-mix(in srgb, var(--hero-color, var(--color-rose-400)) 40%, transparent);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Light Mode
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-adaptiveHero::before {
+  box-shadow: none;
+}
+
+.light .fm-adaptiveHero[data-urgency="immediate"]::after {
+  opacity: 0.2;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Reduced Motion
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-adaptiveHero,
+  .fm-adaptiveHero[data-urgency="immediate"] {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-adaptiveHero__action {
+    transition: none;
+    letter-spacing: 0.05em;
+  }
+
+  .fm-adaptiveHero__action:hover {
+    letter-spacing: 0.05em;
+  }
+
+  .fm-adaptiveHero::before {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Print
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-adaptiveHero {
+    break-inside: avoid;
+    border-left: 2px solid #333 !important;
+    background: white !important;
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-adaptiveHero::before,
+  .fm-adaptiveHero::after {
+    display: none;
+  }
+
+  .fm-adaptiveHero__action {
+    display: none;
+  }
+}

@@ -1,0 +1,560 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/ConversionPipeline.css
+   Phase 34 "The Gateway" — Signature: Conversion Pipeline
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-pipeline
+   Glass: .glass-gst-pipeline
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-pipeline {
+  --glass-gst-pipeline-version: 1;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-pipeline-bg: rgba(18, 18, 26, 0.5);
+  --gst-pipeline-border: rgba(255, 255, 255, 0.06);
+  --gst-pipeline-text-primary: #f0ece4;
+  --gst-pipeline-text-muted: #7a7570;
+  --gst-pipeline-radius: 16px;
+  --gst-pipeline-stage-radius: 10px;
+  --gst-pipeline-bar-height: 28px;
+  --gst-pipeline-connector-height: 32px;
+}
+
+/* ── Base ── */
+.gst-pipeline {
+  position: relative;
+  background: var(--gst-pipeline-bg);
+  border: 1px solid var(--gst-pipeline-border);
+  border-radius: var(--gst-pipeline-radius);
+  padding: 24px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  opacity: 0;
+  animation: gst-pipeline-fadeIn 0.5s ease 0.2s forwards;
+}
+
+.gst-pipeline[data-state="empty"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  animation: none;
+  opacity: 1;
+}
+
+.gst-pipeline__empty-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 15px;
+  color: var(--gst-pipeline-text-muted);
+  margin: 0;
+}
+
+/* ── Header ── */
+.gst-pipeline__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.gst-pipeline__title {
+  font-family: var(--font-display, "Italiana");
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--gst-pipeline-text-primary);
+  margin: 0;
+}
+
+.gst-pipeline__header-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.gst-pipeline__stat {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 12px;
+  color: var(--gst-pipeline-text-muted);
+}
+
+.gst-pipeline__stat[data-level="excellent"] {
+  color: var(--gst-severity-low);
+}
+
+.gst-pipeline__stat[data-level="good"] {
+  color: var(--gst-accent);
+}
+
+.gst-pipeline__stat[data-level="attention"] {
+  color: var(--gst-severity-medium);
+}
+
+.gst-pipeline__stat[data-level="warning"],
+.gst-pipeline__stat[data-level="critical"] {
+  color: var(--gst-severity-high);
+}
+
+/* ── Stages Container ── */
+.gst-pipeline__stages {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Stage Wrapper (stage + connector) ── */
+.gst-pipeline__stage-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Connector Between Stages ── */
+.gst-pipeline__connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--gst-pipeline-connector-height);
+  position: relative;
+}
+
+.gst-pipeline__connector-line {
+  position: absolute;
+  left: 40px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.04)
+  );
+}
+
+.gst-pipeline__connector-rate {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gst-accent);
+  background: var(--gst-pipeline-bg);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(212, 168, 83, 0.15);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Stage Row (button) ── */
+.gst-pipeline__stage {
+  display: grid;
+  grid-template-columns: 160px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--gst-pipeline-stage-radius);
+  border: 1px solid var(--gst-pipeline-border);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  width: 100%;
+  text-align: left;
+  outline: none;
+}
+
+.gst-pipeline__stage:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.gst-pipeline__stage:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+/* ── Bottleneck glow ── */
+.gst-pipeline__stage[data-bottleneck="true"] {
+  border-color: rgba(231, 76, 60, 0.2);
+}
+
+.gst-pipeline__stage[data-severity="critical"] {
+  border-color: rgba(255, 23, 68, 0.3);
+  animation: gst-pipeline-critical-border 2.5s ease-in-out infinite;
+}
+
+/* ── Stage Label ── */
+.gst-pipeline__stage-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.gst-pipeline__stage-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gst-pipeline-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gst-pipeline__stage-trend {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.gst-pipeline__stage[data-trend="improving"] .gst-pipeline__stage-trend {
+  color: var(--gst-severity-low);
+}
+
+.gst-pipeline__stage[data-trend="stable"] .gst-pipeline__stage-trend {
+  color: var(--gst-pipeline-text-muted);
+}
+
+.gst-pipeline__stage[data-trend="declining"] .gst-pipeline__stage-trend {
+  color: var(--gst-severity-high);
+}
+
+/* ── Stage Bar ── */
+.gst-pipeline__stage-bar-container {
+  height: var(--gst-pipeline-bar-height);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.gst-pipeline__stage-bar {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.gst-pipeline__stage-bar[data-color="registered"] {
+  background: linear-gradient(90deg, rgba(122, 117, 112, 0.5), rgba(122, 117, 112, 0.2));
+}
+
+.gst-pipeline__stage-bar[data-color="first_visit"] {
+  background: linear-gradient(90deg, rgba(78, 205, 196, 0.5), rgba(78, 205, 196, 0.2));
+}
+
+.gst-pipeline__stage-bar[data-color="trial_active"] {
+  background: linear-gradient(90deg, rgba(245, 166, 35, 0.5), rgba(245, 166, 35, 0.2));
+}
+
+.gst-pipeline__stage-bar[data-color="ready"] {
+  background: linear-gradient(90deg, rgba(46, 204, 113, 0.5), rgba(46, 204, 113, 0.2));
+}
+
+.gst-pipeline__stage-bar[data-color="converted"] {
+  background: linear-gradient(90deg, rgba(212, 168, 83, 0.6), rgba(212, 168, 83, 0.2));
+}
+
+/* ── Stage Metrics ── */
+.gst-pipeline__stage-metrics {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.gst-pipeline__stage-count {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gst-pipeline-text-primary);
+  min-width: 32px;
+  text-align: right;
+}
+
+.gst-pipeline__stage-rate {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 12px;
+  color: var(--gst-pipeline-text-muted);
+  min-width: 44px;
+  text-align: right;
+}
+
+.gst-pipeline__stage-vs {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  min-width: 40px;
+  text-align: right;
+}
+
+.gst-pipeline__stage-vs[data-positive="true"] {
+  color: var(--gst-severity-low);
+}
+
+.gst-pipeline__stage-vs[data-positive="false"] {
+  color: var(--gst-severity-high);
+}
+
+/* ── Badges ── */
+.gst-pipeline__stage-badges {
+  display: flex;
+  gap: 6px;
+  min-width: 80px;
+  justify-content: flex-end;
+}
+
+.gst-pipeline__badge {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.gst-pipeline__badge[data-type="bottleneck"] {
+  color: var(--gst-severity-high);
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.gst-pipeline__badge[data-type="quickwin"] {
+  color: var(--gst-accent);
+  background: rgba(212, 168, 83, 0.1);
+  border: 1px solid rgba(212, 168, 83, 0.2);
+}
+
+/* ── Expanded Detail ── */
+.gst-pipeline__detail {
+  padding: 12px 14px;
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--gst-pipeline-border);
+  border-radius: 8px;
+  opacity: 0;
+  animation: gst-pipeline-detail-in 0.25s ease forwards;
+}
+
+.gst-pipeline__detail-grid {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 10px;
+}
+
+.gst-pipeline__detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gst-pipeline__detail-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gst-pipeline-text-muted);
+}
+
+.gst-pipeline__detail-value {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gst-pipeline-text-primary);
+}
+
+.gst-pipeline__detail-bottleneck {
+  padding: 8px 12px;
+  border-left: 3px solid var(--gst-severity-high);
+  background: rgba(231, 76, 60, 0.04);
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 8px;
+}
+
+.gst-pipeline__detail-bottleneck-cause,
+.gst-pipeline__detail-bottleneck-stats {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 12px;
+  color: var(--gst-pipeline-text-primary);
+  margin: 0 0 2px 0;
+  line-height: 1.5;
+}
+
+.gst-pipeline__detail-bottleneck-stats {
+  color: var(--gst-pipeline-text-muted);
+}
+
+/* ── Quick Win Cards ── */
+.gst-pipeline__detail-quickwins {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gst-pipeline__quickwin {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(212, 168, 83, 0.15);
+  background: rgba(212, 168, 83, 0.04);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  width: 100%;
+  text-align: left;
+  outline: none;
+}
+
+.gst-pipeline__quickwin:hover {
+  background: rgba(212, 168, 83, 0.08);
+  border-color: var(--gst-accent);
+}
+
+.gst-pipeline__quickwin:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+.gst-pipeline__quickwin-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gst-pipeline-text-primary);
+}
+
+.gst-pipeline__quickwin-action {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 12px;
+  color: var(--gst-pipeline-text-muted);
+}
+
+.gst-pipeline__quickwin-impact {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gst-accent);
+}
+
+/* ── Animations ── */
+@keyframes gst-pipeline-fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gst-pipeline-detail-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gst-pipeline-critical-border {
+  0%, 100% { border-color: rgba(255, 23, 68, 0.3); }
+  50% { border-color: rgba(255, 23, 68, 0.15); }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-pipeline {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-pipeline__stage-bar {
+  transition: none;
+}
+
+[data-prefers-reduced="true"] .gst-pipeline__detail {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-pipeline__stage[data-severity="critical"] {
+  animation: none;
+}
+
+/* ── Light Mode ── */
+.light .gst-pipeline {
+  --gst-pipeline-bg: rgba(255, 255, 255, 0.85);
+  --gst-pipeline-border: rgba(0, 0, 0, 0.08);
+  --gst-pipeline-text-primary: #1a1a2e;
+  --gst-pipeline-text-muted: #6b6b78;
+}
+
+.light .gst-pipeline__stage {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .gst-pipeline__stage-bar-container {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .gst-pipeline__connector-rate {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-pipeline {
+    padding: 16px;
+  }
+
+  .gst-pipeline__header {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .gst-pipeline__title {
+    font-size: 18px;
+  }
+
+  .gst-pipeline__header-stats {
+    gap: 10px;
+  }
+
+  .gst-pipeline__stage {
+    grid-template-columns: 120px 1fr;
+    grid-template-rows: auto auto;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .gst-pipeline__stage-metrics {
+    grid-column: 1 / -1;
+  }
+
+  .gst-pipeline__stage-badges {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .gst-pipeline__quickwin {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-pipeline__stage {
+    grid-template-columns: 140px 1fr auto auto;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-pipeline {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+  }
+
+  .gst-pipeline__stage {
+    border-color: #ddd;
+  }
+
+  .gst-pipeline__stage-bar {
+    background: #eee !important;
+  }
+}

@@ -1,0 +1,678 @@
+/**
+ * CulturalDashboard — Root organism layout
+ *
+ * 5-layer composition:
+ * 1. Ambient (absolute, z-0)
+ * 2. Pulse (fixed top-right, z-20)
+ * 3. Header (relative, z-10)
+ * 4. Main: Decision + Stream (relative, z-10)
+ * 5. Panels: Asymmetric grid (relative, z-10)
+ * 6. Actions: Fixed bottom-right (z-50)
+ *
+ * Noise overlay at z-999 (pointer-events: none).
+ */
+
+/* ══════════════════════════════════════════════════════════
+   ROOT
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard {
+  --cd-bg: #0a0a0a;
+  --cd-panel-bg: rgba(255, 255, 255, 0.018);
+  --cd-panel-border: rgba(255, 255, 255, 0.06);
+  --cd-panel-border-hover: rgba(255, 255, 255, 0.12);
+  --cd-text-primary: rgba(255, 255, 255, 0.88);
+  --cd-text-secondary: rgba(255, 255, 255, 0.55);
+  --cd-text-muted: rgba(255, 255, 255, 0.3);
+  --cd-accent: #60a5fa;
+  --cd-gap-xs: 0.35rem;
+  --cd-gap-sm: 0.5rem;
+  --cd-gap-md: 0.75rem;
+  --cd-gap-lg: 1.25rem;
+  --cd-radius-sm: 6px;
+  --cd-radius-md: 10px;
+
+  position: relative;
+  min-height: 100vh;
+  background: var(--cd-bg);
+  color: var(--cd-text-primary);
+  font-family: 'DM Mono', monospace;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cd-gap-lg);
+  padding: 1.25rem 1.5rem 5rem;
+}
+
+/* ── Mode-specific accents ── */
+.cultural-dashboard[data-mode="pulse"] {
+  --cd-accent: #4ade80;
+  --cd-panel-border: rgba(74, 222, 128, 0.08);
+}
+
+.cultural-dashboard[data-mode="flowing"] {
+  --cd-accent: #60a5fa;
+  --cd-panel-border: rgba(96, 165, 250, 0.08);
+}
+
+.cultural-dashboard[data-mode="deep"] {
+  --cd-accent: #a78bfa;
+  --cd-panel-border: rgba(167, 139, 250, 0.08);
+}
+
+.cultural-dashboard[data-mode="critical"] {
+  --cd-accent: #ef4444;
+  --cd-panel-border: rgba(239, 68, 68, 0.1);
+}
+
+.cultural-dashboard[data-mode="dormant"] {
+  --cd-accent: #6b7280;
+  --cd-panel-border: rgba(255, 255, 255, 0.04);
+}
+
+/* ══════════════════════════════════════════════════════════
+   NOISE OVERLAY
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard__noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.028;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* ══════════════════════════════════════════════════════════
+   AMBIENT LAYER
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard__ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PULSE
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard__pulse {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.5rem;
+  z-index: 20;
+}
+
+/* ══════════════════════════════════════════════════════════
+   HEADER
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  position: relative;
+  z-index: 10;
+  padding-bottom: var(--cd-gap-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  opacity: 0;
+  animation: cdFadeIn 0.5s ease forwards;
+  animation-delay: 0.05s;
+}
+
+.cultural-dashboard__header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cultural-dashboard__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.6rem;
+  color: var(--cd-text-primary);
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.cultural-dashboard__subtitle {
+  font-size: 0.65rem;
+  color: var(--cd-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.cultural-dashboard__header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Health */
+.cultural-dashboard__health {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+
+.cultural-dashboard__health-label {
+  font-size: 0.5rem;
+  color: var(--cd-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cultural-dashboard__health-score {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.cultural-dashboard__health-score[data-level="good"] {
+  color: #4ade80;
+}
+
+.cultural-dashboard__health-score[data-level="warning"] {
+  color: #eab308;
+}
+
+.cultural-dashboard__health-score[data-level="critical"] {
+  color: #ef4444;
+}
+
+/* Mode indicator */
+.cultural-dashboard__mode-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cultural-dashboard__mode-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cd-accent);
+  animation: cdModePulse 2s ease-in-out infinite;
+}
+
+.cultural-dashboard__mode-text {
+  font-size: 0.55rem;
+  color: var(--cd-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CRITICAL BANNER
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard__critical-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--cd-radius-md);
+  position: relative;
+  z-index: 10;
+  opacity: 0;
+  animation: cdSlideDown 0.4s ease forwards;
+  animation-delay: 0.3s;
+}
+
+.critical-banner__icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  animation: cdUrgentFlash 1.5s ease-in-out infinite;
+}
+
+.critical-banner__text {
+  flex: 1;
+  font-size: 0.72rem;
+  color: rgba(239, 68, 68, 0.85);
+}
+
+.critical-banner__action {
+  padding: 0.25rem 0.6rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: rgba(239, 68, 68, 0.7);
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.critical-banner__action:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: rgba(239, 68, 68, 0.95);
+}
+
+/* ══════════════════════════════════════════════════════════
+   MAIN (Decision + Stream)
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard__main {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: var(--cd-gap-lg);
+  position: relative;
+  z-index: 10;
+  min-height: 280px;
+}
+
+.cultural-dashboard__decision {
+  opacity: 0;
+  animation: cdFadeSlideUp 0.6s ease forwards;
+  animation-delay: 0.1s;
+}
+
+.cultural-dashboard__stream {
+  opacity: 0;
+  animation: cdFadeSlideUp 0.6s ease forwards;
+  animation-delay: 0.2s;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PANELS (Asymmetric Grid)
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard__panels {
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 1.3fr;
+  grid-template-areas:
+    "genome     genome    journey"
+    "resonance  mutations social"
+    "venue      venue     venue";
+  gap: var(--cd-gap-md);
+  position: relative;
+  z-index: 10;
+}
+
+.cultural-dashboard__panel {
+  background: var(--cd-panel-bg);
+  border: 1px solid var(--cd-panel-border);
+  border-radius: var(--cd-radius-md);
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  opacity: 0;
+  animation: cdFadeSlideUp 0.6s ease forwards;
+}
+
+.cultural-dashboard__panel:hover {
+  transform: translateY(-2px);
+  border-color: var(--cd-panel-border-hover);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Grid areas */
+.cultural-dashboard__panel--genome {
+  grid-area: genome;
+  min-height: 300px;
+  animation-delay: 0.3s;
+}
+
+.cultural-dashboard__panel--journey {
+  grid-area: journey;
+  min-height: 200px;
+  animation-delay: 0.4s;
+}
+
+.cultural-dashboard__panel--resonance {
+  grid-area: resonance;
+  min-height: 250px;
+  animation-delay: 0.5s;
+}
+
+.cultural-dashboard__panel--mutations {
+  grid-area: mutations;
+  min-height: 200px;
+  animation-delay: 0.6s;
+}
+
+.cultural-dashboard__panel--social {
+  grid-area: social;
+  min-height: 280px;
+  animation-delay: 0.7s;
+}
+
+.cultural-dashboard__panel--venue {
+  grid-area: venue;
+  min-height: 260px;
+  animation-delay: 0.8s;
+}
+
+/* ══════════════════════════════════════════════════════════
+   ACTION BUTTONS (Floating)
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard__actions {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  opacity: 0;
+  animation: cdFadeSlideUp 0.5s ease forwards;
+  animation-delay: 0.9s;
+}
+
+.cultural-dashboard__action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem 0.45rem 0.55rem;
+  background: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  max-width: 44px;
+  overflow: hidden;
+}
+
+.cultural-dashboard__action-btn:hover {
+  max-width: 200px;
+  border-color: var(--action-color, rgba(255, 255, 255, 0.15));
+  background: rgba(15, 15, 15, 0.95);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+}
+
+.cultural-dashboard__action-icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+
+.cultural-dashboard__action-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--action-color, rgba(255, 255, 255, 0.5));
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.cultural-dashboard__action-btn:hover .cultural-dashboard__action-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ══════════════════════════════════════════════════════════
+   SKELETON LOADING
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard--loading {
+  pointer-events: none;
+}
+
+.cd-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02) 25%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.02) 75%
+  );
+  background-size: 200% 100%;
+  animation: cdShimmer 2s ease-in-out infinite;
+  border-radius: var(--cd-radius-sm);
+}
+
+.cd-skeleton--title {
+  width: 220px;
+  height: 24px;
+}
+
+.cd-skeleton--subtitle {
+  width: 140px;
+  height: 14px;
+  margin-top: 0.3rem;
+}
+
+.cd-skeleton--badge {
+  width: 80px;
+  height: 28px;
+  border-radius: 4px;
+}
+
+.cd-skeleton--block {
+  width: 100%;
+  border-radius: var(--cd-radius-md);
+}
+
+.cd-skeleton--decision {
+  height: 240px;
+}
+
+.cd-skeleton--stream {
+  height: 320px;
+}
+
+.cd-skeleton--panel {
+  height: 240px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   ERROR STATE
+   ══════════════════════════════════════════════════════════ */
+
+.cultural-dashboard--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cultural-dashboard__error-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: var(--cd-radius-md);
+  max-width: 400px;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+
+.cultural-dashboard__error-icon {
+  font-size: 2rem;
+}
+
+.cultural-dashboard__error-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--cd-text-primary);
+  margin: 0;
+}
+
+.cultural-dashboard__error-message {
+  font-size: 0.72rem;
+  color: var(--cd-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.cultural-dashboard__error-retry {
+  padding: 0.5rem 1.5rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--cd-text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.cultural-dashboard__error-retry:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ══════════════════════════════════════════════════════════
+   KEYFRAMES
+   ══════════════════════════════════════════════════════════ */
+
+@keyframes cdFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes cdFadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cdSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cdShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes cdModePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.8); }
+}
+
+@keyframes cdUrgentFlash {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
+
+/* Tablet */
+@media (max-width: 1200px) {
+  .cultural-dashboard {
+    padding: 1rem 1.25rem 5rem;
+  }
+
+  .cultural-dashboard__main {
+    grid-template-columns: 1fr 280px;
+  }
+
+  .cultural-dashboard__panels {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "genome     journey"
+      "resonance  mutations"
+      "social     venue";
+  }
+}
+
+/* Mobile landscape / small tablet */
+@media (max-width: 900px) {
+  .cultural-dashboard__main {
+    grid-template-columns: 1fr;
+  }
+
+  .cultural-dashboard__stream {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .cultural-dashboard__panels {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "genome     genome"
+      "journey    resonance"
+      "mutations  social"
+      "venue      venue";
+  }
+
+  .cultural-dashboard__action-btn {
+    max-width: 44px;
+  }
+
+  .cultural-dashboard__action-label {
+    display: none;
+  }
+}
+
+/* Mobile portrait */
+@media (max-width: 600px) {
+  .cultural-dashboard {
+    padding: 0.75rem 0.75rem 5rem;
+    gap: var(--cd-gap-md);
+  }
+
+  .cultural-dashboard__title {
+    font-size: 1.2rem;
+  }
+
+  .cultural-dashboard__main {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .cultural-dashboard__panels {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "genome"
+      "journey"
+      "resonance"
+      "mutations"
+      "social"
+      "venue";
+  }
+
+  .cultural-dashboard__panel {
+    min-height: auto !important;
+  }
+
+  .cultural-dashboard__actions {
+    bottom: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .cultural-dashboard__pulse {
+    top: 0.75rem;
+    right: 4rem;
+  }
+
+  .cultural-dashboard__health {
+    display: none;
+  }
+
+  .cultural-dashboard__critical-banner {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+}

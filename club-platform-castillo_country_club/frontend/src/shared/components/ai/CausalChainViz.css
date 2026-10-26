@@ -1,0 +1,376 @@
+/**
+ * @component CausalChainViz (Fase 23)
+ * @namespace .glass-causal (NOT .glass-chain — that belongs to FamilyIntelligencePanel)
+ * @depends globals.css (radius-lg, font tokens, color tokens, color-mix)
+ * @note Namespace .glass-causal to avoid collision with FamilyIntelligencePanel .glass-chain.
+ *       Fixed: renamed all .glass-chain to .glass-causal.
+ *       2 keyframes (chain-glow, chain-critical-pulse), ~34 classes.
+ * @import import './CausalChainViz.css';
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   CausalChainViz — Silver Tide Neural Flow Visualization
+   Fase 23 · Glass · Neural Flow · Propagation · Confidence Hex
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root wrappers ── */
+.glass-causal--compact-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.glass-causal--expanded-wrap {
+  position: relative;
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(14, 20, 32, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 2px solid;
+  overflow: hidden;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.glass-causal__glow {
+  position: absolute;
+  top: -20%;
+  left: 20%;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(30px);
+  animation: causal-glow 5s ease-in-out infinite;
+}
+@keyframes causal-glow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+/* ═══════════════════════════════════════
+   Multi-chain header
+   ═══════════════════════════════════════ */
+
+.glass-causal__multi-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-amber-400);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  position: relative;
+  z-index: 1;
+}
+.glass-causal__multi-highest {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* ═══════════════════════════════════════
+   Chain list
+   ═══════════════════════════════════════ */
+
+.glass-causal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════
+   Compact Chain — Neural Badge
+   ═══════════════════════════════════════ */
+
+.glass-causal__compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid;
+  border-left: 3px solid;
+  cursor: default;
+  transition: background 0.15s ease;
+}
+.glass-causal__compact:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.glass-causal__compact-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mini flow indicator */
+.glass-causal__compact-flow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.glass-causal__compact-flow-dot {
+  position: relative;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+.glass-causal__compact-flow-line {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 4px;
+  height: 1px;
+  transform: translateY(-50%);
+  opacity: 0.3;
+}
+
+/* Mini ring gauge */
+.glass-causal__compact-conf {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.glass-causal__compact-ring {
+  width: 100%;
+  height: 100%;
+}
+.glass-causal__compact-pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════
+   Expanded Chain — Intelligence Card
+   ═══════════════════════════════════════ */
+
+.glass-causal__expanded {
+  position: relative;
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 3px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.glass-causal__expanded:hover {
+  background: rgba(255, 255, 255, 0.025);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.glass-causal__expanded[role="button"] { cursor: pointer; }
+.glass-causal__expanded[role="button"]:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Critical pulse */
+.glass-causal__expanded--critical {
+  animation: causal-critical-pulse 3s ease-in-out infinite;
+}
+@keyframes causal-critical-pulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: inset 0 0 16px rgba(228, 90, 100, 0.04), 0 0 12px rgba(228, 90, 100, 0.03); }
+}
+
+/* Header */
+.glass-causal__expanded-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.glass-causal__expanded-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.glass-causal__expanded-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+}
+.glass-causal__expanded-severity {
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.glass-causal__expanded-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.glass-causal__expanded-meta {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+
+/* Critical badge */
+.glass-causal__expanded-critical-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: rgba(228, 90, 100, 0.08);
+  border: 1px solid rgba(228, 90, 100, 0.15);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-rose-400);
+  font-family: var(--font-mono);
+  align-self: flex-start;
+}
+
+/* Description */
+.glass-causal__expanded-desc {
+  font-size: 12px;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════
+   Neural Flow Diagram
+   ═══════════════════════════════════════ */
+
+.glass-causal__flow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+}
+.glass-causal__flow-svg {
+  height: auto;
+  overflow: visible;
+}
+
+/* Labels below nodes */
+.glass-causal__flow-labels {
+  display: flex;
+  gap: 0;
+}
+.glass-causal__flow-label {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+}
+.glass-causal__flow-label-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-silver-400);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+.glass-causal__flow-label-tag--root {
+  color: var(--color-rose-400);
+  border-color: rgba(228, 90, 100, 0.15);
+  background: rgba(228, 90, 100, 0.06);
+}
+.glass-causal__flow-label-tag--final {
+  color: var(--color-amber-400);
+  border-color: rgba(251, 191, 36, 0.15);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+/* ═══════════════════════════════════════
+   Confidence Hex
+   ═══════════════════════════════════════ */
+
+.glass-causal__hex {
+  position: relative;
+  flex-shrink: 0;
+}
+.glass-causal__hex-svg {
+  width: 100%;
+  height: 100%;
+}
+.glass-causal__hex-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-causal--expanded-wrap {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+.light .glass-causal__glow { opacity: 0.02; }
+.light .glass-causal__multi-header { color: var(--color-amber-500); border-bottom-color: rgba(0, 0, 0, 0.05); }
+.light .glass-causal__expanded {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+.light .glass-causal__expanded:hover { background: rgba(0, 0, 0, 0.025); border-color: rgba(0, 0, 0, 0.06); }
+.light .glass-causal__expanded-title { color: var(--color-silver-700, #374151); }
+.light .glass-causal__expanded-meta { color: var(--color-silver-400); }
+.light .glass-causal__expanded-desc { color: var(--color-silver-600); }
+.light .glass-causal__expanded-critical-badge { background: rgba(228, 90, 100, 0.05); border-color: rgba(228, 90, 100, 0.1); }
+.light .glass-causal__compact {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-causal__compact:hover { background: rgba(0, 0, 0, 0.025); }
+.light .glass-causal__compact-text { color: var(--color-silver-600); }
+.light .glass-causal__flow-label-tag {
+  color: var(--color-silver-500);
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-causal__flow-label-tag--root {
+  background: rgba(228, 90, 100, 0.04);
+  border-color: rgba(228, 90, 100, 0.1);
+}
+.light .glass-causal__flow-label-tag--final {
+  background: rgba(251, 191, 36, 0.04);
+  border-color: rgba(251, 191, 36, 0.1);
+}
+.light .glass-causal__hex-value { color: var(--color-silver-700); }

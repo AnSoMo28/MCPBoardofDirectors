@@ -1,0 +1,248 @@
+/* src/features/facilities/components/FacilityAmbientCanvas.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* FACILITY AMBIENT CANVAS — "The Breathing Background"          */
+/*                                                                */
+/* MERGED: Their 5 layers + pulse ring                           */
+/*         + Our CSS-driven mode transitions + light mode        */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — glow breathes, speed by pulse-rate  */
+/*   SENSE 6: EMPATÍA — palette shifts with data-mode           */
+/*                                                                */
+/* Colors are NEVER hardcoded. They come from:                   */
+/*   1. CSS custom properties set by JS (--fac-ambient-*)       */
+/*   2. Project tokens (--color-teal-*, --color-amber-*, etc.)  */
+/*   3. CSS selectors [data-mode] for mode-specific overrides   */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.glass-fac-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ═══ LAYER 1: PRIMARY GRADIENT ═══════════════════════════════ */
+/* Main atmospheric color. Smooth 1.2s transition between modes. */
+
+.glass-fac-ambient__primary {
+  position: absolute;
+  inset: -20%;
+  transition: background 1.2s ease;
+}
+
+[data-mode="calm"] .glass-fac-ambient__primary {
+  background: radial-gradient(
+    ellipse 60% 50% at 15% 45%,
+    color-mix(in srgb, var(--fac-ambient-accent) 12%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+[data-mode="alert"] .glass-fac-ambient__primary {
+  background: radial-gradient(
+    ellipse 60% 50% at 20% 40%,
+    color-mix(in srgb, var(--fac-ambient-accent) 16%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+[data-mode="critical"] .glass-fac-ambient__primary {
+  background: radial-gradient(
+    ellipse 60% 50% at 25% 35%,
+    color-mix(in srgb, var(--fac-ambient-accent) 22%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+/* ═══ LAYER 2: SECONDARY GRADIENT ═════════════════════════════ */
+/* Depth accent in opposite corner. */
+
+.glass-fac-ambient__secondary {
+  position: absolute;
+  inset: -20%;
+  transition: background 1.2s ease;
+}
+
+[data-mode="calm"] .glass-fac-ambient__secondary {
+  background: radial-gradient(
+    ellipse 50% 60% at 85% 20%,
+    color-mix(in srgb, var(--fac-ambient-secondary) 8%, transparent) 0%,
+    transparent 60%
+  );
+}
+
+[data-mode="alert"] .glass-fac-ambient__secondary {
+  background: radial-gradient(
+    ellipse 50% 60% at 80% 30%,
+    color-mix(in srgb, var(--fac-ambient-secondary) 12%, transparent) 0%,
+    transparent 60%
+  );
+}
+
+[data-mode="critical"] .glass-fac-ambient__secondary {
+  background: radial-gradient(
+    ellipse 50% 60% at 75% 25%,
+    color-mix(in srgb, var(--fac-ambient-secondary) 16%, transparent) 0%,
+    transparent 60%
+  );
+}
+
+/* ═══ LAYER 3: TERTIARY GLOW ══════════════════════════════════ */
+/* Breathing center glow with blur. The "lung" of the canvas.   */
+/* Opacity driven by --fac-ambient-opacity (JS-calculated).     */
+/* Blur driven by --fac-ambient-blur (JS-calculated).           */
+
+.glass-fac-ambient__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 50%,
+    color-mix(in srgb, var(--fac-ambient-glow) calc(var(--fac-ambient-opacity, 0.1) * 100%), transparent),
+    transparent
+  );
+  filter: blur(var(--fac-ambient-blur, 16px));
+  animation: glass-fac-ambient-breathe 4s ease-in-out infinite;
+  will-change: opacity, transform;
+  transition: background 1.2s ease;
+}
+
+/* Pulse-rate → breathing speed */
+[data-pulse-rate="dormant"] .glass-fac-ambient__glow {
+  animation-duration: 6s;
+}
+[data-pulse-rate="slow"] .glass-fac-ambient__glow {
+  animation-duration: 4s;
+}
+[data-pulse-rate="elevated"] .glass-fac-ambient__glow {
+  animation-duration: 2.5s;
+}
+[data-pulse-rate="rapid"] .glass-fac-ambient__glow {
+  animation-duration: 1.5s;
+}
+
+@keyframes glass-fac-ambient-breathe {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+/* ═══ LAYER 4: GRAIN OVERLAY ═════════════════════════════════ */
+/* SVG feTurbulence noise, composited with overlay blend mode.  */
+
+.glass-fac-ambient__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+}
+
+/* ═══ LAYER 5: PULSE RING ════════════════════════════════════ */
+/* Concentric ring that appears in alert/critical modes.        */
+/* Hidden in calm. Fades in during alert. Fully visible + fast  */
+/* in critical. The operator SEES urgency radiating.            */
+
+.glass-fac-ambient__pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40vmax;
+  height: 40vmax;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid transparent;
+  opacity: 0;
+  transition: opacity 0.8s ease, border-color 0.8s ease;
+  pointer-events: none;
+}
+
+/* Calm: hidden */
+[data-mode="calm"] .glass-fac-ambient__pulse-ring {
+  opacity: 0;
+}
+
+/* Alert: fades in, slow expand */
+[data-mode="alert"] .glass-fac-ambient__pulse-ring {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--fac-ambient-accent) 15%, transparent);
+  animation: glass-fac-ring-expand 4s ease-out infinite;
+}
+
+/* Critical: fully visible, faster expand, double ring effect */
+[data-mode="critical"] .glass-fac-ambient__pulse-ring {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--fac-ambient-accent) 25%, transparent);
+  animation: glass-fac-ring-expand 2.5s ease-out infinite;
+}
+
+[data-mode="critical"] .glass-fac-ambient__pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--fac-ambient-accent) 12%, transparent);
+  animation: glass-fac-ring-expand 2.5s ease-out 0.6s infinite;
+}
+
+@keyframes glass-fac-ring-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* ═══ LIGHT MODE — CSS driven, no JS detection ═══════════════ */
+
+.light .glass-fac-ambient__grain {
+  opacity: 0.02;
+}
+
+.light .glass-fac-ambient__glow {
+  filter: blur(calc(var(--fac-ambient-blur, 16px) * 1.5));
+}
+
+.light .glass-fac-ambient__primary,
+.light .glass-fac-ambient__secondary {
+  opacity: 0.6;
+}
+
+.light .glass-fac-ambient__pulse-ring {
+  border-width: 0.5px;
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-fac-ambient__glow {
+    animation: none;
+    opacity: 0.7;
+  }
+
+  .glass-fac-ambient__primary,
+  .glass-fac-ambient__secondary {
+    transition-duration: 0ms;
+  }
+
+  .glass-fac-ambient__pulse-ring {
+    animation: none;
+    opacity: 0;
+  }
+
+  .glass-fac-ambient__pulse-ring::after {
+    animation: none;
+  }
+}

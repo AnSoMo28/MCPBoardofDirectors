@@ -1,0 +1,505 @@
+# RESUMEN EJECUTIVO — Auditoría Pre-Fase 19
+## Castillo Country Club — Plataforma de Inteligencia de Club
+
+**Fecha:** Junio 2025
+**Archivos auditados:** 19 (4 backend agents/models, 11 frontend, 3 mock files, 1 registry)
+**Hallazgos totales:** 173 (H-F1 a H-F173)
+**Violaciones de reglas:** 12 (V1 a V12)
+**Tiempo de lectura estimado del checkpoint:** ~15 min
+
+---
+
+## PARTE 1: ESTADO DE SALUD DEL PROYECTO
+
+### Veredicto general: **SOLIDO con deuda técnica controlada**
+
+El proyecto tiene una arquitectura madura, un design system consistente, y un patrón AI bien establecido. La deuda técnica es proporcional a la velocidad de desarrollo (22 fases). Los problemas son específicos y tienen solución clara — no hay fallas sistémicas.
+
+### Lo que funciona excepcionalmente bien
+
+| Aspecto | Evidencia |
+|---------|-----------|
+| **Mock system** | Contracts → Factories → Registry pattern es elegante. Para migrar a backend real: eliminar key, 0 cambios en componentes |
+| **AI Intelligence Pattern** | Consolidado en Fase 17/18. Config array + enabled state + on-demand queries + ScoreGauge shared. Replicable a cualquier módulo |
+| **HITL Flow** | 3 patrones claros: approval→pending_approval→showToast info, conditional escalation (>4 guests→HITL), dual approval model |
+| **Backend alignment (AI types)** | Los 14 AI types de finance están 100% alineados con los modelos Pydantic del backend. Zero transformation needed |
+| **Token discipline** | ~95% del frontend usa tokens del Silver Tide design system. Las violaciones son concentradas y fixeables |
+| **Shared components** | Button, Badge, Card, EmptyState, DetailTabs, PageContainer, ScoreGauge — todos usados consistentemente |
+
+---
+
+## PARTE 2: HALLAZGOS CRÍTICOS (requieren fix antes de Fase 19)
+
+### C1 — `FinancialDashboard.tsx`: Bug en sub-tabs de Herramientas
+
+```
+SEVERIDAD: CRÍTICA (feature rota)
+ARCHIVO: frontend/src/features/finance/FinancialDashboard.tsx
+```
+
+**Problema:** Cuando el usuario clickea "Presupuesto" o "Reportes" dentro de la tab "Herramientas", `setActiveTab(tab.id)` cambia `activeTab` a `"budget"` o `"reportes"`. Pero el render dice `{activeTab === "tools" && (...)}` — esto es FALSE, así que **ningún sub-componente se renderiza**. El usuario ve pantalla vacía.
+
+**Fix quirúrgico:**
+
+Encontrá estas líneas en el onClick de los sub-tab buttons (~línea 121):
+
+```tsx
+onClick={() => {
+  setToolTab(tab.id);
+  setActiveTab(tab.id);  // ← ESTA LÍNEA ROMPE EL RENDER
+}}
+```
+
+Reemplazá por:
+
+```tsx
+onClick={() => {
+  setToolTab(tab.id);
+  // NO cambiar activeTab — debe permanecer en "tools"
+}}
+```
+
+---
+
+### C2 — `FamilyDetail.tsx`: Badge import duplicado
+
+```
+SEVERIDAD: CRÍTICA (error de compilación)
+ARCHIVO: frontend/src/features/families/FamilyDetail.tsx
+```
+
+**Problema:** `Badge` está importado dos veces. TypeScript/ESLint lanza error.
+
+**Fix quirúrgico:**
+
+Eliminá esta línea (~línea 15 o ~línea 21, la segunda ocurrencia):
+
+```tsx
+import { Badge } from "@/shared/components/ui/Badge";
+```
+
+Dejá solo una de las dos.
+
+---
+
+### C3 — `FamilyDetail.tsx`: `formatUSD` en vez de `formatCurrency` (₡)
+
+```
+SEVERIDAD: CRÍTICA (wrong currency — Costa Rica usa colones)
+ARCHIVO: frontend/src/features/families/FamilyDetail.tsx
+```
+
+**Problema:** Todo el componente usa `formatUSD` para montos. El backend usa ₡ (colones). Los socios ven `$150,000` en vez de `₡150,000`.
+
+**Fix:** Encontrá el import:
+
+```tsx
+import { cn, formatUSD, getAgeGroup, calculateAge } from "@/shared/lib/utils";
+```
+
+Reemplazá por:
+
+```tsx
+import { cn, formatCurrency, getAgeGroup, calculateAge } from "@/shared/lib/utils";
+```
+
+Luego reemplazá TODAS las ocurrencias de `formatUSD(` por `formatCurrency(` en el archivo (~10-12 ocurrencias).
+
+**Verificación adicional:** Confirmá que `formatCurrency` en `shared/lib/utils.ts` usa ₡ (colones). Si no, actualizalo:
+
+```typescript
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('es-CR', {
+    style: 'currency',
+    currency: 'CRC',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+```
+
+---
+
+### C4 — `mock-registry.ts`: Special case de `generate_ai_analysis` intercepta el mock correcto
+
+```
+SEVERIDAD: MEDIA (resuelta por diseño — el panel NO pasa scope)
+ARCHIVO: frontend/src/shared/mocks/mock-registry.ts
+```
+
+**Problema:** `getMockResponse()` tiene un special case que intercepta `generate_ai_analysis` con `scope === "financial"` y devuelve `createFinancialAIReport()` (de executive_dashboard) en vez de `createMockGenerateAiAnalysis()` (de finance).
+
+**Resolución:** El `FinanceIntelligencePanel` que crearemos NO pasa `scope` como parámetro. Solo pasa `{ period }`. Sin `scope`, el special case no intercepta, y el flujo cae al registry → factory correcta.
+
+**No requiere fix en el registry.** Solo asegurar que el nuevo panel no envíe `scope`.
+
+---
+
+## PARTE 3: HALLAZGOS DE ALTA SEVERIDAD (fix en Fase 19)
+
+### A1 — Agent name discrepancy entre `approvals/types.ts` y `ApprovalQueue.tsx`
+
+```
+SEVERIDAD: ALTA
+```
+
+Hay dos `AGENT_LABELS` definidos con nombres diferentes:
+
+| Source | `communication` key | Agent names |
+|--------|-------------------|-------------|
+| `approvals/types.ts` | `communication_agent` | Nombres largos: `event_orchestrator`, `family_profile`, etc. |
+| `ApprovalQueue.tsx` | `communication` | Nombres cortos: `finance`, `events`, etc. |
+
+**El real** (verificado contra backend agents):
+- `finance.py` → `agent_name = "finance"` ✅
+- `family_profile.py` → `agent_name = "family_profile"` (NO `"families"`)
+- `guest_management_agent.py` → `agent_name = "guest_management"`
+- `proactive_recommendation_agent.py` → `agent_name = "proactive_recommendation"`
+- `event_orchestrator.py` → `agent_name = ?` (no leído, pero el nombre del archivo sugiere `"event_orchestrator"`)
+
+**Fix:** Consolidar `AGENT_LABELS` en `approvals/types.ts` como source of truth. ApprovalQueue importa de ahí. Agregar todos los agents que faltan.
+
+### A2 — `PrivateEventPlanner.tsx`: Sin HITL flow para create
+
+```
+SEVERIDAD: ALTA
+```
+
+`plan_private_event` (create) devuelve `pending_approval`. El componente muestra `showToast({ type: "success" })` en vez de `showToast({ type: "info", message: "Pendiente de aprobación" })`.
+
+**Fix:** Implementar el patrón HITL consolidado (mismo que EventForm y FamilyForm):
+
+```typescript
+onSuccess: (data) => {
+  if (data?.status === "pending_approval") {
+    showToast({ type: "info", message: "Solicitud enviada — pendiente de aprobación" });
+    setShowCreate(false);
+    eventsQ.refetch();
+    return;
+  }
+  showToast({ type: "success", message: data.message ?? "Evento registrado" });
+  // ...
+}
+```
+
+### A3 — `FamilyIntelligencePanel.tsx`: ScoreGauge local duplica shared
+
+```
+SEVERIDAD: ALTA
+```
+
+~35 líneas de código que duplican `shared/components/ui/ScoreGauge.tsx` (creado en Fase 18).
+
+**Fix:** Eliminar el ScoreGauge local (~líneas 40-75) y reemplazar import:
+
+```tsx
+import { ScoreGauge } from "@/shared/components/ui/ScoreGauge";
+```
+
+Ajustar props: el shared tiene `size` default 80, el local tenía 120. Ajustar en cada llamada.
+
+### A4 — Tier mismatch backend ↔ frontend (P5)
+
+```
+SEVERIDAD: ALTA
+```
+
+Backend: `basic`, `premium`, `vip` (3 tiers)
+Frontend families: `platino`, `oro`, `plata`, `bronce` (4 tiers)
+Fix ya existe en `finance/types.ts` con mapping functions — pero `families/types.ts` y los componentes de families NO lo usan.
+
+**Fix en Fase 19:** Hacer que `TIER_CONFIG` en `families/types.ts` acepte ambos formatos usando `getTierDisplayConfig()`, o extender `MemberTier` type.
+
+### A5 — `approvals/types.ts`: Tool name mismatch 6/7 en families
+
+```
+SEVERIDAD: ALTA (bloquea Fase 22 migration)
+```
+
+Backend `family_profile.py` usa: `family_get_profile`, `family_create_profile`, `family_search`, etc.
+Frontend registry usa: `get_family`, `create_family`, `list_families`, etc.
+
+**Para Fase 19 (mocks):** No causa bugs porque los mocks interceptan por el nombre del registry.
+**Para Fase 22 (migration):** Necesita resolver. Opciones: renombrar registry keys, o agregar alias en el backend router.
+
+### A6 — `FamilyDetail.tsx`: PreferencesTab no carga datos existentes
+
+```
+SEVERIDAD: ALTA
+```
+
+El tab de preferencias muestra defaults hardcodeados (español, email+push, Pádel+Gastronomía) sin consultar las preferencias reales del backend.
+
+**Fix:** Agregar query `family_get_preferences` al montar el tab y popular los states con los valores existentes.
+
+---
+
+## PARTE 4: HALLAZGOS DE MEDIA SEVERIDAD (fix acumulado)
+
+| # | Hallazgo | Fix |
+|---|----------|-----|
+| M1 | Focus-visible inconsistente (ring vs outline) en ~15 elementos across MemberCard, FamilyDetail, ConnectionsTab, PreferencesTab | Migrar a `focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)] focus-visible:outline-offset-2` |
+| M2 | `PrivateEventPlanner` service toggles: `min-h-[40px]` → `min-h-[44px]` | Fix quirúrgico: 1 línea |
+| M3 | `ApprovalQueue`: sin breadcrumbs | Agregar `breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Aprobaciones" }]}` |
+| M4 | `ApprovalQueue`: AGENT_LABELS incomplete (faltan events, families, operations, hitl) | Agregar 4 entries |
+| M5 | `ApprovalQueue`: `expires_at` no se muestra | Agregar countdown badge en ApprovalCard |
+| M6 | `ApprovalQueue`: params se muestran como JSON crudo | Para tools conocidas, renderizar preview legible |
+| M7 | `PrivateEventPlanner` inputs usan `inputCls` inline en vez de FormField pattern | Migrar a FormField o inputClass shared |
+| M8 | `FamilyIntelligencePanel` usa patrón viejo (4 sections) vs patrón consolidado (config array) | Refactor opcional — funciona bien |
+| M9 | `financialSummary` en FamilyDetail: `get_family` backend no incluye esta data directamente | Verificar en migration |
+| M10 | `FamilyDetail` breadcrumbs usan `href` — verificar que PageContainer acepta `href` (vs `to`) | Verificar |
+
+---
+
+## PARTE 5: GUÍA PARA FUTUROS CHATS — QUICK START
+
+### Contexto mínimo para retomar el proyecto
+
+Para que un nuevo chat retome el proyecto sin leer 19 archivos, necesita:
+
+```
+1. CLAUDE_CONTEXT_MINI.md (actualizado)
+2. El checkpoint de la última fase completada
+3. globals.css (design system reference)
+```
+
+### Conocimiento consolidado por módulo
+
+#### Finance Module
+| Componente | Tools MCP | Estado | Notas clave |
+|-----------|-----------|--------|-------------|
+| `FinancialDashboard.tsx` | — (hub con 7 lazy tabs) | Bug en sub-tabs (C1) | Fix: eliminar `setActiveTab(tab.id)` de sub-tab onClick |
+| `FinancialIntelligence` (legacy) | — | Pendiente reemplazo por FinanceIntelligencePanel | Usar `generate_ai_analysis` on-demand |
+| `FinanceIntelligencePanel` (NUEVO) | `finance/generate_ai_analysis` | A crear en Fase 19 | 1 tool → 9 secciones de render |
+| `FinanceOverview` | `finance/get_financial_summary` | Auditoría pendiente | P1: métricas que no aparecen |
+| Finance types.ts | — | ✅ 100% backend-aligned | 14 AI types + 15 config maps + P5 fix |
+
+**Key backend fact:** `generate_ai_analysis` ya existe con 9 secciones completas (health, cashflow, concentration, anomalies, recs, trends, alerts, projection, member_economics). NO crear 3 tools separadas — usar esta herramienta única.
+
+#### Approval Module
+| Componente | Tools MCP | Estado | Notas clave |
+|-----------|-----------|--------|-------------|
+| `ApprovalQueue.tsx` | `hitl/get_pending_approvals`, `approve_request`, `reject_request` | Sin breadcrumbs (M3) | 17 approval types across agents |
+| `approvals/types.ts` | — | AGENT_LABELS discrepancy (A1) | Consolidar como source of truth |
+
+**Key backend fact:** `ApprovalStatus` tiene 5 valores (pending, approved, rejected, expired, cancelled). `ApprovalLevel` tiene 4 (auto, semi_auto, hitl, always_human). Dual approval via `requires_dual_approval` + `first_approval_by`/`second_approval_by`.
+
+#### Events Module
+| Componente | Tools MCP | Estado | Notas clave |
+|-----------|-----------|--------|-------------|
+| `EventCalendar.tsx` | `events/event_get_calendar` | ✅ Fase 18 | Conflict rings, ARIA, HITL |
+| `EventDetail.tsx` | Multiple events tools | ✅ Fase 18 | 5 tabs, AI on-demand |
+| `EventForm.tsx` | `events/create_event` | ✅ Fase 18 | 21 campos, HITL flow |
+| `EventIntelligencePanel.tsx` | 4 AI tools | ✅ Fase 18 | Patrón consolidado de referencia |
+
+#### Families Module
+| Componente | Tools MCP | Estado | Notas clave |
+|-----------|-----------|--------|-------------|
+| `FamilyList.tsx` | `families/list_families` | ✅ | — |
+| `FamilyDetail.tsx` | `families/get_family`, `get_social_graph`, `family_set_preferences` | Badge duplicado (C2), formatUSD (C3) | 7 tabs |
+| `FamilyForm.tsx` | `families/create_family`, `update_family` | ✅ Fase 17 | HITL flow |
+| `FamilyIntelligencePanel.tsx` | 4 AI tools | ScoreGauge local (A3) | Patrón viejo, funciona |
+| `MemberCard.tsx` | — | User import sin uso (P12) | Focus-visible inconsistente |
+| `SocialGraph.tsx` | — | ✅ | — |
+
+**Key backend fact:** Agent name es `"family_profile"` (NO `"families"`). Tool names tienen prefijo `family_` (ej: `family_get_profile`). Frontend registry usa nombres cortos (`get_family`). Migration en Fase 22.
+
+#### Guest Management Module
+| Componente | Tools MCP | Estado | Notas clave |
+|-----------|-----------|--------|-------------|
+| `PrivateEventPlanner.tsx` | `guest_management/plan_private_event` | Sin HITL flow (A2) | Pipeline stepper, create modal |
+| `GuestRegistration.tsx` | `guest_management/register_guest` | Verificar HITL conditional | Escalación >4 guests/día |
+| `TrialMembershipManager.tsx` | `guest_management/manage_trial_memberships` | ✅ | HITL |
+| `GuestAnalytics.tsx` | `guest_management/get_guest_analytics` | ✅ | AUTO |
+
+**Key backend fact:** `register_guest` tiene escalación condicional SEMI→HITL si >4 invitados por familia por día.
+
+#### Mock System
+| Archivo | Regla | Notas clave |
+|---------|-------|-------------|
+| `contracts.ts` | NUNCA borrar contracts | Source of truth de la API. Append al final |
+| `factories.ts` | Append al final | Factory functions que satisfacen contracts |
+| `mock-registry.ts` | EDIT keys específicas | `{ server: { tool: factory } }` |
+
+**Key fact:** `getMockResponse()` tiene special case para `generate_ai_analysis` que intercepta por `scope`. FinanceIntelligencePanel NO debe pasar `scope`.
+
+---
+
+### Reglas de trabajo — Cheat sheet
+
+```
+# TOKENS & THEMING
+1. NUNCA colores hardcoded → var(--color-xxx) o color-mix
+2. NUNCA backdrop-filter para datos → bg-[var(--color-surface-2)] sólido
+3. Recharts: importar de shared/lib/chartTheme.ts
+4. Changelog con reemplazos exactos
+5. Código completo >30%, quirúrgico ≤15 líneas
+
+# CHARTS
+6. SIEMPRE ResponsiveContainer
+7. CHART constants para config
+8. formatCurrency/formatNumber para labels
+9. TOOLTIP_STYLE sin blur
+10. AXIS_TICK para axis labels
+
+# UX & A11Y
+11. focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)]
+12. min-h-[44px] en elementos interactivos
+13. DetailTabs shared para navegación
+14. EmptyState shared para estados vacíos
+15. showToast() — NUNCA alert()
+16. PageContainer + breadcrumbs
+
+# COMPONENTES
+17. Button de shared — NUNCA raw <button> para acciones
+18. useReducedMotion() antes de animaciones
+19. AI: botón trigger, NUNCA auto-load, staleTime:0
+20. useBreakpoint() para responsive JS
+21. Tablas: hidden sm:block + sm:hidden mobile cards
+22. cn() para conditional classes
+```
+
+### File tree reference — Archivos más relevantes
+
+```
+frontend/src/
+├── features/
+│   ├── finance/
+│   │   ├── FinancialDashboard.tsx        ← Hub con 7 tabs (BUG en sub-tabs)
+│   │   ├── types.ts                      ← 14 AI types + 15 config maps ✅
+│   │   └── components/
+│   │       ├── FinancialIntelligence.tsx  ← LEGACY → reemplazar por IntelligencePanel
+│   │       ├── FinanceOverview.tsx       ← P1: métricas que no aparecen
+│   │       ├── BillingCenter.tsx
+│   │       ├── ExpenseManager.tsx
+│   │       ├── BudgetManager.tsx
+│   │       └── ReportGenerator.tsx
+│   ├── approvals/
+│   │   ├── ApprovalQueue.tsx             ← Sin breadcrumbs, agent labels incomplete
+│   │   └── types.ts                      ← AGENT_LABELS discrepancy
+│   ├── events/                           ← ✅ Completo Fase 18
+│   │   ├── EventCalendar.tsx
+│   │   ├── EventDetail.tsx
+│   │   ├── EventForm.tsx
+│   │   ├── types.ts
+│   │   └── components/
+│   │       └── EventIntelligencePanel.tsx
+│   ├── families/
+│   │   ├── FamilyList.tsx
+│   │   ├── FamilyDetail.tsx              ← Badge dup (C2), formatUSD (C3)
+│   │   ├── FamilyForm.tsx
+│   │   ├── types.ts                      ← Tier mismatch (A4)
+│   │   └── components/
+│   │       ├── FamilyIntelligencePanel.tsx ← ScoreGauge local (A3)
+│   │       ├── MemberCard.tsx            ← P12, focus-visible
+│   │       └── SocialGraph.tsx
+│   └── guests/
+│       ├── components/
+│       │   ├── PrivateEventPlanner.tsx   ← Sin HITL flow (A2)
+│       │   ├── GuestRegistration.tsx
+│       │   ├── GuestAnalytics.tsx
+│       │   └── TrialMembershipManager.tsx
+├── shared/
+│   ├── components/ui/
+│   │   ├── ScoreGauge.tsx                ← SHARED (Fase 18)
+│   │   ├── Button.tsx, Badge.tsx, Card.tsx, etc.
+│   │   └── index.ts
+│   ├── hooks/
+│   │   ├── useMCPQuery.ts
+│   │   ├── useBreakpoint.ts
+│   │   └── useReducedMotion.ts
+│   ├── lib/
+│   │   ├── utils.ts                      ← formatCurrency, cn, timeAgo
+│   │   ├── chartTheme.ts
+│   │   └── api.ts
+│   └── mocks/
+│       ├── contracts.ts                  ← NUNCA borrar, append only
+│       ├── factories.ts                  ← Append only
+│       └── mock-registry.ts             ← Special case generate_ai_analysis
+
+backend/src/club_mcp/
+├── agents/
+│   ├── finance.py                        ← 8 tools, generate_ai_analysis (9 secciones)
+│   ├── family_profile.py                 ← agent_name="family_profile", 7 tools
+│   ├── guest_management_agent.py         ← agent_name="guest_management", 5 tools
+│   ├── proactive_recommendation_agent.py ← 8/8 names match frontend
+│   └── event_orchestrator.py             ← 9+ tools (Fase 18)
+├── models/
+│   ├── finance.py                        ← 14 AI models ✅
+│   └── ...
+└── hitl/
+    ├── approval_engine.py                ← In-memory, callbacks, expiry
+    └── approval_types.py                 ← 5 statuses, 4 levels, dual approval
+```
+
+---
+
+## PARTE 6: DATOS CLAVE PARA NO PERDER
+
+### Moneda: ₡ (Colones costarricenses)
+- Backend usa ₡ con formato: `₡1.5M`, `₡150K`
+- Frontend `formatCurrency` debe usar `Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' })`
+- **NUNCA USD ($) para datos del club**
+
+### Temporalidad Costa Rica
+- **Temporada alta:** Dic-May (+8% factor)
+- **Temporada baja:** Jun-Sep (-8% factor)
+- **Transición:** Oct, Nov (factor 1.0)
+
+### Roles del sistema
+| Rol | Acceso | Aprobación |
+|-----|--------|-----------|
+| ADMIN | Total | Puede aprobar todo |
+| STAFF | Operaciones | No aprueba |
+| JUNTA | Directiva, reportes, finanzas | Puede aprobar (membership_committee) |
+| SOCIO | Portal /mi-club | No aprueba |
+
+### Tools MCP por servidor (acumulado ~100+)
+
+| Server | Tools | Backend | Mock |
+|--------|-------|---------|------|
+| finance | 17 | 8/17 | ✅ |
+| families | 11 | 7/11 | ✅ |
+| events | 17 | 8/17 | ✅ |
+| communication | 13 | ? | ✅ |
+| guest_management | 6 | 5/6 | ✅ |
+| hitl | 3 | 3/3 | ✅ |
+| wellness | 11 | ? | ✅ |
+| member_engagement | 5 | ? | ✅ |
+| proactive_recommendation | 8 | 8/8 | ✅ |
+| satisfaction | 1 | ? | ✅ |
+| operations | 3 | ? | ✅ |
+| executive_dashboard | 2 | ? | ✅ |
+
+---
+
+## PARTE 7: PRIORIDADES PARA FASE 19
+
+### P0 — Fix inmediatos (bloquean features)
+1. FinancialDashboard sub-tabs bug (C1)
+2. FamilyDetail Badge import duplicado (C2)
+3. FamilyDetail formatUSD → formatCurrency (C3)
+
+### P1 — FinanceIntelligencePanel (feature nueva)
+4. Crear `FinanceIntelligencePanel.tsx` usando `generate_ai_analysis`
+5. Montarlo en el tab "Inteligencia" de FinancialDashboard (reemplazar FinancialIntelligence legacy)
+
+### P2 — Deuda técnica de alta severidad
+6. ApprovalQueue: breadcrumbs + AGENT_LABELS consolidation
+7. PrivateEventPlanner: HITL flow
+8. FamilyIntelligencePanel: ScoreGauge shared import
+9. Tier alignment en families module
+
+### P3 — Cross-module integration
+10. Event↔Family: recommendation activities link a events
+11. Event↔Guest: "Enviar Invitaciones" button
+
+### P4 — Fixes de media severidad
+12. Focus-visible consistency (15+ elementos)
+13. min-h-[44px] en service toggles
+14. PreferencesTab: cargar datos existentes
+15. ApprovalQueue: expiry countdown, params preview
+
+---
+
+**Listo para la propuesta de Fase 19.** Confirmá y procedo con el desglose de bloques detallado con la misma metodología de Fase 18 — propuesta de arquitectura primero, aprobación, luego código.

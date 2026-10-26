@@ -1,0 +1,314 @@
+/* src/features/communications/components/EmotionalTrajectory.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Emotional Trajectory — The Arc of Feeling                   */
+/* Phase 31 — Silver Tide Glass UI                            */
+/* Namespace: .glass-comm-trajectory                          */
+/* ═══════════════════════════════════════════════════════════ */
+
+.glass-comm-trajectory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 0.75rem);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-xl, 1rem);
+  padding: var(--space-4, 1rem);
+  backdrop-filter: blur(8px);
+}
+
+.glass-comm-trajectory[data-compact="true"] {
+  padding: var(--space-3, 0.75rem);
+  gap: var(--space-2, 0.5rem);
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+.trajectory__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.trajectory__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+}
+
+.glass-comm-trajectory[data-compact="true"] .trajectory__title {
+  font-size: 0.82rem;
+}
+
+.trajectory__zone-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.trajectory__zone-badge[data-zone="thriving"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 12%, transparent);
+}
+.trajectory__zone-badge[data-zone="stable"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+}
+.trajectory__zone-badge[data-zone="concerned"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+.trajectory__zone-badge[data-zone="at_risk"] {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+.trajectory__zone-badge[data-zone="crisis"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+}
+
+.trajectory__score {
+  font-weight: 700;
+}
+
+.trajectory__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trajectory__empty-text {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.5;
+}
+
+/* ── SVG ──────────────────────────────────────────────── */
+
+.trajectory__svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Zone bands */
+.trajectory__zone-band[data-zone="thriving"] { fill: var(--color-emerald-400); }
+.trajectory__zone-band[data-zone="at_risk"] { fill: var(--color-gold-400); }
+.trajectory__zone-band[data-zone="crisis"] { fill: var(--color-rose-400); }
+
+/* Baseline */
+.trajectory__baseline {
+  stroke: var(--color-silver-500);
+  stroke-width: 1;
+  opacity: 0.25;
+}
+
+.trajectory__baseline-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 8px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.5;
+}
+
+.trajectory__baseline-empty {
+  stroke: var(--color-silver-500);
+  stroke-width: 1;
+  stroke-dasharray: "4 4";
+  opacity: 0.2;
+}
+
+/* Fill gradient */
+.trajectory__fill-top { stop-color: var(--color-teal-400); }
+.trajectory__fill-bottom { stop-color: transparent; }
+
+.glass-comm-trajectory[data-zone="thriving"] .trajectory__fill-top { stop-color: var(--color-emerald-400); }
+.glass-comm-trajectory[data-zone="concerned"] .trajectory__fill-top { stop-color: var(--color-amber-400); }
+.glass-comm-trajectory[data-zone="at_risk"] .trajectory__fill-top { stop-color: var(--color-gold-400); }
+.glass-comm-trajectory[data-zone="crisis"] .trajectory__fill-top { stop-color: var(--color-rose-400); }
+
+/* Main curve */
+.trajectory__curve {
+  stroke: var(--color-teal-400);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+
+.glass-comm-trajectory[data-compact="true"] .trajectory__curve {
+  stroke-width: 2;
+}
+
+.trajectory__curve[data-zone="thriving"] { stroke: var(--color-emerald-400); }
+.trajectory__curve[data-zone="stable"] { stroke: var(--color-teal-400); }
+.trajectory__curve[data-zone="concerned"] { stroke: var(--color-amber-400); }
+.trajectory__curve[data-zone="at_risk"] { stroke: var(--color-gold-400); }
+.trajectory__curve[data-zone="crisis"] { stroke: var(--color-rose-400); }
+
+/* Forecast cone */
+.trajectory__forecast-cone {
+  stroke: none;
+  opacity: 0.4;
+  transition: opacity 0.5s ease;
+}
+
+.trajectory__forecast-cone[data-intervention="true"] {
+  opacity: 0.7;
+  animation: trajectory-forecast-pulse 3s ease-in-out infinite;
+}
+
+.trajectory__forecast-stop { stop-color: var(--color-teal-400); }
+.glass-comm-trajectory[data-zone="crisis"] .trajectory__forecast-stop { stop-color: var(--color-rose-400); }
+.glass-comm-trajectory[data-zone="at_risk"] .trajectory__forecast-stop { stop-color: var(--color-gold-400); }
+
+.trajectory__forecast-line {
+  stroke: var(--color-silver-500);
+  stroke-width: 1.5;
+  opacity: 0.35;
+}
+
+.trajectory__forecast-line[data-intervention="true"] {
+  stroke: var(--color-rose-400);
+  opacity: 0.6;
+}
+
+.trajectory__forecast-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 8px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.5;
+}
+
+/* Trigger markers */
+.trajectory__trigger-ripple {
+  fill: none;
+  stroke: var(--color-rose-400);
+  stroke-width: 1;
+  opacity: 0.25;
+}
+
+.trajectory__trigger-ripple[data-positive="true"] {
+  stroke: var(--color-emerald-400);
+}
+
+.trajectory__trigger-dot {
+  fill: var(--color-rose-400);
+  opacity: 0.75;
+}
+
+.trajectory__trigger-dot[data-positive="true"] {
+  fill: var(--color-emerald-400);
+}
+
+/* Velocity vector */
+.trajectory__velocity {
+  stroke: var(--color-teal-400);
+  stroke-width: 2;
+  opacity: 0.65;
+}
+
+.trajectory__velocity[data-direction="down"] {
+  stroke: var(--color-rose-400);
+}
+
+/* Current point */
+.trajectory__current-ring {
+  fill: none;
+  stroke: var(--color-teal-400);
+  stroke-width: 2;
+  animation: trajectory-current-pulse 3s ease-in-out infinite;
+}
+
+.trajectory__current-ring[data-zone="thriving"] { stroke: var(--color-emerald-400); }
+.trajectory__current-ring[data-zone="concerned"] { stroke: var(--color-amber-400); }
+.trajectory__current-ring[data-zone="at_risk"] { stroke: var(--color-gold-400); }
+.trajectory__current-ring[data-zone="crisis"] { stroke: var(--color-rose-400); }
+
+.trajectory__current-dot {
+  fill: var(--color-teal-400);
+}
+
+.trajectory__current-dot[data-zone="thriving"] { fill: var(--color-emerald-400); }
+.trajectory__current-dot[data-zone="concerned"] { fill: var(--color-amber-400); }
+.trajectory__current-dot[data-zone="at_risk"] { fill: var(--color-gold-400); }
+.trajectory__current-dot[data-zone="crisis"] { fill: var(--color-rose-400); }
+
+/* Axis labels */
+.trajectory__axis-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 9px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.55;
+}
+
+/* ── Stats Strip ──────────────────────────────────────── */
+
+.trajectory__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2, 0.5rem);
+  padding-top: var(--space-3, 0.75rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.trajectory__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.trajectory__stat-value {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.trajectory__stat-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+  text-align: center;
+}
+
+/* ── Animations ───────────────────────────────────────── */
+
+@keyframes trajectory-current-pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes trajectory-forecast-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.65; }
+}
+
+/* ── Light Mode ───────────────────────────────────────── */
+
+.light .glass-comm-trajectory {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .trajectory__baseline { stroke: #aaa; }
+.light .trajectory__trigger-ripple { opacity: 0.15; }
+
+/* ── Reduced Motion ───────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .trajectory__current-ring {
+    animation: none !important;
+    opacity: 0.7;
+  }
+
+  .trajectory__forecast-cone {
+    animation: none !important;
+    opacity: 0.5;
+  }
+}

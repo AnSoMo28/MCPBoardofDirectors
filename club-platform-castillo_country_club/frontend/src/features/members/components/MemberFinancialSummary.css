@@ -1,0 +1,585 @@
+/**
+ * MemberFinancialSummary — Financial Intelligence Portrait
+ * Namespace: .glass-m360-finance
+ * @phase 30 — Block 4.5
+ */
+
+/* ═══════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-finance {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HERO — Gauge + LTV + Sparkline
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-finance__hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 18px;
+  background: var(--color-surface-1);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 15%, transparent);
+  backdrop-filter: blur(10px) saturate(1.05);
+  transition: border-color 0.5s ease;
+}
+
+.glass-m360-finance[data-ltv-trend="improving"]
+  .glass-m360-finance__hero {
+  border-color: color-mix(
+    in srgb,
+    var(--color-emerald-400) 15%,
+    transparent
+  );
+}
+
+.glass-m360-finance[data-ltv-trend="declining"]
+  .glass-m360-finance__hero {
+  border-color: color-mix(
+    in srgb,
+    var(--color-rose-400) 15%,
+    transparent
+  );
+}
+
+/* ── Gauge ── */
+
+.glass-m360-finance__gauge {
+  flex-shrink: 0;
+}
+
+.glass-m360-finance__gauge-arc {
+  animation: m360-finance-gauge-draw 1s ease forwards;
+}
+
+/* ── Hero info ── */
+
+.glass-m360-finance__hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-m360-finance__hero-label {
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.glass-m360-finance__hero-value {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  line-height: 1.2;
+}
+
+.glass-m360-finance__hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.glass-m360-finance__hero-trend {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: color 0.5s ease;
+}
+
+.glass-m360-finance__hero-tier {
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+}
+
+/* ── Sparkline ── */
+
+.glass-m360-finance__sparkline {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.glass-m360-finance__sparkline-svg {
+  width: 140px;
+  height: 44px;
+}
+
+.glass-m360-finance__sparkline-line {
+  stroke-dasharray: 500;
+  stroke-dashoffset: 500;
+  animation: m360-finance-sparkline-draw 1.5s ease forwards;
+}
+
+.glass-m360-finance__sparkline-dot {
+  animation: m360-finance-dot-pulse 2s ease-in-out infinite;
+}
+
+.glass-m360-finance__sparkline-label {
+  font-size: 0.5rem;
+  color: var(--color-silver-600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   KPI ROW
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-finance__kpis {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .glass-m360-finance__kpis {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.glass-m360-finance__kpi {
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--color-surface-0);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 8%, transparent);
+  transition: border-color 0.2s ease;
+}
+
+.glass-m360-finance__kpi:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--color-silver-600) 18%,
+    transparent
+  );
+}
+
+.glass-m360-finance__kpi-label {
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.25rem;
+}
+
+.glass-m360-finance__kpi-value {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  line-height: 1.2;
+}
+
+.glass-m360-finance__kpi-sub {
+  font-size: 0.5625rem;
+  color: var(--color-silver-600);
+  margin-top: 0.125rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SECTION TITLE
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-finance__section-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SPEND BREAKDOWN
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-finance__breakdown {
+  padding: 1rem;
+  border-radius: 18px;
+  background: var(--color-surface-1);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 15%, transparent);
+}
+
+.glass-m360-finance__breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.glass-m360-finance__bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  animation: m360-finance-bar-in 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 50ms);
+}
+
+.glass-m360-finance__bar-icon {
+  font-size: 0.875rem;
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.glass-m360-finance__bar-label {
+  font-size: 0.75rem;
+  color: var(--color-silver-300);
+  width: 6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.glass-m360-finance__bar-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-surface-3);
+  overflow: hidden;
+}
+
+.glass-m360-finance__bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.glass-m360-finance__bar-fill--animated {
+  animation: m360-finance-bar-fill 0.6s ease forwards;
+  transform-origin: left;
+}
+
+.glass-m360-finance__bar-amount {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  width: 4rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.glass-m360-finance__bar-pct {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--color-silver-500);
+  width: 2rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LTV HISTORY CHART
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-finance__history {
+  padding: 1rem;
+  border-radius: 18px;
+  background: var(--color-surface-1);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 15%, transparent);
+}
+
+.glass-m360-finance__history-svg {
+  width: 100%;
+  height: 80px;
+}
+
+.glass-m360-finance__history-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: m360-finance-sparkline-draw 2s ease forwards;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SEASONALITY
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-finance__seasonality {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.5rem;
+}
+
+.glass-m360-finance__season-card {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 12px;
+  background: var(--color-surface-0);
+  border: 1px solid transparent;
+}
+
+.glass-m360-finance__season-card--peak {
+  border-color: color-mix(
+    in srgb,
+    var(--color-emerald-400) 15%,
+    transparent
+  );
+}
+
+.glass-m360-finance__season-card--low {
+  border-color: color-mix(
+    in srgb,
+    var(--color-amber-400) 15%,
+    transparent
+  );
+}
+
+.glass-m360-finance__season-label {
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+}
+
+.glass-m360-finance__season-value {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+/* ═══════════════════════════════════════════════════════
+   FORWARD PROJECTION
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-finance__projection {
+  padding: 1rem;
+  border-radius: 18px;
+  background: var(--color-surface-1);
+  border: 1px solid
+    color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+
+.glass-m360-finance__projection-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.glass-m360-finance__projection-kpi {
+  text-align: center;
+}
+
+.glass-m360-finance__projection-label {
+  font-size: 0.5rem;
+  color: var(--color-silver-600);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.glass-m360-finance__projection-value {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-silver-100);
+}
+
+.glass-m360-finance__projection-domains {
+  margin-top: 0.625rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 8%, transparent);
+}
+
+.glass-m360-finance__projection-domains-label {
+  font-size: 0.5625rem;
+  color: var(--color-silver-600);
+  margin-bottom: 0.375rem;
+}
+
+.glass-m360-finance__projection-domain-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0;
+}
+
+.glass-m360-finance__projection-domain-icon {
+  font-size: 0.75rem;
+  width: 1rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.glass-m360-finance__projection-domain-label {
+  font-size: 0.625rem;
+  color: var(--color-silver-400);
+  width: 5rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glass-m360-finance__projection-domain-current {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+  flex-shrink: 0;
+}
+
+.glass-m360-finance__projection-domain-arrow {
+  font-size: 0.5rem;
+  color: var(--color-silver-600);
+  flex-shrink: 0;
+}
+
+.glass-m360-finance__projection-domain-predicted {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.glass-m360-finance__projection-domain-trend {
+  font-size: 0.625rem;
+  flex-shrink: 0;
+}
+
+.glass-m360-finance__projection-risks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.glass-m360-finance__projection-assumptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.glass-m360-finance__projection-assumption {
+  font-size: 0.5rem;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 4px;
+  background: var(--color-surface-0);
+  color: var(--color-silver-600);
+}
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-finance-gauge-draw {
+  from {
+    stroke-dashoffset: v-bind("2 * Math.PI * 20");
+  }
+  to {
+    stroke-dashoffset: var(--gauge-offset, 0);
+  }
+}
+
+@keyframes m360-finance-sparkline-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes m360-finance-dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    r: 2.5;
+  }
+  50% {
+    opacity: 0.5;
+    r: 3.5;
+  }
+}
+
+@keyframes m360-finance-bar-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes m360-finance-bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360-finance__hero,
+.light .glass-m360-finance__breakdown,
+.light .glass-m360-finance__history {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-m360-finance__kpi {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.light .glass-m360-finance__season-card {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.light .glass-m360-finance__bar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360-finance__gauge-arc {
+    animation: none;
+  }
+
+  .glass-m360-finance__sparkline-line {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+
+  .glass-m360-finance__sparkline-dot {
+    animation: none;
+  }
+
+  .glass-m360-finance__history-line {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+
+  .glass-m360-finance__bar-row {
+    opacity: 1;
+    animation: none;
+  }
+
+  .glass-m360-finance__bar-fill--animated {
+    animation: none;
+  }
+}

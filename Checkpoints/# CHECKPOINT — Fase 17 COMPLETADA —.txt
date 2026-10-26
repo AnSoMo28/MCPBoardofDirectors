@@ -1,0 +1,511 @@
+# CHECKPOINT — Fase 17 COMPLETADA — RecommendationsDashboard Enhancement
+
+**Fecha:** Mayo 2026
+**Sesiones completadas:** 17 (histórico) / 1 (esta sesión)
+**Archivos creados:** 2 nuevos + 1 reescrito
+**Líneas nuevas:** ~535+ (sin contar fixes de sub-componentes)
+**Tools MCP registradas:** 8/8 proactive_recommendation
+
+---
+
+## 0. ROL DEL PROYECTO — Mi identidad en este trabajo
+
+No soy un "monkey coder" que traduce specs a código. Mi rol en este proyecto es el de **arquitecto de producto inteligente**: combino visión de producto, arquitectura de software, diseño de experiencia y estrategia de IA para construir algo que no existe en el mercado — un sistema de gestión de clubes que **piensa, propone y actúa** en lugar de solo mostrar datos.
+
+Mi trabajo específico:
+- **Auditar** cada archivo contra 22 reglas de diseño + lógica de negocio
+- **Detectar** incompatibilidades entre backend y frontend antes de que rompan en producción
+- **Proponer** arquitecturas de inteligencia artificial client-side que convierten datos en decisiones
+- **Ejecutar** código production-grade con cero placeholder logic
+- **Documentar** cada decisión para que el trabajo sea continuable sin pérdidas
+
+Cada fase que cierro no es "código que funciona" — es un sistema de decisión diseñado para que un gerente de club tome mejores acciones con menos esfuerzo.
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend (Nuevos)
+
+| # | Archivo | Líneas | Contenido | Tools MCP que consume |
+|---|---------|--------|-----------|----------------------|
+| 1 | `features/recommendations/hooks/useRecommendationAdvisor.ts` | ~140 | Hook de inteligencia client-side. 7 reglas computacionales. Consume datos ya en caché de 3 queries. 0 API calls. | Ninguna nueva — consume cache de `optimize_pricing` (list), `suggest_new_activities` (list), `generate_quarterly_insights` (list) |
+| 2 | `features/recommendations/components/AdvisorBanner.tsx` | ~185 | Componente UI para el Advisor. Banner expandible con insight cards priorizadas. Navegación a tabs. Animaciones staggered con reducedMotion guard. | Ninguna — recibe AdvisorInsight[] como prop |
+
+### Archivos Reescritos
+
+| # | Archivo | Acción | Qué se cambió |
+|---|---------|--------|---------------|
+| 1 | `features/recommendations/RecommendationsDashboard.tsx` | **REWRITE** | Eliminados imports faltantes (DollarSign, Lightbulb), eliminado import dead (Placeholder), eliminado `font-ui` sin prefijo. Agregadas 3 queries auto-load para pre-calentar caché del Advisor. Agregado AdvisorBanner en el top. Consolidación de keyframes CSS. |
+
+### Sub-componentes auditados (NO modificados — fixes pendientes en F22)
+
+| # | Archivo | Estado | Queries | Mutations | Issues menores |
+|---|---------|--------|---------|-----------|----------------|
+| 1 | `RecommendationsOverview.tsx` | ✅ AUDITADO | 3 auto-load | 0 | `toLocaleString()`, `font-ui` |
+| 2 | `PricingOptimizer.tsx` | ✅ AUDITADO | 1 auto-load | 1 HITL | `font-ui`, `font-mono` |
+| 3 | `ActivitySuggester.tsx` | ✅ AUDITADO | 1 auto-load | 1 HITL | `font-ui`, `font-mono`, keyframes |
+| 4 | `QuarterlyInsights.tsx` | ✅ AUDITADO | 1 auto-load | 1 AUTO | `toLocaleString()`, `font-ui/mono` |
+| 5 | `FamilyRecommendations.tsx` | ✅ AUDITADO | 1 on-demand | 0 | `font-ui/mono` |
+| 6 | `SocialClusters.tsx` | ⬜ NO AUDITADO | — | — | — |
+| 7 | `SchedulingConflicts.tsx` | ⬜ NO AUDITADO | — | — | — |
+| 8 | `PredictAttendance.tsx` | ⬜ NO AUDITADO | — | — | — |
+
+### Tools MCP — proactive_recommendation (8/8)
+
+| # | Tool | Backend agent | Approval | Tipo | Destino frontend | ¿Conectada? |
+|---|------|--------------|----------|------|-----------------|-------------|
+| 1 | `optimize_pricing` (list/get/create/update_status) | proactive_recommendation | HITL (create) | CRUD + Mutation | PricingOptimizer, RecommendationsOverview, Advisor | ✅ |
+| 2 | `suggest_new_activities` (list/get/create/update_status) | proactive_recommendation | HITL (create) | CRUD + Mutation | ActivitySuggester, RecommendationsOverview, Advisor | ✅ |
+| 3 | `generate_family_recommendations` | proactive_recommendation | AUTO | Inteligencia | FamilyRecommendations | ✅ |
+| 4 | `predict_event_attendance` | proactive_recommendation | AUTO | Inteligencia | PredictAttendance | ⬜ Auditoría pendiente |
+| 5 | `detect_scheduling_conflicts` | proactive_recommendation | AUTO | Inteligencia | SchedulingConflicts | ⬜ Auditoría pendiente |
+| 6 | `personalize_communication` | proactive_recommendation | AUTO | Inteligencia | **Ningún componente** | ⬜ Sin UI |
+| 7 | `identify_social_clusters` | proactive_recommendation | AUTO | Inteligencia | SocialClusters | ⬜ Auditoría pendiente |
+| 8 | `generate_quarterly_insights` (list/get/generate/update_status) | proactive_recommendation | AUTO | CRUD + Inteligencia | QuarterlyInsights, RecommendationsOverview, Advisor | ✅ |
+
+### Enums del backend auditados contra types.ts — 0 discrepancias
+
+| Enum | Values | types.ts | Estado |
+|------|--------|----------|--------|
+| RecommendationType | activity, event, social, dining, wellness, sport | ✅ idéntico | ✅ |
+| RecommendationPriority | low, medium, high, urgent | ✅ idéntico | ✅ |
+| PredictionConfidence | low, medium, high | ✅ idéntico | ✅ |
+| ConflictSeverity | low, medium, high, critical | ✅ idéntico | ✅ |
+| SuggestionStatus | proposed, under_review, approved, rejected, implemented | ✅ idéntico | ✅ |
+| PricingStrategy | demand_based, seasonal, member_tier, event_based, bundle | ✅ idéntico | ✅ |
+| InsightPeriod | Q1, Q2, Q3, Q4 | ✅ idéntico | ✅ |
+| ClusterType | social, activity, age_based, interest, engagement | ✅ idéntico | ✅ |
+
+### Pydantic models auditados contra types.ts — 0 discrepancias
+
+| Model | Fields | types.ts interface | Estado |
+|-------|--------|-------------------|--------|
+| Recommendation | 11 fields | ✅ idéntico | ✅ |
+| AttendancePrediction | 7 fields | ✅ idéntico | ✅ |
+| SchedulingConflict | 11 fields | ✅ idéntico | ✅ |
+| ActivitySuggestion | 12 fields | ✅ idéntico | ✅ |
+| CommunicationDraft | 7 fields | ✅ idéntico | ✅ |
+| PricingOptimization | 12 fields | ✅ idéntico | ✅ |
+| SocialCluster | 9 fields | ✅ idéntico | ✅ |
+| QuarterlyInsights | 15 fields | ✅ idéntico | ✅ |
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | `recommendations/types.ts` perfectamente alineado con backend — 0 discrepancias en 8 enums y 8 models | INFO (positivo) | ✅ Confirmado |
+| 2 | `DollarSign` y `Lightbulb` no importados en shell pero usados en AdministrationSection | ALTA | ✅ Resuelto en re-escritura del shell |
+| 3 | `Placeholder` importado pero no usado en shell | BAJA | ✅ Eliminado en re-escritura |
+| 4 | `font-ui` sin prefijo `font-[family-name:var(--font-ui)]` — ~50 instancias en 6 sub-componentes | MEDIA | ⬜ Pendiente F22 |
+| 5 | `font-mono` sin prefijo `font-[family-name:var(--font-mono)]` — ~30 instancias | MEDIA | ⬜ Pendiente F22 |
+| 6 | `toLocaleString()` en vez de `formatNumber()` de utils — ~8 instancias en Overview y QuarterlyInsights | MEDIA | ⬜ Pendiente F22 |
+| 7 | `<style>` keyframes `slideDown`/`fadeUp` duplicados en 3 sub-componentes (PricingOptimizer, ActivitySuggester, QuarterlyInsights) | BAJA | ⬜ Consolidar en F22 |
+| 8 | Mutation en QuarterlyInsights sin invalidación automática de list query | MEDIA | ⬜ Verificar hook |
+| 9 | `top_activities` en QuarterlyInsights backend es `list[dict[str, Any]]` pero types.ts tipa como `TopActivity[]` — types.ts es más estricto (correcto) | INFO | ✅ Aceptado |
+| 10 | Todas las 8 tools del agente backend están auditadas y verificadas contra types.ts | INFO (positivo) | ✅ |
+| 11 | Patrón CRUD con action routing (list/get/create/update_status) usado por 3 tools — diferente al patrón de ExecutiveDashboard | INFO | ✅ Documentado |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón: Client-Side AI Advisor (creado en Fase 17)
+
+**Concepto:** Un hook de React que computa insights estratégicos de datos ya en caché de React Query. Cero llamadas al backend. Cero latencia. Aparece como banner en el top del dashboard.
+
+**Niveles:**
+
+```
+Nivel 0: Dashboard queries (auto-load, staleTime)
+   ↓ datos en caché
+Nivel 1: useRecommendationAdvisor(datos en caché) → AdvisorInsight[]
+   ↓ 7 reglas computacionales
+Nivel 2: <AdvisorBanner /> → render condicional (solo si hay insights)
+   ↓ click "Ir"
+Nivel 3: setActiveTab(targetTab) → navega al tab relevante
+```
+
+**Tipo de dato:**
+
+```typescript
+type AdvisorInsight = {
+  id: string;
+  title: string;
+  reasoning: string;
+  impact: "high" | "medium" | "low";
+  targetTab: string;
+  confidence: number; // 0-100
+};
+```
+
+**Reglas computacionales implementadas:**
+
+| # | Regla | Input | Output | Impact |
+|---|-------|-------|--------|--------|
+| 1 | Pricing pendientes | pendingPricings.length > 0 | "N optimizaciones, X alto riesgo, impacto +₡N" | HIGH/MEDIUM |
+| 2 | Alta demanda | interest≥70, requests≥20 | "N sugerencias de alta demanda: X, Y, Z" | HIGH |
+| 3 | Sin insights | insights.length === 0 | "Sin informes trimestrales" | MEDIUM |
+| 4 | Insights stale | latestInsight > 90 días | "Último informe hace N días" | MEDIUM |
+| 5 | Baja satisfacción | satisfaction < 4.0 | "Satisfacción X/5.0, áreas: A, B" | HIGH |
+| 6 | Backlog sugerencias | pendingSuggestions ≥ 5 | "N sugerencias acumuladas" | MEDIUM |
+| 7 | Recomendaciones sin implementar | latestInsight.recommendations > 0 | "N recomendaciones sin implementar" | MEDIUM |
+
+**Cuándo se aplica:**
+- Cualquier dashboard que tiene múltiples queries de diferentes dominios
+- Donde los datos ya cargados pueden cruzarse para producir insights
+- Donde el usuario se beneficia de "qué hacer ahora" sin tener que analizar datos
+
+**Fases futuras donde se replica:**
+- F18: FinancialDashboard — Advisor financiero (costos, revenue, proyecciones)
+- F19: EventOrchestrator — Advisor de eventos (conflictos, asistencia, optimización)
+- F20: Cross-Agent Health — Advisor global (salud del sistema, anomalías cross-agente)
+
+### Patrón: CRUD con Action Routing (pre-existente, documentado aquí)
+
+**Cuándo se usa:** Tools que soportan múltiples operaciones (list, get, create, update_status) bajo un solo nombre de tool, diferenciadas por param `action`.
+
+**Ejemplo:**
+```typescript
+useMCPQuery("proactive_recommendation", "optimize_pricing", { action: "list" })
+useMCPMutation("proactive_recommendation", "optimize_pricing", { action: "create", ... })
+```
+
+**Diferencia con ExecutiveDashboard:** Donde cada operación es una tool separada (`get_executive_summary`, `detect_anomalies`).
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| Decisión | Alternativa descartada | Razón |
+|----------|----------------------|-------|
+| Advisor como hook + banner inline en shell | Tab separada de "AI Advisor" | Un tab más sería 8vo tab. Advisor tiene sentido como contexto global que aparece siempre, no como vista escondida |
+| Advisor consume cache (3 queries duplicadas en shell) | Advisor hace sus propias queries | React Query deduplica — las mismas 3 queries ya las hace el Overview. Shell pre-calienta caché, Overview carga al instante |
+| Advisor como expansible (colapsable) | Siempre visible, no colapsable | Si hay 0 insights, no ocupa espacio. Si hay insights, usuario puede colapsar después de verlos |
+| 7 reglas computacionales fijas | Motor configurable con reglas dinámicas | Para 8 tools, reglas fijas son más simples, auditableas y mantenibles. Motor configurable es over-engineering |
+| "Ir" en cada insight navega al tab | "Ir" abre modal / pre-llena formulario | Navegación al tab es suficiente como primer paso. Pre-llenar forms es F21 (mutations inteligentes) |
+| Auditoría de sub-componentes sin re-escritura | Re-escritura completa como E2 | Los sub-componentes están bien construidos. Solo necesitan fixes cosméticos (fonts, formatters). Re-escritura sería waste |
+| Keyframes consolidados en shell pero NO eliminados de sub-componentes | Eliminar de sub-componentes | Los sub-componentes pueden montarse independientemente (otros dashboards, tests). Mantener keyframes propios es defensivo. Limpieza en F22 |
+| 3 sub-componentes no auditados (SocialClusters, SchedulingConflicts, PredictAttendance) quedan pendientes | Auditar ahora | No bloquean el Advisor. Son componentes de tab individuales. Se auditan cuando se trabaje su F22 polish |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F15 | Foundation + all module dashboards (original) | ✅ |
+| F15ext-B1-B4 | DailyBriefing full stack enhancement | ✅ |
+| F15ext-C1-C3 | ComplianceCheck full stack enhancement | ✅ |
+| F15ext-S1-S4 | SmartSchedule full stack rewrite | ✅ |
+| F16 | ExecutiveDashboard Enhancement | ✅ |
+| **F17** | **RecommendationsDashboard Enhancement** | **✅ COMPLETADA** |
+| F18 | FinancialDashboard Enhancement | ⬜ SIGUIENTE |
+| F19 | EventOrchestrator Dashboard Enhancement | ⬜ |
+| F20 | Global Cross-Agent Health | ⬜ |
+| F21 | Mutations Phase | ⬜ |
+| F22 | Polish Phase (fonts, formatters, keyframes, dead imports) | ⬜ |
+
+---
+
+## 6. PRÓXIMA FASE — F18: FinancialDashboard Enhancement
+
+### Agente backend a leer
+**Ruta:** `backend/src/club_mcp/agents/financial_agent.py`
+
+### Models a leer
+**Ruta:** `backend/src/club_mcp/models/financial.py`
+
+### Lo que sabemos del agente financial
+- Fue auditado parcialmente en Fase 15
+- Tiene tools para: revenue tracking, expense management, budget forecasting, cost analysis
+- Puede tener tools HITL para: aprobación de presupuestos, transferencias, cambios de pricing vinculados
+
+### Tools esperadas (confirmar con agente)
+
+| Tool (estimada) | Tipo esperado | Approval esperado |
+|-----------------|--------------|-------------------|
+| `get_financial_summary` | Datos | AUTO |
+| `get_expense_breakdown` | Datos | AUTO |
+| `generate_budget_forecast` | Inteligencia | AUTO/HITL |
+| `approve_expense` | Mutation | HITL |
+| `get_revenue_trends` | Datos | AUTO |
+| `export_financial_report` | Mutation | SEMI_AUTO |
+
+### Bloques propuestos para F18
+
+| Bloque | Contenido | Dependencias |
+|--------|-----------|-------------|
+| R1 | Auditoría: agente + models + componente FinancialDashboard + sub-componentes | Archivos del backend y frontend |
+| R2 | Fix issues de auditoría + Advisor financiero hook | R1 completo |
+| R3 | AdvisorBanner adaptado para financial + integración en shell | R2 completo |
+
+### ApprovalQueue impact
+- Si hay tools HITL nuevas: agregar a `shared/services/approvalQueue.ts` con patrón `pending_approval`
+
+### Qué archivos pedir para F18
+
+```
+1. backend/src/club_mcp/agents/financial_agent.py
+2. backend/src/club_mcp/models/financial.py
+3. frontend/src/features/finance/FinancialDashboard.tsx (o ruta equivalente)
+```
+
+---
+
+## 7. LISTA COMPLETA DE AGENTES AUDITADOS + TOOLS
+
+| # | Agente | Tools | HITL | AUTO | Inteligencia | Fase auditado | Frontend conectado |
+|---|--------|-------|------|------|-------------|---------------|-------------------|
+| 1 | `daily_briefing` | 7 | 1 (quick_approve) | 6 | generate_daily_briefing | F15ext-B | DailyBriefing ✅ |
+| 2 | `compliance_check` | 6 | 1 (approve_recommendation) | 5 | generate_compliance_insights | F15ext-C | ComplianceCheck ✅ |
+| 3 | `smart_schedule` | 8 | 2 (create_event, resolve_conflict) | 6 | suggest_optimal_slots, analyze_schedule_efficiency | F15ext-S | SmartSchedule ✅ |
+| 4 | `executive_dashboard` | 8 | 2 (export_report SEMI, generate_quarterly_board_report HITL) | 6 | detect_anomalies, generate_ai_analysis | F16 | ExecutiveDashboard ✅ |
+| 5 | `proactive_recommendation` | 8 | 2 (optimize_pricing, suggest_new_activities) | 6 | generate_family_recommendations, predict_event_attendance, detect_scheduling_conflicts, personalize_communication, identify_social_clusters, generate_quarterly_insights | F17 | RecommendationsDashboard ✅ |
+| 6 | `financial` | ⬜ | ⬜ | ⬜ | ⬜ | F18 (siguiente) | FinancialDashboard ⬜ |
+| 7 | `event_orchestrator` | ⬜ | ⬜ | ⬜ | ⬜ | F19 | EventOrchestrator ⬜ |
+| 8 | `facility_management` | ⬜ | ⬜ | ⬜ | ⬜ | Parcial F16 | Referenced ⬜ |
+
+**Total tools auditadas: 37/8+ tools (5 agentes completos)**
+
+---
+
+## 8. VISIÓN DE IA — Cómo estamos construyendo una herramienta de decisión inteligente
+
+### El problema que resolvemos
+
+La mayoría del software de gestión de clubes es **un repositorio de datos** — te muestra lo que pasó. Nuestro sistema es un **sistema de decisión** — te dice qué hacer y por qué.
+
+### Los 4 niveles de inteligencia que estamos implementando
+
+```
+Nivel 1: DATOS (lo que ya existía)
+├── Queries al backend
+├── Visualización de KPIs
+├── Charts y tablas
+└── "¿Qué está pasando?"
+
+Nivel 2: CONTEXTO (lo que construimos en E1-E4)
+├── Auto-load + staleTime optimization
+├── On-demand sections (CTA → loading → results)
+├── Types source of truth (backend 1:1)
+└── "¿Qué necesito ver ahora?"
+
+Nivel 3: INTELIGENCIA CLIENT-SIDE (lo que innovamos)
+├── AI Advisors (useRecommendationAdvisor, etc.)
+├── Reglas computacionales de 7+ factores
+├── Cross-domain analysis (pricing × suggestions × insights)
+├── Impact scoring (high/medium/low)
+├── Confidence scoring (0-100)
+├── 0 API calls, 0 tokens, 0ms
+└── "¿Qué debería hacer y por qué?"
+
+Nivel 4: ACCIÓN INTELIGENTE (F21 — el futuro)
+├── Pre-filled mutation params desde Advisor insights
+├── One-click execute: Advisor → Form → HITL → Approval
+├── Batch actions: "Aprobar todas las optimizaciones de bajo riesgo"
+├── AI-generated communication drafts
+└── "Ejecutá esto, ya lo analicé"
+```
+
+### Lo que hace único a nuestro sistema
+
+| Característica | Software tradicional | Nuestro sistema |
+|---------------|---------------------|-----------------|
+| Datos | Tablas y charts | Tablas, charts + Advisor que interpreta |
+| Análisis | El usuario analiza | El sistema analiza y propone |
+| Decisiones | El usuario decide qué mirar | El sistema prioriza qué mirar |
+| Acciones | El usuario navega forms | El sistema pre-llena y guía |
+| Cross-domain | Cada módulo es aislado | Advisor cruza pricing × activities × insights |
+| Inteligencia | Backend ML (latencia, tokens) | Client-side compute (0ms, 0 tokens) |
+| Personalización | Genérico para todos | Basado en datos reales del club específico |
+
+### Agentes auditados con enfoque de IA
+
+| Agente | Capacidad de IA | Advisor potencial | Estado |
+|--------|----------------|-------------------|--------|
+| `proactive_recommendation` | Motor de recomendaciones, predicciones, clusters, pricing, conflictos | **7 reglas cross-domain** — el Advisor más completo hasta ahora | ✅ Implementado |
+| `executive_dashboard` | Anomalías, análisis de IA, reportes ejecutivos | Executive Advisor (ya conectado en F16 como CTA on-demand) | ✅ |
+| `smart_schedule` | Sugerencias de horarios, análisis de eficiencia, resolución de conflictos | Schedule Advisor — "óptimo slots para nuevo evento" | ✅ Parcial |
+| `daily_briefing` | Briefing diario, resumen ejecutivo, alertas | Brief Advisor — "3 items requieren atención hoy" | ✅ Parcial |
+| `compliance_check` | Insights de compliance, recomendaciones | Compliance Advisor — "2 recomendaciones críticas" | ✅ Parcial |
+| `financial` | Forecasting, análisis de costos, tendencias | **Financial Advisor** — "proyección de Q3 muestra déficit en catering" | ⬜ F18 |
+| `event_orchestrator` | Orquestación de eventos, scheduling, recursos | **Event Advisor** — "3 eventos esta semana sin predicción de asistencia" | ⬜ F19 |
+
+### La visión de F20: Cross-Agent Advisor
+
+El Advisor definitivo que consolida TODOS los agentes:
+
+```
+GlobalAdvisor
+├── consume: executive_summary, financial_overview, schedule_data, 
+│            recommendations_data, compliance_data
+├── computa: cross-domain insights
+│   ├── "Revenue baja 5% pero satisfaction subió — no recortes, 
+│   │    invertir en bienestar"
+│   ├── "3 conflictos de scheduling + 2 optimizaciones pendientes 
+│   │    = mover evento X a fecha Y"
+│   └── "Cluster social de 15 familias premium sugiere demanda 
+│        para evento exclusivo"
+└── 0 tokens, 0 calls, client-side puro
+```
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+### `useRecommendationAdvisor.ts`
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| #1 Tokens | N/A | Hook puro, sin UI |
+| #2 No blur | N/A | Hook puro |
+| #3 No skeleton en advisor | N/A | No hace queries |
+| #4-22 | N/A | Hook computacional, solo aplica #8 (formatters) |
+
+### `AdvisorBanner.tsx`
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| #1 Tokens | ✅ | Todos los colores con `var(--color-xxx)` |
+| #2 No blur/glass | ✅ | Card sólida |
+| #3 No skeleton | ✅ | Solo renderiza si insights > 0 |
+| #6 ResponsiveContainer | N/A | No charts |
+| #8 Formatters | N/A | Solo muestra texto e impact badges |
+| #11 focus-visible | ✅ | En header button y "Ir" buttons |
+| #12 min-h-[44px] | ✅ | Button tiene size="sm" + padding adecuado |
+| #14 EmptyState | N/A | Si 0 insights, componente no renderiza |
+| #15 showToast | N/A | No mutations |
+| #17 Button | ✅ | "Ir" usa `<Button variant="ghost" size="sm">` |
+| #18 ReducedMotion | ✅ | `prefersReduced` en animaciones |
+| #20 Breakpoint | N/A | Single column, no necesita |
+| #21 Responsive | ✅ | `p-4 sm:p-5`, `text-sm`/`text-xs` responsive |
+| #22 cn() | N/A | No conditional classes complejas |
+
+### `RecommendationsDashboard.tsx` (rewrite)
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| #1 Tokens | ✅ | Todos los colores con tokens |
+| #2 No blur | ✅ | — |
+| #11 focus-visible | ✅ | En sub-tab buttons |
+| #13 DetailTabs | ✅ | Componente shared usado |
+| #16 Breadcrumb | ✅ | `href: "/admin"`, path absoluto |
+| #17 Button | ✅ | Sub-tabs son disclosure pattern |
+| #18 ReducedMotion | ✅ | `prefersReduced` en keyframes |
+| #21 Responsive | ✅ | — |
+
+---
+
+## 10. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Archivo(s) | Fase sugerida |
+|---|-------|-----------|-----------|---------------|
+| 1 | `font-ui` sin prefijo — ~50 instancias en 6 sub-componentes | MEDIA | Overview, PricingOptimizer, ActivitySuggester, QuarterlyInsights, FamilyRecommendations, shell | F22 |
+| 2 | `font-mono` sin prefijo — ~30 instancias | MEDIA | PricingOptimizer, ActivitySuggester, QuarterlyInsights | F22 |
+| 3 | `toLocaleString()` en vez de `formatNumber()` — ~8 instancias | MEDIA | RecommendationsOverview, QuarterlyInsights | F22 |
+| 4 | Keyframes `slideDown`/`fadeUp` duplicados en 3 sub-componentes | BAJA | PricingOptimizer, ActivitySuggester, QuarterlyInsights | F22 |
+| 5 | Mutation en QuarterlyInsights sin invalidación de list query | MEDIA | QuarterlyInsights | F22 |
+| 6 | 3 sub-componentes no auditados: SocialClusters, SchedulingConflicts, PredictAttendance | MEDIA | `components/SocialClusters.tsx`, `SchedulingConflicts.tsx`, `PredictAttendance.tsx` | F22 |
+| 7 | `personalize_communication` tool sin componente UI | MEDIA | Ningún componente la usa | Futuro |
+| 8 | `glass-card` / `glass-input` / `aurora-btn` CSS classes — verificar existencia en global.css | BAJA | global.css | F22 |
+| 9 | YoY data: `YearOverYearToggle` con `yoyData={null}` en ExecutiveDashboard | INFO | ExecutiveDashboard.tsx | Futuro (cuando backend provea) |
+| 10 | Contracts: types de operations — verificar que no quedaron imports huérfanos | BAJA | factories.ts, contracts.ts | F16 cleanup |
+| 11 | `get_financial_overview` y `get_membership_health` factories — conectar cuando se creen sub-pages | MEDIA | factories, registry | F18 |
+| 12 | Date-scoped range: ExecutiveDashboard no usa date-scoped queries | INFO | ExecutiveDashboard.tsx | Futuro |
+
+---
+
+## 11. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección: Agentes auditados — AGREGAR
+
+```
+| proactive_recommendation | 8 tools | 2 HITL | 6 AUTO | F17 ✅ |
+```
+
+### Sección: Fases completadas — AGREGAR
+
+```
+| F17 | RecommendationsDashboard Enhancement | ✅ |
+```
+
+### Sección: Advisor pattern — AGREGAR NUEVA SECCIÓN
+
+```
+## Client-Side AI Advisor Pattern
+
+Hook: useRecommendationAdvisor(datos de cache) → AdvisorInsight[]
+UI: <AdvisorBanner insights={[]} onNavigateToTab={fn} />
+0 API calls. Computa de datos ya en React Query cache.
+Reglas: 7 computacionales (pending pricing, high demand, stale insights, low satisfaction, etc.)
+Impact scoring: high/medium/low. Confidence: 0-100.
+Se replica en: F18 (financial), F19 (events), F20 (cross-agent).
+```
+
+### Sección: Próxima fase — ACTUALIZAR
+
+```
+F18: FinancialDashboard Enhancement
+- Agente: backend/src/club_mcp/agents/financial_agent.py
+- Models: backend/src/club_mcp/models/financial.py
+- Frontend: features/finance/FinancialDashboard.tsx
+```
+
+---
+
+## 12. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto
+```
+1. CLAUDE_CONTEXT_MINI.md (si existe, sino el checkpoint de F15ext-C)
+2. Este checkpoint (Fase 17)
+3. Fase 16 checkpoint (ExecutiveDashboard)
+```
+
+### Paso 2 — Pedir lectura de agente
+```
+"Pasame el agente de financial_agent.py y los modelos de financial.py"
+```
+
+### Paso 3 — Pedir componente
+```
+"Pasame FinancialDashboard.tsx y sus sub-componentes"
+```
+
+### Paso 4 — Pedir auditoría
+```
+"Auditá el agente, los modelos y el componente contra el patrón de Advisor"
+```
+
+### Paso 5 — Pedir implementación
+```
+"Creá el Financial Advisor hook + AdvisorBanner adaptado + fixes del shell"
+```
+
+### Paso 6 — Pedir checkpoint
+```
+"Generá el checkpoint de Fase 18"
+```
+
+---
+
+## 13. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto |
+|-------|---------|-------|---------|
+| Mayo 2026 | F17 NO necesita los 4 bloques E1-E4 | types.ts ya estaba alineado, sub-componentes bien construidos, tab pattern reemplaza on-demand | F17 fue auditoría + Advisor, no re-escritura masiva |
+| Mayo 2026 | Advisor es hook client-side, no backend tool | 0 tokens, 0ms, consume cache existente. Backend ML es overkill para 7 reglas simples | Patrón se replica en F18, F19, F20 |
+| Mayo 2026 | Advisor como banner inline, no como tab | Un tab más sería 8vo. Advisor tiene sentido como contexto global | Usuario ve recomendaciones sin cambiar de vista |
+| Mayo 2026 | 3 queries duplicadas en shell para pre-calentar cache | React Query deduplica. Overview carga al instante | Performance UX positivo |
+| Mayo 2026 | Fixes de fonts/formatters/postales pendientes a F22 | Son cosméticos, no bloquean funcionalidad. Polish phase es el lugar correcto | F17 se cierra más rápido |
+| Mayo 2026 | Sub-componentes NO se re-escribieron | Están bien construidos. Solo necesitan fixes quirúrgicos | Ahorro de ~1000 líneas de re-escritura innecesaria |
+| Mayo 2026 | Keyframes consolidados en shell pero mantenidos en sub-componentes | Defensivo: sub-componentes pueden montarse independientemente | Limpieza definitiva en F22 |
+| Mayo 2026 | `personalize_communication` sin UI quedó pendiente | No bloquea. Se puede integrar como feature de Advisor en F20/F21 | Futuro |
+| Mayo 2026 | 3 sub-componentes no auditados (SocialClusters, SchedulingConflicts, PredictAttendance) | No bloquean Advisor. Se auditan en F22 polish | Futuro |
+
+---
+
+**Fase 17 cerrada. Próxima: F18 FinancialDashboard Enhancement.**

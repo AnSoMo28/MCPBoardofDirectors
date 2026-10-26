@@ -1,0 +1,68 @@
+/**
+ * @component DashboardLayout (Fase 21)
+ * @namespace .glass-layout-shell, .glass-content-canvas, .ambient-vignette
+ * @depends globals.css (color tokens)
+ * @note .ambient-vignette tambien se usa en LivingCommandCenter.css (Fase 19)
+ *       Aqui se define la version Fase 21 como canonica.
+ *       La animacion ambient-glow-pulse esta en LivingCommandCenter.css.
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   DashboardLayout — Glass Shell
+   Fase 21 — Shared Layout Foundation
+   ═══════════════════════════════════════════════════════════ */
+
+/* Root layout canvas — atmospheric depth mesh */
+.glass-layout-shell {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(15, 20, 30, 0.8) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(10, 15, 25, 0.6) 0%, transparent 50%),
+    var(--color-abyss, #0a0e14);
+}
+
+/* Ambient Health Vignette — z-3 structural guarantee */
+/* Visual properties (background, animation) driven by useAmbientState CSS vars */
+.ambient-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(201, 169, 110, 0.04) 0%,
+    transparent 70%
+  );
+  animation: ambient-glow-pulse 8s ease-in-out infinite;
+  transition: background 3s ease, opacity 3s ease;
+}
+
+/* Content canvas — depth frame around routed content */
+.glass-content-canvas {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.025);
+  border-radius: 16px;
+  min-height: 100%;
+}
+
+/* ── Light mode ── */
+
+.light .glass-layout-shell {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(240, 237, 230, 0.5) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(235, 230, 220, 0.3) 0%, transparent 50%),
+    #f5f3ee;
+}
+
+.light .ambient-vignette {
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(201, 169, 110, 0.05) 0%,
+    transparent 70%
+  );
+  opacity: 0.5;
+}
+
+.light .glass-content-canvas {
+  background: rgba(0, 0, 0, 0.008);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}

@@ -1,0 +1,644 @@
+/**
+ * WellnessAnomalyRadar.css
+ * src/features/wellness/components/WellnessAnomalyRadar.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .wr / .wr__*
+ * @keyframes   3 (wr-scan, wr-blip-critical, wr-star)
+ * @signature   Radar circular de severidades — "The Watchtower".
+ *              Geometría en el JSX; tinta 100% aquí. La severidad se
+ *              resuelve como CLASE que expone --wr-blip-color: tema,
+ *              light y forced-colors tocan UN solo lugar por severidad.
+ *
+ * v3 — G17 ANÁLISIS CRUZADO (CSS legacy .glass-wr/wra* × v2 .wr/wr-*).
+ * El usuario aportó el CSS legacy original para auditoría cruzada
+ * (v2 se escribió sin auditarlo — este archivo cierra ese vacío).
+ * Cada decisión de abajo está verificada contra el SISTEMA REAL,
+ * no de memoria:
+ *   · --color-rose-400 / --color-emerald-400 / --font-mono EXISTEN
+ *     (ScoreGauge.tsx:87-90, PermissionGate.css:287/339/343).
+ *   · Convención glass de la casa: blur(12px) saturate(1.05) +
+ *     var(--glass-bg)/var(--glass-border) + prefijo -webkit-
+ *     (PermissionDenied.css:92-95 — el gemelo exacto de este card).
+ *
+ * ADOPTADO del legacy (6 — el cruce es honesto o no es cruce):
+ *   [a1] --font-mono en .wr__count y .wr__center — readouts de
+ *        instrumento en mono. El legacy acertó; v2 usaba font-ui.
+ *        Peso 500, NO 700: DM Mono nativo es 300/400/500 — 700 sería
+ *        faux-bold sintético en el dato más importante del widget.
+ *   [a2] --color-rose-400 como acento crítico (blip, halo, dot,
+ *        tinte de fila) — rose es el "negativo" semántico DEL SISTEMA
+ *        (ScoreGauge lo usa para score malo, PermissionGate para
+ *        denegados), no un rojo aislado con fallback inventado.
+ *   [a3] --color-emerald-400 en .wr__clear — el "positivo" semántico
+ *        del sistema (ScoreGauge >= 0.8, permiso concedido).
+ *   [a4] Tinte de fila en .wr__alert (padding 4px 8px + radius 6px,
+ *        rosa 6%) — agrupa dot+mensaje cuando el texto envuelve.
+ *   [a5] Pulso del .wr__alert-dot SINCRONIZADO con el blip crítico:
+ *        mismo keyframe wr-blip-critical. El reuse del legacy
+ *        (wraBlipPulse compartido) era el instinto correcto — la
+ *        lista y el radar laten al unísono y no cuesta un keyframe.
+ *   [a6] Tinte de píldora + borde en el conteo (estructura visual
+ *        del legacy, tinta gold del sistema).
+ *
+ * RECHAZADO del legacy (5 — con evidencia de archivo):
+ *   [r1] saturate(1.3) + color-mix(in srgb, surface-1 90%) — la casa
+ *        glass es saturate(1.05) con token --glass-bg
+ *        (PermissionDenied.css:93). Un vibrancy one-off rompe la
+ *        consistencia de superficie entre cards del mismo dashboard.
+ *   [r2] Raíz .glass-wr — familia BEM rota (los hijos son .wr__*) y
+ *        fuera del contrato del TSX v2 (emite .wr). BC-06: este
+ *        archivo posee TODOS los estilos del componente, sin depender
+ *        de que un consumidor importe el CSS "correcto".
+ *   [r3] color-mix SIN fallback rgba — Chrome<111 / Safari<16.2 /
+ *        FF<113 se quedan con fondo transparente: texto flotando.
+ *        Patrón house: línea rgba ANTES, color-mix oklab DESPUÉS.
+ *   [r4] transform-origin: 70px 70px — coordenada absoluta acoplada
+ *        al viewBox 140; v3 es agnóstico: transform-box: view-box +
+ *        origin 50% (la geometría puede cambiar sin romper el CSS).
+ *   [r5] reduced-motion con !important + opacity: 1 — innecesario:
+ *        animation: none devuelve al VALOR BASE de la regla (elegido
+ *        a producción), no congela un frame intermedio del keyframe.
+ *
+ * DEFECTOS DE v2 QUE EL CRUCE EXPUSO (4 — corregidos aquí; auditar
+ * en una sola dirección es fiscalizar, no auditar):
+ *   [f1] .wr__count / .wr__clear sin contraste verificado en light:
+ *        gold-400 (#c9a96e) y emerald-400 (#34d399) sobre blanco
+ *        quedan ~2:1 — ilegibles a 11px. §8 ahora lleva tinta oscura
+ *        dedicada (#8b7340 / #2e7d5b, >= 4.5:1).
+ *   [f2] Severidad = data-ink: como gráfico debe pasar 3:1 en light.
+ *        amber-400 ~2.4:1 y rose-400 ~2.9:1 fallaban. La arquitectura
+ *        de UNA variable por severidad convierte el fix en 4 líneas
+ *        (blip + halo cascan solos) — existe precisamente para esto.
+ *   [f3] .wr__alert--more en dark a 3.75:1 (silver-500) → silver-400.
+ *   [f4] Scan dorado ~2:1 en light → #8b7340 (misma tinta que la
+ *        estrella ya usaba).
+ *
+ * CONTRATO CON EL TSX v2 (verificado clase por clase): 21 clases
+ * emitidas, 21 cubiertas — wr, header, title, count, clear, svg,
+ * ring, cross (la orientación --h/--v es geometría del JSX: base
+ * compartida), scan, hub, center, blip-group (--critical/--high/
+ * --medium/--low), blip, halo, star, alerts, alert, alert-dot,
+ * alert-msg, alert--more. [data-mode] queda como hook RESERVADO sin
+ * variante visual (restraint documentado: nada que estilar hoy,
+ * cero código muerto mañana).
+ *
+ * MIGRACIÓN: reemplaza INTEGRO al legacy .glass-wr (y al v2). Si el
+ * repo aún importa el archivo legacy, esta copia lo sustituye 1:1 —
+ * el TSX v2 no emite ninguna clase .glass-wr ni .wr__blip--critical.
+ *
+ * RESTRICCIONES DELIBERADAS (2027 con propósito, no buzzword):
+ * [x] Container query SÍ — el widget vive en un grid de wellness
+ *     cuyo ancho de columna varía; título y alertas escalan contra
+ *     el ancho REAL del card (no del viewport). El radar en sí ya
+ *     es fluido por diseño: viewBox + max-width.
+ * [x] @property NO — nada aquí necesita transicionar una custom
+ *     property (pulso y scan son keyframes de composición con
+ *     propiedades individuales). Restraint documentado.
+ * [x] Selectores PLANOS (sin nesting nativo) — consistencia house
+ *     + compatibilidad con el tooling de cobertura de clases.
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  blur(12) saturate(1.05) sobre tokens --glass-*
+ * D2 Stagger  ✗  Widget de estado único (not applicable)
+ * D3 Easing   ✓  var(--ease-apple) en blip crítico + dot de alerta
+ * D4 Typo     ✓  font-display (título) + font-mono 500 en readouts
+ *                (a1: count y centro — instrumento, no prosa) +
+ *                text-wrap: pretty en mensajes
+ * D5 Color    ✓  Severidad → --wr-blip-color (crítico = rose del
+ *                sistema, a2); derivados oklab + fallback rgba previo
+ * D6 Pseudo   ✗  Sin ::before/::after — el radar ES el arte (restraint)
+ * D7 Interact ✗  Widget observacional sin CTA: nada que hoverear
+ *                (la interacción vive en las páginas que lo hostean)
+ * D8 Density  ✓  @container < 16rem compacta título/alertas/radar
+ * D9 Response ✓  viewBox fluido por diseño + cqi en descendientes
+ * D10 A11y    ✓  Roles/aria dinámicos en TSX; forced-colors con
+ *                CanvasText/Highlight; contraste 3:1 de tinta de
+ *                datos en light verificado (f2 — NUEVO en v3)
+ * D11 Light   ✓  COMPLETO: retícula + 4 severidades + count/clear
+ *                (f1/f2 cierran el gap que v2 declaraba sin verificar)
+ * D12 Motion  ✓  reduced-motion apaga scan/pulso/estrella/dot (§9)
+ *                + print sin animación ni tinte (§10)
+ * D13 Frames  ✓  3 keyframes namespaced al final (§11)
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  BLOQUE — glass card + container
+   ═══════════════════════════════════════════════════════════════ */
+
+.wr {
+  /* Container nombrado: título y alertas escalan contra este ancho */
+  container: wr / inline-size;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+
+  color: var(--color-silver-100, #f0ece4);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(1.05);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.55);
+
+  /* Sin align-items: center — los hijos estiran al 100% por defecto:
+     el legacy lo ponía y se veía forzado a parchar header y alerts
+     con width: 100% (dos síntomas, una causa). */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  HEADER — título + badge de conteo / estado despejado
+   ═══════════════════════════════════════════════════════════════ */
+
+.wr__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.wr__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-silver-300, #c4beb6);
+}
+
+/* a1 + a6: readout de instrumento — mono al peso máximo NATIVO de
+   DM Mono (500; 700 sería faux-bold sintético). El conteo es total
+   MIXTO de severidades → gold (lectura de instrumento), no rose:
+   rose queda reservado a lo estrictamente crítico (blip + dot +
+   alertas) y así el header no grita "alarma" con 3 anomalías low. */
+.wr__count {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-gold-400, #c9a96e);
+  padding: 1px 8px;
+  border-radius: 999px;
+
+  background: rgba(201, 169, 110, 0.08);
+  background: color-mix(in oklab, var(--color-gold-400, #c9a96e) 8%, transparent);
+  border: 1px solid rgba(201, 169, 110, 0.2);
+  border-color: color-mix(in oklab, var(--color-gold-400, #c9a96e) 20%, transparent);
+}
+
+/* a3: emerald = "positivo" semántico del sistema (ScoreGauge >= 0.8,
+   permiso concedido en PermissionGate.css:339). */
+.wr__clear {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--color-emerald-400, #34d399);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  RETÍCULA SVG — anillos, cruz, scan, corazón
+   ═══════════════════════════════════════════════════════════════ */
+
+.wr__svg {
+  display: block;
+  width: 100%;
+  max-width: 176px;
+  margin-inline: auto;
+}
+
+.wr__ring {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 0.5;
+}
+
+.wr__cross {
+  stroke: rgba(255, 255, 255, 0.03);
+  stroke-width: 0.3;
+}
+
+/* Scan: geometría estática en el JSX (centro → derecha); la rotación
+   corre en el compositor con la propiedad individual `rotate`.
+   r4: transform-box: view-box + origin 50% — agnóstico de la
+   geometría (el legacy anclaba 70px 70px al viewBox 140 a ciegas). */
+.wr__scan {
+  stroke: var(--color-gold-400, #c9a96e);
+  stroke-width: 0.5;
+  opacity: 0.35;
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: wr-scan 6s linear infinite;
+}
+
+.wr__hub {
+  fill: var(--color-surface-3, #26241f);
+}
+
+/* a1: mono para el readout central. 9 unidades de viewBox ≈ 11px
+   renderizados a 176px — calibrado contra las alertas de 11px. */
+.wr__center {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 9px;
+  font-weight: 500;
+  fill: var(--color-silver-200, #d4cfc7);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  BLIPS — severidad como clase que expone --wr-blip-color
+   ═══════════════════════════════════════════════════════════════ */
+
+/* a2: crítico = rose DEL SISTEMA (ScoreGauge.tsx:90,
+   PermissionGate.css:343) — unifica widget, gauge y permisos bajo
+   un mismo rojo semántico. */
+.wr__blip-group--critical {
+  --wr-blip-color: var(--color-rose-400, #fb7185);
+}
+
+.wr__blip-group--high {
+  --wr-blip-color: var(--color-amber-400, #cf9f52);
+}
+
+.wr__blip-group--medium {
+  --wr-blip-color: var(--color-teal-400, #4fa08a);
+}
+
+.wr__blip-group--low {
+  --wr-blip-color: var(--color-silver-500, #7a7570);
+}
+
+.wr__blip {
+  fill: var(--wr-blip-color, var(--color-silver-500, #7a7570));
+  opacity: 0.8;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+.wr__halo {
+  fill: none;
+  stroke: var(--wr-blip-color, var(--color-silver-500, #7a7570));
+  stroke-width: 0.5;
+  opacity: 0.3;
+}
+
+/* Solo lo crítico pulsa — jerarquía de atención por movimiento */
+.wr__blip-group--critical .wr__blip {
+  animation: wr-blip-critical 1.4s var(--ease-apple, ease-in-out) infinite;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  ESTADO VACÍO — la estrella ES el corazón del radar
+   ═══════════════════════════════════════════════════════════════ */
+
+.wr__star {
+  font-size: 14px;
+  fill: var(--color-gold-400, #c9a96e);
+  animation: wr-star 3.2s ease-in-out infinite;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  ALERTAS CRÍTICAS — lista semántica (<ul>/<li> en el TSX)
+   ═══════════════════════════════════════════════════════════════ */
+
+.wr__alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* a4: tinte de fila del legacy, con el patrón house (fallback rgba
+   previo + oklab). Agrupa dot+mensaje cuando envuelve a 2 líneas. */
+.wr__alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--color-silver-400, #a09a92);
+
+  background: rgba(251, 113, 133, 0.06);
+  background: color-mix(in oklab, var(--color-rose-400, #fb7185) 6%, transparent);
+}
+
+/* a5: el dot late CON el blip crítico — mismo keyframe, misma
+   duración, mismo easing: la lista y el radar al unísono. Reuse del
+   legacy (wraBlipPulse compartido): instinto correcto, cero coste. */
+.wr__alert-dot {
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-rose-400, #fb7185);
+  box-shadow: 0 0 6px rgba(251, 113, 133, 0.5);
+  box-shadow: 0 0 6px color-mix(in oklab, var(--color-rose-400, #fb7185) 50%, transparent);
+  animation: wr-blip-critical 1.4s var(--ease-apple, ease-in-out) infinite;
+}
+
+.wr__alert-msg {
+  text-wrap: pretty;
+}
+
+/* Indicador de truncado explícito ("+N más").
+   f3: silver-500 quedaba a 3.75:1 en dark → silver-400.
+   Alineación: fila 8px + dot 5px + gap 6px = 19px desde el borde
+   (a4 movió el punto de partida — v2 alineaba a 11px sin padding). */
+.wr__alert--more {
+  padding-left: 19px;
+  color: var(--color-silver-400, #a09a92);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  DENSIDAD — container query (solo descendientes)
+   ═══════════════════════════════════════════════════════════════ */
+
+@container wr (width < 16rem) {
+  .wr__title {
+    font-size: 10px;
+  }
+
+  .wr__alert {
+    font-size: 10px;
+  }
+
+  .wr__svg {
+    max-width: 148px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  LIGHT MODE (D11) — COMPLETO tras el cruce (f1/f2/f4)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .wr {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.25);
+}
+
+.light .wr__title {
+  color: var(--color-silver-800, #2c2a27);
+}
+
+/* f1: gold-400 / emerald-400 sobre blanco ≈ 2:1 — ilegibles a 11px.
+   Tinta oscura dedicada (>= 4.5:1): #8b7340 ≈ 4.9:1, #2e7d5b ≈ 5:1.
+   Tinta fija (mismo patrón que la estrella v2): globals.css no está
+   en el paquete auditado — no se inventan tokens; si existen
+   --color-gold-600 / --color-emerald-600, sustituir por el token. */
+.light .wr__count {
+  color: #8b7340;
+  background: rgba(139, 115, 64, 0.1);
+  border-color: rgba(139, 115, 64, 0.35);
+}
+
+.light .wr__clear {
+  color: #2e7d5b;
+}
+
+.light .wr__ring {
+  stroke: rgba(15, 23, 42, 0.1);
+}
+
+.light .wr__cross {
+  stroke: rgba(15, 23, 42, 0.07);
+}
+
+.light .wr__hub {
+  fill: rgba(15, 23, 42, 0.06);
+}
+
+.light .wr__center {
+  fill: var(--color-silver-800, #2c2a27);
+}
+
+/* f4: scan gold-400 ≈ 2:1 sobre blanco → tinta de la estrella */
+.light .wr__scan {
+  stroke: #8b7340;
+}
+
+.light .wr__star {
+  fill: #8b7340;
+}
+
+/* f2: severidad = data-ink → mínimo 3:1 como gráfico. Sobre blanco:
+   rose-400 ≈ 2.9:1 y amber-400 ≈ 2.4:1 FALLABAN. Override de la
+   variable, no de las reglas — blip y halo cascan solos:
+     #e11d48 ≈ 4.7:1 · #8a6420 ≈ 5.3:1 · #2e7d5b ≈ 5:1 ·
+     #5c5852 ≈ 6.7:1. */
+.light .wr__blip-group--critical {
+  --wr-blip-color: #e11d48;
+}
+
+.light .wr__blip-group--high {
+  --wr-blip-color: #8a6420;
+}
+
+.light .wr__blip-group--medium {
+  --wr-blip-color: #2e7d5b;
+}
+
+.light .wr__blip-group--low {
+  --wr-blip-color: #5c5852;
+}
+
+.light .wr__alert {
+  color: var(--color-silver-800, #2c2a27);
+
+  background: rgba(251, 113, 133, 0.08);
+  background: color-mix(in oklab, var(--color-rose-400, #fb7185) 8%, transparent);
+}
+
+/* Mismo rose profundo que su blip crítico en light (4.7:1) — dot y
+   blip siguen siendo la misma señal a ambos lados del widget. */
+.light .wr__alert-dot {
+  background: #e11d48;
+}
+
+.light .wr__alert--more {
+  color: var(--color-silver-500, #7a7570);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  REDUCED MOTION + CONTRASTE + FORCED COLORS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* r5: animation: none devuelve al VALOR BASE de cada regla — no
+   congela un frame del keyframe — por eso no hay opacity: 1
+   defensivo ni !important (patrón legacy): los valores base ya
+   están elegidos a producción (blip 0.8, estrella 1, dot 1, scan
+   estático visible). El dot entra a la lista porque ahora pulsa. */
+@media (prefers-reduced-motion: reduce) {
+  .wr__scan,
+  .wr__blip,
+  .wr__star,
+  .wr__alert-dot {
+    animation: none;
+  }
+}
+
+/* Alto contraste preferido (acceso OS-level) */
+@media (prefers-contrast: more) {
+  .wr__ring {
+    stroke: rgba(255, 255, 255, 0.18);
+  }
+
+  .wr__cross {
+    stroke: rgba(255, 255, 255, 0.12);
+  }
+
+  .wr__title,
+  .wr__alert {
+    color: var(--color-silver-200, #d4cfc7);
+  }
+}
+
+/* Windows High Contrast / forced colors.
+   La distinción de severidad por color se pierde aquí — la lista de
+   alertas (TEXTO) porta la semántica crítica: eso NO es un bug del
+   degradado, es el diseño de resiliencia del widget. */
+@media (forced-colors: active) {
+  .wr {
+    background: Canvas;
+    border-color: CanvasText;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .wr__ring {
+    stroke: CanvasText;
+  }
+
+  .wr__cross {
+    stroke: CanvasText;
+  }
+
+  .wr__scan {
+    stroke: Highlight;
+  }
+
+  .wr__blip {
+    fill: Highlight;
+  }
+
+  .wr__halo {
+    stroke: Highlight;
+  }
+
+  .wr__hub {
+    fill: Canvas;
+    stroke: CanvasText;
+    stroke-width: 0.5;
+  }
+
+  .wr__alert {
+    background: none;
+  }
+
+  .wr__alert-dot {
+    background: Highlight;
+    box-shadow: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §10  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .wr {
+    background: none;
+    border-color: #000;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: #000;
+  }
+
+  .wr__scan,
+  .wr__blip,
+  .wr__star,
+  .wr__alert-dot {
+    animation: none;
+  }
+
+  .wr__ring,
+  .wr__cross {
+    stroke: rgba(0, 0, 0, 0.3);
+  }
+
+  .wr__center,
+  .wr__star {
+    fill: #000;
+  }
+
+  .wr__title,
+  .wr__alert {
+    color: #000;
+  }
+
+  /* a4 invertido en papel: el tinte no aporta tinta útil — ahorro
+     de cartucho y legibilidad sobre blanco puro. */
+  .wr__alert {
+    background: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §11 KEYFRAMES (D13) — ALL at end, ALL wr-* namespaced.
+       Count: 3.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Barrido del radar — propiedad individual `rotate` (compositor;
+   el legacy animaba transform: rotate() — main-thread) */
+@keyframes wr-scan {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* Pulso crítico — opacidad + escala individual. Lo comparten blip
+   crítico y dot de alerta (a5): sincronía por construcción. */
+@keyframes wr-blip-critical {
+  0%,
+  100% {
+    opacity: 0.75;
+    scale: 1;
+  }
+
+  50% {
+    opacity: 1;
+    scale: 1.25;
+  }
+}
+
+/* Titileo de la estrella de "Cielo despejado" */
+@keyframes wr-star {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}

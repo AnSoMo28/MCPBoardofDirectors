@@ -1,0 +1,493 @@
+/**
+ * @component CalibrationDashboard (Fase 23)
+ * @namespace .glass-cal, .glass-cal__*
+ * @depends globals.css (radius tokens, font tokens, color tokens, shadow-card)
+ * @note CalibrationDashboard.tsx should import BOTH:
+ *       import '../../ml/ml-glass.css';           // Shared ML primitives
+ *       import './CalibrationDashboard.css';       // This file (co-located)
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   CalibrationDashboard — Silver Tide Neural Console
+   Fase 23 · Glass · Health Ring · Accuracy Matrix · Waterfall
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root surface ── */
+.glass-cal {
+  position: relative;
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(201, 169, 110, 0.12);
+  padding: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card, 0 4px 24px rgba(0, 0, 0, 0.15));
+}
+
+/* ── Ambient glow orb ── */
+.glass-cal__glow {
+  position: absolute;
+  top: -30%;
+  right: -15%;
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(80, 200, 180, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: cal-glow-breathe 6s ease-in-out infinite;
+}
+@keyframes cal-glow-breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ── Header ── */
+.glass-cal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+.glass-cal__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  font-family: var(--font-display);
+}
+.glass-cal__reset {
+  font-size: 10px !important;
+  color: var(--color-silver-500) !important;
+  transition: color 0.15s ease;
+}
+.glass-cal__reset:hover {
+  color: var(--color-rose-400) !important;
+}
+
+/* ── Hero section ── */
+.glass-cal__hero {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 640px) {
+  .glass-cal__hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ── Health Ring ── */
+.glass-cal__ring {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .glass-cal__ring { margin: 0 auto; }
+}
+.glass-cal__ring-svg { width: 100%; height: 100%; }
+.glass-cal__ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.glass-cal__ring-score {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+.glass-cal__ring-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+
+/* ── Stats grid ── */
+.glass-cal__stats {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+@media (min-width: 640px) {
+  .glass-cal__stats { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ── Stat card ── */
+.glass-cal__stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: border-color 0.15s ease;
+}
+.glass-cal__stat:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.glass-cal__stat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.glass-cal__stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-400);
+  font-family: var(--font-mono);
+}
+.glass-cal__stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1.2;
+}
+
+/* ── Section ── */
+.glass-cal__section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  z-index: 1;
+}
+.glass-cal__section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-400);
+  font-family: var(--font-mono);
+  margin-bottom: 12px;
+}
+.glass-cal__section-desc {
+  font-size: 11px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+  margin-bottom: 12px;
+}
+
+/* ═══════════════════════════════════════
+   Accuracy Matrix — Heatmap Grid
+   ═══════════════════════════════════════ */
+
+.glass-cal__matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.glass-cal__cell {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 3px solid transparent;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  cursor: default;
+}
+.glass-cal__cell:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Readiness variants */
+.glass-cal__cell--calibrated { border-left-color: var(--color-teal-400); }
+.glass-cal__cell--calibrated:hover { box-shadow: 0 0 12px -4px rgba(80, 200, 180, 0.15); }
+
+.glass-cal__cell--warming { border-left-color: var(--color-amber-400); }
+.glass-cal__cell--warming:hover { box-shadow: 0 0 12px -4px rgba(245, 158, 11, 0.15); }
+
+.glass-cal__cell--cold { border-left-color: var(--color-silver-500); opacity: 0.6; }
+.glass-cal__cell--cold:hover { opacity: 0.8; }
+
+.glass-cal__cell-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.glass-cal__cell-name {
+  font-size: 11px;
+  color: var(--color-silver-300);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.glass-cal__cell-pct {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+.glass-cal__cell-bar-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  margin-top: 8px;
+  overflow: hidden;
+}
+.glass-cal__cell-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.glass-cal__cell-count {
+  font-size: 9px;
+  color: var(--color-silver-600);
+  font-family: var(--font-mono);
+  margin-top: 4px;
+  display: block;
+}
+
+/* ═══════════════════════════════════════
+   Confidence Waterfall — Diverging Bar Chart
+   ═══════════════════════════════════════ */
+
+.glass-cal__wf {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.glass-cal__wf-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.glass-cal__wf-label {
+  font-size: 10px;
+  color: var(--color-silver-400);
+  font-family: var(--font-mono);
+  width: 130px;
+  flex-shrink: 0;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .glass-cal__wf-label { width: 80px; font-size: 9px; }
+}
+
+/* Bar area — centered */
+.glass-cal__wf-bar-area {
+  flex: 1;
+  height: 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.glass-cal__wf-center {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(-50%);
+}
+
+/* Bars */
+.glass-cal__wf-bar {
+  position: absolute;
+  height: 8px;
+  border-radius: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: width 0.5s ease-out;
+}
+.glass-cal__wf-bar--left { right: 50%; }
+.glass-cal__wf-bar--right { left: 50%; }
+
+.glass-cal__wf-delta {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  width: 36px;
+  flex-shrink: 0;
+}
+
+/* Legend */
+.glass-cal__wf-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+.glass-cal__wf-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+.glass-cal__wf-legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   Causal Chain Section
+   ═══════════════════════════════════════ */
+
+.glass-cal__chains {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.glass-cal__chain-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: border-color 0.15s ease;
+}
+.glass-cal__chain-row:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.glass-cal__chain-name {
+  font-size: 11px;
+  color: var(--color-silver-300);
+  font-family: var(--font-mono);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.glass-cal__chain-bar-track {
+  width: 60px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.glass-cal__chain-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.glass-cal__chain-pct {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.glass-cal__chain-meta {
+  font-size: 9px;
+  color: var(--color-silver-600);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════
+   Empty State
+   ═══════════════════════════════════════ */
+
+.glass-cal--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+.glass-cal__empty-icon {
+  color: var(--color-silver-500);
+  margin-bottom: 16px;
+  animation: cal-empty-breathe 3s ease-in-out infinite;
+}
+@keyframes cal-empty-breathe {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+.glass-cal__empty-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+  margin-bottom: 4px;
+}
+.glass-cal__empty-desc {
+  font-size: 12px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-cal {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.06);
+  border-top-color: rgba(201, 169, 110, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+.light .glass-cal__glow { opacity: 0.3; }
+.light .glass-cal__title { color: var(--color-abyss, #0a0e14); }
+.light .glass-cal__reset { color: var(--color-silver-400) !important; }
+.light .glass-cal__reset:hover { color: var(--color-rose-500) !important; }
+.light .glass-cal__stat {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-cal__stat:hover { border-color: rgba(0, 0, 0, 0.08); }
+.light .glass-cal__stat-label { color: var(--color-silver-500); }
+.light .glass-cal__cell {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-cal__cell:hover { border-color: rgba(0, 0, 0, 0.1); }
+.light .glass-cal__cell--cold { opacity: 0.5; }
+.light .glass-cal__cell-name { color: var(--color-silver-600); }
+.light .glass-cal__cell-bar-track { background: rgba(0, 0, 0, 0.04); }
+.light .glass-cal__section-title { color: var(--color-silver-500); }
+.light .glass-cal__section-desc { color: var(--color-silver-400); }
+.light .glass-cal__wf-label { color: var(--color-silver-500); }
+.light .glass-cal__wf-center { background: rgba(0, 0, 0, 0.08); }
+.light .glass-cal__chain-row {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-cal__chain-row:hover { border-color: rgba(0, 0, 0, 0.08); }
+.light .glass-cal__chain-name { color: var(--color-silver-600); }
+.light .glass-cal__chain-bar-track { background: rgba(0, 0, 0, 0.04); }
+.light .glass-cal__empty-icon { color: var(--color-silver-400); }
+.light .glass-cal__empty-title { color: var(--color-abyss, #0a0e14); }
+.light .glass-cal__empty-desc { color: var(--color-silver-500); }
+.light .glass-cal__wf-legend-item { color: var(--color-silver-400); }

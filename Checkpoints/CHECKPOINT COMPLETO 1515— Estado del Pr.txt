@@ -1,0 +1,930 @@
+CHECKPOINT COMPLETO — Estado del Proyecto al 14 de Mayo 2026
+
+Resumen Ejecutivo
+
+Castillo Country Club es un sistema MCP (Model Context Protocol) para la gestión integral de un club privado de élite en Costa Rica. El backend está 100% completo con 15 agentes, 103 tools, ~550 tests y ~88% de cobertura. El siguiente paso es construir el frontend completo (React 19 + TypeScript + Tailwind).
+
+
+
+BACKEND — COMPLETADO ✅
+
+Stack confirmado
+
+text
+text
+Python 3.14.4
+uv (package management)
+FastMCP (MCP server)
+Pydantic v2
+pytest + pytest-asyncio + pytest-cov
+
+Estado de agentes — 15/15 COMPLETADOS
+
+#	Agente	Module Name	Tools	HITL	Tests	Estado
+1	FamilyProfileAgent	family_profile	7	2	32	PASSED
+2	EventOrchestratorAgent	event_orchestrator	9	3	50	PASSED
+3	AgeGroupAgent	age_group	7	1	26	PASSED
+4	FinanceAgent	finance	7	3	30	PASSED
+5	WellnessAgent	wellness	7	1	28	PASSED
+6	ComplianceAgent	compliance	7	2	27	PASSED
+7	SportsRecreationAgent	sports_recreation_agent	7	2	42	PASSED
+8	CulturalSocialAgent	cultural_social_agent	6	3	41	PASSED
+9	CommunicationAgent	communication_agent	7	3	41	PASSED
+10	FacilityManagementAgent	facility_management_agent	7	2	—	PASSED
+11	MemberEngagementAgent	member_engagement_agent	6	2	—	PASSED
+12	GuestManagementAgent	guest_management_agent	5	2	34	PASSED
+13	ProactiveRecommendationAgent	proactive_recommendation_agent	8	2	48	PASSED
+14	DocumentIntelligenceAgent	document_intelligence_agent	6	2	48	PASSED
+15	ExecutiveDashboardAgent	executive_dashboard_agent	7	1	47	PASSED
+
+Total: 103 tools, ~29 HITL, ~554 tests, ~88% coverage
+
+
+
+ESTRUCTURA EXACTA DEL BACKEND
+
+text
+text
+backend/src/club_mcp/
+├── agents/
+│   ├── __init__.py                    # Imports de los 15 agentes
+│   ├── base.py                        # BaseAgent, MCPTool, register_with_mcp
+│   ├── family_profile.py
+│   ├── event_orchestrator.py
+│   ├── age_group.py
+│   ├── finance.py
+│   ├── wellness.py
+│   ├── compliance.py
+│   ├── sports_recreation_agent.py
+│   ├── cultural_social_agent.py
+│   ├── communication_agent.py
+│   ├── facility_management_agent.py
+│   ├── member_engagement_agent.py
+│   ├── guest_management_agent.py
+│   ├── proactive_recommendation_agent.py
+│   ├── document_intelligence_agent.py
+│   └── executive_dashboard_agent.py
+├── db/repositories/
+│   ├── __init__.py                    # Imports de los 15 repos
+│   ├── family_repo.py
+│   ├── event_repo.py
+│   ├── age_group_repo.py
+│   ├── finance_repo.py
+│   ├── wellness_repo.py
+│   ├── compliance_repo.py
+│   ├── sports_recreation_repo.py
+│   ├── cultural_social_repo.py
+│   ├── communication_repo.py
+│   ├── facility_management_repo.py
+│   ├── member_engagement_repo.py
+│   ├── guest_management_repo.py
+│   ├── proactive_recommendation_repo.py
+│   ├── document_intelligence_repo.py
+│   └── executive_dashboard_repo.py
+├── models/
+│   ├── __init__.py                    # Imports de TODOS los modelos
+│   ├── family.py
+│   ├── member.py
+│   ├── age_group_activity.py
+│   ├── finance.py
+│   ├── wellness.py                  # (si existe)
+│   ├── compliance.py                # (si existe)
+│   ├── sports_recreation.py
+│   ├── cultural_social.py
+│   ├── communication.py
+│   ├── facility_management.py
+│   ├── member_engagement.py
+│   ├── guest_management.py
+│   ├── proactive_recommendation.py
+│   ├── document_intelligence.py
+│   └── executive_dashboard.py
+├── hitl/
+│   ├── approval_types.py            # ApprovalLevel, ApprovalStatus, ApprovalRequest
+│   └── approval_engine.py           # ApprovalEngine (in-memory)
+├── config/
+│   └── club_registry.py             # get_club_config("castillo_country_club")
+├── server.py                        # Punto de entrada MCP, registra 15 agentes
+└── (futuros: orchestrator/, api/, notifications/, ai/, middleware/, utils/)
+
+backend/tests/
+├── conftest.py                      # Fixtures: repo, approval_engine, family_agent, etc.
+└── unit/agents/
+    ├── test_family_profile_agent.py
+    ├── test_event_orchestrator_agent.py
+    ├── test_age_group_agent.py
+    ├── test_finance_agent.py
+    ├── test_wellness_agent.py
+    ├── test_compliance_agent.py
+    ├── test_sports_recreation_agent.py
+    ├── test_cultural_social_agent.py
+    ├── test_communication_agent.py
+    ├── test_facility_management_agent.py
+    ├── test_member_engagement_agent.py
+    ├── test_guest_management_agent.py
+    ├── test_proactive_recommendation_agent.py
+    ├── test_document_intelligence_agent.py
+    └── test_executive_dashboard_agent.py
+
+
+MAPA COMPLETO DE AGENTES, TOOLS Y RELACIONES
+
+CAPA EJECUTIVA (Inteligencia de Negocio)
+
+text
+text
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 ExecutiveDashboardAgent (executive_dashboard_agent)          │
+│    CONSULTA A TODOS LOS DEMÁS AGENTES                          │
+│                                                                 │
+│ Tools:                                                          │
+│   🔴 generate_quarterly_board_report  HITL   Informe junta     │
+│   🟡 export_report                    SEMI   Exportar datos     │
+│   🟢 get_executive_summary            AUTO   KPIs consolidados  │
+│   🟢 get_financial_overview           AUTO   P&L, revenue       │
+│   🟢 get_membership_health            AUTO   Engagement, churn  │
+│   🟢 get_operational_pulse            AUTO   Events, facilities │
+│   🟢 detect_anomalies                 AUTO   Alertas            │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → FamilyProfileAgent (total families, demographics)           │
+│   → FinanceAgent (revenue, expenses, budgets)                   │
+│   → MemberEngagementAgent (engagement scores, at-risk)          │
+│   → EventOrchestratorAgent (events held, attendance)            │
+│   → FacilityManagementAgent (utilization rates)                 │
+│   → GuestManagementAgent (guest trends, trials)                 │
+│   → SportsRecreationAgent (top activities)                      │
+│   → WellnessAgent (wellness participation)                      │
+│   → ProactiveRecommendationAgent (predictions, insights)        │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🧠 DocumentIntelligenceAgent (document_intelligence_agent)     │
+│    RAG — REPOSITORIO DE CONOCIMIENTO                           │
+│                                                                 │
+│ Tools:                                                          │
+│   🔴 generate_knowledge_report   HITL    Reportes con fuentes   │
+│   🔴 manage_document_access      HITL    Control de acceso      │
+│   🟡 ingest_document             SEMI    Ingesta de documentos  │
+│   🟢 query_documents             AUTO    Búsqueda semántica     │
+│   🟢 search_similar              AUTO    Docs similares         │
+│   🟢 get_repository_stats        AUTO    Stats del repositorio  │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → ComplianceAgent (audit logging de consultas)                │
+│   → ExecutiveDashboardAgent (fuentes para reportes)             │
+│   → ProactiveRecommendationAgent (contexto para pricing)        │
+└─────────────────────────────────────────────────────────────────┘
+
+CAPA OPERATIVA (13 agentes)
+
+text
+text
+┌─────────────────────────────────────────────────────────────────┐
+│ 👨‍👩‍👧‍👦 FamilyProfileAgent (family_profile)                        │
+│ Tools: 7                                                        │
+│   🟢 create_family_profile          AUTO                        │
+│   🟢 get_family_profile             AUTO                        │
+│   🟢 search_families                AUTO                        │
+│   🔴 update_family_members          HITL   Cambia estructura    │
+│   🟡 set_family_preferences         SEMI   Self-service/admin   │
+│   🟢 get_family_activity_history    AUTO                        │
+│   🟢 get_family_social_graph        AUTO                        │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → MemberEngagementAgent (engagement por familia)              │
+│   → FinanceAgent (estado financiero por familia)                │
+│   → GuestManagementAgent (familia anfitriona)                   │
+│   → AgeGroupAgent (miembros por edad)                           │
+│   → CommunicationAgent (notificaciones familia)                 │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🎪 EventOrchestratorAgent (event_orchestrator)                  │
+│ Tools: 9                                                        │
+│   🔴 create_event                   HITL   Costo/compromisos    │
+│   🟡 build_event_program            SEMI   Draft → approve      │
+│   🟡 manage_rsvps                   SEMI   <50 auto, >50 HITL  │
+│   🔴 coordinate_vendors             HITL   Contratos/dinero     │
+│   🟢 manage_event_capacity          AUTO                        │
+│   🟢 get_event_analytics            AUTO                        │
+│   🟡 clone_event_template           SEMI   Clona → review       │
+│   ⛔ manage_emergency_broadcast     ALWAYS HUMANO              │
+│   🟡 generate_event_report          SEMI   Draft/externo        │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → FacilityManagementAgent (reservar venues)                   │
+│   → CommunicationAgent (invitaciones, recordatorios)            │
+│   → FinanceAgent (presupuesto, facturación)                     │
+│   → SportsRecreationAgent (eventos deportivos)                  │
+│   → CulturalSocialAgent (galas, eventos sociales)               │
+│   → AgeGroupAgent (eventos por edad)                            │
+│   → ProactiveRecommendationAgent (predicción asistencia)        │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 👶 AgeGroupAgent (age_group)                                    │
+│ Tools: 7                                                        │
+│   🟢 get_activities_for_age_group   AUTO                        │
+│   🟡 create_age_activity            SEMI   Draft → approve      │
+│   🟢 match_children_to_programs     AUTO                        │
+│   🟢 get_age_group_demographics     AUTO                        │
+│   🟡 coordinate_cross_generational  SEMI                        │
+│   🟡 manage_waitlist                SEMI   Override → HITL      │
+│   🟢 get_supervision_requirements   AUTO                        │
+│   🟢 track_developmental_programs   AUTO                        │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → FamilyProfileAgent (edades de miembros)                     │
+│   → WellnessAgent (programas juveniles)                         │
+│   → SportsRecreationAgent (deportes por edad)                   │
+│   → FacilityManagementAgent (espacios kids/youth)               │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💰 FinanceAgent (finance)                                       │
+│ Tools: 7 — EL MÁS CRÍTICO                                      │
+│   🔴 process_monthly_dues           HITL   Cobro masivo 5000+   │
+│   🟡 calculate_event_pricing        SEMI   Simulación/publicar  │
+│   🟢 get_family_financial_status    AUTO   Solo su familia      │
+│   🟢 manage_guest_fees              AUTO   Auto/ waivers → HITL │
+│   🔴 generate_department_budget     HITL   Presupuesto deptos   │
+│   🟡 project_event_roi              SEMI   Estimación → review  │
+│   ⛔ handle_refund_or_credit        ALWAYS HUMANO              │
+│   🟢 get_financial_dashboard        AUTO                        │
+│   🔴 manage_payment_plans           HITL   Modifica obligaciones│
+│   ⛔ apply_late_fee                 ALWAYS HUMANO              │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → EventOrchestratorAgent (costos de eventos)                  │
+│   → FamilyProfileAgent (estado de cuenta por familia)           │
+│   → GuestManagementAgent (cargos de invitados)                  │
+│   → CommunicationAgent (avisos de cobro)                        │
+│   → ExecutiveDashboardAgent (KPIs financieros)                  │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🧘 WellnessAgent (wellness)                                     │
+│ Tools: 7                                                        │
+│   🟢 get_wellness_programs          AUTO                        │
+│   🟡 create_wellness_program        SEMI                        │
+│   🟢 book_wellness_session          AUTO                        │
+│   🟢 track_member_health_goals      AUTO                        │
+│   🟢 get_wellness_recommendations   AUTO                        │
+│   🔴 manage_wellness_partnerships   HITL   Contratos externos   │
+│   🟢 get_wellness_analytics         AUTO                        │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → MemberEngagementAgent (wellness como factor engagement)     │
+│   → AgeGroupAgent (programas por edad)                          │
+│   → FinanceAgent (costos programas wellness)                    │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📋 ComplianceAgent (compliance)                                 │
+│ Tools: 7                                                        │
+│   🟢 check_compliance_status        AUTO                        │
+│   🟡 create_compliance_report       SEMI                        │
+│   🔴 enforce_policy                 HITL                        │
+│   🟢 get_audit_trail                AUTO                        │
+│   🔴 handle_regulatory_filing       HITL                        │
+│   🟢 monitor_data_privacy           AUTO                        │
+│   🟢 get_compliance_dashboard       AUTO                        │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → DocumentIntelligenceAgent (audit de consultas RAG)          │
+│   → FinanceAgent (compliance financiero)                        │
+│   → CommunicationAgent (compliance en comunicaciones)           │
+│   → TODOS los agentes (audit trail transversal)                 │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🎾 SportsRecreationAgent (sports_recreation_agent)              │
+│ Tools: 7                                                        │
+│   🟡 manage_court_reservations      SEMI   Evento bloqueo → HITL│
+│   🟡 organize_tournament            SEMI   Plan → approve       │
+│   🟢 manage_fitness_classes         AUTO                        │
+│   🟢 coordinate_coaching            AUTO                        │
+│   🟡 manage_sport_leagues           SEMI   Estructura → approve │
+│   🟢 get_equipment_availability     AUTO                        │
+│   🟢 get_sports_recommendations     AUTO                        │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → FacilityManagementAgent (canchas, equipamiento)             │
+│   → AgeGroupAgent (deportes por edad)                           │
+│   → EventOrchestratorAgent (torneos como eventos)               │
+│   → ProactiveRecommendationAgent (recommendaciones deportivas)  │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🎭 CulturalSocialAgent (cultural_social_agent)                  │
+│ Tools: 6                                                        │
+│   🔴 organize_formal_gala           HITL   Alto costo/protocolo │
+│   🔴 manage_entertainment_acts      HITL   Contratación externa │
+│   🟡 manage_cultural_program        SEMI   Draft → approve      │
+│   🟢 manage_social_events           AUTO                        │
+│   🟢 manage_art_exhibitions         AUTO                        │
+│   🟢 get_cultural_calendar          AUTO                        │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → EventOrchestratorAgent (galas como eventos)                 │
+│   → FacilityManagementAgent (venues para galas)                 │
+│   → CommunicationAgent (invitaciones culturales)                │
+│   → FinanceAgent (presupuesto cultural)                         │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 📢 CommunicationAgent (communication_agent)                     │
+│ Tools: 7                                                        │
+│   🟡 send_personalized_notification SEMI   >100 → HITL         │
+│   ⛔ broadcast_club_announcement    ALWAYS HUMANO              │
+│   🟡 generate_weekly_digest         SEMI   Auto → review        │
+│   🟡 send_event_reminders           SEMI   Template/auto        │
+│   🟡 collect_post_event_feedback    SEMI   Cambio preguntas→HITL│
+│   ⛔ manage_emergency_broadcast     ALWAYS HUMANO              │
+│   🟢 generate_rsvp_confirmations    AUTO                        │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → TODOS los agentes (notificaciones transversales)            │
+│   → EventOrchestratorAgent (invitaciones y recordatorios)       │
+│   → MemberEngagementAgent (campañas de reactivación)            │
+│   → FinanceAgent (avisos de cobro)                              │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🏛️ FacilityManagementAgent (facility_management_agent)          │
+│ Tools: 7                                                        │
+│   🟢 get_venue_availability         AUTO                        │
+│   🟡 book_venue                     SEMI   Grande → HITL        │
+│   🔴 schedule_maintenance           HITL   Cierra instalaciones │
+│   🟢 manage_capacity_realtime       AUTO                        │
+│   🔴 coordinate_event_setup         HITL                        │
+│   🟢 get_utilization_report         AUTO                        │
+│   🟢 manage_club_map                AUTO                        │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → EventOrchestratorAgent (venues para eventos)                │
+│   → SportsRecreationAgent (canchas deportivas)                  │
+│   → CulturalSocialAgent (espacios culturales)                   │
+│   → FinanceAgent (costos de mantenimiento)                      │
+│   → ExecutiveDashboardAgent (utilización como KPI)              │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 💡 MemberEngagementAgent (member_engagement_agent)              │
+│ Tools: 6                                                        │
+│   🟢 calculate_engagement_score     AUTO                        │
+│   🟢 identify_at_risk_members       AUTO                        │
+│   🔴 design_reactivation_campaign   HITL   Estrategia comercial │
+│   🟢 analyze_participation_trends   AUTO                        │
+│   🔴 manage_loyalty_rewards         HITL   Costo de beneficios  │
+│   🟡 run_satisfaction_survey        SEMI   Auto → admin publica │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → FamilyProfileAgent (datos de familia)                       │
+│   → CommunicationAgent (campañas de reactivación)               │
+│   → ProactiveRecommendationAgent (detección de riesgo)          │
+│   → ExecutiveDashboardAgent (engagement KPIs)                   │
+│   → FinanceAgent (costo de loyalty rewards)                     │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🎉 GuestManagementAgent (guest_management_agent)                │
+│ Tools: 5                                                        │
+│   🟡 register_guest                 SEMI   >4 por día → HITL   │
+│   🟢 manage_guest_privileges        AUTO                        │
+│   🔴 plan_private_event             HITL   Alto valor $10-50K+  │
+│   🟢 get_guest_analytics            AUTO                        │
+│   🔴 manage_trial_memberships       HITL   Impacta membresía    │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → FamilyProfileAgent (familia anfitriona)                     │
+│   → FacilityManagementAgent (venues para eventos privados)      │
+│   → FinanceAgent (cargos de invitados, cotizaciones)            │
+│   → MemberEngagementAgent (trials → membership)                 │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🔮 ProactiveRecommendationAgent (proactive_recommendation_agent)│
+│ Tools: 8                                                        │
+│   🔴 optimize_pricing               HITL   Cambio de precios    │
+│   🔴 suggest_new_activities         HITL   Nueva inversión      │
+│   🟢 generate_family_recommends     AUTO                        │
+│   🟢 predict_event_attendance       AUTO                        │
+│   🟢 detect_scheduling_conflicts    AUTO                        │
+│   🟢 personalize_communication      AUTO                        │
+│   🟢 identify_social_clusters       AUTO                        │
+│   🟡 generate_quarterly_insights    SEMI   Auto → gerencia      │
+│                                                                 │
+│ RELACIONES:                                                     │
+│   → DocumentIntelligenceAgent (contexto de contratos para RAG)  │
+│   → EventOrchestratorAgent (predicción asistencia)              │
+│   → FinanceAgent (pricing optimization)                         │
+│   → MemberEngagementAgent (recomendaciones engagement)          │
+│   → CulturalSocialAgent (sugerencias culturales)                │
+│   → SportsRecreationAgent (recomendaciones deportivas)          │
+│   → ExecutiveDashboardAgent (insights trimestrales)             │
+└─────────────────────────────────────────────────────────────────┘
+
+
+ERRORES COMETIDOS — LECCIONES APRENDIDAS (NO REPETIR)
+
+1. datetime.utcnow() → DEPRECATED en Python 3.14
+
+python
+python
+# ❌ NUNCA usar
+datetime.utcnow()
+datetime.datetime.utcnow()
+
+# ✅ SIEMPRE usar
+from datetime import datetime, timezone
+datetime.now(tz=timezone.utc).isoformat()
+
+2. datetime.UTC no existe
+
+python
+python
+# ❌ NO existe
+datetime.UTC
+
+# ✅ Correcto
+timezone.utc
+
+3. Import de datetime en agentes
+
+python
+python
+# SIEMPRE agregar al tope del archivo del agente
+from datetime import datetime, timezone
+
+# El import estático NO importa datetime como valor runtime:
+from __future__ import annotations  # ← Esto NO trae datetime al runtime
+
+4. No testear _approval_level en llamadas directas
+
+El wrapper _wrap_with_hitl solo agrega _approval_level cuando se registra con MCP (register_with_mcp), NO cuando se llama el método directamente en tests.
+
+
+5. Defaults de parámetros de filtros
+
+python
+python
+# ❌ NUNCA usar enum como default
+event_type: str = "dinner"
+facility_type: str = "pool"
+
+# ✅ SIEMPRE usar string vacío
+event_type: str = ""
+facility_type: str = ""
+
+# RAZÓN: Al hacer list(), si el usuario no pasa el parámetro,
+# filtra solo por ese valor y no devuelve todo.
+
+6. Crear solo UNA versión de cada archivo
+
+Si la respuesta se corta a mitad de código, NO volver a empezar desde cero. Pedir al usuario que confirme qué tiene copiado y continuar desde ahí. Mezclar dos versiones genera inconsistencias.
+
+
+7. Tests con seed helpers y contadores
+
+python
+python
+# ❌ Cuando se usa un seed con valor default alto y luego se suma
+# El assert no considera el valor sembrado + incremento
+
+# ✅ Sembrar con valor 0 por defecto y pasar valor explícito en test
+loyalty_points: int = 0  # en seed helper
+# Y en el test:
+await _seed_member(repo, loyalty_points=0)
+# Luego al sumar, el assert es exacto
+
+8. Enums como atributos en modelos — verificar existencia
+
+python
+python
+# ❌ Usar un valor de enum que no existe en el modelo
+_CONTRACT_TYPES = {DocumentType.CONTRACT, DocumentType.LEGAL}
+# Si DocumentType no tiene LEGAL → AttributeError
+
+# ✅ Siempre verificar que todos los valores usados existan en el enum
+# Agregar "legal" al enum si se usa
+
+9. Acceso a atributos de modelo equivocado
+
+python
+python
+# ❌ Usar atributo de un modelo en otro
+engagement.avg_engagement_score  # No existe en EngagementKPI
+
+# ✅ Verificar qué modelo tiene qué campo
+membership.avg_engagement_score  # Sí existe en MembershipKPI
+
+
+PATRÓN EXACTO QUE SEGUIMOS (por cada agente)
+
+Paso 1: Modelo → backend/src/club_mcp/models/{domain}.py
+
+python
+python
+# Enums (str, Enum) para estados/categorías
+# BaseModel con model_config = ConfigDict(from_attributes=True)
+# Entity schemas
+# Create schemas separados
+# Update schemas separados
+# SIEMPRE importar: from datetime import datetime, timezone
+
+Paso 2: Repositorio → backend/src/club_mcp/db/repositories/{domain}_repo.py
+
+python
+python
+# Clase {Domain}Repository con __init__ que crea dict[str, dict]
+# _gen_id() helper con uuid4().hex[:8]
+# CRUD methods async: async def create_X, async def get_X, async def update_X, async def list_X
+# Los repos NUNCA importan de agents (evitar circular)
+# SIEMPRE usar: datetime.now(tz=timezone.utc).isoformat()
+# SIEMPRE importar: from datetime import datetime, timezone
+
+Paso 3: Agente → backend/src/club_mcp/agents/{agent_name}.py
+
+python
+python
+# Hereda BaseAgent (de club_mcp.agents.base)
+# Imports: MCPTool de club_mcp.agents.base, ApprovalLevel de club_mcp.hitl.approval_types
+# SIEMPRE importar: from datetime import datetime, timezone
+# Decorador siempre con kwargs: @MCPTool(name="tool_name", description="desc", approval=ApprovalLevel.XXX)
+# Para HITL agregar: approver_roles=["admin"] en el decorador
+
+# Constructor EXACTO:
+def __init__(self, repo=None, approval_engine=None, notifier=None) -> None:
+    super().__init__()
+    self.repo = repo or {Domain}Repository()
+    if approval_engine is not None:
+        self.approval_engine = approval_engine
+    self.notifier = notifier
+
+def _register_tools(self) -> None:
+    pass
+
+# agent_name y description como class attributes
+# Tools con list/get/create/update usan parámetro action: str
+# Mensajes en español con emojis
+# model_dump(mode="json") para serializar
+
+Paso 4: Tests → backend/tests/unit/agents/test_{agent_name}.py
+
+python
+python
+# Fixtures:
+@pytest.fixture
+def {domain}_repo():
+    return {Domain}Repository()
+
+@pytest.fixture
+def {agent_name}({domain}_repo, approval_engine):
+    agent = Agent(repo={domain}_repo)
+    agent.approval_engine = approval_engine
+    return agent
+
+# Helper async def _seed_{domain}() con defaults neutros (0, "", [])
+# Clase por tool: class Test{ToolName}:
+# Tests: éxito, error, validación, edge cases
+# SIEMPRE @pytest.mark.asyncio
+# Para approval: importar ApprovalStatus de club_mcp.hitl.approval_types y UUID de uuid
+# SIEMPRE usar "admin@castillo.cr" como requested_by y approved_by
+
+Paso 5: Actualizar init.py (3 archivos)
+
+python
+python
+# agents/__init__.py: Import + __all__
+# db/repositories/__init__.py: Import + __all__ (NO importar agents)
+# models/__init__.py: Import TODOS los modelos + __all__
+
+Paso 6: Actualizar server.py
+
+python
+python
+# Import del agente y repo
+# Crear instancia en shared infrastructure
+# Agregar a la lista de agents
+
+Paso 7: Verificar
+
+bash
+bash
+uv run pytest tests/unit/agents/test_{agent_name}.py -v
+uv run pytest -v --cov
+
+
+ARCHIVOS QUE DEBES PASARME AL INICIAR CHAT NUEVO
+
+Para evitar errores de imports, fixtures o firmas:
+
+
+1.backend/src/club_mcp/agents/base.py — firma exacta de BaseAgent, MCPTool, imports
+2.backend/src/club_mcp/hitl/approval_types.py — ApprovalLevel, ApprovalStatus (nombres, valores)
+3.backend/src/club_mcp/hitl/approval_engine.py — firma de create_request(), approve(), reject()
+4.backend/tests/conftest.py — fixtures existentes (approval_engine, notifier, repo)
+5.backend/src/club_mcp/server.py — cómo se instancian y registran agentes
+6.backend/src/club_mcp/agents/__init__.py — imports actuales y all
+7.backend/src/club_mcp/db/repositories/__init__.py — imports actuales
+8.backend/src/club_mcp/models/__init__.py — imports actuales
+9.Un agente completo reciente como referencia (ej: executive_dashboard_agent.py) — patrón exacto a replicar
+
+CON ESTOS 9 ARCHIVOS PUEDO GENERAR CUALQUIER AGENTE NUEVO SIN ERRORES.
+
+
+
+FRONTEND — RECOMENDACIONES EXPERTAS
+
+Filosofía de Diseño para Club Privado
+
+El público de un club privado elite es excepcionalmente diverso:
+
+Adultos mayores (60-80+): Socios fundadores, poco tech-savvy, pantalla grande, contraste alto
+Profesionales busy (35-55): CEOs, abogados, doctores — acceso desde celular, eficiencia
+Jóvenes (18-35): Hijos de socios, nativos digitales, social features
+Staff operativo (20-50): Recepción, mantenimiento, cocina — tablets, rapidez
+Gerencia (40-60): Dashboards, decisiones, reportes
+
+Principio rector: Si mi abuela de 75 años no puede hacer una reservación de cancha en 3 taps, el diseño falló.
+
+
+Stack Recomendado
+
+text
+text
+React 19 + TypeScript
+Vite 6 (build tool)
+Tailwind CSS v4
+TanStack Query v5 (server state — cache, refetch, optimistic updates)
+Zustand (client state — filtros, sidebar, tema)
+React Router v7 (routing con layouts anidados)
+Recharts (charts — más humano y orgánico que D3)
+Framer Motion (animaciones sutiles — NO para todo)
+Lucide React (iconografía — limpia, moderna, legible)
+PWA (instalable en celular/tablet)
+
+Paleta de Colores Recomendada — "Castillo Elegance"
+
+css
+css
+:root {
+  /* Naturaleza costarricense + elegancia de club privado */
+  --castillo-forest: #1a3a2a;       /* Verde bosque profundo — primario */
+  --castillo-gold: #c8a951;          /* Dorado clásico — acento */
+  --castillo-cream: #f5f0e8;         /* Crema cálido — fondo */
+  --castillo-stone: #6b6560;         /* Piedra — texto secundario */
+  --castillo-ivory: #faf8f4;         /* Marfil — fondo alternativo */
+  --castillo-copper: #b87333;        /* Cobre — alertas/info */
+  --castillo-rose: #9e6b6b;          /* Rosa antiguo — errores suaves */
+  --castillo-sage: #8fae8b;          /* Salvia — éxito */
+  --castillo-charcoal: #2c2c2c;      /* Carbón — texto principal */
+  --castillo-warm-white: #fffef9;    /* Blanco cálido — cards */
+}
+
+Por qué esta paleta: El verde bosque conecta con Costa Rica y naturaleza. El dorado evoca exclusividad sin ser ostentoso. Los tonos cálidos (crema, marfil) reducen fatiga visual para adultos mayores. Nada de neones, azules tech fríos o gradientes agresivos.
+
+
+Tipografía Recomendada
+
+text
+text
+Display headings: "Playfair Display" (serif elegante, personalidad)
+Body text: "Source Serif 4" (legible, cálido, profesional)
+UI labels: "DM Sans" (limpio, moderno, excelente legibilidad)
+Monospace: "DM Mono" (para códigos, IDs, datos técnicos)
+
+Tamaños base: Mínimo 16px para body text. Adultos mayores necesitan 18-20px como opción. Nunca menos de 14px para nada.
+
+
+Principios UX para Club Privado
+
+text
+text
+1. CONTRASTE ALTO — WCAG AAA siempre. Adultos mayores necesitan contraste
+   7:1 mínimo. Nada de texto gris claro sobre fondo gris.
+
+2. BOTONES GRANDES — Mínimo 48x48px (WCAG). Preferiblemente 56x56px.
+   Padding generoso. Adultos mayores con temblor en manos lo necesitan.
+
+3. TIPOGRAFÍA ESCALABLE — El usuario debe poder aumentar tamaño de texto
+   sin romper el layout. Usar rem, no px.
+
+4. NAVEGACIÓN SIMPLE — Máximo 3 niveles de profundidad. Siempre visible
+   dónde estás (breadcrumb). Botón "Inicio" siempre accesible.
+
+5. FEEDBACK INMEDIATO — Cada acción tiene respuesta visual. Loading states
+   claros. Confirmaciones con lenguaje humano, no técnico.
+
+6. MODO OSCURO — Adultos mayores y staff nocturno lo necesitan. Toggle
+   siempre visible. Recordar preferencia.
+
+7. RESPONSIVE MOBILE-FIRST — El gerente revisa desde el celular a las 11pm.
+   Recepción usa tablet. El socio viejo usa desktop grande.
+
+8. PWA — Instalable. Funciona offline para datos cacheados. Push
+   notifications para eventos y recordatorios.
+
+9. ACCESIBILIDAD — ARIA labels en todo. Navegación por teclado.
+   Screen reader compatible. Focus indicators visibles.
+
+10. CALIDEZ VISUAL — Sombras suaves, bordes redondeados (8-12px),
+    espacios generosos. Nada de diseños fríos o industriales.
+
+Estructura de Pantallas
+
+text
+text
+DASHBOARD PRINCIPAL (diferente por rol)
+├── 👤 Vista Socio (familia)
+│   ├── Mi Perfil Familiar
+│   ├── Próximos Eventos
+│   ├── Mis Reservaciones
+│   ├── Estado de Cuenta
+│   ├── Recomendaciones Personalizadas
+│   ├── Invitados del Día
+│   └── Comunicaciones
+│
+├── 🏛️ Vista Staff Operativo
+│   ├── Check-in de Invitados (tablet)
+│   ├── Reservaciones del Día
+│   ├── Estado de Instalaciones
+│   ├── Tareas de Mantenimiento
+│   └── Alertas Operativas
+│
+├── 📊 Vista Gerencia / Admin
+│   ├── Executive Dashboard (KPIs consolidados)
+│   ├── Financial Overview (P&L visual)
+│   ├── Membership Health (engagement, churn)
+│   ├── Operational Pulse (events, facilities)
+│   ├── Anomalies & Alerts
+│   ├── HITL Approval Queue
+│   ├── Document Repository (RAG)
+│   └── Board Reports
+│
+└── 👑 Vista Junta Directiva
+    ├── Quarterly Board Report
+    ├── Financial Summary
+    ├── Strategic Recommendations
+    └── Risk Assessment
+
+Componentes Clave del Dashboard Ejecutivo
+
+tsx
+tsx
+// 1. KPI Cards — Grandes, con sparkline, cambio porcentual
+// 2. Revenue Trend — Recharts AreaChart, 12 meses, con tooltip rico
+// 3. Membership Donut — Por tier, con drill-down
+// 4. Engagement Heatmap — Calendario de actividad diaria
+// 5. Top Activities — Bar chart horizontal, con tendencia
+// 6. Anomaly Feed — Lista de alertas con severity badges
+// 7. HITL Queue — Pendientes de aprobación, con acciones
+// 8. Quick Actions — FAB (Floating Action Button) para acciones frecuentes
+
+Arquitectura Frontend
+
+text
+text
+frontend/
+├── src/
+│   ├── app/                    # App shell, providers, routing
+│   │   ├── App.tsx
+│   │   ├── providers.tsx       # QueryClient, Theme, Auth
+│   │   └── router.tsx          # React Router config
+│   │
+│   ├── features/               # Feature modules (domain-driven)
+│   │   ├── dashboard/          # Executive Dashboard
+│   │   ├── families/           # Family profiles
+│   │   ├── events/             # Events
+│   │   ├── finance/            # Financial
+│   │   ├── facilities/         # Facilities
+│   │   ├── members/            # Member engagement
+│   │   ├── guests/             # Guest management
+│   │   ├── communications/     # Communications
+│   │   ├── documents/          # RAG / Document intelligence
+│   │   ├── approvals/          # HITL approval queue
+│   │   └── settings/           # Club settings
+│   │
+│   ├── shared/                 # Shared components
+│   │   ├── components/
+│   │   │   ├── ui/             # Button, Card, Input, Badge, etc.
+│   │   │   ├── charts/         # Recharts wrappers
+│   │   │   ├── layout/         # Sidebar, Header, PageContainer
+│   │   │   └── feedback/       # Loading, Empty, Error, Toast
+│   │   ├── hooks/              # Custom hooks
+│   │   ├── lib/                # API client, utils
+│   │   └── types/              # Shared TypeScript types
+│   │
+│   ├── stores/                 # Zustand stores
+│   │   ├── auth.store.ts
+│   │   ├── theme.store.ts
+│   │   └── sidebar.store.ts
+│   │
+│   └── styles/                 # Tailwind config, global styles
+│       ├── globals.css
+│       └── tailwind.config.ts
+│
+├── public/                     # Static assets, PWA manifest
+├── index.html
+├── vite.config.ts
+├── tsconfig.json
+├── tailwind.config.ts
+└── package.json
+
+API Client Pattern
+
+tsx
+tsx
+// src/shared/lib/api.ts
+// Cada tool del backend se mapea a una función API
+// Ejemplo:
+// POST /api/agents/executive_dashboard/get_executive_summary
+// → llama al tool get_executive_summary del ExecutiveDashboardAgent
+
+// TanStack Query hooks:
+// useQuery → para tools AUTO y consultas
+// useMutation → para tools que crean/modifican (con optimistic updates)
+// Los tools HITL devuelven pending_approval → mostrar approval queue
+
+Responsabilidades por Rol (RBAC)
+
+text
+text
+SOCIO (member):
+  → Ver su perfil, familia, estado de cuenta
+  → Reservar canchas, clases, eventos
+  → Registrar invitados (hasta 4/día auto)
+  → Ver recomendaciones personales
+  → Ver calendario cultural
+
+STAFF:
+  → Check-in de invitados
+  → Gestionar reservaciones
+  → Reportar mantenimiento
+  → Ver alertas operativas
+
+ADMIN/GERENCIA:
+  → Todo lo del staff +
+  → Executive Dashboard completo
+  → Aprobar/rechazar HITL requests
+  → Gestionar documentos RAG
+  → Generar reportes
+  → Configurar campañas y comunicaciones
+
+JUNTA DIRECTIVA:
+  → Ver Board Reports
+  → Ver Financial Summary
+  → Ver Strategic Recommendations
+  → NO puede ejecutar operaciones (read-only)
+
+
+CHECKLIST DE INICIO DEL FRONTEND
+
+Antes de empezar a codear:
+
+
+1.Clonar stack:npm create vite@latest frontend -- --template react-ts
+2.Instalar dependencias core: tailwindcss, @tanstack/react-query, zustand, react-router, recharts, framer-motion, lucide-react
+3.Configurar Tailwind con la paleta Castillo Elegance
+4.Configurar fonts (Playfair Display + Source Serif 4 + DM Sans)
+5.Crear layout base (Sidebar + Header + Content area)
+6.Crear API client que hable con el backend MCP
+7.Crear stores (auth, theme)
+8.Empezar por el Executive Dashboard — es la pantalla de impacto máximo
+
+
+STACK TECNOLÓGICO COMPLETO DEL PROYECTO
+
+text
+text
+BACKEND (COMPLETADO ✅)
+├── Python 3.14 + uv
+├── FastMCP (MCP server framework)
+├── Pydantic v2 (validation)
+├── pytest + pytest-asyncio + pytest-cov
+└── 15 agentes, 103 tools, 554 tests, 88% coverage
+
+FRONTEND (POR CONSTRUIR 🔨)
+├── React 19 + TypeScript
+├── Vite 6
+├── Tailwind CSS v4
+├── TanStack Query v5
+├── Zustand
+├── React Router v7
+├── Recharts
+├── Framer Motion
+├── Lucide React
+└── PWA capabilities
+
+INFRAESTRUCTURA (PENDIENTE)
+├── Docker + Docker Compose
+├── PostgreSQL 16
+├── Redis 7
+├── pgvector
+├── GitHub Actions (CI/CD)
+├── Sentry, OpenTelemetry, Grafana
+└── LangChain / LiteLLM / Ollama (RAG real)
+
+
+Este checkpoint tiene todo lo necesario para que el siguiente chat arranque con el frontend sin perder contexto. Los 9 archivos listados al final son los que debés pasarme primero. ¡Mucha suerte con el frontend!

@@ -1,0 +1,524 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/LiveArenaGrid.css
+   §B3.12 — Live Arena Grid V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  status pulse ring animation
+   2. REACCIÓN:     hover translateY + shadow + reveal
+   3. MEMORIA:      utilization % + upcoming reservations
+   4. INTENCIÓN:    "Reservar ahora" action on available
+   5. SINIESTRÍA:   venue-status colors on accent, pulse, status
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-arena {
+  --spt-ag-accent: var(--color-teal-400, #2a9ab5);
+  --spt-ag-surface: var(--color-surface-1, #1a1a1a);
+  --spt-ag-border: rgba(255, 255, 255, 0.06);
+  --spt-ag-text: var(--color-silver-100, #f0ece4);
+  --spt-ag-text-muted: var(--color-silver-400, #8a8580);
+  --spt-ag-text-dim: var(--color-silver-500, #7a7570);
+  --spt-ag-gap: 12px;
+}
+
+/* ── §0.1 — Mode (LP 6: Empatía) ──────────────────────── */
+
+.spt-arena[data-mode="calm"]    { --spt-ag-accent: var(--color-teal-400, #2a9ab5); }
+.spt-arena[data-mode="alert"]   { --spt-ag-accent: var(--color-amber-400, #d4a017); }
+.spt-arena[data-mode="critical"]{ --spt-ag-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Summary Bar ──────────────────────────────────── */
+
+.spt-arena__summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.spt-arena__summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.spt-arena__summary-text {
+  font-size: 0.75rem;
+  color: var(--spt-ag-text);
+}
+
+.spt-arena__summary-total {
+  font-size: 0.65rem;
+  color: var(--spt-ag-text-dim);
+  margin-left: auto;
+}
+
+/* ── §2 — Arena Grid ───────────────────────────────────── */
+
+.spt-arena__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spt-ag-gap);
+}
+
+@media (max-width: 1024px) {
+  .spt-arena__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .spt-arena__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── §3 — Court Card (LP 2: Reacción) ──────────────────── */
+
+.spt-arena__card {
+  position: relative;
+  background: var(--spt-ag-surface);
+  border: 1px solid var(--spt-ag-border);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  animation: spt-ag-card-enter 0.4s ease both;
+  animation-delay: calc(var(--stagger-i, 0) * 60ms);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+}
+
+@keyframes spt-ag-card-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-arena__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.spt-arena__card:focus-visible {
+  outline: 2px solid var(--spt-ag-accent);
+  outline-offset: 2px;
+}
+
+/* ── §3.1 — Status Accent Bar (LP 5: Siniestría) ─────── */
+
+.spt-arena__card-accent {
+  position: absolute;
+  top: 0;
+  left: 0.75rem;
+  right: 0.75rem;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  opacity: 0.6;
+  transition: background 0.4s ease;
+}
+
+.spt-arena__card-accent[data-venue-status="available"] { background: var(--color-emerald-400, #3daa70); }
+.spt-arena__card-accent[data-venue-status="busy"]      { background: var(--color-amber-400, #d4a017); }
+.spt-arena__card-accent[data-venue-status="occupied"]   { background: var(--color-rose-400, #e54d4d); }
+.spt-arena__card-accent[data-venue-status="inactive"]   { background: var(--color-silver-500, #7a7570); }
+
+/* ── §4 — Card Header ─────────────────────────────────── */
+
+.spt-arena__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.spt-arena__card-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spt-arena__card-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.spt-arena__card-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--spt-ag-text);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.spt-arena__card-sport {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--spt-ag-text-dim);
+  margin: 0;
+}
+
+/* ── §5 — Status Label (LP 5: Siniestría) ─────────────── */
+
+.spt-arena__card-status {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin: 0 0 0.65rem;
+  transition: color 0.4s ease;
+}
+
+.spt-arena__card-status[data-venue-status="available"] { color: var(--color-emerald-400, #3daa70); }
+.spt-arena__card-status[data-venue-status="busy"]      { color: var(--color-amber-400, #d4a017); }
+.spt-arena__card-status[data-venue-status="occupied"]   { color: var(--color-rose-400, #e54d4d); }
+.spt-arena__card-status[data-venue-status="inactive"]   { color: var(--color-silver-500, #7a7570); }
+
+/* ── §6 — Current Activity ─────────────────────────────── */
+
+.spt-arena__card-activity {
+  padding: 0.4rem 0.55rem;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--spt-ag-border);
+  border-radius: 6px;
+  margin-bottom: 0.65rem;
+}
+
+.spt-arena__card-activity-text {
+  font-size: 0.75rem;
+  color: var(--spt-ag-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-arena__card-activity-time {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+  font-size: 0.65rem;
+  color: var(--spt-ag-text-dim);
+}
+
+.spt-arena__card-clock-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* ── §7 — Utilization Bar (LP 3: Memoria + 5: Siniestría) ── */
+
+.spt-arena__util-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.spt-arena__util-label {
+  font-size: 0.6rem;
+  color: var(--spt-ag-text-dim);
+}
+
+.spt-arena__util-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  transition: color 0.4s ease;
+}
+
+.spt-arena__util-value[data-crowd-level="low"]      { color: var(--color-rose-400, #e54d4d); }
+.spt-arena__util-value[data-crowd-level="medium"]    { color: var(--color-amber-400, #d4a017); }
+.spt-arena__util-value[data-crowd-level="high"]      { color: var(--color-teal-400, #2a9ab5); }
+.spt-arena__util-value[data-crowd-level="very_high"] { color: var(--color-emerald-400, #3daa70); }
+
+.spt-arena__util-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.spt-arena__util-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease, background 0.4s ease;
+}
+
+.spt-arena__util-fill[data-crowd-level="low"]      { background: var(--color-rose-400, #e54d4d); }
+.spt-arena__util-fill[data-crowd-level="medium"]    { background: var(--color-amber-400, #d4a017); }
+.spt-arena__util-fill[data-crowd-level="high"]      { background: var(--color-teal-400, #2a9ab5); }
+.spt-arena__util-fill[data-crowd-level="very_high"] { background: var(--color-emerald-400, #3daa70); }
+
+/* ── §8 — Pulse Indicator (LP 1: Respiración) ─────────── */
+
+.spt-arena__pulse {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.spt-arena__pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: spt-ag-pulse var(--pulse-speed, 2s) ease-in-out infinite;
+}
+
+.spt-arena__pulse-ring[data-venue-status="available"] { background: var(--color-emerald-400, #3daa70); }
+.spt-arena__pulse-ring[data-venue-status="busy"]      { background: var(--color-amber-400, #d4a017); }
+.spt-arena__pulse-ring[data-venue-status="occupied"]   { background: var(--color-rose-400, #e54d4d); }
+
+@keyframes spt-ag-pulse {
+  0%   { opacity: 0.4; transform: scale(1); }
+  50%  { opacity: 0; transform: scale(1.8); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+
+.spt-arena__pulse-dot {
+  position: relative;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.spt-arena__pulse-dot[data-venue-status="available"] { background: var(--color-emerald-400, #3daa70); }
+.spt-arena__pulse-dot[data-venue-status="busy"]      { background: var(--color-amber-400, #d4a017); }
+.spt-arena__pulse-dot[data-venue-status="occupied"]   { background: var(--color-rose-400, #e54d4d); }
+.spt-arena__pulse-dot[data-venue-status="inactive"]   { background: var(--color-silver-500, #7a7570); }
+
+/* ── §9 — Upcoming Reservations (hover reveal) ─────────── */
+
+.spt-arena__card-upcoming {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+  margin-top: 0;
+}
+
+.spt-arena__card-upcoming[data-visible="true"] {
+  max-height: 200px;
+  opacity: 1;
+  margin-top: 0.65rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-ag-border);
+}
+
+.spt-arena__card-upcoming-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--spt-ag-text-dim);
+  margin: 0 0 0.35rem;
+}
+
+.spt-arena__card-upcoming-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  margin-bottom: 0.2rem;
+}
+
+.spt-arena__card-upcoming-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.spt-arena__card-upcoming-dot[data-type="reservation"] { background: var(--color-teal-400, #2a9ab5); }
+.spt-arena__card-upcoming-dot[data-type="tournament"]  { background: var(--color-gold-400, #d4af37); }
+.spt-arena__card-upcoming-dot[data-type="class"]       { background: var(--color-emerald-400, #3daa70); }
+
+.spt-arena__card-upcoming-time {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  color: var(--spt-ag-text-muted);
+  flex-shrink: 0;
+}
+
+.spt-arena__card-upcoming-title {
+  color: var(--spt-ag-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-arena__card-upcoming-empty {
+  font-size: 0.65rem;
+  color: var(--spt-ag-text-dim);
+  margin: 0;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--spt-ag-border);
+}
+
+/* ── §10 — Actions (hover reveal, LP 4: Intención) ────── */
+
+.spt-arena__card-actions {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+.spt-arena__card-actions[data-visible="true"] {
+  max-height: 50px;
+  opacity: 1;
+  margin-top: 0.5rem;
+}
+
+.spt-arena__card-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  min-height: 32px;
+}
+
+.spt-arena__card-action--book {
+  border-color: var(--color-teal-400, #2a9ab5);
+  color: var(--color-teal-400, #2a9ab5);
+}
+
+.spt-arena__card-action--book:hover {
+  background: var(--color-teal-400, #2a9ab5);
+  color: var(--color-surface-0, #0d0d0d);
+}
+
+.spt-arena__card-action--view {
+  border-color: var(--spt-ag-border);
+  color: var(--spt-ag-text-muted);
+}
+
+.spt-arena__card-action--view:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.spt-arena__card-action:focus-visible {
+  outline: 2px solid var(--spt-ag-accent);
+  outline-offset: 2px;
+}
+
+.spt-arena__card-action-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* ── §11 — Footer: Narrative (LP 7) ────────────────────── */
+
+.spt-arena__footer {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-ag-border);
+}
+
+.spt-arena__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-ag-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-ag-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §12 — Light Mode ──────────────────────────────────── */
+
+.light .spt-arena {
+  --spt-ag-surface: rgba(255, 255, 255, 0.7);
+  --spt-ag-border: rgba(0, 0, 0, 0.08);
+  --spt-ag-text: #1a1a1a;
+  --spt-ag-text-muted: #6b7280;
+  --spt-ag-text-dim: #9ca3af;
+}
+
+.light .spt-arena__card-activity {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-arena__card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.light .spt-arena__card-action--view:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-arena__util-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ── §13 — Reduced Motion ──────────────────────────────── */
+
+.spt-arena[data-prefers-reduced="true"] .spt-arena__card {
+  animation: none;
+}
+
+.spt-arena[data-prefers-reduced="true"] .spt-arena__pulse-ring {
+  animation: none;
+  opacity: 0.3;
+}
+
+.spt-arena[data-prefers-reduced="true"] .spt-arena__card:hover {
+  transform: none;
+}
+
+/* ── §14 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-arena {
+    border: 1px solid #ccc;
+  }
+
+  .spt-arena__card {
+    animation: none;
+    break-inside: avoid;
+    border: 1px solid #ddd;
+  }
+
+  .spt-arena__card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .spt-arena__pulse-ring {
+    display: none;
+  }
+
+  .spt-arena__card-actions {
+    display: none;
+  }
+
+  .spt-arena__card-upcoming {
+    max-height: none;
+    opacity: 1;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #ddd;
+  }
+}

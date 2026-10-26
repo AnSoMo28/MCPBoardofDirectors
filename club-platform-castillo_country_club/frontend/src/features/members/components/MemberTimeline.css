@@ -1,0 +1,394 @@
+/**
+ * MemberTimeline — Significance-Weighted Journey + Ghost Lane
+ * Namespace: .glass-m360-timeline
+ * @phase 30 — Block 3.2
+ */
+
+/* ═══════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.glass-m360-timeline__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: var(--color-silver-500);
+  font-size: 0.8125rem;
+}
+
+.glass-m360-timeline__empty-icon {
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DOMAIN FILTERS
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-timeline__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-silver-600) 10%, transparent);
+}
+
+.glass-m360-timeline__filter {
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  background: transparent;
+  color: var(--color-silver-500);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 15%, transparent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 28px;
+}
+
+.glass-m360-timeline__filter:hover {
+  color: var(--color-silver-300);
+  border-color: color-mix(in srgb, var(--color-silver-600) 25%, transparent);
+}
+
+.glass-m360-timeline__filter--active {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════
+   TIMELINE BODY — The vertical line
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-timeline__body {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+/* Center line */
+.glass-m360-timeline__body::before {
+  content: '';
+  position: absolute;
+  left: 0.4375rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-silver-600) 25%, transparent),
+    color-mix(in srgb, var(--color-silver-600) 10%, transparent)
+  );
+  border-radius: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   YEAR GROUP
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-timeline__year-group {
+  position: relative;
+}
+
+.glass-m360-timeline__year-header {
+  position: relative;
+  padding: 0.5rem 0;
+  margin-bottom: 0.25rem;
+}
+
+.glass-m360-timeline__year-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-silver-500);
+  background: var(--color-surface-1);
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 12%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════
+   TIMELINE NODE — Individual event
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-timeline__node {
+  position: relative;
+  opacity: 0;
+  animation: m360-timeline-reveal 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 60ms);
+}
+
+/* ── Marker dot on the center line ── */
+
+.glass-m360-timeline__marker {
+  position: absolute;
+  left: -1.5rem;
+  top: 0.5rem;
+  width: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glass-m360-timeline__marker-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface-1);
+  transition: transform 0.2s ease;
+}
+
+/* High significance = larger marker */
+.glass-m360-timeline__node[data-significance="high"] .glass-m360-timeline__marker-dot {
+  width: 14px;
+  height: 14px;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--node-color) 30%, transparent);
+}
+
+/* Ghost = hollow marker */
+.glass-m360-timeline__node--ghost .glass-m360-timeline__marker-dot {
+  background: transparent !important;
+  border-color: var(--node-color);
+  opacity: 0.6;
+}
+
+/* ── Event card ── */
+
+.glass-m360-timeline__event {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface-0);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 10%, transparent);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.glass-m360-timeline__event:hover {
+  border-color: color-mix(in srgb, var(--node-color) 20%, transparent);
+  background: color-mix(in srgb, var(--color-silver-600) 4%, var(--color-surface-0));
+}
+
+.glass-m360-timeline__event:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: -1px;
+}
+
+/* Ghost event */
+.glass-m360-timeline__node--ghost .glass-m360-timeline__event {
+  opacity: 0.7;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--color-silver-600) 8%, transparent);
+}
+
+.glass-m360-timeline__node--ghost .glass-m360-timeline__event:hover {
+  opacity: 1;
+}
+
+/* ── Event internals ── */
+
+.glass-m360-timeline__event-date {
+  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-600);
+}
+
+.glass-m360-timeline__event-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.glass-m360-timeline__event-icon {
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.glass-m360-timeline__event-title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-silver-200);
+}
+
+.glass-m360-timeline__event-desc {
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  line-height: 1.4;
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-silver-600) 6%, transparent);
+}
+
+/* ── Confidence bar (ghost events) ── */
+
+.glass-m360-timeline__confidence {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.glass-m360-timeline__confidence-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-surface-3);
+  overflow: hidden;
+}
+
+.glass-m360-timeline__confidence-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--node-color, var(--color-silver-400));
+  opacity: 0.6;
+  transition: width 0.5s ease;
+}
+
+.glass-m360-timeline__confidence-label {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-600);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   NOW MARKER — Current position
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-timeline__now {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0;
+  position: relative;
+}
+
+.glass-m360-timeline__now-dot {
+  position: absolute;
+  left: -1.5rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--m360-state-color, var(--color-teal-400));
+  box-shadow: 0 0 12px var(--m360-state-color, var(--color-teal-400));
+  animation: m360-timeline-now-pulse 3s ease-in-out infinite;
+}
+
+.glass-m360-timeline__now-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--m360-state-color, var(--color-teal-400));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* State-driven now color */
+.glass-m360-timeline__now[data-member-state="thriving"] .glass-m360-timeline__now-dot {
+  background: var(--color-emerald-400);
+  box-shadow: 0 0 12px var(--color-emerald-400);
+}
+
+.glass-m360-timeline__now[data-member-state="at_risk"] .glass-m360-timeline__now-dot {
+  background: var(--color-rose-400);
+  box-shadow: 0 0 12px var(--color-rose-400);
+  animation: m360-timeline-now-pulse-fast 1.5s ease-in-out infinite;
+}
+
+.glass-m360-timeline__now[data-member-state="disengaging"] .glass-m360-timeline__now-dot {
+  background: var(--color-rose-400);
+  box-shadow: 0 0 16px var(--color-rose-400);
+  animation: m360-timeline-now-pulse-fast 1s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-timeline-reveal {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes m360-timeline-now-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.7; }
+}
+
+@keyframes m360-timeline-now-pulse-fast {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360-timeline__event {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-m360-timeline__event:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .glass-m360-timeline__node--ghost .glass-m360-timeline__event {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-m360-timeline__body::before {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.04)
+  );
+}
+
+.light .glass-m360-timeline__marker-dot {
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.light .glass-m360-timeline__year-label {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360-timeline__node {
+    opacity: 1;
+    animation: none;
+  }
+
+  .glass-m360-timeline__now-dot {
+    animation: none;
+    transform: none;
+  }
+}

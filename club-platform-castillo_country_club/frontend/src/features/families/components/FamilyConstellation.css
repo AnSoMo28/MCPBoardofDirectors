@@ -1,0 +1,685 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/FamilyConstellation.css
+   Phase 34+ Migration — "The Social Galaxy"
+   Level 6+ Agency · Apple Production Grade
+
+   SIGNATURE VISUAL ELEMENTS:
+   1. Deep-space gradient background with abyss color
+   2. Parallax starfield (3 depth layers, mouse-reactive)
+   3. Star classification rendering (binary/supergiant/pulsar/whitedwarf)
+   4. Orbital rings on high-engagement stars
+   5. Constellation angular threads on hover
+   6. Zoom/pan interaction with momentum
+   7. Glass morphism tooltip + detail panel
+   8. Cluster legend with colored dots
+
+   CSS STANDARD: 13 Dimensions Applied
+     D1  Glass morphism (root card, tooltip, detail panel)
+     D2  Stagger (legend items cascade)
+     D3  Cubic-bezier easing on tooltip/detail reveal
+     D4  Mono for data, UI for labels, mono-uppercased for sections
+     D5  Dynamic colors via CSS vars (--legend-color, --tt-x/y, --detail-pct)
+     D6  Pseudo-element depth (noise texture, inset highlight)
+     D7  Hover on controls, legend items, detail button
+     D8  Dense (compact tooltip, tight legend)
+     D9  Responsive (canvas fills width, controls reposition)
+     D10 role="application", aria-roledescription, tabIndex, focus-visible
+     D11 Light mode complete
+     D12 Reduced motion + print
+     D13 fm-galaxy* namespaced keyframes (5)
+
+   ATOMS USED (family-atoms.css):
+     fm-glass-card    → root surface (D1 base)
+     fm-section-label → header label (D4 base)
+     fm-ai-badge      → AI attribution badge
+
+   Keyframes: fm-galaxyFadeIn, fm-galaxyTooltipReveal,
+              fm-galaxyDetailSlide, fm-galaxyLegendCascade,
+              fm-galaxyControlPulse
+   Total: 5 keyframes (fm-galaxy* namespaced)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Glass Card + Deep Space (D1)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-galaxy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    168deg,
+    rgba(8, 11, 18, 0.98) 0%,
+    rgba(12, 16, 24, 0.97) 50%,
+    rgba(10, 14, 22, 0.98) 100%
+  );
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+  opacity: 0;
+  animation: fm-galaxyFadeIn 0.4s ease forwards;
+}
+
+.fm-galaxy::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 30%,
+    rgba(255, 255, 255, 0.03) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.fm-galaxy::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.fm-galaxy > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Header (D4: section label)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-galaxy__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  animation: fm-galaxyFadeIn 0.25s ease 0.05s forwards;
+}
+
+.fm-galaxy__label {
+  font-size: 10px;
+}
+
+.fm-galaxy__header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Canvas Wrapper (D9: fills width, responsive)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-galaxy__canvas-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-md, 10px);
+  overflow: hidden;
+  background: var(--color-abyss, #080B12);
+}
+
+.fm-galaxy__canvas {
+  display: block;
+  width: 100%;
+  outline: none;
+}
+
+/* D10: Focus visible on canvas (keyboard navigation) */
+.fm-galaxy__canvas:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: -2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Controls Overlay (D7: hover + focus)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-galaxy__controls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 3;
+}
+
+.fm-galaxy__control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 11, 18, 0.8);
+  color: var(--color-silver-400);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.fm-galaxy__control-btn:hover {
+  background: rgba(8, 11, 18, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--color-silver-200);
+}
+
+.fm-galaxy__control-btn:active {
+  background: rgba(8, 11, 18, 1);
+}
+
+.fm-galaxy__control-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.fm-galaxy__control-btn--close {
+  color: var(--color-rose-400);
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Cluster Legend (D2: stagger, D5: --legend-color)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-galaxy__legend {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  z-index: 3;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(8, 11, 18, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.fm-galaxy__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--color-silver-400);
+  opacity: 0;
+  animation: fm-galaxyLegendCascade 0.2s ease forwards;
+}
+
+.fm-galaxy__legend-item:nth-child(1) { animation-delay: 0.1s; }
+.fm-galaxy__legend-item:nth-child(2) { animation-delay: 0.15s; }
+.fm-galaxy__legend-item:nth-child(3) { animation-delay: 0.2s; }
+.fm-galaxy__legend-item:nth-child(4) { animation-delay: 0.25s; }
+.fm-galaxy__legend-item:nth-child(5) { animation-delay: 0.3s; }
+.fm-galaxy__legend-item:nth-child(6) { animation-delay: 0.35s; }
+.fm-galaxy__legend-item:nth-child(7) { animation-delay: 0.4s; }
+
+.fm-galaxy__legend-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--legend-color, var(--color-silver-400));
+  flex-shrink: 0;
+}
+
+.fm-galaxy__legend-count {
+  font-size: 7px;
+  color: var(--color-silver-600);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Tooltip (D1: glass, D3: cubic-bezier reveal, D5: --tt-x/y)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-galaxy__tooltip {
+  position: absolute;
+  left: var(--tt-x, 0);
+  top: var(--tt-y, 0);
+  z-index: 4;
+  min-width: 140px;
+  max-width: 200px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md, 10px);
+  background: rgba(8, 11, 18, 0.92);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  pointer-events: none;
+  opacity: 0;
+  animation: fm-galaxyTooltipReveal 0.15s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.fm-galaxy__tooltip-name {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0 0 4px;
+  line-height: 1.3;
+}
+
+.fm-galaxy__tooltip-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.fm-galaxy__tooltip-tier {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-gold-400);
+  padding: 1px 5px;
+  border-radius: 100px;
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+
+.fm-galaxy__tooltip-engagement {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-400);
+}
+
+.fm-galaxy__tooltip-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+}
+
+.fm-galaxy__tooltip-strong {
+  color: var(--color-emerald-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Detail Panel — Selected Star (D3: slide, D5: --detail-pct)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-galaxy__detail {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 4;
+  min-width: 160px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 10px);
+  background: rgba(8, 11, 18, 0.92);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--color-gold-400);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  opacity: 0;
+  animation: fm-galaxyDetailSlide 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.fm-galaxy__detail-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0 0 4px;
+  line-height: 1.3;
+}
+
+.fm-galaxy__detail-tier {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-gold-400);
+  padding: 1px 5px;
+  border-radius: 100px;
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  margin-bottom: 8px;
+}
+
+.fm-galaxy__detail-bar {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.fm-galaxy__detail-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--detail-pct, 0%);
+  background: linear-gradient(90deg, var(--color-gold-400), var(--color-emerald-400));
+}
+
+.fm-galaxy__detail-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  margin-bottom: 8px;
+}
+
+.fm-galaxy__detail-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  color: var(--color-gold-400);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.fm-galaxy__detail-btn:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+}
+
+.fm-galaxy__detail-btn:active {
+  background: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+}
+
+.fm-galaxy__detail-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Keyboard Hint (D4)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-galaxy__keyboard-hint {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--color-silver-600);
+  text-align: center;
+  margin: 0;
+  opacity: 0;
+  animation: fm-galaxyFadeIn 0.25s ease 0.3s forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Screen Reader (D10)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-galaxy__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Keyframes — fm-galaxy* namespaced
+   D13: ALL at end, ALL namespaced, count documented
+   Total: 5 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-galaxyFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-galaxyTooltipReveal {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fm-galaxyDetailSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fm-galaxyLegendCascade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-galaxyControlPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-gold-400) 30%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 8px 2px color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Light Mode (D11)
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-galaxy {
+  background: var(--color-surface-2);
+  border-color: rgba(0, 0, 0, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.light .fm-galaxy::before {
+  display: none;
+}
+
+.light .fm-galaxy::after {
+  display: none;
+}
+
+.light .fm-galaxy__canvas-wrapper {
+  background: var(--color-surface-0);
+}
+
+.light .fm-galaxy__control-btn {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: var(--color-silver-500);
+}
+
+.light .fm-galaxy__control-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.light .fm-galaxy__legend {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.light .fm-galaxy__tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(0, 0, 0, 0.02) inset;
+}
+
+.light .fm-galaxy__tooltip-name {
+  color: var(--color-silver-800, #1a1a2e);
+}
+
+.light .fm-galaxy__detail {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(0, 0, 0, 0.02) inset;
+}
+
+.light .fm-galaxy__detail-name {
+  color: var(--color-silver-800, #1a1a2e);
+}
+
+.light .fm-galaxy__detail-bar {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-galaxy__keyboard-hint {
+  color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Reduced Motion (D12)
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-galaxy {
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-galaxy__header,
+  .fm-galaxy__keyboard-hint {
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-galaxy__legend-item {
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-galaxy__tooltip {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-galaxy__detail {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-galaxy__control-btn,
+  .fm-galaxy__detail-btn {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Responsive (D9)
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fm-galaxy {
+    padding: 12px 14px;
+  }
+
+  .fm-galaxy__legend {
+    bottom: 4px;
+    left: 4px;
+  }
+
+  .fm-galaxy__detail {
+    top: auto;
+    bottom: 40px;
+    left: 4px;
+    right: 4px;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .fm-galaxy__keyboard-hint {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Print (D12)
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-galaxy {
+    background: white;
+    border: 1px solid #ccc;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  .fm-galaxy::before,
+  .fm-galaxy::after {
+    display: none;
+  }
+
+  .fm-galaxy__controls,
+  .fm-galaxy__keyboard-hint,
+  .fm-galaxy__detail-btn {
+    display: none;
+  }
+
+  .fm-galaxy__canvas {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-galaxy__tooltip {
+    animation: none;
+    opacity: 1;
+    background: white;
+    border-color: #ccc;
+  }
+}

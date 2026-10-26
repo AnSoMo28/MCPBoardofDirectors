@@ -1,0 +1,360 @@
+/**
+ * @component PrintView (Fase 25)
+ * @namespace .glass-print
+ * @depends globals.css (tokens)
+ * @note Print preview overlay, A4 page simulation, toolbar.
+ *       @media print rules at bottom for browser print output.
+ * @import import './PrintView.css';
+ */
+
+/* ═══════════════════════════════════════
+   Root (trigger wrapper)
+   ═══════════════════════════════════════ */
+
+.glass-print {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════
+   Preview Overlay
+   ═══════════════════════════════════════ */
+
+.glass-print__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  overflow-y: auto;
+  /* Transition instead of framer-motion */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.glass-print__overlay--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ═══════════════════════════════════════
+   Toolbar (sticky)
+   ═══════════════════════════════════════ */
+
+.glass-print__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--color-surface-2, #1a1a1a);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-print__toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.glass-print__toolbar-icon {
+  color: var(--color-gold-400, #c9a96e);
+}
+
+.glass-print__toolbar-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.glass-print__toolbar-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.glass-print__toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.glass-print__toolbar-close {
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-silver-400, #a09a92);
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.glass-print__toolbar-close:hover {
+  color: var(--color-silver-200, #d4cfc7);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.glass-print__toolbar-close:focus-visible {
+  outline: 2px solid var(--color-gold-400, #c9a96e);
+  outline-offset: 2px;
+}
+
+.glass-print__toolbar-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ═══════════════════════════════════════
+   A4 Page
+   ═══════════════════════════════════════ */
+
+.glass-print__page-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.glass-print__page {
+  width: 210mm;
+  min-height: 297mm;
+  max-width: 100%;
+  background: #fff;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-body, "Source Serif 4", serif);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Page header ── */
+
+.glass-print__page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 40px 40px 24px;
+  border-bottom: 2px solid #8b6e30;
+}
+
+.glass-print__page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.glass-print__page-header-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.glass-print__page-header-title {
+  margin: 0;
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #8b6e30;
+}
+
+.glass-print__page-header-sub {
+  margin: 4px 0 0;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.glass-print__page-header-date-label {
+  display: block;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  color: #6b7280;
+  text-align: right;
+}
+
+.glass-print__page-header-date {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: #2c2c2c;
+  text-align: right;
+}
+
+/* ── Report title ── */
+
+.glass-print__page-title-section {
+  padding: 32px 40px 16px;
+}
+
+.glass-print__page-title {
+  margin: 0;
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c2c2c;
+}
+
+.glass-print__page-subtitle {
+  margin: 4px 0 0;
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* ── Content ── */
+
+.glass-print__page-content {
+  flex: 1;
+  padding: 0 40px 40px;
+  color: #2c2c2c;
+}
+
+/* ── Footer ── */
+
+.glass-print__page-footer {
+  padding: 16px 40px;
+  border-top: 1px solid #d4d0c8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* ═══════════════════════════════════════
+   Mobile (screen < 800px)
+   ═══════════════════════════════════════ */
+
+@media screen and (max-width: 800px) {
+  .glass-print__page {
+    width: 100% !important;
+    min-height: auto !important;
+    transform-origin: top center;
+  }
+
+  .glass-print__page-header,
+  .glass-print__page-title-section,
+  .glass-print__page-content,
+  .glass-print__page-footer {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+/* ═══════════════════════════════════════
+   Reduced motion
+   ═══════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-print__overlay {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides (toolbar only)
+   ═══════════════════════════════════════ */
+
+.light .glass-print__toolbar {
+  background: var(--color-surface-2, #f5f3ee);
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-print__toolbar-label {
+  color: var(--color-silver-700, #4a4742);
+}
+
+.light .glass-print__toolbar-close {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .glass-print__toolbar-close:hover {
+  color: var(--color-silver-700, #4a4742);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ═══════════════════════════════════════
+   @media print — browser print output
+   Print-safe fallback colors (no CSS vars)
+   ═══════════════════════════════════════ */
+
+@media print {
+  /* Hide everything except the print content */
+  body > *:not(.glass-print__print-root) {
+    display: none !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 15mm 12mm 20mm 12mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+    background: #fff !important;
+  }
+
+  button,
+  [role="button"],
+  .no-print,
+  nav,
+  .sidebar,
+  .header-bar {
+    display: none !important;
+  }
+
+  .glass-print__page {
+    width: 100% !important;
+    min-height: auto !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .glass-print__page-header {
+    padding-top: 0 !important;
+    border-bottom-color: #8b6e30 !important;
+  }
+
+  .glass-print__page-content {
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  .glass-print__page-content h1,
+  .glass-print__page-content h2,
+  .glass-print__page-content h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .glass-print__page-content table,
+  .glass-print__page-content figure,
+  .glass-print__page-content .card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .glass-print__page-content svg text {
+    fill: #333 !important;
+  }
+
+  .glass-print__page-footer {
+    /* Not fixed — appears as normal flow at end of content.
+       For multi-page: the confidentiality line renders
+       as part of the last page's content. */
+    position: relative;
+    bottom: auto;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    color: #666;
+  }
+}

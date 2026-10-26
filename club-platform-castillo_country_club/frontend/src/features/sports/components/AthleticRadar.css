@@ -1,0 +1,417 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/AthleticRadar.css
+   §B3.7 — Athletic Radar Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  halo pulse + dot alert pulse
+   2. REACCIÓN:     hover scale on dots
+   3. MEMORIA:      value labels near dots
+   4. INTENCIÓN:    suggestion paragraph
+   5. SINIESTRÍA:   low axes highlighted red
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-radar {
+  --spt-radar-accent: var(--color-teal-400, #2a9ab5);
+  --spt-radar-glow: rgba(42, 154, 181, 0.15);
+  --spt-radar-pulse-dur: 6s;
+  --spt-radar-grid-color: rgba(255, 255, 255, 0.06);
+  --spt-radar-line-color: rgba(255, 255, 255, 0.1);
+  --spt-radar-text: var(--color-silver-100, #f0ece4);
+  --spt-radar-text-muted: var(--color-silver-400, #8a8580);
+  --spt-radar-surface: var(--color-surface-1, #1a1a1a);
+  --spt-radar-border: rgba(255, 255, 255, 0.06);
+
+  background: var(--spt-radar-surface);
+  border: 1px solid var(--spt-radar-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  container-type: inline-size;
+}
+
+/* ── §0.1 — Mode Variables (LP 6: Empatía) ─────────────── */
+
+.spt-radar[data-mode="calm"] {
+  --spt-radar-accent: var(--color-teal-400, #2a9ab5);
+  --spt-radar-glow: rgba(42, 154, 181, 0.15);
+  --spt-radar-pulse-dur: 6s;
+}
+
+.spt-radar[data-mode="alert"] {
+  --spt-radar-accent: var(--color-amber-400, #d4a017);
+  --spt-radar-glow: rgba(212, 160, 23, 0.2);
+  --spt-radar-pulse-dur: 3s;
+}
+
+.spt-radar[data-mode="critical"] {
+  --spt-radar-accent: var(--color-rose-400, #e54d4d);
+  --spt-radar-glow: rgba(229, 77, 77, 0.25);
+  --spt-radar-pulse-dur: 1.5s;
+}
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-radar__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.spt-radar__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.1rem;
+  color: var(--spt-radar-text);
+  margin: 0;
+}
+
+.spt-radar__level {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  background: var(--spt-radar-glow);
+  color: var(--spt-radar-accent);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* Level badge colors via data-skill-level (LP 5: Siniestría) */
+
+.spt-radar__level[data-skill-level="novice"] {
+  background: rgba(138, 133, 128, 0.15);
+  color: var(--color-silver-400);
+}
+
+.spt-radar__level[data-skill-level="apprentice"] {
+  background: rgba(42, 154, 181, 0.15);
+  color: var(--color-teal-400);
+}
+
+.spt-radar__level[data-skill-level="practitioner"] {
+  background: rgba(61, 170, 112, 0.15);
+  color: var(--color-emerald-400);
+}
+
+.spt-radar__level[data-skill-level="expert"] {
+  background: rgba(212, 160, 23, 0.15);
+  color: var(--color-amber-400);
+}
+
+.spt-radar__level[data-skill-level="master"] {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--color-gold-400);
+}
+
+.spt-radar__level[data-skill-level="legend"] {
+  background: rgba(229, 77, 77, 0.15);
+  color: var(--color-rose-400);
+}
+
+.spt-radar__confidence {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  color: var(--spt-radar-text-muted);
+  margin-left: auto;
+}
+
+/* ── §2 — SVG Container ────────────────────────────────── */
+
+.spt-radar__svg {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* ── §3 — Grid Hexagons ────────────────────────────────── */
+
+.spt-radar__grid-hex {
+  stroke: var(--spt-radar-grid-color);
+  stroke-width: 1;
+}
+
+/* ── §4 — Axis Lines ───────────────────────────────────── */
+
+.spt-radar__axis-line {
+  stroke: var(--spt-radar-line-color);
+  stroke-width: 0.5;
+}
+
+/* ── §5 — Level Halo (LP 1: Respiración) ──────────────── */
+
+.spt-radar__halo {
+  stroke-width: 2;
+  stroke-opacity: 0.3;
+  animation: spt-radar-halo-pulse var(--spt-radar-pulse-dur) ease-in-out infinite;
+  transition: stroke 0.4s ease;
+}
+
+@keyframes spt-radar-halo-pulse {
+  0%, 100% { stroke-opacity: 0.2; }
+  50%      { stroke-opacity: 0.5; }
+}
+
+/* Halo color by skill level */
+
+.spt-radar__halo[data-skill-level="novice"]       { stroke: var(--color-silver-400); }
+.spt-radar__halo[data-skill-level="apprentice"]    { stroke: var(--color-teal-400); }
+.spt-radar__halo[data-skill-level="practitioner"]  { stroke: var(--color-emerald-400); }
+.spt-radar__halo[data-skill-level="expert"]        { stroke: var(--color-amber-400); }
+.spt-radar__halo[data-skill-level="master"]        { stroke: var(--color-gold-400); }
+.spt-radar__halo[data-skill-level="legend"]        { stroke: var(--color-rose-400); }
+
+/* ── §6 — Data Polygon ─────────────────────────────────── */
+
+.spt-radar__data {
+  fill: var(--spt-radar-accent);
+  fill-opacity: 0.12;
+  stroke: var(--spt-radar-accent);
+  stroke-width: 2;
+  stroke-opacity: 0.5;
+  stroke-linejoin: round;
+  animation: spt-radar-data-enter 0.8s ease both;
+  transition: fill 0.4s ease, stroke 0.4s ease;
+}
+
+@keyframes spt-radar-data-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── §7 — Data Dots ────────────────────────────────────── */
+
+.spt-radar__dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+/* Axis colors (LP 5: Siniestría — each axis has its own identity) */
+
+.spt-radar__dot[data-axis="power"]     { fill: var(--color-rose-400); }
+.spt-radar__dot[data-axis="speed"]     { fill: var(--color-amber-400); }
+.spt-radar__dot[data-axis="endurance"] { fill: var(--color-emerald-400); }
+.spt-radar__dot[data-axis="technique"] { fill: var(--color-teal-400); }
+.spt-radar__dot[data-axis="tactical"]  { fill: var(--color-violet-400); }
+.spt-radar__dot[data-axis="mental"]    { fill: var(--color-blue-400); }
+
+/* ── §8 — Dot Alert Ring (LP 5: Siniestría) ───────────── */
+
+.spt-radar__dot-alert {
+  stroke-width: 1.5;
+  stroke-opacity: 0.3;
+  animation: spt-radar-alert-pulse 2s ease-in-out infinite;
+}
+
+.spt-radar__dot-alert[data-axis="power"]     { stroke: var(--color-rose-400); }
+.spt-radar__dot-alert[data-axis="speed"]     { stroke: var(--color-amber-400); }
+.spt-radar__dot-alert[data-axis="endurance"] { stroke: var(--color-emerald-400); }
+.spt-radar__dot-alert[data-axis="technique"] { stroke: var(--color-teal-400); }
+.spt-radar__dot-alert[data-axis="tactical"]  { stroke: var(--color-violet-400); }
+.spt-radar__dot-alert[data-axis="mental"]    { stroke: var(--color-blue-400); }
+
+@keyframes spt-radar-alert-pulse {
+  0%, 100% { stroke-opacity: 0.15; }
+  50%      { stroke-opacity: 0.5; }
+}
+
+/* ── §9 — Point Group Hover (LP 2: Reacción) ──────────── */
+
+.spt-radar__point-group {
+  cursor: pointer;
+  outline: none;
+}
+
+.spt-radar__point-group:hover .spt-radar__dot,
+.spt-radar__point-group:focus-visible .spt-radar__dot {
+  transform: scale(1.5);
+}
+
+.spt-radar__point-group:hover .spt-radar__value,
+.spt-radar__point-group:focus-visible .spt-radar__value {
+  font-weight: 700;
+  fill: var(--spt-radar-text);
+}
+
+.spt-radar__point-group:focus-visible {
+  outline: none;
+}
+
+.spt-radar__point-group:focus-visible .spt-radar__dot {
+  stroke: var(--spt-radar-accent);
+  stroke-width: 2;
+}
+
+/* ── §10 — Values near dots (LP 3: Memoria) ────────────── */
+
+.spt-radar__value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  fill: var(--spt-radar-text-muted);
+  transition: font-weight 0.2s ease, fill 0.2s ease;
+}
+
+.spt-radar__value[data-axis="power"]     { fill: var(--color-rose-400); }
+.spt-radar__value[data-axis="speed"]     { fill: var(--color-amber-400); }
+.spt-radar__value[data-axis="endurance"] { fill: var(--color-emerald-400); }
+.spt-radar__value[data-axis="technique"] { fill: var(--color-teal-400); }
+.spt-radar__value[data-axis="tactical"]  { fill: var(--color-violet-400); }
+.spt-radar__value[data-axis="mental"]    { fill: var(--color-blue-400); }
+
+/* ── §11 — Labels outside radar ─────────────────────────── */
+
+.spt-radar__label {
+  font-family: var(--font-body, "DM Sans", sans-serif);
+  font-size: 0.7rem;
+  font-weight: 500;
+  fill: var(--spt-radar-text-muted);
+}
+
+.spt-radar__label[data-axis="power"]     { fill: var(--color-rose-400); }
+.spt-radar__label[data-axis="speed"]     { fill: var(--color-amber-400); }
+.spt-radar__label[data-axis="endurance"] { fill: var(--color-emerald-400); }
+.spt-radar__label[data-axis="technique"] { fill: var(--color-teal-400); }
+.spt-radar__label[data-axis="tactical"]  { fill: var(--color-violet-400); }
+.spt-radar__label[data-axis="mental"]    { fill: var(--color-blue-400); }
+
+/* ── §12 — Footer: Narrative (LP 7) + Suggestion (LP 4) ─ */
+
+.spt-radar__footer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--spt-radar-border);
+}
+
+.spt-radar__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.85rem;
+  color: var(--spt-radar-text-muted);
+  line-height: 1.6;
+  margin: 0 0 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-radar-accent);
+  transition: border-color 0.4s ease;
+}
+
+.spt-radar__suggestion {
+  font-size: 0.8rem;
+  color: var(--spt-radar-text-muted);
+  margin: 0 0 0.35rem;
+}
+
+.spt-radar__suggestion strong {
+  color: var(--spt-radar-text);
+}
+
+.spt-radar__plateau {
+  font-size: 0.8rem;
+  color: var(--color-amber-400, #d4a017);
+  margin: 0;
+}
+
+/* ── §13 — Stagger entry for points ────────────────────── */
+
+.spt-radar__point-group {
+  animation: spt-radar-point-enter 0.4s ease both;
+  animation-delay: calc(var(--stagger-i, 0) * 80ms);
+}
+
+@keyframes spt-radar-point-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── §14 — Light Mode ──────────────────────────────────── */
+
+.light .spt-radar {
+  --spt-radar-surface: rgba(255, 255, 255, 0.7);
+  --spt-radar-border: rgba(0, 0, 0, 0.08);
+  --spt-radar-text: #1a1a1a;
+  --spt-radar-text-muted: #6b7280;
+  --spt-radar-grid-color: rgba(0, 0, 0, 0.06);
+  --spt-radar-line-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .spt-radar__label {
+  fill: #6b7280;
+}
+
+/* ── §15 — Reduced Motion ──────────────────────────────── */
+
+.spt-radar[data-prefers-reduced="true"] .spt-radar__halo {
+  animation: none;
+  stroke-opacity: 0.35;
+}
+
+.spt-radar[data-prefers-reduced="true"] .spt-radar__dot-alert {
+  animation: none;
+  stroke-opacity: 0.35;
+}
+
+.spt-radar[data-prefers-reduced="true"] .spt-radar__data {
+  animation: none;
+}
+
+.spt-radar[data-prefers-reduced="true"] .spt-radar__point-group {
+  animation: none;
+}
+
+/* ── §16 — Responsive ──────────────────────────────────── */
+
+@container (max-width: 360px) {
+  .spt-radar__label {
+    font-size: 0.6rem;
+  }
+
+  .spt-radar__value {
+    font-size: 0.55rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .spt-radar__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .spt-radar__confidence {
+    margin-left: 0;
+  }
+}
+
+/* ── §17 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-radar {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .spt-radar__halo {
+    animation: none;
+  }
+
+  .spt-radar__dot-alert {
+    animation: none;
+  }
+
+  .spt-radar__data {
+    animation: none;
+  }
+
+  .spt-radar__point-group {
+    animation: none;
+  }
+}

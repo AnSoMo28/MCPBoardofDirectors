@@ -1,0 +1,753 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/IntelligenceGlance.css
+   Phase 34+ Migration — "The Quick Read"
+   Level 6+ Agency · Production Grade
+
+   SIGNATURE VISUAL ELEMENTS:
+   1. Floating glass card with gold edge light
+   2. AI badge with authority glow
+   3. Severity-colored signal dots with pulse
+   4. Temperature bar with zone-colored fill
+   5. Confidence bar with gradient fill
+   6. Cascade stagger reveal (7 groups)
+   7. Compact density — every pixel is information
+
+   CSS STANDARD: 13 Dimensions Applied
+     D1  Glass morphism (inset highlight, gold edge, shadow)
+     D2  Stagger (7 section groups)
+     D3  Cubic-bezier easing on entrance
+     D4  Mono for data, UI for body, mono-uppercased for labels
+     D5  Severity-driven dynamic colors via data-attributes
+     D6  Pseudo-element depth (AI glow, signal pulse)
+     D7  Hover on actions
+     D8  Ultra-tight spatial density
+     D9  Intrinsic sizing (no fixed width)
+     D10 role="dialog", aria-label, keyboard close
+     D11 Light mode complete
+     D12 Reduced motion + print
+     D13 fm-glance* namespaced keyframes (6 total)
+
+   Keyframes: fm-glanceSlideUp, fm-glanceConfGrow,
+              fm-glanceSignalPulse, fm-glanceAiGlow,
+              fm-glanceFloat, fm-glanceFadeIn
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Floating Glass Card
+   D1-01: Translucent gradient with depth
+   D1-07: Inset top highlight (::before)
+   D1-12: Border-left gold accent
+   D1-13: Deep contextual shadow (floating)
+   D1-14: overflow: hidden
+   D8: Ultra-tight padding (14px)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-glance {
+  position: relative;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    168deg,
+    rgba(180, 190, 210, 0.04) 0%,
+    rgba(12, 16, 24, 0.98) 35%,
+    rgba(8, 12, 18, 0.99) 100%
+  );
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid rgba(201, 169, 110, 0.25);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+  outline: none;
+  opacity: 0;
+  animation: fm-glanceSlideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  max-width: 340px;
+}
+
+/* Inset top edge light */
+.fm-glance::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.04) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Subtle urgency glow based on headline type */
+.fm-glance::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 20% 0%,
+    color-mix(in srgb, var(--color-rose-400, transparent) 6%, transparent) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.fm-glance[data-headline-type="alert"]::after,
+.fm-glance[data-headline-type="warning"]::after {
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Header — AI Badge + Close
+   D4-05: Badge is mono 8px
+   D6: AI badge glow (::after pseudo-element)
+   D2-07: Stagger delay 0s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-glance__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 8px;
+  opacity: 0;
+  animation: fm-glanceSlideUp 0.25s ease 0s forwards;
+}
+
+.fm-glance__ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-400);
+  position: relative;
+}
+
+/* AI badge authority glow */
+.fm-glance__ai-badge::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 6px;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  pointer-events: none;
+  animation: fm-glanceAiGlow 3s ease-in-out infinite;
+}
+
+.fm-glance__ai-badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-rose-400);
+  color: white;
+  font-size: 7px;
+  font-weight: 700;
+  margin-left: 2px;
+  line-height: 1;
+}
+
+.fm-glance__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-silver-500);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.fm-glance__close:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-silver-300);
+}
+
+.fm-glance__close:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Headline — P1 Narrative First
+   D4-04: Display font 14px
+   D2-07: Stagger delay 0.05s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-glance__headline {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-silver-100);
+  margin: 0 0 10px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-glanceSlideUp 0.25s ease 0.05s forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Signals — Severity-Colored
+   D5: Severity via data-attribute
+   D6: Signal dot pulse for critical
+   D2-07: Stagger delay 0.1s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-glance__signals {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-glanceSlideUp 0.25s ease 0.1s forwards;
+}
+
+.fm-glance__signal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.fm-glance__signal[data-severity="critical"] {
+  border-left: 2px solid var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 3%, transparent);
+}
+
+.fm-glance__signal[data-severity="warning"] {
+  border-left: 2px solid var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 3%, transparent);
+}
+
+.fm-glance__signal[data-severity="info"] {
+  border-left: 2px solid var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 3%, transparent);
+}
+
+.fm-glance__signal-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.fm-glance__signal-dot[data-severity="critical"] {
+  background: var(--color-rose-400);
+  box-shadow: 0 0 4px var(--color-rose-400);
+  animation: fm-glanceSignalPulse 2s ease-in-out infinite;
+}
+
+.fm-glance__signal-dot[data-severity="warning"] {
+  background: var(--color-amber-400);
+}
+
+.fm-glance__signal-dot[data-severity="info"] {
+  background: var(--color-teal-400);
+}
+
+.fm-glance__signal-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-300);
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-glance__signal-value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-silver-200);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Temperature + Trend
+   D4-01: Data values mono
+   D5: Temp color via CSS var
+   D2-07: Stagger delay 0.15s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-glance__metrics {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-glanceSlideUp 0.25s ease 0.15s forwards;
+}
+
+.fm-glance__temp {
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-glance__temp-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.fm-glance__temp-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--glance-temp, 0%);
+  background: var(--glance-temp-color, var(--color-silver-400));
+  opacity: 0;
+  animation: fm-glanceConfGrow 0.5s ease 0.35s forwards;
+}
+
+.fm-glance__temp-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  letter-spacing: 0.04em;
+}
+
+.fm-glance__trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.fm-glance__trend-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.fm-glance__trend-icon[data-trend="up"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-glance__trend-icon[data-trend="down"] {
+  color: var(--color-rose-400);
+}
+
+.fm-glance__trend-icon[data-trend="stable"] {
+  color: var(--color-silver-600);
+}
+
+.fm-glance__trend-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Recommendation — AI Voice
+   D4-03: Body text uses --font-ui
+   D6: Sparkles icon accent
+   D2-07: Stagger delay 0.2s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-glance__recommendation {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border-radius: var(--radius-sm, 6px);
+  border-left: 2px solid color-mix(in srgb, var(--color-gold-400) 30%, transparent);
+  background: rgba(255, 255, 255, 0.012);
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-glanceSlideUp 0.25s ease 0.2s forwards;
+}
+
+.fm-glance__rec-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--color-gold-400);
+}
+
+.fm-glance__recommendation p {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--color-silver-300);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Confidence Bar
+   D4-01: Mono data label
+   D2-07: Stagger delay 0.25s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-glance__confidence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-glanceSlideUp 0.25s ease 0.25s forwards;
+}
+
+.fm-glance__confidence-track {
+  flex: 1;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.fm-glance__confidence-fill {
+  height: 100%;
+  border-radius: 1px;
+  width: var(--glance-conf, 0%);
+  background: linear-gradient(
+    90deg,
+    var(--color-emerald-400),
+    var(--color-teal-400)
+  );
+  opacity: 0;
+  animation: fm-glanceConfGrow 0.5s ease 0.4s forwards;
+}
+
+.fm-glance__confidence-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--color-silver-500);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Actions — CTAs (P3)
+   D7: Hover + focus-visible
+   D2-07: Stagger delay 0.3s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-glance__actions {
+  display: flex;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-glanceSlideUp 0.25s ease 0.3s forwards;
+}
+
+.fm-glance__action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-silver-300);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  min-height: 32px;
+  transition: background 0.2s ease, border-color 0.2s ease, letter-spacing 0.2s ease;
+}
+
+.fm-glance__action:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.fm-glance__action:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+/* Primary CTA — gold accent */
+.fm-glance__action--primary {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  color: var(--color-gold-400);
+}
+
+.fm-glance__action--primary:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 35%, transparent);
+  letter-spacing: 0.1em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Keyframes — fm-glance* namespaced
+   D13-01: All at end
+   D13-02: All namespaced
+   Total: 6 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-glanceSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-glanceConfGrow {
+  from {
+    opacity: 0;
+    width: 0;
+  }
+  to {
+    opacity: 1;
+    width: var(--glance-conf, 100%);
+  }
+}
+
+@keyframes fm-glanceSignalPulse {
+  0%, 100% {
+    box-shadow: 0 0 2px var(--color-rose-400);
+  }
+  50% {
+    box-shadow: 0 0 6px var(--color-rose-400), 0 0 12px color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+  }
+}
+
+@keyframes fm-glanceAiGlow {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes fm-glanceFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes fm-glanceFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Light Mode
+   D11: Complete
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-glance {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+  border-left-color: rgba(201, 169, 110, 0.2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-glance::before,
+.light .fm-glance::after {
+  display: none;
+}
+
+.light .fm-glance__ai-badge {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+
+.light .fm-glance__ai-badge::after {
+  display: none;
+}
+
+.light .fm-glance__close {
+  border-color: var(--color-border-default);
+  background: var(--color-surface-1);
+}
+
+.light .fm-glance__signal {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-glance__temp-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-glance__recommendation {
+  background: rgba(0, 0, 0, 0.012);
+  border-left-color: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+}
+
+.light .fm-glance__recommendation p {
+  color: var(--color-silver-600);
+}
+
+.light .fm-glance__confidence-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-glance__action {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-glance__action:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .fm-glance__action--primary {
+  background: color-mix(in srgb, var(--color-gold-400) 6%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+
+.light .fm-glance__action--primary:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Reduced Motion
+   D12-05: opacity: 1 on all stagger
+   D12-06: All animations disabled
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-glance,
+  .fm-glance__header,
+  .fm-glance__headline,
+  .fm-glance__signals,
+  .fm-glance__metrics,
+  .fm-glance__recommendation,
+  .fm-glance__confidence,
+  .fm-glance__actions {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .fm-glance__temp-fill,
+  .fm-glance__confidence-fill {
+    animation: none;
+    opacity: 1;
+    width: var(--glance-temp, 100%);
+  }
+
+  .fm-glance__confidence-fill {
+    width: var(--glance-conf, 100%);
+  }
+
+  .fm-glance__signal-dot[data-severity="critical"] {
+    animation: none;
+    box-shadow: 0 0 3px var(--color-rose-400);
+  }
+
+  .fm-glance__ai-badge::after {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .fm-glance__action {
+    transition: none;
+    letter-spacing: 0.06em;
+  }
+
+  .fm-glance__action:hover {
+    letter-spacing: 0.06em;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Print
+   D12-01: break-inside avoid
+   D12-02: White bg
+   D12-03: No pseudo-elements, no animations
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-glance {
+    break-inside: avoid;
+    background: white;
+    border: 1px solid #ccc;
+    border-left: 3px solid #c9a96e;
+    backdrop-filter: none;
+    opacity: 1;
+    animation: none;
+    box-shadow: none;
+    max-width: none;
+  }
+
+  .fm-glance::before,
+  .fm-glance::after,
+  .fm-glance__ai-badge::after {
+    display: none;
+  }
+
+  .fm-glance__header,
+  .fm-glance__headline,
+  .fm-glance__signals,
+  .fm-glance__metrics,
+  .fm-glance__recommendation,
+  .fm-glance__confidence,
+  .fm-glance__actions {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-glance__temp-fill,
+  .fm-glance__confidence-fill {
+    animation: none;
+    opacity: 1;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-glance__action {
+    display: none;
+  }
+
+  .fm-glance__recommendation {
+    border-left-color: #c9a96e;
+    background: #f9f9f9;
+  }
+}

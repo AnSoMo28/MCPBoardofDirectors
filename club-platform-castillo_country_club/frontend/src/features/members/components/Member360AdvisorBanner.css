@@ -1,0 +1,447 @@
+/**
+ * Member360AdvisorBanner — Intelligence Advisor
+ * Namespace: .glass-m360-advisor
+ * @phase 30 — Block 4.3
+ */
+
+/* ═══════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-advisor {
+  border-radius: 18px;
+  border: 1px solid
+    color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  background: var(--color-surface-1);
+  backdrop-filter: blur(10px) saturate(1.05);
+  padding: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.glass-m360-advisor[data-urgency="critical"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+}
+
+.glass-m360-advisor[data-urgency="high"] {
+  border-color: color-mix(in srgb, var(--color-amber-400) 18%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-advisor__header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 10%, transparent);
+}
+
+.glass-m360-advisor__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.glass-m360-advisor__header-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.glass-m360-advisor__header-count {
+  font-size: 0.6875rem;
+  color: var(--color-silver-500);
+}
+
+.glass-m360-advisor__header-badge {
+  font-size: 0.5625rem;
+  padding: 0.125rem 0.4375rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.glass-m360-advisor__header-badge--critical {
+  color: var(--color-rose-400);
+  background: color-mix(
+    in srgb,
+    var(--color-rose-400) 12%,
+    transparent
+  );
+}
+
+.glass-m360-advisor__header-badge--high {
+  color: var(--color-amber-400);
+  background: color-mix(
+    in srgb,
+    var(--color-amber-400) 12%,
+    transparent
+  );
+}
+
+/* ── Resonance indicator ── */
+
+.glass-m360-advisor__resonance {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  background: var(--color-surface-0);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 10%, transparent);
+}
+
+.glass-m360-advisor__resonance[data-agreement="unanimous"] {
+  border-left: 2px solid var(--color-emerald-400);
+}
+
+.glass-m360-advisor__resonance[data-agreement="conflicting"] {
+  border-left: 2px solid var(--color-rose-400);
+}
+
+/* ── Window indicator ── */
+
+.glass-m360-advisor__window {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+}
+
+.glass-m360-advisor__window[data-window-status="imminent"] {
+  color: var(--color-rose-400);
+  background: color-mix(
+    in srgb,
+    var(--color-rose-400) 10%,
+    transparent
+  );
+  animation: m360-advisor-window-pulse 1.5s ease-in-out infinite;
+}
+
+.glass-m360-advisor__window[data-window-status="closing"] {
+  color: var(--color-amber-400);
+  background: color-mix(
+    in srgb,
+    var(--color-amber-400) 8%,
+    transparent
+  );
+}
+
+.glass-m360-advisor__window[data-window-status="open"] {
+  color: var(--color-silver-500);
+  background: var(--color-surface-0);
+}
+
+/* ═══════════════════════════════════════════════════════
+   INSIGHT LIST
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-advisor__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+/* ── Individual insight ── */
+
+.glass-m360-advisor__insight {
+  border-radius: 10px;
+  background: var(--color-surface-0);
+  border: 1px solid
+    color-mix(in srgb, var(--color-silver-600) 10%, transparent);
+  border-left: 3px solid
+    var(--insight-color, var(--color-silver-600));
+  padding: 0.625rem 0.75rem;
+  opacity: 0;
+  animation: m360-advisor-insight-in 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 60ms);
+  transition: border-color 0.2s ease;
+}
+
+.glass-m360-advisor__insight[data-impact="critical"] {
+  box-shadow: 0 0 12px
+    color-mix(in srgb, var(--color-rose-400) 6%, transparent);
+}
+
+.glass-m360-advisor__insight:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--insight-color, var(--color-silver-600)) 25%,
+    transparent
+  );
+}
+
+.glass-m360-advisor__insight-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+
+/* ── Impact badge ── */
+
+.glass-m360-advisor__impact-badge {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  font-size: 0.5625rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* ── Content area ── */
+
+.glass-m360-advisor__insight-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-m360-advisor__insight-toggle {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.glass-m360-advisor__insight-toggle:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.glass-m360-advisor__insight-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.glass-m360-advisor__insight-title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-silver-100);
+  flex: 1;
+}
+
+.glass-m360-advisor__insight-layer {
+  font-size: 0.5625rem;
+  color: var(--color-silver-600);
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ── Expanded body ── */
+
+.glass-m360-advisor__insight-body {
+  margin-top: 0.5rem;
+  padding-left: 1.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  animation: m360-advisor-body-in 0.2s ease;
+}
+
+.glass-m360-advisor__insight-reasoning {
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  line-height: 1.5;
+}
+
+.glass-m360-advisor__insight-data {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.glass-m360-advisor__insight-data-tag {
+  font-size: 0.5625rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  background: var(--color-surface-2);
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+
+/* ── Right side (confidence + action) ── */
+
+.glass-m360-advisor__insight-right {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.375rem;
+  min-width: 80px;
+}
+
+/* ── Confidence bar ── */
+
+.glass-m360-advisor__confidence {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.glass-m360-advisor__confidence-bar-wrap {
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-surface-3);
+  overflow: hidden;
+}
+
+.glass-m360-advisor__confidence-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.glass-m360-advisor__confidence-value {
+  font-size: 0.5625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+  min-width: 2rem;
+  text-align: right;
+}
+
+/* ── Action button ── */
+
+.glass-m360-advisor__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: none;
+  background: color-mix(
+    in srgb,
+    var(--insight-color, var(--color-gold-400)) 8%,
+    transparent
+  );
+  cursor: pointer;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+
+.glass-m360-advisor__action-btn:hover {
+  background: color-mix(
+    in srgb,
+    var(--insight-color, var(--color-gold-400)) 15%,
+    transparent
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   TOGGLE ALL
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-advisor__toggle-all {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.glass-m360-advisor__toggle-all:hover {
+  color: var(--color-silver-200);
+}
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-advisor-insight-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes m360-advisor-body-in {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+@keyframes m360-advisor-window-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360-advisor {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-m360-advisor__insight {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.light .glass-m360-advisor__header {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-m360-advisor__insight-data-tag {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .glass-m360-advisor__resonance {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360-advisor__insight {
+    opacity: 1;
+    animation: none;
+  }
+
+  .glass-m360-advisor__insight-body {
+    animation: none;
+  }
+
+  .glass-m360-advisor__window[data-window-status="imminent"] {
+    animation: none;
+  }
+}

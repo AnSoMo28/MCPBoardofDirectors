@@ -1,0 +1,377 @@
+/**
+ * Button.css
+ * src/shared/components/ui/Button.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-btn
+ * @keyframes   1 (ui-btn-spin)
+ * @signature   Gold primary glow + lunar sweep on hover
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✗  Buttons are solid surfaces (not glass)
+ * D2 Stagger  ✗  Single element (not applicable)
+ * D3 Easing   ✓  Apple easing on all transitions
+ * D4 Typo     ✓  UI font, mono for small, compact sizing
+ * D5 Color    ✓  Tokens + color-mix() for translucent variants
+ * D6 Pseudo   ~  Lunar sweep handled by globals.css §11
+ * D7 Interact ✓  hover, focus-visible, active, disabled
+ * D8 Density  ✓  48px min-height, compact padding per size
+ * D9 Response ✓  Full-width on mobile
+ * D10 A11y    ✓  focus-visible ring, disabled semantics
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  1 namespaced at end
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  ROOT — .ui-btn (D3, D7, D8, D10)
+   Base button surface. All transitions are property-specific.
+   Apple easing. Touch-safe 48px min-height.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border: none;
+  border-radius: var(--radius-md, 10px);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  /* D3: Specific properties, never "all" */
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease,
+    opacity 0.2s ease;
+}
+
+/* D7: Active — subtle press */
+.ui-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* D10-01: Focus — gold ring, 2px offset */
+.ui-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+  outline-style: solid;
+}
+
+/* D7: Disabled state */
+.ui-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  VARIANTS (D5)
+   All colors from tokens. Translucent variants via color-mix().
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Primary — Gold (Intelligence, Action) ──────────────────── */
+.ui-btn--primary {
+  background: var(--color-gold-400);
+  color: var(--color-abyss);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 30%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+
+.ui-btn--primary:hover:not(:disabled) {
+  background: var(--color-gold-300);
+  border-color: color-mix(in srgb, var(--color-gold-400) 50%, transparent);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+}
+
+/* ── Sage — Nature, Wellness ─────────────────────────────────── */
+.ui-btn--sage {
+  background: var(--color-sage-400);
+  color: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-sage-400) 30%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-sage-400) 12%, transparent);
+}
+
+.ui-btn--sage:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-sage-400) 85%, white);
+  border-color: color-mix(in srgb, var(--color-sage-400) 50%, transparent);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--color-sage-400) 22%, transparent);
+}
+
+/* ── Secondary — Surface, Neutral ────────────────────────────── */
+.ui-btn--secondary {
+  background: var(--color-surface-3);
+  color: var(--color-silver-200);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ui-btn--secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-surface-3) 85%, white);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Ghost — Minimal, Transparent ────────────────────────────── */
+.ui-btn--ghost {
+  background: transparent;
+  color: var(--color-silver-400);
+  border: 1px solid transparent;
+}
+
+.ui-btn--ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-silver-100);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Danger — Rose, Critical ─────────────────────────────────── */
+.ui-btn--danger {
+  background: var(--color-rose-400);
+  color: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+}
+
+.ui-btn--danger:hover:not(:disabled) {
+  background: var(--color-rose-300);
+  border-color: color-mix(in srgb, var(--color-rose-400) 50%, transparent);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+}
+/* ── Success — Emerald, Confirmation ────────────────────────── */
+.ui-btn--success {
+  background: var(--color-emerald-400);
+  color: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-emerald-400) 30%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+}
+
+.ui-btn--success:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-emerald-400) 85%, white);
+  border-color: color-mix(in srgb, var(--color-emerald-400) 50%, transparent);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--color-emerald-400) 25%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  SIZES (D8, D4)
+   Compact dense spacing. Mono font for small size.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-btn--sm {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  gap: 6px;
+  min-height: 36px;
+}
+
+.ui-btn--md {
+  padding: 10px 22px;
+  font-size: 13px;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.ui-btn--lg {
+  padding: 14px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 10px;
+  min-height: 48px;
+  border-radius: var(--radius-lg, 12px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  MODIFIERS — Full Width, Loading
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-btn--full {
+  width: 100%;
+}
+
+/* Loading — pointer events off, content dims */
+.ui-btn--loading {
+  cursor: wait;
+}
+
+.ui-btn--loading .ui-btn__content {
+  opacity: 0.4;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  CHILDREN — Content, Icon, Spinner
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-btn__content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: inherit;
+  line-height: 1;
+}
+
+.ui-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ui-btn__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-btn--lg .ui-btn__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Spinner — animated loading indicator */
+.ui-btn__spinner {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  animation: ui-btn-spin 0.8s linear infinite;
+}
+
+.ui-btn__spinner svg {
+  width: 100%;
+  height: 100%;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  KEYFRAMES (D13)
+   ALL at end, namespaced ui-btn-*. Count: 1.
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes ui-btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-btn--primary {
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+
+.light .ui-btn--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-gold-400) 18%, transparent);
+}
+
+.light .ui-btn--sage {
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-sage-400) 10%, transparent);
+}
+
+.light .ui-btn--sage:hover:not(:disabled) {
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-sage-400) 15%, transparent);
+}
+
+.light .ui-btn--secondary {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-700);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .ui-btn--secondary:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.07);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.light .ui-btn--ghost {
+  color: var(--color-silver-500);
+}
+
+.light .ui-btn--ghost:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-800);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .ui-btn--danger {
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+}
+
+.light .ui-btn--danger:hover:not(:disabled) {
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-rose-400) 18%, transparent);
+}
+
+.light .ui-btn:focus-visible {
+  outline-color: var(--color-gold-500);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-btn {
+    transition: none;
+  }
+
+  .ui-btn:active:not(:disabled) {
+    transform: none;
+  }
+
+  .ui-btn__spinner {
+    animation: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  /* Action buttons in modals/drawers go full-width */
+  .ui-btn--full {
+    width: 100%;
+  }
+
+  /* Slightly tighter padding on mobile */
+  .ui-btn--lg {
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-btn {
+    border: 1px solid #999 !important;
+    background: transparent !important;
+    color: #1a1a1a !important;
+    box-shadow: none !important;
+  }
+
+  /* Hide non-essential buttons */
+  .ui-btn--ghost {
+    display: none !important;
+  }
+}

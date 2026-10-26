@@ -1,0 +1,911 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/FamilyBrief.css
+   Phase 34+ Migration — "The Daily Intelligence Briefing"
+   Level 6+ Agency · Production Grade
+
+   SIGNATURE VISUAL ELEMENTS:
+   1. Tone-tinted atmosphere — entire card shifts chromatically
+   2. Animated confidence bar — grows from left with pulse
+   3. Editorial headline — display font with gradient underline sweep
+   4. Pull-quote narrative — blockquote with left accent
+   5. Moment spotlight — radial glow behind highlight moment
+   6. Milestone urgency pulse — countdown indicator
+   7. Agent chips — domain-colored attribution
+   8. Stagger cascade — 8 groups, top-to-bottom reveal
+
+   CSS STANDARD: 13 Dimensions Applied
+     D1  Glass morphism with TONE-TINTED gradient
+     D2  Stagger (8 section groups)
+     D3  Cubic-bezier easing on entrance
+     D4  Display for headline, mono for data, UI for body
+     D5  ENTIRE card chromatic shift by tone
+     D6  Pseudo-element depth (tone glow, underline, spotlight)
+     D7  Hover on milestone CTA
+     D8  Tight editorial density
+     D9  Responsive ≤768px
+     D10 role="region", aria-label
+     D11 Light mode complete
+     D12 Reduced motion + print
+     D13 fm-brief* namespaced keyframes (8 total)
+
+   Keyframes: fm-briefSlideUp, fm-briefConfGrow, fm-briefUnderlineSweep,
+              fm-briefSpotlightPulse, fm-briefMilestoneUrgent,
+              fm-briefMilestoneGlow, fm-briefAgentFade, fm-briefFadeIn
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Editorial Surface with Tone Atmosphere
+   D1-01: Translucent gradient — TONE-TINTED
+   D1-07: Inset top highlight (::before)
+   D1-12: Border-left gold accent
+   D1-13: Contextual shadow
+   D1-14: overflow: hidden
+   D5: ENTIRE card atmosphere shifts by data-tone
+
+   THE CORE INNOVATION: The background gradient changes
+   based on the AI's emotional assessment. Celebratory = warm gold.
+   Urgent = red glow. Caring = teal wash. This is NOT just a badge.
+   The card BREATHES the tone.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-brief {
+  position: relative;
+  padding: 0;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid var(--brief-tone, rgba(201, 169, 110, 0.3));
+  background: linear-gradient(
+    168deg,
+    color-mix(in srgb, var(--brief-tone, transparent) 3%, rgba(180, 190, 210, 0.03)) 0%,
+    rgba(12, 16, 24, 0.97) 40%,
+    rgba(8, 12, 18, 0.98) 100%
+  );
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+  opacity: 0;
+  animation: fm-briefSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Inset top edge light */
+.fm-brief::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--brief-tone, rgba(255,255,255,0.06)) 15%, rgba(255, 255, 255, 0.06)) 30%,
+    rgba(255, 255, 255, 0.03) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Tone atmosphere glow — radial gradient matching the AI's mood */
+.fm-brief::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 20% 0%,
+    var(--brief-glow, transparent) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Confidence Bar — Top progress indicator
+   D4-01: Data values use mono
+   D2-07: Stagger delay 0s
+
+   This is the FIRST thing the director sees.
+   A thin bar at the very top showing how confident the AI is.
+   It grows from 0 to its value with a pulse at the end.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-brief__confidence-bar {
+  height: 3px;
+  width: var(--brief-conf, 0%);
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  animation: fm-briefConfGrow 0.8s cubic-bezier(0.32, 0.72, 0, 1) 0.05s forwards;
+}
+
+.fm-brief__confidence-bar[data-confidence="high"] {
+  background: linear-gradient(90deg, var(--color-emerald-400), var(--color-teal-400));
+}
+
+.fm-brief__confidence-bar[data-confidence="medium"] {
+  background: linear-gradient(90deg, var(--color-gold-400), var(--color-amber-400));
+}
+
+.fm-brief__confidence-bar[data-confidence="low"] {
+  background: linear-gradient(90deg, var(--color-amber-400), var(--color-rose-400));
+}
+
+.fm-brief__confidence-bar[data-confidence="critical"] {
+  background: var(--color-rose-400);
+  animation:
+    fm-briefConfGrow 0.8s cubic-bezier(0.32, 0.72, 0, 1) 0.05s forwards,
+    fm-briefSpotlightPulse 2s ease-in-out 1s infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Content Wrapper — padding for all sections
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-brief__meta,
+.fm-brief__headline,
+.fm-brief__narrative,
+.fm-brief__moment,
+.fm-brief__milestone,
+.fm-brief__agents,
+.fm-brief__footer {
+  position: relative;
+  z-index: 1;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Meta Row — Tone Badge + Freshness Clock
+   D4-05: Badge is mono 9px
+   D2-07: Stagger delay 0.1s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-brief__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  margin-bottom: 8px;
+  opacity: 0;
+  animation: fm-briefSlideUp 0.3s ease 0.1s forwards;
+}
+
+.fm-brief__tone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--brief-tone, var(--color-silver-400));
+  background: color-mix(in srgb, var(--brief-tone, var(--color-silver-400)) 12%, transparent);
+}
+
+.fm-brief__freshness {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.fm-brief__freshness[data-freshness="fresh"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-brief__freshness[data-freshness="recent"] {
+  color: var(--color-amber-400);
+}
+
+.fm-brief__freshness[data-freshness="stale"] {
+  color: var(--color-silver-600);
+}
+
+/* Fresh indicator pulse dot */
+.fm-brief__freshness[data-freshness="fresh"]::after {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-emerald-400);
+  margin-left: 4px;
+  animation: fm-briefSpotlightPulse 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Headline — THE DOMINANT STATEMENT
+   D4-04: Display font, 18px, 700
+   D6: Animated gradient underline sweep (::after)
+   D2-07: Stagger delay 0.15s
+
+   This is the FIRST thing the director reads.
+   It commands attention like a newspaper front page.
+   The gradient underline sweeps in from left to right.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-brief__headline {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--brief-tone, var(--color-silver-100));
+  margin: 0 0 12px;
+  padding-bottom: 10px;
+  position: relative;
+  opacity: 0;
+  animation: fm-briefSlideUp 0.35s ease 0.15s forwards;
+}
+
+/* Animated gradient underline — sweeps in */
+.fm-brief__headline::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--brief-tone, var(--color-gold-400)),
+    color-mix(in srgb, var(--brief-tone, var(--color-gold-400)) 20%, transparent)
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: fm-briefUnderlineSweep 0.6s ease 0.35s forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Narrative — AI Voice, Pull-Quote Treatment
+   D4-03: Body text uses --font-ui
+   D6: Left accent border
+   D2-07: Stagger delay 0.2s
+
+   The AI is speaking. This isn't a metric.
+   It's a personal briefing. The blockquote treatment
+   gives it gravitas — like a pull quote in a magazine.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-brief__narrative {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-silver-300);
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-left: 2px solid color-mix(in srgb, var(--brief-tone, var(--color-silver-500)) 30%, transparent);
+  background: rgba(255, 255, 255, 0.012);
+  border-radius: 0 var(--radius-sm, 6px) var(--radius-sm, 6px) 0;
+  opacity: 0;
+  animation: fm-briefSlideUp 0.3s ease 0.2s forwards;
+}
+
+.fm-brief__narrative p {
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Highlight Moment — Spotlight Stage
+   D6: Radial spotlight glow behind the moment
+   D5: Sentiment-driven color via data-attribute
+   D2-07: Stagger delay 0.25s
+
+   The AI has identified a key moment. It's presented on a
+   "stage" with a subtle spotlight glow. The sentiment
+   determines the spotlight color.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-brief__moment {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-md, 8px);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  opacity: 0;
+  animation: fm-briefSlideUp 0.3s ease 0.25s forwards;
+}
+
+/* Spotlight glow — subtle radial behind the moment */
+.fm-brief__moment::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.fm-brief__moment[data-sentiment="celebratory"]::before {
+  background: radial-gradient(ellipse at 50% 50%, rgba(201, 169, 110, 0.08) 0%, transparent 70%);
+  opacity: 1;
+}
+
+.fm-brief__moment[data-sentiment="concerning"]::before {
+  background: radial-gradient(ellipse at 50% 50%, rgba(196, 100, 112, 0.08) 0%, transparent 70%);
+  opacity: 1;
+}
+
+.fm-brief__moment-emoji {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.fm-brief__moment-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-brief__moment-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
+.fm-brief__moment[data-sentiment="celebratory"] .fm-brief__moment-label {
+  color: var(--color-gold-400);
+}
+
+.fm-brief__moment[data-sentiment="neutral"] .fm-brief__moment-label {
+  color: var(--color-silver-400);
+}
+
+.fm-brief__moment[data-sentiment="concerning"] .fm-brief__moment-label {
+  color: var(--color-rose-400);
+}
+
+.fm-brief__moment-date {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+  margin-bottom: 6px;
+}
+
+.fm-brief__moment-text {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-silver-300);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Milestone Teaser — Predictive Countdown
+   D7: Hover on CTA
+   D5: Urgency-driven color via data-attribute
+   D2-07: Stagger delay 0.3s
+
+   The AI is looking forward. The countdown creates urgency.
+   "today" and "imminent" milestones get a pulse border.
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-brief__milestone {
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.015);
+  opacity: 0;
+  animation: fm-briefSlideUp 0.3s ease 0.3s forwards;
+}
+
+/* Urgent milestones get a pulsing left border */
+.fm-brief__milestone[data-urgency="today"],
+.fm-brief__milestone[data-urgency="imminent"] {
+  border-left: 3px solid var(--color-amber-400);
+  animation:
+    fm-briefSlideUp 0.3s ease 0.3s forwards,
+    fm-briefMilestoneGlow 3s ease-in-out 0.8s infinite;
+}
+
+.fm-brief__milestone-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.fm-brief__milestone-icon {
+  flex-shrink: 0;
+  color: var(--color-silver-400);
+}
+
+.fm-brief__milestone-countdown {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.fm-brief__milestone[data-urgency="today"] .fm-brief__milestone-countdown {
+  color: var(--color-rose-400);
+}
+
+.fm-brief__milestone[data-urgency="imminent"] .fm-brief__milestone-countdown {
+  color: var(--color-amber-400);
+}
+
+.fm-brief__milestone[data-urgency="soon"] .fm-brief__milestone-countdown {
+  color: var(--color-gold-400);
+}
+
+.fm-brief__milestone[data-urgency="upcoming"] .fm-brief__milestone-countdown {
+  color: var(--color-silver-500);
+}
+
+.fm-brief__milestone-title {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-300);
+}
+
+.fm-brief__milestone-action {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+
+/* CTA Button — Gold accent */
+.fm-brief__milestone-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 14px;
+  border-radius: 100px;
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+  background: color-mix(in srgb, var(--color-gold-400) 6%, transparent);
+  color: var(--color-gold-400);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, letter-spacing 0.2s ease;
+  min-height: 32px;
+}
+
+.fm-brief__milestone-btn:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+  letter-spacing: 0.1em;
+}
+
+.fm-brief__milestone-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Agent Attribution — Elegant credits line
+   D4-05: Chips are mono 8px
+   D2-07: Stagger delay 0.35s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-brief__agents {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  margin-bottom: 10px;
+  opacity: 0;
+  animation: fm-briefSlideUp 0.25s ease 0.35s forwards;
+}
+
+.fm-brief__agents-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-silver-600);
+}
+
+.fm-brief__agent-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--agent-color, var(--color-silver-400)) 25%, transparent);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--agent-color, var(--color-silver-400));
+  opacity: 0;
+  animation: fm-briefAgentFade 0.2s ease forwards;
+}
+
+.fm-brief__agent-chip:nth-child(2) { animation-delay: 0.4s; }
+.fm-brief__agent-chip:nth-child(3) { animation-delay: 0.44s; }
+.fm-brief__agent-chip:nth-child(4) { animation-delay: 0.48s; }
+.fm-brief__agent-chip:nth-child(5) { animation-delay: 0.52s; }
+.fm-brief__agent-chip:nth-child(6) { animation-delay: 0.56s; }
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Footer — Engine metadata
+   D4-01: Mono data
+   D2-07: Stagger delay 0.4s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-brief__footer {
+  padding-bottom: 14px;
+  opacity: 0;
+  animation: fm-briefSlideUp 0.25s ease 0.4s forwards;
+}
+
+.fm-brief__footer-text {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-600);
+  text-transform: uppercase;
+}
+
+.fm-brief__footer-conf[data-confidence="high"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-brief__footer-conf[data-confidence="medium"] {
+  color: var(--color-gold-400);
+}
+
+.fm-brief__footer-conf[data-confidence="low"] {
+  color: var(--color-amber-400);
+}
+
+.fm-brief__footer-conf[data-confidence="critical"] {
+  color: var(--color-rose-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Keyframes — fm-brief* namespaced
+   D13-01: All at end
+   D13-02: All namespaced
+   Total: 8 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-briefSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-briefConfGrow {
+  from {
+    opacity: 0;
+    width: 0;
+  }
+  to {
+    opacity: 1;
+    width: var(--brief-conf, 100%);
+  }
+}
+
+@keyframes fm-briefUnderlineSweep {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes fm-briefSpotlightPulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes fm-briefMilestoneGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(255, 196, 66, 0);
+  }
+  50% {
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+  }
+}
+
+@keyframes fm-briefAgentFade {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fm-briefFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Light Mode
+   D11: Complete
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-brief {
+  background: var(--color-surface-0);
+  border-color: var(--color-border-default);
+  border-left-color: var(--brief-tone, rgba(201, 169, 110, 0.3));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-brief::before,
+.light .fm-brief::after {
+  display: none;
+}
+
+.light .fm-brief__narrative {
+  background: rgba(0, 0, 0, 0.012);
+  border-left-color: color-mix(in srgb, var(--brief-tone, var(--color-silver-300)) 30%, transparent);
+  color: var(--color-silver-600);
+}
+
+.light .fm-brief__moment {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-brief__moment::before {
+  display: none;
+}
+
+.light .fm-brief__moment-text {
+  color: var(--color-silver-600);
+}
+
+.light .fm-brief__milestone {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-brief__milestone-action {
+  color: var(--color-silver-500);
+}
+
+.light .fm-brief__agents {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-brief__agent-chip {
+  border-color: color-mix(in srgb, var(--agent-color, var(--color-silver-300)) 20%, transparent);
+}
+
+.light .fm-brief__footer-text {
+  color: var(--color-silver-400);
+}
+
+.light .fm-brief__headline::after {
+  background: linear-gradient(
+    90deg,
+    var(--brief-tone, var(--color-gold-400)),
+    color-mix(in srgb, var(--brief-tone, var(--color-gold-400)) 15%, transparent)
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Reduced Motion
+   D12-05: opacity: 1 on all stagger
+   D12-06: All animations/transitions disabled
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-brief,
+  .fm-brief__meta,
+  .fm-brief__headline,
+  .fm-brief__narrative,
+  .fm-brief__moment,
+  .fm-brief__milestone,
+  .fm-brief__agents,
+  .fm-brief__footer {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .fm-brief__confidence-bar {
+    animation: none;
+    opacity: 1;
+    width: var(--brief-conf, 100%);
+  }
+
+  .fm-brief__confidence-bar[data-confidence="critical"] {
+    animation: none;
+  }
+
+  .fm-brief__headline::after {
+    animation: none;
+    transform: scaleX(1);
+  }
+
+  .fm-brief__agent-chip {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-brief__freshness[data-freshness="fresh"]::after {
+    animation: none;
+  }
+
+  .fm-brief__milestone[data-urgency="today"],
+  .fm-brief__milestone[data-urgency="imminent"] {
+    animation: none;
+  }
+
+  .fm-brief__milestone-btn {
+    transition: none;
+    letter-spacing: 0.06em;
+  }
+
+  .fm-brief__milestone-btn:hover {
+    letter-spacing: 0.06em;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Responsive
+   D9: Mobile adjustments
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fm-brief__headline {
+    font-size: 16px;
+  }
+
+  .fm-brief__narrative {
+    font-size: 11px;
+  }
+
+  .fm-brief__moment {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fm-brief__meta,
+  .fm-brief__headline,
+  .fm-brief__narrative,
+  .fm-brief__moment,
+  .fm-brief__milestone,
+  .fm-brief__agents,
+  .fm-brief__footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .fm-brief__headline {
+    font-size: 15px;
+  }
+
+  .fm-brief__milestone-header {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §14  Print
+   D12-01: break-inside avoid
+   D12-02: White bg
+   D12-03: No pseudo-elements, no animations
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-brief {
+    break-inside: avoid;
+    background: white;
+    border: 1px solid #ccc;
+    border-left: 3px solid #c9a96e;
+    backdrop-filter: none;
+    opacity: 1;
+    animation: none;
+    box-shadow: none;
+  }
+
+  .fm-brief::before,
+  .fm-brief::after {
+    display: none;
+  }
+
+  .fm-brief__confidence-bar {
+    animation: none;
+    opacity: 1;
+    background: #333 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-brief__headline {
+    animation: none;
+    opacity: 1;
+    color: #111;
+  }
+
+  .fm-brief__headline::after {
+    animation: none;
+    transform: scaleX(1);
+    background: #c9a96e;
+  }
+
+  .fm-brief__narrative {
+    animation: none;
+    opacity: 1;
+    border-left-color: #c9a96e;
+    background: #f9f9f9;
+    color: #333;
+  }
+
+  .fm-brief__moment {
+    animation: none;
+    opacity: 1;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+  }
+
+  .fm-brief__moment::before {
+    display: none;
+  }
+
+  .fm-brief__milestone {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-brief__milestone-btn {
+    display: none;
+  }
+
+  .fm-brief__agents,
+  .fm-brief__footer {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-brief__agent-chip {
+    animation: none;
+    opacity: 1;
+    border-color: #999;
+    color: #333;
+  }
+}

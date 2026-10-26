@@ -1,0 +1,261 @@
+/* src/shared/components/layout/DetailTabs.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Shared Layout — Detail Tabs                                 */
+/*                                                              */
+/* @namespace  dtabs-*                                          */
+/* @keyframes  2 (dtabsBadgePop, dtabsGlow)                    */
+/* @signature  Glass tab bar with gold sliding indicator glow  */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Root */
+/* §1 Tab Button */
+/* §2 Icon + Label */
+/* §3 Count Badge */
+/* §4 Sliding Indicator */
+/* §5 Keyframes */
+/* §6 Light Mode */
+/* §7 Reduced Motion */
+/* §8 Responsive */
+/* §9 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Root                                                     */
+/* ─────────────────────────────────────────────────────────── */
+
+.dtabs {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 6px;
+  background: color-mix(in srgb, var(--color-surface-1) 50%, transparent);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg, 16px);
+  scrollbar-width: none;
+}
+.dtabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Tab Button                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+.dtabs__tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  min-height: 40px;
+  border-radius: var(--radius-md, 12px);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s var(--ease-apple), background 0.15s var(--ease-apple);
+}
+.dtabs__tab:hover {
+  color: var(--color-silver-200);
+  background: rgba(255, 255, 255, 0.04);
+}
+.dtabs__tab:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: -2px;
+}
+.dtabs__tab--active {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 Icon + Label                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.dtabs__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.dtabs__label {
+  line-height: 1.2;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 Count Badge                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.dtabs__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  animation: dtabsBadgePop 0.3s var(--ease-apple) forwards;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 Sliding Indicator                                        */
+/* ─────────────────────────────────────────────────────────── */
+
+.dtabs__indicator {
+  position: absolute;
+  bottom: 6px;
+  left: var(--dtabs-ix, 0);
+  width: var(--dtabs-iw, 0);
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--color-gold-400),
+    var(--color-gold-300),
+    var(--color-gold-400)
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    left 0.35s var(--ease-apple),
+    width 0.35s var(--ease-apple),
+    opacity 0.2s var(--ease-apple);
+}
+.dtabs__indicator--ready {
+  opacity: 1;
+}
+/* Glow aura under indicator */
+.dtabs__indicator::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  filter: blur(6px);
+  animation: dtabsGlow 3s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Keyframes                                                */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes dtabsBadgePop {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+@keyframes dtabsGlow {
+  0%, 100% { opacity: 0.15; }
+  50%      { opacity: 0.45; }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Light Mode                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .dtabs {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .dtabs__tab {
+  color: var(--color-silver-500);
+}
+.light .dtabs__tab:hover {
+  color: var(--color-silver-700);
+  background: rgba(0, 0, 0, 0.03);
+}
+.light .dtabs__tab--active {
+  color: var(--color-gold-500);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+.light .dtabs__badge {
+  color: var(--color-gold-500);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+.light .dtabs__indicator {
+  background: linear-gradient(
+    90deg,
+    var(--color-gold-500),
+    var(--color-gold-400),
+    var(--color-gold-500)
+  );
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Reduced Motion                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .dtabs__tab {
+    transition: none;
+  }
+  .dtabs__indicator {
+    transition: none;
+  }
+  .dtabs__indicator::after {
+    animation: none;
+  }
+  .dtabs__badge {
+    animation: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Responsive                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 639px) {
+  .dtabs__tab {
+    padding: 8px 12px;
+    font-size: 12px;
+    gap: 6px;
+  }
+  .dtabs__icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Print                                                    */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  .dtabs {
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
+    padding: 0;
+    gap: 12px;
+  }
+  .dtabs__tab {
+    color: #333;
+    padding: 4px 8px;
+    font-size: 10pt;
+  }
+  .dtabs__tab--active {
+    background: transparent;
+    font-weight: 700;
+    text-decoration: underline;
+  }
+  .dtabs__indicator,
+  .dtabs__indicator::after {
+    display: none;
+  }
+  .dtabs__badge {
+    color: #333;
+    background: #eee;
+  }
+}

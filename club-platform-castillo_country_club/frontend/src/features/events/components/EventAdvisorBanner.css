@@ -1,0 +1,913 @@
+/* src/features/events/components/EventAdvisorBanner.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Events Domain — Advisor Banner (Command Center)             */
+/*                                                              */
+/* @namespace  eab-*                                            */
+/* @keyframes  11 (eabReveal, eabCardIn, eabConfidenceFill,    */
+/*              eabContextStat, eabThreadDot, eabAmbientPulse,   */
+/*              eabSpin, eabEvidenceSlide, eabBodyExpand,       */
+/*              eabReactionIn, eabDomainPop)                    */
+/* @signature  Urgency ambient glow + narrative thread line     */
+/*             + depth-of-field tiers + confidence cascade      */
+/*             + CSS-only expand/collapse + action morphing     */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Root + Urgency Ambient */
+/* §1 Header */
+/* §2 Body (CSS-only expand/collapse) */
+/* §3 Calendar Context Bar */
+/* §4 Reactions Log */
+/* §5 Narrative Thread */
+/* §6 Insight Card (depth tiers) */
+/* §7 Confidence Bar */
+/* §8 Evidence Block */
+/* §9 Action Buttons */
+/* §10 Supplementary */
+/* §11 Keyframes */
+/* §12 Light Mode */
+/* §13 Reduced Motion */
+/* §14 Responsive */
+/* §15 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Root + Urgency Ambient                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+.eab {
+  position: relative;
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  background: color-mix(in srgb, var(--color-surface-1) 92%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+  animation: eabReveal 0.4s var(--ease-apple) forwards;
+  opacity: 0;
+}
+
+/* Top gradient highlight */
+.eab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 0%, transparent 25%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Urgency ambient border-top */
+.eab::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-gold-400);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 3;
+  transition: background 0.4s var(--ease-apple), opacity 0.4s var(--ease-apple);
+}
+
+.eab--urgency-high::after {
+  background: var(--color-rose-400);
+  opacity: 0.7;
+  animation: eabAmbientPulse 2s ease-in-out infinite;
+}
+.eab--urgency-medium::after {
+  background: var(--color-amber-400);
+  opacity: 0.5;
+}
+.eab--urgency-low::after {
+  background: var(--color-gold-400);
+  opacity: 0.3;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Header                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+.eab__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  transition: background 0.15s var(--ease-apple);
+}
+.eab__header:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.eab__header:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: -2px;
+}
+
+.eab__header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eab__header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md, 10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+}
+
+.eab__header-info {
+  min-width: 0;
+  text-align: left;
+}
+
+.eab__header-title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  line-height: 1.3;
+}
+
+.eab__header-subtitle {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-400);
+  line-height: 1.3;
+}
+
+.eab__header-urgent {
+  color: var(--color-rose-400);
+  font-weight: 600;
+}
+
+.eab__header-chevron {
+  color: var(--color-silver-400);
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 Body (CSS-only expand/collapse)                          */
+/* ─────────────────────────────────────────────────────────── */
+
+.eab__body-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s var(--ease-apple);
+}
+.eab__body-wrapper[data-state="open"] {
+  grid-template-rows: 1fr;
+}
+
+.eab__body {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 20px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 Calendar Context Bar                                     */
+/* ─────────────────────────────────────────────────────────── */
+
+.eab-context {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md, 10px);
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  overflow-x: auto;
+}
+
+.eab-context__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  animation: eabContextStat 0.3s var(--ease-apple) forwards;
+  animation-delay: calc(100ms + var(--si, 0) * 50ms);
+}
+
+.eab-context__divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.eab-context__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 56px;
+  flex-shrink: 0;
+}
+
+.eab-context__value {
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 2vw, 16px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.eab-context__label {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-silver-500);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 Reactions Log                                            */
+/* ─────────────────────────────────────────────────────────── */
+
+.eab-reactions {
+  opacity: 0;
+  animation: eabReactionIn 0.3s var(--ease-apple) forwards;
+  animation-delay: 200ms;
+}
+
+.eab-reactions__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.eab-reactions__icon {
+  color: var(--color-emerald-400);
+}
+
+.eab-reactions__title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-emerald-400);
+}
+
+.eab-reactions__count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-600);
+}
+
+.eab-reactions__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Narrative Thread                                         */
+/* ─────────────────────────────────────────────────────────── */
+
+.eab-thread {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 12px;
+}
+
+.eab-thread__line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 4px;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--color-gold-400) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.eab-thread__step {
+  position: relative;
+}
+
+.eab-thread__dot {
+  position: absolute;
+  left: -12px;
+  top: 18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface-1);
+  z-index: 2;
+  animation: eabThreadDot 0.3s var(--ease-apple) forwards;
+  opacity: 0;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Insight Card                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.eab-card {
+  position: relative;
+  padding: 14px 16px;
+  border-radius: var(--radius-md, 12px);
+  background: color-mix(in srgb, var(--color-surface-2) 55%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  transition: border-color 0.2s var(--ease-apple);
+}
+
+/* Depth: hero = gold left accent */
+.eab-card--hero {
+  border-left: 3px solid var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-surface-2) 65%, transparent);
+}
+
+/* Depth: secondary = teal left accent */
+.eab-card--secondary {
+  border-left: 3px solid var(--color-teal-400);
+}
+
+/* Depth: supplementary = subtle */
+.eab-card--supplementary {
+  border-left: 3px solid var(--color-silver-600);
+  opacity: 0.85;
+}
+.eab-card--supplementary:hover {
+  opacity: 1;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.eab-card__body {
+  position: relative;
+  z-index: 1;
+}
+
+.eab-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.eab-card__layer-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm, 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.eab-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.eab-card__badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.eab-card__impact,
+.eab-card__layer {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.eab-card__title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  line-height: 1.4;
+}
+
+.eab-card__title--hero {
+  font-size: clamp(13px, 2vw, 15px);
+  font-weight: 600;
+  color: var(--color-silver-100);
+}
+
+.eab-card__reasoning {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.eab-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.eab-card__expand-btn {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-gold-400);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.12s var(--ease-apple);
+}
+.eab-card__expand-btn:hover {
+  color: var(--color-gold-200);
+}
+
+.eab-card__action {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Confidence Bar                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+.eab-confidence {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.eab-confidence__track {
+  width: 48px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.eab-confidence__fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--c-pct, 0%);
+  animation: eabConfidenceFill 0.5s var(--ease-apple) forwards;
+  animation-delay: 300ms;
+}
+.eab-confidence__fill--high   { background: var(--color-emerald-400); }
+.eab-confidence__fill--medium { background: var(--color-amber-400); }
+.eab-confidence__fill--low    { background: var(--color-rose-400); }
+
+.eab-confidence__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+}
+.eab-confidence__label--high   { color: var(--color-emerald-400); }
+.eab-confidence__label--medium { color: var(--color-amber-400); }
+.eab-confidence__label--low    { color: var(--color-rose-400); }
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Evidence Block                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+.eab-evidence {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm, 8px);
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  margin-top: 10px;
+  opacity: 0;
+  animation: eabEvidenceSlide 0.3s var(--ease-apple) forwards;
+  animation-delay: 200ms;
+}
+
+.eab-evidence__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.eab-evidence__label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-500);
+}
+
+.eab-evidence__value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-silver-300);
+}
+
+.eab-evidence__bar {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.eab-evidence__fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s var(--ease-apple);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Action Buttons (shared Button overrides)                 */
+/* ─────────────────────────────────────────────────────────── */
+
+/* Header button — override Button defaults for full-width layout */
+.eab__header.ui-btn {
+  justify-content: space-between;
+  padding: 16px 20px;
+  min-height: auto;
+  border-radius: var(--radius-lg, 16px) var(--radius-lg, 16px) 0 0;
+  text-align: left;
+}
+.eab__header.ui-btn .ui-btn__content {
+  width: 100%;
+  justify-content: space-between;
+}
+.eab__header.ui-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Card action — keep Button sized for card context */
+.eab-card__action .ui-btn {
+  min-height: 36px;
+}
+
+/* Expand button — styled as inline text link */
+.eab-card__expand-btn.ui-btn {
+  padding: 0;
+  min-height: auto;
+  height: auto;
+  font-size: 10px;
+  color: var(--color-gold-400);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.eab-card__expand-btn.ui-btn:hover:not(:disabled) {
+  color: var(--color-gold-200);
+  background: transparent;
+}
+
+/* Supplementary toggle — styled as inline text trigger */
+.eab-supplementary__toggle.ui-btn {
+  padding: 4px 0;
+  min-height: auto;
+  height: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-500);
+}
+.eab-supplementary__toggle.ui-btn:hover:not(:disabled) {
+  color: var(--color-silver-300);
+  background: transparent;
+}
+/* ─────────────────────────────────────────────────────────── */
+/* §10 Supplementary                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+.eab-supplementary__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.12s var(--ease-apple);
+}
+.eab-supplementary__toggle:hover {
+  color: var(--color-silver-300);
+}
+
+.eab-supplementary__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §11 Keyframes                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes eabReveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eabCardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eabConfidenceFill {
+  from { width: 0%; }
+  to   { width: var(--c-pct, 0%); }
+}
+
+@keyframes eabContextStat {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eabThreadDot {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes eabAmbientPulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.9; }
+}
+
+@keyframes eabSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes eabEvidenceSlide {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eabBodyExpand {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes eabReactionIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eabDomainPop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Apply stagger to cards */
+.eab-card.eab-stagger {
+  opacity: 0;
+  animation: eabCardIn 0.3s var(--ease-apple) forwards;
+  animation-delay: calc(100ms + var(--card-i, 0) * 80ms);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §12 Light Mode                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .eab {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.light .eab::before {
+  background: none;
+}
+.light .eab__header.ui-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.02);
+}
+.light .eab-card__expand-btn.ui-btn {
+  color: var(--color-gold-500);
+}
+.light .eab-card__expand-btn.ui-btn:hover:not(:disabled) {
+  color: var(--color-gold-600);
+  background: transparent;
+}
+.light .eab-supplementary__toggle.ui-btn {
+  color: var(--color-silver-500);
+}
+.light .eab__header-icon {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+.light .eab__header-title {
+  color: var(--color-silver-800);
+}
+.light .eab__header-subtitle {
+  color: var(--color-silver-500);
+}
+.light .eab-context {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .eab-context__divider {
+  background: rgba(0, 0, 0, 0.06);
+}
+.light .eab-thread__line {
+  background: linear-gradient(180deg, var(--color-gold-400) 0%, rgba(0, 0, 0, 0.06) 100%);
+}
+.light .eab-thread__dot {
+  border-color: white;
+}
+.light .eab-card {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .eab-card--hero {
+  background: rgba(0, 0, 0, 0.02);
+}
+.light .eab-card__title {
+  color: var(--color-silver-700);
+}
+.light .eab-card__title--hero {
+  color: var(--color-silver-800);
+}
+.light .eab-card__reasoning {
+  color: var(--color-silver-500);
+}
+.light .eab-confidence__track {
+  background: rgba(0, 0, 0, 0.06);
+}
+.light .eab-confidence__fill--high   { background: #047857; }
+.light .eab-confidence__fill--medium { background: #b45309; }
+.light .eab-confidence__fill--low    { background: #e11d48; }
+.light .eab-evidence {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .eab-evidence__label {
+  color: var(--color-silver-500);
+}
+.light .eab-evidence__value {
+  color: var(--color-silver-600);
+}
+.light .eab-evidence__bar {
+  background: rgba(0, 0, 0, 0.06);
+}
+.light .eab-supplementary__toggle {
+  color: var(--color-silver-500);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §13 Reduced Motion                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .eab,
+  .eab-card.eab-stagger,
+  .eab-context__item,
+  .eab-reactions,
+  .eab-evidence,
+  .eab-thread__dot {
+    animation: none !important;
+    opacity: 1;
+  }
+  .eab::after {
+    animation: none;
+  }
+  .eab--urgency-high::after {
+    animation: none;
+    opacity: 0.7;
+  }
+  .eab__body-wrapper {
+    transition: none;
+  }
+  .eab-confidence__fill {
+    animation: none;
+    width: var(--c-pct, 0%);
+  }
+  .eab-card {
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §14 Responsive                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .eab__header {
+    padding: 18px 24px;
+  }
+  .eab__body {
+    padding: 0 24px 24px;
+  }
+  .eab-context {
+    gap: 16px;
+    padding: 12px 16px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §15 Print                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  .eab {
+    border: 1px solid #ccc;
+    background: white;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    animation: none;
+    opacity: 1;
+  }
+  .eab::before,
+  .eab::after {
+    display: none;
+  }
+  .eab__header {
+    border-bottom: 1px solid #eee;
+  }
+  .eab__header-title {
+    color: #111;
+  }
+  .eab__header-subtitle {
+    color: #555;
+  }
+  .eab__body-wrapper {
+    grid-template-rows: 1fr !important;
+  }
+  .eab-card {
+    border: 1px solid #d1d5db;
+    background: white;
+    animation: none;
+    opacity: 1;
+  }
+  .eab-card__title {
+    color: #111;
+  }
+  .eab-card__reasoning {
+    color: #444;
+  }
+  .eab-context {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+  }
+  .eab-evidence {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+  }
+  .eab-thread__line {
+    background: #ccc;
+  }
+  .eab-thread__dot {
+    border-color: white;
+  }
+  .eab-btn-exec {
+    background: #333;
+    color: white;
+  }
+  .eab-btn-nav {
+    background: white;
+    color: #333;
+    border-color: #ccc;
+  }
+  .eab__header.ui-btn {
+    background: transparent;
+    color: #111;
+    border-bottom: 1px solid #eee;
+  }
+  .eab-card__action .ui-btn {
+    border: 1px solid #999;
+    background: transparent;
+    color: #1a1a1a;
+  }
+}

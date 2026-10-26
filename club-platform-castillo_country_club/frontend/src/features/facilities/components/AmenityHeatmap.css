@@ -1,0 +1,553 @@
+/* src/features/facilities/components/AmenityHeatmap.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* AMENITY HEATMAP — "El Campo Térmico"                          */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — cell entry stagger, bar fill         */
+/*   SENSE 2: REACCIÓN — cell hover translateY, details reveal   */
+/*   SENSE 3: MEMORIA — utilization %, trend, comfort, forecast  */
+/*   SENSE 4: INTENCIÓN — urgency encoding on comfort             */
+/*   SENSE 5: SINIESTRÍA — critical cells dominant                */
+/*   SENSE 6: EMPATÍA — data-mode responsive                      */
+/*   SENSE 7: NARRATIVA — heatmap summary                         */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.fac-heat {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fac-heat--empty {
+  padding: 40px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ═══ HEADER ═══════════════════════════════════════════════════ */
+
+.fac-heat__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.fac-heat__header-text {
+  min-width: 0;
+}
+
+.fac-heat__title {
+  font-size: 16px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-100);
+  margin: 0;
+}
+
+.fac-heat__subtitle {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  margin: 4px 0 0;
+}
+
+/* ═══ LEGEND ═══════════════════════════════════════════════════ */
+
+.fac-heat__legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.fac-heat__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fac-heat__legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.fac-heat__legend-swatch[data-util-level="low"] {
+  background: var(--color-emerald-400);
+}
+.fac-heat__legend-swatch[data-util-level="medium"] {
+  background: var(--color-teal-400);
+}
+.fac-heat__legend-swatch[data-util-level="high"] {
+  background: var(--color-amber-400);
+}
+.fac-heat__legend-swatch[data-util-level="critical"] {
+  background: var(--color-rose-400);
+}
+
+.fac-heat__legend-label {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+
+.fac-heat__narrative {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+
+/* ═══ GRID ═════════════════════════════════════════════════════ */
+
+.fac-heat__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+/* ═══ HEATMAP CELL (Sense 2 + 5) ══════════════════════════════ */
+
+.fac-heat__cell {
+  position: relative;
+  padding: 14px;
+  background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
+  border-radius: 10px;
+  overflow: hidden;
+  /* Sense 1: stagger */
+  opacity: 0;
+  animation: fac-heat-cell-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+  /* Sense 2: hover */
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+@keyframes fac-heat-cell-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fac-heat__cell:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-border) 35%, transparent);
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.2);
+}
+
+/* Sense 5: Critical gets pulse border */
+.fac-heat__cell[data-util-level="critical"] {
+  border-left: 3px solid var(--color-rose-400);
+  animation: fac-heat-cell-enter 0.4s ease-out forwards,
+             fac-heat-critical-pulse 2.5s ease-in-out 0.4s infinite;
+}
+
+@keyframes fac-heat-critical-pulse {
+  0%, 100% { border-left-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent); }
+  50% { border-left-color: var(--color-rose-400); }
+}
+
+/* Top accent */
+.fac-heat__cell-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+.fac-heat__cell-accent[data-util-level="low"] {
+  background: var(--color-emerald-400);
+}
+.fac-heat__cell-accent[data-util-level="medium"] {
+  background: var(--color-teal-400);
+}
+.fac-heat__cell-accent[data-util-level="high"] {
+  background: var(--color-amber-400);
+}
+.fac-heat__cell-accent[data-util-level="critical"] {
+  background: var(--color-rose-400);
+}
+
+/* ── Cell Header ── */
+.fac-heat__cell-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fac-heat__cell-head-left {
+  min-width: 0;
+}
+
+.fac-heat__cell-type {
+  display: block;
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fac-heat__cell-name {
+  display: block;
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Level badge (CSS-driven) */
+.fac-heat__cell-level {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.fac-heat__cell-level[data-util-level="low"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 12%, transparent);
+}
+.fac-heat__cell-level[data-util-level="medium"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+}
+.fac-heat__cell-level[data-util-level="high"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+.fac-heat__cell-level[data-util-level="critical"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+}
+
+/* ── Utilization Score ── */
+.fac-heat__cell-score-row {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.fac-heat__cell-score {
+  font-size: 28px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.fac-heat__cell-score[data-util-level="low"] {
+  color: var(--color-emerald-400);
+}
+.fac-heat__cell-score[data-util-level="medium"] {
+  color: var(--color-teal-400);
+}
+.fac-heat__cell-score[data-util-level="high"] {
+  color: var(--color-amber-400);
+}
+.fac-heat__cell-score[data-util-level="critical"] {
+  color: var(--color-rose-400);
+}
+
+.fac-heat__cell-score-unit {
+  font-size: 14px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+}
+
+/* ── Capacity Bar (Sense 1: fill animation) ── */
+.fac-heat__cell-bar-wrap {
+  margin-bottom: 8px;
+}
+
+.fac-heat__cell-bar-track {
+  height: 4px;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.fac-heat__cell-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0%;
+  animation: fac-heat-bar-fill 0.8s ease-out 0.3s forwards;
+}
+
+@keyframes fac-heat-bar-fill {
+  to { width: var(--bar-pct); }
+}
+
+.fac-heat__cell-bar-fill[data-util-level="low"] {
+  background: var(--color-emerald-400);
+}
+.fac-heat__cell-bar-fill[data-util-level="medium"] {
+  background: var(--color-teal-400);
+}
+.fac-heat__cell-bar-fill[data-util-level="high"] {
+  background: var(--color-amber-400);
+}
+.fac-heat__cell-bar-fill[data-util-level="critical"] {
+  background: var(--color-rose-400);
+}
+
+.fac-heat__cell-bar-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fac-heat__cell-bar-occupancy {
+  font-size: 10px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+}
+
+.fac-heat__cell-bar-trend {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.fac-heat__cell-bar-trend[data-trend="improving"] {
+  color: var(--color-emerald-400);
+}
+.fac-heat__cell-bar-trend[data-trend="stable"] {
+  color: var(--color-silver-500);
+}
+.fac-heat__cell-bar-trend[data-trend="declining"] {
+  color: var(--color-rose-400);
+}
+
+.fac-heat__cell-bar-trend-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── Peak Hours ── */
+.fac-heat__cell-peak {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  margin-bottom: 8px;
+}
+
+.fac-heat__cell-peak-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* ── Comfort Indicator (Prop #4: Sense 4 urgency) ── */
+.fac-heat__cell-comfort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+  margin-bottom: 8px;
+}
+
+.fac-heat__cell-comfort[data-comfort-urgency="low"] {
+  border-color: color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+}
+.fac-heat__cell-comfort[data-comfort-urgency="medium"] {
+  border-color: color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+}
+.fac-heat__cell-comfort[data-comfort-urgency="high"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+}
+.fac-heat__cell-comfort[data-comfort-urgency="critical"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+  animation: fac-heat-critical-pulse 2.5s ease-in-out infinite;
+}
+
+.fac-heat__cell-comfort-label {
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fac-heat__cell-comfort-score {
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-silver-200);
+}
+
+.fac-heat__cell-comfort-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-emerald-400);
+}
+
+.fac-heat__cell-comfort[data-comfort-urgency="medium"] .fac-heat__cell-comfort-dot {
+  background: var(--color-amber-400);
+}
+.fac-heat__cell-comfort[data-comfort-urgency="high"] .fac-heat__cell-comfort-dot,
+.fac-heat__cell-comfort[data-comfort-urgency="critical"] .fac-heat__cell-comfort-dot {
+  background: var(--color-rose-400);
+}
+
+.fac-heat__cell-comfort-status {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  color: var(--color-silver-400);
+}
+
+.fac-heat__cell-comfort[data-comfort-urgency="high"] .fac-heat__cell-comfort-status,
+.fac-heat__cell-comfort[data-comfort-urgency="critical"] .fac-heat__cell-comfort-status {
+  color: var(--color-rose-400);
+}
+
+/* ── Hover Details (Sense 2: revealed on hover) ── */
+.fac-heat__cell-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease, margin-top 0.3s ease;
+  margin-top: 0;
+}
+
+.fac-heat__cell:hover .fac-heat__cell-details {
+  max-height: 120px;
+  opacity: 1;
+  margin-top: 8px;
+}
+
+.fac-heat__cell-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fac-heat__cell-detail-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+.fac-heat__cell-detail-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.fac-heat__cell-detail-value {
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-300);
+}
+
+.fac-heat__cell-detail-value--gold {
+  color: var(--color-gold-400);
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .fac-heat__cell {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+.light .fac-heat__cell-name {
+  color: var(--color-silver-800);
+}
+
+.light .fac-heat__cell-score {
+  color: var(--color-silver-700);
+}
+
+.light .fac-heat__cell-bar-fill[data-util-level="low"] {
+  background: var(--color-emerald-500);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fac-heat__cell {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-heat__cell:hover {
+    transform: none;
+  }
+
+  .fac-heat__cell[data-util-level="critical"] {
+    animation: none;
+  }
+
+  .fac-heat__cell-comfort[data-comfort-urgency="critical"] {
+    animation: none;
+  }
+
+  .fac-heat__cell-bar-fill {
+    animation: none;
+    width: var(--bar-pct);
+  }
+
+  .fac-heat__cell-details {
+    max-height: 120px;
+    opacity: 1;
+    margin-top: 8px;
+    transition: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fac-heat__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fac-heat__header {
+    flex-direction: column;
+  }
+
+  .fac-heat__cell-score {
+    font-size: 22px;
+  }
+}

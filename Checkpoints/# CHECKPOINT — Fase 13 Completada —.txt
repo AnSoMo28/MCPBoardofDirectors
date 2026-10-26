@@ -1,0 +1,1019 @@
+# CHECKPOINT — Fase 13 Completada — Finance Enhancement + HITL Complete
+
+**Fecha:** Mayo 2025
+**Sesiones completadas:** 1 (esta sesión — Fase 13 completa)
+**Archivos creados:** 6 nuevos + 8 modificados
+**Líneas nuevas:** ~4,656
+**Tools MCP registradas:** 14 (9 existentes con frontend + 3 nuevas AI + 2 bridge)
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend Nuevos (6)
+
+```
+src/features/finance/components/
+├── FinanceOverview.tsx                    ← ~530 líneas
+│   Tab 1 "Resumen" — 4 KPI cards con sparklines y change%,
+│   Health Score gauge SVG 360° con factor mini-bars,
+│   7 quick deterministic insights, alert signals del AI,
+│   Revenue by Category bar chart, Monthly Trend area chart,
+│   Expense vs Budget table con semáforo BUDGET_UTILIZATION_CONFIG,
+│   quick action buttons (Export, Update).
+│   Tools: get_financial_summary (auto), finance_budget_check (auto),
+│          generate_ai_analysis (auto, staleTime 5min)
+│
+├── FinanceAnalytics.tsx                   ← ~620 líneas
+│   Tab 2 "Análisis" — Period selector (6 opciones),
+│   9 secciones expandibles del AiFinancialReport:
+│   Health Score (gauge 160px + factor progress bars con weight%),
+│   Cash Flow Forecast (AreaChart con confidence bands),
+│   Revenue Concentration (Shannon/HHI KPIs + source bars + trend),
+│   Anomalías (severity lateral bars + deviation bars + impact),
+│   Recommendations (numbered + priority/category/confidence/effort),
+│   Trends (change% badges), Alerts (severity cards),
+│   Projection (narrative + assumptions + risk factors),
+│   Member Economics (6 KPI grid + by-tier table).
+│   Tools: generate_ai_analysis (auto, staleTime 5min)
+│
+├── FinancialIntelligence.tsx              ← ~780 líneas
+│   Tab 3 "Inteligencia" — 3 sub-features con sub-tab bar:
+│   1. ScenarioSimulator: 6 slider variables agrupadas por categoría
+│      (pricing/membership/expense/revenue), 6 delta cards
+│      baseline→escenario, risk cards con severity/probability/segments,
+│      AI commentary con confidence.
+│   2. OpportunityScanner: summary strip 4 KPIs, category filter chips,
+│      opportunity cards con confidence bar/esfuerzo/segmentos/
+│      risk factors/data basis, action buttons (implement/program/dismiss).
+│   3. BoardBriefing: key metrics grid 4 KPIs, 4 briefing sections
+│      con severity lateral bars, alerts con severity/requires_action,
+│      recommendations priorizadas, upcoming decisions con
+│      options A/B/C + deadline + impact.
+│   Tools: finance_scenario_simulate (auto),
+│          finance_opportunities_scan (auto),
+│          finance_board_briefing (auto)
+│
+├── BillingCenter.tsx                      ← ~520 líneas
+│   Tab 4 "Facturación" — Family selector con 3 presets + custom input,
+│   account summary cards (4 KPIs), overdue alert banner,
+│   3 sub-view tabs (Cuenta/Nueva Factura/Registrar Pago),
+│   invoice list con status badges (incluye draft/sent mapping),
+│   dynamic invoice items form (add/remove/update con
+│   live subtotal/tax/total), payment form con quick-fill
+│   desde facturas pendientes.
+│   Tools: finance_account_status (auto per family_id),
+│          finance_invoice_create (mutation HITL),
+│          finance_payment_process (mutation HITL)
+│
+├── ExpenseManager.tsx                     ← ~370 líneas
+│   Tab 5 "Gastos" — Expense creation form (6 fields:
+│   description, amount, category, vendor, date, notes),
+│   budget context section con per-category utilization bars
+│   (semáforo), total utilization summary bar,
+│   category labels via EXPENSE_CATEGORY_CONFIG.
+│   Tools: finance_expense_create (mutation HITL),
+│          finance_budget_check (auto, staleTime 2min)
+│
+├── BudgetManager.tsx                      ← ~340 líneas
+│   Sub-tab "Presupuesto" inside Tab 6 "Herramientas" —
+│   Period selector (3 opciones), total summary card (4 KPIs:
+│   presupuestado/ejecutado/restante/utilización),
+│   global utilization bar animada, per-category table (desktop)
+│   + cards (mobile), inline edit con save/cancel por categoría.
+│   Tools: finance_budget_check (auto, staleTime 2min),
+│          finance_category_update (mutation SEMI)
+│
+└── ReportGenerator.tsx                    ← ~280 líneas
+    Sub-tab "Reportes" inside Tab 6 "Herramientas" —
+    Report type selector (4 tipos), date range pickers
+    (auto-set a trimestre actual), report result con summary text,
+    3 KPI cards (ingresos/gastos/neto con margen%),
+    income breakdown con progress bars + trend %,
+    expense breakdown con progress bars + trend color coding,
+    export/send buttons placeholder.
+    Tools: finance_report_generate (mutation SEMI)
+```
+
+### Archivos Modificados (8)
+
+| # | Archivo | Qué se cambió | Por qué |
+|---|---------|---------------|---------|
+| 1 | `features/finance/types.ts` | +310 líneas append | 14 config maps (EXPENSE_CATEGORY_CONFIG, PAYMENT_METHOD_CONFIG, PAYMENT_STATUS_CONFIG, BUDGET_PERIOD_CONFIG, HEALTH_GRADE_CONFIG, ANOMALY_SEVERITY_CONFIG, ALERT_SEVERITY_CONFIG, RECOMMENDATION_CATEGORY_CONFIG, RECOMMENDATION_PRIORITY_CONFIG, RECOMMENDATION_EFFORT_CONFIG, RECOMMENDATION_CONFIDENCE_CONFIG, BUDGET_UTILIZATION_CONFIG + helper, AI_ANALYSIS_PERIOD_CONFIG, OPPORTUNITY_CATEGORY_CONFIG, OPPORTUNITY_STATUS_CONFIG, BRIEFING_SECTION_SEVERITY_CONFIG, METRIC_ASSESSMENT_CONFIG), 8 interfaces (ScenarioVariableConfig, ScenarioSnapshot, ScenarioDelta, ScenarioRisk, ScenarioSimulationData, OpportunityItem, OpportunityScanData, BoardBriefingData, BriefingMetric, BriefingSection, BriefingAlert, BriefingRecommendation, BriefingDecision), SCENARIO_VARIABLE_DEFAULTS array |
+| 2 | `shared/mocks/contracts.ts` | +145 líneas append | 12 response interfaces: FinanceExpenseCreateResponse, FinanceInvoiceCreateResponse, FinanceBudgetCheckResponse, FinancePaymentProcessResponse, FinanceReportGenerateResponse, FinanceAccountStatusResponse, FinanceCategoryUpdateResponse, GenerateAiAnalysisResponse, GetFinancialSummaryResponse (bridge), FinanceScenarioSimulateResponse, FinanceOpportunitiesScanResponse, FinanceBoardBriefingResponse |
+| 3 | `shared/mocks/factories.ts` | +520 líneas append | 12 factories: createMockFinancialSummary (6mo trend, 5 rev cats, 6 exp cats), createMockFinanceExpenseCreate (HITL), createMockFinanceInvoiceCreate (HITL, 3 items), createMockFinanceBudgetCheck (9 lines, 78%), createMockFinancePaymentProcess (HITL), createMockFinanceReportGenerate (income/expense breakdowns), createMockFinanceAccountStatus (3 families, invoices[]), createMockFinanceCategoryUpdate (SEMI), createMockGenerateAiAnalysis (full 9-section report), createMockScenarioSimulation (6 vars, 2 risks), createMockOpportunityScan (5 opps, ₡6.5M/mes), createMockBoardBriefing (4 sections, 3 alerts, 3 recs, 2 decisions) |
+| 4 | `shared/mocks/mock-registry.ts` | +16 líneas append | 12 entries bajo server "finance" |
+| 5 | `features/finance/FinancialDashboard.tsx` | Rewrite (~105 líneas) | Monolito → Hub con DetailTabs (6 tabs), lazy loading de 7 componentes, sub-tabs pattern para Herramientas (Presupuesto/Reportes), breadcrumbs |
+| 6 | `features/finance/FamilyAccount.tsx` | Rewrite (~470 líneas) | FIX #11: Tab bar local → DetailTabs. FIX #12: Raw select → FilterDropdown. FIX #13: Added mobile cards (Rule #21) con sm:hidden pattern |
+| 7 | `features/families/types.ts` | +90 líneas append | FIX #5: BackendTier type, BACKEND_TIER_CONFIG, FRONTEND_TO_BACKEND_TIER mapping, BACKEND_TO_FRONTEND_TIER mapping, toBackendTier(), toFrontendTier(), getTierDisplayConfig(), getTierOptions() |
+
+### Mock System
+
+**Contracts nuevos (12):**
+
+| Tool | Server | Contract shape |
+|------|--------|----------------|
+| `get_financial_summary` | finance | `{status, period, period_label, total_revenue, total_expenses, net_income, profit_margin, revenue_change_pct, expense_change_pct, revenue_by_category[], expense_by_category[], monthly_trend[]}` |
+| `finance_expense_create` | finance | `{status, message, request_id?, description?, amount?, category?}` |
+| `finance_invoice_create` | finance | `{status, message, request_id?, subtotal?, tax?, total?, family_id?}` |
+| `finance_budget_check` | finance | `{status, message, data?:{period, total_budgeted, total_spent, total_remaining, utilization_pct, lines[]}, total_budgeted, total_spent, total_remaining, utilization_pct}` |
+| `finance_payment_process` | finance | `{status, message, request_id?, amount?, method?, family_id?}` |
+| `finance_report_generate` | finance | `{status, message, data?:{report_type, period_start, period_end, total_income, total_expenses, net_result, expense_breakdown[], income_breakdown[], summary}, report_type?, period?}` |
+| `finance_account_status` | finance | `{status, message, data?:{family_id, family_name, total_invoiced, total_paid, balance_due, overdue_amount, overdue_count, last_payment_date, invoices[]}, balance_due?, overdue_amount?}` |
+| `finance_category_update` | finance | `{status, message, category?, budget_amount?}` |
+| `generate_ai_analysis` | finance | `{status, message, data: AiFinancialReport}` |
+| `finance_scenario_simulate` | finance | `{status, message, data: {baseline, scenario, delta, risks[], ai_commentary, confidence, time_horizon_months}}` |
+| `finance_opportunities_scan` | finance | `{status, message, data: {opportunities[], total_opportunity_value, scan_date, data_quality_score}}` |
+| `finance_board_briefing` | finance | `{status, message, data: {sections[], key_metrics[], alerts[], recommendations[], upcoming_decisions[], generated_at, period}}` |
+
+**Factories nuevas (12):**
+
+| Factory | Data costarricense |
+|---------|-------------------|
+| `createMockFinancialSummary` | ₡42.3M revenue, ₡34.8M expenses, 17.7% margin, 6 meses trend, 5 revenue cats (cuotas 60%, F&B 20%, eventos 11%, deportes 6%, otros 4%), 6 expense cats con budgets, montos en colones |
+| `createMockFinanceExpenseCreate` | "Reparación bomba piscina" ₡850K maintenance, HITL pending |
+| `createMockFinanceInvoiceCreate` | 3 line items, 13% IVA, subtotal ₡1.25M, HITL pending |
+| `createMockFinanceBudgetCheck` | 9 category lines (staff ₡14.5M, maintenance ₡5.5M, F&B ₡7M, utilities ₡4.5M, equipment ₡3M, events ₡2.5M, marketing ₡2M, insurance ₡1.2M, other ₡800K), 78% utilization, maintenance 114.5% overrun |
+| `createMockFinancePaymentProcess` | ₡2.5M transfer, HITL pending |
+| `createMockFinanceReportGenerate` | Q2 2026 income/expense breakdowns, maintenance +31% trend, F&B +23% trend |
+| `createMockFinanceAccountStatus` | 3 families: Castillo Montero (₡2.5M balance, 1 overdue), Quesada Vargas (al día), Solano Brenes (₡1.8M pendiente), invoices con status draft/sent/paid/overdue |
+| `createMockFinanceCategoryUpdate` | "maintenance" ₡6M, SEMI success |
+| `createMockGenerateAiAnalysis` | Health 78.4 B+ (5 factors), cash flow 6 meses con seasonalidad CR, 5 revenue sources (HHI 4258, div 79.5%), 3 anomalies, 6 recommendations, 3 trends, 2 alerts, projection, member economics (LTV ₡750K, CAC ₡31.7K, LTV:CAC 23.6x, 3 tiers) |
+| `createMockScenarioSimulation` | Cuota +8% → revenue ₡3.9M↑, margin 17.7%→24.0%, health 78→84, 2 risks (churn básico 35%, margen temporada baja 20%) |
+| `createMockOpportunityScan` | 5 opps (Happy Hour ₡1.2M/mes 82%, Work-From-Club ₡1.8M 74%, Eventos corporativos ₡2.5M 68%, Guest fee premium ₡400K 88%, Gym+F&B ₡600K 71%), total ₡6.5M/mes, quality 78 |
+| `createMockBoardBriefing` | 4 sections, 4 key metrics, 3 alerts, 3 recommendations (₡9.3M impacto), 2 upcoming decisions (cuotas 2027 + cancha pádel ₡85M) |
+
+**Registry keys nuevas (12):**
+
+| Server | Keys |
+|--------|------|
+| `finance` | `get_financial_summary`, `finance_expense_create`, `finance_invoice_create`, `finance_budget_check`, `finance_payment_process`, `finance_report_generate`, `finance_account_status`, `finance_category_update`, `generate_ai_analysis`, `finance_scenario_simulate`, `finance_opportunities_scan`, `finance_board_briefing` |
+
+### Tools MCP Registradas
+
+| # | Tool | Server | Backend | Mock | Tipo | Aprobación |
+|---|------|--------|---------|------|------|------------|
+| 1 | `get_financial_summary` | finance | ⬜ mock-only | ✅ | Auto bridge | AUTO |
+| 2 | `finance_expense_create` | finance | ✅ | ✅ | CRUD mutation | HITL |
+| 3 | `finance_invoice_create` | finance | ✅ | ✅ | CRUD mutation | HITL |
+| 4 | `finance_budget_check` | finance | ✅ | ✅ | Auto-load | AUTO |
+| 5 | `finance_payment_process` | finance | ✅ | ✅ | CRUD mutation | HITL |
+| 6 | `finance_report_generate` | finance | ✅ | ✅ | Mutation | SEMI |
+| 7 | `finance_account_status` | finance | ✅ | ✅ | Auto-load | AUTO |
+| 8 | `finance_category_update` | finance | ✅ | ✅ | Mutation | SEMI |
+| 9 | `generate_ai_analysis` | finance | ✅ | ✅ | Auto-load AI | AUTO |
+| 10 | `finance_scenario_simulate` | finance | ⬜ mock-only | ✅ | AI auto | AUTO |
+| 11 | `finance_opportunities_scan` | finance | ⬜ mock-only | ✅ | AI auto | AUTO |
+| 12 | `finance_board_briefing` | finance | ⬜ mock-only | ✅ | AI auto | AUTO |
+
+**Tools existentes de otros servidores NO tocadas:**
+
+| # | Tool | Server | Componente existente |
+|---|------|--------|---------------------|
+| 1 | `get_pending_approvals` | hitl | ApprovalQueue.tsx |
+| 2 | `approve_request` | hitl | ApprovalQueue.tsx |
+| 3 | `reject_request` | hitl | ApprovalQueue.tsx |
+| 4 | Todas de communication | communication | CommunicationDashboard + CommunicationCenter |
+| 5 | Todas de guest_management | guest_management | GuestManagementDashboard |
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+### Hallazgos del análisis backend
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | FinancialDashboard usaba tool fantasma `get_financial_summary` — NO existe en FinanceAgent | ALTA | RESUELTO — mockeado como bridge |
+| 2 | FinanceAgent tiene 8 tools reales (7 operativas + 1 AI analysis) | ALTA | Documentado, todas mockeadas |
+| 3 | `generate_ai_analysis` es AUTO (no necesita botón) y devuelve 9 secciones ricas | ALTA | Implementado como auto-load con staleTime 5min |
+| 4 | Mensajes del agente usan `$` pero `format_currency()` devuelve `₡` (colones) | MEDIA | Documentado — frontend usa ₡ correctamente |
+| 5 | `InvoiceStatus` backend incluye `draft`/`sent` que no existen en `INVOICE_STATUS_CONFIG` frontend | BAJA | RESUELTO — helper `getInvStatusConfig()` en BillingCenter |
+| 6 | `FinanceRepository.get_active_member_count()` puede no existir — fallback a 200 | BAJA | Documentado — no afecta frontend |
+| 7 | `_resolve_period()` soporta 7 periodos (incluye default=quarterly) | BAJA | AI_ANALYSIS_PERIOD_CONFIG cubre 6, factory usa default quarterly |
+| 8 | Aging bucket usa `aging_90_plus * 0.4/0.6` split hardcoded | BAJA | Documentado — TEMPORARY approximation, propio código lo dice |
+
+### Hallazgos de componentes existentes
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 9 | FinancialDashboard: AGING_DATA y TIER_DATA hardcodeados inline (violación Regla #1) | MEDIA | RESUELTO — eliminados en rewrite como hub |
+| 10 | FamilyAccount: 3 tools fantasma (`get_family_account`, `get_transactions`, `get_invoices`) no existen en FinanceAgent | ALTA | Documentado — mockeado, decisión: mockear hasta backend implemente |
+| 11 | FamilyAccount: tab bar local con implementación manual ARIA | BAJA | RESUELTO — migrado a DetailTabs (#11) |
+| 12 | FamilyAccount: raw `<select>` para filtro de tipo | BAJA | RESUELTO — migrado a FilterDropdown (#12) |
+| 13 | FamilyAccount: responsive table ya tenía hidden sm:table-cell pattern | BAJA | RESUELTO — aceptable, + mobile cards para Rule #21 |
+| 14 | ApprovalQueue NO necesita modificaciones para 2 tipos nuevos | ALTA | Documentado — toolDisplayName es genérico, AGENT_LABELS ya tiene `proactive_recommendation` |
+| 15 | `ExpenseCategory` nombre colisiona entre frontend (interface de breakdown) y backend (enum) | BAJA | Documentado — config map usa `EXPENSE_CATEGORY_CONFIG`, no reutiliza nombre |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón NUEVO: Simulador de Escenarios con Sliders
+
+**Cuándo se usa:** Cuando hay variables ajustables que impactan un output proyectado.
+
+```
+1. Variables agrupadas por categoría (pricing, membership, expense, revenue)
+2. Slider HTML nativo con type="range"
+3. Label + valor actual con color dinámico (verde si > default, rojo si < default)
+4. Min/default/max labels debajo del slider
+5. Delta cards: baseline → escenario con arrow y valor delta coloreado
+6. Risk cards con severity, probability, affected segments
+7. AI commentary como narrative final
+```
+
+**Ejemplo:** ScenarioSimulator en FinancialIntelligence.tsx
+**Se replica en:** Futuros simuladores (membership pricing, event pricing, staffing)
+
+### Patrón NUEVO: Scanner de Oportunidades con Action Flow
+
+**Cuándo se usa:** Cuando el sistema identifica activamente items que requieren decisión del usuario.
+
+```
+1. Summary strip con KPIs (count, revenue potencial, quality score, high confidence count)
+2. Category filter chips con toggle (click para filtrar, click de nuevo para limpiar)
+3. Opportunity cards con:
+   - Title + status badge (NEW → reviewed → approved → implemented → dismissed)
+   - Category badge + time to revenue
+   - Description narrative
+   - Confidence bar + effort badge + affected segments
+   - Data basis (qué datos lo fundamentan)
+   - Risk factors alert box
+   - Action buttons: Implement / Program / Descartar
+```
+
+**Ejemplo:** OpportunityScanner en FinancialIntelligence.tsx
+**Se replica en:** Cualquier feature de recomendaciones activas (wellness, satisfaction)
+
+### Patrón NUEVO: Briefing Ejecutivo con Decisiones
+
+**Cuándo se usa:** Cuando se genera un resumen ejecutivo para tomadores de decisión.
+
+```
+1. Header bar con metadata (period, generated_at) + actions (Regenerar, PDF, Enviar)
+2. Key metrics grid (4 KPIs con trend arrows y assessment colors)
+3. Sections con severity lateral bars (info/highlight/alert/critical)
+4. Items list con emoji extraction → icono Lucide
+5. Alerts con severity + requires_action flag
+6. Recommendations priorizadas con estimated impact
+7. Upcoming decisions con options (A, B, C...), deadline, impact estimate
+```
+
+**Ejemplo:** BoardBriefing en FinancialIntelligence.tsx
+**Se replica en:** Cualquier briefing/report ejecutivo (board, AGM, investor)
+
+### Patrón NUEVO: Section Wrapper Expandible
+
+**Cuándo se usa:** Cuando un componente tiene 3+ secciones colapsables.
+
+```
+Section({
+  title, icon, iconColor, defaultOpen, children
+})
+- Header con icono + título uppercase + chevron
+- aria-expanded para accesibilidad
+- AnimatePresence para animación open/close
+- min-h-[48px] en toggle button (Regla #12)
+- Contenido se desmonta al colapsar (performance)
+```
+
+**Ejemplo:** FinanceAnalytics.tsx (9 secciones)
+**Se replica en:** Cualquier vista con múltiples secciones de análisis
+
+### Patrón CONFIRMADO: Hub con DetailTabs + Lazy Loading
+
+Confirmado desde Fase 11-12, replicado en Fase 13:
+
+```
+Dashboard.tsx (hub padre)
+├── DetailTabs con tabs[]
+├── lazy(() => import("./ComponentA"))
+├── lazy(() => import("./ComponentB"))
+├── Suspense con Skeleton fallback
+└── Breadcrumbs absolutos (/admin/xxx)
+```
+
+**Fase 13:** FinancialDashboard (6 tabs con lazy loading de 7 componentes)
+
+### Patrón CONFIRMADO: Sub-tabs para Herramientas
+
+Confirmado desde Fase 10-12, replicado en Fase 13:
+
+```
+DetailTabs (vistas principales)
+  └── Tab "Herramientas"
+        └── Sub-tab bar (toggle local con buttons)
+              ├── Presupuesto → BudgetManager
+              └── Reportes → ReportGenerator
+```
+
+**Fase 13:** FinancialDashboard → Herramientas → BudgetManager + ReportGenerator
+
+### Patrón CONFIRMADO: Insights Determinísticos + AI On-Demand
+
+Confirmado desde Fase 11-12, replicado en Fase 13:
+
+**Capa 1 — Determinística (siempre visible):**
+- FinanceOverview: 7 quick insights computados de `get_financial_summary` + `generate_ai_analysis`
+- Se renderizan inmediatamente sin llamada adicional
+
+**Capa 2 — AI Auto-Load (con staleTime):**
+- FinanceAnalytics: 9 secciones completas de `generate_ai_analysis`
+- FinanceOverview: health score + alert signals de `generate_ai_analysis`
+- staleTime 5min para evitar recalcular frecuentemente
+
+**Diferencia con Fases 11-12:** `generate_ai_analysis` es AUTO (no necesita botón). El botón "Regenerar" hace `refetch()` explícito pero el data se carga automáticamente. Esto es porque el agente backend ya computa el analysis — no es un endpoint mock-only.
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón |
+|---|---------|----------------------|-------|
+| 1 | FinancialDashboard con 6 tabs (no 5) | 5 tabs (sin Inteligencia) | 3 features de inteligencia (Simulator, Opportunities, Briefing) merecen su propio tab. Son herramientas de alto valor que no deben esconderse en "Herramientas" |
+| 2 | `get_financial_summary` como bridge mock | Reescribir todo para usar solo tools del agente | Factory provee sparklines + change_pct que las tools del agente no tienen. El bridge permite que FinanceOverview funcione sin cambios cuando backend implemente la tool |
+| 3 | `generate_ai_analysis` como auto-load con staleTime 5min | Botón on-demand (como communication_insights) | Backend ya computa el analysis — no es mock-only. Carga automática da UX inmediata. Botón "Regenerar" para forzar refresh |
+| 4 | ScenarioSimulator con sliders HTML nativos | Componente de slider custom | 6 variables necesitan controles inmediatos. Sliders nativos son accessibility-first (funcionan con teclado/screen reader sin custom code) |
+| 5 | ScenarioSimulator auto-simula al cambiar variables | Botón "Simular" explícito | UX más fluida — el usuario ve el impacto en tiempo real. staleTime 5min evita requests excesivos. Botón "Simular" hace refetch explícito |
+| 6 | OpportunityScanner con 3 acciones (Implement/Program/Descartar) | Solo "Implementar" | Workflow completo — el admin necesita poder archivar oportunidades o programarlas para revisión futura |
+| 7 | Briefing con "Enviar a Junta" button placeholder | Solo preview | El flujo completo de envío requiere backend de notificaciones. El placeholder comunica la intención |
+| 8 | Decision options como cards numeradas (A, B, C) | Radio buttons | Más visual y apropiado para decisiones ejecutivas. Las opciones son informativas, no un form |
+| 9 | FamilyAccount rewrite completo (no quirúrgico) | Patches individuales | Los 3 fixes (#11, #12, #13) + mobile cards tocaban secciones intercaladas — un rewrite limpio es más seguro que 3 patches |
+| 10 | BACKEND_TIER_CONFIG + mapping functions | Reemplazar frontend tiers completamente | Componentes existentes usan "platino"/"oro"/"plata"/"bronce". Mapping bridgea ambos mundos sin romper nada |
+| 11 | `getInvStatusConfig()` helper inline en BillingCenter | Agregar draft/sent a INVOICE_STATUS_CONFIG global | Solo BillingCenter necesita estos status. No contaminar el config global para 2 valores |
+| 12 | BudgetManager con inline edit (no modal) | Modal de edición por categoría | Cambiar un valor de presupuesto es una acción simple. Inline edit es más rápido y contextual |
+| 13 | ReportGenerator con date range pickers | Period selector (monthly/quarterly/yearly) como BudgetManager | Reports necesitan granularidad de fecha. Un trimestre específico es diferente a "este trimestre" |
+| 14 | 3 families hardcodeadas en FamilyPresets (BillingCenter) | Dynamic family search | Para mock, 3 presets dan contexto inmediato. El input libre permite custom IDs. Backend eventualmente proveerá search |
+| 15 | Category chips con toggle en OpportunityScanner | FilterDropdown | 6 categorías como chips son más visuales y permiten ver totales por categoría inline |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| 1-7 | Infraestructura, tokens, forms, lists, details | ✅ |
+| 8 | Dashboard sub-componentes | 🔄 5/12 done |
+| 9 | Wellness + Satisfaction | ✅ |
+| 10 | Proactive Recommendations | ✅ COMPLETADA |
+| 11 | Communication Enhancement | ✅ COMPLETADA |
+| 12 | Guest Management + Trial Memberships | ✅ COMPLETADA |
+| **13** | **Finance Enhancement + HITL Complete** | **✅ COMPLETADA** |
+| 14 | Print/PDF + Export | ⬜ SIGUIENTE |
+| 15 | Integration Testing + QA | ⬜ |
+| 16 | Mock → Backend Migration | ⬜ |
+
+---
+
+## 6. PRÓXIMA FASE — Fase 14: Print/PDF + Export
+
+**No requiere agente backend específico.**
+
+**Frontend existente:**
+- Placeholder buttons en: FinanceOverview ("Exportar"), ReportGenerator ("Exportar"), BoardBriefing ("PDF"), CommunicationCenter ("Exportar")
+- `export_report` tool existe en el agente executive_dashboard (approval: HITL)
+
+**Bloques propuestos (tentativo):**
+
+| Bloque | Contenido | Dependencia |
+|--------|-----------|-------------|
+| B1 | Export service utility + PDF template engine | Ninguna |
+| B2 | Export buttons connect to export_report tool + PDF generation | B1 |
+| B3 | Print-optimized CSS + page break handling | B2 |
+
+**ApprovalQueue impact:** `export_report` es HITL con escalación condicional (audiencia externa → HITL). Ya existe en ApprovalQueue.
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+### Pendientes originales (pre-Fase 13) — Estado actualizado
+
+| # | Issue | Severidad | Archivo | Fase | Estado |
+|---|-------|-----------|---------|------|--------|
+| 2 | AIChatWidget: posición movida de derecha a izquierda sobre sidebar | MEDIA | `shared/components/chat/AIChatWidget.tsx` | 15 | ⬜ PENDIENTE |
+| 4 | Dashboard sub-componentes: 7/12 pendientes (violations reglas) | MEDIA | `features/dashboard/components/` | 8 | ⬜ PENDIENTE |
+| 6 | MembershipDonut: tooltip con backdrop-filter (Regla #2) | MEDIA | `features/dashboard/components/MembershipDonut.tsx` | 8 | ⬜ PENDIENTE |
+| 7 | AgeBalanceWidget: mock group colors no son tokens Silver Tide (Regla #1) | MEDIA | `features/dashboard/components/AgeBalanceWidget.tsx` | 8 | ⬜ PENDIENTE |
+| 8 | Sub-componentes dashboard: hex hardcodeados en vez de chartTheme (Regla #3) | MEDIA | `features/dashboard/components/*` | 8 | ⬜ PENDIENTE |
+| 9 | HitlQueue: botones raw en vez de Button shared (Regla #17) | MEDIA | `features/dashboard/components/HitlQueue.tsx` | 8 | ⬜ PENDIENTE |
+| 10 | MembershipDonut: falta useReducedMotion() (Regla #18) | BAJA | `features/dashboard/components/MembershipDonut.tsx` | 8 | ⬜ PENDIENTE |
+| 14 | SettingsPage: notificaciones store local no sync con backend | BAJA | `features/settings/SettingsPage.tsx` | 15 | ⬜ PENDIENTE |
+| 15 | SettingsPage: versión frontend hardcoded "1.0.0-beta" | BAJA | `features/settings/SettingsPage.tsx` | 15 | ⬜ PENDIENTE |
+| 16 | RiskHeatmap: emojis como icons en vez de Lucide | BAJA | `features/reports/RiskHeatmap.tsx` | 15 | ⬜ PENDIENTE |
+| 17 | MyReservations: tipos inline no compartidos | BAJA | `features/mi-club/MyReservations.tsx` | 15 | ⬜ PENDIENTE |
+| 18 | communication_insights: tool mock-only, no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 19 | guest_management_insights: tool mock-only, no existe en backend | BAJA | `shared/mocks/` | 16 | ⬜ PENDIENTE |
+| 20 | EmergencyBroadcast.tsx excluido de CommunicationDashboard | BAJA | `communications/` | — | Decisión confirmada |
+| 21 | GuestList.tsx y GuestRegistration.tsx viven en server "guests" separado de "guest_management" | BAJA | `features/guests/` | — | Arquitectura |
+
+### Pendientes resueltos en Fase 13
+
+| # | Issue | Resolución |
+|---|-------|-----------|
+| 1 | FinancialDashboard: métricas que no aparecen | ✅ RESUELTO — `get_financial_summary` mock reemplaza tool fantasma |
+| 3 | ApprovalQueue: 2 tipos nuevos (optimize_pricing, suggest_new_activities) | ✅ RESUELTO — No requiere cambios en ApprovalQueue. Los mocks nuevos del backend los incluyen en `get_pending_approvals` |
+| 5 | Tier mismatch backend↔frontend | ✅ RESUELTO — Bridged con mapping functions + BACKEND_TIER_CONFIG |
+| 11 | FamilyAccount: tab bar local en vez de DetailTabs | ✅ RESUELTO — Migrado a DetailTabs |
+| 12 | FamilyAccount: filter select raw en vez de FilterDropdown | ✅ RESUELTO — Migrado a FilterDropdown |
+| 13 | FamilyAccount: Table raw en vez de Table compartido | ✅ RESUELTO — Mobile cards + responsive pattern verificado |
+
+### Pendientes nuevos de Fase 13
+
+| # | Issue | Severidad | Archivo | Fase sugerida |
+|---|-------|-----------|---------|---------------|
+| 22 | `get_financial_summary` es mock-only — no existe en backend | BAJA | `shared/mocks/` | 16 |
+| 23 | `finance_scenario_simulate` es mock-only | BAJA | `shared/mocks/` | 16 |
+| 24 | `finance_opportunities_scan` es mock-only | BAJA | `shared/mocks/` | 16 |
+| 25 | `finance_board_briefing` es mock-only | BAJA | `shared/mocks/` | 16 |
+| 26 | FilterDropdown import path no verificada — asume `@/shared/components/ui/FilterDropdown` | MEDIA | `FamilyAccount.tsx` | 15 |
+| 27 | `get_family_account`, `get_transactions`, `get_invoices` no existen en FinanceAgent | MEDIA | `FamilyAccount.tsx` | 16 |
+| 28 | FamilyAccount aging bucket usa 40/60 split de `aging_90_plus` | BAJA | `FamilyAccount.tsx` | 16 |
+| 29 | BillingCenter: `InvoiceData` backend no tiene `invoice_number`, `balance`, `paid_amount` | MEDIA | `BillingCenter.tsx` | 16 |
+| 30 | 3 features de inteligencia financiera para Fase futura: Matriz Rentabilidad por Socio, Test de Estrés Monte Carlo, Calendario Financiero Estacional | BAJA | `features/finance/` | Futura |
+| 31 | ScenarioSimulator `categoryLabels` hardcodeado (4 categorías internas) | BAJA | `FinancialIntelligence.tsx` | Futura |
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección 7 (Estado del Sprint) — REEMPLAZAR:
+
+```
+| Fase | Contenido                                        | Estado            |
+|------|--------------------------------------------------|-------------------|
+| 1-7  | Infraestructura, tokens, forms, lists, details   | ✅                |
+| 8    | Dashboard sub-componentes                        | 🔄 5/12 done      |
+| 9    | Wellness + Satisfaction                          | ✅                |
+| 10   | Proactive Recommendations                        | ✅ COMPLETADA     |
+| 11   | Communication Enhancement                        | ✅ COMPLETADA     |
+| 12   | Guest Management + Trial Memberships             | ✅ COMPLETADA     |
+| 13   | Finance Enhancement + HITL Complete              | ✅ COMPLETADA     |
+| 14   | Print/PDF + Export                               | ⬜ SIGUIENTE      |
+| 15   | Integration Testing + QA                         | ⬜                |
+| 16   | Mock → Backend Migration                         | ⬜                |
+```
+
+### Sección 8 (Pendientes) — REEMPLAZAR completamente con tabla consolidada de Sección 7 (arriba).
+
+### Sección 4 (Patrones) — Agregar nuevos patrones:
+
+```
+| Nivel        | Patrón                                          | Ejemplo                              |
+|--------------|------------------------------------------------|--------------------------------------|
+| Hub          | DetailTabs + lazy() + Suspense                 | FinancialDashboard (6 tabs), CommunicationDashboard, GuestManagementDashboard |
+| Insights     | Quick deterministic + AI auto-load             | FinanceOverview, FinanceAnalytics    |
+| Intelligence | Scenario Simulator con sliders                 | ScenarioSimulator                    |
+| Intelligence | Opportunity Scanner con action flow            | OpportunityScanner                   |
+| Intelligence | Board Briefing con decisiones                  | BoardBriefing                        |
+| UI           | Section wrapper expandible con AnimatePresence | FinanceAnalytics (9 secciones)       |
+```
+
+### Sección 6 (Shared Components) — Verificar que DetailTabs y FilterDropdown estén listados.
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos nuevos (6 componentes)
+
+| Regla | FinanceOverview | FinanceAnalytics | FinancialIntelligence | BillingCenter | ExpenseManager | BudgetManager | ReportGenerator |
+|-------|----------------|-----------------|----------------------|---------------|----------------|---------------|-----------------|
+| #1 NUNCA hardcoded | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #2 NO backdrop-filter | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #3 chartTheme | ✅ | ✅ | N/A | N/A | N/A | N/A | N/A |
+| #6 ResponsiveContainer | ✅ | ✅ | N/A | N/A | N/A | N/A | N/A |
+| #7 CHART constants | ✅ | ✅ | N/A | N/A | N/A | N/A | N/A |
+| #8 formatCurrency | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #9 TOOLTIP_STYLE | ✅ | ✅ | N/A | N/A | N/A | N/A | N/A |
+| #10 AXIS_TICK | ✅ | ✅ | N/A | N/A | N/A | N/A | N/A |
+| #11 focus-visible | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #12 touch ≥44px | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #13 DetailTabs | ✅ (hub) | N/A (child) | N/A | N/A | N/A | N/A | N/A |
+| #15 Toast | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #17 Button shared | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #18 reducedMotion | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #20 breakpoint | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | N/A |
+| #21 responsive | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| #22 cn() | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+### Archivos modificados (3)
+
+| Regla | FinancialDashboard | FamilyAccount | families/types |
+|-------|-------------------|---------------|----------------|
+| #1 | ✅ | ✅ | ✅ |
+| #2 | ✅ | ✅ | N/A |
+| #13 | ✅ (DetailTabs) | ✅ (DetailTabs) | N/A |
+| #15 | ✅ | ✅ | N/A |
+| #16 | ✅ (breadcrumbs) | N/A | N/A |
+| #17 | ✅ | ✅ | N/A |
+| #21 | ✅ | ✅ (mobile cards) | N/A |
+
+### Mocks (4 archivos)
+
+| Regla | contracts | factories | registry |
+|-------|-----------|-----------|----------|
+| #1 | ✅ | ✅ | N/A |
+| #2 | N/A | N/A | N/A |
+| #4 | ✅ | ✅ | ✅ |
+
+**0 violaciones pendientes en Fase 13.**
+
+---
+
+## 10. QUICK START PARA NUEVO CHAT
+
+```
+1. Pegar CLAUDE_CONTEXT_MINI.md (Secciones 1-10)
+2. Pegar este CHECKPOINT (Fase 13 completa)
+3. Si la fase 14 requiere un agente backend específico:
+   → Pedir: "Pasame el agente de ExecutiveDashboardAgent y los modelos"
+   → Pegar: backend/src/club_mcp/agents/executive_dashboard.py
+   → Pegar: backend/src/club_mcp/models/*.py
+4. Si la fase 14 es standalone (Print/PDF):
+   → Pedir: "Definime los bloques de Fase 14 (Print/PDF + Export)"
+5. Pedir: "Genera Bloque 1"
+```
+
+---
+
+## 11. DECISION LOG
+
+| # | Fecha | Decisión | Razón | Impacto |
+|---|-------|---------|-------|---------|
+| 1 | Mayo 2025 | FinancialDashboard rewrite como hub con 6 tabs (no 5) | 3 features de inteligencia financiera merecen tab propio ("Inteligencia") | FinancialIntelligence.tsx como componente separado con 3 sub-features |
+| 2 | Mayo 2025 | `get_financial_summary` como bridge mock (no eliminar) | Factory provee sparklines + change_pct que las tools reales no tienen | Se elimina en Fase 16 cuando backend implemente la tool |
+| 3 | Mayo 2025 | `generate_ai_analysis` como auto-load con staleTime 5min (no on-demand button) | Backend ya computa el analysis — no es mock-only. UX inmediata > botón explícito | Diferente patrón que communication_insights/guest_management_insights |
+| 4 | Mayo 2025 | ScenarioSimulator auto-simula al cambiar variables | UX más fluida que botón explícito. El usuario ve impacto en tiempo real | staleTime 5min evita requests excesivos |
+| 5 | Mayo 2025 | 3 features de inteligencia en Fase 13 (no postergar) | Transforman el módulo de "ver números" a "tomar decisiones". Alto valor percibido por la junta | +1,115 líneas, +3 tools mock-only, +1 tab en dashboard |
+| 6 | Mayo 2025 | Features de inteligencia restantes documentadas extensamente para fase futura | Matriz Rentabilidad por Socio, Test de Estrés Monte Carlo, Calendario Financiero Estacional requieren datos que aún no tenemos | Pendiente #30 — se retoman cuando backend provea member behavioral data |
+| 7 | Mayo 2025 | FamilyAccount rewrite completo (no quirúrgico) | 3 fixes intercalados + mobile cards tocaban secciones entrelazadas | Más seguro que 3 patches individuales |
+| 8 | Mayo 2025 | BACKEND_TIER_CONFIG + mapping functions (no reemplazar frontend tiers) | Componentes existentes usan 4-tier frontend. Bridge evita romper nada | Full unification recomendada para Fase 16 |
+| 9 | Mayo 2025 | ApprovalQueue NO se modifica para 2 tipos nuevos | ToolDisplayName es genérico, AGENT_LABELS ya tiene `proactive_recommendation` | 0 cambios necesarios — los mocks nuevos aparecen automáticamente |
+| 10 | Mayo 2025 | Inline edit en BudgetManager (no modal) | Cambiar presupuesto es una acción simple. Inline es más rápido y contextual | Patrón replicable para settings/values simples |
+| 11 | Mayo 2025 | `getInvStatusConfig()` helper inline en BillingCenter | Solo BillingCenter necesita draft/sent. No contaminar config global | Se puede mover a types.ts si otro componente lo necesita |
+| 12 | Mayo 2025 | 3 families hardcodeadas en BillingCenter presets | Para mock, presets dan contexto inmediato. Input libre permite custom IDs | Backend eventualmente proveerá family search |
+| 13 | Mayo 2025 | Category chips con toggle en OpportunityScanner (no FilterDropdown) | 6 categorías como chips son más visuales y muestran totales inline | Patrón replicable para filter-by-category con counts |
+| 14 | Mayo 2025 | Briefing "Enviar a Junta" como placeholder | Flujo completo requiere backend de notificaciones | Se conecta en Fase 16 cuando notification system esté integrado |
+| 15 | Mayo 2025 | Decision options como cards numeradas A/B/C (no radio buttons) | Más visual para decisiones ejecutivas. Las opciones son informativas, no un form | Patrón replicable para approval/voting flows |
+
+---
+
+Gracias por esta sesión épica. Fase 13 quedó como una plataforma de inteligencia financiera completa: Health Score, cash flow forecast con seasonalidad costarricense, revenue concentration con Shannon/HHI, anomaly detection, 6 recomendaciones estratégicas, simulador de escenarios con 6 variables, scanner de 5 oportunidades de revenue (₡6.5M/mes potencial), briefing ejecutivo para la junta con decisiones pendientes, CRUD completo de facturación/pagos/gastos con HITL, presupuesto con edición inline, y reportes generados on-demand. Nos vemos en Fase 14 — Print/PDF + Export.
+
+estas tres quedaron por fuera del check point pero debes incluirlas es mandatorio
+No, no las incluí con el análisis detallado. Solo quedaron como pendiente #30 en el checkpoint. Acá van las 3 features completas con todo el análisis original.
+
+---
+
+## Feature 4 — Matriz de Rentabilidad por Socio (Member Profitability Matrix)
+
+### Qué es
+
+Un mapa visual de cada socio/familia en dos dimensiones: cuánto facturan vs cuánto cuestan al club. Cuatro cuadrantes con estrategias diferentes. No es una tabla — es una herramienta de segmentación estratégica que revela verdades incómodas sobre quién subsidia a quién.
+
+### Visualización
+
+```
+         ALTO COSTO
+              │
+    ┌─────────┼─────────┐
+    │ WORKHORSE│  STAR   │
+    │ Analizar │ Fidelizar│
+    │ eficiencia│ premium │
+    │  12 fam. │  28 fam. │
+────┼─────────┼─────────┼──── ALTO REVENUE
+    │  RIESGO  │POTENCIAL│
+    │ Revisar  │ Activar │
+    │ contratos│ programas│
+    │   8 fam. │  45 fam. │
+    └─────────┼─────────┘
+              │
+         BAJO COSTO
+
+Hover/focus sobre cada punto → detalle de la familia:
+┌──────────────────────────────────────┐
+│ Familia Montero Quirós               │
+│ Tier: Premium · 4 socios             │
+│ Revenue 12m: ₡3.2M                   │
+│ Costo 12m: ₡1.8M                     │
+│ Margen: 43.8%                        │
+│ Tendencia: ↗ +12% vs anterior        │
+│ LTV estimado: ₡18.5M                 │
+│ Riesgo churn: Bajo (score: 12/100)   │
+│ Insight: "Top 15% en revenue.         │
+│ Candidata a programa VIP familiar."  │
+└──────────────────────────────────────┘
+```
+
+### Adicionalmente: Tabla de ranking con columnas
+
+Familia, Tier, Revenue 12m, Costo 12m, Margen %, Tendencia, LTV, Churn Risk Score. Ordenable por cualquier columna. Filtrable por cuadrante (click en un cuadrante del scatter → filtra la tabla).
+
+### Segmentación AI automática
+
+Los 4 cuadrantes con estrategias diferenciadas:
+
+- **Stars (high rev / low cost):** Fidelizar, ofrecer beneficios exclusivos, evitar migración. Son el motor financiero del club.
+- **Workhorses (high rev / high cost):** Optimizar costos de servicio, evaluar si los servicios extra generan ROI. Pueden ser estrellas si se optimiza el costo de atenderlos.
+- **Potentials (low rev / low cost):** Activar con programas de consumo, cross-sell actividades. Bajo riesgo, alta oportunidad.
+- **Risks (low rev / high cost):** Revisar términos, evaluar si el servicio que consumen justifica su membresía. Conversación difícil pero necesaria.
+
+### Tools MCP necesarias
+
+| Tool | Server | Approval | Description |
+|------|--------|----------|-------------|
+| `finance_member_profitability` | finance | AUTO | Devuelve array de member economics por familia con behavioral data: revenue, cost, margin, churn_score, ltv, activity_summary |
+
+### Contract shape
+
+```typescript
+{
+  status: string;
+  message: string;
+  data: {
+    families: Array<{
+      family_id: string;
+      family_name: string;
+      tier: string;
+      member_count: number;
+      revenue_12m: number;
+      cost_12m: number;
+      margin_pct: number;
+      trend_pct: number;
+      ltv_estimate: number;
+      churn_risk_score: number;  // 0-100
+      quadrant: "star" | "workhorse" | "potential" | "risk";
+      top_revenue_source: string;
+      last_activity_date: string;
+      ai_insight: string;
+    }>;
+    summary: {
+      total_families: number;
+      avg_revenue: number;
+      avg_margin: number;
+      star_count: number;
+      workhorse_count: number;
+      potential_count: number;
+      risk_count: number;
+      revenue_concentration_top10_pct: number;
+    };
+    quadrant_strategies: {
+      star: string;
+      workhorse: string;
+      potential: string;
+      risk: string;
+    };
+  };
+}
+```
+
+### Factories data costarricense
+
+```typescript
+// 8 familias de ejemplo:
+// Castillo Montero (VIP, star, ₡4.8M rev, 52% margin, churn 8)
+// Quesada Vargas (Premium, star, ₡3.2M rev, 44% margin, churn 12)
+// Solano Brenes (Básico, potential, ₡1.4M rev, 18% margin, churn 25)
+// Montero Quirós (Premium, workhorse, ₡3.8M rev, 12% margin, churn 15)
+// Vargas Rojas (Básico, risk, ₡800K rev, -8% margin, churn 65)
+// Jiménez Castro (Premium, star, ₡2.9M rev, 48% margin, churn 5)
+// Rodríguez Mora (Básico, potential, ₡1.1M rev, 22% margin, churn 30)
+// Brenes Alfaro (VIP, workhorse, ₡5.2M rev, 8% margin, churn 20)
+```
+
+### Componente propuesto
+
+**MemberProfitabilityMatrix.tsx** (~550 líneas)
+- Scatter plot (Revenue X vs Cost Y) con 4 quadrant backgrounds coloreados
+- Cada punto = una familia, tamaño proporcional al member_count
+- Hover card con 8 métricas + AI insight
+- Summary strip (4 KPIs: stars/workhorses/potentials/risks count)
+- Quadrant strategy cards (4, con click para filtrar tabla)
+- Ranking table sortable/filtrable
+- Tool: `finance_member_profitability` (auto, staleTime 5min)
+
+### Por qué no en Fase 13
+
+Necesita datos granulares de `member_engagement` que el backend aún no provee. El FinanceAgent calcula `member_economics` agregado (200 socios promedio) pero no tiene acceso a datos por familia. Requiere un join entre `finance_repo` y `member_repo` que no existe.
+
+### Cuándo implementar
+
+**Fase 14 o 15**, cuando el backend tenga:
+1. `finance_member_profitability` implementado en FinanceAgent
+2. O se pueda derivar de `finance_account_status` (ya tenemos 3 familias) + datos de `member_engagement`
+
+---
+
+## Feature 5 — Test de Estrés Financiero (Monte Carlo Stress Test)
+
+### Qué es
+
+Un simulador que evalúa la resiliencia financiera del club ante escenarios adversos. No usa números fijos como el Scenario Simulator — usa distribuciones de probabilidad y ejecuta N iteraciones (Monte Carlo) para generar un fan chart de posibles resultados. Es la diferencia entre saber "si pierdo 10 socios, pierdo X" y saber "hay un 87% de probabilidad de mantener cash flow positivo si viene una recesión".
+
+### Escenarios preconfigurados
+
+```
+┌─ Escenario: "Recesión Costa Rica 2026" ──────────────┐
+│                                                        │
+│ Variables estocásticas:                                │
+│ • Churn de socios: μ=8%, σ=3% (distribución normal)  │
+│ • Caída F&B: μ=15%, σ=5%                              │
+│ • Eventos cancelados: μ=25%, σ=10%                    │
+│ • Tipo de cambio USD/CRC: μ=+12%, σ=4%               │
+│                                                        │
+│ 1,000 iteraciones Monte Carlo                          │
+│                                                        │
+│ RESULTADO:                                             │
+│ ┌────────────────────────────────────────────┐        │
+│ │ P(mantener cash flow positivo 12m): 87%    │        │
+│ │ P(health score > 60): 72%                  │        │
+│ │ Pérdida máxima probable (P95): ₡-18.3M    │        │
+│ │ Reserva mínima recomendada: ₡22M           │        │
+│ │ Mes más crítico: Agosto 2026               │        │
+│ └────────────────────────────────────────────┘        │
+│                                                        │
+│ Fan chart de 12 meses con P10/P25/P50/P75/P90        │
+│ (5 líneas de proyección de cash flow acumulado)       │
+└────────────────────────────────────────────────────────┘
+```
+
+### 6 Escenarios preconfigurados
+
+1. **"Recesión Costa Rica"** — churn 8%±3%, caída F&B 15%±5%, eventos cancelados 25%±10%, tipo de cambio +12%±4%
+2. **"Pandemia 2.0"** — cierre temporal 2 meses, recovery 6 meses, churn 15%±5%, F&B -40%±10%
+3. **"Competencia"** — nuevo club abre a 15 min, churn 12%±4%, guest fees -20%, eventos -30%
+4. **"Renovación Mayor"** — cierre parcial de instalaciones 6 meses, gastos +50%, revenue -25%
+5. **"Boom"** — crecimiento acelerado: +20%±8% socios, +30%±10% eventos, staff +15%
+6. **"Custom"** — el usuario define μ y σ para cada variable
+
+### Visualización principal
+
+**Fan Chart (12 meses):**
+- 5 líneas: P10 (pesimista), P25, P50 (mediana), P75, P90 (optimista)
+- Área sombreada entre P10 y P90 (zona de incertidumbre)
+- Línea de referencia en ₡0 (break-even)
+- Mes más crítico resaltado con marker
+
+**Metrics panel:**
+- P(cash flow positivo 12m): gauge %
+- P(health score > 60): gauge %
+- Pérdida máxima probable (P95): número grande
+- Reserva mínima recomendada: número grande
+- Mes más crítico: badge
+
+### Tools MCP necesarias
+
+| Tool | Server | Approval | Description |
+|------|--------|----------|-------------|
+| `finance_stress_test` | finance | AUTO | Ejecuta N iteraciones con parámetros estocásticos, devuelve percentiles |
+
+### Contract shape
+
+```typescript
+{
+  status: string;
+  message: string;
+  data: {
+    scenario_name: string;
+    iterations: number;
+    metrics: {
+      p_positive_cashflow_12m: number;    // 0-1
+      p_health_above_60: number;          // 0-1
+      max_probable_loss_p95: number;      // colones
+      min_reserve_recommended: number;    // colones
+      critical_month: string;             // "Aug 2026"
+    };
+    fan_chart: Array<{
+      month: string;
+      p10: number;
+      p25: number;
+      p50: number;
+      p75: number;
+      p90: number;
+    }>;
+    distribution_summary: {
+      mean_net_12m: number;
+      std_dev: number;
+      skewness: number;
+      worst_case: number;
+      best_case: number;
+    };
+    assumptions: string[];
+    ai_commentary: string;
+  };
+}
+```
+
+### Componente propuesto
+
+**StressTestPanel.tsx** (~500 líneas)
+- Scenario selector (6 preconfigurados + custom)
+- Custom scenario editor: sliders μ y σ para cada variable estocástica
+- "Ejecutar test" button con iteration count selector (100/500/1000)
+- Fan chart: AreaChart con 5 areas (P10/P25/P50/P75/P90)
+- Metrics panel: 5 KPI cards con gauges
+- Distribution summary: min/mean/max + skewness indicator
+- AI commentary box
+- Assumptions list
+- Tool: `finance_stress_test` (auto con scenario params)
+
+### Por qué no en Fase 13
+
+Dos razones:
+1. **Complejidad de implementación alta:** El backend necesita ejecutar Monte Carlo real (1000 iteraciones con distribuciones). El mock puede simular percentiles pero no es lo mismo que un simulador real.
+2. **Valor incremental vs Scenario Simulator:** El Scenario Simulator (Feature 1) ya cubre el 80% del valor de "¿qué pasa si cambian las variables?". Monte Carlo agrega cuantificación de riesgo probabilístico — valioso pero no urgente.
+
+### Cuándo implementar
+
+**Fase 15** (Integration Testing), cuando:
+1. El backend tenga `finance_stress_test` implementado con Monte Carlo real
+2. El Scenario Simulator esté validado por los usuarios
+3. La junta directiva pida cuantificación de riesgo explícita
+
+---
+
+## Feature 6 — Calendario Financiero Inteligente Estacional
+
+### Qué es
+
+Un timeline visual de 12 meses específico para Costa Rica que muestra patrones estacionales de revenue y gasto, ventanas de acción recomendadas, alertas financieras anticipadas, y eventos programados. No es un calendario genérico — es un mapa temporal que conecta la realidad climática y cultural costarricense con la salud financiera del club.
+
+### Visualización
+
+```
+    Ene  Feb  Mar  Abr  May  Jun  Jul  Ago  Sep  Oct  Nov  Dic
+    ───────────────────────────────────────────────────────────
+Revenue
+temp ████████████████░░░░░░░░░░░░░░░░░░████████████████████
+     ALTA TEMPORADA    TEMPORADA BAJA     TRANSICIÓN  ALTA
+
+Eventos
+     ██░░██░░██░░░░░░░░░░░░░░░░░░░░░░░░██░░██░░████████████
+     Bodas     Bautizos    Mantenimiento    Quinceañeras  Navidad
+
+Gastos
+     ░░░░██░░░░░░████████████████████░░░░░░░░░░░░░░░░░░░░██
+          Impuestos   Mantenimiento mayor        Aguinaldos
+
+ACCIONES RECOMENDADAS:
+┌─────────────────────────────────────────────────────────────┐
+│ 📅 Mayo: "Renegociar contratos F&B antes de temporada baja"│
+│    Ahorro potencial: ₡4.2M anuales                         │
+│                                                             │
+│ 📅 Junio: "Programa Work-From-Club para socios remotos"    │
+│    Revenue potencial: ₡1.8M/mes en temporada baja          │
+│                                                             │
+│ 📅 Septiembre: "Reservar cash para aguinaldos + primas"    │
+│    Monto requerido estimado: ₡15.6M                        │
+│                                                             │
+│ 📅 Noviembre: "Early bird renovación membresías 2027"      │
+│    Target: 80% renovación anticipada con 5% descuento      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Layers toggleables
+
+El componente tiene 6 layers que el usuario puede activar/desactivar:
+
+1. **Revenue patterns** (por categoría): barras apiladas mostrando composición mensual del revenue
+2. **Expense patterns** (por categoría): barras apiladas mostrando composición mensual de gastos
+3. **Eventos programados**: markers en timeline (bodas, bautizos, quinceañeras, corporativos)
+4. **Maintenance windows**: bloques de tiempo donde hay mantenimiento programado (cierre parcial piscina, etc.)
+5. **Cash reserve requirements**: línea mostrando cuánto cash necesita el club mes a mes para cubrir obligaciones
+6. **AI recommended actions**: cards con acciones específicas por mes, cada una con ahorro/revenue potencial
+
+### Datos estacionales costarrICENSES hardcodeados (base knowledge)
+
+```typescript
+const CR_SEASONALITY = {
+  // Temporada alta: Diciembre a Abril (verano CR)
+  high_season: { months: [0, 1, 2, 3, 11], revenue_factor: 1.08, event_multiplier: 1.5 },
+  // Temporada baja: Junio a Septiembre (lluvias)
+  low_season: { months: [5, 6, 7, 8], revenue_factor: 0.92, event_multiplier: 0.6 },
+  // Transición: Mayo, Octubre, Noviembre
+  transition: { months: [4, 9, 10], revenue_factor: 1.0, event_multiplier: 1.0 },
+  
+  // Eventos culturales típicos CR
+  cultural_events: [
+    { month: 0, event: "Fiestas de Palmares", impact: "high" },
+    { month: 1, event: "Carnaval (Puntarenas)", impact: "medium" },
+    { month: 3, event: "Semana Santa", impact: "high" },
+    { month: 6, event: "Fiestas patrias", impact: "medium" },
+    { month: 8, event: "Día del Niño", impact: "low" },
+    { month: 11, event: "Navidad + Fin de Año", impact: "high" },
+  ],
+  
+  // Obligaciones financieras mensuales
+  financial_obligations: [
+    { month: 1, item: "Pago impuestos renta", type: "expense" },
+    { month: 3, item: "Declaración fiscal", type: "admin" },
+    { month: 4, item: "Aguinaldo (1er pago)", type: "expense" },
+    { month: 10, item: "Prima navideña + aguinaldo", type: "expense" },
+    { month: 11, event: "Aguinaldos staff", type: "expense" },
+  ],
+  
+  // Ventanas de mantenimiento
+  maintenance_windows: [
+    { month_range: [5, 7], item: "Mantenimiento mayor piscina", impact: "partial_closure" },
+    { month_range: [8, 8], item: "Preparación temporada alta", impact: "none" },
+  ],
+};
+```
+
+### Tools MCP necesarias
+
+| Tool | Server | Approval | Description |
+|------|--------|----------|-------------|
+| `finance_seasonal_calendar` | finance | AUTO | Devuelve 12 meses con patterns, events, recommended actions basado en datos reales del club + conocimiento estacional CR |
+
+### Contract shape
+
+```typescript
+{
+  status: string;
+  message: string;
+  data: {
+    year: number;
+    months: Array<{
+      month: number;           // 1-12
+      label: string;           // "Ene 2026"
+      season: "high" | "low" | "transition";
+      revenue_factor: number;  // 1.08 para alta, 0.92 para baja
+      projected_revenue: number;
+      projected_expenses: number;
+      projected_net: number;
+      cash_reserve_required: number;
+      events: Array<{ name: string; type: string; impact: string }>;
+      maintenance: Array<{ item: string; impact: string }>;
+      obligations: Array<{ item: string; amount: number }>;
+      recommended_actions: Array<{
+        action: string;
+        category: "cost_saving" | "revenue_opportunity" | "cash_management" | "planning";
+        estimated_impact: number;
+        deadline: string;
+        priority: "high" | "medium" | "low";
+      }>;
+    }>;
+    annual_summary: {
+      high_season_revenue: number;
+      low_season_revenue: number;
+      seasonality_gap_pct: number;
+      total_obligations: number;
+      critical_cash_months: number[];
+      recommended_reserve: number;
+    };
+  };
+}
+```
+
+### Componente propuesto
+
+**SeasonalCalendar.tsx** (~600 líneas)
+- **Timeline view** (default): 12 columnas (una por mes), 6 filas (una por layer), toggle por layer
+- **Month detail view** (click en columna): expande para mostrar detalle del mes con todos sus eventos, obligaciones, y acciones recomendadas
+- **Actions panel**: lista priorizada de acciones recomendadas con estimated impact y deadline
+- **Season indicator**: barra horizontal con colores (alta=verde, baja=rojo, transición=ámbar)
+- **Legend**: qué significa cada layer
+- **Annual summary card**: 6 KPIs (high/low season revenue, gap %, total obligations, critical months, reserve)
+- Tool: `finance_seasonal_calendar` (auto, staleTime 1h — datos estacionales no cambian frecuentemente)
+
+### Por qué no en Fase 13
+
+Tres razones:
+1. **Puede ser standalone:** No depende de los otros componentes de finance. Se puede construir en cualquier momento.
+2. **Los datos estacionales son semi-estáticos:** La seasonalidad CR no cambia trimestre a trimestre. No hay urgencia.
+3. **Valor es contextual:** Funciona mejor cuando el club ya tiene los otros dashboards funcionando y puede tomar acciones basadas en las recomendaciones del calendario.
+
+### Cuándo implementar
+
+**Fase 14 o 15**, idealmente junto con Print/PDF (Fase 14) porque:
+1. El calendario es altamente imprimible — la junta lo puede tener como referencia física
+2. Las "Acciones Recomendadas" se pueden exportar como checklist mensual
+3. Los datos semi-estáticos significan que el mock puede ser muy realista desde el día 1
+
+---
+
+## Resumen de las 3 features pendientes
+
+| # | Feature | Tool MCP | Componente | Líneas aprox | Fase sugerida | Depende de |
+|---|---------|----------|-----------|-------------|---------------|-----------|
+| 4 | Matriz de Rentabilidad por Socio | `finance_member_profitability` | MemberProfitabilityMatrix.tsx | ~550 | 14-15 | Backend member behavioral data |
+| 5 | Test de Estrés Monte Carlo | `finance_stress_test` | StressTestPanel.tsx | ~500 | 15 | Backend Monte Carlo implementation |
+| 6 | Calendario Financiero Estacional | `finance_seasonal_calendar` | SeasonalCalendar.tsx | ~600 | 14-15 | Standalone (puede empezar cuando sea) |
+
+Las 3 features viven en el **Tab 3 "Inteligencia"** de FinancialDashboard, expandiendo el sub-tab bar a 6 items:
+
+```
+FinancialIntelligence.tsx sub-tabs:
+├── Simulador          → ScenarioSimulator          ✅ IMPLEMENTADO
+├── Oportunidades      → OpportunityScanner         ✅ IMPLEMENTADO
+├── Briefing           → BoardBriefing              ✅ IMPLEMENTADO
+├── Rentabilidad       → MemberProfitabilityMatrix  ⬜ PENDIENTE (Feature 4)
+├── Test de Estrés     → StressTestPanel            ⬜ PENDIENTE (Feature 5)
+└── Calendario         → SeasonalCalendar           ⬜ PENDIENTE (Feature 6)
+```
+
+---
+

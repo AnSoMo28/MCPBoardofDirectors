@@ -1,0 +1,978 @@
+/* ═══════════════════════════════════════════════════════════
+   RESERVATION CALENDAR — Week/Day Calendar View
+   BEM: .fac-cal / .fac-cal__[el] / .fac-cal--[mod]
+   Data: [data-view] [data-status] [data-today] [data-occupied]
+         [data-active] [data-prefers-reduced]
+   Level: 5+ Apple/Xiaomi — no compromises
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ── Custom Properties ───────────────────────────────────── */
+
+:root {
+  --fc-bg:           var(--glass-bg, rgba(255, 255, 255, 0.03));
+  --fc-border:       var(--glass-border, rgba(255, 255, 255, 0.06));
+  --fc-border-hi:    rgba(255, 255, 255, 0.1);
+  --fc-text:         var(--color-silver-100, #e8e4de);
+  --fc-text-200:     var(--color-silver-200, #d4d0c8);
+  --fc-text-muted:   var(--color-silver-400, #8a8580);
+  --fc-text-dim:     var(--color-silver-500, #6b6560);
+  --fc-surface-0:    var(--color-surface-0, #0d0d11);
+  --fc-surface-1:    var(--color-surface-1, #141419);
+  --fc-surface-2:    var(--color-surface-2, #1c1c22);
+  --fc-surface-3:    var(--color-surface-3, #242429);
+  --fc-accent:       var(--color-gold-400, #eab308);
+  --fc-abyss:        var(--color-abyss, #0a0a0f);
+  --fc-slot-h:       48px; /* 12 × 4px — hour slot height */
+  --fc-gutter-w:     48px; /* 12 × 4px — time gutter width */
+}
+
+
+/* ── Base ────────────────────────────────────────────────── */
+
+.fac-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* 16px — toolbar to content */
+  font-family: var(--font-ui, system-ui, -apple-system, sans-serif);
+  color: var(--fc-text);
+
+  /* Level 5+ — container queries */
+  container-type: inline-size;
+  container-name: fac-cal;
+}
+
+
+/* ── Toolbar ─────────────────────────────────────────────── */
+
+.fac-cal__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.fac-cal__toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* 4+2 — button gaps */
+  min-width: 0;
+}
+
+.fac-cal__nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--fc-border);
+  background: transparent;
+  color: var(--fc-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
+}
+
+.fac-cal__nav-btn:hover {
+  background: var(--fc-surface-3);
+  color: var(--fc-text-200);
+}
+
+/* Level 5+ — active */
+.fac-cal__nav-btn:active {
+  transform: scale(0.94);
+  transition-duration: 0.08s;
+}
+
+.fac-cal__nav-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.fac-cal__today-btn {
+  padding: 0 14px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--fc-border);
+  background: transparent;
+  color: var(--fc-text-200);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, transform 0.08s ease;
+}
+
+.fac-cal__today-btn:hover {
+  background: var(--fc-surface-3);
+}
+
+.fac-cal__today-btn:active {
+  transform: scale(0.96);
+  transition-duration: 0.08s;
+}
+
+.fac-cal__toolbar-title {
+  font-family: var(--font-display, "Cormorant Garamond", Georgia, serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--fc-text-200);
+  margin: 0;
+  margin-left: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* View toggle */
+.fac-cal__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--fc-surface-1);
+  border: 1px solid var(--fc-border);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.fac-cal__toggle-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--fc-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.08s ease;
+}
+
+.fac-cal__toggle-btn:hover {
+  color: var(--fc-text-200);
+}
+
+.fac-cal__toggle-btn[data-active="true"] {
+  background: var(--fc-accent);
+  color: var(--fc-abyss);
+}
+
+.fac-cal__toggle-btn:active {
+  transform: scale(0.96);
+  transition-duration: 0.08s;
+}
+
+
+/* ── Week View ───────────────────────────────────────────── */
+
+.fac-cal__week {
+  display: flex;
+  border-radius: 12px;
+  border: 1px solid var(--fc-border);
+  background: var(--fc-surface-1);
+  overflow-x: auto;
+  min-width: 0;
+
+  /* Level 5+ — scroll behavior */
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+}
+
+/* Time gutter */
+.fac-cal__gutter {
+  width: var(--fc-gutter-w);
+  flex-shrink: 0;
+}
+
+.fac-cal__gutter-head {
+  height: 52px;
+  border-bottom: 1px solid var(--fc-border);
+}
+
+.fac-cal__gutter-slot {
+  height: var(--fc-slot-h);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-right: 8px;
+  padding-top: 2px;
+}
+
+.fac-cal__gutter-label {
+  font-family: var(--font-mono, "DM Mono", "Fira Code", monospace);
+  font-size: 10px;
+  color: var(--fc-text-dim);
+}
+
+/* Day column */
+.fac-cal__day-col {
+  flex: 1;
+  min-width: 100px;
+  border-left: 1px solid var(--fc-border);
+}
+
+/* Day header */
+.fac-cal__day-head {
+  position: sticky;
+  top: 0;
+  z: 10;
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-bottom: 1px solid var(--fc-border);
+  background: var(--fc-surface-1);
+  transition: background-color 0.2s ease;
+}
+
+.fac-cal__day-head[data-today="true"] {
+  background: color-mix(in srgb, var(--fc-accent) 8%, var(--fc-surface-1));
+}
+
+.fac-cal__day-name {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--fc-text-muted);
+}
+
+.fac-cal__day-num {
+  font-family: var(--font-display, "Cormorant Garamond", Georgia, serif);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--fc-text-200);
+}
+
+.fac-cal__day-head[data-today="true"] .fac-cal__day-num {
+  color: var(--fc-accent);
+}
+
+/* Hour slot */
+.fac-cal__slot {
+  height: var(--fc-slot-h);
+  border-bottom: 1px solid var(--fc-border);
+  border-right: 1px solid var(--fc-border);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.fac-cal__slot[data-occupied="false"]:hover {
+  background: var(--fc-surface-3);
+}
+
+.fac-cal__slot[data-occupied="false"]:active {
+  background: var(--fc-surface-2);
+}
+
+/* Reservation block (week view) */
+.fac-cal__block {
+  height: 100%;
+  padding: 3px 6px;
+  margin: 2px;
+  border-radius: 4px;
+  border: 1px solid;
+  overflow: hidden;
+  cursor: pointer;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
+
+  /* Level 5+ — entry */
+  animation: fc-fade-in 0.3s ease forwards;
+}
+
+.fac-cal__block:hover {
+  opacity: 0.85;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.fac-cal__block:active {
+  transform: scale(0.97);
+  transition-duration: 0.08s;
+}
+
+/* Status-driven block colors */
+.fac-cal__block[data-status="confirmed"] {
+  background: color-mix(in srgb, var(--color-gold-400, #eab308) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400, #eab308) 30%, transparent);
+  color: var(--color-gold-400, #eab308);
+}
+
+.fac-cal__block[data-status="pending"] {
+  background: color-mix(in srgb, var(--color-amber-400, #fbbf24) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-amber-400, #fbbf24) 30%, transparent);
+  color: var(--color-amber-400, #fbbf24);
+}
+
+.fac-cal__block[data-status="completed"] {
+  background: color-mix(in srgb, var(--color-teal-400, #2dd4bf) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-teal-400, #2dd4bf) 30%, transparent);
+  color: var(--color-teal-400, #2dd4bf);
+}
+
+.fac-cal__block[data-status="cancelled"] {
+  background: color-mix(in srgb, var(--color-rose-400, #fb7185) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-rose-400, #fb7185) 20%, transparent);
+  color: var(--color-rose-400, #fb7185);
+  opacity: 0.6;
+}
+
+.fac-cal__block[data-status="no_show"] {
+  background: color-mix(in srgb, var(--color-silver-400, #8a8580) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-silver-400, #8a8580) 20%, transparent);
+  color: var(--color-silver-400, #8a8580);
+}
+
+.fac-cal__block-name {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.fac-cal__block-time {
+  display: block;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 9px;
+  opacity: 0.7;
+  line-height: 1.3;
+}
+
+
+/* ── Day View ────────────────────────────────────────────── */
+
+.fac-cal__day {
+  border-radius: 12px;
+  border: 1px solid var(--fc-border);
+  background: var(--fc-surface-1);
+  overflow: hidden;
+}
+
+/* Legend */
+.fac-cal__legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--fc-border);
+  flex-wrap: wrap;
+}
+
+.fac-cal__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fac-cal__legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+.fac-cal__legend-swatch[data-status="confirmed"] {
+  background: color-mix(in srgb, var(--color-gold-400, #eab308) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400, #eab308) 40%, transparent);
+}
+
+.fac-cal__legend-swatch[data-status="pending"] {
+  background: color-mix(in srgb, var(--color-amber-400, #fbbf24) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-amber-400, #fbbf24) 40%, transparent);
+}
+
+.fac-cal__legend-swatch[data-status="completed"] {
+  background: color-mix(in srgb, var(--color-teal-400, #2dd4bf) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-teal-400, #2dd4bf) 40%, transparent);
+}
+
+.fac-cal__legend-swatch[data-status="cancelled"] {
+  background: color-mix(in srgb, var(--color-rose-400, #fb7185) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-rose-400, #fb7185) 30%, transparent);
+}
+
+.fac-cal__legend-swatch[data-status="no_show"] {
+  background: color-mix(in srgb, var(--color-silver-400, #8a8580) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-silver-400, #8a8580) 30%, transparent);
+}
+
+.fac-cal__legend-label {
+  font-size: 11px;
+  color: var(--fc-text-muted);
+}
+
+/* Day row */
+.fac-cal__day-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 56px;
+  border-bottom: 1px solid var(--fc-border);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.fac-cal__day-row[data-occupied="false"]:hover {
+  background: var(--fc-surface-3);
+}
+
+.fac-cal__day-row[data-occupied="false"]:active {
+  background: var(--fc-surface-2);
+}
+
+.fac-cal__day-row-gutter {
+  width: 64px;
+  flex-shrink: 0;
+  padding: 12px 10px;
+  border-right: 1px solid var(--fc-border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.fac-cal__day-row-label {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  color: var(--fc-text-dim);
+}
+
+.fac-cal__day-row-content {
+  flex: 1;
+  padding: 6px 10px;
+  min-height: 56px;
+}
+
+/* Day block (expanded) */
+.fac-cal__day-block {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid;
+  cursor: pointer;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
+
+  animation: fc-fade-in 0.3s ease forwards;
+}
+
+.fac-cal__day-block:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fac-cal__day-block:active {
+  transform: scale(0.98);
+  transition-duration: 0.08s;
+}
+
+/* Status colors (same scheme as week blocks) */
+.fac-cal__day-block[data-status="confirmed"] {
+  background: color-mix(in srgb, var(--color-gold-400, #eab308) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400, #eab308) 25%, transparent);
+}
+
+.fac-cal__day-block[data-status="pending"] {
+  background: color-mix(in srgb, var(--color-amber-400, #fbbf24) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-amber-400, #fbbf24) 25%, transparent);
+}
+
+.fac-cal__day-block[data-status="completed"] {
+  background: color-mix(in srgb, var(--color-teal-400, #2dd4bf) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-teal-400, #2dd4bf) 25%, transparent);
+}
+
+.fac-cal__day-block[data-status="cancelled"] {
+  background: color-mix(in srgb, var(--color-rose-400, #fb7185) 6%, transparent);
+  border-color: color-mix(in srgb, var(--color-rose-400, #fb7185) 15%, transparent);
+  opacity: 0.7;
+}
+
+.fac-cal__day-block[data-status="no_show"] {
+  background: color-mix(in srgb, var(--color-silver-400, #8a8580) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-silver-400, #8a8580) 15%, transparent);
+}
+
+.fac-cal__day-block-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fac-cal__day-block-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fc-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fac-cal__day-block-time {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  color: var(--fc-text-muted);
+  flex-shrink: 0;
+}
+
+.fac-cal__day-block-notes {
+  font-size: 11px;
+  color: var(--fc-text-muted);
+  margin: 4px 0 0;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.fac-cal__day-block-guests {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 10px;
+  color: var(--fc-text-dim);
+  margin-top: 4px;
+  display: block;
+}
+
+
+/* ── New Booking Button ──────────────────────────────────── */
+
+.fac-cal__new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: var(--fc-accent);
+  color: var(--fc-abyss);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  transition: brightness 0.15s ease, transform 0.08s ease;
+}
+
+.fac-cal__new-btn:hover {
+  filter: brightness(1.1);
+}
+
+.fac-cal__new-btn:active {
+  transform: scale(0.98);
+  transition-duration: 0.08s;
+}
+
+.fac-cal__new-icon {
+  width: 16px;
+  height: 16px;
+}
+
+
+/* ── Error State ─────────────────────────────────────────── */
+
+.fac-cal__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 20px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-rose-400, #fb7185) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-rose-400, #fb7185) 18%, transparent);
+  text-align: center;
+}
+
+.fac-cal__error-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--color-rose-400, #fb7185);
+}
+
+.fac-cal__error-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fc-text-200);
+  margin: 0;
+}
+
+.fac-cal__error-desc {
+  font-size: 12px;
+  color: var(--fc-text-muted);
+  margin: 0;
+}
+
+
+/* ── Skeleton ────────────────────────────────────────────── */
+
+.fac-cal__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fac-cal__skeleton-toolbar {
+  height: 44px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--fc-surface-1) 25%, var(--fc-surface-2) 50%, var(--fc-surface-1) 75%);
+  background-size: 200% 100%;
+  animation: fc-shimmer 1.5s ease-in-out infinite;
+}
+
+.fac-cal__skeleton-grid {
+  display: flex;
+  border-radius: 12px;
+  border: 1px solid var(--fc-border);
+  background: var(--fc-surface-1);
+  overflow: hidden;
+}
+
+.fac-cal__skeleton-gutter {
+  width: var(--fc-gutter-w);
+  flex-shrink: 0;
+}
+
+.fac-cal__skeleton-gutter-cell {
+  height: var(--fc-slot-h);
+  border-bottom: 1px solid var(--fc-border);
+}
+
+.fac-cal__skeleton-col {
+  flex: 1;
+  min-width: 100px;
+  border-left: 1px solid var(--fc-border);
+}
+
+.fac-cal__skeleton-col-head {
+  height: 52px;
+  border-bottom: 1px solid var(--fc-border);
+  background: linear-gradient(90deg, var(--fc-surface-2) 25%, var(--fc-surface-1) 50%, var(--fc-surface-2) 75%);
+  background-size: 200% 100%;
+  animation: fc-shimmer 1.5s ease-in-out infinite;
+}
+
+.fac-cal__skeleton-slot {
+  height: var(--fc-slot-h);
+  border-bottom: 1px solid var(--fc-border);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   LEVEL 5+ — FOCUS VISIBLE
+   ═══════════════════════════════════════════════════════════ */
+
+.fac-cal__nav-btn:focus-visible,
+.fac-cal__today-btn:focus-visible,
+.fac-cal__toggle-btn:focus-visible,
+.fac-cal__new-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--fc-surface-1, #141419),
+    0 0 0 4px var(--fc-accent, #eab308);
+}
+
+.fac-cal__block:focus-visible,
+.fac-cal__day-block:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--fc-surface-1, #141419),
+    0 0 0 3px var(--fc-accent, #eab308);
+}
+
+.fac-cal__slot:focus-visible {
+  outline: none;
+  background: var(--fc-surface-3);
+}
+
+.fac-cal__day-row:focus-visible {
+  outline: none;
+  background: var(--fc-surface-3);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   LEVEL 5+ — CONTAINER QUERIES
+   ═══════════════════════════════════════════════════════════ */
+
+@container fac-cal (max-width: 480px) {
+  .fac-cal__toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .fac-cal__toolbar-title {
+    font-size: 14px;
+  }
+  .fac-cal__gutter {
+    width: 36px;
+  }
+  .fac-cal__gutter-label {
+    font-size: 9px;
+  }
+  .fac-cal__day-col {
+    min-width: 80px;
+  }
+  .fac-cal__legend {
+    gap: 10px;
+  }
+  .fac-cal__day-block-head {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   LIGHT THEME
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fac-cal {
+  --fc-bg:           rgba(255, 255, 255, 0.6);
+  --fc-border:       rgba(0, 0, 0, 0.08);
+  --fc-border-hi:    rgba(0, 0, 0, 0.12);
+  --fc-text:         #1a1a1a;
+  --fc-text-200:     #1a1a1a;
+  --fc-text-muted:   #6b7280;
+  --fc-text-dim:     #9ca3af;
+  --fc-surface-0:    #f3f4f6;
+  --fc-surface-1:    #ffffff;
+  --fc-surface-2:    #f9fafb;
+  --fc-surface-3:    #e5e7eb;
+  --fc-accent:       #b45309;
+  --fc-abyss:        #ffffff;
+}
+
+.light .fac-cal__week,
+.light .fac-cal__day {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.light .fac-cal__slot[data-occupied="false"]:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .fac-cal__day-row[data-occupied="false"]:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .fac-cal__day-head[data-today="true"] {
+  background: color-mix(in srgb, var(--fc-accent) 6%, #ffffff);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   LEVEL 5+ — REDUCED MOTION
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fac-cal__block,
+  .fac-cal__day-block,
+  .fac-cal__skeleton-toolbar,
+  .fac-cal__skeleton-col-head {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.fac-cal[data-prefers-reduced="true"] .fac-cal__block,
+.fac-cal[data-prefers-reduced="true"] .fac-cal__day-block {
+  animation: none;
+  opacity: 1;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   LEVEL 5+ — PRINT
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fac-cal__toolbar,
+  .fac-cal__new-btn,
+  .fac-cal__toggle,
+  .fac-cal__legend {
+    display: none;
+  }
+  .fac-cal__week,
+  .fac-cal__day {
+    border: 1px solid #ccc;
+    background: #fff;
+    box-shadow: none;
+  }
+  .fac-cal__block,
+  .fac-cal__day-block {
+    border: 1px solid #999;
+    background: #f5f5f5 !important;
+    color: #111 !important;
+    animation: none;
+    opacity: 1;
+    box-shadow: none;
+  }
+  .fac-cal__day-head,
+  .fac-cal__day-head[data-today="true"] {
+    background: #f0f0f0;
+  }
+  .fac-cal__slot,
+  .fac-cal__day-row {
+    break-inside: avoid;
+  }
+  .fac-cal__slot:hover,
+  .fac-cal__day-row:hover {
+    background: transparent;
+  }
+  .fac-cal__nav-btn,
+  .fac-cal__today-btn {
+    display: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fc-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fc-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══ ADDITIONS TO ReservationCalendar.css ═══════════════════════ */
+/* Living Protocol additions — merge into existing CSS file        */
+/* ════════════════════════════════════════════════════════════════ */
+
+/* ── data-mode responsive (Sense 6) ── */
+[data-mode="alert"] .fac-cal__day-col[data-today="true"] {
+  border-left-color: color-mix(in srgb, var(--color-amber-400) 30%, transparent);
+}
+
+[data-mode="critical"] .fac-cal__day-col[data-today="true"] {
+  border-left-color: var(--color-rose-400);
+}
+
+/* ── Narrative (Sense 7) ── */
+.fac-cal__narrative {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+
+/* ── Block hover (Sense 2) ── */
+.fac-cal__block {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fac-cal__block:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Block stagger (Sense 1) ── */
+.fac-cal__block {
+  opacity: 0;
+  animation: fac-cal-block-enter 0.3s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.04s);
+}
+
+@keyframes fac-cal-block-enter {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── Current hour indicator (Sense 5) ── */
+.fac-cal__slot[data-current="true"] {
+  background: color-mix(in srgb, var(--color-teal-400) 4%, transparent);
+}
+
+.fac-cal__slot-now-line,
+.fac-cal__day-now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: var(--color-teal-400);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.fac-cal__slot-now-line::before,
+.fac-cal__day-now-line::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-teal-400);
+}
+
+.fac-cal__day-row[data-current="true"] {
+  background: color-mix(in srgb, var(--color-teal-400) 4%, transparent);
+}
+
+/* ── Day block hover (Sense 2) ── */
+.fac-cal__day-block {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fac-cal__day-block:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Status legend swatch (CSS-driven) ── */
+.fac-cal__legend-swatch[data-status="confirmed"] {
+  background: var(--color-teal-400);
+}
+.fac-cal__legend-swatch[data-status="pending"] {
+  background: var(--color-amber-400);
+}
+.fac-cal__legend-swatch[data-status="completed"] {
+  background: var(--color-emerald-400);
+}
+.fac-cal__legend-swatch[data-status="no_show"] {
+  background: var(--color-rose-400);
+}
+.fac-cal__legend-swatch[data-status="cancelled"] {
+  background: var(--color-silver-600);
+}
+
+/* ── Light mode ── */
+.light .fac-cal__narrative {
+  color: var(--color-silver-600);
+}
+
+.light .fac-cal__slot[data-current="true"] {
+  background: color-mix(in srgb, var(--color-teal-500) 6%, transparent);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .fac-cal__block {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-cal__block:hover,
+  .fac-cal__day-block:hover {
+    transform: none;
+  }
+}

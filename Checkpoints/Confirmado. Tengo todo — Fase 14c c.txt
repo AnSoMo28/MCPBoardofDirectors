@@ -1,0 +1,78 @@
+Confirmado. Tengo todo — Fase 14c completa, y la info de Fase 14d que me pasaste en los mensajes anteriores ya la tengo asimilada. Sigo con 14d.
+
+---
+
+# FASE 14d — DECISIONES INFORMADAS + COMUNICACIÓN GENERATIVA
+
+## Propuesta de Arquitectura
+
+### 1. Tools MCP (4)
+
+| # | Tool | Server | Tipo | Aprobación | Nivel |
+|---|------|--------|------|------------|-------|
+| 1 | `finance_decision_simulate` | finance | AI on-demand | AUTO | Nivel 2 — on-demand |
+| 2 | `communications_generate_personalized` | communications | AI on-demand | SEMI | Nivel 2 — on-demand |
+| 3 | `communications_campaign_generate` | communications | AI on-demand | SEMI | Nivel 2 — on-demand |
+| 4 | `communications_sentiment_analyze` | communications | AI auto | AUTO | Nivel 1 — auto-load |
+
+### 2. Componentes
+
+| # | Componente | Ubicación | Patrón |
+|---|-----------|-----------|--------|
+| 1 | DecisionCockpit | `features/finance/components/DecisionCockpit.tsx` | Sub-tab de FinancialIntelligence (tab #8) |
+| 2 | PersonalizedCommunication | `features/communications/components/PersonalizedCommunication.tsx` | Sub-tab de CommunicationDashboard |
+| 3 | CampaignGenerator | `features/communications/components/CampaignGenerator.tsx` | Sub-tab de CommunicationDashboard |
+| 4 | SentimentMonitor | `features/communications/components/SentimentMonitor.tsx` | Sub-tab de CommunicationDashboard |
+
+### 3. Bloques
+
+| Bloque | Contenido | Dependencia |
+|--------|-----------|-------------|
+| B0 | Contracts + factories + registry (4 tools) | Ninguna |
+| B1 | DecisionCockpit (sub-tab en FinancialIntelligence) | B0 |
+| B2 | PersonalizedCommunication + CampaignGenerator (sub-tabs en CommunicationDashboard) | B0 |
+| B3 | SentimentMonitor + integración en CommunicationDashboard + DecisionDocument update | B1, B2 |
+
+### 4. Decisiones
+
+| # | Decisión | Razón |
+|---|---------|-------|
+| 1 | DecisionCockpit como sub-tab de FinancialIntelligence (tab #8) | Vive junto a ScenarioSimulator y StressTest. El flujo es: explorar → simular → decidir |
+| 2 | Los 3 tools de communications como sub-tabs de CommunicationDashboard | Patrón ya establecido con CommunicationOverview, CommunicationAnalytics, etc. |
+| 3 | Todos los 4 tools son on-demand o auto — 0 cambios en ApprovalQueue | finance_decision_simulate es AUTO, sentiment es AUTO, los otros 2 son SEMI pero no requieren HITL queue |
+| 4 | DecisionDocument.tsx NO se modifica en esta fase — se actualiza en B3 para agregar `finance_decision_simulate` como 4ta fuente | Entregable incremental |
+
+---
+
+### Archivos necesarios para B0
+
+Necesito ver el estado actual de los 3 archivos de mocks para hacer el append:
+
+| # | Archivo |
+|---|---------|
+| 1 | `src/shared/mocks/contracts.ts` — los últimos contratos (los de 14c) |
+| 2 | `src/shared/mocks/factories.ts` — las últimas factories (las de 14c) |
+| 3 | `src/shared/mocks/mock-registry.ts` — estado actual del registry |
+
+### Archivos necesarios para B1 (DecisionCockpit)
+
+| # | Archivo | Por qué |
+|---|---------|---------|
+| 4 | `features/finance/components/FinancialIntelligence.tsx` | Para agregar el sub-tab #8 DecisionCockpit |
+| 5 | `features/finance/types.ts` | Para agregar re-exports y configs de decision |
+
+### Archivos necesarios para B2 (Communications)
+
+| # | Archivo | Por qué |
+|---|---------|---------|
+| 6 | `features/communications/CommunicationDashboard.tsx` | Para agregar los 3 sub-tabs nuevos |
+
+### Archivos necesarios para B3 (integración)
+
+| # | Archivo | Por qué |
+|---|---------|---------|
+| 7 | `shared/components/export/DecisionDocument.tsx` | Para agregar finance_decision_simulate como 4ta fuente |
+
+---
+
+**Pasame los archivos cuando puedas y arranco con B0.** Podés mandar los 7 juntos o por bloque como prefieras.

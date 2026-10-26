@@ -1,0 +1,514 @@
+/**
+ * @component AIInsightNarrative (Fase 23)
+ * @namespace .glass-narrative
+ * @depends globals.css (radius tokens, font tokens, color tokens, color-mix)
+ * @note Merged from BLOQUE 15 canonical + existing co-located file.
+ *       Includes both sets of class names used by TSX.
+ *       narrative-cursor-blink keyframe also exists in globals.css —
+ *       if both define it identically, browser handles gracefully.
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   AIInsightNarrative — Silver Tide Intelligence Briefing
+   Fase 23 · Glass · Typewriter · Confidence Lattice · Causal Chain
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ── */
+.glass-narrative {
+  position: relative;
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid rgba(201, 169, 110, 0.2);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.glass-narrative__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.glass-narrative__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.glass-narrative__header-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-gold-400);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.glass-narrative__header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.glass-narrative__header-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════
+   Confidence Lattice
+   ═══════════════════════════════════════ */
+
+.glass-narrative__lattice {
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+.glass-narrative__lattice-svg {
+  width: 100%;
+  height: 100%;
+}
+.glass-narrative__lattice-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.glass-narrative__lattice-score {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+.glass-narrative__lattice-label {
+  font-size: 8px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════
+   Causal Chain
+   ═══════════════════════════════════════ */
+
+.glass-narrative__chain {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.glass-narrative__chain::-webkit-scrollbar { display: none; }
+.glass-narrative__chain-node {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.glass-narrative__chain-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+.glass-narrative__chain-dot--conclusion {
+  background: var(--color-gold-400);
+  box-shadow: 0 0 8px rgba(201, 169, 110, 0.4);
+}
+.glass-narrative__chain-text {
+  font-size: 9px;
+  color: var(--color-silver-400);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.glass-narrative__chain-arrow {
+  color: var(--color-silver-600);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   Narrative Section
+   ═══════════════════════════════════════ */
+
+.glass-narrative__section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.glass-narrative__section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.glass-narrative__section-label {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+/* Color modifiers (existing TSX uses these) */
+.glass-narrative__section-label--gold { color: var(--color-gold-400); }
+.glass-narrative__section-label--teal { color: var(--color-teal-400); }
+.glass-narrative__section-label--amber { color: var(--color-amber-400); }
+
+.glass-narrative__section-text {
+  font-size: 12px;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+/* ── Evidence weight dots ── */
+.glass-narrative__evidence,
+.glass-narrative__evidence-weight {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.glass-narrative__evidence-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease;
+}
+.glass-narrative__evidence-dot--filled {
+  background: var(--color-gold-400);
+}
+
+/* ── Typewriter cursor ── */
+.glass-narrative__cursor {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: var(--color-gold-400);
+  margin-left: 1px;
+  vertical-align: middle;
+  animation: narrative-cursor-blink 0.8s step-end infinite;
+}
+@keyframes narrative-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════
+   Benchmark Bar
+   ═══════════════════════════════════════ */
+
+.glass-narrative__benchmark {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.glass-narrative__benchmark-bar {
+  padding: 0 4px;
+}
+.glass-narrative__benchmark-track {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  margin: 16px 0;
+}
+.glass-narrative__benchmark-mark {
+  position: absolute;
+  top: -14px;
+  font-size: 8px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.glass-narrative__benchmark-mark--club {
+  left: 30%;
+  color: var(--color-gold-400);
+  font-weight: 600;
+}
+.glass-narrative__benchmark-mark--club::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-gold-400);
+  box-shadow: 0 0 8px rgba(201, 169, 110, 0.4);
+}
+.glass-narrative__benchmark-mark--avg {
+  left: 50%;
+}
+.glass-narrative__benchmark-mark--avg::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-silver-400);
+}
+.glass-narrative__benchmark-mark--top {
+  left: 80%;
+  color: var(--color-emerald-400);
+}
+.glass-narrative__benchmark-mark--top::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-emerald-400);
+}
+.glass-narrative__benchmark-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(201, 169, 110, 0.15), rgba(201, 169, 110, 0.04));
+}
+.glass-narrative__benchmark-text {
+  font-size: 11px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════
+   Recommendation
+   ═══════════════════════════════════════ */
+
+.glass-narrative__recommendation {
+  padding: 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-gold-400) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.glass-narrative__rec-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.glass-narrative__rec-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-gold-400);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.glass-narrative__rec-text {
+  font-size: 12px;
+  color: var(--color-silver-200);
+  font-family: var(--font-ui);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+/* ═══════════════════════════════════════
+   Impact Projection
+   ═══════════════════════════════════════ */
+
+.glass-narrative__impact {
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.glass-narrative__impact-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.glass-narrative__impact-timeline,
+.glass-narrative__impact-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.glass-narrative__impact-now,
+.glass-narrative__impact-target {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.glass-narrative__impact-name {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+  width: 80px;
+  flex-shrink: 0;
+}
+.glass-narrative__impact-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+.glass-narrative__impact-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--color-emerald-400), var(--color-teal-400));
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.3);
+  transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-narrative__impact-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-emerald-400);
+  font-family: var(--font-mono);
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   Meta
+   ═══════════════════════════════════════ */
+
+.glass-narrative__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+.glass-narrative__meta-item {
+  font-size: 9px;
+  color: var(--color-silver-600);
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════
+   Loading State
+   ═══════════════════════════════════════ */
+
+.glass-narrative--loading {
+  padding: 20px 18px;
+}
+.glass-narrative__loading-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.glass-narrative__loading-text {
+  font-size: 13px;
+  color: var(--color-silver-300);
+  font-family: var(--font-ui);
+}
+.glass-narrative__loading-sub {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════
+   Error / Footer
+   ═══════════════════════════════════════ */
+
+.glass-narrative--error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+}
+.glass-narrative--error p {
+  font-size: 12px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+}
+
+.glass-narrative__footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+.glass-narrative__footer svg {
+  color: var(--color-silver-500);
+}
+.glass-narrative__footer span {
+  font-size: 9px;
+  color: var(--color-silver-600);
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-narrative {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+  border-left-color: rgba(201, 169, 110, 0.15);
+}
+.light .glass-narrative__header { border-bottom-color: rgba(0, 0, 0, 0.05); }
+.light .glass-narrative__header-title { color: var(--color-gold-500); }
+.light .glass-narrative__header-time { color: var(--color-silver-400); }
+.light .glass-narrative__section-text { color: var(--color-silver-600); }
+.light .glass-narrative__chain {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+.light .glass-narrative__chain-text { color: var(--color-silver-500); }
+.light .glass-narrative__chain-dot { background: rgba(0, 0, 0, 0.1); }
+.light .glass-narrative__chain-dot--conclusion { background: var(--color-gold-500); }
+.light .glass-narrative__recommendation {
+  background: color-mix(in srgb, var(--color-gold-400) 3%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+.light .glass-narrative__rec-text { color: var(--color-silver-600); }
+.light .glass-narrative__benchmark-text { color: var(--color-silver-500); }
+.light .glass-narrative__benchmark-track { background: rgba(0, 0, 0, 0.04); }
+.light .glass-narrative__impact-track { background: rgba(0, 0, 0, 0.04); }
+.light .glass-narrative__impact { border-top-color: rgba(0, 0, 0, 0.05); }
+.light .glass-narrative__impact-now,
+.light .glass-narrative__impact-target { color: var(--color-silver-400); }
+.light .glass-narrative__footer { border-top-color: rgba(0, 0, 0, 0.05); }
+.light .glass-narrative__footer span { color: var(--color-silver-400); }
+.light .glass-narrative__cursor { background: var(--color-gold-500); }
+.light .glass-narrative__evidence-dot { background: rgba(0, 0, 0, 0.06); }
+.light .glass-narrative__evidence-dot--filled { background: var(--color-gold-500); }
+.light .glass-narrative--loading .glass-narrative__loading-text { color: var(--color-silver-600); }
+.light .glass-narrative--loading .glass-narrative__loading-sub { color: var(--color-silver-400); }
+.light .glass-narrative--error p { color: var(--color-silver-500); }
+.light .glass-narrative__meta { border-top-color: rgba(0, 0, 0, 0.04); }
+.light .glass-narrative__meta-item { color: var(--color-silver-600); }

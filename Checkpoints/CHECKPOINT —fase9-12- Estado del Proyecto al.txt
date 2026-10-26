@@ -1,0 +1,262 @@
+CHECKPOINT — Estado del Proyecto al 14 de Mayo 2026
+
+
+AGENTES COMPLETADOS (9/12)
+
+
+Agente Tools HITL Tests Estado
+1 FamilyProfileAgent 7 2 32 PASSED
+2 EventOrchestratorAgent 9 3 50 PASSED
+3 AgeGroupAgent 7 1 26 PASSED
+4 FinanceAgent 7 3 30 PASSED
+5 WellnessAgent 7 1 28 PASSED
+6 ComplianceAgent 7 2 27 PASSED
+7 SportsRecreationAgent 7 2 42 PASSED
+8 CulturalSocialAgent 6 3 41 PASSED
+9 CommunicationAgent 7 3 41 PASSED
+
+
+Total: 317 tests passing, ~81% coverage
+
+
+ERRORES COMETIDOS — LECCIONES APRENDIDAS (NO REPETIR)
+
+
+1.datetime.utcnow() → DEPRECATED en Python 3.14. SIEMPRE usar:
+python
+python
+from datetime import datetime, timezone
+datetime.now(tz=timezone.utc).isoformat()
+NUNCA usar datetime.utcnow() ni datetime.datetime.utcnow().
+
+
+2.
+datetime.UTC no existe → Es timezone.utc, NO datetime.UTC.
+
+3.
+datetime importado en agent → SIEMPRE agregar from datetime import datetime, timezone al tope del archivo del agente cuando algún método usa datetime.now(). El import estático arriba (from __future__ import annotations) NO importa datetime como valor de runtime.
+
+4.
+No testear _approval_level en llamadas directas → El wrapper _wrap_with_hitl solo agrega _approval_level cuando se registra con MCP (register_with_mcp), NO cuando se llama el método directamente en tests.
+
+5.
+Defaults de parámetros de filtros → SIEMPRE usar "" (string vacío) como default para parámetros como event_type, facility_type, engagement_level, etc. NUNCA usar el valor de un enum como default (ej: "dinner", "pool"). Porque al hacer list, si el usuario no pasa el parámetro, filtra solo por ese valor y no devuelve todo.
+
+6.
+Crear solo UNA versión de cada archivo → Si la respuesta se corta a mitad de código, NO volver a empezar desde cero. Pedir al usuario que confirme qué tiene copiado y continuar desde ahí. Mezclar dos versiones genera inconsistencias (ej: V1 con name/value vs V2 con monetary_value).
+
+7.
+Tests con seed helpers y contadores → Cuando se usa un seed helper con un valor default (ej: loyalty_points=1200) y después se llama a una función que suma puntos, el assert debe considerar el valor sembrado + el incremento. Mejor sembrar con valor 0 por defecto y pasar el valor explícito en el test.
+
+
+PATRÓN EXACTO QUE SEGUIMOS (por cada agente)
+
+
+Paso 1: Modelo → backend/src/club_mcp/models/{domain}.py
+
+
+python
+python
+# Enums (str, Enum) para estados/categorías
+# BaseModel con model_config = ConfigDict(from_attributes=True)
+# Entity schemas
+# Create schemas separados
+# Update schemas separados
+# SIEMPRE importar: from datetime import datetime, timezone
+
+Paso 2: Repositorio → backend/src/club_mcp/db/repositories/{domain}_repo.py
+
+
+python
+python
+# Clase {Domain}Repository con __init__ que crea dict[str, dict]
+# _gen_id() helper con uuid4().hex[:8]
+# CRUD methods async: async def create_X, async def get_X, async def update_X, async def list_X
+# Los repos NUNCA importan de agents (evitar circular)
+# Todos los imports de modelos van dentro del mismo bloque: from club_mcp.models.{domain} import (...)
+# SIEMPRE usar: datetime.now(tz=timezone.utc).isoformat()
+# SIEMPRE importar: from datetime import datetime, timezone
+
+Paso 3: Agente → backend/src/club_mcp/agents/{agent_name}.py
+
+
+python
+python
+# Hereda BaseAgent (de club_mcp.agents.base)
+# Imports: MCPTool de club_mcp.agents.base, ApprovalLevel de club_mcp.hitl.approval_types
+# SIEMPRE importar: from datetime import datetime, timezone
+# Decorador siempre con kwargs: @MCPTool(name="tool_name", description="desc", approval=ApprovalLevel.XXX)
+# Para HITL agregar: approver_roles=["admin"] en el decorador
+
+# Constructor EXACTO:
+def __init__(self, repo=None, approval_engine=None, notifier=None) -> None:
+    super().__init__()
+    self.repo = repo or {Domain}Repository()
+    if approval_engine is not None:
+        self.approval_engine = approval_engine
+    self.notifier = notifier
+
+def _register_tools(self) -> None:
+    pass
+
+# agent_name y description como class attributes
+# Tools con list/get/create/update usan parámetro action: str
+# Mensajes en español con emojis
+# model_dump(mode="json") para serializar
+
+# Para helpers de parseo de channels/etc:
+@staticmethod
+def _parse_channels(channels_str: str) -> list[...]:
+    # ...
+
+# Tools HITL:
+#   Método principal llama self.approval_engine.create_request(
+#       agent=..., tool=..., params=..., requested_by=...,
+#       approval_level=..., risk_summary=..., estimated_impact=...,
+#       affected_count=..., approver_roles=["admin"]
+#   )
+#   Devuelve {"status": "pending_approval", "request_id": str(approval.request_id), ...}
+
+# Método execute_*() separado para post-approval (NO decorado con @MCPTool)
+
+Paso 4: Tests → backend/tests/unit/agents/test_{agent_name}.py
+
+
+python
+python
+# Fixtures:
+@pytest.fixture
+def {domain}_repo():
+    return {Domain}Repository()
+
+@pytest.fixture
+def {agent_name}({domain}_repo, approval_engine):
+    agent = Agent(repo={domain}_repo)
+    agent.approval_engine = approval_engine
+    return agent
+
+# NO usar notifier en fixtures (no existe en conftest)
+
+# Helper async def _seed_{domain}() con await para crear datos
+# SIEMPRE usar defaults neutros (0, "", []) en seed helpers, NO valores altos
+
+# Clase por tool: class Test{ToolName}:
+# Tests: éxito, error, validación, edge cases
+# SIEMPRE @pytest.mark.asyncio
+
+# Para approval flow:
+approval = await agent.approval_engine.approve(
+    UUID(request_id),
+    approved_by="admin@castillo.cr",
+    note="...",
+)
+assert approval.status == ApprovalStatus.APPROVED
+# Importar ApprovalStatus de club_mcp.hitl.approval_types
+# Importar UUID de uuid
+
+# SIEMPRE usar "admin@castillo.cr" como requested_by y approved_by
+
+Paso 5: Actualizar init.py (3 archivos)
+
+
+python
+python
+# agents/__init__.py:
+#   Importar agente + agregar a __all__
+
+# db/repositories/__init__.py:
+#   Importar repo + agregar a __all__ (NO importar agents)
+
+# models/__init__.py:
+#   Importar TODOS los modelos (enums, entities, creates, updates) + agregar a __all__
+
+Paso 6: Actualizar server.py
+
+
+python
+python
+# Import del agente y repo
+# Crear instancia: {domain}_repo = {Domain}Repository()
+# Agregar a la lista: {AgentName}({domain}_repo, approval_engine, notifier),
+
+Paso 7: Verificar
+
+
+bash
+bash
+uv run pytest tests/unit/agents/test_{agent_name}.py -v
+uv run pytest -v --cov
+
+AGENTES PENDIENTES (3/12 + 1 bonus)
+
+
+Agente Tools HITL Prioridad HITL
+10 FacilityManagementAgent 7 2 schedule_maintenance, coordinate_event_setup
+11 MemberEngagementAgent 6 2 design_reactivation_campaign, manage_loyalty_rewards
+12 GuestManagementAgent 5 2 plan_private_event, manage_trial_memberships
+
+
+Plus: ProactiveRecommendationAgent (8 tools, 2 HITL)
+
+
+NOTA: Los agentes 10 (FacilityManagement) y 11 (MemberEngagement) YA ESTÁN COMPLETADOS en el chat anterior. El chat se cortó antes de verificar pero el código fue generado completo. Solo falta confirmar tests.
+
+
+INFRAESTRUCTURA PENDIENTE (después de los 12 agentes)
+
+
+backend/src/club_mcp/orchestrator/ (router, context, flows, event_bus)
+backend/src/club_mcp/api/ (FastAPI app, routes, schemas)
+backend/src/club_mcp/notifications/ (email, push, whatsapp)
+backend/src/club_mcp/ai/ (ollama_client, llm_router, embeddings)
+backend/src/club_mcp/middleware/
+backend/src/club_mcp/utils/
+frontend/ (React app completa)
+docker/, docs/, scripts/, seeds/
+
+
+ARCHIVOS QUE DEBES PASARME AL INICIAR CHAT NUEVO
+
+
+Para evitar errores de imports, fixtures o firmas:
+
+
+1.backend/src/club_mcp/agents/base.py — firma exacta de BaseAgent, MCPTool, imports
+2.backend/src/club_mcp/hitl/approval_types.py — ApprovalLevel, ApprovalStatus (nombres, valores)
+3.backend/src/club_mcp/hitl/approval_engine.py — firma de create_request(), approve(), reject()
+4.backend/tests/conftest.py — fixtures existentes (approval_engine, notifier, repo)
+5.backend/src/club_mcp/server.py — cómo se instancian y registran agentes
+6.backend/src/club_mcp/agents/init.py — imports actuales y all
+7.backend/src/club_mcp/db/repositories/init.py — imports actuales
+8.backend/src/club_mcp/models/init.py — imports actuales
+9.Un agente completo reciente como referencia (ej: cultural_social_agent.py) — patrón exacto a replicar
+
+CON ESTOS 9 ARCHIVOS PUEDO GENERAR CUALQUIER AGENTE NUEVO SIN ERRORES.
+
+
+ARCHIVOS CREADOS POR AGENTE (estructura exacta)
+
+
+backend/src/club_mcp/models/{domain}.py
+backend/src/club_mcp/db/repositories/{domain}repo.py
+backend/src/club_mcp/agents/{agent_name}.py
+backend/tests/unit/agents/test{agent_name}.py
+
+
+Después de cada agente se actualizan:
+backend/src/club_mcp/agents/init.py
+backend/src/club_mcp/db/repositories/init.py
+backend/src/club_mcp/models/init.py
+backend/src/club_mcp/server.py
+
+
+RESUMEN DE ESTADO DE CHAT ANTERIOR
+
+
+Agentes 1-9: Confirmados con tests pasando.
+Agentes 10-11: Código generado completo, tests pendientes de confirmar (el chat se cortó antes). Necesitan:
+
+Agente 10 (FacilityManagementAgent): Copiar los 7 archivos, verificar con pytest.
+Agente 11 (MemberEngagementAgent): Copiar los 7 archivos, verificar con pytest. RECORDAR el fix de datetime import en el agente y loyalty_points=0 en seed.
+Agente 12 (GuestManagementAgent): Pendiente.
+ProactiveRecommendationAgent: Pendiente.

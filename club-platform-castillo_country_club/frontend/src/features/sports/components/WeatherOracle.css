@@ -1,0 +1,493 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/WeatherOracle.css
+   §B3.10 — Weather Oracle Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  gauge value-arc pulse in danger zone
+   2. REACCIÓN:     hover forecast cards
+   3. MEMORIA:      forecast cards persist visible
+   4. INTENCIÓN:    recommendations + reschedule hints
+   5. SINIESTRÍA:   zone colors (red/amber/green)
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-weather {
+  --spt-w-accent: var(--color-teal-400, #2a9ab5);
+  --spt-w-surface: var(--color-surface-1, #1a1a1a);
+  --spt-w-border: rgba(255, 255, 255, 0.06);
+  --spt-w-text: var(--color-silver-100, #f0ece4);
+  --spt-w-text-muted: var(--color-silver-400, #8a8580);
+
+  background: var(--spt-w-surface);
+  border: 1px solid var(--spt-w-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+/* ── §0.1 — Zone accent (LP 5: Siniestría) ─────────────── */
+
+.spt-weather[data-zone="danger"]  { --spt-w-accent: var(--color-rose-400, #e54d4d); }
+.spt-weather[data-zone="warning"] { --spt-w-accent: var(--color-amber-400, #d4a017); }
+.spt-weather[data-zone="good"]    { --spt-w-accent: var(--color-emerald-400, #3daa70); }
+
+/* ── §0.2 — Mode (LP 6: Empatía) ──────────────────────── */
+
+.spt-weather[data-mode="calm"][data-zone="good"] {
+  --spt-w-accent: var(--color-teal-400, #2a9ab5);
+}
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-weather__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.spt-weather__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.spt-weather__cond-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  transition: color 0.4s ease;
+}
+
+.spt-weather__cond-icon[data-zone="danger"]  { color: var(--color-rose-400, #e54d4d); }
+.spt-weather__cond-icon[data-zone="warning"] { color: var(--color-amber-400, #d4a017); }
+.spt-weather__cond-icon[data-zone="good"]    { color: var(--color-emerald-400, #3daa70); }
+
+.spt-weather__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.1rem;
+  color: var(--spt-w-text);
+  margin: 0;
+}
+
+.spt-weather__condition {
+  font-size: 0.75rem;
+  color: var(--spt-w-text-muted);
+  margin: 0;
+}
+
+.spt-weather__season-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.spt-weather__season-badge[data-risk-level="low"] {
+  background: rgba(61, 170, 112, 0.12);
+  color: var(--color-emerald-400, #3daa70);
+}
+
+.spt-weather__season-badge[data-risk-level="medium"] {
+  background: rgba(212, 160, 23, 0.12);
+  color: var(--color-amber-400, #d4a017);
+}
+
+.spt-weather__season-badge[data-risk-level="high"] {
+  background: rgba(229, 77, 77, 0.12);
+  color: var(--color-rose-400, #e54d4d);
+}
+
+/* ── §2 — Gauge Container ──────────────────────────────── */
+
+.spt-weather__gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.spt-weather__gauge-svg {
+  width: 100%;
+  max-width: 220px;
+}
+
+/* ── §3 — SVG Gauge Styles ─────────────────────────────── */
+
+/* Zone bands (LP 5: Siniestría) */
+
+.spt-weather__zone {
+  fill: none;
+  stroke-width: 18;
+  stroke-linecap: round;
+  opacity: 0.12;
+}
+
+.spt-weather__zone--danger  { stroke: var(--color-rose-400, #e54d4d); }
+.spt-weather__zone--warning { stroke: var(--color-amber-400, #d4a017); }
+.spt-weather__zone--good    { stroke: var(--color-emerald-400, #3daa70); }
+
+/* Background arc */
+
+.spt-weather__bg-arc {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+/* Value arc (LP 1: Respiración — pulse in danger) */
+
+.spt-weather__value-arc {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke 0.4s ease;
+}
+
+.spt-weather__value-arc[data-zone="danger"] {
+  stroke: var(--color-rose-400, #e54d4d);
+  animation: spt-w-gauge-pulse-danger 2s ease-in-out infinite;
+}
+
+.spt-weather__value-arc[data-zone="warning"] {
+  stroke: var(--color-amber-400, #d4a017);
+  animation: spt-w-gauge-pulse-warning 4s ease-in-out infinite;
+}
+
+.spt-weather__value-arc[data-zone="good"] {
+  stroke: var(--color-emerald-400, #3daa70);
+}
+
+@keyframes spt-w-gauge-pulse-danger {
+  0%, 100% { stroke-opacity: 0.7; }
+  50%      { stroke-opacity: 1; }
+}
+
+@keyframes spt-w-gauge-pulse-warning {
+  0%, 100% { stroke-opacity: 0.8; }
+  50%      { stroke-opacity: 1; }
+}
+
+/* Needle */
+
+.spt-weather__needle {
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: stroke 0.4s ease;
+}
+
+.spt-weather__needle[data-zone="danger"]  { stroke: var(--color-rose-400, #e54d4d); }
+.spt-weather__needle[data-zone="warning"] { stroke: var(--color-amber-400, #d4a017); }
+.spt-weather__needle[data-zone="good"]    { stroke: var(--color-emerald-400, #3daa70); }
+
+/* Center dot */
+
+.spt-weather__center-dot {
+  fill: rgba(255, 255, 255, 0.3);
+}
+
+/* Value label */
+
+.spt-weather__gauge-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 1.2rem;
+  font-weight: 700;
+  transition: fill 0.4s ease;
+}
+
+.spt-weather__gauge-value[data-zone="danger"]  { fill: var(--color-rose-400, #e54d4d); }
+.spt-weather__gauge-value[data-zone="warning"] { fill: var(--color-amber-400, #d4a017); }
+.spt-weather__gauge-value[data-zone="good"]    { fill: var(--color-emerald-400, #3daa70); }
+
+/* Zone labels */
+
+.spt-weather__zone-label {
+  font-family: var(--font-body, "DM Sans", sans-serif);
+  font-size: 0.55rem;
+  fill: rgba(255, 255, 255, 0.25);
+}
+
+.spt-weather__zone-label--danger  { fill: rgba(229, 77, 77, 0.4); }
+.spt-weather__zone-label--good    { fill: rgba(61, 170, 112, 0.4); }
+
+/* Gauge narrative below */
+
+.spt-weather__gauge-narrative {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0.25rem 0 0;
+  transition: color 0.4s ease;
+}
+
+.spt-weather__gauge-narrative[data-zone="danger"]  { color: var(--color-rose-400, #e54d4d); }
+.spt-weather__gauge-narrative[data-zone="warning"] { color: var(--color-amber-400, #d4a017); }
+.spt-weather__gauge-narrative[data-zone="good"]    { color: var(--color-emerald-400, #3daa70); }
+
+/* ── §4 — Impact Card ──────────────────────────────────── */
+
+.spt-weather__impact {
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.spt-weather__impact[data-zone="danger"] {
+  background: rgba(229, 77, 77, 0.06);
+  border: 1px solid rgba(229, 77, 77, 0.15);
+}
+
+.spt-weather__impact[data-zone="warning"] {
+  background: rgba(212, 160, 23, 0.06);
+  border: 1px solid rgba(212, 160, 23, 0.15);
+}
+
+.spt-weather__impact[data-zone="good"] {
+  background: rgba(61, 170, 112, 0.06);
+  border: 1px solid rgba(61, 170, 112, 0.15);
+}
+
+.spt-weather__impact-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.spt-weather__impact-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-amber-400, #d4a017);
+}
+
+.spt-weather__impact-severity {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  color: var(--spt-w-text-muted);
+}
+
+.spt-weather__impact-recommendation {
+  font-size: 0.8rem;
+  color: var(--spt-w-text-muted);
+  line-height: 1.5;
+  margin: 0 0 0.25rem;
+}
+
+.spt-weather__impact-reschedule {
+  font-size: 0.75rem;
+  color: var(--color-amber-400, #d4a017);
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ── §5 — Affected Sports ──────────────────────────────── */
+
+.spt-weather__affected {
+  margin-bottom: 0.75rem;
+}
+
+.spt-weather__affected-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--spt-w-text-muted);
+  margin: 0 0 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.spt-weather__affected-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.spt-weather__affected-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.spt-weather__affected-badge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--spt-w-border);
+  color: var(--spt-w-text-muted);
+  transition: background 0.2s ease;
+}
+
+.spt-weather__affected-badge:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── §6 — Forecast Grid (LP 2: Reacción + 3: Memoria) ──── */
+
+.spt-weather__forecast {
+  margin-bottom: 0.75rem;
+}
+
+.spt-weather__forecast-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--spt-w-text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.spt-weather__forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.spt-weather__forecast-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--spt-w-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  animation: spt-w-forecast-enter 0.3s ease both;
+  animation-delay: calc(var(--stagger-i, 0) * 60ms);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease;
+}
+
+@keyframes spt-w-forecast-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-weather__forecast-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.spt-weather__forecast-hour {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--spt-w-text);
+  margin: 0 0 0.2rem;
+}
+
+.spt-weather__forecast-demand,
+.spt-weather__forecast-wf {
+  font-size: 0.7rem;
+  color: var(--spt-w-text-muted);
+  margin: 0 0 0.1rem;
+}
+
+.spt-weather__forecast-demand strong,
+.spt-weather__forecast-wf strong {
+  color: var(--spt-w-text);
+}
+
+.spt-weather__forecast-conf {
+  font-size: 0.6rem;
+  color: var(--spt-w-text-muted);
+  opacity: 0.6;
+  margin: 0;
+}
+
+/* ── §7 — Footer: Narrative (LP 7) ─────────────────────── */
+
+.spt-weather__footer {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-w-border);
+}
+
+.spt-weather__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-w-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-w-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §8 — Light Mode ───────────────────────────────────── */
+
+.light .spt-weather {
+  --spt-w-surface: rgba(255, 255, 255, 0.7);
+  --spt-w-border: rgba(0, 0, 0, 0.08);
+  --spt-w-text: #1a1a1a;
+  --spt-w-text-muted: #6b7280;
+}
+
+.light .spt-weather__bg-arc {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-weather__zone {
+  opacity: 0.1;
+}
+
+.light .spt-weather__center-dot {
+  fill: rgba(0, 0, 0, 0.2);
+}
+
+.light .spt-weather__zone-label {
+  fill: rgba(0, 0, 0, 0.25);
+}
+
+.light .spt-weather__affected-badge {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .spt-weather__forecast-card {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* ── §9 — Reduced Motion ───────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-weather__value-arc {
+    animation: none;
+  }
+
+  .spt-weather__forecast-card {
+    animation: none;
+  }
+}
+
+/* ── §10 — Responsive ──────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .spt-weather__forecast-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .spt-weather__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+}
+
+/* ── §11 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-weather {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .spt-weather__value-arc {
+    animation: none;
+  }
+
+  .spt-weather__forecast-card {
+    animation: none;
+  }
+}

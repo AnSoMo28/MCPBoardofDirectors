@@ -1,0 +1,590 @@
+# CHECKPOINT — Fases 18, 19 y 20 COMPLETADAS — AI Intelligence Engine Trilogy
+
+**Fecha:** 2026
+**Sesiones completadas:** 18 (histórico) / 1 (esta mega-sesión F18-F20)
+**Archivos creados:** 6 nuevos + 6 modificados
+**Líneas nuevas:** ~1,900+
+**Tools MCP auditadas:** 42+ (finance 17, events 16, executive 8, hitl 3)
+**Advisor rules totales:** 65 reglas computacionales, 0 tokens API
+
+---
+
+## 0. ROL ENRIQUECIDO — Mi identidad como arquitecto de producto inteligente
+
+### El rol (FIJADO COMO REGLA DE ORO DE COMPORTAMIENTO)
+
+**No soy un "monkey coder" que traduce specs a código.** Mi rol es el de **arquitecto de producto inteligente senior** que combina 6 disciplinas en una sola persona:
+
+| Disciplina | Qué implica en la práctica |
+|-----------|---------------------------|
+| **FullStack Engineering** | Código production-grade, 0 placeholders, 0 shortcuts. Cada línea auditable. |
+| **UI/UX Architecture** | Diseño de interfaces que piensan por el usuario. No muestro datos — guío decisiones. |
+| **Product Strategy** | Cada feature resuelve un problema de negocio real. No construyo por construir. |
+| **Private Club Operations (CR)** | Entiendo el contexto: estacionalidad costarricense, socios VIP, cultura de club privado. |
+| **AI/ML Architecture** | Diseño sistemas de inteligencia client-side que convierten datos en decisiones. |
+| **Financial Intelligence** | Análisis VC-grade: LTV/CAC, Shannon entropy, HHI, Monte Carlo, health scoring compuesto. |
+
+### Lo que esto significa operativamente
+
+| Situación | Lo que un monkey coder haría | Lo que yo hago |
+|-----------|------------------------------|----------------|
+| Ver un bug | Corregir la línea | Auditar por qué existe, si es síntoma de un patrón roto, y si hay más instancias |
+| Ver una tool sin UI | Ignorarla o hardcodear algo | Proponer dónde encaja en la arquitectura de Advisor, qué nivel de carga tiene, qué reglas aplica |
+| Recibir un componente nuevo | Traducir spec a código | Analizar contra 22 reglas, contra el patrón AI, contra el backend real, y proponer mejoras de producto |
+| Documentar | "Listo, funciona" | Changelog detallado, decision log, verificación contra reglas, impacto en fases futuras |
+| Proponer una feature | Hacer lo que piden | Proponer algo que el usuario no sabía que necesitaba — porque veo el patrón completo |
+
+### Proceso mental antes de cada bloque
+
+```
+1. ¿Qué dice el código actual?          → Leer archivo real
+2. ¿Qué viola de las 22 reglas?         → Auditar línea por línea
+3. ¿Qué nivel de inteligencia tiene?    → ¿Solo datos? ¿Contexto? ¿IA?
+4. ¿Qué nivel PODRÍA tener?             → Proponer upgrade si aplica
+5. ¿Cómo encaja en la visión global?    → Decisiones compatibles con F20+
+6. ¿Qué pendientes acumulados resuelve? → Cerrar issues del checkpoint
+7. ¿Propongo ANTES de codificar?        → El usuario aprueba
+8. ¿Genero código completo o quirúrgico? → Regla #5: >30% rewrite, ≤15 líneas quirúrgico
+```
+
+### Regla de oro (INVIOLABLE)
+
+**Yo propongo y analizo ANTES de escribir código. El usuario aprueba antes de generar. Changelog detallado al final de cada bloque. Formato de edición: Bloque A (código actual exacto) → Bloque B (líneas nuevas para copiar y pegar). Nunca mezclo.**
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA MEGA-SESIÓN (F18-F20)
+
+### FASE 18 — FinancialDashboard Enhancement
+
+| # | Archivo | Acción | Líneas | Contenido |
+|---|---------|--------|--------|-----------|
+| 1 | `features/finance/hooks/useFinancialAdvisor.ts` | NUEVO | ~280 | 18 reglas en 3 capas (macro/micro/fusion) |
+| 2 | `features/finance/components/FinancialAdvisorBanner.tsx` | NUEVO | ~280 | Command Center con 3 secciones por capa, expandible, staggered animations |
+| 3 | `features/finance/types.ts` | APPEND | +20 | `AdvisorInsightLayer`, `FinancialAdvisorInsight` |
+| 4 | `features/finance/FinancialDashboard.tsx` | REWRITE | ~140 | Pre-warming queries, Advisor Banner, cn() fix, focus-visible fix |
+
+### FASE 19 — EventOrchestrator Dashboard Enhancement
+
+| # | Archivo | Acción | Líneas | Contenido |
+|---|---------|--------|--------|-----------|
+| 1 | `features/events/hooks/useEventAdvisor.ts` | NUEVO | ~280 | 15 reglas en 3 capas (macro/micro/fusion) |
+| 2 | `features/events/components/EventAdvisorBanner.tsx` | NUEVO | ~250 | Command Center con 3 secciones por capa |
+| 3 | `features/events/types.ts` | APPEND | +20 | `EventAdvisorInsightLayer`, `EventAdvisorInsight` |
+| 4 | `features/events/EventCalendar.tsx` | QUIRÚRGICO | +9 | 2 imports, hook call, banner render |
+
+### FASE 20 — Global Cross-Agent Health Advisor
+
+| # | Archivo | Acción | Líneas | Contenido |
+|---|---------|--------|--------|-----------|
+| 1 | `features/dashboard/hooks/useGlobalAdvisor.ts` | NUEVO | ~400 | 25 reglas en 5 capas (diagnostic/strategy/prediction/innovation/execution) |
+| 2 | `features/dashboard/components/GlobalAdvisorBanner.tsx` | NUEVO | ~320 | Control Tower con 5 secciones por capa, systemic risk score |
+| 3 | `features/dashboard/types.ts` | APPEND | +15 | `GlobalAdvisorLayer`, `GlobalAdvisorInsight` |
+| 4 | `features/dashboard/ExecutiveDashboard.tsx` | QUIRÚRGICO | +12 | 3 imports, hook call, banner render |
+
+---
+
+## 2. HALLAZGOS DE ESTAS SESIONES
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | `generate_ai_analysis` es la "joya" del agente finance — 9 dimensiones de inteligencia en 1 tool | INFO (positivo) | ✅ Documentado |
+| 2 | `get_financial_summary` NO existe como tool en finance.py — solo mock | MEDIA | ⬜ Migrar a backend futuro |
+| 3 | `TierEconomics` importado pero no calculado en agente | MEDIA | ⬜ Advisor client-side puede derivarlo |
+| 4 | Finance tiene 17 tools (más de cualquier otro módulo), 9 son mock-only | INFO | ✅ |
+| 5 | 5 sub-componentes finance creados pero NUNCA montados (DecisionCockpit, MemberProfitabilityMatrix, NarrativeEngine, SeasonalCalendar, StressTestPanel) | MEDIA | ⬜ Integrar F21+ |
+| 6 | `FamilyAccount.tsx` es SOCIO-facing (useParams), no admin | INFO | ✅ |
+| 7 | `useGlobalStatus` ya consume cross-agent data (hitl + events) para sidebar | INFO (positivo) | ✅ Patrón base para Global Advisor |
+| 8 | Events frontend types tiene dual layer: legacy + Bk-prefixed backend-aligned | INFO | ✅ |
+| 9 | EventCalendar ya tiene client-side conflict detection + smart slot suggestion | INFO (positivo) | ✅ |
+| 10 | ExecutiveDashboard ya tiene Advisor inline (`generateExecutiveRecommendations`) pero single-domain | INFO | ✅ Global Advisor lo complementa |
+| 11 | `compactCurrency` local en IntelligencePanel vs `formatCurrency` de utils — inconsistencia | BAJA | ⬜ F22 |
+| 12 | `toLocaleString("es-CR")` usado en vez de `formatNumber()` en múltiples componentes | MEDIA | ⬜ F22 |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón: Client-Side AI Advisor (creado F17, replicado F18-F20)
+
+**Concepto:** Hook de React que computa insights estratégicos de datos ya en cache de React Query. Cero llamadas al backend. Cero latencia. Aparece como banner en el top del dashboard.
+
+**Niveles:**
+```
+Nivel 0: Shell queries (pre-warming, staleTime)
+   ↓ datos en caché
+Nivel 1: useXxxAdvisor(datos de cache) → AdvisorInsight[]
+   ↓ N reglas computacionales
+Nivel 2: <XxxAdvisorBanner /> → render condicional (solo si hay insights)
+   ↓ click "Ir"
+Nivel 3: setActiveTab(targetTab) / navigate(route) → navega al destino
+```
+
+**Implementaciones:**
+| Fase | Advisor | Reglas | Capas | Fuente |
+|------|---------|--------|-------|--------|
+| F17 | useRecommendationAdvisor | 7 | 1 | proactive_recommendation cache |
+| F18 | useFinancialAdvisor | 18 | 3 (macro/micro/fusion) | finance cache |
+| F19 | useEventAdvisor | 15 | 3 (macro/micro/fusion) | events cache |
+| F20 | useGlobalAdvisor | 25 | 5 (diagnostic/strategy/prediction/innovation/execution) | cross-agent cache |
+
+**Cuándo se aplica:** Cualquier dashboard que tiene múltiples queries de diferentes dominios donde los datos ya cargados pueden cruzarse para producir insights.
+
+**Fases futuras donde se replica:**
+- F21: Se agrega "Action Bridge" — los insights se conectan a mutations reales
+- F22: Polish — se consolida tipado, se limpia duplicación
+
+### Patrón: CRUD con Action Routing (pre-existente, documentado F17)
+
+Tools que soportan múltiples operaciones bajo un solo nombre, diferenciadas por param `action`:
+```typescript
+useMCPQuery("events", "event_manage_rsvps", { action: "list", event_id })
+useMCPMutation("events", "event_manage_rsvps", { action: "add", event_id, family_id })
+```
+Usado por: events (event_manage_rsvps, event_coordinate_vendors), families.
+
+### Patrón: Pre-warming Queries en Shell
+
+```typescript
+// En el shell del dashboard, queries duplicadas para pre-calentar cache:
+const aiQ = useMCPQuery("finance", "generate_ai_analysis", { period }, { staleTime: 300_000 });
+// React Query deduplica — las mismas queries en sub-componentes cargan al instante desde cache
+```
+Aplicado en: FinancialDashboard (F18), ExecutiveDashboard (F20).
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| Decisión | Alternativa descartada | Razón |
+|----------|----------------------|-------|
+| Advisor como hook + banner inline en shell | Tab separada de "AI Advisor" | Un tab más sería 8vo tab. Advisor tiene sentido como contexto global |
+| 3 capas de inteligencia (macro/micro/fusion) en F18/F19 | Una sola capa plana | Diferentes niveles de profundidad permiten priorización mejor |
+| Global Advisor con 5 capas (diagnostic/strategy/prediction/innovation/execution) | Solo diagnóstico + ejecución | Las capas intermedias (estrategia, predicción, innovación) son el diferenciador vs software tradicional |
+| Advisor consume cache (queries duplicadas en shell) | Advisor hace sus propias queries | React Query deduplica. Shell pre-calienta, sub-componentes cargan al instante |
+| Advisor defensivo (funciona con datos parciales) | Forzar queries de todos los dominios | Usuario puede no haber visitado Finance/Events. No bloquea, computa con lo disponible |
+| Systemic Risk Score compuesto (F20) | Health Score de un solo dominio | Combina health + anomalies + conflicts + approvals en un solo número |
+| Competitive Benchmark Simulation hardcodeado | Benchmarks desde backend | CR private clubs data no existe como API. Hardcodear benchmarks locales es práctico |
+| TODO placeholders en ExecutiveDashboard para cache connections | Conectar todo inmediatamente | F21 conectará useGlobalStatus. No bloquea F20, permite iteración |
+| Keyframes consolidados en shells pero mantenidos en sub-componentes | Eliminar de sub-componentes | Sub-componentes pueden montarse independientemente. Limpieza definitiva en F22 |
+| Sub-componentes NO se re-escribieron en F18 | Re-escritura completa | Están bien construidos. Solo necesitan fixes quirúrgicos |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F5 | Infraestructura, tokens, forms, lists, details | ✅ |
+| F6 | Dashboards densos + AI | ✅ |
+| F7 | Reports, mi-club, settings, finance | ✅ |
+| F8 | Dashboard sub-componentes | 🔄 5/12 done |
+| F9 | Wellness + Satisfaction | ✅ |
+| F10 | Proactive Recommendations | ✅ |
+| F11 | Communication Enhancement | ✅ |
+| F12 | Guest Management + Trial Memberships | ✅ |
+| F13 | Finance Enhancement + HITL Complete | ✅ |
+| F14 | Intelligence Features (Stress Test, Profitability, Seasonal, Narrative, Decision Cockpit) | ✅ |
+| F15 | Integration Testing + QA | ✅ |
+| F15ext-B1-B4 | DailyBriefing full stack enhancement | ✅ |
+| F15ext-C1-C3 | ComplianceCheck full stack enhancement | ✅ |
+| F15ext-S1-S4 | SmartSchedule full stack rewrite | ✅ |
+| F16 | ExecutiveDashboard Enhancement | ✅ |
+| F17 | RecommendationsDashboard Enhancement — 7 rules Advisor | ✅ |
+| **F18** | **FinancialDashboard Enhancement — 18 rules Advisor (3 layers)** | **✅** |
+| **F19** | **EventOrchestrator Dashboard Enhancement — 15 rules Advisor (3 layers)** | **✅** |
+| **F20** | **Global Cross-Agent Health Advisor — 25 rules Advisor (5 layers)** | **✅** |
+| **F21** | **Mutations Phase — Advisor → one-click execute** | **⬜ SIGUIENTE** |
+| F22 | Polish Phase (fonts, formatters, keyframes, dead imports) | ⬜ |
+| F23 | Mock → Backend Migration | ⬜ |
+
+---
+
+## 6. PRÓXIMA FASE — F21: Mutations Phase (DETALLE)
+
+### Concepto
+Los Advisors producen insights accionables (F17-F20). F21 conecta esos insights a mutations reales. El Advisor dice "hacé esto" y tiene un botón que ejecuta directamente.
+
+### 8 acciones mutables a conectar
+
+| # | Acción | Origen insight | Mutation | Approval |
+|---|--------|---------------|----------|----------|
+| 1 | Aprobar pendientes | Rule 3 (Approval Bottleneck) | `hitl.approve_request` × N | AUTO |
+| 2 | Rechazar pendiente | Rule 3 | `hitl.reject_request` | AUTO |
+| 3 | Generar briefing junta | Rule 23 (Board Brief) | `executive_dashboard.generate_quarterly_board_report` | HITL |
+| 4 | Exportar PDF | Rule 25 (Monthly Report) | `executive_dashboard.export_report` | SEMI |
+| 5 | Actualizar presupuesto | Rule 9 (Budget overrun) | `finance.finance_category_update` | SEMI |
+| 6 | Generar reporte financiero | Rule 11 (Investment Priority) | `finance.finance_report_generate` | SEMI |
+| 7 | Crear evento rápido | Rule 14 (Demand Forecaster) | `events.event_create` | HITL |
+| 8 | Clonar evento exitoso | Rule 14 | `events.event_clone_template` | SEMI |
+
+### Archivos a crear/modificar
+
+| # | Archivo | Acción | Líneas est. |
+|---|---------|--------|-------------|
+| 1 | `shared/hooks/useAdvisorAction.ts` | NUEVO — hook que ejecuta mutations desde Advisor actions | ~80 |
+| 2 | `features/dashboard/types.ts` | APPEND — `AdvisorAction` type | +15 |
+| 3 | `features/events/types.ts` | APPEND — re-export | +5 |
+| 4 | `features/finance/types.ts` | APPEND — re-export | +5 |
+| 5 | `features/dashboard/components/GlobalAdvisorBanner.tsx` | ENHANCE — "Ejecutar" button | ~40 |
+| 6 | `features/finance/components/FinancialAdvisorBanner.tsx` | ENHANCE — "Ejecutar" button | ~40 |
+| 7 | `features/events/components/EventAdvisorBanner.tsx` | ENHANCE — "Ejecutar" button | ~40 |
+| 8 | `features/dashboard/hooks/useGlobalAdvisor.ts` | ENHANCE — attach actions to insights | ~80 |
+| 9 | `features/finance/hooks/useFinancialAdvisor.ts` | ENHANCE — attach actions | ~40 |
+| 10 | `features/events/hooks/useEventAdvisor.ts` | ENHANCE — attach actions | ~40 |
+
+### Archivos que necesitás pegar en el próximo chat
+
+```
+1. Este checkpoint (F18-F20)
+2. backend/src/club_mcp/hitl/approval_engine.py  ← para entender approve/reject flow
+3. backend/src/club_mcp/hitl/approval_types.py   ← para ApprovalLevel enum
+4. shared/hooks/useMCPMutation.ts                 ← para mutation hook pattern
+5. features/dashboard/components/GlobalAdvisorBanner.tsx  ← para enhance
+6. features/finance/components/FinancialAdvisorBanner.tsx  ← para enhance
+7. features/events/components/EventAdvisorBanner.tsx       ← para enhance
+```
+
+---
+
+## 7. AGENTES BACKEND AUDITADOS — LISTA COMPLETA
+
+| # | Agente | Archivo | Tools | HITL | AUTO | SEMI | Inteligencia | Fase auditado | Frontend conectado |
+|---|--------|---------|-------|------|------|------|-------------|---------------|-------------------|
+| 1 | `daily_briefing` | `agents/daily_briefing.py` | 7 | 1 (quick_approve) | 6 | — | generate_daily_briefing | F15ext-B | DailyBriefing ✅ |
+| 2 | `compliance_check` | `agents/compliance.py` | 6 | 1 (approve_recommendation) | 5 | — | generate_compliance_insights | F15ext-C | ComplianceCheck ✅ |
+| 3 | `smart_schedule` | `agents/smart_schedule.py` | 8 | 2 (create_event, resolve_conflict) | 6 | — | suggest_optimal_slots, analyze_schedule_efficiency | F15ext-S | SmartSchedule ✅ |
+| 4 | `executive_dashboard` | `agents/executive_dashboard_agent.py` | 8 | 2 (export_report SEMI, generate_quarterly_board_report HITL) | 6 | — | detect_anomalies, generate_ai_analysis | F16 | ExecutiveDashboard ✅ |
+| 5 | `proactive_recommendation` | `agents/proactive_recommendation_agent.py` | 8 | 2 (optimize_pricing, suggest_new_activities) | 6 | — | 6 tools: family_recommendations, predict_attendance, detect_scheduling_conflicts, personalize_communication, identify_social_clusters, quarterly_insights | F17 | RecommendationsDashboard ✅ |
+| 6 | `finance` | `agents/finance.py` | 8 | 3 (expense_create, invoice_create, payment_process) | 3 | 2 | **generate_ai_analysis** (9 dimensiones: Health Score, Revenue Concentration, Cash Flow Forecast, Anomalies, Recommendations, Trends, Alerts, Projection, Member Economics) | **F18** ✅ | FinancialDashboard ✅ + **18 rules Advisor** |
+| 7 | `event_orchestrator` | `agents/event_orchestrator.py` | 9 | 3 (event_create, coordinate_vendors, generate_report financial) | 4 | 2 | event_get_analytics | **F19** ✅ | EventCalendar ✅ + **15 rules Advisor** |
+| 8 | `facility_management` | `agents/facility_management_agent.py` | — | — | — | — | — | Parcial F16 | Referenced ⬜ |
+
+### Agentes NO auditados aún (del proyecto)
+
+| # | Agente | Archivo | Estado |
+|---|--------|---------|--------|
+| 1 | `communication` | `agents/communication_agent.py` | Tools en mock-registry (12), agent NO auditado |
+| 2 | `guest_management` | `agents/guest_management_agent.py` | Tools en mock-registry (6), agent NO auditado |
+| 3 | `member_engagement` | `agents/member_engagement_agent.py` | Tools en mock-registry (5), agent NO auditado |
+| 4 | `wellness` | `agents/wellness.py` | Tools en mock-registry (11), agent NO auditado |
+| 5 | `satisfaction` | `agents/satisfaction_agent.py` | Tool en mock-registry (1), agent NO auditado |
+| 6 | `family_profile` | `agents/family_profile.py` | Tools en mock-registry (11), agent NO auditado |
+| 7 | `sports_recreation` | `agents/sports_recreation_agent.py` | NO auditado |
+| 8 | `cultural_social` | `agents/cultural_social_agent.py` | NO auditado |
+| 9 | `document_intelligence` | `agents/document_intelligence_agent.py` | NO auditado |
+| 10 | `age_group` / `age_group_activity` | `agents/age_group.py` | NO auditado |
+
+**Total tools auditadas: 54+ (7 agentes completos)**
+**Total tools en proyecto: ~100+ (13+ agentes)**
+
+---
+
+## 8. LA VISIÓN DE IA — Cómo estamos construyendo una herramienta de decisión inteligente
+
+### El problema que resolvemos
+
+La mayoría del software de gestión de clubes es **un repositorio de datos** — te muestra lo que pasó. Nuestro sistema es un **sistema de decisión** — te dice qué hacer, por qué, y te deja ejecutar con un clic.
+
+### Los 5 niveles de inteligencia
+
+```
+NIVEL 1: DATOS (F1-F7)
+├── Queries al backend
+├── Visualización de KPIs
+├── Charts y tablas
+└── "¿Qué está pasando?"
+
+NIVEL 2: CONTEXTO (F8-F15)
+├── Auto-load + staleTime optimization
+├── On-demand sections (CTA → loading → results)
+├── Types source of truth (backend 1:1)
+└── "¿Qué necesito ver ahora?"
+
+NIVEL 3: INTELIGENCIA CLIENT-SIDE (F16-F19)
+├── AI Advisors domain-specific (Financial, Event, Recommendations)
+├── Reglas computacionales de 7-18 factores por dominio
+├── Cross-domain analysis within single agent
+├── Impact scoring (high/medium/low)
+├── Confidence scoring (0-100)
+├── 0 API calls, 0 tokens, 0ms
+└── "¿Qué debería hacer y por qué?"
+
+NIVEL 4: CROSS-AGENT INTELLIGENCE (F20)
+├── Global Advisor (25 reglas, 5 capas)
+├── Diagnostic → Strategy → Prediction → Innovation → Execution
+├── Systemic Risk Score compuesto
+├── Cross-domain fusion (finance × events × members × operations)
+├── Competitive benchmarks (CR private clubs)
+├── "¿Qué no estoy viendo que otros clubes sí hacen?"
+└── "¿Qué va a pasar en 90 días si no actúo?"
+
+NIVEL 5: ACCIÓN INTELIGENTE (F21 — el futuro)
+├── Pre-filled mutation params desde Advisor insights
+├── One-click execute: Advisor → Mutation → HITL → Done
+├── Batch actions: "Aprobar todas las de bajo riesgo"
+├── AI-generated communication drafts
+├── Weekly Action Plan ejecutable
+└── "Ejecutá esto, ya lo analicé"
+```
+
+### Lo que hace único a nuestro sistema
+
+| Característica | Software tradicional | Nuestro sistema |
+|---------------|---------------------|-----------------|
+| Datos | Tablas y charts | Tablas, charts + Advisor que interpreta |
+| Análisis | El usuario analiza | El sistema analiza y propone con 65 reglas |
+| Decisiones | El usuario decide qué mirar | El sistema prioriza por impacto y confianza |
+| Acciones | El usuario navega forms | El sistema ejecuta con un clic (F21) |
+| Cross-domain | Cada módulo es aislado | Global Advisor cruza TODOS los dominios |
+| Inteligencia | Backend ML (latencia, tokens) | Client-side compute (0ms, 0 tokens) |
+| Predicción | No existe | 90-day trajectory, churn prediction, demand forecast |
+| Innovación | No existe | Hidden revenue, cross-sell, partnership, benchmark |
+| Ejecución | Manual | Weekly plan, board brief, scenario test |
+| Personalización | Genérico para todos | Basado en datos reales del club específico |
+
+### La arquitectura Advisor completa
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    GLOBAL ADVISOR (F20)                          │
+│                    "Control Tower"                               │
+│                    25 rules × 5 layers                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─── FINANCIAL ADVISOR (F18) ────────────────────────────┐    │
+│  │  18 rules × 3 layers (macro/micro/fusion)              │    │
+│  │  Input: generate_ai_analysis + get_financial_summary    │    │
+│  │  Health, margin, cashflow, anomalies, concentration     │    │
+│  │  LTV/CAC, budget, seasonal, cross-domain fusion        │    │
+│  └────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─── EVENT ADVISOR (F19) ────────────────────────────────┐    │
+│  │  15 rules × 3 layers (macro/micro/fusion)              │    │
+│  │  Input: event_get_calendar + event data                 │    │
+│  │  Capacity, conflicts, pricing, engagement, seasonal     │    │
+│  └────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─── RECOMMENDATIONS ADVISOR (F17) ──────────────────────┐    │
+│  │  7 rules × 1 layer                                     │    │
+│  │  Input: pricing + suggestions + insights cache          │    │
+│  │  Pending items, demand, staleness, satisfaction         │    │
+│  └────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─── CROSS-AGENT FUSION (F20) ───────────────────────────┐    │
+│  │  25 rules × 5 layers                                   │    │
+│  │  Diagnostic + Strategy + Prediction + Innovation        │    │
+│  │  + Execution                                           │    │
+│  │  Systemic Risk Score, Competitive Benchmark             │    │
+│  │  Weekly Action Plan, Board Brief                        │    │
+│  └────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  TOTAL: 65 rules, 0 tokens API, 0ms, 100% client-side         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 9. MOCK REGISTRY — TOOLS POR SERVER
+
+### finance (17 tools — el más grande del proyecto)
+
+| # | Tool | Backend | Mock | Tipo | Approval |
+|---|------|---------|------|------|----------|
+| 1 | `finance_expense_create` | ✅ | ✅ | Mutation | HITL |
+| 2 | `finance_invoice_create` | ✅ | ✅ | Mutation | HITL |
+| 3 | `finance_budget_check` | ✅ | ✅ | Data | AUTO |
+| 4 | `finance_payment_process` | ✅ | ✅ | Mutation | HITL |
+| 5 | `finance_report_generate` | ✅ | ✅ | Report | SEMI |
+| 6 | `finance_account_status` | ✅ | ✅ | Data | AUTO |
+| 7 | `finance_category_update` | ✅ | ✅ | Mutation | SEMI |
+| 8 | `generate_ai_analysis` | ✅ | ✅ | Inteligencia | AUTO |
+| 9 | `get_financial_summary` | ⬜ | ✅ | Data | AUTO |
+| 10 | `finance_scenario_simulate` | ⬜ | ✅ | Inteligencia | AUTO |
+| 11 | `finance_opportunities_scan` | ⬜ | ✅ | Inteligencia | AUTO |
+| 12 | `finance_board_briefing` | ⬜ | ✅ | Inteligencia | AUTO |
+| 13 | `finance_member_profitability` | ⬜ | ✅ | Inteligencia | AUTO |
+| 14 | `finance_stress_test` | ⬜ | ✅ | Inteligencia | AUTO |
+| 15 | `finance_seasonal_calendar` | ⬜ | ✅ | Inteligencia | AUTO |
+| 16 | `finance_narrative_generate` | ⬜ | ✅ | Inteligencia | AUTO |
+| 17 | `finance_decision_simulate` | ⬜ | ✅ | Inteligencia | AUTO |
+
+### events (16 tools)
+
+| # | Tool | Backend | Mock | Tipo | Approval |
+|---|------|---------|------|------|----------|
+| 1 | `event_create` | ✅ | ✅ | Mutation | HITL |
+| 2 | `event_build_program` | ✅ | ✅ | Mutation | SEMI |
+| 3 | `event_manage_rsvps` | ✅ | ✅ | CRUD | AUTO/HITL(bulk) |
+| 4 | `event_coordinate_vendors` | ✅ | ✅ | CRUD | HITL/AUTO(list) |
+| 5 | `event_manage_capacity` | ✅ | ✅ | Data+Mutation | AUTO |
+| 6 | `event_get_analytics` | ✅ | ✅ | Inteligencia | AUTO |
+| 7 | `event_clone_template` | ✅ | ✅ | Mutation | SEMI |
+| 8 | `event_get_calendar` | ✅ | ✅ | Data | AUTO |
+| 9 | `event_generate_report` | ✅ | ✅ | Report | SEMI/HITL(fin) |
+| 10 | `list_events` | ⬜ | ✅ | Data | AUTO |
+| 11 | `get_event` | ⬜ | ✅ | Data | AUTO |
+| 12 | `update_event_status` | ⬜ | ✅ | Mutation | AUTO |
+| 13 | `event_predict_attendance` | ⬜ | ✅ | Inteligencia | AUTO |
+| 14 | `event_recommend_optimization` | ⬜ | ✅ | Inteligencia | AUTO |
+| 15 | `event_conflict_detection` | ⬜ | ✅ | Inteligencia | AUTO |
+| 16 | `event_engagement_boost` | ⬜ | ✅ | Inteligencia | AUTO |
+
+### executive_dashboard (8 tools)
+
+| # | Tool | Backend | Mock | Tipo | Approval |
+|---|------|---------|------|------|----------|
+| 1 | `get_executive_summary` | ✅ | ✅ | Data | AUTO |
+| 2 | `get_operational_pulse` | ✅ | ✅ | Data | AUTO |
+| 3 | `detect_anomalies` | ✅ | ✅ | Inteligencia | AUTO |
+| 4 | `get_financial_overview` | ⬜ | ✅ | Data | AUTO |
+| 5 | `get_membership_health` | ⬜ | ✅ | Data | AUTO |
+| 6 | `get_age_group_balance` | ⬜ | ✅ | Data | AUTO |
+| 7 | `generate_quarterly_board_report` | ✅ | ✅ | Report | HITL |
+| 8 | `export_report` | ✅ | ✅ | Export | SEMI |
+
+### hitl (3 tools)
+
+| # | Tool | Backend | Mock | Tipo | Approval |
+|---|------|---------|------|------|----------|
+| 1 | `get_pending_approvals` | ✅ | ✅ | Data | AUTO |
+| 2 | `approve_request` | ✅ | ✅ | Mutation | AUTO |
+| 3 | `reject_request` | ✅ | ✅ | Mutation | AUTO |
+
+---
+
+## 10. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Archivo(s) | Fase sugerida |
+|---|-------|-----------|-----------|---------------|
+| 1 | `font-ui` sin prefijo — ~50 instancias en 6 sub-componentes recommendations | MEDIA | Overview, PricingOptimizer, ActivitySuggester, QuarterlyInsights, FamilyRecommendations, shell | F22 |
+| 2 | `font-mono` sin prefijo — ~30 instancias | MEDIA | PricingOptimizer, ActivitySuggester, QuarterlyInsights | F22 |
+| 3 | `toLocaleString()` en vez de `formatNumber()` — ~8 instancias | MEDIA | RecommendationsOverview, QuarterlyInsights, EventCalendar | F22 |
+| 4 | Keyframes `slideDown`/`fadeUp` duplicados en 3 sub-componentes | BAJA | PricingOptimizer, ActivitySuggester, QuarterlyInsights | F22 |
+| 5 | Mutation en QuarterlyInsights sin invalidación de list query | MEDIA | QuarterlyInsights | F22 |
+| 6 | 3 sub-componentes recommendations no auditados (SocialClusters, SchedulingConflicts, PredictAttendance) | MEDIA | `components/SocialClusters.tsx` etc. | F22 |
+| 7 | `personalize_communication` tool sin componente UI | MEDIA | Ningún componente la usa | Futuro |
+| 8 | `get_financial_summary` mock-only — migrar a backend | MEDIA | mock-registry | F23 |
+| 9 | 5 sub-componentes finance no integrados al shell (DecisionCockpit, MemberProfitabilityMatrix, NarrativeEngine, SeasonalCalendar, StressTestPanel) | MEDIA | `components/DecisionCockpit.tsx` etc. | F21+ |
+| 10 | `compactCurrency` local vs `formatCurrency` de utils | BAJA | FinanceIntelligencePanel | F22 |
+| 11 | `toLocaleString("es-CR")` en ConcentrationSection | BAJA | FinanceIntelligencePanel | F22 |
+| 12 | GlobalAdvisor connect finance/events cache (TODO placeholders) | MEDIA | ExecutiveDashboard.tsx | F21 |
+| 13 | `TierEconomics` importado pero no calculado en agente finance | MEDIA | backend finance.py | Futuro |
+| 14 | Event Advisor: 4 AI mock tools sin UI dedicada (predict, optimize, conflict, engagement) | MEDIA | events components | F21+ |
+
+---
+
+## 11. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección 0 ROL — REEMPLAZAR completamente con el Rol Enriquecido de este checkpoint (sección 0 arriba)
+
+### Sección: Agentes auditados — AGREGAR
+
+```
+| finance | 8 tools | 3 HITL | 3 AUTO | 2 SEMI | F18 ✅ |
+| event_orchestrator | 9 tools | 3 HITL | 4 AUTO | 2 SEMI | F19 ✅ |
+```
+
+### Sección: Advisor Pattern — AGREGAR NUEVA SECCIÓN
+
+```
+## Client-Side AI Advisor Architecture
+
+4 Advisors implementados:
+  F17: useRecommendationAdvisor (7 rules, 1 layer)
+  F18: useFinancialAdvisor (18 rules, 3 layers: macro/micro/fusion)
+  F19: useEventAdvisor (15 rules, 3 layers: macro/micro/fusion)
+  F20: useGlobalAdvisor (25 rules, 5 layers: diagnostic/strategy/prediction/innovation/execution)
+
+TOTAL: 65 rules, 0 API tokens, 0ms, 100% client-side
+
+Pattern: useXxxAdvisor(cache) → XxxAdvisorInsight[] → <XxxAdvisorBanner />
+Replicated: F18, F19, F20. Next: F21 (action bridge).
+```
+
+### Sección: Próxima fase — ACTUALIZAR
+
+```
+F21: Mutations Phase — Advisor → one-click execute
+- Hook: shared/hooks/useAdvisorAction.ts
+- Enhance: 3 AdvisorBanner components
+- Enhance: 3 useXxxAdvisor hooks (attach actions)
+```
+
+---
+
+## 12. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto
+```
+1. Este checkpoint (F18-F20 completo)
+2. CLAUDE_CONTEXT_MINI.md (si existe, sino este checkpoint cubre el 95%)
+```
+
+### Paso 2 — Pedir archivos para F21
+```
+"Pasame estos archivos para F21 — Mutations Phase:
+1. backend/src/club_mcp/hitl/approval_engine.py
+2. backend/src/club_mcp/hitl/approval_types.py
+3. frontend/src/shared/hooks/useMCPMutation.ts
+4. frontend/src/features/dashboard/components/GlobalAdvisorBanner.tsx
+5. frontend/src/features/finance/components/FinancialAdvisorBanner.tsx
+6. frontend/src/features/events/components/EventAdvisorBanner.tsx"
+```
+
+### Paso 3 — Pedir auditoría
+```
+"Auditá los archivos y diseñá el Advisor Action Bridge para F21"
+```
+
+### Paso 4 — Pedir propuesta
+```
+"Proponé la arquitectura de mutations conectadas a Advisor insights"
+```
+
+### Paso 5 — Aprobar + generar
+```
+"Aprobado — generá los bloques"
+```
+
+### Paso 6 — Pedir checkpoint
+```
+"Generá el checkpoint de F21"
+```
+
+---
+
+## 13. FASES RESTANTES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| **F21** | **Mutations Phase — Advisor → one-click execute** | **⬜ SIGUIENTE** |
+| F22 | Polish Phase (fonts, formatters, keyframes, dead imports, 14 pendientes) | ⬜ |
+| F23 | Mock → Backend Migration (eliminar keys del registry, 0 cambios en componentes) | ⬜ |
+| F24 | Cross-Agent Advisor Enhancement (conectar useGlobalStatus + real cache bridge) | ⬜ |
+| F25 | Remaining Agents Audit (communication, guest_management, member_engagement, wellness, satisfaction, family_profile, sports_recreation, cultural_social, document_intelligence) | ⬜ |
+| F26 | Integration Testing + QA final | ⬜ |
+
+---
+
+## 14. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto |
+|-------|---------|-------|---------|
+| 2026 | F18 NO necesita los 4 bloques E1-E4 originales | types.ts ya estaba alineado, sub-componentes bien construidos, Advisor pattern reemplaza rewrite masivo | F18 fue auditoría + Advisor, no re-escritura masiva |
+| 2026 | Advisor como hook client-side, no backend tool | 0 tokens, 0ms, consume cache existente. Backend ML es overkill para reglas determinísticas | Patrón replicado F19, F20 |
+| 2026 | Financial Advisor con 3 capas (macro/micro/fusion) | Diferentes niveles de profundidad. Fusion capa es innovación — cruza datos que otros Advisors no cruzan | Se replicó en Event Advisor |
+| 2026 | Event Advisor consume calendar data directamente | Calendar ya tiene `has_conflicts` — no necesita query adicional | Hook más simple que Finance |
+| 2026 | Global Advisor con 5 capas (no solo diagnóstico) | Las capas Strategy/Prediction/Innovation/Execution son el diferenciador vs software tradicional | 25 reglas vs las 10 originales propuestas |
+| 2026 | Systemic Risk Score compuesto | Un solo número que resume health + anomalies + conflicts + approvals | UX: usuario ve "riesgo 68/100 (C)" y sabe exactamente dónde está |
+| 2026 | Competitive Benchmark Simulation hardcodeado | CR private clubs data no existe como API. Benchmarks hardcodeados son mejor que nada | Advisor sabe qué es "bueno" en contexto local |
+| 2026 | TODO placeholders en ExecutiveDashboard | F21 conectará useGlobalStatus. No bloquea F20 | Iteración incremental |
+| 2026 | Fixes de fonts/formatters/keyframes pendientes a F22 | Son cosméticos, no bloquean funcionalidad. Polish phase es el lugar correcto | F18-F20 se cierran más rápido |
+| 2026 | Sub-componentes NO se re-escribieron | Están bien construidos. Solo necesitan fixes quirúrgicos | Ahorro de ~1000 líneas de re-escritura innecesaria |
+| 2026 | Formato de edición: Bloque A (exacto) + Bloque B (nuevo) | El usuario necesita copiar y pegar sin errores. Nunca mezclar bloques | Workflow establecido desde F18 |
+| 2026 | Rol enriquecido fijado como regla de oro | Mi rol no es monkey coder — es arquitecto de producto inteligente. Propongo ANTES de codificar | Comportamiento consistente en todos los chats |
+
+---
+
+**Fases 18, 19 y 20 cerradas. Arquitectura Advisor completa (65 reglas). Próxima: F21 — Mutations Phase.**

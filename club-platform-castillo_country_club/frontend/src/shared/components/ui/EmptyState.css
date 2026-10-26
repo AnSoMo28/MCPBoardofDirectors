@@ -1,0 +1,336 @@
+/**
+ * EmptyState.css
+ * src/shared/components/ui/EmptyState.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .ui-emptystate
+ * @keyframes   1 (ui-emptystate-glow-pulse)
+ * @signature   Radial glow beacon behind icon circle —
+ *              soft light inviting the user to take action.
+ *              The empty state is a MOMENT, not a dead end.
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  Icon circle: backdrop-filter + -webkit + translucent
+ * D2 Stagger  ✓  Sequential reveal: icon → title → description → actions
+ * D3 Easing   ✓  Apple easing on entrance + hover transitions
+ * D4 Typo     ✓  Display font title, UI font description
+ * D5 Color    ✓  Tokens only, color-mix for glow
+ * D6 Pseudo   ✓  ::before radial glow beacon, ::after noise
+ * D7 Interact ✓  hover on action area, focus-visible on buttons
+ * D8 Density  ✓  Generous 24px spacing (resting moment)
+ * D9 Response ✓  Full-width centered, mobile compact
+ * D10 A11y    ✓  role="status", aria-label, aria-hidden
+ * D11 Light   ✓  .light prefix overrides
+ * D12 Motion  ✓  reduced-motion + print
+ * D13 Frames  ✓  1 namespaced at end
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  ROOT — .ui-emptystate (D8, D9)
+   Centered flex column. Generous padding.
+   This is a RESTING MOMENT — breathing room is intentional.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-emptystate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  gap: 16px;
+}
+
+/* D8: Compact mode — tighter spacing */
+.ui-emptystate[data-compact="true"] {
+  padding: 24px 16px;
+  gap: 10px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  ICON CIRCLE (D1, D6)
+   Glass circle with radial glow beacon behind it.
+   Signature: the soft light inviting action.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-emptystate__icon-circle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  /* D2: Stagger — icon reveals first */
+  opacity: 0;
+  animation: ui-emptystate-reveal 0.5s cubic-bezier(0.32, 0.72, 0, 1) 0s forwards;
+}
+
+.ui-emptystate__icon-circle[data-compact="true"] {
+  width: 48px;
+  height: 48px;
+}
+
+/* D6: Glow beacon — radial light behind icon */
+.ui-emptystate__icon-circle::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-gold-400) 10%, transparent) 0%,
+    color-mix(in srgb, var(--color-gold-400) 4%, transparent) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+  animation: ui-emptystate-glow-pulse 3s ease-in-out infinite;
+}
+
+/* D6: Subtle noise texture on circle */
+.ui-emptystate__icon-circle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ui-emptystate__icon-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-silver-400);
+}
+
+.ui-emptystate__icon-circle[data-compact="true"] .ui-emptystate__icon-inner {
+  color: var(--color-silver-500);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  TITLE (D2, D4)
+   Display font, 16px. Stagger: reveals second.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-emptystate__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  line-height: 1.3;
+  margin: 0;
+  max-width: 320px;
+  /* D2: Stagger — reveals second */
+  opacity: 0;
+  animation: ui-emptystate-reveal 0.5s cubic-bezier(0.32, 0.72, 0, 1) 0.1s forwards;
+}
+
+.ui-emptystate__title[data-compact="true"] {
+  font-size: 14px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  DESCRIPTION (D2, D4)
+   UI font, 12px. Stagger: reveals third.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-emptystate__description {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 280px;
+  /* D2: Stagger — reveals third */
+  opacity: 0;
+  animation: ui-emptystate-reveal 0.5s cubic-bezier(0.32, 0.72, 0, 1) 0.2s forwards;
+}
+
+.ui-emptystate__description[data-compact="true"] {
+  font-size: 11px;
+  max-width: 240px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  ACTIONS (D2, D7, D8)
+   Stagger: reveals last. Buttons consume .ui-btn from Button.css.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ui-emptystate__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  /* D2: Stagger — reveals last */
+  opacity: 0;
+  animation: ui-emptystate-reveal 0.5s cubic-bezier(0.32, 0.72, 0, 1) 0.3s forwards;
+}
+
+.ui-emptystate__actions[data-compact="true"] {
+  margin-top: 4px;
+}
+
+/* D7: Ensure action buttons inherit proper styling */
+.ui-emptystate__actions button,
+.ui-emptystate__actions a {
+  font: inherit;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .ui-emptystate__icon-circle {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.light .ui-emptystate__icon-circle::before {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-gold-400) 8%, transparent) 0%,
+    color-mix(in srgb, var(--color-gold-400) 3%, transparent) 40%,
+    transparent 70%
+  );
+}
+
+.light .ui-emptystate__icon-circle::after {
+  display: none;
+}
+
+.light .ui-emptystate__icon-inner {
+  color: var(--color-silver-400);
+}
+
+.light .ui-emptystate__title {
+  color: var(--color-silver-800);
+}
+
+.light .ui-emptystate__description {
+  color: var(--color-silver-500);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-emptystate__icon-circle,
+  .ui-emptystate__title,
+  .ui-emptystate__description,
+  .ui-emptystate__actions {
+    animation: none;
+    opacity: 1;
+  }
+
+  .ui-emptystate__icon-circle::before {
+    animation: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .ui-emptystate {
+    padding: 32px 16px;
+  }
+
+  .ui-emptystate__icon-circle {
+    width: 56px;
+    height: 56px;
+  }
+
+  .ui-emptystate__title {
+    font-size: 14px;
+  }
+
+  .ui-emptystate__description {
+    font-size: 11px;
+  }
+
+  .ui-emptystate__actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .ui-emptystate__actions button,
+  .ui-emptystate__actions a {
+    width: 100%;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  KEYFRAMES (D13)
+   ALL at end, ALL ui-emptystate-* namespaced. Count: 2.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Cascade reveal — opacity + subtle upward drift */
+@keyframes ui-emptystate-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Glow beacon — soft breathing pulse */
+@keyframes ui-emptystate-glow-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.08); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .ui-emptystate__icon-circle {
+    border: 1px solid #ccc !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .ui-emptystate__icon-circle::before,
+  .ui-emptystate__icon-circle::after {
+    display: none !important;
+  }
+
+  .ui-emptystate__title,
+  .ui-emptystate__description,
+  .ui-emptystate__actions {
+    animation: none !important;
+    opacity: 1 !important;
+    color: #1a1a1a !important;
+  }
+}

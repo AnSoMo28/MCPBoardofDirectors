@@ -1,0 +1,836 @@
+/* src/features/communications/components/ScheduleComposer.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Schedule Composer — V2 Glass UI + Intelligence             */
+/* "El Programador" — Phase 31 — 10 Innovations              */
+/* Namespace: .glass-comm-schedule                            */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* ── Root ─────────────────────────────────────────────── */
+
+.glass-comm-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6, 1.5rem);
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+/* ── Loading ──────────────────────────────────────────── */
+
+.schedule__loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+}
+
+.schedule__skeleton {
+  border-radius: var(--radius-xl, 1rem);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  animation: schedule-shimmer 1.5s ease-in-out infinite;
+}
+
+.schedule__skeleton--card { height: 10rem; }
+
+/* ── Error & Empty ────────────────────────────────────── */
+
+.schedule__error,
+.schedule__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-8, 2rem) 0;
+  text-align: center;
+  color: var(--text-muted, #7a7570);
+}
+
+.schedule__error h3,
+.schedule__empty h3 {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.schedule__error p,
+.schedule__empty p { font-size: 0.82rem; margin: 0; }
+
+/* ── Section Cards ────────────────────────────────────── */
+
+.schedule__section-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-4, 1rem);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-xl, 1rem);
+  backdrop-filter: blur(8px);
+}
+
+.schedule__section-title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+}
+
+.schedule__section-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted, #7a7570);
+  margin: calc(var(--space-1, 0.25rem) * -1) 0 0;
+}
+
+/* ── Form Fields ──────────────────────────────────────── */
+
+.schedule__label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: var(--space-1, 0.25rem);
+}
+
+.schedule__select,
+.schedule__input,
+.schedule__textarea {
+  width: 100%;
+  padding: var(--space-3, 0.75rem);
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 60%, transparent);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  min-height: 48px;
+  transition: border-color 0.2s ease;
+}
+
+.schedule__textarea { resize: vertical; min-height: 80px; }
+
+.schedule__select:focus-visible,
+.schedule__input:focus-visible,
+.schedule__textarea:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.schedule__select:hover,
+.schedule__input:hover,
+.schedule__textarea:hover {
+  border-color: color-mix(in srgb, var(--text-primary) 18%, transparent);
+}
+
+.schedule__input::placeholder,
+.schedule__textarea::placeholder {
+  color: var(--text-muted, #7a7570);
+  opacity: 0.6;
+}
+
+.schedule__input--date,
+.schedule__input--time {
+  font-family: var(--font-mono, monospace);
+}
+
+.schedule__field-error {
+  font-size: 0.72rem;
+  color: var(--color-rose-400);
+  margin: 0;
+}
+
+/* ── Template Preview ─────────────────────────────────── */
+
+.schedule__template-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-3, 0.75rem);
+  border-radius: var(--radius-lg, 0.75rem);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+
+.schedule__template-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2, 0.5rem);
+}
+
+.schedule__template-category {
+  font-size: 0.58rem;
+  font-weight: 500;
+  padding: 2px var(--space-2, 0.5rem);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  color: var(--text-muted, #7a7570);
+}
+
+.schedule__template-channels {
+  display: flex;
+  gap: var(--space-1, 0.25rem);
+}
+
+.schedule__template-channel-tag {
+  font-size: 0.52rem;
+  padding: 1px var(--space-1, 0.25rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  color: var(--text-muted, #7a7570);
+  font-family: var(--font-mono, monospace);
+}
+
+.schedule__template-subject {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.schedule__template-body {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.schedule__template-variables {
+  display: flex;
+  gap: var(--space-1, 0.25rem);
+  flex-wrap: wrap;
+}
+
+.schedule__template-variable {
+  font-size: 0.58rem;
+  font-family: var(--font-mono, monospace);
+  padding: 1px var(--space-1, 0.25rem);
+  border-radius: var(--radius-sm, 0.25rem);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  color: var(--color-gold-400);
+}
+
+/* ── Innovation 5: Tone Bars ──────────────────────────── */
+
+.schedule__tone-bars {
+  display: flex;
+  gap: var(--space-2, 0.5rem);
+}
+
+.schedule__tone-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.schedule__tone-bar-label {
+  font-size: 0.52rem;
+  color: var(--text-muted, #7a7570);
+  font-family: var(--font-mono, monospace);
+}
+
+.schedule__tone-bar-track {
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  overflow: hidden;
+}
+
+.schedule__tone-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--bar-width, 0%);
+  transition: width 0.4s ease;
+}
+
+.schedule__tone-bar-fill[data-level="good"] { background: var(--color-emerald-400); }
+.schedule__tone-bar-fill[data-level="fair"] { background: var(--color-amber-400); }
+.schedule__tone-bar-fill[data-level="low"] { background: var(--color-rose-400); }
+
+/* ── Innovation 4: Channel Grid ───────────────────────── */
+
+.schedule__channel-grid {
+  display: flex;
+  gap: var(--space-2, 0.5rem);
+}
+
+.schedule__channel-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-3, 0.75rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
+  cursor: pointer;
+  min-height: 44px;
+  transition: border-color 0.2s ease;
+  opacity: 0;
+  animation: schedule-fade-in 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+}
+
+.schedule__channel-btn[data-selected="true"] {
+  border-color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 6%, transparent);
+}
+
+.schedule__channel-btn span {
+  font-size: 0.72rem;
+  color: var(--text-primary);
+}
+
+.schedule__channel-btn[data-channel="email"] { color: var(--color-teal-400); }
+.schedule__channel-btn[data-channel="push"] { color: var(--color-gold-400); }
+.schedule__channel-btn[data-channel="sms"] { color: var(--color-emerald-400); }
+.schedule__channel-btn[data-channel="whatsapp"] { color: var(--color-sage-400); }
+.schedule__channel-btn[data-channel="in_app"] { color: var(--color-silver-400); }
+
+.schedule__channel-pct {
+  font-size: 0.52rem;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted, #7a7570);
+}
+
+.schedule__channel-fit {
+  font-size: 0.62rem;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  padding: 2px var(--space-2, 0.5rem);
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+.schedule__channel-fit[data-level="good"] { color: var(--color-emerald-400); background: color-mix(in srgb, var(--color-emerald-400) 12%, transparent); }
+.schedule__channel-fit[data-level="fair"] { color: var(--color-amber-400); background: color-mix(in srgb, var(--color-amber-400) 12%, transparent); }
+.schedule__channel-fit[data-level="poor"] { color: var(--color-rose-400); background: color-mix(in srgb, var(--color-rose-400) 12%, transparent); }
+
+/* ── Innovation 6: Recipient Intelligence ─────────────── */
+
+.schedule__recipient-intel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  margin-top: var(--space-1, 0.25rem);
+}
+
+.schedule__recipient-count {
+  font-size: 0.72rem;
+  color: var(--text-muted, #7a7570);
+}
+
+.schedule__recipient-level {
+  font-size: 0.58rem;
+  font-weight: 600;
+  padding: 2px var(--space-2, 0.5rem);
+  border-radius: 9999px;
+}
+
+.schedule__recipient-level[data-level="individual"] { color: var(--text-muted, #7a7570); background: color-mix(in srgb, var(--text-primary) 5%, transparent); }
+.schedule__recipient-level[data-level="normal"] { color: var(--color-teal-400); background: color-mix(in srgb, var(--color-teal-400) 10%, transparent); }
+.schedule__recipient-level[data-level="warning"] { color: var(--color-amber-400); background: color-mix(in srgb, var(--color-amber-400) 10%, transparent); }
+.schedule__recipient-level[data-level="critical"] { color: var(--color-rose-400); background: color-mix(in srgb, var(--color-rose-400) 10%, transparent); }
+
+/* ── Time Section ─────────────────────────────────────── */
+
+.schedule__time-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3, 0.75rem);
+}
+
+.schedule__time-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4, 1rem);
+}
+
+/* ── Innovation 1: Time Score Ring ────────────────────── */
+
+.schedule__time-indicator {
+  padding: var(--space-4, 1rem);
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid;
+}
+
+.schedule__time-indicator[data-level="optimal"] {
+  border-color: color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-400) 6%, transparent);
+}
+
+.schedule__time-indicator[data-level="good"] {
+  border-color: color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+  background: color-mix(in srgb, var(--color-teal-400) 6%, transparent);
+}
+
+.schedule__time-indicator[data-level="acceptable"] {
+  border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+  background: color-mix(in srgb, var(--color-amber-400) 6%, transparent);
+}
+
+.schedule__time-indicator[data-level="suboptimal"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+  background: color-mix(in srgb, var(--color-rose-400) 6%, transparent);
+}
+
+.schedule__time-indicator-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  color: var(--text-muted, #7a7570);
+}
+
+.schedule__time-indicator-text { flex: 1; }
+
+.schedule__time-indicator-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.schedule__time-indicator-details {
+  display: flex;
+  gap: var(--space-3, 0.75rem);
+  margin-top: 2px;
+}
+
+.schedule__time-indicator-details span {
+  font-size: 0.62rem;
+  color: var(--text-muted, #7a7570);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+}
+
+.schedule__time-indicator-details svg { color: var(--color-emerald-400); }
+
+.schedule__time-ring {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+}
+
+.schedule__time-ring-bg {
+  stroke: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.schedule__time-ring-fill {
+  stroke-dasharray: 125.66;
+  stroke-dashoffset: var(--ring-offset, 125.66);
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.schedule__time-ring-fill[data-level="optimal"] { stroke: var(--color-emerald-400); }
+.schedule__time-ring-fill[data-level="good"] { stroke: var(--color-teal-400); }
+.schedule__time-ring-fill[data-level="acceptable"] { stroke: var(--color-amber-400); }
+.schedule__time-ring-fill[data-level="suboptimal"] { stroke: var(--color-rose-400); }
+
+.schedule__time-ring-text {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono, monospace);
+  fill: var(--text-primary);
+}
+
+/* ── Innovation 2: Quiet Hours Warning ────────────────── */
+
+.schedule__quiet-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-3, 0.75rem);
+  border-radius: var(--radius-lg, 0.75rem);
+  background: color-mix(in srgb, var(--color-amber-400) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+  color: var(--color-amber-400);
+  font-size: 0.72rem;
+}
+
+.schedule__quiet-warning svg { flex-shrink: 0; margin-top: 1px; }
+
+/* ── Innovation 3: Impact Decay Preview ───────────────── */
+
+.schedule__impact-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  font-size: 0.68rem;
+  flex-wrap: wrap;
+}
+
+.schedule__impact-label {
+  color: var(--text-muted, #7a7570);
+  font-weight: 500;
+}
+
+.schedule__impact-item {
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+}
+
+.schedule__impact-item[data-level="good"] { color: var(--color-emerald-400); }
+.schedule__impact-item[data-level="fair"] { color: var(--color-amber-400); }
+.schedule__impact-item[data-level="poor"] { color: var(--color-rose-400); }
+
+/* ── Innovation 7: Cascade Preview ────────────────────── */
+
+.schedule__cascade-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1, 0.25rem);
+  font-size: 0.68rem;
+  color: var(--text-muted, #7a7570);
+}
+
+.schedule__cascade-preview svg {
+  color: var(--color-teal-400);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── Innovation 8: Auto-Optimize Button ───────────────── */
+
+.schedule__auto-optimize-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+  background: color-mix(in srgb, var(--color-teal-400) 6%, transparent);
+  color: var(--color-teal-400);
+  font-size: 0.72rem;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  cursor: pointer;
+  min-height: 36px;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.schedule__auto-optimize-btn:hover {
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+}
+
+.schedule__auto-optimize-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Innovation 10: Suggested Slots ───────────────────── */
+
+.schedule__suggested-slots {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+}
+
+.schedule__suggested-label {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-muted, #7a7570);
+  margin: 0;
+}
+
+.schedule__suggested-slot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 4%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.2s ease;
+}
+
+.schedule__suggested-slot:hover {
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.schedule__suggested-slot[data-best="true"] {
+  border-color: color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+  background: color-mix(in srgb, var(--color-emerald-400) 4%, transparent);
+}
+
+.schedule__suggested-slot svg {
+  color: var(--color-emerald-400);
+  flex-shrink: 0;
+}
+
+.schedule__slot-score {
+  font-size: 0.75rem;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  color: var(--color-teal-400);
+  flex-shrink: 0;
+}
+
+.schedule__slot-score[data-best="true"] { color: var(--color-emerald-400); }
+
+.schedule__slot-day {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.schedule__slot-reason {
+  font-size: 0.58rem;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted, #7a7570);
+  margin-left: auto;
+  text-align: right;
+}
+
+.schedule__suggested-basis {
+  font-size: 0.58rem;
+  color: var(--text-muted, #7a7570);
+  margin: 0;
+}
+
+/* ── Innovation 9: Schedule Summary ───────────────────── */
+
+.schedule__summary {
+  padding: var(--space-3, 0.75rem);
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid;
+  border-left-width: 3px;
+}
+
+.schedule__summary[data-level="ready"] {
+  border-color: color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+  border-left-color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 4%, transparent);
+}
+
+.schedule__summary[data-level="caution"] {
+  border-color: color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+  border-left-color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 4%, transparent);
+}
+
+.schedule__summary[data-level="warning"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+  border-left-color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 4%, transparent);
+}
+
+.schedule__summary-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2, 0.5rem);
+}
+
+.schedule__summary-items {
+  display: flex;
+  gap: var(--space-4, 1rem);
+  font-size: 0.68rem;
+  color: var(--text-muted, #7a7570);
+  font-family: var(--font-mono, monospace);
+  flex-wrap: wrap;
+}
+
+.schedule__summary-warnings {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--space-2, 0.5rem);
+}
+
+.schedule__summary-warnings span {
+  font-size: 0.62rem;
+  color: var(--color-amber-400);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+}
+
+/* ── Actions ──────────────────────────────────────────── */
+
+.schedule__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3, 0.75rem);
+}
+
+.schedule__reset-btn {
+  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 0.2s ease;
+}
+
+.schedule__reset-btn:hover {
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.schedule__submit-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-3, 0.75rem) var(--space-6, 1.5rem);
+  border-radius: var(--radius-md, 0.5rem);
+  border: none;
+  background: var(--color-gold-400);
+  color: var(--color-abyss, #0a0a0a);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  cursor: pointer;
+  min-height: 48px;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.schedule__submit-btn:hover { filter: brightness(1.1); }
+.schedule__submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.schedule__retry-btn {
+  padding: var(--space-2, 0.5rem) var(--space-4, 1rem);
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  cursor: pointer;
+  min-height: 36px;
+}
+
+/* ── HITL Notice ──────────────────────────────────────── */
+
+.schedule__hitl-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-3, 0.75rem);
+  border-radius: var(--radius-lg, 0.75rem);
+  background: color-mix(in srgb, var(--color-amber-400) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+  color: var(--color-amber-400);
+  font-size: 0.72rem;
+}
+
+.schedule__hitl-notice svg { flex-shrink: 0; margin-top: 1px; }
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS (3)
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes schedule-shimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes schedule-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes schedule-ring-draw {
+  from { stroke-dashoffset: 125.66; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .glass-comm-schedule { max-width: 100%; }
+
+  .schedule__time-inputs { grid-template-columns: 1fr; }
+
+  .schedule__channel-grid { flex-direction: column; }
+
+  .schedule__time-indicator-content { flex-direction: column; align-items: flex-start; }
+
+  .schedule__time-ring { align-self: center; }
+
+  .schedule__tone-bars { flex-direction: column; }
+
+  .schedule__suggested-slot { flex-wrap: wrap; }
+
+  .schedule__slot-reason { margin-left: 0; text-align: left; width: 100%; }
+
+  .schedule__summary-items { flex-direction: column; gap: var(--space-1, 0.25rem); }
+
+  .schedule__actions { flex-direction: column; }
+
+  .schedule__actions button { width: 100%; justify-content: center; }
+
+  .schedule__time-header { flex-direction: column; align-items: flex-start; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════ */
+
+.light .schedule__section-card {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .schedule__select,
+.light .schedule__input,
+.light .schedule__textarea {
+  background: color-mix(in srgb, #ffffff 80%, transparent);
+  border-color: color-mix(in srgb, #000000 12%, transparent);
+}
+
+.light .schedule__channel-btn {
+  background: color-mix(in srgb, #000000 2%, transparent);
+  border-color: color-mix(in srgb, #000000 6%, transparent);
+}
+
+.light .schedule__template-preview,
+.light .schedule__time-indicator,
+.light .schedule__suggested-slot,
+.light .schedule__summary {
+  background: color-mix(in srgb, #ffffff 60%, transparent);
+  border-color: color-mix(in srgb, #000000 6%, transparent);
+}
+
+.light .schedule__quiet-warning,
+.light .schedule__hitl-notice {
+  background: color-mix(in srgb, var(--color-amber-400) 4%, transparent);
+}
+
+.light .schedule__time-ring-bg {
+  stroke: color-mix(in srgb, #000000 8%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .schedule__skeleton { animation: none !important; opacity: 0.5; }
+
+  .schedule__channel-btn { animation: none !important; opacity: 1; }
+
+  .schedule__time-ring-fill { transition: none !important; }
+
+  .schedule__tone-bar-fill { transition: none !important; }
+}

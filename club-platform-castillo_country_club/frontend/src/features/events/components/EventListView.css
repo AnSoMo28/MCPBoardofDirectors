@@ -1,0 +1,497 @@
+/* src/features/events/components/EventListView.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Events Domain — List View Component                         */
+/*                                                              */
+/* @namespace  elv-*                                            */
+/* @keyframes  3 (elvCardIn, elvBadgePop, elvCapGlow)          */
+/* @signature  Grouped date headers + staggered card cascade   */
+/*             + capacity glow + today beacon                   */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Root */
+/* §1 Date Group */
+/* §2 Date Header */
+/* §3 Event Card */
+/* §4 Capacity Badge */
+/* §5 Stagger Animation */
+/* §6 Keyframes */
+/* §7 Light Mode */
+/* §8 Reduced Motion */
+/* §9 Responsive */
+/* §10 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Root                                                     */
+/* ─────────────────────────────────────────────────────────── */
+
+.elv {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-panel, 20px);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Date Group                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+.elv-group {
+  position: relative;
+}
+
+.elv-group--today {
+  padding-left: 12px;
+  border-left: 3px solid var(--color-gold-400);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 Date Header                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.elv-group__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.elv-group__datebox {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md, 12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-2);
+  color: var(--color-silver-200);
+}
+.elv-group__datebox--today {
+  background: var(--color-gold-400);
+  color: var(--color-abyss);
+}
+
+.elv-group__month {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.elv-group__daynum {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.elv-group__info {
+  min-width: 0;
+}
+
+.elv-group__weekday {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.elv-group__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  margin-top: 2px;
+  animation: elvBadgePop 0.3s var(--ease-apple) forwards;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 Event Card                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+.elv-group__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 56px;
+}
+
+.elv-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 12px);
+  background: color-mix(in srgb, var(--color-surface-2) 55%, transparent);
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 0.15s var(--ease-apple), border-color 0.15s var(--ease-apple),
+              transform 0.2s var(--ease-apple);
+}
+.elv-card:hover {
+  background: color-mix(in srgb, var(--color-surface-3) 60%, transparent);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+.elv-card:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+/* Category accent stripe */
+.elv-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--card-accent, var(--color-silver-500));
+  border-radius: 3px 0 0 3px;
+}
+
+.elv-card__icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm, 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.elv-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.elv-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.elv-card__title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.elv-card__status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--status-color, var(--color-silver-400));
+}
+
+.elv-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-400);
+}
+
+.elv-card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.elv-card__meta-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.elv-card__pricing {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 Capacity Badge                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+.elv-capacity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.elv-capacity__bar {
+  width: 64px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.elv-capacity__fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--cap-pct, 0%);
+  transition: width 0.5s var(--ease-apple);
+}
+.elv-capacity__fill--normal {
+  background: var(--color-emerald-400);
+}
+.elv-capacity__fill--high {
+  background: var(--color-amber-400);
+}
+.elv-capacity__fill--critical {
+  background: var(--color-rose-400);
+  animation: elvCapGlow 2s ease-in-out infinite;
+}
+
+.elv-capacity__count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-400);
+}
+
+.elv-capacity__label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+}
+.elv-capacity__label--high {
+  color: var(--color-amber-400);
+}
+.elv-capacity__label--critical {
+  color: var(--color-rose-400);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Stagger Animation                                        */
+/* ─────────────────────────────────────────────────────────── */
+
+.elv-stagger {
+  opacity: 0;
+  animation: elvCardIn 0.35s var(--ease-apple) forwards;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Keyframes                                                */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes elvCardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes elvBadgePop {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+@keyframes elvCapGlow {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.4); }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Light Mode                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .elv-group--today {
+  border-color: var(--color-gold-400);
+}
+.light .elv-group__datebox {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-700);
+}
+.light .elv-group__datebox--today {
+  color: white;
+}
+.light .elv-group__weekday {
+  color: var(--color-silver-700);
+}
+.light .elv-group__badge {
+  color: var(--color-gold-500);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+.light .elv-card {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .elv-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.light .elv-card__title {
+  color: var(--color-silver-700);
+}
+.light .elv-card__meta {
+  color: var(--color-silver-500);
+}
+.light .elv-capacity__bar {
+  background: rgba(0, 0, 0, 0.06);
+}
+.light .elv-capacity__count {
+  color: var(--color-silver-500);
+}
+.light .elv-capacity__label--high {
+  color: #b45309;
+}
+.light .elv-capacity__label--critical {
+  color: #e11d48;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Reduced Motion                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .elv-stagger {
+    animation: none !important;
+    opacity: 1;
+  }
+  .elv-group__badge {
+    animation: none;
+  }
+  .elv-capacity__fill--critical {
+    animation: none;
+  }
+  .elv-card {
+    transition: none;
+  }
+  .elv-capacity__fill {
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Responsive                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .elv-group__datebox {
+    width: 48px;
+    height: 48px;
+  }
+  .elv-card {
+    padding: 14px 16px;
+    gap: 14px;
+  }
+  .elv-card__icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  .elv-group__cards {
+    padding-left: 60px;
+  }
+}
+
+@media (max-width: 639px) {
+  .elv-card__pricing {
+    display: none;
+  }
+  .elv-capacity {
+    display: none;
+  }
+  .elv-card__meta {
+    gap: 8px;
+  }
+  .elv-group__cards {
+    padding-left: 0;
+  }
+  .elv-group__header {
+    gap: 10px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §10 Print                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  .elv {
+    gap: 16px;
+  }
+  .elv-group--today {
+    border-left: 3px solid #333;
+  }
+  .elv-group__datebox {
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #ccc;
+  }
+  .elv-group__datebox--today {
+    background: #333;
+    color: white;
+  }
+  .elv-group__weekday {
+    color: #333;
+  }
+  .elv-group__badge {
+    color: #333;
+    background: #f0f0f0;
+    animation: none;
+  }
+  .elv-card {
+    background: white;
+    border: 1px solid #d1d5db;
+    backdrop-filter: none;
+    animation: none;
+    opacity: 1;
+  }
+  .elv-card::before {
+    background: #333;
+  }
+  .elv-card__title {
+    color: #111;
+  }
+  .elv-card__status {
+    color: #333;
+  }
+  .elv-card__meta {
+    color: #555;
+  }
+  .elv-capacity__bar {
+    background: #e5e7eb;
+  }
+  .elv-capacity__fill--normal {
+    background: #047857;
+  }
+  .elv-capacity__fill--high {
+    background: #d97706;
+  }
+  .elv-capacity__fill--critical {
+    background: #e11d48;
+    animation: none;
+  }
+  .elv-capacity__count {
+    color: #555;
+  }
+  .elv-card__pricing {
+    color: #333;
+  }
+}

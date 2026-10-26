@@ -1,0 +1,760 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/age-group/components/AgeGroupProgramsPanel.css
+   Phase 34+ Migration — Programs Panel Styles (v2)
+   "The Program Cockpit" — Level 6+ Agency · Production Grade
+
+   CONSUMES FROM globals.css:
+     Tokens:    --color-teal-400, --color-rose-400, --color-amber-400,
+                --color-emerald-400, --color-gold-400, --color-silver-*,
+                --color-surface-1, --line-color, --glass-bg, --glass-border,
+                --font-display ("Cormorant Garamond"), --font-ui ("DM Sans"),
+                --font-mono ("DM Mono"),
+                --radius-sm, --radius-md, --radius-lg, --radius-xl
+     Keyframes: slideUp (similar to cardIn but 10px vs 8px — cardIn kept)
+     Glass:     .glass-card consumed by parent
+
+   FEATURE KEYFRAMES: 4
+     ag-programs-cardIn, ag-programs-heatmapScan,
+     ag-programs-heatmapPulse, ag-programs-sectionIn
+   REUSED KEYFRAMES: 0 (cardIn has 8px offset, differs from slideUp 10px)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────
+   §0  Block
+   ────────────────────────────────────────────────────────── */
+
+.ag-programs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ag-programs__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §1  Card — base + data-* states
+   ────────────────────────────────────────────────────────── */
+
+.ag-programs__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--color-surface-1, #111827);
+  border: 1px solid var(--line-color, rgba(255, 255, 255, 0.06));
+  border-left: 3px solid var(--badge-color, var(--color-silver-500, #5C6978));
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+  opacity: 0;
+  animation: ag-programs-cardIn 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.08s + 0.1s);
+}
+
+.ag-programs__card:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateY(-1px);
+}
+
+/* Demand-driven badge color cascade */
+.ag-programs__card[data-demand="high"] {
+  --badge-color: var(--color-emerald-400, #3DAA70);
+}
+
+.ag-programs__card[data-demand="normal"] {
+  --badge-color: var(--color-teal-400, #2A9AB5);
+}
+
+.ag-programs__card[data-demand="low"] {
+  --badge-color: var(--color-amber-400, #D4A840);
+}
+
+.ag-programs__card[data-demand="critical"] {
+  --badge-color: var(--color-rose-400, #C46470);
+}
+
+/* Expanded state */
+.ag-programs__card[data-expanded] {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §2  Card Header & Badges
+   ────────────────────────────────────────────────────────── */
+
+.ag-programs__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ag-programs__card-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.ag-programs__card-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-silver-100, #F0F2F5);
+  font-family: var(--font-display, "Cormorant Garamond", serif);
+}
+
+.ag-programs__card-subtitle {
+  margin: 0;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.6875rem;
+  color: var(--color-silver-500, #5C6978);
+}
+
+.ag-programs__card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+/* AI Score Badge */
+.ag-programs__card-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.04));
+  color: var(--color-silver-300, #B8C0CC);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+}
+
+.ag-programs__card-ai-badge[data-top] {
+  background: color-mix(in srgb, var(--color-gold-400, #C9A96E) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400, #C9A96E) 30%, transparent);
+  color: var(--color-gold-400, #C9A96E);
+}
+
+/* Fill Status Badge — color from --badge-color cascade */
+.ag-programs__card-fill-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.625rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--badge-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--badge-color) 30%, transparent);
+  color: var(--badge-color);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §3  Card Body — ring + radar + metrics
+   ────────────────────────────────────────────────────────── */
+
+.ag-programs__card-body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ag-programs__card-radar-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.ag-programs__card-top-bracket {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--bracket-color, var(--color-silver-300, #B8C0CC));
+}
+
+.ag-programs__card-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 140px;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §4  Capacity Ring SVG
+   ────────────────────────────────────────────────────────── */
+
+.ag-programs__cap-ring {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.ag-programs__cap-ring-fill {
+  transform-origin: 30px 30px;
+  transform: rotate(-90deg);
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.ag-programs__cap-ring-ghost {
+  transform-origin: 30px 30px;
+  transform: rotate(-90deg);
+}
+
+.ag-programs__cap-ring-pct {
+  font-size: 11px;
+  font-weight: 800;
+  fill: var(--color-silver-100, #F0F2F5);
+  font-family: var(--font-display, "Cormorant Garamond", serif);
+}
+
+.ag-programs__cap-ring-label {
+  font-size: 7px;
+  fill: var(--color-silver-500, #5C6978);
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §5  Affinity Radar SVG
+   ────────────────────────────────────────────────────────── */
+
+.ag-programs__radar {
+  width: 70px;
+  height: 63px;
+  flex-shrink: 0;
+}
+
+.ag-programs__radar-dot {
+  fill: var(--dot-color, var(--color-silver-400, #8A95A5));
+  transition: opacity 0.2s ease;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §6  Metric items
+   ────────────────────────────────────────────────────────── */
+
+.ag-programs__metric {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ag-programs__metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.03));
+  color: var(--color-silver-500, #5C6978);
+  flex-shrink: 0;
+}
+
+.ag-programs__metric-data {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ag-programs__metric-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.5625rem;
+  color: var(--color-silver-500, #5C6978);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ag-programs__metric-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-silver-100, #F0F2F5);
+}
+
+/* Satisfaction level colors */
+.ag-programs__metric[data-sat-level="excellent"] .ag-programs__metric-icon,
+.ag-programs__metric[data-sat-level="excellent"] .ag-programs__metric-value {
+  color: var(--color-emerald-400, #3DAA70);
+}
+
+.ag-programs__metric[data-sat-level="good"] .ag-programs__metric-icon,
+.ag-programs__metric[data-sat-level="good"] .ag-programs__metric-value {
+  color: var(--color-teal-400, #2A9AB5);
+}
+
+.ag-programs__metric[data-sat-level="fair"] .ag-programs__metric-icon,
+.ag-programs__metric[data-sat-level="fair"] .ag-programs__metric-value {
+  color: var(--color-amber-400, #D4A840);
+}
+
+.ag-programs__metric[data-sat-level="poor"] .ag-programs__metric-icon,
+.ag-programs__metric[data-sat-level="poor"] .ag-programs__metric-value {
+  color: var(--color-rose-400, #C46470);
+}
+
+/* Retention level colors */
+.ag-programs__metric[data-ret-level="high"] .ag-programs__metric-icon,
+.ag-programs__metric[data-ret-level="high"] .ag-programs__metric-value {
+  color: var(--color-emerald-400, #3DAA70);
+}
+
+.ag-programs__metric[data-ret-level="medium"] .ag-programs__metric-icon,
+.ag-programs__metric[data-ret-level="medium"] .ag-programs__metric-value {
+  color: var(--color-amber-400, #D4A840);
+}
+
+.ag-programs__metric[data-ret-level="low"] .ag-programs__metric-icon,
+.ag-programs__metric[data-ret-level="low"] .ag-programs__metric-value {
+  color: var(--color-rose-400, #C46470);
+}
+
+/* ──────────────────────────────────────────────────────────
+   §7  Cohort Heatmap
+   ────────────────────────────────────────────────────────── */
+
+.ag-programs__heatmap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  position: relative;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.02));
+}
+
+.ag-programs__heatmap-seg {
+  flex: 1;
+  height: 100%;
+  background: var(--seg-color, var(--color-gold-400, #C9A96E));
+  opacity: var(--seg-opacity, 0.3);
+  transition: opacity 0.3s ease;
+}
+
+.ag-programs__heatmap-seg[data-hot-score] {
+  box-shadow: 0 0 6px color-mix(in srgb, var(--seg-color, var(--color-gold-400, #C9A96E)) 40%, transparent);
+  animation: ag-programs-heatmapPulse 2s ease-in-out infinite;
+}
+
+.ag-programs__heatmap-scanner {
+  position: absolute;
+  top: 0;
+  left: -20%;
+  width: 20%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: ag-programs-heatmapScan 2.5s linear infinite;
+  pointer-events: none;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §8  Expand Button & Expanded Content
+   ────────────────────────────────────────────────────────── */
+
+.ag-programs__card-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--radius-sm, 6px);
+  min-height: 32px;
+  transition: background 0.2s ease;
+}
+
+.ag-programs__card-expand-btn:hover {
+  background: var(--glass-bg, rgba(255, 255, 255, 0.04));
+}
+
+.ag-programs__card-expand-btn:focus-visible {
+  outline: 2px solid var(--color-teal-400, #2A9AB5);
+  outline-offset: 2px;
+}
+
+.ag-programs__card-expand-icon {
+  color: var(--color-silver-500, #5C6978);
+  transition: transform 0.3s ease;
+}
+
+.ag-programs__card-expand-icon[data-open] {
+  transform: rotate(180deg);
+}
+
+/* Expanded content */
+.ag-programs__card-expanded {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line-color, rgba(255, 255, 255, 0.06));
+}
+
+.ag-programs__expanded-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  opacity: 0;
+  animation: ag-programs-sectionIn 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.08s + 0.05s);
+}
+
+.ag-programs__expanded-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.6875rem;
+  color: var(--color-silver-500, #5C6978);
+}
+
+.ag-programs__expanded-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bracket-color, var(--color-silver-100, #F0F2F5));
+}
+
+/* ──────────────────────────────────────────────────────────
+   §9  Dormant (Empty State)
+   ────────────────────────────────────────────────────────── */
+
+.ag-programs__dormant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem 1.5rem;
+  border-radius: var(--radius-xl, 16px);
+  background: var(--color-surface-1, #111827);
+  border: 1px dashed var(--line-color, rgba(255, 255, 255, 0.06));
+  text-align: center;
+}
+
+.ag-programs__dormant-title {
+  margin: 0;
+  font-family: var(--font-display, "Cormorant Garamond", serif);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-silver-300, #B8C0CC);
+}
+
+.ag-programs__dormant-desc {
+  margin: 0;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 0.75rem;
+  color: var(--color-silver-500, #5C6978);
+  max-width: 240px;
+}
+
+/* ──────────────────────────────────────────────────────────
+   §10  Keyframes (feature-specific: 4)
+   Note: ag-programs-cardIn uses 8px offset (vs slideUp 10px)
+   ────────────────────────────────────────────────────────── */
+
+@keyframes ag-programs-cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ag-programs-heatmapScan {
+  from { left: -20%; }
+  to   { left: 100%; }
+}
+
+@keyframes ag-programs-heatmapPulse {
+  0%, 100% {
+    opacity: var(--seg-opacity, 0.5);
+  }
+  50% {
+    opacity: calc(var(--seg-opacity, 0.5) * 0.4);
+  }
+}
+
+@keyframes ag-programs-sectionIn {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §11  Responsive
+   ────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .ag-programs__card-body {
+    gap: 0.75rem;
+  }
+
+  .ag-programs__card-metrics {
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ag-programs__card {
+    padding: 0.75rem;
+  }
+
+  .ag-programs__card-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .ag-programs__card-header-right {
+    align-self: flex-start;
+  }
+
+  .ag-programs__card-body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .ag-programs__card-radar-block {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .ag-programs__card-metrics {
+    width: 100%;
+  }
+
+  .ag-programs__radar {
+    width: 60px;
+    height: 54px;
+  }
+
+  .ag-programs__cap-ring {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §12  Light Mode
+   ────────────────────────────────────────────────────────── */
+
+.light .ag-programs__card {
+  background: var(--color-warm-canvas, #f5f3ee);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .ag-programs__card:hover {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.light .ag-programs__card[data-expanded] {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.light .ag-programs__card-title {
+  color: var(--color-abyss, #080B12);
+}
+
+.light .ag-programs__card-subtitle {
+  color: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-programs__card-ai-badge {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-silver-700, #374151);
+}
+
+.light .ag-programs__card-ai-badge[data-top] {
+  background: color-mix(in srgb, var(--color-gold-500, #B8942D) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-500, #B8942D) 20%, transparent);
+  color: var(--color-gold-500, #B8942D);
+}
+
+.light .ag-programs__cap-ring-pct {
+  fill: var(--color-abyss, #080B12);
+}
+
+.light .ag-programs__cap-ring-label {
+  fill: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-programs__metric-label {
+  color: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-programs__metric-value {
+  color: var(--color-abyss, #080B12);
+}
+
+.light .ag-programs__metric-icon {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-programs__heatmap {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light .ag-programs__card-expand-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .ag-programs__card-expand-btn:focus-visible {
+  outline-color: var(--color-teal-500, #0d9488);
+}
+
+.light .ag-programs__card-expand-icon {
+  color: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-programs__card-expanded {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .ag-programs__expanded-label {
+  color: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-programs__expanded-value {
+  color: var(--color-abyss, #080B12);
+}
+
+.light .ag-programs__dormant {
+  background: var(--color-warm-canvas, #f5f3ee);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .ag-programs__dormant-title {
+  color: var(--color-silver-700, #374151);
+}
+
+.light .ag-programs__dormant-desc {
+  color: var(--color-silver-600, #3D4755);
+}
+
+.light .ag-programs__card-top-bracket {
+  color: var(--bracket-color, var(--color-silver-700, #374151));
+}
+
+.light .ag-programs__radar-dot {
+  fill: var(--dot-color, var(--color-silver-500, #5C6978));
+}
+
+/* ──────────────────────────────────────────────────────────
+   §13  Reduced Motion
+   ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-programs__card,
+  .ag-programs__expanded-section {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .ag-programs__heatmap-scanner {
+    animation: none !important;
+    display: none;
+  }
+
+  .ag-programs__heatmap-seg[data-hot-score] {
+    animation: none !important;
+  }
+
+  .ag-programs__card-expand-icon {
+    transition: none;
+  }
+
+  .ag-programs__cap-ring-fill {
+    transition: none;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   §14  Print
+   ────────────────────────────────────────────────────────── */
+
+@media print {
+  .ag-programs__card {
+    animation: none !important;
+    opacity: 1;
+    border: 1px solid #ccc;
+    background: #fff;
+    break-inside: avoid;
+  }
+
+  .ag-programs__card:hover {
+    transform: none;
+  }
+
+  .ag-programs__card-title {
+    color: #000;
+  }
+
+  .ag-programs__card-subtitle {
+    color: #333;
+  }
+
+  .ag-programs__cap-ring-pct {
+    fill: #000;
+  }
+
+  .ag-programs__metric-label {
+    color: #333;
+  }
+
+  .ag-programs__metric-value {
+    color: #000;
+  }
+
+  .ag-programs__heatmap-scanner {
+    display: none;
+  }
+
+  .ag-programs__heatmap-seg[data-hot-score] {
+    animation: none !important;
+  }
+
+  .ag-programs__expanded-section {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .ag-programs__card-expand-btn {
+    display: none;
+  }
+
+  .ag-programs__dormant {
+    border-style: solid;
+    border-color: #ccc;
+  }
+}

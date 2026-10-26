@@ -1,0 +1,800 @@
+/* src/features/facilities/FacilityMap.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* FACILITY MAP — "El Atlas"                                     */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — card entry stagger, edge draw-in     */
+/*   SENSE 2: REACCIÓN — card hover translateY(-2px), node scale */
+/*   SENSE 3: MEMORIA — spatial positions, crowd, health          */
+/*   SENSE 4: INTENCIÓN — view toggle, clear filters, CTA        */
+/*   SENSE 5: SINIESTRÍA — bottleneck pulse, maintenance accent   */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — facility + spatial summary              */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Keyframes ── */
+@keyframes fac-map-card-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fac-map-node-enter {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fac-map-edge-draw {
+  from { stroke-dashoffset: 200; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes fac-map-bottleneck-pulse {
+  0%, 100% { stroke-opacity: 0.2; }
+  50% { stroke-opacity: 0.7; }
+}
+
+@keyframes fac-map-shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+/* ── Container ── */
+.fac-map {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ═══ STATS ROW ════════════════════════════════════════════════ */
+
+.fac-map__stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.fac-map__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--color-surface) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+  border-radius: 8px;
+}
+
+.fac-map__stat-label {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  margin: 0;
+}
+
+.fac-map__stat-value {
+  font-size: 22px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+}
+
+.fac-map__stat-value[data-stat-id="operational"] {
+  color: var(--color-emerald-400);
+}
+.fac-map__stat-value[data-stat-id="maintenance"] {
+  color: var(--color-amber-400);
+}
+.fac-map__stat-value[data-stat-id="closed"] {
+  color: var(--color-rose-400);
+}
+.fac-map__stat-value[data-stat-id="total"] {
+  color: var(--color-gold-400);
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+
+.fac-map__narrative {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin: 0;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+
+[data-mode="alert"] .fac-map__narrative {
+  border-left-color: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+}
+
+[data-mode="critical"] .fac-map__narrative {
+  border-left-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+}
+
+/* ═══ TOOLBAR (Filters + Toggle) ═══════════════════════════════ */
+
+.fac-map__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.fac-map__filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.fac-map__search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.fac-map__search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--color-silver-500);
+  pointer-events: none;
+}
+
+.fac-map__search-input {
+  width: 100%;
+  padding: 7px 10px 7px 30px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-200);
+  transition: border-color 0.2s ease;
+}
+
+.fac-map__search-input::placeholder {
+  color: var(--color-silver-600);
+}
+
+.fac-map__search-input:focus {
+  border-color: color-mix(in srgb, var(--color-teal-400) 40%, transparent);
+  outline: none;
+}
+
+.fac-map__select {
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.fac-map__select:focus {
+  border-color: color-mix(in srgb, var(--color-teal-400) 40%, transparent);
+  outline: none;
+}
+
+/* View toggle (Sense 4) */
+.fac-map__toggle {
+  display: flex;
+  border: 1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.fac-map__toggle-btn {
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  color: var(--color-silver-500);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.fac-map__toggle-btn[data-active="true"] {
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+  color: var(--color-teal-400);
+  font-weight: 600;
+}
+
+.fac-map__toggle-btn:hover:not([data-active="true"]) {
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  color: var(--color-silver-300);
+}
+
+.fac-map__toggle-btn:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-teal-400);
+  outline: none;
+}
+
+/* ═══ GRID VIEW — Cards (Sense 1 + 2) ═════════════════════════ */
+
+.fac-map__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.fac-map__card {
+  position: relative;
+  padding: 14px;
+  background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 12%, transparent);
+  border-radius: 10px;
+  cursor: pointer;
+  /* Sense 1: stagger */
+  opacity: 0;
+  animation: fac-map-card-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+  /* Sense 2: hover */
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.fac-map__card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-border) 35%, transparent);
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.2);
+}
+
+/* Sense 5: Status accents */
+.fac-map__card[data-status="maintenance"] {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+.fac-map__card[data-status="closed"],
+.fac-map__card[data-status="renovation"] {
+  border-left: 3px solid var(--color-rose-400);
+  opacity: 0.8;
+}
+
+/* ── Card header ── */
+.fac-map__card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.fac-map__card-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Icon with category color (CSS-driven) */
+.fac-map__card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+}
+
+.fac-map__card-icon[data-category="wellness"] {
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+}
+.fac-map__card-icon[data-category="wellness"] .fac-map__card-icon-svg {
+  color: var(--color-teal-400);
+}
+
+.fac-map__card-icon[data-category="sport"] {
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+}
+.fac-map__card-icon[data-category="sport"] .fac-map__card-icon-svg {
+  color: var(--color-amber-400);
+}
+
+.fac-map__card-icon[data-category="social"] {
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+}
+.fac-map__card-icon[data-category="social"] .fac-map__card-icon-svg {
+  color: var(--color-gold-400);
+}
+
+.fac-map__card-icon[data-category="service"] {
+  background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-silver-400) 20%, transparent);
+}
+.fac-map__card-icon[data-category="service"] .fac-map__card-icon-svg {
+  color: var(--color-silver-400);
+}
+
+.fac-map__card-icon[data-category="admin"] {
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+}
+.fac-map__card-icon[data-category="admin"] .fac-map__card-icon-svg {
+  color: var(--color-rose-400);
+}
+
+.fac-map__card-head-text {
+  min-width: 0;
+}
+
+.fac-map__card-name {
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0 0 2px;
+  line-height: 1.2;
+}
+
+.fac-map__card-type {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+/* Status badge (CSS-driven) */
+.fac-map__card-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.fac-map__card-badge[data-status="operational"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+}
+.fac-map__card-badge[data-status="maintenance"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+}
+.fac-map__card-badge[data-status="closed"],
+.fac-map__card-badge[data-status="renovation"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+.fac-map__card-badge[data-status="seasonal_closed"] {
+  color: var(--color-silver-500);
+  background: color-mix(in srgb, var(--color-silver-500) 8%, transparent);
+}
+
+.fac-map__card-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.fac-map__card-badge-dot[data-status="operational"] { background: var(--color-emerald-400); }
+.fac-map__card-badge-dot[data-status="maintenance"] { background: var(--color-amber-400); }
+.fac-map__card-badge-dot[data-status="closed"],
+.fac-map__card-badge-dot[data-status="renovation"] { background: var(--color-rose-400); }
+.fac-map__card-badge-dot[data-status="seasonal_closed"] { background: var(--color-silver-500); }
+
+/* ── Card info ── */
+.fac-map__card-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fac-map__card-info-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+}
+
+.fac-map__card-info-item--full {
+  width: 100%;
+}
+
+.fac-map__card-info-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--color-silver-500);
+}
+
+/* ── Rate ── */
+.fac-map__card-rate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.fac-map__card-rate-label {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+.fac-map__card-rate-value {
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-gold-400);
+}
+
+/* ── Maintenance alert ── */
+.fac-map__card-alert {
+  display: flex;
+  gap: 6px;
+  padding: 6px 8px;
+  background: color-mix(in srgb, var(--color-amber-400) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+
+.fac-map__card-alert-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--color-amber-400);
+  margin-top: 1px;
+}
+
+.fac-map__card-alert-text {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Amenities ── */
+.fac-map__card-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.fac-map__card-amenity {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 8%, transparent);
+}
+
+.fac-map__card-amenity-more {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 8%, transparent);
+}
+
+/* ═══ SPATIAL VIEW — SVG Map (Prop #5) ═════════════════════════ */
+
+.fac-map__spatial-wrap {
+  width: 100%;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.fac-map__spatial-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Zones ── */
+.fac-map__spatial-zone {
+  fill: currentColor;
+  opacity: 0.04;
+}
+
+.fac-map__spatial-zone[data-category="wellness"] { color: var(--color-teal-400); }
+.fac-map__spatial-zone[data-category="sport"] { color: var(--color-amber-400); }
+.fac-map__spatial-zone[data-category="social"] { color: var(--color-gold-400); }
+.fac-map__spatial-zone[data-category="service"] { color: var(--color-silver-400); }
+.fac-map__spatial-zone[data-category="admin"] { color: var(--color-rose-400); }
+
+.fac-map__spatial-zone-label {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  fill: var(--color-silver-600);
+  text-anchor: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Edges (Sense 1: draw-in) ── */
+.fac-map__spatial-edge {
+  stroke-width: 1.5;
+  opacity: 0;
+  animation: fac-map-edge-draw 0.8s ease-out forwards;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 0;
+}
+
+.fac-map__spatial-edge[data-edge-type="flow"] {
+  stroke: var(--color-teal-400);
+  stroke-width: 2;
+  opacity: 0;
+  animation: fac-map-edge-draw 0.8s ease-out 0.3s forwards;
+}
+
+.fac-map__spatial-edge[data-edge-type="synergy"] {
+  stroke: var(--color-silver-500);
+  stroke-dasharray: 4 4;
+  opacity: 0;
+  animation: fac-map-edge-draw 0.8s ease-out 0.5s forwards;
+}
+
+/* ── Nodes (Sense 1 + 2) ── */
+.fac-map__spatial-node {
+  cursor: pointer;
+  /* Sense 1: entry */
+  opacity: 0;
+  animation: fac-map-node-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--node-i, 0) * 0.05s + 0.2s);
+  /* Sense 2: hover */
+  transform-origin: center;
+  transform-box: fill-box;
+  transition: transform 0.2s ease;
+}
+
+.fac-map__spatial-node:hover {
+  transform: scale(1.15);
+}
+
+.fac-map__spatial-node:focus-visible {
+  outline: none;
+}
+
+.fac-map__spatial-node:focus-visible .fac-map__spatial-node-circle {
+  stroke-width: 3;
+  stroke: var(--color-teal-400);
+}
+
+/* Node circle by category */
+.fac-map__spatial-node-circle {
+  stroke-width: 2;
+  transition: stroke-width 0.2s ease;
+}
+
+.fac-map__spatial-node[data-category="wellness"] .fac-map__spatial-node-circle {
+  fill: color-mix(in srgb, var(--color-teal-400) 15%, transparent);
+  stroke: var(--color-teal-400);
+}
+.fac-map__spatial-node[data-category="sport"] .fac-map__spatial-node-circle {
+  fill: color-mix(in srgb, var(--color-amber-400) 15%, transparent);
+  stroke: var(--color-amber-400);
+}
+.fac-map__spatial-node[data-category="social"] .fac-map__spatial-node-circle {
+  fill: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  stroke: var(--color-gold-400);
+}
+.fac-map__spatial-node[data-category="service"] .fac-map__spatial-node-circle {
+  fill: color-mix(in srgb, var(--color-silver-400) 12%, transparent);
+  stroke: var(--color-silver-400);
+}
+.fac-map__spatial-node[data-category="admin"] .fac-map__spatial-node-circle {
+  fill: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+  stroke: var(--color-rose-400);
+}
+
+/* Crowd-level circle override */
+.fac-map__spatial-node[data-crowd="overloaded"] .fac-map__spatial-node-circle {
+  stroke: var(--color-rose-400);
+  stroke-width: 3;
+}
+
+.fac-map__spatial-node[data-crowd="crowded"] .fac-map__spatial-node-circle {
+  stroke: var(--color-amber-400);
+  stroke-width: 2.5;
+}
+
+/* Node label */
+.fac-map__spatial-node-label {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  fill: var(--color-silver-400);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* Bottleneck pulse ring (Sense 5) */
+.fac-map__spatial-node-bottleneck {
+  fill: none;
+  stroke: var(--color-rose-400);
+  stroke-width: 2;
+  animation: fac-map-bottleneck-pulse 2s ease-in-out infinite;
+}
+
+/* ═══ SKELETON ═════════════════════════════════════════════════ */
+
+.fac-map__skeleton-card {
+  height: 200px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-surface) 40%, transparent) 25%,
+    color-mix(in srgb, var(--color-surface) 60%, transparent) 50%,
+    color-mix(in srgb, var(--color-surface) 40%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: fac-map-shimmer 1.5s ease-in-out infinite;
+}
+
+.fac-map__skeleton-card:nth-child(2) { animation-delay: 0.1s; }
+.fac-map__skeleton-card:nth-child(3) { animation-delay: 0.2s; }
+.fac-map__skeleton-card:nth-child(4) { animation-delay: 0.3s; }
+.fac-map__skeleton-card:nth-child(5) { animation-delay: 0.4s; }
+.fac-map__skeleton-card:nth-child(6) { animation-delay: 0.5s; }
+
+/* ═══ ERROR STATE ══════════════════════════════════════════════ */
+
+.fac-map__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px;
+  text-align: center;
+}
+
+.fac-map__error-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--color-amber-400);
+}
+
+.fac-map__error-title {
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-200);
+  margin: 0;
+}
+
+.fac-map__error-desc {
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+  margin: 0;
+}
+
+/* ═══ EMPTY STATE ══════════════════════════════════════════════ */
+
+.fac-map__empty-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .fac-map__card {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+}
+
+.light .fac-map__card-name {
+  color: var(--color-silver-800);
+}
+
+.light .fac-map__spatial-wrap {
+  background: color-mix(in srgb, var(--color-surface) 95%, transparent);
+}
+
+.light .fac-map__spatial-node-label {
+  fill: var(--color-silver-700);
+}
+
+.light .fac-map__spatial-zone-label {
+  fill: var(--color-silver-400);
+}
+
+.light .fac-map__narrative {
+  color: var(--color-silver-600);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fac-map__card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-map__card:hover {
+    transform: none;
+  }
+
+  .fac-map__spatial-node {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fac-map__spatial-node:hover {
+    transform: none;
+  }
+
+  .fac-map__spatial-edge {
+    animation: none;
+    opacity: 0.3;
+    stroke-dasharray: none;
+  }
+
+  .fac-map__spatial-node-bottleneck {
+    animation: none;
+    stroke-opacity: 0.5;
+  }
+
+  .fac-map__skeleton-card {
+    animation: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fac-map__stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fac-map__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fac-map__filters {
+    flex-direction: column;
+  }
+
+  .fac-map__search-wrap {
+    max-width: none;
+  }
+
+  .fac-map__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fac-map__toggle {
+    align-self: flex-start;
+  }
+}

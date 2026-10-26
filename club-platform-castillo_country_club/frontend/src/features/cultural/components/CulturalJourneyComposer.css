@@ -1,0 +1,217 @@
+/**
+ * CulturalJourneyComposer — "The Journey"
+ *
+ * Horizontal SVG timeline with phase segments, event dots,
+ * key moment diamonds, and horizon indicator.
+ * Dark background, phase-colored segments, staggered reveal.
+ */
+
+.cultural-journey-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: 'DM Mono', monospace;
+  overflow-x: auto;
+}
+
+.cultural-journey-composer__empty {
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+/* ── Header ── */
+.cultural-journey-composer__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cultural-journey-composer__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.cultural-journey-composer__meta {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cultural-journey-composer__horizon,
+.cultural-journey-composer__exploration,
+.cultural-journey-composer__dates {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── SVG ── */
+.cultural-journey-composer__svg {
+  overflow: visible;
+  min-width: 100%;
+}
+
+/* ── Baseline ── */
+.cultural-journey-composer__baseline {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
+/* ── Phase ── */
+.cultural-journey-composer__phase {
+  cursor: pointer;
+  opacity: 0;
+  animation: journey-phase-enter 0.5s ease forwards;
+}
+
+@keyframes journey-phase-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cultural-journey-composer__phase--hovered .cultural-journey-composer__phase-bar {
+  transition: opacity 0.2s ease, stroke-width 0.2s ease;
+}
+
+.cultural-journey-composer__phase-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  font-weight: 600;
+  fill: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: fill 0.2s ease;
+}
+
+.cultural-journey-composer__phase--hovered .cultural-journey-composer__phase-label {
+  fill: rgba(255, 255, 255, 0.9);
+}
+
+.cultural-journey-composer__phase-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  fill: rgba(255, 255, 255, 0.3);
+}
+
+.cultural-journey-composer__phase-dates {
+  font-family: 'DM Mono', monospace;
+  font-size: 6px;
+  fill: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Event dots ── */
+.cultural-journey-composer__event-target {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.cultural-journey-composer__event-dot {
+  transition: r 0.15s ease, opacity 0.15s ease;
+  filter: drop-shadow(0 0 2px currentColor);
+}
+
+.cultural-journey-composer__event-dot--hovered {
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* ── Transition ── */
+.cultural-journey-composer__transition {
+  transition: stroke-opacity 0.2s ease;
+}
+
+/* ── Key Moments ── */
+.cultural-journey-composer__moment {
+  cursor: pointer;
+}
+
+.cultural-journey-composer__moment-diamond {
+  fill: rgba(251, 191, 36, 0.2);
+  stroke: rgba(251, 191, 36, 0.7);
+  stroke-width: 1;
+  transition: fill 0.2s ease;
+}
+
+.cultural-journey-composer__moment:hover .cultural-journey-composer__moment-diamond {
+  fill: rgba(251, 191, 36, 0.4);
+}
+
+.cultural-journey-composer__moment-line {
+  stroke: rgba(251, 191, 36, 0.3);
+  stroke-width: 0.5;
+  stroke-dasharray: 2 2;
+}
+
+.cultural-journey-composer__moment-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 6px;
+  fill: rgba(251, 191, 36, 0.6);
+  letter-spacing: 0.04em;
+}
+
+/* ── Horizon Indicator ── */
+.cultural-journey-composer__horizon-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  fill: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Tooltip ── */
+.cultural-journey-composer__tooltip {
+  pointer-events: none;
+  animation: journey-tooltip-in 0.12s ease;
+}
+
+@keyframes journey-tooltip-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Footer ── */
+.cultural-journey-composer__footer {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cultural-journey-composer__summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cultural-journey-composer__summary-label {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cultural-journey-composer__summary-value {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}

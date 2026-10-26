@@ -1,0 +1,70 @@
+/**
+ * @component CursorEffect (Fase 21)
+ * @namespace .cursor-dot, .cursor-ring, .custom-cursor-active
+ * @depends globals.css (cursor base: position, z-index, mix-blend-mode, touch guard)
+ * @note Este archivo agrega: will-change, pressed states, light mode.
+ *       La base (.cursor-dot, .cursor-ring) ya esta en globals.css.
+ *       Los overrides aqui son EXTENSIONES de Fase 21.
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   CursorEffect — Silver Tide Cursor
+   Fase 21 — Glass-aware + Press + Morph
+   ═══════════════════════════════════════════════════════════ */
+
+.cursor-dot {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(240, 217, 168, 0.9);
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform, opacity, left, top;
+  transition: box-shadow 0.15s ease;
+}
+
+.cursor-ring {
+  position: fixed;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(240, 217, 168, 0.4);
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform, opacity, left, top, border-color;
+}
+
+/* Press state — gold glow pulse on dot */
+.cursor-dot--pressed {
+  box-shadow: 0 0 12px 4px rgba(201, 169, 110, 0.5);
+}
+
+/* Press state — intensified ring border */
+.cursor-ring--pressed {
+  border-color: rgba(240, 217, 168, 0.8) !important;
+}
+
+/* Hide native cursor when custom is active */
+.custom-cursor-active,
+.custom-cursor-active * {
+  cursor: none !important;
+}
+
+/* ── Light mode ── */
+
+.light .cursor-dot {
+  background: rgba(160, 130, 80, 0.85);
+}
+
+.light .cursor-ring {
+  border-color: rgba(160, 130, 80, 0.3);
+}
+
+.light .cursor-dot--pressed {
+  box-shadow: 0 0 12px 4px rgba(160, 130, 80, 0.4);
+}
+
+.light .cursor-ring--pressed {
+  border-color: rgba(160, 130, 80, 0.7) !important;
+}

@@ -1,0 +1,461 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/ConversionChemistry.css
+   Phase 34 "The Gateway" — Signature: Conversion Chemistry
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-chem
+   Glass: .glass-gst-chem
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-chem {
+  --glass-gst-chem-version: 1;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-chem-bg: rgba(18, 18, 26, 0.5);
+  --gst-chem-border: rgba(255, 255, 255, 0.06);
+  --gst-chem-text-primary: #f0ece4;
+  --gst-chem-text-muted: #7a7570;
+  --gst-chem-radius: 16px;
+  --gst-chem-bar-height: 8px;
+  --gst-chem-bar-track: rgba(255, 255, 255, 0.04);
+}
+
+/* ── Base ── */
+.gst-chem {
+  position: relative;
+  background: var(--gst-chem-bg);
+  border: 1px solid var(--gst-chem-border);
+  border-radius: var(--gst-chem-radius);
+  padding: 24px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  opacity: 0;
+  animation: gst-chem-fadeIn 0.5s ease 0.3s forwards;
+}
+
+.gst-chem[data-state="empty"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  animation: none;
+  opacity: 1;
+}
+
+.gst-chem__empty-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 15px;
+  color: var(--gst-chem-text-muted);
+  margin: 0;
+}
+
+/* ── Header / Overall Score ── */
+.gst-chem__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.gst-chem__overall {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gst-chem__overall-score {
+  font-family: var(--font-display, "Italiana");
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--gst-accent);
+}
+
+.gst-chem[data-level="exceptional"] .gst-chem__overall-score {
+  color: var(--gst-severity-low);
+}
+
+.gst-chem[data-level="strong"] .gst-chem__overall-score {
+  color: var(--gst-accent);
+}
+
+.gst-chem[data-level="moderate"] .gst-chem__overall-score {
+  color: var(--gst-severity-medium);
+}
+
+.gst-chem[data-level="weak"],
+.gst-chem[data-level="poor"] .gst-chem__overall-score {
+  color: var(--gst-severity-high);
+}
+
+.gst-chem__overall-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gst-chem-text-muted);
+}
+
+.gst-chem__confidence {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 12px;
+  color: var(--gst-chem-text-muted);
+}
+
+/* ── Section Titles ── */
+.gst-chem__section-title {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gst-chem-text-muted);
+  margin: 0 0 12px 0;
+}
+
+/* ── Dimension Bars ── */
+.gst-chem__dimensions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.gst-chem__dimension-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.gst-chem__dimension-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--gst-chem-text-primary);
+}
+
+.gst-chem__dimension-value {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gst-chem-text-muted);
+}
+
+.gst-chem__dimension-track {
+  height: var(--gst-chem-bar-height);
+  background: var(--gst-chem-bar-track);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.gst-chem__dimension-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gst-chem__dimension-fill[data-level="exceptional"] {
+  background: linear-gradient(90deg, rgba(78, 205, 196, 0.7), rgba(78, 205, 196, 0.4));
+}
+
+.gst-chem__dimension-fill[data-level="strong"] {
+  background: linear-gradient(90deg, rgba(212, 168, 83, 0.7), rgba(212, 168, 83, 0.4));
+}
+
+.gst-chem__dimension-fill[data-level="moderate"] {
+  background: linear-gradient(90deg, rgba(245, 166, 35, 0.7), rgba(245, 166, 35, 0.4));
+}
+
+.gst-chem__dimension-fill[data-level="weak"] {
+  background: linear-gradient(90deg, rgba(144, 164, 174, 0.6), rgba(144, 164, 174, 0.3));
+}
+
+.gst-chem__dimension-fill[data-level="poor"] {
+  background: linear-gradient(90deg, rgba(231, 76, 60, 0.6), rgba(231, 76, 60, 0.3));
+}
+
+/* ── Sponsors ── */
+.gst-chem__sponsors-section {
+  margin-bottom: 20px;
+}
+
+.gst-chem__sponsors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gst-chem__sponsor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--gst-chem-border);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  width: 100%;
+  text-align: left;
+  outline: none;
+}
+
+.gst-chem__sponsor:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.gst-chem__sponsor:focus-visible {
+  outline: 2px solid var(--gst-accent);
+  outline-offset: 2px;
+}
+
+.gst-chem__sponsor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.gst-chem__sponsor-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gst-chem-text-primary);
+}
+
+.gst-chem__sponsor-compat {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.gst-chem__sponsor-compat[data-level="exceptional"] {
+  color: var(--gst-severity-low);
+}
+
+.gst-chem__sponsor-compat[data-level="strong"] {
+  color: var(--gst-accent);
+}
+
+.gst-chem__sponsor-compat[data-level="moderate"] {
+  color: var(--gst-severity-medium);
+}
+
+.gst-chem__sponsor-detail {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.gst-chem__sponsor-stat {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  color: var(--gst-chem-text-muted);
+}
+
+.gst-chem__sponsor-interests {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  color: var(--gst-chem-text-muted);
+}
+
+.gst-chem__sponsor-effectiveness {
+  display: flex;
+  gap: 12px;
+  padding-top: 4px;
+  border-top: 1px solid var(--gst-chem-border);
+}
+
+.gst-chem__sponsor-effectiveness span {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 10px;
+  color: var(--gst-chem-text-muted);
+}
+
+/* ── Prediction ── */
+.gst-chem__prediction {
+  padding-top: 16px;
+  border-top: 1px solid var(--gst-chem-border);
+}
+
+.gst-chem__prediction-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.gst-chem__prediction-probability {
+  font-family: var(--font-display, "Italiana");
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.gst-chem__prediction-probability[data-level="exceptional"] {
+  color: var(--gst-severity-low);
+}
+
+.gst-chem__prediction-probability[data-level="strong"] {
+  color: var(--gst-accent);
+}
+
+.gst-chem__prediction-probability[data-level="moderate"] {
+  color: var(--gst-severity-medium);
+}
+
+.gst-chem__prediction-probability[data-level="weak"],
+.gst-chem__prediction-probability[data-level="poor"] {
+  color: var(--gst-severity-high);
+}
+
+.gst-chem__prediction-interval {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 12px;
+  color: var(--gst-chem-text-muted);
+}
+
+.gst-chem__prediction-action {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 14px;
+  color: var(--gst-chem-text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.5;
+}
+
+.gst-chem__prediction-ltv {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gst-accent);
+  margin: 0 0 12px 0;
+}
+
+/* ── Factors ── */
+.gst-chem__factors {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gst-chem__factor {
+  display: grid;
+  grid-template-columns: 20px 140px 1fr;
+  gap: 8px;
+  align-items: baseline;
+  padding: 4px 0;
+}
+
+.gst-chem__factor-impact {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.gst-chem__factor[data-impact="positive"] .gst-chem__factor-impact {
+  color: var(--gst-severity-low);
+}
+
+.gst-chem__factor[data-impact="negative"] .gst-chem__factor-impact {
+  color: var(--gst-severity-high);
+}
+
+.gst-chem__factor[data-impact="neutral"] .gst-chem__factor-impact {
+  color: var(--gst-chem-text-muted);
+}
+
+.gst-chem__factor-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gst-chem-text-primary);
+}
+
+.gst-chem__factor-desc {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 11px;
+  color: var(--gst-chem-text-muted);
+}
+
+/* ── Animations ── */
+@keyframes gst-chem-fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-chem {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .gst-chem__dimension-fill {
+  transition: none;
+}
+
+/* ── Light Mode ── */
+.light .gst-chem {
+  --gst-chem-bg: rgba(255, 255, 255, 0.85);
+  --gst-chem-border: rgba(0, 0, 0, 0.08);
+  --gst-chem-text-primary: #1a1a2e;
+  --gst-chem-text-muted: #6b6b78;
+  --gst-chem-bar-track: rgba(0, 0, 0, 0.04);
+}
+
+.light .gst-chem__sponsor {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-chem {
+    padding: 16px;
+  }
+
+  .gst-chem__overall-score {
+    font-size: 36px;
+  }
+
+  .gst-chem__prediction-probability {
+    font-size: 28px;
+  }
+
+  .gst-chem__factor {
+    grid-template-columns: 20px 1fr;
+    gap: 4px;
+  }
+
+  .gst-chem__factor-name {
+    grid-column: 2;
+  }
+
+  .gst-chem__factor-desc {
+    grid-column: 1 / -1;
+    margin-left: 24px;
+  }
+
+  .gst-chem__sponsor-detail {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-chem {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+  }
+
+  .gst-chem__dimension-fill {
+    background: #ddd !important;
+  }
+}

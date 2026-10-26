@@ -1,0 +1,534 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/SocialGraph.css
+   Phase 34+ Migration — Social Graph Visualization
+   Level 6+ Agency · Production Grade
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Glass constellation foundation
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-socialGraph {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(180, 190, 210, 0.04) 0%,
+    rgba(15, 20, 30, 0.94) 40%,
+    rgba(10, 14, 20, 0.97) 100%
+  );
+  backdrop-filter: blur(14px) saturate(1.3) brightness(1.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(201, 169, 110, 0.08);
+  border-left: 1px solid rgba(201, 169, 110, 0.04);
+  border-right: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+}
+
+.fm-socialGraph::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.10) 30%,
+    rgba(255, 255, 255, 0.05) 70%,
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Header
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-socialGraph__header {
+  padding: 20px 20px 8px;
+}
+
+.fm-socialGraph__title {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 4px;
+}
+
+.fm-socialGraph__subtitle {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  color: var(--color-silver-500);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  SVG Canvas
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-socialGraph__canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 300px;
+  max-height: 500px;
+  cursor: default;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Tooltip
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-socialGraph__tooltip {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  padding: 12px 14px;
+  border-radius: var(--radius-md, 8px);
+  background: linear-gradient(
+    135deg,
+    rgba(15, 20, 30, 0.96) 0%,
+    rgba(10, 14, 20, 0.98) 100%
+  );
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  max-width: 280px;
+  animation: fm-socialGraph-tooltip-in 0.2s ease-out;
+}
+
+.fm-socialGraph__tooltip-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.fm-socialGraph__tooltip-tier-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--sg-tooltip-tier-color, var(--color-silver-400));
+}
+
+.fm-socialGraph__tooltip-label {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.fm-socialGraph__tooltip-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--color-teal-400) 15%, transparent);
+  color: var(--color-teal-400);
+}
+
+.fm-socialGraph__tooltip-relationship {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  color: var(--color-silver-300);
+  margin-bottom: 4px;
+}
+
+.fm-socialGraph__tooltip-strength {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.fm-socialGraph__tooltip-strength-label {
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  color: var(--color-silver-500);
+}
+
+.fm-socialGraph__tooltip-strength-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-surface-3);
+  overflow: hidden;
+  max-width: 64px;
+}
+
+.fm-socialGraph__tooltip-strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--sg-tooltip-strength-pct, 0%);
+  transition: width 0.3s ease;
+}
+
+.fm-socialGraph__tooltip-strength-value {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--color-silver-400);
+}
+
+.fm-socialGraph__tooltip-activities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.fm-socialGraph__tooltip-activity {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: 0.5625rem;
+  background: var(--color-surface-3);
+  color: var(--color-silver-300);
+}
+
+.fm-socialGraph__tooltip-insight {
+  margin-top: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  color: var(--color-gold-400);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.fm-socialGraph__tooltip-strength-fill[data-level="strong"] {
+  background: var(--color-emerald-400);
+}
+
+.fm-socialGraph__tooltip-strength-fill[data-level="medium"] {
+  background: var(--color-amber-400);
+}
+
+.fm-socialGraph__tooltip-strength-fill[data-level="weak"] {
+  background: var(--color-silver-400);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Edges
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-socialGraph__edge {
+  stroke: var(--color-silver-500);
+  stroke-width: calc(var(--sg-edge-width, 1) * 1px);
+  opacity: var(--sg-edge-opacity, 0.3);
+  transition: opacity 0.2s ease, stroke 0.2s ease;
+  stroke-linecap: round;
+}
+
+.fm-socialGraph__edge[data-suggested] {
+  stroke: var(--color-teal-400);
+  stroke-dasharray: 6 4;
+  opacity: 0.35;
+}
+
+.fm-socialGraph__edge[data-highlighted] {
+  opacity: 1;
+  stroke: var(--color-gold-400);
+}
+
+.fm-socialGraph__edge[data-dimmed] {
+  opacity: 0.06;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Nodes
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-socialGraph__node {
+  cursor: default;
+  transition: opacity 0.2s ease;
+  outline: none;
+}
+
+.fm-socialGraph__node:not([data-center]) {
+  cursor: pointer;
+}
+
+.fm-socialGraph__node:focus-visible .fm-socialGraph__node-circle {
+  stroke: var(--color-gold-400);
+  stroke-width: 3;
+}
+
+.fm-socialGraph__node[data-dimmed] {
+  opacity: 0.15;
+}
+
+.fm-socialGraph__node[data-hovered] .fm-socialGraph__node-circle {
+  stroke-width: 3;
+  filter: drop-shadow(0 0 6px var(--sg-node-color, var(--color-silver-400)));
+}
+
+.fm-socialGraph__node-circle {
+  fill: color-mix(in srgb, var(--sg-node-color, var(--color-silver-400)) 20%, var(--color-surface-1));
+  stroke: var(--sg-node-color, var(--color-silver-400));
+  stroke-width: 2;
+  transition: stroke-width 0.15s ease, filter 0.2s ease;
+}
+
+.fm-socialGraph__node[data-center] .fm-socialGraph__node-circle {
+  fill: color-mix(in srgb, var(--color-gold-400) 18%, var(--color-surface-1));
+  stroke: var(--color-gold-400);
+  stroke-width: 2.5;
+}
+
+.fm-socialGraph__node[data-suggested] .fm-socialGraph__node-circle {
+  fill: transparent;
+  stroke: var(--color-teal-400);
+  stroke-dasharray: 4 3;
+  stroke-width: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Node Labels
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-socialGraph__node-initial {
+  fill: var(--sg-node-color, var(--color-silver-300));
+  font-family: var(--font-display);
+  font-weight: 700;
+  pointer-events: none;
+  user-select: none;
+}
+
+.fm-socialGraph__node[data-center] .fm-socialGraph__node-initial {
+  fill: var(--color-gold-400);
+}
+
+.fm-socialGraph__node[data-suggested] .fm-socialGraph__node-initial {
+  fill: var(--color-teal-400);
+  opacity: 0.7;
+}
+
+.fm-socialGraph__node-label {
+  fill: var(--color-silver-500);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.fm-socialGraph__node[data-center] .fm-socialGraph__node-label {
+  fill: var(--color-silver-300);
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.fm-socialGraph__node[data-hovered] .fm-socialGraph__node-label {
+  fill: var(--color-silver-200);
+}
+
+.fm-socialGraph__more-label {
+  fill: var(--color-silver-600);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Legend
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-socialGraph__legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding: 12px 20px 16px;
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  color: var(--color-silver-400);
+}
+
+.fm-socialGraph__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fm-socialGraph__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.fm-socialGraph__legend-dot--dashed {
+  border: 1.5px dashed var(--color-teal-400);
+  background: transparent;
+}
+.fm-socialGraph__legend-dot[data-type="center"] {
+  background: var(--color-gold-400);
+}
+
+.fm-socialGraph__legend-dot[data-type="connected"] {
+  background: var(--color-silver-400);
+}
+
+.fm-socialGraph__legend-dot[data-type="suggested"] {
+  border: 1.5px dashed var(--color-teal-400);
+  background: transparent;
+}
+/* ═══════════════════════════════════════════════════════════
+   §8  Network Health Badge
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-socialGraph__health {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  z-index: 2;
+}
+
+.fm-socialGraph__health-score {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-socialGraph-tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Light Mode
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-socialGraph {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--color-surface-2);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.light .fm-socialGraph::before {
+  display: none;
+}
+
+.light .fm-socialGraph__tooltip {
+  background: var(--color-surface-1);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.light .fm-socialGraph__tooltip-activity {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-600);
+}
+
+.light .fm-socialGraph__health {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-socialGraph__edge {
+  stroke: var(--color-silver-300);
+}
+
+.light .fm-socialGraph__node-label {
+  fill: var(--color-silver-600);
+}
+
+.light .fm-socialGraph__node[data-center] .fm-socialGraph__node-label {
+  fill: var(--color-silver-800);
+}
+
+.light .fm-socialGraph__more-label {
+  fill: var(--color-silver-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Reduced Motion
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-socialGraph__tooltip {
+    animation: none;
+  }
+
+  .fm-socialGraph__edge,
+  .fm-socialGraph__node,
+  .fm-socialGraph__node-circle {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Responsive
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fm-socialGraph__canvas {
+    min-height: 250px;
+  }
+
+  .fm-socialGraph__tooltip {
+    max-width: 220px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Print
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-socialGraph {
+    border: 1px solid #ccc;
+    background: white;
+    backdrop-filter: none;
+  }
+
+  .fm-socialGraph::before {
+    display: none;
+  }
+
+  .fm-socialGraph__node-circle {
+    stroke: #333 !important;
+    fill: #f0f0f0 !important;
+  }
+
+  .fm-socialGraph__edge {
+    stroke: #999 !important;
+  }
+
+  .fm-socialGraph__tooltip,
+  .fm-socialGraph__health {
+    display: none;
+  }
+}

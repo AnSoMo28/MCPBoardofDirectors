@@ -1,0 +1,593 @@
+/* src/features/events/components/CalendarGrid.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Events Domain — Calendar Grid Component                     */
+/*                                                              */
+/* @namespace  ecal-*                                           */
+/* @keyframes  5 (ecalFadeIn, ecalAurora, ecalConflict,        */
+/*              ecalGlow, ecalHeatGlow)                         */
+/* @signature  Diagonal stagger reveal + multi-category aurora  */
+/*             + today beacon + AI insight badges               */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Grid Root + Headers */
+/* §1 Day Cell */
+/* §2 Day Cell States */
+/* §3 Aurora + Beacon */
+/* §4 Event Chip */
+/* §5 Peek Preview */
+/* §6 Heat Bar */
+/* §7 Keyframes */
+/* §8 Light Mode */
+/* §9 Reduced Motion */
+/* §10 Responsive */
+/* §11 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Grid Root + Headers                                      */
+/* ─────────────────────────────────────────────────────────── */
+
+.ecal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  min-width: 700px;
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+}
+
+.ecal__header {
+  padding: 8px 4px;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: clamp(9px, 1.2vw, 12px);
+  font-weight: 600;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: color-mix(in srgb, var(--color-surface-2) 40%, transparent);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ecal__header:last-of-type {
+  border-right: none;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Day Cell                                                 */
+/* ─────────────────────────────────────────────────────────── */
+
+.ecal-cell {
+  position: relative;
+  min-height: 80px;
+  padding: 4px;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: background 0.15s var(--ease-apple);
+  overflow: hidden;
+
+  /* Diagonal stagger reveal */
+  opacity: 0;
+  animation: ecalFadeIn 0.35s var(--ease-apple) forwards;
+  animation-delay: calc((var(--stagger-row, 0) * 7 + var(--stagger-col, 0)) * 15ms);
+}
+.ecal-cell:nth-child(7n) {
+  border-right: none;
+}
+.ecal-cell:hover {
+  background: color-mix(in srgb, var(--color-surface-3) 50%, transparent);
+}
+.ecal-cell:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: -2px;
+}
+
+.ecal-cell__content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 Day Cell States                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+.ecal-cell--other-month {
+  opacity: 0.3;
+}
+
+.ecal-cell--today {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-gold-400) 35%, transparent);
+}
+
+.ecal-cell--conflicts {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 Aurora + Beacon                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+.ecal-cell__aurora {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--aurora-alpha, 0);
+  border-radius: inherit;
+  overflow: hidden;
+}
+.ecal-cell__aurora::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 85% 55% at 50% 95%,
+    var(--aurora-color, transparent) 0%,
+    transparent 70%
+  );
+  animation: ecalAurora 6s ease-in-out infinite;
+}
+/* Conflict flicker */
+.ecal-cell__aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-rose-400);
+  animation: ecalConflict 3s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.ecal-cell--conflicts .ecal-cell__aurora::before {
+  animation-play-state: running;
+}
+
+/* Today beacon — persistent golden ambient glow */
+.ecal-cell__beacon {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--color-gold-400) 10%, transparent) 0%,
+    transparent 70%
+  );
+  animation: ecalGlow 4s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 Event Chip                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+.ecal-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.3;
+  background: var(--chip-bg);
+  color: var(--chip-color);
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: filter 0.12s var(--ease-apple);
+}
+.ecal-chip:hover {
+  filter: brightness(1.15);
+}
+.ecal-chip__icon {
+  flex-shrink: 0;
+  line-height: 1;
+}
+.ecal-chip__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Peek Preview                                             */
+/* ─────────────────────────────────────────────────────────── */
+
+.ecal-peek {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  padding: 6px;
+  overflow-y: auto;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--color-surface-1) 90%, transparent);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.97);
+  transition: opacity 0.15s var(--ease-apple), transform 0.15s var(--ease-apple);
+  transition-delay: 0s;
+}
+.ecal-cell:hover .ecal-peek {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+  transition-delay: 300ms;
+}
+
+.ecal-peek__events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.ecal-peek__event-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+}
+.ecal-peek__event-icon {
+  flex-shrink: 0;
+  line-height: 1;
+}
+.ecal-peek__event-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-ui);
+  color: var(--color-silver-200);
+}
+.ecal-peek__event-time {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+}
+
+.ecal-peek__intel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 8px;
+}
+
+.ecal-peek__slot {
+  color: var(--color-emerald-400);
+}
+
+/* AI insight highlight in peek */
+.ecal-peek__insight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  margin-top: 4px;
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  border-left: 2px solid var(--color-gold-400);
+  color: var(--color-silver-200);
+  line-height: 1.4;
+}
+.ecal-peek__insight-icon {
+  flex-shrink: 0;
+  line-height: 1;
+}
+.ecal-peek__insight-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Day Cell Header + Badges + Chips                         */
+/* ─────────────────────────────────────────────────────────── */
+
+.ecal-cell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.ecal-cell__daynum {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: var(--font-ui);
+  font-size: clamp(11px, 1.2vw, 13px);
+  font-weight: 500;
+  color: var(--color-silver-200);
+}
+.ecal-cell__daynum--today {
+  background: var(--color-gold-400);
+  color: var(--color-abyss);
+  font-weight: 700;
+}
+.ecal-cell__daynum--faded {
+  color: var(--color-silver-600);
+}
+.ecal-cell__daynum--past {
+  color: var(--color-silver-400);
+}
+
+.ecal-cell__badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ecal-cell__count {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+}
+.ecal-cell__count--conflict {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+}
+
+/* AI insight badge */
+.ecal-cell__insight-badge {
+  font-size: 12px;
+  line-height: 1;
+  animation: ecalGlow 3s ease-in-out infinite;
+}
+
+.ecal-cell__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ecal-cell__more {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  padding-left: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Heat Bar                                                 */
+/* ─────────────────────────────────────────────────────────── */
+
+.ecal-cell__heat-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  z-index: 2;
+}
+.ecal-cell__heat-fill {
+  height: 100%;
+  border-radius: 0 2px 0 0;
+  transition: width 0.5s var(--ease-apple);
+}
+
+/* Density heat glow on critical density */
+.ecal-cell--density-critical .ecal-cell__heat-fill {
+  animation: ecalHeatGlow 2s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Keyframes                                                */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes ecalFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ecalAurora {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+@keyframes ecalConflict {
+  0%, 85%, 100% { opacity: 0; }
+  90%           { opacity: 0.18; }
+  95%           { opacity: 0; }
+}
+
+@keyframes ecalGlow {
+  0%, 100% { opacity: 0.12; }
+  50%      { opacity: 0.35; }
+}
+
+@keyframes ecalHeatGlow {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.4); }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Light Mode                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .ecal {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .ecal__header {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-silver-500);
+}
+.light .ecal-cell {
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .ecal-cell:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+.light .ecal-cell--today {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+}
+.light .ecal-cell--conflicts {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-rose-400) 18%, transparent);
+}
+.light .ecal-cell__daynum {
+  color: var(--color-silver-700);
+}
+.light .ecal-cell__daynum--today {
+  color: white;
+}
+.light .ecal-cell__daynum--faded {
+  color: var(--color-silver-400);
+}
+.light .ecal-cell__daynum--past {
+  color: var(--color-silver-500);
+}
+.light .ecal-cell__count {
+  color: var(--color-gold-500);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+.light .ecal-cell__count--conflict {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+}
+.light .ecal-peek {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+.light .ecal-peek__event-title {
+  color: var(--color-silver-700);
+}
+.light .ecal-peek__event-time {
+  color: var(--color-silver-400);
+}
+.light .ecal-peek__insight {
+  background: color-mix(in srgb, var(--color-gold-400) 6%, transparent);
+  color: var(--color-silver-700);
+}
+.light .ecal-cell__more {
+  color: var(--color-silver-500);
+}
+.light .ecal-cell__heat-bar {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §10 Reduced Motion                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ecal-cell {
+    animation: none !important;
+    opacity: 1;
+  }
+  .ecal-cell__aurora::after {
+    animation: none;
+  }
+  .ecal-cell__aurora::before {
+    animation: none;
+  }
+  .ecal-cell__beacon {
+    animation: none;
+  }
+  .ecal-cell__insight-badge {
+    animation: none;
+  }
+  .ecal-cell--density-critical .ecal-cell__heat-fill {
+    animation: none;
+  }
+  .ecal-peek {
+    transition: none;
+  }
+  .ecal-peek {
+    transition-delay: 0s !important;
+  }
+  .ecal-chip {
+    transition: none;
+  }
+  .ecal-cell__heat-fill {
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §11 Responsive                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .ecal-cell {
+    min-height: 100px;
+    padding: 6px;
+  }
+  .ecal__header {
+    padding: 10px 4px;
+  }
+  .ecal-cell__daynum {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (min-width: 768px) {
+  .ecal-cell {
+    min-height: 120px;
+    padding: 8px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §12 Print                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  .ecal {
+    border: 1px solid #ccc;
+    min-width: auto;
+  }
+  .ecal__header {
+    background: #f5f5f5;
+    border-color: #ccc;
+    color: #333;
+  }
+  .ecal-cell {
+    border-color: #e5e5e5;
+    min-height: 60px;
+    animation: none;
+    opacity: 1;
+  }
+  .ecal-cell__aurora,
+  .ecal-cell__beacon,
+  .ecal-cell__aurora::before,
+  .ecal-cell__aurora::after,
+  .ecal-peek,
+  .ecal-cell__insight-badge,
+  .ecal-cell__heat-bar {
+    display: none !important;
+  }
+  .ecal-cell--today {
+    box-shadow: inset 0 0 0 1.5px #333;
+  }
+  .ecal-cell__daynum {
+    color: #333;
+  }
+  .ecal-cell__daynum--today {
+    background: #333;
+    color: white;
+  }
+  .ecal-chip {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+  }
+}

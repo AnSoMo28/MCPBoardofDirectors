@@ -1,0 +1,565 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/BracketView.css
+   §B3.13 — Bracket View V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  in_progress pulse on status bar
+   2. REACCIÓN:     hover translateY + shadow on nodes
+   3. MEMORIA:      scores, winner highlight, progress bar
+   4. INTENCIÓN:    champion card, progress indicator
+   5. SINIESTRÍA:   status colors, upset highlight, seed display
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-bracket {
+  --spt-bk-accent: var(--color-teal-400, #2a9ab5);
+  --spt-bk-surface: var(--color-surface-1, #1a1a1a);
+  --spt-bk-border: rgba(255, 255, 255, 0.06);
+  --spt-bk-text: var(--color-silver-100, #f0ece4);
+  --spt-bk-text-muted: var(--color-silver-400, #8a8580);
+  --spt-bk-text-dim: var(--color-silver-500, #7a7570);
+}
+
+/* ── §0.1 — Mode (LP 6: Empatía) ──────────────────────── */
+
+.spt-bracket[data-mode="calm"]    { --spt-bk-accent: var(--color-teal-400, #2a9ab5); }
+.spt-bracket[data-mode="alert"]   { --spt-bk-accent: var(--color-amber-400, #d4a017); }
+.spt-bracket[data-mode="critical"]{ --spt-bk-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-bracket__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.spt-bracket__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spt-bracket__header-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-gold-400, #d4af37);
+  flex-shrink: 0;
+}
+
+.spt-bracket__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.1rem;
+  color: var(--spt-bk-text);
+  margin: 0;
+}
+
+.spt-bracket__subtitle {
+  font-size: 0.65rem;
+  color: var(--spt-bk-text-dim);
+  margin: 0;
+}
+
+.spt-bracket__upset-count {
+  color: var(--color-amber-400, #d4a017);
+  font-weight: 600;
+}
+
+/* ── §2 — Champion Card (LP 4: Intención) ──────────────── */
+
+.spt-bracket__champion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
+}
+
+.spt-bracket__champion-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-gold-400, #d4af37);
+}
+
+.spt-bracket__champion-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-gold-400, #d4af37);
+}
+
+/* ── §3 — Scroll Container ─────────────────────────────── */
+
+.spt-bracket__scroll {
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* ── §4 — Grid (rounds as columns) ─────────────────────── */
+
+.spt-bracket__grid {
+  display: flex;
+  gap: 2.5rem;
+  min-width: fit-content;
+  position: relative;
+}
+
+/* ── §5 — SVG Connector Lines ──────────────────────────── */
+
+.spt-bracket__connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.spt-bracket__connector-line {
+  fill: none;
+  stroke-width: 1.5;
+  transition: stroke 0.4s ease;
+}
+
+.spt-bracket__connector-line[data-match-status="completed"] {
+  stroke: rgba(61, 170, 112, 0.25);
+}
+
+.spt-bracket__connector-line[data-match-status="in_progress"] {
+  stroke: rgba(212, 175, 55, 0.35);
+}
+
+.spt-bracket__connector-line[data-match-status="pending"] {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-dasharray: 4 4;
+}
+
+.spt-bracket__connector-line[data-match-status="bye"] {
+  stroke: rgba(138, 133, 128, 0.1);
+  stroke-dasharray: 2 6;
+}
+
+/* ── §6 — Round Column ─────────────────────────────────── */
+
+.spt-bracket__round {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.spt-bracket__round-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin-bottom: 0.5rem;
+}
+
+.spt-bracket__round-name {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--spt-bk-text-muted);
+}
+
+.spt-bracket__round-count {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.55rem;
+  color: var(--spt-bk-text-dim);
+}
+
+.spt-bracket__round-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.spt-bracket__round-arrow {
+  display: none; /* Visual only — connectors handle flow */
+}
+
+/* ── §7 — Match Node (LP 2: Reacción + 5: Siniestría) ─── */
+
+.spt-bracket__node {
+  width: 200px;
+  background: var(--spt-bk-surface);
+  border: 1px solid var(--spt-bk-border);
+  border-radius: 8px;
+  overflow: hidden;
+  animation: spt-bk-node-enter 0.4s ease both;
+  animation-delay: calc(var(--stagger-i, 0) * 60ms);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+}
+
+@keyframes spt-bk-node-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-bracket__node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Status border accent */
+
+.spt-bracket__node[data-match-status="completed"] {
+  border-color: rgba(61, 170, 112, 0.15);
+}
+
+.spt-bracket__node[data-match-status="in_progress"] {
+  border-color: rgba(212, 175, 55, 0.25);
+}
+
+/* Upset: golden glow (LP 5: Siniestría) */
+
+.spt-bracket__node[data-upset="true"] {
+  border-color: rgba(212, 175, 55, 0.35);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.12);
+  animation: spt-bk-node-enter 0.4s ease both,
+             spt-bk-upset-glow 3s ease-in-out infinite;
+}
+
+@keyframes spt-bk-upset-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(212, 175, 55, 0.08); }
+  50%      { box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
+}
+
+/* ── §8 — Player Rows ──────────────────────────────────── */
+
+.spt-bracket__player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.65rem;
+  transition: background 0.2s ease;
+}
+
+.spt-bracket__player[data-winner="true"] {
+  background: rgba(61, 170, 112, 0.06);
+}
+
+.spt-bracket__player-name {
+  font-size: 0.75rem;
+  color: var(--spt-bk-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: color 0.2s ease;
+}
+
+.spt-bracket__player-name[data-winner="true"] {
+  color: var(--color-emerald-300, #4ade80);
+  font-weight: 600;
+}
+
+.spt-bracket__player-name[data-empty="true"] {
+  color: var(--spt-bk-text-dim);
+  font-style: italic;
+}
+
+.spt-bracket__seed {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.6rem;
+  color: var(--spt-bk-text-dim);
+  opacity: 0.6;
+}
+
+.spt-bracket__score {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--spt-bk-text-muted);
+  transition: color 0.2s ease;
+}
+
+.spt-bracket__score[data-winner="true"] {
+  color: var(--color-emerald-400, #3daa70);
+}
+
+/* ── §9 — Divider ──────────────────────────────────────── */
+
+.spt-bracket__divider {
+  height: 1px;
+  background: var(--spt-bk-border);
+}
+
+/* ── §10 — Status Bar (LP 1: Respiración) ──────────────── */
+
+.spt-bracket__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.5rem;
+  border-top: 1px solid var(--spt-bk-border);
+  transition: background 0.4s ease;
+}
+
+.spt-bracket__status[data-match-status="completed"] {
+  background: rgba(61, 170, 112, 0.04);
+}
+
+.spt-bracket__status[data-match-status="in_progress"] {
+  background: rgba(212, 175, 55, 0.06);
+}
+
+.spt-bracket__status[data-match-status="pending"] {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.spt-bracket__status-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: spt-bk-status-pulse 1.5s ease-in-out infinite;
+}
+
+.spt-bracket__status-pulse[data-match-status="in_progress"] {
+  background: var(--color-gold-400, #d4af37);
+}
+
+@keyframes spt-bk-status-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+.spt-bracket__status-icon {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  transition: color 0.4s ease;
+}
+
+.spt-bracket__status[data-match-status="completed"] .spt-bracket__status-icon {
+  color: var(--color-emerald-400, #3daa70);
+}
+
+.spt-bracket__status[data-match-status="in_progress"] .spt-bracket__status-icon {
+  color: var(--color-gold-400, #d4af37);
+}
+
+.spt-bracket__status[data-match-status="pending"] .spt-bracket__status-icon {
+  color: var(--spt-bk-text-dim);
+}
+
+.spt-bracket__status-icon--upset {
+  color: var(--color-amber-400, #d4a017) !important;
+}
+
+.spt-bracket__status-label {
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: color 0.4s ease;
+}
+
+.spt-bracket__status[data-match-status="completed"] .spt-bracket__status-label {
+  color: var(--color-emerald-400, #3daa70);
+}
+
+.spt-bracket__status[data-match-status="in_progress"] .spt-bracket__status-label {
+  color: var(--color-gold-400, #d4af37);
+}
+
+.spt-bracket__status[data-match-status="pending"] .spt-bracket__status-label {
+  color: var(--spt-bk-text-dim);
+}
+
+.spt-bracket__status[data-match-status="bye"] .spt-bracket__status-label {
+  color: var(--spt-bk-text-dim);
+  opacity: 0.6;
+}
+
+/* ── §11 — Progress Bar (LP 4: Intención) ──────────────── */
+
+.spt-bracket__progress {
+  margin-bottom: 0.5rem;
+}
+
+.spt-bracket__progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+}
+
+.spt-bracket__progress-label {
+  font-size: 0.6rem;
+  color: var(--spt-bk-text-dim);
+}
+
+.spt-bracket__progress-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--spt-bk-accent);
+  transition: color 0.4s ease;
+}
+
+.spt-bracket__progress-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.spt-bracket__progress-fill {
+  height: 100%;
+  background: var(--spt-bk-accent);
+  border-radius: 2px;
+  transition: width 0.6s ease, background 0.4s ease;
+}
+
+/* ── §12 — Footer: Narrative (LP 7) ────────────────────── */
+
+.spt-bracket__footer {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-bk-border);
+}
+
+.spt-bracket__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-bk-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-bk-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §13 — Light Mode ──────────────────────────────────── */
+
+.light .spt-bracket {
+  --spt-bk-surface: rgba(255, 255, 255, 0.7);
+  --spt-bk-border: rgba(0, 0, 0, 0.08);
+  --spt-bk-text: #1a1a1a;
+  --spt-bk-text-muted: #6b7280;
+  --spt-bk-text-dim: #9ca3af;
+}
+
+.light .spt-bracket__player[data-winner="true"] {
+  background: rgba(61, 170, 112, 0.05);
+}
+
+.light .spt-bracket__node:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-bracket__connector-line[data-match-status="completed"] {
+  stroke: rgba(61, 170, 112, 0.2);
+}
+
+.light .spt-bracket__connector-line[data-match-status="in_progress"] {
+  stroke: rgba(212, 175, 55, 0.25);
+}
+
+.light .spt-bracket__connector-line[data-match-status="pending"] {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-bracket__champion {
+  background: rgba(212, 175, 55, 0.06);
+}
+
+.light .spt-bracket__progress-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ── §14 — Reduced Motion ──────────────────────────────── */
+
+.spt-bracket[data-prefers-reduced="true"] .spt-bracket__node {
+  animation: none;
+}
+
+.spt-bracket[data-prefers-reduced="true"] .spt-bracket__node:hover {
+  transform: none;
+}
+
+.spt-bracket[data-prefers-reduced="true"] .spt-bracket__node[data-upset="true"] {
+  animation: none;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.12);
+}
+
+.spt-bracket[data-prefers-reduced="true"] .spt-bracket__status-pulse {
+  animation: none;
+  opacity: 0.6;
+}
+
+/* ── §15 — Responsive ──────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .spt-bracket__node {
+    width: 170px;
+  }
+
+  .spt-bracket__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .spt-bracket__champion {
+    align-self: flex-start;
+  }
+}
+
+/* ── §16 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-bracket {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .spt-bracket__node {
+    animation: none;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+  }
+
+  .spt-bracket__node:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .spt-bracket__node[data-upset="true"] {
+    animation: none;
+    border: 2px solid #d4a017;
+  }
+
+  .spt-bracket__status-pulse {
+    animation: none;
+  }
+
+  .spt-bracket__scroll {
+    overflow: visible;
+  }
+
+  .spt-bracket__connectors {
+    display: none;
+  }
+}

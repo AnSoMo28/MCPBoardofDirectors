@@ -1,0 +1,438 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/FamilyAdvisorBanner.css
+   Phase 34+ Migration — Intelligence Experience Banner
+   Level 6+ Agency · Production Grade
+
+   Depends on:
+     ../family-atoms.css (fm-insight, fm-cta, fm-signal, fm-expandable)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Glass constellation foundation
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-advisorBanner {
+  position: relative;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    135deg,
+    rgba(180, 190, 210, 0.04) 0%,
+    rgba(15, 20, 30, 0.95) 40%,
+    rgba(10, 14, 20, 0.97) 100%
+  );
+  backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  padding: 0;
+  opacity: 0;
+  animation: fm-bannerIn 0.35s ease forwards;
+}
+
+.fm-advisorBanner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.04) 70%,
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Urgency ambient — data-attribute driven */
+.fm-advisorBanner[data-urgent] {
+  border-left: 3px solid var(--color-amber-400);
+  animation: fm-bannerIn 0.35s ease forwards, fm-bannerGlowAmber 4s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Headline — Persistent most important thing (P7)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-advisorBanner__headline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  cursor: default;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.fm-advisorBanner__headline[data-urgent] {
+  color: var(--color-silver-200);
+  background: color-mix(in srgb, var(--color-amber-400) 3%, transparent);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.fm-advisorBanner__headline-icon {
+  flex-shrink: 0;
+  color: var(--color-silver-500);
+}
+
+.fm-advisorBanner__headline[data-urgent] .fm-advisorBanner__headline-icon {
+  color: var(--color-amber-400);
+}
+
+.fm-advisorBanner__headline-text {
+  flex: 1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.fm-advisorBanner__headline-cta {
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Counts Bar — Insight summary + toggle
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-advisorBanner__counts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-silver-500);
+}
+
+.fm-advisorBanner__counts-icon {
+  flex-shrink: 0;
+  color: var(--color-silver-600);
+}
+
+.fm-advisorBanner__counts-text {
+  flex: 1;
+}
+
+.fm-advisorBanner__toggle {
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  Body — Expanded content with smooth transition
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-advisorBanner__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 18px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+}
+
+.fm-advisorBanner__body[data-open] {
+  max-height: 3000px;
+  opacity: 1;
+  padding: 12px 18px 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  Insight Groups
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-advisorBanner__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Insight Card — Staggered animations from old
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-advisorBanner__insight {
+  /* Inherits from fm-insight atom — overrides below */
+  opacity: 0;
+  animation: fm-bannerSlideUp 0.3s ease both;
+}
+
+.fm-advisorBanner__group .fm-advisorBanner__insight:nth-child(1) { animation-delay: 0.05s; }
+.fm-advisorBanner__group .fm-advisorBanner__insight:nth-child(2) { animation-delay: 0.1s; }
+.fm-advisorBanner__group .fm-advisorBanner__insight:nth-child(3) { animation-delay: 0.15s; }
+.fm-advisorBanner__group .fm-advisorBanner__insight:nth-child(4) { animation-delay: 0.2s; }
+.fm-advisorBanner__group .fm-advisorBanner__insight:nth-child(5) { animation-delay: 0.25s; }
+.fm-advisorBanner__group .fm-advisorBanner__insight:nth-child(6) { animation-delay: 0.3s; }
+
+/* Interrupt insights glow */
+.fm-advisorBanner .fm-insight[data-severity="critical"] {
+  border-left-width: 4px;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Insight Meta Row (impact + layer + confidence)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-advisorBanner__insight-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.fm-advisorBanner__insight-meta .fm-signal {
+  font-size: 0.625rem;
+}
+
+.fm-advisorBanner__insight-meta .fm-signal__icon {
+  width: 10px;
+  height: 10px;
+}
+
+.fm-advisorBanner__layer-tag {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+  flex-shrink: 0;
+}
+
+.fm-advisorBanner__confidence {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Quick Action — Enhanced from old with urgent variant
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-advisorBanner__insight .fm-cta--primary {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  color: var(--color-gold-400);
+  font-size: 0.625rem;
+  font-weight: 600;
+  min-height: 28px;
+  padding: 4px 10px;
+}
+
+.fm-advisorBanner__insight .fm-cta--primary:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+}
+
+/* Urgent action — rose treatment for critical insights */
+.fm-advisorBanner__insight[data-severity="critical"] .fm-cta--primary {
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+  color: var(--color-rose-400);
+}
+
+.fm-advisorBanner__insight[data-severity="critical"] .fm-cta--primary:hover {
+  background: color-mix(in srgb, var(--color-rose-400) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Delta Badges (P5 — preserved from old)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-advisorBanner__delta {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.fm-advisorBanner__delta--up {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 8%, transparent);
+}
+
+.fm-advisorBanner__delta--down {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 8%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Gateway — Link to full Intelligence Panel
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-advisorBanner__gateway {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  margin: 4px 0 0;
+  border-radius: var(--radius-md, 8px);
+  border: 1px dashed rgba(201, 169, 110, 0.2);
+  background: color-mix(in srgb, var(--color-gold-400) 3%, transparent);
+  color: var(--color-gold-400);
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  width: 100%;
+}
+
+.fm-advisorBanner__gateway:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  border-color: rgba(201, 169, 110, 0.35);
+}
+
+.fm-advisorBanner__gateway:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes fm-bannerIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-bannerSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fm-bannerGlowAmber {
+  0%, 100% { box-shadow: 0 0 0 rgba(212, 168, 64, 0); }
+  50% { box-shadow: 0 0 12px rgba(212, 168, 64, 0.06); }
+}
+
+@keyframes fm-bannerGlowRose {
+  0%, 100% { box-shadow: 0 0 0 rgba(233, 93, 110, 0); }
+  50% { box-shadow: 0 0 16px rgba(233, 93, 110, 0.08); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Light Mode
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-advisorBanner {
+  background: var(--color-surface-2);
+  border-color: rgba(0, 0, 0, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.light .fm-advisorBanner::before {
+  display: none;
+}
+
+.light .fm-advisorBanner__headline {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-advisorBanner__headline[data-urgent] {
+  background: color-mix(in srgb, var(--color-amber-400) 3%, var(--color-surface-0));
+}
+
+.light .fm-advisorBanner__insight {
+  /* Inherits light overrides from fm-insight atom */
+}
+
+.light .fm-advisorBanner__layer-tag {
+  color: var(--color-silver-400);
+}
+
+.light .fm-advisorBanner__gateway {
+  background: color-mix(in srgb, var(--color-gold-400) 4%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+
+.light .fm-advisorBanner__gateway:hover {
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Reduced Motion
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-advisorBanner,
+  .fm-advisorBanner[data-urgent] {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-advisorBanner__insight {
+    opacity: 1;
+    animation: none;
+  }
+
+  .fm-advisorBanner__body {
+    transition: none;
+  }
+
+  .fm-advisorBanner__body[data-open] {
+    max-height: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Print
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-advisorBanner {
+    border: 1px solid #ccc;
+    background: white;
+    backdrop-filter: none;
+    box-shadow: none;
+    opacity: 1;
+  }
+
+  .fm-advisorBanner::before {
+    display: none;
+  }
+
+  .fm-advisorBanner__headline-cta,
+  .fm-advisorBanner .fm-cta,
+  .fm-advisorBanner__gateway,
+  .fm-advisorBanner__toggle {
+    display: none;
+  }
+
+  .fm-advisorBanner__body {
+    max-height: none !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+    padding: 12px 18px 16px !important;
+  }
+
+  .fm-advisorBanner__insight {
+    opacity: 1 !important;
+    animation: none !important;
+    break-inside: avoid;
+  }
+
+  .fm-advisorBanner .fm-expandable__content {
+    grid-template-rows: 1fr !important;
+  }
+}

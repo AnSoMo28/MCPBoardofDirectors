@@ -1,0 +1,622 @@
+# CHECKPOINT — Fase 18 COMPLETADA — Events Module: Calendar, Detail, Form, AI Intelligence, Mocks
+
+**Fecha:** Junio 2025
+**Sesiones completadas:** ~22+ acumuladas (esta sesión = Fase 18 completa — Bloques 0-6)
+**Archivos modificados:** 8 (EventCalendar, EventDetail, EventForm, types.ts, contracts.ts, factories.ts, mock-registry.ts, index.ts)
+**Archivos nuevos:** 3 (ScoreGauge.tsx, EventIntelligencePanel.tsx, + factory `createMockEventGetDetail`)
+**Líneas nuevas:** ~2,800+
+**Tools MCP registradas:** ~100+ (originales 84 + 16 nuevas de events)
+
+---
+
+## 1. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend — Nuevos
+
+| # | Archivo | Líneas | Contenido | Tools MCP |
+|---|---------|--------|-----------|-----------|
+| 1 | `frontend/src/shared/components/ui/ScoreGauge.tsx` | ~75 | SVG circular gauge compartido. Props: score, maxScore, size, strokeWidth, color, label. ARIA `role="meter"`. `useReducedMotion` guard en stroke-dashoffset transition. Wrapper relative + absolute centering para score text. | N/A — shared UI |
+| 2 | `frontend/src/features/events/components/EventIntelligencePanel.tsx` | ~420 | Panel AI on-demand con 4 secciones: Predict Attendance, Optimization, Conflict Detection, Engagement Boost. Config array `AI_TOOLS[]`. State `enabled: Record<string, boolean>`. 4 queries `useMCPQuery` con `enabled:false` + `staleTime:0`. Grid 2×2 con Card por tool. Result renderers dedicados por key: `PredictResult`, `OptimizeResult`, `ConflictResult`, `BoostResult`. ScoreGauge en predict (72px), conflict (risk level), boost (current→projected). Staggered mount animation con reducedMotion guard. Refresh button por sección. | `event_predict_attendance`, `event_recommend_optimization`, `event_conflict_detection`, `event_engagement_boost` |
+
+### Archivos Frontend — Modificados
+
+| # | Archivo | Cambio | Por qué |
+|---|---------|--------|---------|
+| 1 | `frontend/src/features/events/types.ts` | APPEND: 7 enums backend-aligned (`BkEventStatus`, `BkEventCategory`, `BkEventType`, `BkRecurrencePattern`, `BkEventPricingModel`, `BkRsvpStatus`, `BkVendorContractStatus`) + 17 interfaces (`BkProgramItem`, `BkRsvpRecord`, `BkVendorRecord`, `BkEventResponse`, `BkEventBrief`, `BkCapacityInfo`, `BkEventAnalytics`, `BkCalendarDay`, `BkEventReport`, 4 AI types) + 6 config maps (`BK_EVENT_CATEGORY_CONFIG`, `BK_EVENT_STATUS_CONFIG`, `BK_RSVP_STATUS_CONFIG`, `BK_PRICING_MODEL_CONFIG`, `BK_RECURRENCE_CONFIG`, `BK_VENDOR_STATUS_CONFIG`) | Types viejos desalineados con backend. EventType frontend confundido con EventCategory. EventStatus incompleta (4 vs 7). RsvpStatus valor incorrecto ("waitlist" → "waitlisted"). Prefix `Bk` para no colisionar con types viejos |
+| 2 | `frontend/src/features/events/EventCalendar.tsx` | Cambios extensos (~450 líneas): types migration (Event→BkEventBrief, EventType→BkEventCategory), 15+ raw buttons→Button, useIsMobile→useBreakpoint, +useReducedMotion guard en todos los motions, MCP tool name ("list_events"→"event_get_calendar"), data shape (Event[]→BkCalendarDay[] Map lookup), conflict ring indicators en calendar cells, ARIA keyboard nav en day cells (tabIndex, role="button", onKeyDown, aria-label), HITL flow en createEvent mutation (pending_approval→showToast info), EmptyState en error, breadcrumbs, inputClass en QuickAddPanel inputs | Backend alignment + 22 rules compliance. CalendarDay.has_conflicts del backend ahora visible en UI |
+| 3 | `frontend/src/features/events/EventDetail.tsx` | Rewrite significativo (~600 líneas): types migration (Event→BkEventResponse, EventRsvp→BkRsvpRecord), MCP query shape (data.event→data.data), +3 mutations (updateStatus HITL flow, cloneEvent, generateReport), tabs 3→5 (resumen, programa, rsvps, proveedores, ai), +ProgramTimeline (timeline visual con BkProgramItem), +RsvpRow responsive (hidden sm:block + sm:hidden mobile cards), +VendorRow (contact info, costs, contract status), +RSVP summary bar, -AiInsightsPanel inline (reemplazado por EventIntelligencePanel on-demand), +Actions section (enviar invitaciones, clonar, reporte), STATUS_BADGE_VARIANT map | Backend alignment + AI on-demand + responsive + cross-module (invitaciones→communication) |
+| 4 | `frontend/src/features/events/EventForm.tsx` | Rewrite significativo (~500 líneas): types migration (EventType→BkEventCategory+BkEventCategory), EventFormData 16→21 campos (+event_type, +is_members_only, +allow_guests, +max_guests_per_family, +recurrence, +dress_code, +notes), +Step 0 access type selector (open/private/semi_private), +Step 2 pricing model grid (BK_PRICING_MODEL_CONFIG), +Step 2 access rules (checkboxes), +Step 2 recurrence select, +Step 2 dress code/notes, Step 3 review→full fields + HITL notice, onSuccess deprecated→useEffect pattern, createEvent HITL→pending_approval flow, payload→backend shape (date_start ISO, category, pricing_model, age_groups[]), raw buttons→Button, +useReducedMotion guard, breadcrumbs siempre presentes | Backend alignment + HITL flow + TanStack v5 deprecation fix |
+| 5 | `frontend/src/shared/mocks/contracts.ts` | APPEND: 16 contracts — `EventGetCalendarMockResponse`, `EventCreateMockResponse`, `EventBuildProgramMockResponse`, `EventManageRsvpsMockResponse`, `EventCoordinateVendorsMockResponse`, `EventManageCapacityMockResponse`, `EventGetAnalyticsMockResponse`, `EventCloneTemplateMockResponse`, `EventGenerateReportMockResponse`, `EventPredictAttendanceMockResponse`, `EventRecommendOptimizationMockResponse`, `EventConflictDetectionMockResponse`, `EventEngagementBoostMockResponse` + shared interfaces (EventCalendarBrief, EventCalendarDayData, ProgramItemData, RsvpData, VendorData) | Mock system: contracts son source of truth de la API |
+| 6 | `frontend/src/shared/mocks/factories.ts` | APPEND: 17 factories — `createMockEventGetCalendar` (8 eventos CR con CalendarDay grouping), `createMockEventCreate` (HITL pending_approval), `createMockEventBuildProgram` (4 program items), `createMockEventManageRsvps` (6 RSVPs list + add response), `createMockEventCoordinateVendors` (3 vendors list + HITL), `createMockEventManageCapacity`, `createMockEventGetAnalytics` (revenue ₡150K), `createMockEventCloneTemplate`, `createMockEventGenerateReport` (12 events, ₡2.85M), `createMockEventPredictAttendance` (5 factors, 87% confidence), `createMockEventRecommendOptimization` (4 recs, score 82), `createMockEventConflictDetection` (2 conflicts), `createMockEventEngagementBoost` (4 strategies), `createMockEventGetDetail` (full BkEventResponse con programs+rsvps+vendors), `createMockEventUpdateStatusNew` | Datos CR realistas: familias ticas, montos en ₡, locations del club |
+| 7 | `frontend/src/shared/mocks/mock-registry.ts` | EDIT: +16 imports nuevos, events server 4→16 tools, `get_event`→`createMockEventGetDetail`, `update_event_status`→`createMockEventUpdateStatusNew` | Registry expansion alineado con backend |
+| 8 | `frontend/src/shared/components/ui/index.ts` | EDIT: +1 export `ScoreGauge` | Barrel file para shared UI |
+
+### Mock System — Tools nuevas
+
+| Server | Tool | Contract | Factory | Registry | Backend |
+|--------|------|----------|---------|----------|---------|
+| `events` | `event_get_calendar` | `EventGetCalendarMockResponse` | `createMockEventGetCalendar` | ✅ | ✅ |
+| `events` | `event_build_program` | `EventBuildProgramMockResponse` | `createMockEventBuildProgram` | ✅ | ✅ |
+| `events` | `event_manage_rsvps` | `EventManageRsvpsMockResponse` | `createMockEventManageRsvps` | ✅ | ✅ |
+| `events` | `event_coordinate_vendors` | `EventCoordinateVendorsMockResponse` | `createMockEventCoordinateVendors` | ✅ | ✅ |
+| `events` | `event_manage_capacity` | `EventManageCapacityMockResponse` | `createMockEventManageCapacity` | ✅ | ✅ |
+| `events` | `event_get_analytics` | `EventGetAnalyticsMockResponse` | `createMockEventGetAnalytics` | ✅ | ✅ |
+| `events` | `event_clone_template` | `EventCloneTemplateMockResponse` | `createMockEventCloneTemplate` | ✅ | ✅ |
+| `events` | `event_generate_report` | `EventGenerateReportMockResponse` | `createMockEventGenerateReport` | ✅ | ✅ |
+| `events` | `get_event` | (inline BkEventResponse) | `createMockEventGetDetail` | ✅ | ⬜ |
+| `events` | `update_event_status` | (inline status) | `createMockEventUpdateStatusNew` | ✅ | ⬜ |
+| `events` | `event_predict_attendance` | `EventPredictAttendanceMockResponse` | `createMockEventPredictAttendance` | ✅ | ⬜ |
+| `events` | `event_recommend_optimization` | `EventRecommendOptimizationMockResponse` | `createMockEventRecommendOptimization` | ✅ | ⬜ |
+| `events` | `event_conflict_detection` | `EventConflictDetectionMockResponse` | `createMockEventConflictDetection` | ✅ | ⬜ |
+| `events` | `event_engagement_boost` | `EventEngagementBoostMockResponse` | `createMockEventEngagementBoost` | ✅ | ⬜ |
+
+### Tools MCP — Tabla completa Events (Fase 18)
+
+| # | Server | Tool | Backend | Mock | Tipo | Aprobación | UI |
+|---|--------|------|---------|------|------|------------|-----|
+| 1 | events | get_event | ⬜ gap | ✅ | datos | AUTO | EventDetail, EventForm |
+| 2 | events | list_events | ⬜ (era Fase 15 QA) | ✅ | datos | AUTO | (legacy — Calendar usa event_get_calendar) |
+| 3 | events | create_event | ✅ | ✅ | mutation | **HITL** | EventForm (pending_approval flow), EventCalendar QuickAdd |
+| 4 | events | update_event | ⬜ gap | ⬜ | mutation | HITL | EventForm edit mode |
+| 5 | events | update_event_status | ⬜ gap | ✅ | mutation | HITL | EventDetail actions |
+| 6 | events | event_get_calendar | ✅ | ✅ | datos | AUTO | EventCalendar |
+| 7 | events | event_build_program | ✅ | ✅ | mutation | SEMI | EventDetail programa tab |
+| 8 | events | event_manage_rsvps | ✅ | ✅ | datos/mutation | AUTO (bulk≥10→HITL) | EventDetail rsvps tab |
+| 9 | events | event_coordinate_vendors | ✅ | ✅ | mutation | HITL (list=AUTO) | EventDetail proveedores tab |
+| 10 | events | event_manage_capacity | ✅ | ✅ | datos | AUTO | EventDetail capacity gauge |
+| 11 | events | event_get_analytics | ✅ | ✅ | datos | AUTO | EventDetail analytics |
+| 12 | events | event_clone_template | ✅ | ✅ | mutation | SEMI | EventDetail resumen actions |
+| 13 | events | event_generate_report | ✅ | ✅ | mutation | SEMI (financial→HITL) | EventDetail resumen actions |
+| 14 | events | event_predict_attendance | ⬜ AI | ✅ | AI on-demand | AUTO | EventIntelligencePanel |
+| 15 | events | event_recommend_optimization | ⬜ AI | ✅ | AI on-demand | AUTO | EventIntelligencePanel |
+| 16 | events | event_conflict_detection | ⬜ AI | ✅ | AI on-demand | AUTO | EventIntelligencePanel |
+| 17 | events | event_engagement_boost | ⬜ AI | ✅ | AI on-demand | SEMI | EventIntelligencePanel |
+
+### Tools MCP — Tabla completa del proyecto (acumulada ~100+)
+
+| Server | Tools | Backend | Mock |
+|--------|-------|---------|------|
+| executive_dashboard | 2 | ✅ | ✅ |
+| finance | 17 | ✅ | ✅ |
+| member_engagement | 5 | ✅ | ✅ |
+| wellness | 11 | ✅ | ✅ |
+| satisfaction | 1 | ✅ | ✅ |
+| proactive_recommendation | 8 | ✅ | ✅ |
+| communication | 13 | ✅ | ✅ |
+| guest_management | 6 | ✅ | ✅ |
+| hitl | 3 | ✅ | ✅ |
+| operations | 3 | ✅ | ✅ |
+| families | 11 | 7/11 | ✅ |
+| **events** | **17** | **8/17** | **✅** |
+| **Total** | **~100** | | |
+
+---
+
+## 2. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|----------|-----------|--------|
+| H1 | `types.ts` de events completamente desalineado con backend — EventType frontend confundido con EventCategory, EventStatus incompleta (4 vs 7), RsvpStatus con valor incorrecto ("waitlist" → "waitlisted") | CRÍTICA | ✅ Resuelto: types nuevos con prefix Bk + config maps |
+| H2 | Backend NO tiene tool `get_event` expuesta como MCPTool — solo `event_repo.get_event()` es método interno del repo | ALTA | ✅ Resuelto: mockeado como tool independiente, documentado como gap para backend migration |
+| H3 | Backend NO tiene tool `update_event` — `update_event` existe en repo pero no como MCPTool | ALTA | ✅ Documentado: EventForm edit mode mockea la tool. Backend migration pendiente |
+| H4 | Backend NO tiene tool `update_event_status` — solo `execute_event_create` hace update post-approval | ALTA | ✅ Resuelto: mockeado. Backend migration pendiente |
+| H5 | Backend tiene 9 tools reales (NO 12 como estimé en la propuesta inicial). Diferencias: no hay event_list/event_get separados, event_manage_rsvps es multi-action (5 actions), event_coordinate_vendors no estimada, event_build_program no estimada, event_clone_template no estimada | MEDIA | ✅ Documentado: tools mapeadas correctamente en Bloque 0 |
+| H6 | `onSuccess` deprecated en `useMCPQuery` de EventForm (TanStack v5) — mismo bug que FamilyForm en Fase 17 | CRÍTICA | ✅ Resuelto: migrado a `useEffect` pattern |
+| H7 | ~15 raw buttons en QuickAddPanel de EventCalendar + ~10 en EventForm step selectors | ALTA | ✅ Resuelto: todos migrados a Button component |
+| H8 | `useIsMobile()` custom hook en EventCalendar duplica `useBreakpoint()` compartido | MEDIA | ✅ Resuelto: reemplazado por `useBreakpoint()` |
+| H9 | Sin `useReducedMotion()` en EventCalendar (QuickAddPanel motions, EventListView staggered items) | ALTA | ✅ Resuelto: guard en todos los motion.div |
+| H10 | AiInsightsPanel en EventDetail auto-loaded — viola Regla #19 (NUNCA auto-load AI) | ALTA | ✅ Resuelto: reemplazado por EventIntelligencePanel on-demand con 4 trigger buttons |
+| H11 | EventDetail sin tabs de Programa ni Proveedores — backend tiene `programs[]` y `vendors[]` en EventResponse | MEDIA | ✅ Resuelto: 5 tabs (resumen, programa, rsvps, proveedores, ai) |
+| H12 | EventForm sin campos de EventCreate del backend: event_type, is_members_only, allow_guests, max_guests_per_family, recurrence, dress_code (10 campos faltantes de 21) | ALTA | ✅ Resuelto: EventFormData expandido de 16 a 21 campos |
+| H13 | EventDetail RSVPs sin responsive (Regla 21) — desktop-only | MEDIA | ✅ Resuelto: hidden sm:block + sm:hidden mobile cards |
+| H14 | `rsvp.memberCount` del frontend no existe en backend — backend usa `member_ids[]` + `guests_count` | MEDIA | ✅ Resuelto: `rsvp.member_ids.length + rsvp.guests_count` |
+| H15 | CalendarDay del backend incluye `has_conflicts` — no se mostraba en UI | MEDIA | ✅ Resuelto: ring rose + badge rojo en celdas con conflictos |
+| H16 | QuickAddPanel inputs con classNames inline en vez de `inputClass` de FormField (P7) | MEDIA | ✅ Resuelto: 5 inputs migrados a `inputClass` |
+| H17 | `ScoreGauge` como componente local en FamilyIntelligencePanel — EventIntelligencePanel también lo necesita | MEDIA | ✅ Resuelto: extraído a shared/components/ui/ScoreGauge.tsx |
+| H18 | `relatedEvents` en EventDetailResponse no existe en BkEventResponse del backend | BAJA | ✅ Resuelto: eliminado de la UI |
+
+---
+
+## 3. PATRONES ESTABLECIDOS
+
+### Patrón: AI Intelligence Panel (consolidado de Fase 17 + 18)
+
+**Arquitectura replicable para cualquier módulo:**
+
+```
+┌───────────────────────────────────────────────────────┐
+│         {Module}IntelligencePanel.tsx                  │
+│                                                        │
+│  1. Config array: AI_TOOLS[] con key, title, icon,     │
+│     tone, server, tool                                 │
+│  2. State: enabled Record<string, boolean>             │
+│  3. Queries: useMCPQuery ×N (enabled:false, staleTime:0)│
+│  4. Grid 2×2 (lg:grid-cols-2) con Card por tool       │
+│  5. Loading: skeleton shaped como result               │
+│  6. Result: componente dedicado por tool key           │
+│  7. Refresh: botón "Actualizar análisis"               │
+│  8. ScoreGauge shared para scores circulares           │
+│  9. Staggered mount animation con reducedMotion guard  │
+│                                                        │
+│  Implementado en:                                      │
+│  ✅ FamilyIntelligencePanel (Fase 17)                  │
+│  ✅ EventIntelligencePanel (Fase 18)                   │
+│                                                        │
+│  Pendiente:                                            │
+│  ⬜ FinanceIntelligencePanel (Fase 19)                 │
+│  ⬜ WellnessIntelligencePanel (ya existe parcial)      │
+│  ⬜ CommunicationIntelligencePanel                     │
+└───────────────────────────────────────────────────────┘
+```
+
+### Patrón: HITL Flow en Forms (consolidado)
+
+```typescript
+// Cuando mutation es HITL:
+const mutation = useMCPMutation(server, tool, {
+  onSuccess: (data) => {
+    const payload = data?.data;
+    if (payload?.status === "pending_approval") {
+      showToast({ type: "info", message: "Solicitud enviada — pendiente de aprobación" });
+      navigate("/admin/...");
+      return;
+    }
+    // Normal success flow
+    showToast({ type: "success", message: "..." });
+    navigate(`/admin/.../${payload?.id}`);
+  },
+});
+```
+
+**Implementado en:**
+- ✅ FamilyForm (Fase 17 — create_family, update_family)
+- ✅ EventForm (Fase 18 — event_create)
+- ✅ EventCalendar QuickAdd (Fase 18 — event_create)
+- ✅ EventDetail (Fase 18 — update_event_status)
+
+### Patrón: Backend-Aligned Types con Prefix
+
+**Cuando los types viejos no pueden eliminarse porque componentes dependen de ellos:**
+
+```typescript
+// Prefix Bk para nuevos types sin colisión
+export type BkEventStatus = "draft" | "pending_approval" | ...;
+export interface BkEventResponse { ... }
+
+// Los componentes se migran gradualmente de Event → BkEventResponse
+// Cuando todos migrados → eliminar prefix, eliminar types viejos
+```
+
+**Implementado:** `types.ts` de events con prefix `Bk` para todos los types nuevos. Los types viejos se mantienen temporalmente pero ya NO se usan en ningún componente post-Fase 18.
+
+### Patrón: Program Timeline (NUEVO)
+
+```
+Timeline visual vertical para itinerarios de eventos:
+- Sorted por order field
+- Línea vertical con dots (primero = gold, resto = surface)
+- Card por item: time_start—time_end, title, description, location, responsible, notes
+- EmptyState si no hay items
+
+Implementado: EventDetail programa tab
+Reutilizable para: cualquier itinerario/agenda
+```
+
+### Patrón: Responsive RSVP/Vendor Rows (NUEVO)
+
+```
+Regla 21 aplicada a detail lists:
+- Desktop: flex row con icon + info + badges (hidden sm:flex)
+- Mobile: card con stacked layout (sm:hidden)
+- Summary bar con counts por status arriba de la lista
+
+Implementado: EventDetail rsvps tab
+```
+
+---
+
+## 4. DECISIONES DE DISEÑO
+
+| # | Decisión | Alternativa descartada | Razón |
+|---|---------|----------------------|-------|
+| D1 | Prefix `Bk` para types backend-aligned | Renombrar in-place (eliminar types viejos) | Componentes legacy dependen de types viejos. Prefix permite migración gradual sin romper nada |
+| D2 | `ScoreGauge` extraído a shared | Mantener local en cada IntelligencePanel | 2 módulos ya lo necesitan (families, events). Patrón confirmado para Finance, Wellness |
+| D3 | `event_get_calendar` como tool principal del Calendar (no `list_events`) | Mantener `list_events` | Backend real usa `event_get_calendar` como tool. Calendar view necesita CalendarDay[] con has_conflicts |
+| D4 | EventDetail 5 tabs en vez de 3 | Mantener 3 (program, rsvps, insights) | Backend devuelve programs[], vendors[] en EventResponse. Separar en tabs mejora scaneo. Proveedores tiene suficiente data para su propia sección |
+| D5 | `inputClass` de FormField en QuickAddPanel | Mantener classNames inline | P7: consistencia con patrón del proyecto. Los inline classNames eran visualmente idénticos pero no mantenibles |
+| D6 | Botón "Enviar Invitaciones" en EventDetail Actions | Crear integration directa con communication server | Navegar a `/admin/communications?event_id=...&action=invite` es más limpio — communication module ya tiene su UI |
+| D7 | `AiAnalysisSection` inline eliminado de EventDetail → `EventIntelligencePanel` componente separado | Mantener inline con on-demand | Separa concerns. El panel AI es reutilizable y puede evolucionar independientemente del detail |
+| D8 | `createMockEventGetDetail` con datos completos (programs + rsvps + vendors) | Mock minimal | Testing completo de EventDetail requiere todos los sub-collecciones. Datos CR realistas para demo |
+| D9 | `event_create` factory devuelve `pending_approval` (HITL) | Devolver success directo | Simula comportamiento real del backend HITL. Testing del flujo completo incluyendo path de "pendiente" |
+| D10 | EventCalendar QuickAddPanel crea evento con `event_create` (HITL) en vez de bypass | Quick add sin approval | Consistencia: TODOS los eventos requieren approval según el backend. Quick add es conveniencia, no bypass |
+| D11 | Bloques 7B (Event↔Guest) y 7C (Event↔Families) postergados a Fase 19 | Incluir en Fase 18 | Fase 18 ya es extensa (~2,800 líneas). Cross-module integration merece atención dedicada |
+| D12 | `Input.tsx` glass inline (P6) postergado a auditoría shared/ui | Fix en esta fase | No se analizó Input.tsx en Bloque 0. Cambiar shared/ui sin auditoría completa riesga regression |
+| D13 | Conflicto detection visual en Calendar via ring+badge rojo | Tool AI separada para conflict detection en Calendar | `CalendarDay.has_conflicts` del backend ya detecta conflictos data-level. La ring visual es suficiente para el calendar. Análisis profundo queda en AI panel |
+
+---
+
+## 5. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| 1 | Foundation — Design tokens, theme, fonts | ✅ |
+| 2 | Layout — DashboardLayout, Sidebar, PageContainer | ✅ |
+| 3 | Auth — PermissionGate, login, roles | ✅ |
+| 4 | Executive Dashboard — summary cards, AI reports | ✅ |
+| 5 | Finance Module — overview, intelligence, scenarios | ✅ |
+| 6 | Member Engagement — dashboard, segments, retention | ✅ |
+| 7 | Finance Advanced — expenses, invoices, budgets, payments | ✅ |
+| 8 | Wellness — profiles, activities, goals, predictions | ✅ |
+| 9 | Satisfaction — trends, NPS, sentiment analysis | ✅ |
+| 10 | Proactive Recommendation — pricing, suggestions, clusters | ✅ |
+| 11 | Communication — broadcasts, templates, analytics | ✅ |
+| 12 | Guest Management — register, events, trials, analytics | ✅ |
+| 13 | HITL — pending approvals, approve/reject workflows | ✅ |
+| 14 | Narrative + Export + Members Advanced | ✅ |
+| 14b | Fixes + Audit | ✅ |
+| 15 | QA — Bug fixes, crash fixes, glass transparency | ✅ |
+| 15ext | Operations — daily briefing, compliance, smart schedule | ✅ |
+| 16 | Design System Migration — Card, Button, Badge, lunar-btn, sweep global, shared/ui audit | ✅ |
+| 17 | Families Module — list, detail, form, social graph, AI intelligence, preferences | ✅ |
+| **18** | **Events Module — calendar, detail, form, mocks, types, AI intelligence, cross-cutting** | **✅ COMPLETADA** |
+| 19 | Finance Enhancement + HITL Complete + Events↔Guests/Families | ⬜ SIGUIENTE |
+| 20 | Print/PDF + Export | ⬜ |
+| 21 | Integration Testing + QA | ⬜ |
+| 22 | Mock → Backend Migration | ⬜ |
+
+### Fase 18 — Sub-fases (completa)
+
+| Sub-fase (Bloque) | Contenido | Estado |
+|-----------|-----------|--------|
+| 0 | Análisis backend (event_orchestrator.py, event.py, event_repo.py) + auditoría frontend (types.ts, EventCalendar, EventDetail, EventForm) | ✅ |
+| 1 | Types + Contracts + Factories + Registry (16 tools, 16 contracts, 17 factories, 7 enums, 17 interfaces, 6 config maps) | ✅ |
+| 2 | EventCalendar enhancement (backend types, Button, useBreakpoint, useReducedMotion, conflict rings, ARIA, HITL, inputClass) | ✅ |
+| 3 | EventDetail enhancement (5 tabs, ProgramTimeline, RsvpRow responsive, VendorRow, AI on-demand, HITL, clone, report) | ✅ |
+| 4 | EventForm enhancement (21 campos, access type selector, pricing model grid, recurrence, useEffect pattern, HITL flow) | ✅ |
+| 5 | ScoreGauge shared + EventIntelligencePanel (4 AI tools on-demand) + EventDetail refactor | ✅ |
+| 6 | Cross-cutting: inputClass en Calendar, invitaciones button en Detail, P8 verification | ✅ |
+| 7 | Mejoras proactivas (7B Events↔Guests, 7C Events↔Families) | ⬜ POSTERGADO A FASE 19 |
+
+---
+
+## 6. PRÓXIMA FASE — Desglose
+
+### Fase 19: Finance Enhancement + HITL Complete + Cross-Module Integration
+
+**Backend agents a leer:**
+- `backend/src/club_mcp/agents/finance.py` (ya leído en sesiones anteriores — verificar actualizaciones)
+- `backend/src/club_mcp/agents/guest_management_agent.py` (para 7B)
+- `backend/src/club_mcp/agents/family_profile.py` (para 7C)
+
+**Herramientas estimadas:**
+
+| Herramienta | Server | Tipo | Approval | Destino |
+|-------------|--------|------|----------|---------|
+| `finance_predict_seasonal` | finance | AI on-demand | AUTO | FinanceIntelligencePanel |
+| `finance_recommend_cost_optimization` | finance | AI on-demand | AUTO | FinanceIntelligencePanel |
+| `finance_risk_scenarios` | finance | AI on-demand | SEMI | FinanceIntelligencePanel |
+| Event↔Guest integration | cross-module | integration | — | EventDetail + PrivateEventPlanner |
+| Event↔Family integration | cross-module | integration | — | FamilyIntelligencePanel (recommend_activities sugiere eventos) |
+
+**Bloques propuestos:**
+
+| Bloque | Contenido | Archivos | Dependencia |
+|--------|-----------|----------|-------------|
+| 0 | Auditoría Finance dashboard + HITL queue + ApprovalQueue | FinancialDashboard.tsx, ApprovalQueue.tsx | Lectura backend |
+| 1 | Finance AI Intelligence Panel (patrón Fase 17/18) | FinanceIntelligencePanel.tsx (NUEVO) | Bloque 0 |
+| 2 | FinancialDashboard métricas fix (P1) | FinancialDashboard.tsx | Bloque 0 |
+| 3 | ApprovalQueue: 2 tipos nuevos (P3) + pending_approval display | ApprovalQueue.tsx, types.ts | Bloque 0 |
+| 4 | Event↔Guest integration (7B) | EventForm.tsx, PrivateEventPlanner.tsx | Bloque 0 |
+| 5 | Event↔Family integration (7C) | FamilyIntelligencePanel.tsx | Bloque 0 |
+| 6 | Tier mismatch fix (P5) + remaining fixes | families/types.ts | — |
+
+**ApprovalQueue impact:** `event_create` (HITL) y `update_event_status` (HITL) ya deberían mostrar pending requests en la queue.
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Archivo | Fase sugerida |
+|---|-------|-----------|---------|---------------|
+| P1 | FinancialDashboard: métricas que no aparecen | MEDIA | `features/finance/FinancialDashboard.tsx` | 19 |
+| P2 | AIChatWidget: posición movida de derecha a izquierda | MEDIA | `shared/components/chat/AIChatWidget.tsx` | 21 |
+| P3 | ApprovalQueue: 2 tipos nuevos (optimize_pricing, suggest_new_activities) | MEDIA | `features/approvals/ApprovalQueue.tsx` | 19 |
+| P4 | Dashboard sub-componentes: 7/12 pendientes (violations reglas) | MEDIA | `features/dashboard/components/` | 19 |
+| P5 | Tier mismatch backend↔frontend | MEDIA | `features/families/types.ts` | 19 |
+| P6 | `Input.tsx` tiene glass inline — debería usar `.glass-input` CSS class | BAJA | `shared/components/ui/Input.tsx` | 20 |
+| P7 | Features no importan Input.tsx — construyen `<input>` inline | MEDIA | Otros features (ya resuelto en events) | 19 |
+| P8 | Alertas inline no usan `.alert-card` en algunos features | MEDIA | Otros features (ya resuelto en events/families/finance) | 19 |
+| P9 | `CardSkeleton` y `TableSkeleton` — ¿usan el design system? | BAJA | `shared/components/ui/Skeleton.tsx` | 19 |
+| P10 | FrostedGlassCard height hardcodeada a 252px | BAJA | `shared/components/ui/FrostedGlassCard.tsx` | 20 |
+| P11 | Light mode `.light` override — ¿verificado con nuevos componentes? | BAJA | `globals.css` | 20 |
+| P12 | MemberCard: `User` import de lucide-react sin uso | BAJA | `features/families/components/MemberCard.tsx` | 19 |
+| P13 | `get_activity_history` mock creado pero no integrado en ActivityTab | MEDIA | `features/families/FamilyDetail.tsx` | 19 |
+| P14 | `create_family` backend HITL — mock devuelve pending_approval pero backend real puede tener flujo diferente | BAJA | `factories.ts` | 22 |
+| P15 | `list_families` backend — tool name puede diferir (`family_search` en backend) | MEDIA | `mock-registry.ts` | 22 |
+| **P16** | **Backend: `get_event` no expuesta como MCPTool — solo método interno del repo** | **ALTA** | **`backend/event_orchestrator.py`** | **22** |
+| **P17** | **Backend: `update_event` no expuesta como MCPTool** | **ALTA** | **`backend/event_orchestrator.py`** | **22** |
+| **P18** | **Backend: `update_event_status` no existe en agente** | **ALTA** | **`backend/event_orchestrator.py`** | **22** |
+| **P19** | **Backend: AI tools de events (predict, optimize, conflict, boost) no implementadas** | **MEDIA** | **`backend/event_orchestrator.py`** | **22** |
+| **P20** | **Types viejos de events (`EventStatus`, `EventType`, `RsvpStatus`, etc.) eliminables cuando se verifique que ningún componente los usa** | **BAJA** | **`features/events/types.ts`** | **21** |
+
+---
+
+## 8. ACTUALIZACIONES PARA CLAUDE_CONTEXT_MINI.md
+
+### Sección: Mock Registry Servers — ACTUALIZAR
+
+```markdown
+## Mock Registry Servers (actualizado)
+- executive_dashboard (2 tools)
+- finance (17 tools)
+- member_engagement (5 tools)
+- wellness (11 tools)
+- satisfaction (1 tool)
+- proactive_recommendation (8 tools)
+- communication (13 tools)
+- guest_management (6 tools)
+- hitl (3 tools)
+- operations (3 tools)
+- families (11 tools: get_family, list_families, create_family, update_family, get_activity_history, get_social_graph, family_set_preferences, family_predict_churn, family_recommend_activities, family_social_match, family_engagement_plan)
+- events (17 tools: get_event, list_events, create_event, update_event_status, event_get_calendar, event_build_program, event_manage_rsvps, event_coordinate_vendors, event_manage_capacity, event_get_analytics, event_clone_template, event_generate_report, event_predict_attendance, event_recommend_optimization, event_conflict_detection, event_engagement_boost)
+```
+
+### Sección: AI Intelligence Pattern — ACTUALIZAR con Events
+
+```markdown
+## AI Intelligence Pattern — Implementado en Events (Fase 18)
+
+### Architecture
+EventIntelligencePanel.tsx — 4 herramientas en grid 2×2:
+- event_predict_attendance (AUTO) — ScoreGauge + factors + recommendation
+- event_recommend_optimization (AUTO) — ScoreGauge + recommendation cards
+- event_conflict_detection (AUTO) — risk gauge + conflict cards con resolution
+- event_engagement_boost (SEMI) — dual ScoreGauge (current→projected) + strategies
+
+### Pattern consolidated
+- Config array AI_TOOLS[] con key, title, icon, tone, server, tool
+- State: enabled Record<string, boolean>
+- Queries: useMCPQuery con enabled:false + staleTime:0
+- Result renderers: componente dedicado por tool key (PredictResult, OptimizeResult, etc.)
+- ScoreGauge shared component para scores circulares
+
+### Tools por módulo (acumulado)
+- families: predict_churn ✅, recommend_activities ✅, social_match ✅, engagement_plan ✅
+- events: predict_attendance ✅, recommend_optimization ✅, conflict_detection ✅, engagement_boost ✅
+- finance: predict_seasonal ⬜, recommend_cost_optimization ⬜, risk_scenarios ⬜ (Fase 19)
+- wellness: predict_risk (ya existe wellness_predict), recommend_personalized_plan (ya existe wellness_recommendations)
+```
+
+### Sección: Backend Gap — AGREGAR
+
+```markdown
+## Backend Gaps — Tools que el frontend mockea pero el backend no expone
+
+### Events
+| Tool | Backend Status | Frontend Mock | Notas |
+|------|---------------|---------------|-------|
+| get_event | ⬜ No expuesta (solo método repo) | ✅ createMockEventGetDetail | Necesita ser @MCPTool en event_orchestrator.py |
+| update_event | ⬜ No expuesta (solo método repo) | ⬜ No mockeada | EventForm edit mode no funcional hasta que se cree |
+| update_event_status | ⬜ No existe | ✅ createMockEventUpdateStatusNew | Necesita nueva tool en agente |
+| event_predict_attendance | ⬜ AI no implementada | ✅ | Mock-only para ahora |
+| event_recommend_optimization | ⬜ AI no implementada | ✅ | Mock-only para ahora |
+| event_conflict_detection | ⬜ AI no implementada | ✅ | Mock-only para ahora. CalendarDay.has_conflicts es data-level |
+| event_engagement_boost | ⬜ AI no implementada | ✅ | Mock-only para ahora |
+
+### Families
+| Tool | Backend Status | Frontend Mock | Notas |
+|------|---------------|---------------|-------|
+| list_families | ⬜ (posiblemente family_search) | ✅ | Verificar nombre real en migration |
+| family_predict_churn | ⬜ AI no implementada | ✅ | Mock-only |
+| family_recommend_activities | ⬜ AI no implementada | ✅ | Mock-only |
+| family_social_match | ⬜ AI no implementada | ✅ | Mock-only |
+| family_engagement_plan | ⬜ AI no implementada | ✅ | Mock-only |
+
+### Migration priority (Fase 22)
+1. get_event — usar event_repo.get_event()
+2. update_event_status — nueva tool + status enum validation
+3. update_event — usar event_repo.update_event() con EventUpdate model
+4. AI tools — requiere implementación de modelos predictivos
+```
+
+### Sección: ScoreGauge — AGREGAR
+
+```markdown
+## ScoreGauge Shared Component (Fase 18)
+
+Archivo: shared/components/ui/ScoreGauge.tsx
+
+Props:
+- score: number (current value)
+- maxScore: number (default 100)
+- size: number (default 80px)
+- strokeWidth: number (default 6)
+- color: string (CSS color)
+- label: string (text below gauge)
+
+Features:
+- SVG circular gauge con stroke-dashoffset animation
+- ARIA: role="meter", aria-valuenow/min/max
+- useReducedMotion guard en transition
+- Score text centered en SVG con absolute positioning
+
+Usado por:
+- EventIntelligencePanel (predict, conflict, boost)
+- FamilyIntelligencePanel (churn, engagement)
+```
+
+### Sección: EventModule Architecture — AGREGAR
+
+```markdown
+## Event Module Architecture (Fase 18)
+
+### Frontend Files
+- features/events/types.ts — Backend-aligned types con prefix Bk + legacy types
+- features/events/EventCalendar.tsx — Calendar/list view, QuickAddPanel, conflict rings
+- features/events/EventDetail.tsx — 5 tabs (resumen, programa, rsvps, proveedores, ai)
+- features/events/EventForm.tsx — Wizard 4 steps, 21 campos, HITL flow
+- features/events/components/EventIntelligencePanel.tsx — AI on-demand panel
+
+### Key Backend Data Shapes
+- BkEventResponse: full event con programs[], rsvps[], vendors[]
+- BkCalendarDay: date + events[] + has_conflicts
+- BkProgramItem: timeline item (time_start, time_end, title, location, responsible)
+- BkRsvpRecord: family-based RSVP con member_ids[], guests_count, total_cost
+- BkVendorRecord: vendor con contract_status lifecycle
+
+### Enums (Backend-Aligned)
+- BkEventStatus: 7 valores (draft→pending_approval→approved→published→in_progress→completed→cancelled)
+- BkEventCategory: 8 valores (sports, cultural, social, private, festive, children, family, corporate)
+- BkEventType: 3 valores (open, private, semi_private) — ACCESO, no categoría
+- BkEventPricingModel: 4 valores (free, subsidized, paid, premium)
+- BkRsvpStatus: 5 valores (pending, confirmed, declined, waitlisted, no_show)
+- BkRecurrencePattern: 5 valores (none, weekly, biweekly, monthly, yearly)
+- BkVendorContractStatus: 7 valores (pending→quoted→negotiating→approved→contracted→completed→cancelled)
+
+### Cross-Module Integrations
+- events ↔ communication: "Enviar Invitaciones" en EventDetail → /admin/communications?event_id=...
+- events ↔ families: RSVP vinculado a family_id/family_name (BkRsvpRecord)
+- events ↔ guest_management: EventDetail proveedores tab muestra vendors (postergado 7B a Fase 19)
+```
+
+---
+
+## 9. VERIFICACIÓN CONTRA REGLAS
+
+### EventCalendar.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Todos los colores via tokens + BK_EVENT_CATEGORY_CONFIG |
+| 2 | ✅ | Sin blur en datos. Card sólido |
+| 6 | N/A | No hay charts |
+| 11 | ✅ | focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)] en day cells, view toggle, all buttons |
+| 12 | ✅ | min-h-[44px] en todos los inputs y buttons |
+| 14 | ✅ | EmptyState en error con retry action |
+| 15 | ✅ | showToast en create success/error/HITL |
+| 16 | ✅ | PageContainer + breadcrumbs |
+| 17 | ✅ | Button component en todos los actions (15+ migrados) |
+| 18 | ✅ | useReducedMotion en QuickAddPanel backdrop, panel, suggestion, conflict, EventListView staggered items |
+| 19 | N/A | Calendar no tiene AI features directas |
+| 20 | ✅ | useBreakpoint() reemplazó useIsMobile() custom |
+| 21 | ✅ | Calendar scroll horizontal en mobile, list default en phones |
+| 22 | ✅ | cn() en todas las classes condicionales |
+
+### EventDetail.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Todos los colores via tokens + config maps |
+| 2 | ✅ | Sin blur — Card surface-2 sólido para datos |
+| 11 | ✅ | focus-visible en related events, list items, Button component |
+| 12 | ✅ | min-h-[44px] en Button component |
+| 13 | ✅ | DetailTabs con 5 tabs |
+| 14 | ✅ | EmptyState en error, RSVPs vacíos, proveedores vacíos |
+| 15 | ✅ | showToast en status update, clone, report |
+| 16 | ✅ | PageContainer + breadcrumbs |
+| 17 | ✅ | Button + Badge everywhere |
+| 18 | ✅ | useReducedMotion en hero, tab transitions, AI panel staggered |
+| 19 | ✅ | EventIntelligencePanel: enabled:false + button trigger + staleTime:0 |
+| 21 | ✅ | RsvpRow responsive: hidden sm:block + sm:hidden mobile cards |
+
+### EventForm.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Tokens + config maps |
+| 11 | ✅ | focus-visible en Button component |
+| 12 | ✅ | min-h-[44px] en todos los inputs (FormField) |
+| 14 | ✅ | Errors inline con border-rose |
+| 15 | ✅ | showToast en HITL + success + error |
+| 16 | ✅ | PageContainer + breadcrumbs + navigate /admin/ |
+| 17 | ✅ | Button component en category/access/pricing selectors + navigation |
+| 18 | ✅ | useReducedMotion guard en wizard step transitions + auto-focus |
+
+### EventIntelligencePanel.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Todos los colores via tokens |
+| 2 | ✅ | Card surface-2 sólido |
+| 11 | ✅ | Button component (incluye focus-visible) |
+| 14 | ✅ | EmptyState en error |
+| 17 | ✅ | Button + Badge |
+| 18 | ✅ | useReducedMotion en staggered mount animation |
+| 19 | ✅ | enabled:false + button trigger + staleTime:0 |
+
+### ScoreGauge.tsx
+
+| Regla | Estado | Evidencia |
+|-------|--------|-----------|
+| 1 | ✅ | Color via prop (CSS var desde caller) |
+| 18 | ✅ | useReducedMotion guard en stroke-dashoffset transition |
+| 11 | ✅ | ARIA role="meter" con aria-valuenow/min/max |
+
+---
+
+## 10. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto
+
+```
+1. CLAUDE_CONTEXT_MINI.md (actualizado con secciones del punto 8)
+2. Este checkpoint completo
+3. globals.css (para reference del design system)
+```
+
+### Paso 2 — Confirmar comprensión
+
+```
+"Confirmá que procesaste el checkpoint de Fase 18 y que conoces el estado del proyecto. Luego pasame los archivos necesarios para Fase 19."
+```
+
+### Paso 3 — Pedir archivos de Fase 19
+
+```
+"Pasame estos archivos para arrancar Fase 19:
+
+Para el bloque de Finance Enhancement + HITL:
+1. frontend/src/features/finance/FinancialDashboard.tsx
+2. frontend/src/features/approvals/ApprovalQueue.tsx
+3. frontend/src/features/approvals/types.ts
+
+Para cross-module integration:
+4. frontend/src/features/guests/components/PrivateEventPlanner.tsx
+5. frontend/src/features/families/components/FamilyIntelligencePanel.tsx (ya existe — verificar si necesita update con event recommendations)
+```
+
+### Paso 4 — Bloque 0
+
+```
+"Procesá estos archivos, identificá violaciones contra las 22 reglas, y proponé los bloques de Fase 19 con la misma metodología que usamos en Fase 18."
+```
+
+### Paso 5 — Al final
+
+```
+"Generá el checkpoint de Fase 19 y actualizá el CLAUDE_CONTEXT_MINI.md con los patrones nuevos."
+```
+
+---
+
+## 11. DECISION LOG
+
+| Fecha | Decisión | Razón | Impacto |
+|-------|---------|-------|---------|
+| Jun 2025 | Prefix `Bk` para types backend-aligned de events en vez de renombrar in-place | Types viejos se mantienen hasta que se verifique que ningún componente los usa. Prefix evita romper imports existentes | Fase 21/QA: eliminar types viejos cuando se confirme que no se usan |
+| Jun 2025 | `ScoreGauge` extraído a shared/components/ui | 2 módulos lo necesitan (families, events). Pattern confirmado para Finance, Wellness | Fase 19+: importar de shared, no redefinir local |
+| Jun 2025 | `event_get_calendar` como tool principal del Calendar (no `list_events`) | Backend real usa esta tool. CalendarDay incluye has_conflicts que el calendar necesita mostrar | `list_events` queda como legacy. En migration decidir si se elimina |
+| Jun 2025 | EventDetail 5 tabs (resumen, programa, rsvps, proveedores, ai) | Backend devuelve programs[], vendors[] en EventResponse. Separar mejora scaneo. AI panel merece tab propio | EventDetail más complejo pero más completo |
+| Jun 2025 | `AiInsightsPanel` inline ELIMINADO de EventDetail | Auto-loaded AI viola Regla #19. Reemplazado por `EventIntelligencePanel` on-demand | UI consistente con patrón AI del proyecto |
+| Jun 2025 | EventForm: 21 campos en vez de 16 | Backend EventCreate tiene 21 campos. Los 5 faltantes (event_type, is_members_only, allow_guests, recurrence, dress_code) son esenciales para el modelo de negocio | Form más extenso pero alineado con backend real |
+| Jun 2025 | QuickAddPanel crea evento con HITL approval | TODOS los eventos requieren approval según backend. Quick add es conveniencia, no bypass de approval flow | showToast info + navigate away en vez de success directo |
+| Jun 2025 | `useEffect` pattern en EventForm en vez de `onSuccess` deprecated | TanStack v5 deprecated onSuccess en useQuery | Previene warnings y future breakage |
+| Jun 2025 | Bloques 7B/7C postergados a Fase 19 | Fase 18 ya es extensa (~2,800 líneas). Cross-module integration merece atención dedicada | Fase 19 incluye Event↔Guest y Event↔Family integration |
+| Jun 2025 | Backend gaps documentados (P16-P19): get_event, update_event, update_event_status, AI tools no expuestas | Frontend funciona con mocks. Backend migration en Fase 22 necesita crear estas tools | Fase 22: priorizar get_event + update_event_status primero |
+| Jun 2025 | `inputClass` de FormField usado en Calendar QuickAddPanel | P7: consistencia con patrón del proyecto | Inputs visualmente idénticos pero mantenibles |
+| Jun 2025 | Botón "Enviar Invitaciones" navega a communications con query params | Más limpio que integration directa. Communication module ya tiene su UI | Cross-module sin tight coupling |
+| Jun 2025 | Conflict detection visual en Calendar via ring rose + badge (NO tool AI separada) | CalendarDay.has_conflicts del backend ya detecta conflictos. Ring visual es suficiente para calendar. AI conflict_detection es para análisis profundo en EventDetail | No duplicar funcionalidad |
+
+---
+
+**Gracias por la sesión extraordinaria.** El módulo de events pasó de ser una vista estática con 4 tools mockeadas a una plataforma completa con 17 tools, 5 tabs inteligentes, AI on-demand con 4 herramientas, timeline visual, vendors management, responsive RSVPs, y HITL flow completo. Los patrones de Fase 17 (Families) se consolidaron y replicaron exitosamente. La base está lista para Finance Enhancement (Fase 19) y eventual migration a backend real (Fase 22).

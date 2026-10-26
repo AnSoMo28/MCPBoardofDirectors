@@ -1,0 +1,257 @@
+/**
+ * @component MLDashboardPage (Fase 23)
+ * @namespace .glass-ml-page, .glass-ml-kpi, .glass-ml-segment, .glass-ml-boot, .glass-ml-content
+ * @depends globals.css (radius tokens, font tokens, color tokens)
+ * @note This is a page-level wrapper. Child ML components (ModelHealthPanel, CalibrationDashboard, etc.)
+ *       import their own CSS. This file covers only the page chrome: KPI strip, segment tiles, boot loader.
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   MLDashboardPage — Silver Tide Neural Console
+   Fase 23 · KPI strip · Segment tiles · Neural ambient
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Page wrapper ── */
+.glass-ml-page {
+  position: relative;
+  padding-bottom: 32px;
+}
+
+/* ── Ambient glow ── */
+.glass-ml-page__glow {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 50%;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 1s ease;
+}
+
+/* ── KPI Grid ── */
+.glass-ml-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+@media (min-width: 640px) {
+  .glass-ml-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ── KPI Card ── */
+.glass-ml-kpi {
+  position: relative;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+.glass-ml-kpi:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.glass-ml-kpi__label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-400);
+  font-family: var(--font-mono);
+  margin-bottom: 4px;
+}
+.glass-ml-kpi__value {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1.1;
+}
+.glass-ml-kpi__sub {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-ui);
+  margin-top: 3px;
+}
+.glass-ml-kpi__bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  opacity: 0.4;
+}
+
+/* ═══════════════════════════════════════
+   Boot Loader
+   ═══════════════════════════════════════ */
+
+.glass-ml-boot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 40vh;
+}
+.glass-ml-boot__msg {
+  font-size: 13px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+}
+
+/* ═══════════════════════════════════════
+   Segmentation Panel
+   ═══════════════════════════════════════ */
+
+.glass-ml-segment {
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.glass-ml-segment__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.glass-ml-segment__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  font-family: var(--font-display);
+}
+.glass-ml-segment__meta {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-family: var(--font-mono);
+}
+.glass-ml-segment__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 14px;
+}
+@media (min-width: 640px) {
+  .glass-ml-segment__grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 1024px) {
+  .glass-ml-segment__grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+/* ── Segment tile ── */
+.glass-ml-segment__tile {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: border-color 0.15s ease;
+}
+.glass-ml-segment__tile:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.glass-ml-segment__tile-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-silver-200);
+  font-family: var(--font-mono);
+}
+.glass-ml-segment__tile-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-silver-100);
+  font-family: var(--font-mono);
+}
+.glass-ml-segment__tile-strategy {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  line-height: 1.4;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Segment metrics ── */
+.glass-ml-segment__metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.glass-ml-segment__metric span:first-child {
+  font-size: 9px;
+  color: var(--color-silver-500);
+  width: 44px;
+  flex-shrink: 0;
+}
+.glass-ml-segment__metric span:last-child {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.glass-ml-segment__metric-bar-track {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+.glass-ml-segment__metric-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+/* ── Content area ── */
+.glass-ml-content {
+  margin-top: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-ml-page__glow { opacity: 0.3; }
+.light .glass-ml-kpi {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-ml-kpi:hover { border-color: rgba(0, 0, 0, 0.08); }
+.light .glass-ml-kpi__label { color: var(--color-silver-400); }
+.light .glass-ml-kpi__sub { color: var(--color-silver-400); }
+.light .glass-ml-segment {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .glass-ml-segment__header { border-bottom-color: rgba(0, 0, 0, 0.05); }
+.light .glass-ml-segment__title { color: var(--color-abyss, #0a0e14); }
+.light .glass-ml-segment__meta { color: var(--color-silver-400); }
+.light .glass-ml-segment__tile {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+.light .glass-ml-segment__tile:hover { border-color: rgba(0, 0, 0, 0.08); }
+.light .glass-ml-segment__tile-label { color: var(--color-silver-600); }
+.light .glass-ml-segment__tile-count { color: var(--color-abyss, #0a0e14); }
+.light .glass-ml-segment__tile-strategy { color: var(--color-silver-400); }
+.light .glass-ml-segment__metric span:first-child { color: var(--color-silver-400); }
+.light .glass-ml-segment__metric-bar-track { background: rgba(0, 0, 0, 0.04); }
+.light .glass-ml-boot__msg { color: var(--color-silver-500); }

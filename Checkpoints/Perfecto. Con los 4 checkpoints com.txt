@@ -1,0 +1,220 @@
+Perfecto. Con los 4 checkpoints compilados tengo el inventario completo. Arranco con el protocolo.
+
+---
+
+## PASO 2 — ANÁLISIS CRUZADO (Consolidado de 4 checkpoints)
+
+### Data Inventory Map — Todo lo disponible para Member 360
+
+| Dominio | Tools MCP | Backend real | Datos disponibles para Member 360 |
+|---------|-----------|-------------|-----------------------------------|
+| **Family Profile** | 17 | ⬜ Mock | `family_360_insight` (cross-domain), `lifecycle_analysis`, `predict_churn`, `social_graph_enriched`, `milestone_tracker`, `engagement_plan` |
+| **Member Engagement** | 6 | ✅ | `get_engagement_dashboard` (5-source aggregation), `get_engagement_insights` (per-member at-risk), loyalty, referrals, feedback |
+| **Finance** | 17 | ✅ Parcial | LTV, balance, payments, charges, billing history |
+| **Events** | 16 | ✅ | Attendance, RSVPs, event history, event satisfaction |
+| **Cultural & Social** | 15 | ✅ Parcial | Calendar, analytics, engagement score, attendance trend |
+| **Sports** | 7 | ✅ | Reservations, tournaments, coaching, recommendations |
+| **Wellness** | 12 | ✅ | Goals, predictions, insights, risk factors |
+| **Facilities** | 20 | ✅ | Occupancy, reservations, usage patterns |
+| **Communications** | 14 | ✅ | Open rate, engagement, sentiment, channels |
+| **Satisfaction** | 6 | ✅ | Survey responses, trends, AI sentiment analysis |
+| **Age Group** | 7 | ✅ | Demographics, participation |
+| **Proactive Recommendation** | 8 | ✅ | `generate_quarterly_insights` (ALL domains), pricing, recs |
+| **Executive Dashboard** | 8 | ✅ | KPIs, anomalies |
+| **Guest Management** | ? | ⬜ | Único sin auditar |
+
+### Types ya disponibles (domain-enums.ts)
+
+| Type | Values | Relevancia para 360 |
+|------|--------|---------------------|
+| `MemberTier` | 7 (platino→vip) | Identidad del socio |
+| `LifecycleStage` | 8 (prospect→reactivated) | Journey mapping |
+| `EngagementLevel` | 7 (champion→inactive) | Engagement scoring |
+| `MemberRole` | 4 (primary→dependent) | Posición en familia |
+| `AgeGroupCategory` | 6 (toddler→seniors) | Demografía |
+| `Sentiment` | 3 | Satisfaction proxy |
+| `TrendDirection` | 3 | Health trends |
+| `SeverityLevel` | 4 | Risk assessment |
+
+### AI types ya disponibles (ai-intelligence.ts)
+
+`AIHealthScore`, `AIPrediction<T>`, `AIAnalysis`, `AINarrative`, `AIActionPlan`, `AdvisorInsightBase`, `AdvisorCommand` — todos listos para extender.
+
+### Discrepancia de numeración resuelta
+
+Cultural & Social está **COMPLETO** (F31 checkpoint lo confirma — 15 tools, 15 advisor rules, 22 archivos). CLAUDE_CONTEXT.md lo marca como ✅ pero con F34 en su plan maestro. Usaré **F39** como número de fase para Member 360 (la numeración original de tu propuesta).
+
+---
+
+## PASO 3 — CONFIRMACIÓN
+
+### A. Identidad y rol
+
+Soy el **Principal AI Systems Architect** del Castillo Country Club. Mi regla de oro es: propongo y analizo ANTES de escribir código, el usuario aprueba antes de generar, changelog detallado al final de cada bloque, formato Bloque A → Bloque B, siempre cuestiono lo que proponjo.
+
+Mis 10 disciplinas: FullStack Engineering, UI/UX Architecture, Product Strategy, Private Club Operations (CR), AI/ML Architecture, Financial Intelligence, Marketing Intelligence, ML & Gen AI, AI Experience Design, Creative Direction.
+
+Las 29 reglas están memorizadas y serán verificadas en cada bloque.
+
+### B. Qué estamos construyendo
+
+Castillo AI Platform — Sistema de Decisión Inteligente, 5 capas de inteligencia (datos → contexto → inteligencia client-side → cross-agent → acción inteligente).
+
+### C. Stack y arquitectura
+
+Frontend: React 18+ TS, Tailwind 4 Silver Tide, Zustand, TanStack Query, React Router v7, Recharts, Framer Motion, Vite+pnpm. Backend: FastAPI Python 3.11+, MCP protocol, JWT+RBAC, HITL 4 niveles, Repository pattern, RAG Engine.
+
+### D. Design System "Silver Tide"
+
+Tokens memorizados. Tokens fantasma identificados y flagged. Typography: Cormorant Garamond / DM Sans / DM Mono. NUNCA Inter, Roboto, Arial.
+
+### E. Advisor Architecture
+
+6 niveles, 98+ rules totales across 7 advisors, Action Bridge, Reaction System, Predictive Pre-fetch, 5 AI tools.
+
+### F. Patrones activos para F39
+
+P1 (Auto-load + On-demand), P5 (Health Score), P9 (Defensive rendering), P13 (Transform helpers), P14 (Advisor Banner), P16 (Predictive Pre-fetch), P26 (Engagement Motor), plus tipos nuevos del Data Hub.
+
+### G. Estado del sprint
+
+33 fases completadas. **F39 = Member 360 Intelligence = SIGUIENTE.** F40 = Predictive/ML después.
+
+### H. Pendientes de alta severidad
+
+1. Tokens fantasma grep global (CRÍTICA)
+2. Guest Management sin auditar (MEDIA)
+3. Family profile backend 100% mock (ALTA)
+4. Dual systems en 4 types files (ALTA — domain-enums.ts resuelve parcialmente)
+5. 53 contracts faltantes en contracts.ts (ALTA)
+
+---
+
+## PASO 4 — PROPUESTA PROACTIVA
+
+### Arquitectura de Member 360
+
+**Concepto clave:** Member 360 NO es un dashboard más. Es un **Member Data Service** — una capa que unifica datos de TODOS los dominios para un socio individual, y que CUALQUIER otro componente/advisor puede consumir.
+
+```
+                    ┌──────────────────────────────────┐
+                    │     MEMBER 360 DATA SERVICE       │
+                    │                                   │
+                    │  useMember360(memberId)           │
+                    │  ├── identity (tier, role, family)│
+                    │  ├── engagement (score, level)    │
+                    │  ├── financial (LTV, balance)     │
+                    │  ├── lifecycle (stage, journey)   │
+                    │  ├── churn (risk, factors)        │
+                    │  ├── health (composite score)     │
+                    │  ├── activities (cross-domain)    │
+                    │  ├── social (connections)         │
+                    │  ├── satisfaction (NPS, sentiment)│
+                    │  └── communications (channels)    │
+                    └──────────────┬───────────────────┘
+                                   │
+              ┌────────────────────┼────────────────────┐
+              │                    │                    │
+    ┌─────────▼──────┐  ┌─────────▼──────┐  ┌─────────▼──────┐
+    │ Family Advisor │  │ Financial Adv  │  │ Global Advisor │
+    │ consume 360    │  │ consume 360    │  │ consume 360    │
+    │ para rules     │  │ para LTV       │  │ para systemic  │
+    └────────────────┘  └────────────────┘  └────────────────┘
+```
+
+**Por qué es diferente de `family_360_insight`:**
+- `family_360_insight` = vista agregada por FAMILIA
+- Member 360 = vista por SOCIO INDIVIDUAL (titular, conyuge, hijo, dependiente)
+- Un socio puede tener engagement alto aunque su familia tenga engagement bajo
+- Churn individual es diferente a churn familiar
+- LTV individual permite targeted retention
+
+### Tools MCP propuestas (10)
+
+| # | Tool | Tipo | Approval | Descripción |
+|---|------|------|----------|-------------|
+| 1 | `get_member_360_profile` | intel | AUTO | Aggregated profile from ALL domains |
+| 2 | `get_member_health_score` | intel | AUTO | Composite 0-100, 5 factors |
+| 3 | `get_member_journey` | intel | AUTO | Lifecycle + timeline + milestones |
+| 4 | `get_member_churn_prediction` | intel | AUTO | Individual churn risk + factors |
+| 5 | `get_member_ltv_analysis` | intel | AUTO | LTV projection + spend analysis |
+| 6 | `get_member_activity_summary` | intel | AUTO | Cross-domain activity breakdown |
+| 7 | `get_member_social_profile` | intel | AUTO | Connections + clusters + referrals |
+| 8 | `generate_member_engagement_proposals` | intel | AUTO | **Engagement Motor** — personalized proposals |
+| 9 | `get_member_risk_assessment` | intel | AUTO | Cross-domain risk factors |
+| 10 | `search_members_360` | data | AUTO | Search/browse members with 360 preview |
+
+### Advisor Rules propuestas (18 × 5 layers)
+
+**Layer 1 — Identity & Health (4 rules):**
+| # | ID | Condición | Impact |
+|---|---|-----------|--------|
+| R1 | health-critical | composite < 40 | HIGH |
+| R2 | health-declining | trend declining + score < 60 | HIGH |
+| R3 | identity-tier-mismatch | individual activity ≠ tier expectations | MEDIUM |
+| R4 | identity-role-optimization | dependent > 18 + no own activities | LOW |
+
+**Layer 2 — Lifecycle Intelligence (4 rules):**
+| # | ID | Condición | Impact |
+|---|---|---|-----------|
+| R5 | lifecycle-stuck | days_in_stage > 2× avg for stage | HIGH |
+| R6 | lifecycle-transition-ready | score > 80 + stable 60d | MEDIUM |
+| R7 | lifecycle-onboarding-incomplete | stage=onboarding + days > 30 + gaps | HIGH |
+| R8 | lifecycle-reactivation-opportunity | stage=dormant + recent touchpoint | MEDIUM |
+
+**Layer 3 — Financial Intelligence (3 rules):**
+| # | ID | Condición | Impact |
+|---|---|---|-----------|
+| R9 | financial-ltv-ascending | ltv trend up + engagement > 70 | LOW |
+| R10 | financial-ltv-at-risk | spend declining 3+ months | HIGH |
+| R11 | financial-payment-stress | balance > 0 + days_since_payment > 60 | HIGH |
+
+**Layer 4 — Engagement & Social (4 rules):**
+| # | ID | Condición | Impact |
+|---|---|---|-----------|
+| R12 | engagement-single-domain | 80%+ activity in 1 domain | MEDIUM |
+| R13 | engagement-cross-domain-star | active in 4+ domains | LOW |
+| R14 | social-isolated | connections < 2 + tenure > 90d | HIGH |
+| R15 | social-ambassador | connections > 8 + referrals > 0 | LOW |
+
+**Layer 5 — Churn & Risk (3 rules):**
+| # | ID | Condición | Impact |
+|---|---|---|-----------|
+| R16 | churn-imminent | risk_level critical + 90d window | CRITICAL |
+| R17 | churn-recoverable | risk_level high + engagement_plan available | HIGH |
+| R18 | risk-cross-domain | risk_factors from 3+ domains | HIGH |
+
+### Bloques propuestos
+
+| Bloque | Contenido | Archivos | Líneas est. |
+|--------|-----------|----------|-------------|
+| **B0** | Backend: agent (10 tools), models, repo, prompts | 4 archivos nuevos | ~1000 |
+| **B1** | Data Layer: types.ts, contracts (10), factories (10), registry, hooks (10 data + 2 action) | 1 nuevo + 3 modificados | ~1100 |
+| **B2** | Dashboard Shell: Member360Dashboard, MemberIdentityCard, MemberHealthScore, Member360AdvisorBanner, router | 4 nuevos + 1 mod | ~850 |
+| **B3** | Journey + Finance + Engagement: MemberJourneyTimeline, MemberFinancialSummary, MemberEngagementProfile | 3 nuevos | ~700 |
+| **B4** | Cross-Domain Panels: MemberActivityHeatmap, MemberSocialProfile, MemberRiskRadar | 3 nuevos | ~700 |
+| **B5** | Intelligence + Motor: Member360IntelligencePanel (9 dimensions), MemberEngagementMotor | 2 nuevos | ~650 |
+
+**Total estimado:** ~16 archivos nuevos + 5 modificados, ~5000 líneas, 10 MCP tools, 18 advisor rules.
+
+### Preguntas de cuestionamiento
+
+**¿Member 360 debería ser una ruta nueva (`/admin/member-360`) o integrarse en la navegación existente?**
+- Contexto: FamilyDetail ya muestra info de la familia. ¿Member 360 es una vista PARALELA (otra ruta) o un TAB dentro de FamilyDetail?
+- Mi recomendación: **Ruta nueva** — `/admin/member-360/:memberId` — porque el socio individual merece su propia vista completa, independiente de la familia.
+
+**¿El Engagement Motor debería ser server-side (como en Cultural) o client-side (como los Advisors)?**
+- Contexto: Las propuestas de engagement requieren datos cross-domain que están en repos múltiples.
+- Mi recomendación: **Server-side** — `generate_member_engagement_proposals` como tool MCP que agrega internamente. El Advisor client-side solo lo sugiere.
+
+**¿Deberíamos resolver los tokens fantasma (#20) como B-0.5 ANTES de construir?**
+- Contexto: Si hay `--color-text-primary` hardcodeados, se van a propagar al nuevo código.
+- Mi recomendación: **SÍ** — 15 min de grep + fix. Lo hago como paso previo a B0.
+
+---
+
+**Estas son mis propuestas. Decime:**
+- **'Todo'** → 6 bloques + tokens fix + Engagement Motor server-side + ruta nueva
+- **'Core'** → B0-B2 (backend + data layer + shell) — lo mínimo viable
+- **'Sin motor'** → Todo menos el Engagement Motor (lo dejamos para F40)
+- **[Instrucción personalizada]** → sigo lo que me indiques

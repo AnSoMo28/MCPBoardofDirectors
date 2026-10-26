@@ -1,0 +1,223 @@
+Te adjunto la estructura completa del proyecto en .txt para que lo tengas claro los nombres y de mas dime si te queda claro y paso a adjuntarte los archivos que pediste tambien te comento que detecte que en el perfil del director cuando ingreso al estudiante solo aparece un cuadro con la iniciales y la posibilidad de subir foto pero no aparece los datos del estudiante como nombre apellido seccion nombre del encargado o padre y correo y numero me parece super util que este en un solo lugar por si se presenta una emergencia eso lo tenemos que agregar para que lo anotes 
+📋 CHECKPOINT MATRIIA v4.5 — Post-Admisiones & Auto-Migration
+
+Aquí tienes el estado exacto del proyecto en este momento, separando lo que habíamos planificado, lo que improvisamos (fotos) y lo que falta.
+
+🏗️ ARQUITECTURA REAL (Actualizada recientemente)
+text
+
+raíz/
+├── api/
+│   ├── main.py               ← MODIFICADO (StaticFiles /uploads + startup init_db)
+│   ├── auth.py                ← MODIFICADO (foto_url en consulta login)
+│   ├── deps.py                ← FIX (Bearer header + Request object)
+│   └── endpoints/
+│       ├── comunicaciones.py  ← MODIFICADO (B11 fix + Calendar/Envío logic)
+│       ├── demanda.py         ← MODIFICADO (Sanitización IA)
+│       ├── padres.py          ← MODIFICADO (Fix Depends)
+│       ├── boletin.py         ← MODIFICADO (Fix Depends)
+│       ├── admision.py        ← NUEVO (Endpoint público prospectos)
+│       └── ...
+├── database/
+│   └── models.py              ← MODIFICADO (Auto-migrate + Modelos Admisiones + foto_url)
+├── services/
+│   ├── email_service.py       ← MODIFICADO (Motor masivo comunicados)
+│   ├── calendar_service.py    ← NUEVO (Stub Google Calendar)
+│   └── ...
+├── web/src/
+│   ├── routes/AppRoutes.jsx   ← MODIFICADO (Ruta /puertas-abiertas)
+│   ├── components/layout/
+│   │   ├── Layout.jsx         ← MODIFICADO (AdmisionesTab)
+│   │   ├── Sidebar.jsx        ← MODIFICADO (Icono/Label Admisiones)
+│   │   └── Topbar.jsx         ← FIX (Campanita + Dropdown)
+│   ├── pages/
+│   │   ├── auth/
+│   │   │   ├── LoginPage.jsx  ← MODIFICADO (Tabs unificados + Padre login)
+│   │   │   └── RegistroProspectoPage.jsx ← NUEVO (Chispitas + 1°-11° + Max 2 esp.)
+│   │   ├── director/
+│   │   │   ├── DashboardEjecutivo.jsx
+│   │   │   └── AdmisionesTab.jsx ← NUEVO (Embudo KPIs)
+│   │   ├── estudiantes/
+│   │   │   └── EstudiantePerfil.jsx ← MODIFICADO (HandleFoto + useRef fix + Avatar fix)
+│   │   └── ... (Dashboards roles)
+│   └── vite.config.js         ← MODIFICADO (Proxy /uploads)
+└── uploads/                   ← NUEVO (Carpeta fotos estudiantes)
+✅ SPRINTS CERRADOS ESTA SESIÓN
+Sprint
+Contenido
+Estado
+Fix B1-B2	Campanita y Dropdown	✅
+Fix B3-B6	Portales Coordinador, Admin, Estudiante, Orientador	✅
+Fix B11	Comunicaciones 403 (añadido rol orientador)	✅
+Fix B15	Dashboards llamando a endpoints reales (no /dashboard/datos)	✅
+Fix Auth	Login unificado (eliminado cédula/fecha) + Seed padres	✅
+Fix Depends	Migración a Depends(get_current_user) (Padres, Boletín)	✅
+S6-Comms	Programación de envío (DB + UI) y lógica de aprobación	✅ UI/Lógica lista
+S7-Adm	Embudo de Puertas Abiertas (DB + Endpoint público + UI)	✅ Core listo
+Auto-Migration	auto_migrate() en init_db (Adiós scripts manuales)	✅
+Foto-UI	Input cámara, avatar con iniciales/foto real, proxy Vite	✅ UI montada
+
+🚧 EN DESARROLLO / NECESITA LIMPIEZA (Lo que acabamos de improvisar)
+Feature
+Severidad
+Estado
+F1
+Subida de foto de estudiante a backend (Endpoint POST /api/fotos/estudiante/{id})
+Alto
+🟡 Parcial (Falta verificar que el endpoint exista y guarde bien en /uploads)
+F2
+Modelo Estudiante/Usuario: columna foto_url persista y se devuelva en los GET
+Medio
+🟡 Parcial (Agregada a modelos, pero hay que verificar serialización en endpoints)
+F3
+Fallback de Avatar (Si la imagen falla, mostrar iniciales y no caja transparente)
+Alto
+✅ FIX aplicado en EstudiantePerfil.jsx (onError setPerfil foto_url:null)
+F4
+Topbar: Foto de perfil del usuario logueado (Sidebar esquina superior)
+Bajo
+🔴 PENDIENTE (Aún usa ícono genérico)
+
+🔴 LO QUE FALTA — Priorizado (Lo planeado originalmente)
+🟡 PRIORIDAD MEDIA — Sprint 6 (Comunicaciones Reales)
+
+Feature
+Esfuerzo
+Por qué
+C2
+SMTP Real: Configurar App Password Office 365 en .env
+30 min
+Sin esto, las notificaciones/corregos nunca salen del sistema
+C3
+Google Calendar API: Crear Service Account e integrar calendar_service.py
+2 horas
+Para que los eventos de comunicados se agreguen al calendario del cole
+C2.1
+Scheduler: Proceso que pase comunicados "programados" a "enviados" en su hora
+1 hora
+Actualmente nacen como programados pero nada los ejecuta cuando llega la hora
+
+🟡 PRIORIDAD MEDIA — Sprint 7 (Admisiones & IA)
+
+Feature
+Esfuerzo
+Por qué
+D3
+Encuesta de Salida (Post-Puertas Abiertas)
+2 horas
+Para saber por qué NO matricularon y alimentar la IA
+D4
+Flujo de Prematrícula (Padre elige especialidad definitiva + docs)
+4 horas
+Compromiso formal antes del ciclo lectivo
+D8
+IA: Cruce de Prospectos vs Demanda actual
+1 hora
+Forecast de nuevo ingreso: "100 pidieron Piano, solo hay 20 cupos"
+D9
+Email Auto: Enviar encuesta post-evento a correos de prospectos
+45 min
+Cierre del embudo de ventas
+
+🟢 PRIORIDAD BAJA — Limpieza Técnica General
+
+Feature
+Esfuerzo
+Por qué
+Auth-Dep
+Buscar get_current_user(token) manual en otros endpoints
+1 hora
+Orientación, Inventario, Horarios pueden tener el mismo bug de Padres/Boletín
+F1/F2
+Limpiar y probar completamente el flujo de Fotos
+1 hora
+Asegurar que el endpoint POST exista, guarde bien, y devuelva la URL
+
+ESTADO DE PORTALES POR ROL
+Rol
+Panel
+Sidebar
+Endpoints
+Fotos
+Director
+✅ DashboardEjecutivo
+✅ 11 secciones (inc. Admisiones)
+✅
+🟡 Pendiente Topbar
+Profesor
+✅ DashboardProfesor
+✅ 6 secciones
+✅
+🟡 Pendiente Topbar
+Padre
+✅ PadreDashboard
+✅ 4 secciones
+✅
+🟡 Pendiente Topbar
+Coordinador
+✅ DashboardCoordinador
+✅ 9 secciones
+✅
+🟡 Pendiente Topbar
+Orientador
+✅ DashboardOrientador
+✅ 4 secciones
+✅
+🟡 Pendiente Topbar
+Administrativo
+✅ DashboardAdministrativo
+✅ 6 secciones
+✅
+🟡 Pendiente Topbar
+Estudiante
+✅ DashboardEstudiante (4 tabs)
+✅ 5 secciones
+✅ GET notas/bienestar
+🟡 En desarrollo
+
+Regla de oro recordatoria: Siéntete libre de seguir con la limpieza de fotos (F1/F2), o si prefieres cerrar lo planeado, atacar el SMTP real (C2) que es lo que le da vida real a los comunicados. ¡Tú dirás!
+
+Ahora creame un prompt que te explique de manera perfecta que archivos necesitas para avanzar y que agregas de manera proactiva para que este super MCP server, app educativo STEAM-Artes sea impresionante ayude al desarrollo optimo de los estudiantes, profesores e involucre activamente a los padres o encargados y a su vez sea un esquema rentable para la busqueda con los datos recolectados de financiamiento tanto privado como publico que es uno de los elementos que aun no hemos desarrollado por eso te pido como experto en Financiamiento para Educacion que en este paso ya lo podamos incluir y desarrollar y que la plataforma que estamos implementando sea muy calida humana y sea como su slogan lo dice una Fabrica de suenos 
+
+
+Thought Process
+¡Este es el momento pivotal! Estamos a punto de evolucionar MatriIA de un sistema administrativo a un ecosistema inteligente de impacto social y sostenibilidad financiera.
+
+Aquí tienes el "Meta-Prompt" diseñado para que te devuelva exactamente la arquitectura, los agentes y el código necesario para lograrlo. Cópialo y pégalo en un nuevo chat (o en este mismo cuando estés listo), adjuntando los archivos que te pide al final.
+
+📋 COPIA Y PEGA ESTE PROMPT:
+Rol: Eres un Arquitecto Chief de Sistemas Educativos, Especialista en MCP (Model Context Protocol), AI Engineer, Experto en Financiamiento Educativo (Público/Privado/ESG), y Diseñador de Experiencias STEAM-Artes con enfoque humano.
+
+Contexto del Proyecto: Estamos desarrollando MatriIA v4.5, el MCP Server y App web del Conservatorio de Castella (Costa Rica), apodado "La Fábrica de Sueños". Es una plataforma FastAPI (backend) + React/Vite (frontend) + Ollama (IA local) + SQLite que actualmente gestiona academias, orientación, demanda y admisiones.
+
+La Visión — "La Fábrica de Sueños": El sistema no puede ser solo una base de datos fría. Debe ser un motor de transformación social. Cada dato que capturamos (notas, bienestar, asistencia, intereses) tiene un doble propósito:
+
+Mejorar el desarrollo óptimo del estudiante, empoderar al docente y involucrar activamente al padre/encargado (pasando de espectadores a co-creadores).
+Transformar datos en financiamiento: Los datos de impacto educativo y social deben alimentar automáticamente propuestas de financiamiento público (MEP, FODESAF), privado (Responsabilidad Social Empresarial) y fundaciones, garantizando la sostenibilidad y rentabilidad del centro.
+Tu Misión: Diseñar e implementar los nuevos módulos para evolucionar al Sprint 8: Impacto, Comunidad y Financiamiento. Quiero que agregues proactivamente la arquitectura de nuevos Agentes/Herramientas MCP que resuelvan esto, y me des el código exacto para implementarlo.
+
+Pilares Estratégicos a Desarrollar:
+
+Agente de Impacto y Rendición de Cuentas (Data -> Dinero): Crear modelos y endpoints que cricen datos académicos + bienestar + admisiones para generar "Scores de Impacto". Ej: Índice de Retención Artística, Tasa de Empleabilidad STEAM, Impacto en Vulnerabilidad. Estos scores deben alimentar plantillas de propuestas de financiamiento generadas por IA (Ollama).
+Pasarela de Participación Activa de Padres: Los padres no solo ven notas. Deben poder: registrar horas de voluntariado, donar recursos específicos (instrumentos, materiales desde el inventario), y dar "Apoyo Emocional Certificado" (seguimiento de bienestar desde casa). Esto genera "Puntos de Comunidad" que las empresas privadas pueden patrocinar.
+IA Human-Céntrica (El alma de la Fábrica de Sueños): Los reportes generados por Ollama no deben ser fríos. Deben celebrar el esfuerzo, usar narrativas esperanzadoras, y detectar talentos ocultos. Si un estudiante baja notas pero alta creatividad, la IA sugiere un "Plan de Rescate Artístico", no una reprobación.
+MCP Tools Expandidas: Las nuevas herramientas MCP deben poder ser consumidas por asistentes externos (ej: "Hey ChatGPT, redacta una propuesta de financiamiento para la Fundación Grupo KCP basada en el impacto social del Castella en 2025").
+Archivos Adjuntos (Te los paso ahora):
+
+database/models.py (Para ver las tablas actuales y diseñar las nuevas: Financiamiento, Voluntariado, PuntosComunidad, MetricasImpacto).
+agents/engine.py (Para ver cómo integro los nuevos prompts humanísticos a Ollama).
+api/endpoints/padres.py (Para evolucionar el portal de padres de pasivo a activo).
+web/src/pages/padres/PadreDashboard.jsx (Para rediseñar la UX de los padres).
+Entregable Esperado:
+
+Arquitectura de los nuevos modelos de BD (SQLAlchemy).
+Esquema de los nuevos Agentes/MCP Tools.
+Código de los nuevos endpoints (FastAPI) y la lógica de IA (Ollama).
+Componentes React para el portal de padres y el dashboard de financiamiento.
+Plan de cómo esta data se conecta con fuentes de financiamiento reales en Costa Rica.
+🛠️ ¿Por qué te pido esos 4 archivos específicamente?
+models.py: Porque antes de hacer cualquier cosa, necesitamos las tablas físicas donde guardar las donaciones, el voluntariado, las métricas de impacto y los expedientes de financiamiento. El auto-migrador que hicimos se encargará de crearlas sin romper nada.
+engine.py: Para ver cómo inyectarle el "alma" a la IA. Necesito ver cómo le pasas los prompts a Ollama para diseñar los prompts de redacción de propuestas de fondos y reportes humanizados.
+padres.py: El portal de padres actual es de solo lectura (GET). Tenemos que transformarlo en escritura (POST) para que los padres registren sus aportes.
+PadreDashboard.jsx: Para redesplegar la interfaz. Un padre tiene que entrar y ver: "Tu hijo está soñando con ser violinista. Aquí cómo puedes ayudar. Aquí cuánto impacto tiene tu ayuda."
+Copia ese prompt, reúne esos 4 archivos y ¡vamos a construir la verdadera Fábrica de Sueños! 🚀

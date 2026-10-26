@@ -1,0 +1,276 @@
+/**
+ * MemberChurnOracle — Predictive Timeline + Oracle Eye
+ * Namespace: .glass-m360-oracle
+ * @phase 30 — Block 3.7
+ */
+
+/* ═══════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-oracle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.glass-m360-oracle__empty {
+  font-size: 0.75rem;
+  color: var(--color-silver-500);
+  padding: 1rem 0;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ORACLE EYE
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-oracle__eye-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface-0);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 10%, transparent);
+}
+
+.glass-m360-oracle__eye-svg {
+  width: 60px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+/* ── Eye animations by state ── */
+
+.glass-m360-oracle__eye-shape--fast {
+  animation: m360-oracle-eye-blink-fast 1s ease-in-out infinite;
+}
+
+.glass-m360-oracle__eye-shape--slow {
+  animation: m360-oracle-eye-blink-slow 3s ease-in-out infinite;
+}
+
+.glass-m360-oracle__eye-shape--none {
+  animation: none;
+}
+
+.glass-m360-oracle__eye-iris--fast {
+  animation: m360-oracle-iris-pulse-fast 1s ease-in-out infinite;
+}
+
+.glass-m360-oracle__eye-iris--slow {
+  animation: m360-oracle-iris-pulse-slow 3s ease-in-out infinite;
+}
+
+.glass-m360-oracle__eye-iris--none {
+  animation: none;
+}
+
+.glass-m360-oracle__eye-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.glass-m360-oracle__eye-state {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SUMMARY
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-oracle__summary {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.glass-m360-oracle__summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 8px;
+  background: var(--color-surface-0);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 8%, transparent);
+  flex: 1;
+  min-width: 100px;
+}
+
+.glass-m360-oracle__summary-label {
+  font-size: 0.5625rem;
+  color: var(--color-silver-500);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.glass-m360-oracle__summary-value {
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-silver-200);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SVG CHART
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-oracle__chart {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* ── Curve draw animation ── */
+
+.glass-m360-oracle__curve {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: m360-oracle-curve-draw 2.5s ease forwards;
+}
+
+/* ── Band fade-in ── */
+
+.glass-m360-oracle__band-outer {
+  opacity: 0;
+  animation: m360-oracle-band-in 1s ease 0.8s forwards;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RISK FACTORS
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-oracle__factors {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.glass-m360-oracle__factor {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  background: var(--color-surface-0);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 8%, transparent);
+  font-size: 0.6875rem;
+  opacity: 0;
+  animation: m360-oracle-factor-in 0.3s ease forwards;
+  animation-delay: calc(2s + var(--stagger-i, 0) * 100ms);
+}
+
+.glass-m360-oracle__factor-name {
+  color: var(--color-silver-400);
+}
+
+.glass-m360-oracle__factor-trend {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+}
+
+.glass-m360-oracle__factor-trend[data-trend="worsening"] {
+  color: var(--color-rose-400);
+}
+
+.glass-m360-oracle__factor-trend[data-trend="improving"] {
+  color: var(--color-emerald-400);
+}
+
+.glass-m360-oracle__factor-trend[data-trend="stable"] {
+  color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-oracle-eye-blink-fast {
+  0%, 100% { ry: 16; }
+  50% { ry: 2; }
+}
+
+@keyframes m360-oracle-eye-blink-slow {
+  0%, 100% { ry: 16; }
+  45% { ry: 16; }
+  50% { ry: 4; }
+  55% { ry: 16; }
+}
+
+@keyframes m360-oracle-iris-pulse-fast {
+  0%, 100% { r: 8; opacity: 0.5; }
+  50% { r: 10; opacity: 0.7; }
+}
+
+@keyframes m360-oracle-iris-pulse-slow {
+  0%, 100% { r: 8; opacity: 0.5; }
+  50% { r: 9; opacity: 0.6; }
+}
+
+@keyframes m360-oracle-curve-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes m360-oracle-band-in {
+  to { opacity: 1; }
+}
+
+@keyframes m360-oracle-factor-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360-oracle__eye-section {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-m360-oracle__summary-item {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-m360-oracle__factor {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360-oracle__eye-shape--fast,
+  .glass-m360-oracle__eye-shape--slow {
+    animation: none;
+  }
+
+  .glass-m360-oracle__eye-iris--fast,
+  .glass-m360-oracle__eye-iris--slow {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .glass-m360-oracle__curve {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+
+  .glass-m360-oracle__band-outer {
+    opacity: 1;
+    animation: none;
+  }
+
+  .glass-m360-oracle__factor {
+    opacity: 1;
+    animation: none;
+  }
+}

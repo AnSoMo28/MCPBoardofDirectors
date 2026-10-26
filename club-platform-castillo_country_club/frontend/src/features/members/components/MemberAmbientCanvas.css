@@ -1,0 +1,177 @@
+/**
+ * MemberAmbientCanvas — Atmospheric background
+ * Namespace: .glass-m360-ambient
+ * @phase 30 — Block 2.3
+ */
+
+/* ═══════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-ambient {
+  --ambient-temperature: 50;
+
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ORBS — Radial gradient blobs that breathe
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-ambient__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: var(--m360-ambient-intensity, 0.3);
+  transition: opacity 1.5s ease, background 1.5s ease;
+}
+
+/* Primary orb — center-right, large */
+.glass-m360-ambient__orb--primary {
+  top: 10%;
+  right: -5%;
+  width: 45%;
+  aspect-ratio: 1;
+  animation: m360-ambient-breathe var(--m360-glow-pulse-sec, 6s) ease-in-out infinite;
+}
+
+/* Secondary orb — bottom-left, smaller */
+.glass-m360-ambient__orb--secondary {
+  bottom: 5%;
+  left: -8%;
+  width: 30%;
+  aspect-ratio: 1;
+  animation: m360-ambient-breathe var(--m360-glow-pulse-sec, 6s) ease-in-out infinite reverse;
+  animation-delay: calc(var(--m360-glow-pulse-sec, 6s) * -0.5);
+}
+
+/* ── State-driven colors ── */
+
+[data-member-state="thriving"] .glass-m360-ambient__orb {
+  background: radial-gradient(circle, var(--color-emerald-400) 0%, transparent 70%);
+}
+
+[data-member-state="stable"] .glass-m360-ambient__orb {
+  background: radial-gradient(circle, var(--color-teal-400) 0%, transparent 70%);
+}
+
+[data-member-state="drifting"] .glass-m360-ambient__orb {
+  background: radial-gradient(circle, var(--color-amber-400) 0%, transparent 70%);
+}
+
+[data-member-state="at_risk"] .glass-m360-ambient__orb {
+  background: radial-gradient(circle, var(--color-terracotta-400) 0%, transparent 70%);
+}
+
+[data-member-state="disengaging"] .glass-m360-ambient__orb {
+  background: radial-gradient(circle, var(--color-rose-400) 0%, transparent 70%);
+}
+
+/* ── Mode-driven intensity ── */
+
+[data-mode="calm"] .glass-m360-ambient__orb {
+  opacity: 0.15;
+}
+
+[data-mode="alert"] .glass-m360-ambient__orb {
+  opacity: 0.3;
+}
+
+[data-mode="critical"] .glass-m360-ambient__orb {
+  opacity: 0.5;
+  animation-duration: calc(var(--m360-glow-pulse-sec, 6s) * 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCAN LINE — Rotating sweep (alert/critical only)
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-ambient__scan {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  transform-origin: center center;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--m360-state-color) 50%, transparent 100%);
+  transition: opacity 0.5s ease;
+}
+
+/* Only visible in alert/critical */
+[data-mode="alert"] .glass-m360-ambient__scan {
+  opacity: 0.08;
+  animation: m360-scan-rotate 8s linear infinite;
+}
+
+[data-mode="critical"] .glass-m360-ambient__scan {
+  opacity: 0.15;
+  animation: m360-scan-rotate 4s linear infinite;
+}
+
+[data-mode="calm"] .glass-m360-ambient__scan {
+  opacity: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   NOISE OVERLAY — Subtle grain
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360-ambient__noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-ambient-breathe {
+  0%, 100% { transform: scale(1) translate(0, 0); }
+  25% { transform: scale(1.05) translate(2%, -1%); }
+  50% { transform: scale(0.95) translate(-1%, 2%); }
+  75% { transform: scale(1.02) translate(1%, -2%); }
+}
+
+@keyframes m360-scan-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360-ambient__orb {
+  opacity: 0.06;
+}
+
+.light .glass-m360-ambient__scan {
+  opacity: 0 !important;
+}
+
+.light .glass-m360-ambient__noise {
+  opacity: 0.01;
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360-ambient__orb {
+    animation: none;
+  }
+  .glass-m360-ambient__scan {
+    animation: none;
+    opacity: 0;
+  }
+}

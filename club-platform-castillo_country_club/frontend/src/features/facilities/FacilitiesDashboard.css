@@ -1,0 +1,614 @@
+/* ═══════════════════════════════════════════════════════════════
+   FACILITIES DASHBOARD — "LA JOYA DE LA CORONA"
+
+   SIEMPRE PRODUCTION GRADE NIVEL 5+ (AGENCIA)
+   SIEMPRE PRODUCTION GRADE NIVEL 5+ (AGENCIA)
+   SIEMPRE PRODUCTION GRADE NIVEL 5+ (AGENCIA)
+
+   5 Agency Behaviors:
+     1. Contextual tab auto-selection (time + alerts)
+     2. Briefing overlay (2-3s then dissolves)
+     3. Hero insight (priority #1 card above stream)
+     4. Cross-tab awareness (contextual suggestions)
+     5. Adaptive density (calm → sparse, critical → dense)
+
+   Layout: 2-column (desktop) → stacked (mobile).
+   AmbientCanvas behind everything (z-index: -1).
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Token Reference ── */
+.fac-dashboard {
+  --fac-dash-bg: transparent;
+  --fac-dash-gap: 16px;
+  --fac-dash-padding: 16px;
+  --fac-dash-content-bg: transparent;
+  --fac-dash-text-primary: var(--color-silver-100);
+  --fac-dash-text-secondary: var(--color-silver-400);
+  --fac-dash-text-muted: var(--color-silver-500);
+  --fac-dash-briefing-bg: rgba(0, 0, 0, 0.85);
+  --fac-dash-briefing-text: var(--color-silver-100);
+  --fac-dash-hero-bg: var(--glass-bg);
+  --fac-dash-hero-border: var(--glass-border);
+  --fac-dash-suggest-bg: rgba(255, 255, 255, 0.03);
+  --fac-dash-suggest-border: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Root Container ── */
+.fac-dashboard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--fac-dash-bg);
+  isolation: isolate;
+}
+
+/* ── Main Layout: Pulse + Stage + Stream ── */
+.fac-dashboard__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Content Row: Stage (grow) + Stream (fixed) ── */
+.fac-dashboard__content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* Stage: takes remaining space */
+.fac-dashboard__stage-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Stream: fixed width sidebar */
+.fac-dashboard__stream-wrap {
+  width: 320px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Adaptive Density Modes ── */
+
+/* calm: generous whitespace, editorial feel */
+.fac-dashboard[data-mode="calm"] {
+  --fac-dash-gap: 20px;
+  --fac-dash-padding: 20px;
+}
+
+/* alert: slightly tighter, more data visible */
+.fac-dashboard[data-mode="alert"] {
+  --fac-dash-gap: 14px;
+  --fac-dash-padding: 14px;
+}
+
+/* critical: maximum density, nothing hidden */
+.fac-dashboard[data-mode="critical"] {
+  --fac-dash-gap: 10px;
+  --fac-dash-padding: 10px;
+}
+
+.fac-dashboard[data-mode="critical"] .fac-dashboard__stream-wrap {
+  width: 360px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BRIEFING OVERLAY — "Good morning. 2 alerts."
+
+   Full-screen overlay that appears on initial load.
+   Shows: greeting + critical summary + ambient color.
+   Dissolves after 3s (or click to dismiss).
+   ══════════════════════════════════════════════════════════════ */
+
+.fac-dashboard__briefing {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: var(--fac-dash-briefing-bg);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  cursor: pointer;
+  animation: facBriefingEnter 0.6s ease forwards;
+}
+
+.fac-dashboard__briefing[data-dismissing="true"] {
+  animation: facBriefingExit 0.8s ease forwards;
+}
+
+@keyframes facBriefingEnter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes facBriefingExit {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.fac-dashboard__briefing-greeting {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--fac-dash-briefing-text);
+  letter-spacing: -0.02em;
+  animation: facBriefingTextIn 0.8s ease 0.2s both;
+}
+
+.fac-dashboard__briefing-summary {
+  font-family: "Source Serif 4", serif;
+  font-size: 18px;
+  color: var(--color-silver-400);
+  text-align: center;
+  max-width: 480px;
+  line-height: 1.6;
+  animation: facBriefingTextIn 0.8s ease 0.5s both;
+}
+
+.fac-dashboard__briefing-alerts {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  animation: facBriefingTextIn 0.8s ease 0.8s both;
+}
+
+.fac-dashboard__briefing-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-family: "DM Mono", monospace;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.fac-dashboard__briefing-alert[data-type="critical"] {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: var(--color-rose-300);
+}
+
+.fac-dashboard__briefing-alert[data-type="warning"] {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: var(--color-amber-300);
+}
+
+.fac-dashboard__briefing-alert[data-type="ok"] {
+  background: rgba(20, 184, 166, 0.08);
+  border: 1px solid rgba(20, 184, 166, 0.15);
+  color: var(--color-teal-300);
+}
+
+.fac-dashboard__briefing-dismiss {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  color: var(--color-silver-600);
+  margin-top: 16px;
+  animation: facBriefingTextIn 0.8s ease 1.2s both;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+@keyframes facBriefingTextIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HERO INSIGHT — "Tu prioridad #1"
+
+   Highlighted card above the intelligence stream.
+   Shows the single most important insight with a CTA
+   that jumps to the relevant tab.
+   ══════════════════════════════════════════════════════════════ */
+
+.fac-dashboard__hero {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--fac-dash-hero-bg);
+  border: 1px solid var(--fac-dash-hero-border);
+  margin: 12px 12px 8px;
+  flex-shrink: 0;
+  animation: facHeroEnter 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes facHeroEnter {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Accent glow on left edge */
+.fac-dashboard__hero::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  transition: background 0.4s ease;
+}
+
+.fac-dashboard__hero[data-severity="critical"]::before {
+  background: var(--color-rose-400);
+}
+
+.fac-dashboard__hero[data-severity="warning"]::before {
+  background: var(--color-amber-400);
+}
+
+.fac-dashboard__hero[data-severity="opportunity"]::before {
+  background: var(--color-emerald-400);
+}
+
+.fac-dashboard__hero[data-severity="info"]::before {
+  background: var(--color-teal-400);
+}
+
+.fac-dashboard__hero-label {
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-silver-500);
+  margin-bottom: 6px;
+}
+
+.fac-dashboard__hero-title {
+  font-family: "Syne", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fac-dash-text-primary);
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+
+.fac-dashboard__hero-reasoning {
+  font-family: "Source Serif 4", serif;
+  font-size: 12px;
+  color: var(--fac-dash-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.fac-dashboard__hero-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fac-dashboard__hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-teal-300);
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.fac-dashboard__hero-cta:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--color-teal-400);
+}
+
+.fac-dashboard__hero-cta:focus-visible {
+  outline: 2px solid var(--color-teal-400);
+  outline-offset: 2px;
+}
+
+.fac-dashboard__hero-cta--primary {
+  background: rgba(20, 184, 166, 0.1);
+  border-color: var(--color-teal-400);
+}
+
+.fac-dashboard__hero-cta--primary:hover {
+  background: rgba(20, 184, 166, 0.18);
+}
+
+.fac-dashboard__hero-cta--dismiss {
+  color: var(--color-silver-500);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.fac-dashboard__hero-cta svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CROSS-TAB SUGGESTIONS — "En 'El Futuro' hay algo relevante"
+
+   Subtle bar at the bottom of each tab's content area.
+   Shows contextual suggestions pointing to other tabs.
+   ══════════════════════════════════════════════════════════════ */
+
+.fac-dashboard__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px var(--fac-dash-padding);
+  border-top: 1px solid var(--glass-border);
+  flex-shrink: 0;
+  animation: facSuggestEnter 0.4s ease 0.3s both;
+}
+
+@keyframes facSuggestEnter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fac-dashboard__suggest {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--fac-dash-suggest-bg);
+  border: 1px solid var(--fac-dash-suggest-border);
+  cursor: pointer;
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  color: var(--color-silver-400);
+  transition: all 0.15s ease;
+  outline: none;
+  white-space: nowrap;
+}
+
+.fac-dashboard__suggest:hover {
+  color: var(--color-silver-200);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.fac-dashboard__suggest:focus-visible {
+  outline: 2px solid var(--color-teal-400);
+  outline-offset: 1px;
+}
+
+.fac-dashboard__suggest-arrow {
+  font-size: 11px;
+  color: var(--color-silver-600);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STAGE CONTENT PADDING — Adaptive by mode
+   ══════════════════════════════════════════════════════════════ */
+
+.fac-dashboard__stage-inner {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--fac-dash-padding);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LOADING STATE — Skeleton Shimmer
+   ══════════════════════════════════════════════════════════════ */
+
+.fac-dashboard__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  height: 100%;
+}
+
+.fac-dashboard__skeleton-bar {
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: facShimmer 1.5s ease-in-out infinite;
+}
+
+.fac-dashboard__skeleton-content {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  min-height: 0;
+}
+
+.fac-dashboard__skeleton-main {
+  flex: 1;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02) 25%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.02) 75%
+  );
+  background-size: 200% 100%;
+  animation: facShimmer 1.5s ease-in-out infinite;
+  animation-delay: 0.15s;
+}
+
+.fac-dashboard__skeleton-sidebar {
+  width: 320px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02) 25%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.02) 75%
+  );
+  background-size: 200% 100%;
+  animation: facShimmer 1.5s ease-in-out infinite;
+  animation-delay: 0.3s;
+}
+
+@keyframes facShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LIGHT MODE
+   ══════════════════════════════════════════════════════════════ */
+
+.light .fac-dashboard {
+  --fac-dash-briefing-bg: rgba(255, 255, 255, 0.92);
+  --fac-dash-briefing-text: var(--color-graphite-800);
+  --fac-dash-hero-bg: rgba(255, 255, 255, 0.7);
+  --fac-dash-hero-border: rgba(0, 0, 0, 0.08);
+  --fac-dash-text-primary: var(--color-graphite-800);
+  --fac-dash-text-secondary: var(--color-graphite-500);
+  --fac-dash-text-muted: var(--color-graphite-400);
+  --fac-dash-suggest-bg: rgba(0, 0, 0, 0.02);
+  --fac-dash-suggest-border: rgba(0, 0, 0, 0.06);
+}
+
+.light .fac-dashboard__stream-wrap {
+  border-left-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fac-dashboard__suggestions {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fac-dashboard__skeleton-bar,
+.light .fac-dashboard__skeleton-main,
+.light .fac-dashboard__skeleton-sidebar {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.02) 25%,
+    rgba(0, 0, 0, 0.04) 50%,
+    rgba(0, 0, 0, 0.02) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fac-dashboard__briefing {
+    animation: none !important;
+  }
+
+  .fac-dashboard__briefing[data-dismissing="true"] {
+    animation: none !important;
+    display: none;
+  }
+
+  .fac-dashboard__briefing-greeting,
+  .fac-dashboard__briefing-summary,
+  .fac-dashboard__briefing-alerts,
+  .fac-dashboard__briefing-dismiss {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .fac-dashboard__hero {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .fac-dashboard__suggestions {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .fac-dashboard__skeleton-bar,
+  .fac-dashboard__skeleton-main,
+  .fac-dashboard__skeleton-sidebar {
+    animation: none !important;
+  }
+}
+
+.fac-dashboard[data-prefers-reduced="true"] .fac-dashboard__briefing,
+.fac-dashboard[data-prefers-reduced="true"] .fac-dashboard__hero,
+.fac-dashboard[data-prefers-reduced="true"] .fac-dashboard__suggestions {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE — Mobile
+   ══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fac-dashboard__content {
+    flex-direction: column;
+  }
+
+  .fac-dashboard__stream-wrap {
+    width: 100%;
+    max-height: 280px;
+    border-left: none;
+    border-top: 1px solid var(--glass-border);
+  }
+
+  .fac-dashboard[data-mode="critical"] .fac-dashboard__stream-wrap {
+    width: 100%;
+    max-height: 320px;
+  }
+
+  .fac-dashboard__skeleton-content {
+    flex-direction: column;
+  }
+
+  .fac-dashboard__skeleton-sidebar {
+    width: 100%;
+    height: 200px;
+  }
+
+  .fac-dashboard__briefing-greeting {
+    font-size: 28px;
+  }
+
+  .fac-dashboard__briefing-summary {
+    font-size: 15px;
+    padding: 0 24px;
+  }
+
+  .fac-dashboard__briefing-alerts {
+    flex-direction: column;
+    align-items: center;
+  }
+  .fac-dashboard__memory-journal-wrap {
+  margin-top: 16px;
+  height: 40%;
+  min-height: 280px;
+}
+}

@@ -1,0 +1,155 @@
+Lee el CLAUDE_CONTEXT.md y después lee este bloque completo antes de escribir cualquier código.
+
+# CONTEXTO SESIÓN FASE 7 — COMPLETADA
+
+## Estado General
+Sprint 12A + 11F fusionado. Fases 1-5 completadas. Fase 6 análisis completo (implementación pendiente). Fase 7 COMPLETADA. Fases 8-10 pendientes.
+
+## Lo que se hizo en esta sesión
+
+### Archivo nuevo creado
+- `src/shared/lib/riskTheme.ts` — Centraliza colores de riesgo en Silver Tide tokens. Paralelo a `chartTheme.ts`. Contiene: RISK_CATEGORY_CONFIG (6 categorías), RISK_LEVEL_CONFIG (4 niveles), PROBABILITY_LABELS, IMPACT_LABELS, getRiskLevel(), getRiskCellColor(), getRiskCellBg(). Todo mapeado a tokens Silver Tide, 100% sin colores hardcoded. Helper interno `withAlpha(hex, alpha)` para generar rgba() limpios.
+
+### Archivos reescritos completos (7)
+1. `src/features/reports/types.ts` — Tipos de riesgo re-exportados desde riskTheme.ts (backward compat). Eliminado RiskMatrixCell (código muerto). REPORT_TYPE_CONFIG y REPORT_STATUS_CONFIG mantienen su lugar.
+2. `src/features/reports/RiskHeatmap.tsx` — Eliminada grid muerta de buildMatrix (solo cellMap). Click-outside handler con pointerdown. Overflow clamping popover (above/below). Escape key. useReducedMotion(). Touch targets 44px. ARIA grid/dialog pattern completo. Focus management popover↔celda.
+3. `src/features/reports/BoardReportViewer.tsx` — PERIODS hardcoded → getAvailablePeriods() dinámico (últimos 5 trimestres). Eliminado TrendIcon (muerto). Dos botones PDF/Print → uno solo "Exportar". Eliminado "Ver plan de acción" sin onClick. NPS sin trend hack. aria-pressed en periodos. useReducedMotion() en animaciones.
+4. `src/features/mi-club/MyReservations.tsx` — Fix timezone CR (UTC-6): getTodayLocal() usa getFullYear/getMonth/getDate local, no toISOString() UTC. Fix navegación /admin/ → /mi-club/reservas/${id}. useReducedMotion(). Touch targets 44px. aria-pressed filter tabs. Error state → EmptyState compartido.
+5. `src/features/mi-club/MiClubLanding.tsx` — typeConfig inline → import EVENT_TYPE_CONFIG de events/types.ts. Navegación eventos a detalle (/mi-club/eventos/${id}). formatUSD → formatCurrency. useReducedMotion() en 6 animaciones. LandingSkeleton loading state. getRecommendationText() extraída con TODO para proactive_recommendation_agent. focus-visible en QuickLink. Eliminada animación avatar-breathe no definida.
+6. `src/features/finance/FamilyAccount.tsx` — familyId undefined → EmptyState claro. Aging buckets 2→4 (0-30, 31-60, 61-90, 90+ — split temporal 40/60 hasta backend fix). TRANSACTION_STATUS_CONFIG centralizado. Tabs role="tablist/tab", aria-selected/pressed. aria-label en filter y pagination. useReducedMotion(). Inline styles → Tailwind clases donde posible. Error state → EmptyState.
+
+### Archivos con fixes quirúrgicos reescritos completos (2)
+7. `src/features/families/types.ts` — TIER_CONFIG: platino #6b6b6b→var(--color-silver-200), plata #8a8a8a→var(--color-silver-400), bronce #b87333→var(--color-terracotta-400). STATUS_CONFIG: variant "info"→"default", "error"→"danger". Tipado stricto de variant con union type del Badge.
+8. `src/features/settings/SettingsPage.tsx` — Notificaciones useState local → useNotificationPrefsStore con Zustand persist (key "castillo-notifications"). Sesión new Date().getHours() → getSessionElapsed(loginTimestamp) con useEffect interval 1min. Backend hardcoded "Conectado" → useBackendHealth() hook con fetch /api/health real (5s timeout, re-check 60s). useReducedMotion(). aria-label descriptivo en toggles. focus→focus-visible. Eliminada avatar-breathe no definida.
+
+### Archivo con fix para soportar SettingsPage
+9. `src/stores/auth.store.ts` — Agregado loginTimestamp: number|null en AuthState. Se setea Date.now() en login() y devBypass(). Se resetea null en logout(). Incluido en partialize para persistir en localStorage.
+
+## Agentes backend analizados (y lo que aprendí)
+
+### executive_dashboard_agent.py
+- 7 tools: generate_quarterly_board_report (HITL), export_report (SEMI→HITL external), get_executive_summary (AUTO), get_financial_overview (AUTO), get_membership_health (AUTO), get_operational_pulse (AUTO), detect_anomalies (AUTO), get_age_group_balance (AUTO)
+- generate_quarterly_board_report devuelve pending_approval, no el reporte directo. execute_board_report() genera el reporte post-aprobación
+- get_board_report y get_risk_matrix NO están en este agente — están en el MCP server "reports" separado
+- detect_anomalies detecta por dominio (membership/financial/operational/engagement) con severidad y acciones sugeridas
+- get_age_group_balance calcula coeficiente de Gini de participación por grupo etario
+- Tool pendiente: generate_ai_analysis (scope: financial|engagement) — pendiente aprobación backend
+
+### family_profile.py
+- 7 tools: family_get_profile (AUTO), family_create_profile (HITL), family_update_members (HITL), family_set_preferences (SEMI), family_get_activity_hist (AUTO), family_search (AUTO), family_get_social_graph (AUTO)
+- Backend usa MembershipTier con valores "basic" | "premium" | "vip" — FRONTEND usa MemberTier con "platino" | "oro" | "plata" | "bronce". 4 vs 3 tiers, nombres no coinciden. MCP server debe hacer mapping — punto de fragilidad
+- family_set_preferences acepta notification_channels — futuro sync con useNotificationPrefsStore
+
+### event_orchestrator.py
+- 9 tools: event_create (HITL), event_build_program (SEMI), event_manage_rsvps (AUTO/bulk HITL ≥10), event_coordinate_vendors (HITL), event_manage_capacity (AUTO), event_get_analytics (AUTO), event_clone_template (SEMI), event_get_calendar (AUTO), event_generate_report (SEMI/HITL financial)
+- event_manage_rsvps tiene escalación condicional: bulk ≥10 RSVPs → HITL
+- event_get_calendar detecta conflictos de horario entre eventos
+
+### facility_management_agent.py
+- 7 tools: manage_facilities (AUTO), schedule_maintenance (HITL), coordinate_event_setup (HITL), get_facility_occupancy (AUTO), manage_inspections (AUTO), report_facility_issue (AUTO), get_maintenance_schedule (AUTO)
+- report_facility_issue auto-crea tarea de mantenimiento correctivo
+- get_reservations NO está en este agente. Vive en el MCP server "facilities" como tool mock (mock-data.ts)
+
+## Hallazgos pendientes que quedaron del auditoría original (no corregidos aún)
+
+### Severidad ALTA pendiente (0 — todas corregidas en Fase 7)
+
+### Severidad MEDIA pendiente
+- SettingsPage: "Notificaciones" — el store persist local no sync con backend (futuro: family_set_preferences de FamilyProfileAgent)
+- SettingsPage: "Versión frontend" hardcoded "1.0.0-beta"
+- MiClubLanding: StatPill duplica funcionalidad de StatCard shared
+- FamilyAccount: Tab bar local en vez de DetailTabs compartido (Regla #13)
+- FamilyAccount: Filter select raw en vez de FilterDropdown compartido (Regla #14)
+- FamilyAccount: table raw en vez de Table compartido
+- MyReservations: Tipos inline no compartidos (solo se usan ahí, no urgente)
+- family_profile vs families/types: tier mismatch backend "basic/premium/vip" vs frontend "platino/oro/plata/bronce"
+
+### Severidad BAJA pendiente
+- MiClubLanding: engagement thresholds hardcodeados (70/40)
+- MiClubLanding: formatCurrency podría necesitar ser formatCRC si manejan colones
+- FamilyAccount: "Realizar Pago" sin handler (falta payment flow)
+- SettingsPage: info sistema hardcoded (versión, framework)
+- RiskHeatmap: emojis como icons en vez de Lucide
+
+## Estructura de archivos actualizada (agregados en esta sesión)
+
+src/
+├── shared/
+│ └── lib/
+│ ├── chartTheme.ts ✅
+│ ├── riskTheme.ts ✅ ← NUEVO
+│ └── utils.ts ✅
+│
+├── stores/
+│ ├── auth.store.ts ✅ (loginTimestamp agregado)
+│ ├── theme.store.ts ✅
+│ └── sidebar.store.ts ✅
+│
+├── features/
+│ ├── reports/
+│ │ ├── types.ts ✅ REWRITE Fase 7
+│ │ ├── RiskHeatmap.tsx ✅ REWRITE Fase 7
+│ │ ├── BoardReportViewer.tsx ✅ REWRITE Fase 7
+│ │ └── PrintView.tsx ⬜ Fase 8
+│ │
+│ ├── mi-club/
+│ │ ├── MyReservations.tsx ✅ REWRITE Fase 7
+│ │ └── MiClubLanding.tsx ✅ REWRITE Fase 7
+│ │
+│ ├── finance/
+│ │ ├── types.ts ✅ FIX Fase 7
+│ │ └── FamilyAccount.tsx ✅ REWRITE Fase 7
+│ │
+│ ├── settings/
+│ │ └── SettingsPage.tsx ✅ REWRITE Fase 7
+│ │
+│ └── families/
+│ └── types.ts ✅ FIX Fase 7
+
+text
+text
+
+## FASES PENDIENTES
+
+### Fase 6 — Dashboards densos + AI (análisis ✅, implementación pendiente)
+Archivos:
+- `src/features/finance/FinancialDashboard.tsx` (rewrite + AI)
+- `src/features/engagement/EngagementDashboard.tsx` (rewrite + AI)
+- `src/features/communications/CommunicationCenter.tsx` (rewrite)
+- `src/features/approvals/ApprovalQueue.tsx` (rewrite)
+Agentes necesarios: finance.py, member_engagement_agent.py, communication_agent.py, base.py (HITL pattern)
+
+### Fase 8 — Dashboard sub-componentes
+Archivos:
+- `src/features/reports/PrintView.tsx`
+- PDF export real (html2pdf.js o @react-pdf/renderer)
+- Sub-componentes del ExecutiveDashboard
+
+### Fase 9 — Shared UI restante + chat
+Archivos:
+- `src/shared/components/chat/AIChatWidget.tsx`
+
+### Fase 10 — QA + cross-check
+- Cross-check de todos los archivos contra las 19 reglas
+- Verificar imports rotos
+- Test de accesibilidad
+- Performance audit
+
+## Reglas que se aplicaron consistentemente en esta sesión
+1. NUNCA colores hardcoded → tokens Silver Tide siempre
+2. NUNCA backdrop-filter para superficies de datos
+3. Recharts: chartTheme.ts para SVG hex
+4. useReducedMotion() en todas las animaciones
+5. Componentes shared: EmptyState, Badge, Button, Card, Skeleton, PageContainer
+6. focus-visible (no focus), aria-*, role
+7. Touch targets mínimo 44px
+8. showToast para feedback de usuario
+9. Breadcrumbs con paths absolutos /admin/ prefix (aplica a rutas admin)
+
+## Nota sobre la dinámica de trabajo
+- Yo propongo y analizo antes de escribir código
+- El usuario aprueba antes de generar
+- Archivos completos para rewrites >30%, quirúrgicos para ≤15 líneas
+- Siempre changelog detallado al final
+- Prioridad: ALTA → MEDIA → BAJA
+- Los agentes backend se leen para entender el shape de datos y las tools disponibles, no para reescribir backend

@@ -1,0 +1,998 @@
+/* src/features/events/components/EventIntelligencePanel.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Events Domain — Intelligence Panel Component                */
+/*                                                              */
+/* @namespace  eip-*                                            */
+/* @keyframes  8 (eipReveal, eipCardIn, eipThinkingStep,       */
+/*              eipConfidenceFill, eipAmbientBreath,            */
+/*              eipDigestIn, eipReasonStep, eipDomainPop)       */
+/* @signature  State-reactive ambient glow + AI thinking steps  */
+/*             + confidence calibration + reasoning chains      */
+/* ═══════════════════════════════════════════════════════════ */
+
+/* §0 Root + Panel Ambient */
+/* §1 Intelligence Digest */
+/* §2 Grid + Card Stagger */
+/* §3 Tool Card */
+/* §4 AI Thinking Steps */
+/* §5 Result Sections */
+/* §6 Confidence Bar */
+/* §7 Factor Bars */
+/* §8 Recommendation/Strategy Cards */
+/* §9 Reasoning Chain */
+/* §10 Domain Signals */
+/* §11 Insight Actions */
+/* §12 Keyframes */
+/* §13 Light Mode */
+/* §14 Reduced Motion */
+/* §15 Responsive */
+/* §16 Print */
+
+/* ─────────────────────────────────────────────────────────── */
+/* §0 Root + Panel Ambient                                     */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: eipReveal 0.4s var(--ease-apple) forwards;
+  opacity: 0;
+}
+
+/* Panel ambient border-top */
+.eip::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  z-index: 2;
+  transition: background 0.4s var(--ease-apple);
+}
+
+.eip--idle::before     { background: var(--color-gold-400); }
+.eip--thinking::before { background: var(--color-teal-400); animation: eipAmbientBreath 2s ease-in-out infinite; }
+.eip--healthy::before  { background: var(--color-emerald-400); }
+.eip--critical::before { background: var(--color-rose-400); animation: eipAmbientBreath 1.5s ease-in-out infinite; }
+
+/* ─────────────────────────────────────────────────────────── */
+/* §1 Intelligence Digest Strip                                */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip-digest {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md, 12px);
+  background: color-mix(in srgb, var(--color-surface-2) 50%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+  animation: eipDigestIn 0.35s var(--ease-apple) forwards;
+  animation-delay: 100ms;
+  opacity: 0;
+}
+
+.eip-digest--active {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.eip-digest__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.eip-digest__count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-silver-400);
+  white-space: nowrap;
+}
+
+.eip-digest__dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.eip-digest__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dot-color, var(--color-silver-600));
+  opacity: 0.3;
+  transition: opacity 0.3s var(--ease-apple);
+}
+.eip-digest__dot[data-active] {
+  opacity: 1;
+  animation: eipDomainPop 0.3s var(--ease-apple);
+}
+
+.eip-digest__narrative {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm, 8px);
+  background: color-mix(in srgb, var(--color-gold-400) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  animation: eipDigestIn 0.35s var(--ease-apple) forwards;
+}
+
+.eip-digest__sparkle {
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.eip-digest__narrative p {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-silver-300);
+  line-height: 1.5;
+}
+
+.eip-digest__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.eip-digest__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm, 8px);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-gold-400);
+  color: var(--color-abyss);
+  border: none;
+  cursor: pointer;
+  transition: filter 0.12s var(--ease-apple);
+}
+.eip-digest__btn:hover {
+  filter: brightness(1.1);
+}
+
+.eip-digest__btn--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-silver-400);
+}
+.eip-digest__btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §2 Grid + Card Stagger                                      */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.eip-stagger {
+  opacity: 0;
+  animation: eipCardIn 0.35s var(--ease-apple) forwards;
+  animation-delay: calc(200ms + var(--card-i, 0) * 80ms);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §3 Tool Card                                                */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow: hidden;
+  transition: border-color 0.2s var(--ease-apple);
+}
+
+/* Top accent stripe */
+.eip-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--card-tone, var(--color-silver-500));
+  z-index: 2;
+}
+
+/* State-driven top accent */
+.eip-card--thinking::before {
+  animation: eipAmbientBreath 1.5s ease-in-out infinite;
+}
+.eip-card--success::before {
+  background: var(--color-emerald-400);
+}
+.eip-card--error::before {
+  background: var(--color-rose-400);
+}
+
+.eip-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.eip-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md, 10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--card-tone, var(--color-silver-500)) 12%, transparent);
+}
+
+.eip-card__title-block {
+  min-width: 0;
+}
+
+.eip-card__title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  line-height: 1.3;
+}
+
+.eip-card__subtitle {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-500);
+  line-height: 1.3;
+}
+
+.eip-card__body {
+  flex: 1;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Idle state */
+.eip-card__idle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Error state */
+.eip-card__error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.eip-card__error-icon {
+  color: var(--color-rose-400);
+}
+
+.eip-card__error-text {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-rose-400);
+}
+
+/* Result + refresh */
+.eip-card__result {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.eip-card__refresh {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.eip-card__refresh-btn {
+  font-size: 11px !important;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §4 AI Thinking Steps                                        */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip-thinking {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.eip-thinking__step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  animation: eipThinkingStep 0.3s var(--ease-apple) forwards;
+  animation-delay: calc(var(--step-i, 0) * 300ms);
+}
+
+.eip-thinking__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-teal-400);
+  flex-shrink: 0;
+}
+.eip-thinking__step--last .eip-thinking__dot {
+  animation: eipAmbientBreath 1s ease-in-out infinite;
+}
+
+.eip-thinking__icon {
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.eip-thinking__text {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-400);
+  line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §5 Result Sections                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip-result {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.eip-result__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eip-result__head--dual {
+  justify-content: center;
+}
+
+.eip-result__head-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eip-result__head-note {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-400);
+}
+
+.eip-result__head-count {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.eip-result__arrow {
+  font-size: 18px;
+  color: var(--color-silver-500);
+}
+
+.eip-summary {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--color-silver-400);
+  line-height: 1.5;
+}
+
+.eip-roi {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-gold-400);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §6 Confidence Bar                                           */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip-confidence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.eip-confidence__track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  max-width: 120px;
+}
+
+.eip-confidence__fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--conf-pct, 0%);
+  background: var(--conf-color, var(--color-silver-500));
+  animation: eipConfidenceFill 0.5s var(--ease-apple) forwards;
+  animation-delay: 400ms;
+  /* Start from 0 for animation */
+  --conf-pct-anim: var(--conf-pct, 0%);
+}
+
+.eip-confidence__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §7 Factor Bars                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip-factors {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.eip-factor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eip-factor__bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.eip-factor__fill {
+  height: 100%;
+  border-radius: 3px;
+  width: var(--factor-w, 0%);
+  transition: width 0.4s var(--ease-apple);
+}
+.eip-factor__fill--positive { background: var(--color-emerald-400); }
+.eip-factor__fill--negative { background: var(--color-rose-400); }
+
+.eip-factor__name {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-400);
+  min-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §8 Recommendation / Strategy / Conflict Cards               */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip-recommendation {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 10px);
+  background: color-mix(in srgb, var(--color-teal-400) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+}
+
+.eip-recommendation__icon {
+  color: var(--color-teal-400);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.eip-recommendation__text {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-silver-300);
+  line-height: 1.5;
+}
+
+.eip-recs,
+.eip-conflicts,
+.eip-strategies {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eip-rec,
+.eip-conflict-card,
+.eip-strategy {
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 10px);
+  background: var(--color-surface-3);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.eip-rec__header,
+.eip-conflict-card__header,
+.eip-strategy__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.eip-rec__area-icon {
+  color: var(--color-gold-400);
+  display: flex;
+  align-items: center;
+}
+
+.eip-rec__effort {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-silver-500);
+}
+
+.eip-rec__suggestion,
+.eip-conflict-card__detail,
+.eip-strategy__action {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-silver-200);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.eip-rec__impact {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-emerald-400);
+}
+
+.eip-conflict-card__title {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-silver-200);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.eip-conflict-card__resolution {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.eip-conflict-card__shield-icon {
+  color: var(--color-gold-400);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.eip-conflict-card__resolution p {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-gold-400);
+  line-height: 1.4;
+}
+
+.eip-strategy__increase {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-emerald-400);
+}
+
+.eip-strategy__meta {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-500);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §9 Reasoning Chain                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip-reasoning {
+  padding-top: 8px;
+}
+
+.eip-reasoning__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 0;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-silver-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.12s var(--ease-apple);
+}
+.eip-reasoning__toggle:hover {
+  color: var(--color-silver-300);
+}
+
+.eip-reasoning__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0 4px 16px;
+}
+
+.eip-reasoning__step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  animation: eipReasonStep 0.25s var(--ease-apple) forwards;
+  animation-delay: calc(var(--step-i, 0) * 100ms);
+}
+
+.eip-reasoning__check {
+  color: var(--color-emerald-400);
+  flex-shrink: 0;
+}
+
+.eip-reasoning__icon {
+  font-size: 11px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.eip-reasoning__text {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--color-silver-400);
+  line-height: 1.3;
+}
+
+.eip-reasoning__result {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-emerald-400);
+  padding-left: 18px;
+  margin-top: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §10 Domain Signals                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip-domains {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.eip-domains__title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-silver-600);
+}
+
+.eip-domains__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.eip-domain-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--domain-color, var(--color-silver-400));
+  background: color-mix(in srgb, var(--domain-color, var(--color-silver-500)) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--domain-color, var(--color-silver-500)) 15%, transparent);
+  cursor: default;
+}
+
+.eip-domain-badge--inactive {
+  opacity: 0.3;
+  color: var(--color-silver-600);
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+.eip-domain-badge__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--domain-color, var(--color-silver-500));
+}
+.eip-domain-badge--inactive .eip-domain-badge__dot {
+  background: var(--color-silver-600);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §11 Insight Actions (shared Button)                         */
+/* ─────────────────────────────────────────────────────────── */
+
+.eip-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §12 Keyframes                                               */
+/* ─────────────────────────────────────────────────────────── */
+
+@keyframes eipReveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eipCardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eipThinkingStep {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes eipConfidenceFill {
+  from { width: 0%; }
+  to   { width: var(--conf-pct-anim, var(--conf-pct, 0%)); }
+}
+
+@keyframes eipAmbientBreath {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+
+@keyframes eipDigestIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eipReasonStep {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes eipDomainPop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §13 Light Mode                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+.light .eip-digest {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .eip-digest__count {
+  color: var(--color-silver-500);
+}
+.light .eip-digest__narrative {
+  background: color-mix(in srgb, var(--color-gold-400) 4%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+.light .eip-digest__narrative p {
+  color: var(--color-silver-700);
+}
+.light .eip-digest__btn--ghost {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-500);
+}
+.light .eip-card__title {
+  color: var(--color-silver-800);
+}
+.light .eip-card__subtitle {
+  color: var(--color-silver-500);
+}
+.light .eip-card__refresh {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .eip-confidence__track {
+  background: rgba(0, 0, 0, 0.06);
+}
+.light .eip-confidence__fill--high { --conf-color: #047857; }
+.light .eip-confidence__fill--medium { --conf-color: #b45309; }
+.light .eip-confidence__fill--low { --conf-color: #e11d48; }
+.light .eip-confidence__label { color: var(--color-silver-600); }
+.light .eip-thinking__text,
+.light .eip-reasoning__text {
+  color: var(--color-silver-600);
+}
+.light .eip-factor__name {
+  color: var(--color-silver-500);
+}
+.light .eip-rec,
+.light .eip-conflict-card,
+.light .eip-strategy {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .eip-rec__suggestion,
+.light .eip-conflict-card__detail,
+.light .eip-strategy__action {
+  color: var(--color-silver-700);
+}
+.light .eip-summary {
+  color: var(--color-silver-600);
+}
+.light .eip-recommendation {
+  background: color-mix(in srgb, #0d9488 4%, transparent);
+  border-color: color-mix(in srgb, #0d9488 8%, transparent);
+}
+.light .eip-recommendation__text {
+  color: var(--color-silver-700);
+}
+.light .eip-domains {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .eip-domain-badge--inactive {
+  color: var(--color-silver-400);
+}
+.light .eip-actions {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §14 Reduced Motion                                          */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .eip,
+  .eip-stagger,
+  .eip-digest,
+  .eip-digest__narrative,
+  .eip-thinking__step,
+  .eip-reasoning__step {
+    animation: none !important;
+    opacity: 1;
+  }
+  .eip::before,
+  .eip-card--thinking::before {
+    animation: none;
+  }
+  .eip-confidence__fill {
+    animation: none;
+    width: var(--conf-pct, 0%);
+  }
+  .eip-action {
+    transition: none;
+  }
+  .eip-digest__dot[data-active] {
+    animation: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §15 Responsive                                              */
+/* ─────────────────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .eip-card {
+    padding: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .eip__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* §16 Print                                                   */
+/* ─────────────────────────────────────────────────────────── */
+
+@media print {
+  .eip {
+    animation: none;
+    opacity: 1;
+  }
+  .eip::before {
+    display: none;
+  }
+  .eip-digest {
+    border: 1px solid #ccc;
+    background: #f9fafb;
+    animation: none;
+    opacity: 1;
+  }
+  .eip-digest__narrative {
+    background: #f0f0f0;
+    border-color: #ccc;
+    animation: none;
+  }
+  .eip-digest__sparkle {
+    color: #333;
+  }
+  .eip-card {
+    border: 1px solid #d1d5db;
+    background: white;
+  }
+  .eip-card::before {
+    display: none;
+  }
+  .eip-card__title {
+    color: #111;
+  }
+  .eip-card__subtitle {
+    color: #555;
+  }
+  .eip-stagger {
+    animation: none;
+    opacity: 1;
+  }
+  .eip-thinking__step,
+  .eip-reasoning__step {
+    animation: none;
+    opacity: 1;
+  }
+  .eip-confidence__fill {
+    animation: none;
+  }
+  .eip-action--accept {
+    background: #333;
+    color: white;
+  }
+  .eip-action--modify {
+    background: white;
+    color: #333;
+    border-color: #ccc;
+  }
+}

@@ -1,0 +1,950 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/families/components/FamilyPulse.css
+   Phase 34+ Migration — "The Heartbeat Loom"
+   Level 6+ Agency · Production Grade
+
+   MERGED: Monitor aesthetic + BEM architecture + 13 Dimensions
+
+   SIGNATURE VISUAL ELEMENTS:
+   1. CRT monitor grid (CSS background pattern)
+   2. Phosphor ECG glow (drop-shadow + dual-path)
+   3. Sweep line with gradient trail (oscilloscope style)
+   4. Heartbeat BPM dot (lub-dub animation)
+   5. Scanline overlay (subtle CRT effect)
+   6. Zone segments with data-attribute colors
+   7. Stagger cascade on all 7 sections
+
+   CSS STANDARD: 13 Dimensions Applied
+     D1  Glass morphism (inset highlight, gold border-left)
+     D2  Stagger (7 section groups)
+     D3  Cubic-bezier easing on entrance
+     D4  Mono for data, UI for labels
+     D5  Rhythm-driven dynamic colors via --pulse-color
+     D6  Pseudo-element depth (::before highlight, ::after scanlines)
+     D7  Hover on sections
+     D8  Tight spatial density
+     D9  Responsive ≤768px
+     D10 aria-hidden on decorative SVG
+     D11 Light mode complete
+     D12 Reduced motion + print
+     D13 fm-pulse* namespaced keyframes (8 total)
+
+   Keyframes: fm-pulseSlideUp, fm-pulseSweep, fm-pulseHeartbeat,
+              fm-pulseFill, fm-pulseSegment, fm-pulseGlowPulse,
+              fm-pulseAuraBreathe, fm-pulseFadeIn
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   §0  Root — Monitor Surface
+   D1-01: Translucent gradient with depth
+   D1-07: Inset top highlight (::before)
+   D1-12: Border-left gold accent
+   D1-13: Contextual shadow
+   D1-14: overflow: hidden
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-pulse {
+  position: relative;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg, 12px);
+  background: linear-gradient(
+    168deg,
+    rgba(180, 190, 210, 0.03) 0%,
+    rgba(10, 18, 16, 0.97) 40%,
+    rgba(8, 14, 12, 0.98) 100%
+  );
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid rgba(201, 169, 110, 0.2);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  opacity: 0;
+  animation: fm-pulseSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §1  Glass Morphism — Inset Highlight + Scanline Overlay
+   D1-07: Top edge light (::before)
+   D6: CRT scanlines (::after)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-pulse::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.03) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Subtle zone glow wash */
+.fm-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 50% 30%,
+    color-mix(in srgb, var(--pulse-color, transparent) 4%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §2  Header — Section Label + Rhythm Badge
+   D4-02: Label is mono uppercase 9px
+   D4-05: Badge is mono 9px
+   D2-07: Stagger delay 0s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-pulse__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 12px;
+  opacity: 0;
+  animation: fm-pulseSlideUp 0.3s ease 0s forwards;
+}
+
+.fm-pulse__section-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-silver-500);
+}
+
+.fm-pulse__rhythm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pulse-color, var(--color-emerald-400));
+  background: color-mix(in srgb, var(--pulse-color, var(--color-emerald-400)) 12%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §3  ECG Monitor — THE SIGNATURE ELEMENT
+   D6: CRT grid background + scanline overlay
+   D5: ECG colors driven by --pulse-color
+   D2-07: Stagger delay 0.05s
+
+   VISUAL DESIGN:
+   - CSS background grid (ECG paper pattern)
+   - SVG waveform with dual path (glow + line)
+   - Animated sweep line with gradient trail
+   - Scanline overlay (::after on .fm-pulse__ecg)
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-pulse__ecg {
+  position: relative;
+  height: 72px;
+  border-radius: var(--radius-md, 8px);
+  background:
+    /* Fine grid — 14px spacing */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 13px,
+      rgba(255, 255, 255, 0.025) 13px,
+      rgba(255, 255, 255, 0.025) 14px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 13px,
+      rgba(255, 255, 255, 0.025) 13px,
+      rgba(255, 255, 255, 0.025) 14px
+    ),
+    /* Major grid — 70px spacing */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 69px,
+      rgba(255, 255, 255, 0.05) 69px,
+      rgba(255, 255, 255, 0.05) 70px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 69px,
+      rgba(255, 255, 255, 0.05) 69px,
+      rgba(255, 255, 255, 0.05) 70px
+    ),
+    /* Base surface */
+    rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  margin-bottom: 12px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-pulseSlideUp 0.3s ease 0.05s forwards;
+}
+
+/* CRT scanline overlay */
+.fm-pulse__ecg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.02) 2px,
+    rgba(0, 0, 0, 0.02) 4px
+  );
+  pointer-events: none;
+  z-index: 4;
+  border-radius: inherit;
+}
+
+.fm-pulse__ecg-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 8px 0;
+}
+
+/* Phosphor glow path — wider, blurred, behind the main line */
+.fm-pulse__ecg-glow {
+  fill: none;
+  stroke: var(--pulse-color, var(--color-emerald-400));
+  stroke-width: 4;
+  opacity: 0.15;
+  filter: blur(3px);
+}
+
+/* Main ECG line — crisp with drop-shadow */
+.fm-pulse__ecg-line {
+  fill: none;
+  stroke: var(--pulse-color, var(--color-emerald-400));
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px var(--pulse-color, var(--color-emerald-400)));
+}
+
+/* ── Sweep Line — Oscilloscope-style gradient trail ── */
+.fm-pulse__ecg-sweep {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 80px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--pulse-color, var(--color-emerald-400)) 3%, transparent) 30%,
+    color-mix(in srgb, var(--pulse-color, var(--color-emerald-400)) 10%, transparent) 44%,
+    color-mix(in srgb, var(--pulse-color, var(--color-emerald-400)) 50%, transparent) 48%,
+    var(--pulse-color, var(--color-emerald-400)) 50%,
+    color-mix(in srgb, var(--pulse-color, var(--color-emerald-400)) 8%, transparent) 54%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 3;
+  animation: fm-pulseSweep 4s ease-in-out infinite;
+  will-change: left;
+}
+
+/* Flatline: no sweep */
+.fm-pulse[data-rhythm="flatline"] .fm-pulse__ecg-sweep {
+  display: none;
+}
+
+/* Flatline: muted ECG */
+.fm-pulse[data-rhythm="flatline"] .fm-pulse__ecg-line {
+  opacity: 0.3;
+  filter: none;
+}
+
+.fm-pulse[data-rhythm="flatline"] .fm-pulse__ecg-glow {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §4  BPM Display — Heartbeat pulsing dot
+   D4-01: BPM number is mono 28px
+   D5-04: Color via data-attribute
+   D2-07: Stagger delay 0.1s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-pulse__bpm {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 14px;
+  opacity: 0;
+  animation: fm-pulseSlideUp 0.3s ease 0.1s forwards;
+}
+
+.fm-pulse__bpm-number {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.fm-pulse__bpm-number[data-bpm="high"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-pulse__bpm-number[data-bpm="medium"] {
+  color: var(--color-gold-400);
+}
+
+.fm-pulse__bpm-number[data-bpm="low"] {
+  color: var(--color-amber-400);
+}
+
+.fm-pulse__bpm-number[data-bpm="critical"] {
+  color: var(--color-rose-400);
+}
+
+.fm-pulse__bpm-unit {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--color-silver-500);
+}
+
+/* Heartbeat dot — lub-dub pulse animation */
+.fm-pulse__bpm-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: auto;
+  animation: fm-pulseHeartbeat 0.83s ease-in-out infinite;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.fm-pulse__bpm-dot[data-bpm="high"] {
+  background-color: var(--color-emerald-400);
+  color: var(--color-emerald-400);
+}
+
+.fm-pulse__bpm-dot[data-bpm="medium"] {
+  background-color: var(--color-gold-400);
+  color: var(--color-gold-400);
+}
+
+.fm-pulse__bpm-dot[data-bpm="low"] {
+  background-color: var(--color-amber-400);
+  color: var(--color-amber-400);
+}
+
+.fm-pulse__bpm-dot[data-bpm="critical"] {
+  background-color: var(--color-rose-400);
+  color: var(--color-rose-400);
+}
+
+.fm-pulse__bpm-dot[data-flatline] {
+  animation: none;
+  opacity: 0.4;
+  box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §5  Amplitude Bar
+   D4-02: Label is mono uppercase
+   D5-04: Color via data-attribute
+   D2-07: Stagger delay 0.15s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-pulse__amplitude {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 14px;
+  opacity: 0;
+  animation: fm-pulseSlideUp 0.3s ease 0.15s forwards;
+}
+
+.fm-pulse__amplitude-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.fm-pulse__amplitude-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-silver-500);
+}
+
+.fm-pulse__amplitude-value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.fm-pulse__amplitude-value[data-amp="high"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-pulse__amplitude-value[data-amp="medium"] {
+  color: var(--color-gold-400);
+}
+
+.fm-pulse__amplitude-value[data-amp="low"] {
+  color: var(--color-amber-400);
+}
+
+.fm-pulse__amplitude-value[data-amp="critical"] {
+  color: var(--color-rose-400);
+}
+
+.fm-pulse__amplitude-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.fm-pulse__amplitude-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: var(--pulse-amp, 0%);
+  opacity: 0;
+  animation: fm-pulseFill 0.6s ease 0.4s forwards;
+}
+
+.fm-pulse__amplitude-fill[data-amp="high"] {
+  background: var(--color-emerald-400);
+}
+
+.fm-pulse__amplitude-fill[data-amp="medium"] {
+  background: var(--color-gold-400);
+}
+
+.fm-pulse__amplitude-fill[data-amp="low"] {
+  background: var(--color-amber-400);
+}
+
+.fm-pulse__amplitude-fill[data-amp="critical"] {
+  background: var(--color-rose-400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §6  Zone Distribution — Active/Passive/Dormant segments
+   D5-04: Zone colors via data-attribute
+   D2-07: Stagger delay 0.2s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-pulse__zones {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 14px;
+  opacity: 0;
+  animation: fm-pulseSlideUp 0.3s ease 0.2s forwards;
+}
+
+.fm-pulse__zone-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.fm-pulse__zone-segment {
+  height: 100%;
+  opacity: 0;
+  animation: fm-pulseSegment 0.4s ease forwards;
+}
+
+.fm-pulse__zone-segment[data-zone="active"] {
+  width: var(--zone-active, 0%);
+  background: var(--color-emerald-400);
+  animation-delay: 0.35s;
+}
+
+.fm-pulse__zone-segment[data-zone="passive"] {
+  width: var(--zone-passive, 0%);
+  background: var(--color-amber-400);
+  animation-delay: 0.4s;
+}
+
+.fm-pulse__zone-segment[data-zone="dormant"] {
+  width: var(--zone-dormant, 0%);
+  background: var(--color-silver-600);
+  animation-delay: 0.45s;
+}
+
+.fm-pulse__zone-labels {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fm-pulse__zone-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-silver-500);
+}
+
+.fm-pulse__zone-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.fm-pulse__zone-dot[data-zone="active"] {
+  background: var(--color-emerald-400);
+}
+
+.fm-pulse__zone-dot[data-zone="passive"] {
+  background: var(--color-amber-400);
+}
+
+.fm-pulse__zone-dot[data-zone="dormant"] {
+  background: var(--color-silver-600);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §7  Trend Deltas — 7d / 30d
+   D4-01: Trend values are mono data
+   D5-04: Color via data-attribute
+   D2-07: Stagger delay 0.25s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-pulse__trends {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  opacity: 0;
+  animation: fm-pulseSlideUp 0.3s ease 0.25s forwards;
+}
+
+.fm-pulse__trend {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.fm-pulse__trend-period {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-silver-500);
+}
+
+.fm-pulse__trend-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.fm-pulse__trend-value[data-trend="up"] {
+  color: var(--color-emerald-400);
+}
+
+.fm-pulse__trend-value[data-trend="down"] {
+  color: var(--color-rose-400);
+}
+
+.fm-pulse__trend-value[data-trend="stable"] {
+  color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §8  Narrative (P1) — Card treatment
+   D4-03: Body text uses --font-ui
+   D2-07: Stagger delay 0.3s
+   ═══════════════════════════════════════════════════════════ */
+
+.fm-pulse__narrative {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--color-silver-400);
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: fm-pulseSlideUp 0.3s ease 0.3s forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §9  Keyframes — fm-pulse* namespaced
+   D13-01: All at end
+   D13-02: All namespaced
+   D13-05: Component prefix matches
+   Total: 8 keyframes
+   ═══════════════════════════════════════════════════════════ */
+
+/* Entrance stagger */
+@keyframes fm-pulseSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ECG sweep — oscilloscope trail */
+@keyframes fm-pulseSweep {
+  0% {
+    left: -80px;
+  }
+  75% {
+    left: 100%;
+  }
+  76%, 100% {
+    left: -80px;
+  }
+}
+
+/* Heartbeat — lub-dub pattern (72 BPM visual rate) */
+@keyframes fm-pulseHeartbeat {
+  0% {
+    transform: scale(1);
+  }
+  5% {
+    transform: scale(1.5);
+  }
+  10% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.25);
+  }
+  20% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Amplitude fill reveal */
+@keyframes fm-pulseFill {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+/* Zone segment reveal */
+@keyframes fm-pulseSegment {
+  from {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* Subtle glow pulse on ECG area (rhythm-specific) */
+@keyframes fm-pulseGlowPulse {
+  0%, 100% {
+    box-shadow: inset 0 0 20px color-mix(in srgb, var(--pulse-color, transparent) 3%, transparent);
+  }
+  50% {
+    box-shadow: inset 0 0 40px color-mix(in srgb, var(--pulse-color, transparent) 6%, transparent);
+  }
+}
+
+/* BPM dot glow breathe */
+@keyframes fm-pulseAuraBreathe {
+  0%, 100% {
+    box-shadow: 0 0 4px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+}
+
+/* Generic fade in */
+@keyframes fm-pulseFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Apply glow pulse to ECG container on non-flatline rhythms */
+.fm-pulse:not([data-rhythm="flatline"]) .fm-pulse__ecg {
+  animation:
+    fm-pulseSlideUp 0.3s ease 0.05s forwards,
+    fm-pulseGlowPulse 4s ease-in-out 0.5s infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §10  Light Mode
+   D11: Complete
+   ═══════════════════════════════════════════════════════════ */
+
+.light .fm-pulse {
+  background: var(--color-surface-0);
+  border-color: rgba(0, 0, 0, 0.06);
+  border-left-color: rgba(201, 169, 110, 0.12);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-pulse::before,
+.light .fm-pulse::after {
+  display: none;
+}
+
+.light .fm-pulse__ecg {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 13px,
+      rgba(0, 0, 0, 0.03) 13px,
+      rgba(0, 0, 0, 0.03) 14px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 13px,
+      rgba(0, 0, 0, 0.03) 13px,
+      rgba(0, 0, 0, 0.03) 14px
+    ),
+    rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-pulse__ecg::after {
+  display: none;
+}
+
+.light .fm-pulse__ecg-line {
+  filter: none;
+}
+
+.light .fm-pulse__ecg-glow {
+  opacity: 0.08;
+  filter: blur(4px);
+}
+
+.light .fm-pulse__amplitude-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-pulse__trends {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .fm-pulse__narrative {
+  background: rgba(0, 0, 0, 0.015);
+  border-color: rgba(0, 0, 0, 0.04);
+  color: var(--color-silver-600);
+}
+
+.light .fm-pulse__bpm-dot {
+  box-shadow: 0 0 4px currentColor;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §11  Reduced Motion
+   D12-05: opacity: 1 on all stagger
+   D12-06: All animations/transitions disabled
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-pulse,
+  .fm-pulse:not([data-rhythm="flatline"]) .fm-pulse__ecg,
+  .fm-pulse__header,
+  .fm-pulse__ecg,
+  .fm-pulse__bpm,
+  .fm-pulse__amplitude,
+  .fm-pulse__zones,
+  .fm-pulse__trends,
+  .fm-pulse__narrative {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .fm-pulse__ecg-sweep {
+    display: none;
+  }
+
+  .fm-pulse__ecg-glow {
+    display: none;
+  }
+
+  .fm-pulse__ecg-line {
+    filter: none;
+  }
+
+  .fm-pulse__bpm-dot {
+    animation: none;
+    box-shadow: 0 0 4px currentColor;
+  }
+
+  .fm-pulse__amplitude-fill {
+    animation: none;
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .fm-pulse__zone-segment {
+    animation: none;
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §12  Responsive
+   D9: Mobile adjustments
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .fm-pulse {
+    padding: 14px 16px;
+  }
+
+  .fm-pulse__ecg {
+    height: 56px;
+  }
+
+  .fm-pulse__zone-labels {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fm-pulse__bpm-number {
+    font-size: 22px;
+  }
+
+  .fm-pulse__trends {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fm-pulse__ecg-sweep {
+    width: 60px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   §13  Print
+   D12-01: break-inside avoid
+   D12-02: White bg
+   D12-03: No pseudo-elements, no animations
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  .fm-pulse {
+    break-inside: avoid;
+    background: white;
+    border: 1px solid #ccc;
+    border-left: 3px solid #c9a96e;
+    backdrop-filter: none;
+    opacity: 1;
+    animation: none;
+    box-shadow: none;
+  }
+
+  .fm-pulse::before,
+  .fm-pulse::after {
+    display: none;
+  }
+
+  .fm-pulse__ecg {
+    animation: none;
+    opacity: 1;
+    background: #f9f9f9;
+  }
+
+  .fm-pulse__ecg::after,
+  .fm-pulse__ecg-sweep,
+  .fm-pulse__ecg-glow {
+    display: none;
+  }
+
+  .fm-pulse__ecg-line {
+    stroke: #333 !important;
+    filter: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-pulse__header,
+  .fm-pulse__bpm,
+  .fm-pulse__amplitude,
+  .fm-pulse__zones,
+  .fm-pulse__trends,
+  .fm-pulse__narrative {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fm-pulse__bpm-dot {
+    animation: none;
+  }
+
+  .fm-pulse__zone-segment {
+    animation: none;
+    opacity: 1;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .fm-pulse__narrative {
+    background: #f9f9f9;
+    border-color: #ddd;
+  }
+}

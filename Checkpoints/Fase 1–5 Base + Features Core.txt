@@ -1,0 +1,661 @@
+Fase 1–5: Base + Features Core
+
+(Completadas antes de esta conversación — incluidas por referencia)
+
+
+Estructura de proyecto, routing, auth flow
+Design System Silver Tide implementado
+Features base: events, families, facilities, reports
+Componentes shared library
+MCP integration layer (useMCPQuery)
+
+Fase 6: Análisis de Agentes + Componentes de Dashboard/Portal Socio
+
+Estado: ✅ COMPLETADA (análisis) / 🔧 PENDIENTE (correcciones)
+
+
+6.1 — Agentes del Backend Analizados (8 agentes, ~55 tools)
+
+#	Agente	Servicio MCP	Tools	Aprobación principal
+1	ExecutiveDashboardAgent	executive_dashboard	8	AUTO/HITL/SEMI mixto
+2	FinanceAgent	finance	7	HITL para operaciones, AUTO para queries
+3	MemberEngagementAgent	member_engagement	6	AUTO para dashboards, HITL para campañas
+4	CommunicationAgent	communication	8	HITL para broadcasts, AUTO para CRUD
+5	ProactiveRecommendationAgent	proactive_recommendation	8	AUTO para análisis, HITL para pricing
+6	SatisfactionAgent	satisfaction	6	SEMI/HITL (auto-approve)
+7	WellnessAgent	wellness	7	SEMI para updates, HITL para clases
+8	GuestManagementAgent	guest_management	5	SEMI→HITL condicional
+
+6.2 — Desglose detallado por agente
+
+Agent 1: ExecutiveDashboardAgent — 8 tools
+
+
+Tool	Aprobación	Destino Frontend
+get_executive_summary	AUTO	FinancialDashboard, EngagementDashboard
+get_financial_overview	AUTO	FinancialDashboard
+get_membership_health	AUTO	EngagementDashboard
+get_operational_pulse	AUTO	EngagementDashboard
+detect_anomalies	AUTO	Ambos dashboards
+get_age_group_balance	AUTO	EngagementDashboard
+generate_quarterly_board_report	HITL	ApprovalQueue
+export_report	SEMI→HITL	ApprovalQueue (condicional: audiencia externa)
+
+Agent 2: FinanceAgent — 7 tools
+
+
+Tool	Aprobación	Destino Frontend
+finance_budget_check	AUTO	FinancialDashboard
+finance_account_status	AUTO	FinancialDashboard
+finance_report_generate	SEMI	FinancialDashboard
+finance_expense_create	HITL	ApprovalQueue
+finance_invoice_create	HITL	ApprovalQueue
+finance_payment_process	HITL	ApprovalQueue
+finance_category_update	SEMI	ApprovalQueue
+
+Agent 3: MemberEngagementAgent — 6 tools
+
+
+Tool	Aprobación	Destino Frontend
+get_engagement_dashboard	AUTO	EngagementDashboard
+get_engagement_insights	AUTO	EngagementDashboard
+submit_feedback	AUTO	CommunicationCenter
+manage_referrals	AUTO	EngagementDashboard
+design_reactivation_campaign	HITL	ApprovalQueue
+manage_loyalty_rewards	HITL	ApprovalQueue
+
+Agent 4: CommunicationAgent — 8 tools
+
+
+Tool	Aprobación	Destino Frontend
+broadcast_club_announcement	HITL	CommunicationCenter + ApprovalQueue
+manage_emergency_broadcast	ALWAYS_HUMAN	CommunicationCenter + ApprovalQueue (doble aprobación)
+send_personalized_notification	SEMI→HITL	CommunicationCenter + ApprovalQueue (>100 destinatarios)
+manage_notification_templates	AUTO	CommunicationCenter
+schedule_notification	AUTO	CommunicationCenter
+get_notification_history	AUTO	CommunicationCenter
+manage_communication_preferences	AUTO	CommunicationCenter
+send_board_package	SEMI	CommunicationCenter (rol JUNTA)
+
+Agent 5: ProactiveRecommendationAgent — 8 tools
+
+
+Tool	Aprobación	Destino Frontend
+identify_social_clusters	AUTO	EngagementDashboard
+generate_family_recommendations	AUTO	EngagementDashboard
+generate_quarterly_insights	AUTO	EngagementDashboard
+predict_event_attendance	AUTO	EngagementDashboard
+detect_scheduling_conflicts	AUTO	EngagementDashboard
+personalize_communication	AUTO	CommunicationCenter
+optimize_pricing	HITL	ApprovalQueue
+suggest_new_activities	HITL	ApprovalQueue
+
+Agent 6: SatisfactionAgent — 6 tools
+
+
+Tool	Aprobación	Destino Frontend
+get_satisfaction_trends	AUTO	EngagementDashboard
+analyze_event_satisfaction	SEMI	EngagementDashboard
+get_survey_for_event	AUTO	EngagementDashboard
+get_satisfaction_questions	AUTO	—
+generate_satisfaction_report	SEMI	EngagementDashboard
+submit_satisfaction_survey	HITL (auto-approve)	ApprovalQueue (audit trail)
+
+Agent 7: WellnessAgent — 7 tools
+
+
+Tool	Aprobación	Destino Frontend
+wellness_profile_get	AUTO	EngagementDashboard
+wellness_activity_log	AUTO	EngagementDashboard
+wellness_recommendations	AUTO	—
+wellness_report	AUTO	EngagementDashboard
+wellness_profile_update	SEMI	—
+wellness_goal_set	SEMI	—
+wellness_schedule_class	HITL	ApprovalQueue
+
+Agent 8: GuestManagementAgent — 5 tools
+
+
+Tool	Aprobación	Destino Frontend
+get_guest_analytics	AUTO	EngagementDashboard
+manage_guest_privileges	AUTO	—
+register_guest	SEMI→HITL	ApprovalQueue (condicional: >4/día)
+plan_private_event	HITL	ApprovalQueue
+manage_trial_memberships	HITL	ApprovalQueue
+
+6.3 — Niveles de Aprobación
+
+Nivel	Significado	Visual en ApprovalQueue
+AUTO	Sin intervención humana	No aparece en queue
+SEMI	Aprobación condicional	Badge amarillo, aparece solo cuando se activa condición
+HITL	Human-in-the-loop siempre	Badge rojo, requiere acción
+ALWAYS_HUMAN	Doble confirmación	Badge rojo pulsante + paso extra de confirmación
+
+6.4 — Patrones de Escalación Condicional (3 patrones)
+
+Patrón	Agente	Condición
+register_guest	GuestManagement	>4 invitados/día → HITL
+send_personalized_notification	Communication	>100 destinatarios → HITL
+export_report	ExecutiveDashboard	audiencia externa → HITL
+
+6.5 — Consolidación ApprovalQueue — 17 tipos de requests
+
+#	Agente	Tool	Nivel	Tipo	Riesgo
+1	Finance	finance_expense_create	HITL	Gasto	Alto
+2	Finance	finance_invoice_create	HITL	Factura	Alto
+3	Finance	finance_payment_process	HITL	Pago	Alto
+4	Engagement	design_reactivation_campaign	HITL	Campaña masiva	Alto
+5	Engagement	manage_loyalty_rewards	HITL	Recompensa	Medio
+6	Communication	broadcast_club_announcement	HITL	Anuncio masivo	Alto
+7	Communication	manage_emergency_broadcast	ALWAYS_HUMAN	Emergencia	Crítico
+8	Communication	send_personalized_notification	SEMI→HITL	Notif. masiva	Medio
+9	Proactive	optimize_pricing	HITL	Cambio de precio	Alto
+10	Proactive	suggest_new_activities	HITL	Nueva actividad	Medio
+11	Wellness	wellness_schedule_class	HITL	Clase	Bajo
+12	Guests	plan_private_event	HITL	Evento privado	Alto
+13	Guests	manage_trial_memberships	HITL	Trial membership	Medio
+14	Guests	register_guest	SEMI→HITL	Excepción límite	Bajo
+15	Executive	generate_quarterly_board_report	HITL	Informe junta	Alto
+16	Executive	export_report	SEMI→HITL	Export externo	Medio
+17	Satisfaction	submit_satisfaction_survey	HITL (auto-approve)	Encuesta	N/A
+Análisis: ExecutiveDashboardAgent
+
+Archivo:backend/src/club_mcp/agents/executive_dashboard_agent.py
+
+
+8 tools (el agente más grande que he visto), 3 niveles de aprobación:
+
+
+Tool	Aprobación	Función
+generate_quarterly_board_report	HITL	Informe trimestral para la junta directiva
+export_report	SEMI_AUTO	Exportar reportes — escala a HITL si audiencia externa
+get_executive_summary	AUTO	Resumen ejecutivo consolidado (4 dominios KPIs)
+get_financial_overview	AUTO	Vista financiera detallada (P&L, revenue, expenses, margin)
+get_membership_health	AUTO	Salud de membresía (tier, growth, churn risk)
+get_operational_pulse	AUTO	Pulso operativo (eventos, utilización, actividades top)
+detect_anomalies	AUTO	Detección de anomalías multi-dominio
+get_age_group_balance	AUTO	Distribución por grupo etario con coeficiente de Gini
+
+
+Esto cambia mi recomendación anterior. Voy a ser directo.
+
+
+Lo que descubro aquí invalida parte de lo que propuse antes
+
+El checkpoint proponía crear finance.generate_financial_analysis y engagement.generate_engagement_analysis como tools nuevos. Pero ahora veo que ExecutiveDashboardAgent YA consolida estos datos:
+
+
+KPIs financieros que yo decía que faltaban — ya están aquí:
+
+
+KPI	Dónde existe
+Collection Ratio	get_financial_overview → collection_rate_pct: 94.0
+Operating Margin	get_financial_overview → calcula margin_pct en runtime
+Budget Variance	get_financial_overview → budget_variance_pct: 5.3
+Revenue Growth	get_financial_overview → revenue_growth_pct: 8.1
+Anomalías financieras	detect_anomalies → detecta sobrecosto F&B 18% con severidad HIGH
+
+KPIs de engagement que decía que faltaban — también:
+
+
+KPI	Dónde existe
+Satisfaction Score	get_executive_summary → engagement.satisfaction_score: 4.2
+NPS	get_executive_summary → engagement.nps_score: 35.0
+At Risk Members	get_executive_summary → engagement.at_risk_members: 23
+Churn Risk Count	get_executive_summary → membership.churn_risk_count: 23
+Engagement Score	get_executive_summary → membership.avg_engagement_score: 78.5
+
+
+Lo que SÍ falta — la capa de análisis con IA
+
+Los tools existentes proveen datos consolidados y detección de anomalías hardcodeadas. Pero ninguno:
+
+
+Usa claude_service para análisis narrativo
+Calcula KPIs avanzados (Risk Score ponderado de 5 factores, Shannon entropy)
+Genera proyecciones con regresión lineal
+Produce recomendaciones personalizadas con impacto estimado financiero
+
+Los datos son simulados ahora (hardcoded), pero la estructura ya está preparada para datos reales del repo.
+
+
+
+Mi recomendación revisada
+
+No crear tools nuevos en finance ni member_engagement.
+
+
+En su lugar, hay dos opciones:
+
+
+Opción A (mi recomendación): Agregar UN tool generate_ai_analysis al ExecutiveDashboardAgent que:
+
+1.Toma datos de get_executive_summary + detect_anomalies + datos cross-agent
+2.Usa claude_service con el patrón de fallback de SatisfactionAgent
+3.Calcula KPIs avanzados determinísticamente (Risk Score, Shannon entropy, proyecciones)
+4.Produce el reporte estructurado que FinancialDashboard y EngagementDashboard renderizan
+5.Parámetro scope: "financial" o "engagement" para que cada dashboard pida lo que necesita
+
+Ventajas:
+
+Centraliza análisis BI donde pertenece lógicamente (agente de BI)
+No duplica lógica de acceso a datos cross-agent
+Reutiliza los datos ya consolidados
+Un solo patrón claude_service + fallback
+
+Opción B: Mantener la recomendación original — dos tools distribuidos en finance y member_engagement. Más acoplamiento pero más separación de responsabilidades por dominio.
+
+
+
+Dato adicional: export_report tiene escalación condicional
+
+Igual que register_guest en GuestManagementAgent — internamente SEMI_AUTO pero escala a HITL si audience es EXTERNAL o MEMBERS. La ApprovalQueue necesita manejar este patrón.
+
+
+Dato adicional 2: get_age_group_balance calcula Gini real
+
+El coeficiente de Gini se calcula en runtime sobre los datos. Esto confirma que los agentes pueden calcular métricas complejas — el Shannon entropy del EngagementDashboard seguiría el mismo patrón.
+
+Paso 1 — Actualizá el CLAUDE_CONTEXT.md
+
+Actualizá el archivo con los hallazgos de este chat. Los bloques que necesitás agregar están repartidos en mis mensajes — los resumo acá:
+
+
+Agregar sección:
+
+text
+text
+## 5.8 Mock Architecture
+api.ts intercepta con REGISTRY. 18 mocks, 8 backend real.
+useMCPMutation SÍ existe.
+TOOLTIP_STYLE y AXIS_TICK SÍ existen en chartTheme.ts.
+
+## 5.9 Chat Architecture
+REST POST /api/chat/ (NO MCP).
+ClaudeService en backend, role-aware.
+
+## 13. HALLAZGOS FASE 8-10
+(MembershipDonut pendiente, FamilyAccount tabs/filters, etc.)
+
+Actualizar secciones:
+
+Estructura de archivos (agregar shared/components/ai/AIDecisionPanel.tsx)
+Fases del sprint (marcar 8, 9, 10 como ✅)
+
+Paso 2 — Abrí chat nuevo y decí:
+
+"Leé CLAUDE_CONTEXT.md. Continuamos con Fase 6."
+
+
+Paso 3 — Pasame estos 4 archivos:
+
+text
+text
+src/features/finance/FinancialDashboard.tsx
+src/features/engagement/EngagementDashboard.tsx
+src/features/communications/CommunicationCenter.tsx
+src/features/approvals/ApprovalQueue.tsx
+
+Paso 4 (si te los pido):
+
+text
+text
+backend/src/club_mcp/agents/member_engagement_agent.py
+backend/src/club_mcp/agents/communication_agent.py
+backend/src/club_mcp/agents/base.py
+
+Fase 10 — QA + Cross-check
+
+Trabajo desde lo que tengo en contexto. Produzco un reporte estructurado con hallazgos clasificados, no vuelvo a escribir código — solo señalo qué falta corregir.
+
+
+
+CROSS-CHECK CONTRA LAS 19 REGLAS
+
+Regla #1: NUNCA colores hardcoded — siempre var(--color-xxx)
+
+Archivo	Violación	Fix
+MembershipDonut.tsx	Tier colors hardcodeadas en MOCK_TIERS del padre y en el componente	Importar TIER_CONFIG de families/types.ts
+RevenueChart.tsx	activeDot.stroke: "var(--color-abyss, #080B12)" — fallback hex inline	OK como fallback, pero verificar que --color-abyss esté definido en CSS
+TopActivities.tsx	Emojis como icons ("🎾", "🏊")	Bajo impacto, documentar como pendiente
+FinancialDashboard.tsx	KPI kpi.color viene de CHART_PALETTE pero aplica via style={{}}	Los colores vienen del theme, no son hardcodeados string — aceptable
+AnomalyFeed.tsx	rgba(196,100,112,0.05) etc. en SEVERITY_CONFIG	Los hex base matchean tokens, alpha es necesario — aceptable
+AgeBalanceWidget.tsx	Group colors en MOCK data: "#8fae8b", "#5a7a9e", "#c8a951", "#9e6b6b"	No son tokens Silver Tide. Deberían mapear a la paleta
+
+Status: 2 violaciones reales (MembershipDonut tiers, AgeBalance mock colors), 4 aceptables.
+
+
+
+Regla #2: NUNCA backdrop-filter para superficies de datos
+
+Archivo	Violación	Fix
+MembershipDonut.tsx	Tooltip con backdrop-filter: blur(16px)	Ya flagged como pendiente. Usar TOOLTIP_STYLE
+PrintView.tsx	Toolbar ahora es sólido ✅	Corregido en Fase 8
+QuickActions.tsx	Overlay ahora es sólido ✅	Corregido en Fase 8
+
+Status: 1 violación real (MembershipDonut tooltip).
+
+
+
+Regla #3: Recharts — importar de chartTheme.ts
+
+Archivo	Status
+RevenueChart.tsx	✅ Usa CHART, CHART_PALETTE, TOOLTIP_STYLE, AXIS_TICK
+FinancialDashboard.tsx	✅ Usa CHART, CHART_COLORS, CHART_PALETTE, TOOLTIP_STYLE, AXIS_TICK
+MembershipDonut.tsx	❌ No importa de chartTheme — tooltip hardcoded
+TopActivities.tsx	✅ Usa CHART_PALETTE
+AgeBalanceWidget.tsx	✅ Usa CHART_PALETTE
+AnomalyFeed.tsx	✅ Usa CHART_PALETTE
+KPICards.tsx	N/A — no tiene charts
+
+Status: 1 violación (MembershipDonut).
+
+
+
+Regla #4: Changelog con reemplazos exactos
+
+✅ Cumplida en todos los archivos de Fase 7, 8, 9.
+
+
+
+Regla #5: Código completo >30%, quirúrgico ≤15 líneas
+
+✅ Cumplida. Todos los rewrites fueron código completo con changelog.
+
+
+
+Regla #6: badgeVariant son props del Badge
+
+✅ No hay violaciones detectadas.
+
+
+
+Regla #7: Tailwind 4 + CSS custom properties
+
+✅ Todos los archivos usan var(--color-xxx) consistentemente.
+
+
+
+Regla #8: Hover glow en botones — @keyframes CSS
+
+Archivo	Status
+HitlQueue.tsx	✅ Usa aurora-btn--sage
+QuickActions.tsx	✅ Usa aurora-btn--gold
+PeriodSelector.tsx	✅ Usa aurora-btn--gold
+AIChatWidget.tsx	❌ Botón send no tiene glow, solo hover:brightness. Menor
+AIDecisionPanel.tsx	✅ Usa componente Button shared
+
+Status: 1 menor (ChatWidget send button).
+
+
+
+Regla #9: Glow en cards — glowColor prop
+
+Archivo	Status
+Sub-componentes dashboard	❌ Usan glass-card class, no componente Card con glowColor
+AIDecisionPanel.tsx	✅ Usa componente Card shared
+RevenueChart.tsx (rewrite)	✅ Usa componente Card shared
+FinancialDashboard.tsx	✅ Usa componente Card shared
+
+Status: Los sub-componentes usan glass-card CSS class válida (verificada en global.css). No es violación estricta pero es inconsistente con el patrón de usar componentes shared.
+
+
+
+Regla #10: Responsiveness — mobile-first, touch targets ≥ 44px
+
+Archivo	Status
+Todos los rewrites Fase 7-9	✅ min-h-[44px] o min-h-[48px] en botones/inputs
+AIChatWidget.tsx	✅ Botones 44px, input con padding
+AIDecisionPanel.tsx	✅ StatPill pills, action buttons
+
+Status: ✅ Cumplida.
+
+
+
+Regla #11: Accesibilidad — focus-visible, role, aria-*, prefers-reduced-motion
+
+Archivo	focus-visible	ARIA	useReducedMotion
+ExecutiveDashboard.tsx	✅	✅	✅
+KPICards.tsx	N/A	✅ role="region", aria-label	✅
+RevenueChart.tsx	N/A	N/A (chart)	✅
+MembershipDonut.tsx	N/A	N/A (chart)	❌
+TopActivities.tsx	N/A	✅ role="list", role="listitem"	✅
+AnomalyFeed.tsx	N/A	✅ role="feed", button/keyboard	✅
+HitlQueue.tsx	N/A	✅ role="list", aria-live	✅
+QuickActions.tsx	✅	✅ aria-label, aria-expanded	✅
+PeriodSelector.tsx	✅	✅ role="tablist", aria-selected	✅
+YearOverYearToggle.tsx	N/A	✅ aria-pressed, aria-label	✅
+PrintView.tsx	✅	✅ aria-label	✅
+AgeBalanceWidget.tsx	N/A	N/A	✅
+AIDecisionPanel.tsx	N/A	✅ aria-expanded, aria-busy	✅
+AIChatWidget.tsx	✅	✅ role="dialog", aria-live, aria-label	✅
+FinancialDashboard.tsx	N/A	✅	✅ (via useMotion)
+SettingsPage.tsx	✅	✅	✅
+FamilyAccount.tsx	✅	✅	✅
+MyReservations.tsx	✅	✅	✅
+MiClubLanding.tsx	✅	✅	✅
+RiskHeatmap.tsx	✅	✅ grid/dialog	✅
+BoardReportViewer.tsx	✅	✅	✅
+
+Status: 1 violación (MembershipDonut — falta useReducedMotion).
+
+
+
+Regla #12: Formularios — onSubmit, auto-focus primer input
+
+Archivo	Status
+PeriodSelector.tsx	⚠️ Inputs de fecha no tienen onSubmit form wrapper, pero no es un form completo — aceptable
+AIChatWidget.tsx	✅ Enter envía, input enfocado al abrir
+
+Status: ✅ Cumplida donde aplica.
+
+
+
+Regla #13: Tabs — componente DetailTabs compartido
+
+Archivo	Status
+FamilyAccount.tsx	❌ Tab bar local (ya flagged Fase 7 como MEDIA)
+PeriodSelector.tsx	⚠️ Tabs locales pero es un caso específico de period selector — aceptable
+
+Status: 1 violación pendiente (FamilyAccount).
+
+
+
+Regla #14: Filtros — componente FilterDropdown compartido
+
+Archivo	Status
+FamilyAccount.tsx	❌ Filter select raw (ya flagged Fase 7 como MEDIA)
+
+Status: 1 violación pendiente.
+
+
+
+Regla #15: Toast — SIEMPRE showToast()
+
+Archivo	Status
+Todos los archivos	✅ Usan showToast()
+
+Status: ✅ Cumplida.
+
+
+
+Regla #16: Breadcrumbs — paths absolutos /admin/ prefix
+
+Archivo	Status
+QuickActions.tsx	✅ Corregido a /admin/events/new, /admin/families/new, etc.
+AIChatWidget.tsx	N/A — no tiene navegación
+
+Status: ✅ Cumplida.
+
+
+
+Regla #17: Botones — componente Button shared
+
+Archivo	Status
+HitlQueue.tsx	❌ Botones raw con clases — no usa Button shared
+QuickActions.tsx	⚠️ FAB button es especial — aceptable
+PeriodSelector.tsx	⚠️ Tab buttons son semánticos — aceptable
+AIChatWidget.tsx	⚠️ Send/close buttons son simples — aceptable
+AIDecisionPanel.tsx	✅ Usa Button shared
+
+Status: 1 violación (HitlQueue approve/reject).
+
+
+
+Regla #18: Animaciones — verificar useReducedMotion()
+
+Ya cubierto en Regla #11. Solo MembershipDonut.tsx falla.
+
+
+
+Regla #19: AI sections — MCP calls bajo demanda (botón), NO auto-load
+
+Archivo	Status
+FinancialDashboard.tsx	✅ Botón "Generar Reporte AI"
+AIDecisionPanel.tsx	✅ Botón "Generar Análisis" / "Regenerar"
+EngagementDashboard.tsx	⚠️ No lo reescribimos — verificar
+CommunicationCenter.tsx	⚠️ No lo reescribimos — verificar
+
+Status: ✅ En archivos reescritos. Pendientes de Fase 6.
+
+
+
+RESUMEN EJECUTIVO
+
+Categoría	Count
+Violaciones que debo corregir AHORA	2
+Violaciones ya flagged como pendientes	3
+Violaciones de Fase 6 (no reescrita aún)	2
+Cumplidas	14 reglas sin violaciones
+
+Violaciones a corregir AHORA (Fase 10)
+
+#	Regla	Archivo	Fix
+1	#1 + #3 + #11 + #18	MembershipDonut.tsx	Tooltip → TOOLTIP_STYLE, +useReducedMotion(), tier colors → CHART_PALETTE hex
+2	#1	AgeBalanceWidget.tsx	Mock group colors → CHART_PALETTE hex en ExecutiveDashboard
+
+Violaciones ya flagged (no corregir ahora)
+
+#	Regla	Archivo	Fix
+3	#13	FamilyAccount.tsx	Tab bar → DetailTabs shared
+4	#14	FamilyAccount.tsx	Filter → FilterDropdown shared
+5	#17	HitlQueue.tsx	Botones raw → Button shared
+
+Violaciones de Fase 6 (pendiente implementación)
+
+#	Regla	Archivo	Nota
+6	#19	EngagementDashboard.tsx	Verificar que AI sea bajo demanda
+7	#19	CommunicationCenter.tsx	Verificar que AI sea bajo demanda
+
+
+IMPORTS ROTOS — Verificación
+
+Los archivos reescritos importan:
+
+
+Import	Existe	Archivo fuente
+@/shared/components/ai/AIDecisionPanel	✅	Creado en Fase 8
+@/shared/lib/chartTheme	✅	Existente
+@/shared/lib/riskTheme	✅	Creado en Fase 7
+@/shared/hooks/useMCPQuery	✅	Contiene useMCPQuery + useMCPMutation + useExecutiveSummary
+@/shared/hooks/useReducedMotion	✅	Existente
+@/shared/components/ui/Card	✅	Existente
+@/shared/components/ui/Button	✅	Existente
+@/shared/components/ui/Skeleton	✅	Existente
+@/shared/components/ui/Toast	✅	Contiene showToast
+@/shared/components/layout/StatCard	✅	Existente
+@/shared/components/layout/PageContainer	✅	Existente
+@/stores/auth.store	✅	Con loginTimestamp
+@/features/families/types	✅	Con TIER_CONFIG
+@/features/finance/types	✅	Con todos los types
+@/features/events/types	✅	Con EVENT_TYPE_CONFIG
+
+Status: Sin imports rotos.
+
+
+
+MOCK-DATA — Verificación de keys
+
+Los archivos usan estas keys contra el REGISTRY:
+
+
+Key en componente	Key en REGISTRY	Match
+families.list_families	families.list_families	✅
+families.get_family_detail	families.get_family_detail	✅
+events.list_events	events.list_events	✅
+events.get_event_detail	events.get_event_detail	✅
+facilities.list_facilities	facilities.list_facilities	✅
+facilities.get_reservations	facilities.get_reservations	✅
+finance.get_financial_summary	finance.get_financial_summary	✅
+finance.get_family_account	finance.get_family_account	✅
+guests.list_todays_guests	guests.list_todays_guests	✅
+guests.get_today_summary	guests.get_today_summary	✅
+communications.list_announcements	communications.list_announcements	✅
+communications.get_communication_center_data	communications.get_communication_center_data	✅
+engagement.get_engagement_overview	engagement.get_engagement_overview	✅
+engagement.get_survey_results	engagement.get_survey_results	✅
+reports.get_board_report	reports.get_board_report	✅
+reports.get_risk_matrix	reports.get_risk_matrix	✅
+executive_dashboard.get_executive_summary	executive_dashboard.get_executive_summary	✅
+executive_dashboard.generate_ai_analysis	executive_dashboard.generate_ai_analysis	✅
+
+Status: Todos los mocks matchean.
+
+
+Responsiveness — Documentación para CLAUDE_CONTEXT.md
+
+Regla nueva para agregar a las Reglas de Trabajo (Regla #20):
+
+markdown
+markdown
+20. Responsiveness: useBreakpoint() para cambios JS (Recharts radius,
+    margins), Tailwind breakpoints para layout (flex-col sm:flex-row,
+    grid-cols). Mobile: < 640px, Tablet: 640-1023px, Desktop: ≥ 1024px.
+    Touch targets mínimo 44px. FABs: bottom-4 right-4 sm:bottom-6 sm:right-6.
+
+Hook disponible:
+
+markdown
+markdown
+shared/hooks/useBreakpoint.ts
+- useBreakpoint() → { isMobile, isTablet, isDesktop, isWide, width }
+- matchMedia (event-driven, no resize listeners)
+- isMobile: < 640px | isTablet: 640-1023px | isDesktop: ≥ 1024px | isWide: ≥ 1280px
+
+Patrón de uso:
+
+Tipo de cambio	Herramienta	Ejemplo
+Layout (grid, flex direction, spacing)	Tailwind breakpoints	flex-col sm:flex-row, grid-cols-1 lg:grid-cols-3
+Mostrar/ocultar elementos	Tailwind	hidden sm:inline, sm:hidden
+Recharts (radius, margins, height)	useBreakpoint()	innerRadius={isMobile ? 45 : 65}
+Lógica condicional JS	useBreakpoint()	isMobile ? w-40 : w-56
+Alturas de contenedores	Tailwind o hook	h-48 sm:h-72 o isMobile ? "h-48" : "h-72"
+FAB position	Tailwind	fixed bottom-4 right-4 sm:bottom-6 sm:right-6
+Chat panel position	Tailwind	fixed bottom-20 left-4 sm:bottom-24 sm:left-6
+
+Checklist responsive (agregar antes de cada implementación):
+
+markdown
+markdown
+## 21. Antes de entregar un componente, verificar:
+- ¿Se ve bien en 320px? (mobile S)
+- ¿Se ve bien en 375px? (mobile M — iPhone)
+- ¿Se ve bien en 768px? (tablet)
+- ¿Se ve bien en 1280px? (desktop)
+- ¿Los Recharts se adaptan? (useBreakpoint para radius/margins)
+- ¿Los FABs no se solapan? (chat left, quick actions right)
+- ¿Touch targets ≥ 44px?
+
+
+Archivos que quedaron con responsiveness aplicado:
+
+#	Archivo	Cambio aplicado
+1	PeriodSelector.tsx	flex-col sm:flex-row, "a" hidden en mobile
+2	MembershipDonut.tsx	useBreakpoint() para w/radius Recharts
+3	RevenueChart.tsx	useBreakpoint() para height y margins
+4	AIDecisionPanel.tsx	lg:grid-cols-4 en vez de sm:grid-cols-4
+5	QuickActions.tsx	bottom-4 right-4 sm:bottom-6 sm:right-6
+6	AIChatWidget.tsx	bottom-20 left-4 sm:bottom-24 sm:left-6
+
+
+

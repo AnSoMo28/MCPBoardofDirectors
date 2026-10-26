@@ -1,0 +1,700 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/sports/components/TournamentPanel.css
+   §B4.13 — Tournament Panel V2 Styles
+   Living Protocol: 7/7
+
+   1. RESPIRACIÓN:  card stagger entry animation
+   2. REACCIÓN:     hover translateY, hover-reveal transitions
+   3. MEMORIA:      tournaments, metrics, filters persist
+   4. INTENCIÓN:    status transitions, deadline alerts, filters
+   5. SINIESTRÍA:   data-status colors, data-fill-level bars,
+                    data-kpi-type stats, data-terminal buttons
+   6. EMPATÍA:      data-mode responsive
+   7. NARRATIVA:    narrative paragraph
+
+   @version 2.0.0
+   @phase   33 — "The Arena"
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── §0 — Root ─────────────────────────────────────────── */
+
+.spt-trn {
+  --spt-tr-accent: var(--color-teal-400, #2a9ab5);
+  --spt-tr-gold: var(--color-gold-400, #c9a96e);
+  --spt-tr-surface: var(--color-surface-1, #1a1a1a);
+  --spt-tr-border: rgba(255, 255, 255, 0.06);
+  --spt-tr-text: var(--color-silver-100, #f0ece4);
+  --spt-tr-text-muted: var(--color-silver-400, #8a8580);
+  --spt-tr-text-dim: var(--color-silver-500, #7a7570);
+}
+
+.spt-trn[data-mode="calm"]    { --spt-tr-accent: var(--color-teal-400, #2a9ab5); }
+.spt-trn[data-mode="alert"]   { --spt-tr-accent: var(--color-amber-400, #d4a017); }
+.spt-trn[data-mode="critical"]{ --spt-tr-accent: var(--color-rose-400, #e54d4d); }
+
+/* ── §1 — Header ───────────────────────────────────────── */
+
+.spt-trn__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.spt-trn__title {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.05rem;
+  color: var(--spt-tr-text);
+  margin: 0;
+}
+
+.spt-trn__new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--spt-tr-accent);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--spt-tr-accent);
+  cursor: pointer;
+  min-height: 32px;
+  transition: background 0.2s ease;
+}
+
+.spt-trn__new-btn:hover {
+  background: rgba(42, 154, 181, 0.1);
+}
+
+.spt-trn__new-btn:focus-visible {
+  outline: 2px solid var(--spt-tr-accent);
+  outline-offset: 2px;
+}
+
+.spt-trn__new-btn-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ── §2 — Stats Grid (KPI Strip — LP 5: Siniestría) ────── */
+
+.spt-trn__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.spt-trn__stat-card {
+  padding: 0.5rem 0.65rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--spt-tr-border);
+  border-radius: 6px;
+}
+
+.spt-trn__stat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.2rem;
+}
+
+.spt-trn__stat-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  transition: color 0.4s ease;
+}
+
+.spt-trn__stat-icon[data-kpi-type="total"]      { color: var(--spt-tr-text-dim); }
+.spt-trn__stat-icon[data-kpi-type="in-progress"] { color: var(--spt-tr-gold); }
+.spt-trn__stat-icon[data-kpi-type="upcoming"]    { color: var(--spt-tr-accent); }
+.spt-trn__stat-icon[data-kpi-type="completed"]   { color: var(--color-emerald-400); }
+
+.spt-trn__stat-label {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--spt-tr-text-dim);
+}
+
+.spt-trn__stat-value {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  transition: color 0.4s ease;
+}
+
+.spt-trn__stat-value[data-kpi-type="total"]      { color: var(--spt-tr-text); }
+.spt-trn__stat-value[data-kpi-type="in-progress"] { color: var(--spt-tr-gold); }
+.spt-trn__stat-value[data-kpi-type="upcoming"]    { color: var(--spt-tr-accent); }
+.spt-trn__stat-value[data-kpi-type="completed"]   { color: var(--color-emerald-400); }
+
+/* ── §3 — Quick Stats ──────────────────────────────────── */
+
+.spt-trn__quick-stats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.7rem;
+  color: var(--spt-tr-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.spt-trn__quick-stat strong {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  transition: color 0.4s ease;
+}
+
+.spt-trn__quick-stat strong[data-rate-level="revenue"] {
+  color: var(--color-emerald-400);
+}
+
+.spt-trn__quick-stat strong[data-rate-level="good"] {
+  color: var(--spt-tr-text);
+}
+
+.spt-trn__quick-stat strong[data-rate-level="warning"] {
+  color: var(--color-amber-400);
+}
+
+/* ── §4 — Filters ──────────────────────────────────────── */
+
+.spt-trn__filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.spt-trn__select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--spt-tr-border);
+  border-radius: 5px;
+  background: var(--color-surface-2, #222);
+  font-size: 0.7rem;
+  color: var(--spt-tr-text-muted);
+  min-height: 28px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.spt-trn__select:focus {
+  outline: none;
+  border-color: var(--spt-tr-accent);
+}
+
+.spt-trn__filter-count {
+  margin-left: auto;
+  font-size: 0.6rem;
+  color: var(--spt-tr-text-dim);
+}
+
+/* ── §5 — Tournament Grid ──────────────────────────────── */
+
+.spt-trn__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+}
+
+/* ── §6 — Tournament Card (LP 1+2: Respiración + Reacción) */
+
+.spt-trn__card {
+  padding: 0.85rem;
+  background: var(--spt-tr-surface);
+  border: 1px solid var(--spt-tr-border);
+  border-radius: 10px;
+  transition: border-color 0.2s ease,
+              transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease;
+  animation: spt-tr-card-enter 0.4s ease both;
+  animation-delay: calc(var(--stagger-i, 0) * 80ms);
+}
+
+@keyframes spt-tr-card-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.spt-trn__card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ── §6.1 — Card Header ────────────────────────────────── */
+
+.spt-trn__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.spt-trn__card-title-area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.spt-trn__card-sport-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.spt-trn__card-title-text {
+  min-width: 0;
+}
+
+.spt-trn__card-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--spt-tr-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-trn__card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+}
+
+.spt-trn__card-sport-label {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--spt-tr-text-dim);
+}
+
+.spt-trn__card-dot {
+  font-size: 0.6rem;
+  color: var(--spt-tr-text-dim);
+}
+
+.spt-trn__card-format-label {
+  font-size: 0.6rem;
+  color: var(--spt-tr-text-dim);
+}
+
+/* ── §6.2 — Status Badge (LP 5: Siniestría — 7 statuses) ─ */
+
+.spt-trn__status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  transition: color 0.4s ease, background 0.4s ease;
+}
+
+.spt-trn__status-badge[data-status="draft"] {
+  color: var(--color-silver-400);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.spt-trn__status-badge[data-status="pending_approval"] {
+  color: var(--color-amber-400);
+  background: var(--color-amber-bg, rgba(212, 168, 64, 0.08));
+}
+
+.spt-trn__status-badge[data-status="confirmed"] {
+  color: var(--color-teal-400);
+  background: var(--color-teal-bg, rgba(42, 154, 181, 0.08));
+}
+
+.spt-trn__status-badge[data-status="registration_open"] {
+  color: var(--color-emerald-400);
+  background: var(--color-emerald-bg, rgba(61, 170, 112, 0.08));
+}
+
+.spt-trn__status-badge[data-status="in_progress"] {
+  color: var(--color-gold-400);
+  background: rgba(201, 169, 110, 0.08);
+}
+
+.spt-trn__status-badge[data-status="completed"] {
+  color: var(--color-emerald-300);
+  background: var(--color-emerald-bg, rgba(61, 170, 112, 0.08));
+}
+
+.spt-trn__status-badge[data-status="cancelled"] {
+  color: var(--color-rose-400);
+  background: var(--color-rose-bg, rgba(229, 77, 77, 0.08));
+}
+
+/* ── §6.3 — Card Info ──────────────────────────────────── */
+
+.spt-trn__card-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.spt-trn__card-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--spt-tr-text-muted);
+}
+
+.spt-trn__card-info-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--spt-tr-text-dim);
+}
+
+.spt-trn__card-info-venue {
+  font-size: 0.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.spt-trn__card-info-venue-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── §6.4 — Participation Bar (LP 5: Siniestría) ───────── */
+
+.spt-trn__card-participation {
+  margin-bottom: 0.5rem;
+}
+
+.spt-trn__card-participation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.spt-trn__card-participation-label {
+  font-size: 0.6rem;
+  color: var(--spt-tr-text-dim);
+}
+
+.spt-trn__card-participation-pct {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  transition: color 0.4s ease;
+}
+
+.spt-trn__card-participation-pct[data-fill-level="high"]   { color: var(--color-emerald-400); }
+.spt-trn__card-participation-pct[data-fill-level="medium"] { color: var(--color-amber-400); }
+.spt-trn__card-participation-pct[data-fill-level="low"]    { color: var(--color-rose-400); }
+
+.spt-trn__card-bar-track {
+  width: 100%;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.spt-trn__card-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease, background 0.4s ease;
+}
+
+.spt-trn__card-bar-fill[data-fill-level="high"]   { background: var(--color-emerald-400); }
+.spt-trn__card-bar-fill[data-fill-level="medium"] { background: var(--color-amber-400); }
+.spt-trn__card-bar-fill[data-fill-level="low"]    { background: var(--color-rose-400); }
+
+/* ── §6.5 — Prizes ─────────────────────────────────────── */
+
+.spt-trn__card-prizes {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6rem;
+  color: var(--spt-tr-text-dim);
+  margin-bottom: 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spt-trn__card-prizes-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--spt-tr-gold);
+}
+
+/* ── §6.6 — Deadline Alert ─────────────────────────────── */
+
+.spt-trn__card-deadline-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  background: var(--color-amber-bg, rgba(212, 168, 64, 0.08));
+  color: var(--color-amber-400);
+  margin-bottom: 0.35rem;
+}
+
+/* ── §6.7 — Status Transitions (CSS hover-reveal) ──────── */
+
+.spt-trn__card-transitions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-tr-border);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.25s ease, max-height 0.25s ease;
+}
+
+.spt-trn__card:hover .spt-trn__card-transitions {
+  opacity: 1;
+  max-height: 3rem;
+}
+
+.spt-trn__card-transitions-label {
+  font-size: 0.6rem;
+  color: var(--spt-tr-text-dim);
+  flex-shrink: 0;
+}
+
+.spt-trn__card-transition-btn {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--spt-tr-border);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--spt-tr-text-muted);
+  cursor: pointer;
+  min-height: 28px;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.spt-trn__card-transition-btn:hover {
+  color: var(--spt-tr-text);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.spt-trn__card-transition-btn:focus-visible {
+  outline: 2px solid var(--spt-tr-accent);
+  outline-offset: 2px;
+}
+
+/* Terminal status (cancelled — destructive) */
+.spt-trn__card-transition-btn[data-terminal="true"] {
+  background: var(--color-rose-bg, rgba(229, 77, 77, 0.06));
+  border-color: rgba(196, 100, 112, 0.2);
+  color: var(--color-rose-400);
+}
+
+.spt-trn__card-transition-btn[data-terminal="true"]:hover {
+  background: rgba(196, 100, 112, 0.15);
+}
+
+/* ── §7 — Shimmer Skeleton ─────────────────────────────── */
+
+.spt-trn__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.spt-trn__skeleton-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.spt-trn__skeleton-block {
+  border-radius: 8px;
+  background: var(--spt-tr-surface);
+  animation: spt-tr-shimmer 1.5s ease-in-out infinite;
+}
+
+.spt-trn__skeleton-block--stats { height: 56px; width: 100%; }
+.spt-trn__skeleton-block--quick { height: 20px; width: 70%; }
+.spt-trn__skeleton-block--card  { height: 220px; width: 100%; }
+
+@keyframes spt-tr-shimmer {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.7; }
+}
+
+/* ── §8 — Footer: Narrative (LP 7) ─────────────────────── */
+
+.spt-trn__footer {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--spt-tr-border);
+}
+
+.spt-trn__narrative {
+  font-family: var(--font-body, "Source Serif 4", serif);
+  font-size: 0.8rem;
+  color: var(--spt-tr-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--spt-tr-accent);
+  transition: border-color 0.4s ease;
+}
+
+/* ── §9 — Light Mode ───────────────────────────────────── */
+
+.light .spt-trn {
+  --spt-tr-surface: rgba(255, 255, 255, 0.7);
+  --spt-tr-border: rgba(0, 0, 0, 0.08);
+  --spt-tr-text: #1a1a1a;
+  --spt-tr-text-muted: #6b7280;
+  --spt-tr-text-dim: #9ca3af;
+}
+
+.light .spt-trn__stat-card {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-trn__card {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.light .spt-trn__card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-trn__card-bar-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .spt-trn__select {
+  background: #f5f5f5;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .spt-trn__card-transition-btn {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .spt-trn__card-deadline-alert {
+  background: rgba(212, 168, 64, 0.06);
+}
+
+/* ── §10 — Reduced Motion ──────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .spt-trn__card {
+    animation: none;
+  }
+
+  .spt-trn__card:hover {
+    transform: none;
+  }
+
+  .spt-trn__card,
+  .spt-trn__card-bar-fill,
+  .spt-trn__card-participation-pct,
+  .spt-trn__stat-value,
+  .spt-trn__stat-icon,
+  .spt-trn__status-badge,
+  .spt-trn__card-transitions,
+  .spt-trn__quick-stat strong,
+  .spt-trn__narrative {
+    transition: none;
+  }
+
+  .spt-trn__skeleton-block {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* ── §11 — Responsive ──────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .spt-trn__stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .spt-trn__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .spt-trn__skeleton-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .spt-trn__filters {
+    flex-wrap: wrap;
+  }
+
+  .spt-trn__filter-count {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .spt-trn__quick-stats {
+    gap: 0.5rem;
+  }
+}
+
+/* ── §12 — Print ───────────────────────────────────────── */
+
+@media print {
+  .spt-trn {
+    break-inside: avoid;
+  }
+
+  .spt-trn__card {
+    animation: none;
+  }
+
+  .spt-trn__card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .spt-trn__card:hover .spt-trn__card-transitions {
+    opacity: 0;
+    max-height: 0;
+  }
+
+  .spt-trn__new-btn,
+  .spt-trn__filters {
+    display: none;
+  }
+
+  .spt-trn__skeleton-block {
+    animation: none;
+  }
+}

@@ -1,0 +1,576 @@
+/**
+ * PermissionGate.css
+ * src/shared/components/auth/PermissionGate.css
+ *
+ * @level       Level 6+ Agency · Apple Production Grade · 2027
+ * @namespace   .perm-*
+ * @keyframes   3 (perm-overlay-in, perm-badge-breathe, perm-unlock-sweep)
+ * @signature   Tres modos de degradación de acceso (hide / dim / readonly)
+ *              + overlay DEV de telemetría. Glass en overlays y debug,
+ *              easing Apple en todas las transiciones.
+ *
+ * REESCRITURA COMPLETA v2.1 — Auditoría G9 (Paquete 1 · REQUEST 1 §13 #7):
+ * [x] G9-17 (P0 · BLOCKING) El archivo anterior definía EXCLUSIVAMENTE
+ *     `.glass-perm-*` mientras el TSX emite `.perm-*` → 0 de 27 clases
+ *     cubiertas: el componente renderizaba SIN ESTILOS en los 3 modos
+ *     (overlay sin glass, barra sin layout, tooltip sin posición, debug
+ *     sin panel fijo, sweep inexistente). El header del TSX declaraba la
+ *     migración de namespace como "removida" pero solo se migró la mitad
+ *     del par. Este archivo cubre el 100% de las clases emitidas por el
+ *     TSX (verificación scripts/verify-paquete01.py).
+ * [x] G9-18 (defensa en profundidad) `.perm-ro__content--intercepted::after`
+ *     — capa de intercepción puntero además del onClickCapture del TSX.
+ * [x] Reglas muertas `.glass-perm__dim-*` / `__readonly-*` / `__debug-*`
+ *     (namespace ya no emitido) eliminadas.
+ * [x] Bloque legacy `.glass-perm-denied*` CONSERVADO (§9): superficie de
+ *     PermissionDenied.tsx (pendiente de auditoría) — cero riesgo de
+ *     regresión; migrar a PermissionDenied.css en su ronda.
+ *
+ * v2.2 — Auditoría G10 (cierre del cluster auth · BC-06):
+ * [x] §9 LEGACY `.glass-perm-denied*` ELIMINADO: PermissionDenied posee
+ *     su propio PermissionDenied.css (namespace perm-denied-*) — la
+ *     deuda declarada arriba queda CERRADA. Referencias legacy de §5/§7
+ *     retiradas. Keyframes: 3 sin cambios (perm-badge-breathe sigue
+ *     vivo en perm-dim__badge §1).
+ *
+ * 13 DIMENSIONS:
+ * D1 Glass    ✓  Overlays + debug con backdrop-filter translúcido
+ * D2 Stagger  ✗  Superficies únicas (not applicable)
+ * D3 Easing   ✓  var(--ease-apple) en bar/tooltip/children/denied
+ * D4 Typo     ✓  font-ui 12-14px, mono 11px en debug
+ * D5 Color    ✓  Tokens gold/silver + rgba translúcidos
+ * D6 Pseudo   ✓  ::after (sweep de desbloqueo + intercepción readonly)
+ * D7 Interact ✓  Request btn hover/focus-visible; tooltips con estado
+ * D8 Density  ✓  Paddings compactos por modo
+ * D9 Response ✓  ≤640px: debug full-width, badges compactos
+ * D10 A11y    ✓  Roles/aria los aporta el TSX; CSS sin outline:none
+ * D11 Light   ✓  .light prefix overrides en cada bloque
+ * D12 Motion  ✓  reduced-motion + print completos
+ * D13 Frames  ✓  3 keyframes namespaced al final
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §0  MODE "hide" — WRAPPERS + SWEEP DE DESBLOQUEO
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Wrapper concedido — base de posicionamiento del sweep */
+.perm-hide {
+  position: relative;
+}
+
+/* Wrapper denegado — entrada en fade */
+.perm-hide--denied {
+  position: relative;
+  animation: perm-overlay-in 0.3s var(--ease-apple, ease) both;
+}
+
+/* Sweep denied→granted (D6: ::after deslizante) */
+.perm-hide--sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(201, 169, 110, 0.12) 40%,
+    rgba(201, 169, 110, 0.18) 50%,
+    rgba(201, 169, 110, 0.12) 60%,
+    transparent 100%
+  );
+  animation: perm-unlock-sweep 0.8s ease-out forwards;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  MODE "dim" — HIJOS DIFUMINADOS + OVERLAY CON BADGE
+   ═══════════════════════════════════════════════════════════════ */
+
+.perm-dim {
+  position: relative;
+  isolation: isolate;
+}
+
+.perm-dim__children {
+  transition:
+    filter 0.3s var(--ease-apple, ease),
+    opacity 0.3s var(--ease-apple, ease);
+}
+
+.perm-dim__children--blurred {
+  pointer-events: none;
+  user-select: none;
+  filter: blur(2px) saturate(0.7);
+  opacity: 0.5;
+}
+
+.perm-dim__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+  text-align: center;
+  border-radius: inherit;
+  background: rgba(10, 14, 24, 0.7);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: perm-overlay-in 0.25s ease-out both;
+}
+
+.perm-dim__badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: rgba(201, 169, 110, 0.06);
+  border: 1px solid rgba(201, 169, 110, 0.15);
+  border-radius: 10px;
+  animation: perm-badge-breathe 3s ease-in-out infinite;
+}
+
+.perm-dim__badge-icon {
+  color: var(--color-gold-400, #c9a96e);
+  flex-shrink: 0;
+}
+
+.perm-dim__badge-text {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.perm-dim__request-btn {
+  padding: 8px 20px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--color-gold-400, #c9a96e);
+  background: rgba(201, 169, 110, 0.08);
+  border: 1px solid rgba(201, 169, 110, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    letter-spacing 0.3s ease;
+}
+
+.perm-dim__request-btn:hover {
+  background: rgba(201, 169, 110, 0.15);
+  border-color: rgba(201, 169, 110, 0.35);
+  letter-spacing: 0.04em;
+}
+
+.perm-dim__request-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400, #c9a96e);
+  outline-offset: 2px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  MODE "readonly" — BARRA + INTERCEPCIÓN + TOOLTIP
+   ═══════════════════════════════════════════════════════════════ */
+
+.perm-ro {
+  position: relative;
+}
+
+/* Barra: colapsada por defecto, se expande con --visible (D3) */
+.perm-ro__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-height: 0;
+  padding: 0 14px;
+  margin-bottom: 0;
+  overflow: hidden;
+  opacity: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: rgba(201, 169, 110, 0.06);
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: var(--color-gold-400, #c9a96e);
+  transition:
+    max-height 0.3s var(--ease-apple, ease),
+    opacity 0.3s var(--ease-apple, ease),
+    padding 0.3s var(--ease-apple, ease),
+    margin-bottom 0.3s var(--ease-apple, ease),
+    border-color 0.3s var(--ease-apple, ease);
+}
+
+.perm-ro__bar--visible {
+  max-height: 48px;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+  opacity: 1;
+  border-color: rgba(201, 169, 110, 0.12);
+}
+
+.perm-ro__content {
+  position: relative;
+}
+
+.perm-ro__content--intercepted {
+  cursor: not-allowed;
+}
+
+/* G9-18: capa de intercepción puntero — defensa en profundidad
+   junto al onClickCapture del TSX (bloquea hover/drag sobre hijos) */
+.perm-ro__content--intercepted::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.perm-ro__tooltip {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 4px 12px;
+  background: rgba(10, 14, 24, 0.9);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+  border-radius: 6px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-silver-300, #b8b2a9);
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s var(--ease-apple, ease);
+}
+
+.perm-ro__tooltip--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  DEBUG OVERLAY (DEV only · fixed bottom-right)
+   ═══════════════════════════════════════════════════════════════ */
+
+.perm__debug {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 100;
+  min-width: 220px;
+  max-width: 320px;
+  padding: 12px 14px;
+  background: rgba(10, 14, 24, 0.92);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  font-family: var(--font-mono, "DM Mono", monospace);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--color-silver-300, #b8b2a9);
+  pointer-events: none;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.perm__debug-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-silver-200, #d4cfc7);
+}
+
+.perm__debug-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 1px 0;
+}
+
+.perm__debug-row--nested {
+  padding-left: 10px;
+}
+
+.perm__debug-row > span:first-child {
+  color: var(--color-silver-400, #a09a92);
+  flex-shrink: 0;
+}
+
+.perm__debug-row > span:last-child {
+  text-align: right;
+  word-break: break-all;
+}
+
+.perm__debug-status {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.perm__debug-status--granted {
+  color: var(--color-emerald-400, #34d399);
+}
+
+.perm__debug-status--denied {
+  color: var(--color-rose-400, #fb7185);
+}
+
+.perm__debug-status--loading {
+  color: var(--color-amber-400, #fbbf24);
+}
+
+.perm__debug-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  LIGHT MODE (D11)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .perm-dim__overlay {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.light .perm-dim__badge {
+  background: rgba(201, 169, 110, 0.08);
+  border-color: rgba(201, 169, 110, 0.2);
+}
+
+.light .perm-dim__badge-text {
+  color: var(--color-silver-700, #4a4742);
+}
+
+.light .perm-dim__request-btn {
+  background: rgba(201, 169, 110, 0.1);
+  border-color: rgba(201, 169, 110, 0.25);
+  color: #8b7340;
+}
+
+.light .perm-dim__request-btn:hover {
+  background: rgba(201, 169, 110, 0.18);
+  border-color: rgba(201, 169, 110, 0.4);
+}
+
+.light .perm-ro__bar {
+  background: rgba(201, 169, 110, 0.08);
+  color: #8b7340;
+}
+
+.light .perm-ro__bar--visible {
+  border-color: rgba(201, 169, 110, 0.15);
+}
+
+.light .perm-ro__tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: var(--color-silver-600, #5c5853);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.light .perm__debug {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--color-silver-600, #5c5853);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.light .perm__debug-title {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-silver-700, #4a4742);
+}
+
+.light .perm__debug-row > span:first-child {
+  color: var(--color-silver-500, #7a7570);
+}
+
+.light .perm__debug-divider {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .perm-hide--sweep::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(201, 169, 110, 0.1) 40%,
+    rgba(201, 169, 110, 0.15) 50%,
+    rgba(201, 169, 110, 0.1) 60%,
+    transparent 100%
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  REDUCED MOTION (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .perm-dim__children,
+  .perm-dim__request-btn,
+  .perm-ro__bar,
+  .perm-ro__tooltip {
+    transition: none;
+  }
+
+  .perm-dim__overlay,
+  .perm-dim__badge,
+  .perm-hide--denied {
+    animation: none;
+  }
+
+  .perm-hide--sweep::after {
+    animation: none;
+    content: none;
+  }
+
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  RESPONSIVE (D9)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .perm__debug {
+    left: 16px;
+    right: 16px;
+    min-width: 0;
+    max-width: none;
+    font-size: 10px;
+  }
+
+  .perm-dim__overlay {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .perm-dim__badge {
+    padding: 10px 14px;
+  }
+
+  .perm-dim__badge-text {
+    font-size: 13px;
+  }
+
+  .perm-dim__request-btn {
+    padding: 8px 16px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  PRINT (D12)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .perm__debug,
+  .perm-ro__tooltip,
+  .perm-dim__request-btn {
+    display: none !important;
+  }
+
+  /* El contenido difuminado se imprime legible (info > decoración) */
+  .perm-dim__children--blurred {
+    filter: none;
+    opacity: 1;
+  }
+
+  .perm-dim__overlay {
+    position: static;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    animation: none;
+  }
+
+  .perm-ro__bar {
+    transition: none;
+    border-color: #b45309;
+    color: #8a5a00;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .perm-hide--denied {
+    animation: none;
+  }
+
+  .perm-hide--sweep::after {
+    content: none;
+    animation: none;
+  }
+
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  KEYFRAMES (D13) — ALL at end, ALL perm-* namespaced. Count: 3.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Fade genérico de montaje (overlay dim + superficie denegada) */
+@keyframes perm-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Badge de bloqueo — respiración con glow dorado */
+@keyframes perm-badge-breathe {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(201, 169, 110, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(201, 169, 110, 0.3);
+  }
+}
+
+/* Sweep de desbloqueo denied→granted */
+@keyframes perm-unlock-sweep {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}

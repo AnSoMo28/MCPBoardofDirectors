@@ -1,0 +1,472 @@
+/* src/features/facilities/components/OccupancyField.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* OCCUPANCY FIELD — "El Campo de Fuerza"                        */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — waves pulse, speed by crowd         */
+/*   SENSE 2: REACCIÓN — island hover scale + glow              */
+/*   SENSE 3: MEMORIA — tooltip with comfort + trend             */
+/*   SENSE 4: INTENCIÓN — perception gap visual                  */
+/*   SENSE 5: SINIESTRÍA — overloaded = dominant visual          */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — tooltip narrative + empty state        */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.glass-fac-field {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+}
+
+.glass-fac-field__canvas {
+  position: relative;
+  width: 100%;
+  height: calc(100% - 64px);
+}
+
+/* ═══ ISLAND ══════════════════════════════════════════════════ */
+
+.glass-fac-field__island {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  outline: none;
+  z-index: 1;
+
+  /* Sense 1: stagger entry */
+  opacity: 0;
+  animation: glass-fac-field-island-enter 0.6s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.12s);
+
+  /* Sense 2: hover transition */
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              z-index 0s;
+}
+
+@keyframes glass-fac-field-island-enter {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Sense 2: REACCIÓN — hover micro-movement */
+.glass-fac-field__island:hover {
+  z-index: 10;
+}
+
+.glass-fac-field__island:hover .glass-fac-field__island-core {
+  transform: scale(1.08);
+}
+
+.glass-fac-field__island:hover .glass-fac-field__island-glow {
+  opacity: 0.5 !important;
+}
+
+/* Focus visible */
+.glass-fac-field__island:focus-visible .glass-fac-field__island-core {
+  box-shadow: 0 0 0 3px var(--color-teal-400);
+}
+
+/* ── Selected ── */
+.glass-fac-field__island[data-selected="true"] .glass-fac-field__island-core {
+  box-shadow: 0 0 0 2px var(--color-teal-400);
+}
+
+/* ═══ ISLAND GLOW ═════════════════════════════════════════════ */
+
+.glass-fac-field__island-glow {
+  position: absolute;
+  inset: -60%;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+/* CSS-driven glow color by crowd level */
+.glass-fac-field__island-glow[data-crowd="empty"] {
+  background: radial-gradient(circle, var(--color-silver-600) 0%, transparent 70%);
+}
+.glass-fac-field__island-glow[data-crowd="quiet"] {
+  background: radial-gradient(circle, var(--color-teal-600) 0%, transparent 70%);
+}
+.glass-fac-field__island-glow[data-crowd="normal"] {
+  background: radial-gradient(circle, var(--color-teal-400) 0%, transparent 70%);
+}
+.glass-fac-field__island-glow[data-crowd="busy"] {
+  background: radial-gradient(circle, var(--color-amber-400) 0%, transparent 70%);
+}
+.glass-fac-field__island-glow[data-crowd="crowded"] {
+  background: radial-gradient(circle, var(--color-rose-400) 0%, transparent 70%);
+}
+.glass-fac-field__island-glow[data-crowd="overloaded"] {
+  background: radial-gradient(circle, var(--color-rose-500) 0%, transparent 70%);
+}
+
+/* ═══ PERCEPTION GAP (Prop #12) ══════════════════════════════ */
+
+.glass-fac-field__perception-gap {
+  position: absolute;
+  inset: -40%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 200, 50, 0.1) 0%, transparent 70%);
+  opacity: 0.6;
+  pointer-events: none;
+  animation: glass-fac-field-gap-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glass-fac-field-gap-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+/* ═══ WAVES — Sense 1: RESPIRACIÓN ═══════════════════════════ */
+/* CSS-driven color via data-crowd, speed responds to crowd     */
+
+.glass-fac-field__wave {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid;
+  pointer-events: none;
+  /* Center on island */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: glass-fac-field-wave-expand 3s ease-out infinite;
+}
+
+/* Wave colors by crowd level */
+.glass-fac-field__wave[data-crowd="empty"] { border-color: color-mix(in srgb, var(--color-silver-600) 20%, transparent); }
+.glass-fac-field__wave[data-crowd="quiet"] { border-color: color-mix(in srgb, var(--color-teal-600) 25%, transparent); }
+.glass-fac-field__wave[data-crowd="normal"] { border-color: color-mix(in srgb, var(--color-teal-400) 25%, transparent); }
+.glass-fac-field__wave[data-crowd="busy"] { border-color: color-mix(in srgb, var(--color-amber-400) 30%, transparent); }
+.glass-fac-field__wave[data-crowd="crowded"] { border-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent); }
+.glass-fac-field__wave[data-crowd="overloaded"] { border-color: color-mix(in srgb, var(--color-rose-400) 40%, transparent); }
+
+/* Wave 1 */
+.glass-fac-field__wave--1 {
+  width: 100%;
+  height: 100%;
+  animation-delay: 0s;
+}
+
+/* Wave 2 */
+.glass-fac-field__wave--2 {
+  width: 100%;
+  height: 100%;
+  animation-delay: 1s;
+}
+
+/* Wave 3 */
+.glass-fac-field__wave--3 {
+  width: 100%;
+  height: 100%;
+  animation-delay: 2s;
+}
+
+@keyframes glass-fac-field-wave-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Wave speed responds to crowd level */
+.glass-fac-field__island[data-crowd="empty"] .glass-fac-field__wave { animation-duration: 5s; }
+.glass-fac-field__island[data-crowd="quiet"] .glass-fac-field__wave { animation-duration: 4s; }
+.glass-fac-field__island[data-crowd="normal"] .glass-fac-field__wave { animation-duration: 3s; }
+.glass-fac-field__island[data-crowd="busy"] .glass-fac-field__wave { animation-duration: 2s; }
+.glass-fac-field__island[data-crowd="crowded"] .glass-fac-field__wave { animation-duration: 1.5s; }
+.glass-fac-field__island[data-crowd="overloaded"] .glass-fac-field__wave { animation-duration: 1s; }
+
+/* ═══ ISLAND CORE ═════════════════════════════════════════════ */
+
+.glass-fac-field__island-core {
+  position: relative;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.3s ease;
+}
+
+/* Core background by crowd level (CSS-driven) */
+.glass-fac-field__island-core[data-crowd="empty"] {
+  background: color-mix(in srgb, var(--color-silver-600) 15%, transparent);
+}
+.glass-fac-field__island-core[data-crowd="quiet"] {
+  background: color-mix(in srgb, var(--color-teal-600) 20%, transparent);
+}
+.glass-fac-field__island-core[data-crowd="normal"] {
+  background: color-mix(in srgb, var(--color-teal-400) 25%, transparent);
+}
+.glass-fac-field__island-core[data-crowd="busy"] {
+  background: color-mix(in srgb, var(--color-amber-400) 25%, transparent);
+}
+.glass-fac-field__island-core[data-crowd="crowded"] {
+  background: color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+}
+.glass-fac-field__island-core[data-crowd="overloaded"] {
+  background: color-mix(in srgb, var(--color-rose-400) 35%, transparent);
+}
+
+.glass-fac-field__island-pct {
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-silver-200);
+  pointer-events: none;
+}
+
+.glass-fac-field__island-name {
+  margin-top: 4px;
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ═══ TOOLTIP (Sense 3 + 7) ══════════════════════════════════ */
+
+.glass-fac-field__tooltip {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--color-border) 30%, transparent);
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-width: 200px;
+  max-width: 280px;
+  z-index: 20;
+}
+
+.glass-fac-field__tooltip[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.glass-fac-field__tooltip-name {
+  font-size: 13px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-100);
+  margin-bottom: 6px;
+}
+
+.glass-fac-field__tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.glass-fac-field__tooltip-label {
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+.glass-fac-field__tooltip-value {
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.glass-fac-field__tooltip-value[data-crowd="busy"],
+.glass-fac-field__tooltip-value[data-crowd="crowded"] {
+  color: var(--color-amber-400);
+}
+.glass-fac-field__tooltip-value[data-crowd="overloaded"] {
+  color: var(--color-rose-400);
+}
+
+/* Perception gap indicator (CSS-driven, not inline) */
+.glass-fac-field__tooltip-gap {
+  margin-top: 6px;
+  font-size: 9px;
+  font-family: var(--font-display);
+  color: var(--color-amber-300);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Narrative (Sense 7) */
+.glass-fac-field__tooltip-narrative {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  line-height: 1.5;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
+}
+
+/* ═══ TIME SLIDER ═════════════════════════════════════════════ */
+
+.glass-fac-field__slider-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 20px 12px;
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+  z-index: 5;
+}
+
+.glass-fac-field__slider-label {
+  display: block;
+  font-size: 11px;
+  font-family: var(--font-display);
+  color: var(--color-silver-400);
+  margin-bottom: 4px;
+}
+
+.glass-fac-field__slider {
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  background: color-mix(in srgb, var(--color-border) 30%, transparent);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.glass-fac-field__slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-teal-400);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.glass-fac-field__slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.glass-fac-field__slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-teal-400);
+  border: none;
+  cursor: pointer;
+}
+
+.glass-fac-field__slider:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-teal-400);
+  border-radius: 2px;
+}
+
+.glass-fac-field__slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.glass-fac-field__slider-tick {
+  font-size: 9px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+}
+
+/* ═══ EMPTY STATE ═════════════════════════════════════════════ */
+
+.glass-fac-field--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glass-fac-field__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px;
+  color: var(--color-silver-500);
+}
+
+.glass-fac-field__empty svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.glass-fac-field__empty-text {
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  max-width: 280px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .glass-fac-field {
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+}
+
+.light .glass-fac-field__tooltip {
+  background: color-mix(in srgb, var(--color-surface) 95%, transparent);
+}
+
+.light .glass-fac-field__island-pct {
+  color: var(--color-silver-700);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-fac-field__island {
+    animation: none;
+    opacity: 1;
+  }
+
+  .glass-fac-field__wave {
+    animation: none;
+    opacity: 0;
+  }
+
+  .glass-fac-field__perception-gap {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .glass-fac-field__island:hover .glass-fac-field__island-core {
+    transform: none;
+  }
+
+  .glass-fac-field__slider::-webkit-slider-thumb:hover {
+    transform: none;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .glass-fac-field__slider-container {
+    padding: 6px 12px 10px;
+  }
+}

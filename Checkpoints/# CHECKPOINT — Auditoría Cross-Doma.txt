@@ -1,0 +1,586 @@
+# CHECKPOINT — Auditoría Cross-Domain + Type System Unification
+
+**Fecha:** Junio 2026
+**Sesiones completadas:** ~16 (histórico) / 1 (esta sesión)
+**Archivos creados:** 2 nuevos (domain-enums.ts + ai-intelligence.ts)
+**Archivos auditados (backend):** 8 agents + 2 models
+**Archivos auditados (frontend):** 7 types.ts + 1 contracts.ts (partial)
+**Líneas nuevas:** ~1200
+**Tools MCP auditadas nuevas:** 53
+**Tools MCP totales registradas:** ~135+
+**Enums maestros unificados:** 16
+**AI types genéricos:** 12 + 8 domain aliases
+
+---
+
+## 0. ROL SUPER ENRIQUECIDO — REGLA DE ORO
+
+Sos el **Principal AI Systems Architect** de la Castillo AI Platform — un sistema de decisión inteligente para clubes privados en Costa Rica.
+
+**Las 9 disciplinas:** 1) FullStack Engineering, 2) UI/UX Architecture, 3) Product Strategy, 4) Private Club Operations (CR), 5) AI/ML Architecture, 6) Financial Intelligence, 7) Marketing Intelligence, 8) ML & Gen AI, 9) AI Experience Design.
+
+**La regla de oro:** Yo propongo y analizo ANTES de escribir código. El usuario aprueba antes de generar. Changelog detallado al final de cada bloque. Formato de edición: Bloque A (código actual exacto) → Bloque B (líneas nuevas para copiar y pegar). Nunca mezclar. Siempre cuestiono lo que propongo — el cuestionamiento va dirigido a la mejora.
+
+**REGLA DE ENTREGA — OPTIMIZACIÓN DE TOKENS:**
+Si un archivo requiere múltiples cambios que en sumatoria superan el 30% → **REWRITE completo** (un bloque, una sola lectura).
+Si ≤30% → **quirúrgico archivo por archivo**.
+NUNCA dividir múltiples cambios del mismo archivo en bloques separados.
+Criterio: minimizar relecturas = minimizar tokens.
+
+---
+
+## 1. LO QUE ESTAMOS CONSTRUYENDO
+
+Castillo AI Platform = "Sistema de Decisión Inteligente" para clubes privados de Costa Rica. 5 capas de inteligencia (Datos → Contexto → Inteligencia Client-Side → Cross-Agent → Acción Inteligente). 80+ reglas determinísticas + 5 AI tools + RAG + Communication Intelligence.
+
+**Esta sesión aportó:** Auditoría completa de 8 backend agents + 7 frontend types + creación del **Type System Unification Layer** (domain-enums.ts + ai-intelligence.ts) que resuelve el problema de 5 sistemas de tiers, 2 de age groups, 2 de engagement levels, 3 de event types.
+
+---
+
+## 2. LO QUE SE CREÓ EN ESTA SESIÓN
+
+### Archivos Frontend (Nuevos)
+
+| # | Ruta | Líneas | Contenido |
+|---|------|--------|-----------|
+| 1 | `shared/types/domain-enums.ts` | ~650 | 16 master enums, 13 display configs, 9 legacy mappings, 8 type guards |
+| 2 | `shared/types/ai-intelligence.ts` | ~550 | 12 generic AI base types, 3 simulation types, 1 brief type, 5 advisor types, 8 domain aliases, 2 response wrappers, 4 configs, 6 helpers |
+
+### Archivos Backend Auditados
+
+| # | Ruta | Tools | Intel | HITL | Estado |
+|---|------|-------|-------|------|--------|
+| 1 | `agents/cultural_social_agent.py` | 6 | 1 | 3 | ✅ Completo |
+| 2 | `agents/age_group.py` | 7 | 3 | 1 | ✅ Completo |
+| 3 | `models/age_group_activity.py` | — | — | — | ✅ Models |
+| 4 | `models/cultural_social.py` | — | — | — | ✅ Models |
+| 5 | `agents/facility_management_agent.py` | 7 | 1 | 2 | ✅ Completo |
+| 6 | `agents/satisfaction_agent.py` | 6 | 3 | 1 | ✅ Completo |
+| 7 | `agents/sports_recreation_agent.py` | 7 | 1 | 2 | ✅ Completo |
+| 8 | `agents/member_engagement_agent.py` | 6 | 3 | 2 | ✅ Completo |
+| 9 | `agents/proactive_recommendation_agent.py` | 8 | 6 | 2 | ✅ Re-auditado |
+
+### Archivos Frontend Auditados
+
+| # | Ruta | Dual System | Backend Aligned | Problemas |
+|---|------|-------------|-----------------|-----------|
+| 1 | `features/facilities/types.ts` | NO (solo legacy) | ⚠️ No | operatingHours shape, currentOccupancy fantasma |
+| 2 | `features/engagement/types.ts` | SÍ (legacy + Fase 6) | Parcial | Engagement levels 5 vs 7, survey shape diferente |
+| 3 | `features/guests/types.ts` | SÍ (legacy + Phase 12) | Parcial | TrialType duplicado (2 sistemas) |
+| 4 | `features/events/types.ts` | SÍ (legacy + Bk*) | ✅ Bk* | Triple EventType, camelCase vs snake_case |
+| 5 | `features/members/types.ts` | NO (re-exports) | ✅ | Patrón correcto — gold standard para otros |
+| 6 | `features/recommendations/types.ts` | NO | ✅ | Patrón correcto — backend 1:1 |
+| 7 | `features/dashboard/types.ts` | NO | ✅ | Patrón correcto — más completo del sistema |
+| 8 | `shared/mocks/contracts.ts` | — | — | 53 contracts faltantes para agents auditados |
+
+---
+
+## 3. HALLAZGOS DE ESTA SESIÓN
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | **5 sistemas de tiers diferentes** — Dashboard(3), Members(3), Families(7), Engagement(implícito), Contracts(implícito) | **CRÍTICA** | ✅ Resuelto por domain-enums.ts — 1 master MemberTier con 7 values |
+| 2 | **2 sistemas de age groups** — Dashboard(rangos diferentes) vs Backend(toddler/kids/teens/young_adults/adults/seniors) | **CRÍTICA** | ✅ Resuelto por domain-enums.ts — 1 master AgeGroupCategory |
+| 3 | **2 sistemas de engagement levels** — Frontend(5: thriving/active/moderate/at_risk/dormant) vs Backend(7: champion/loyal/active/warm/cooling/at_risk/inactive) | **CRÍTICA** | ✅ Resuelto por domain-enums.ts — 1 master EngagementLevel(7) + legacy mapping |
+| 4 | **3 sistemas de event types** — Events legacy(8) + BkEventCategory(8) + CulturalSocial(7) | **ALTA** | ✅ Resuelto por domain-enums.ts — 1 master EventCategory(8) |
+| 5 | **Dual systems en 4 types files** — events, engagement, guests, facilities tienen legacy + backend-aligned coexistiendo | **ALTA** | ⬜ Pendiente — Phase A adapta domain types |
+| 6 | **53 contracts faltantes** en contracts.ts para agents auditados | **ALTA** | ⬜ Pendiente — Phase B conecta agents al frontend |
+| 7 | **Cultural Social sin frontend** — 6 tools, 0 componentes | **ALTA** | ⬜ Pendiente — Phase B |
+| 8 | **Sports Recreation sin frontend** — 7 tools, 0 componentes | **ALTA** | ⬜ Pendiente — Phase B |
+| 9 | **Age Group sin frontend dedicado** — 7 tools, solo AgeBalanceWidget en dashboard | **ALTA** | ⬜ Pendiente — Phase B |
+| 10 | **Member Engagement frontend desalineado** — componentes existentes no verificados contra tools reales | **MEDIA** | ⬜ Pendiente — Phase B |
+| 11 | **Facility Management frontend desalineado** — 3 componentes existentes sin verificar | **MEDIA** | ⬜ Pendiente — Phase B |
+| 12 | **DUPLICACIÓN: identify_social_clusters** existe en proactive_recommendation Y family_profile | **ALTA** | ⬜ Resolver: ¿cuál es source of truth? |
+| 13 | **DUPLICACIÓN: detect_scheduling_conflicts** en proactive_recommendation (event_get_calendar ya detecta) | **MEDIA** | ⬜ Consolidar |
+| 14 | **HARDCODED: generate_quarterly_insights** tiene datos demo hardcodeados | **ALTA** | ⬜ Backend debe computar |
+| 15 | **HARDCODED: predict_event_attendance** usa multiplicadores fijos | **MEDIA** | ⬜ Backend debe consumir historical data |
+| 16 | **TEMPLATE-BASED: personalize_communication** no usa claude_service | **MEDIA** | ⬜ Integrar AI |
+| 17 | **VenueType ≈ FacilityType** — enums semánticamente duplicados | **MEDIA** | ⬜ Reconciliar |
+| 18 | **SatisfactionSurvey shape diferente** — frontend flexible (rating/nps/text/choice) vs backend fijo (10 categories × rating 1-5) | **ALTA** | ⬜ Reconciliar |
+
+---
+
+## 4. PATRONES ESTABLECIDOS / ACTUALIZADOS
+
+### Patrón NUEVO: Type System Unification Layer (F30)
+
+**Concepto:** Un archivo maestro `domain-enums.ts` define TODOS los enums cross-domain. Cada domain types.ts importa de aquí. Cuando el backend cambia, se actualiza UN archivo.
+
+**Cuándo se aplica:** SIEMPRE que un concepto se usa en 2+ domains.
+**Archivos:** `shared/types/domain-enums.ts`
+**Patrón de importación:**
+```typescript
+import { type EventCategory, EVENT_CATEGORY_DISPLAY } from "@/shared/types/domain-enums";
+```
+
+### Patrón NUEVO: AI Intelligence Type System (F30)
+
+**Concepto:** Tipos genéricos (`AIPrediction<T>`, `AIAnalysis`, `AIBrief`) que se extienden por domain. Permite reutilización de patrones AI across domains.
+
+**Cuándo se aplica:** Cada vez que un domain crea inteligencia AI (predictions, analysis, narratives).
+**Archivos:** `shared/types/ai-intelligence.ts`
+**Patrón de extensión:**
+```typescript
+interface FinancialAnalysis extends AIAnalysis {
+  domain: "financial";
+  cash_flow_forecast?: { ... };
+}
+```
+
+### Patrón NUEVO: Conditional HITL Escalation (descubierto en sports_recreation)
+
+**Concepto:** Tool AUTO que escala a HITL basado en parámetros (ej: `purpose == "tournament_block"`).
+**Cuándo se aplica:** Cuando una operación regular tiene un caso de uso de mayor riesgo.
+**Ejemplo:** `manage_court_reservations` — AUTO para reservas regulares, HITL para bloqueos de torneo.
+
+### Patrón NUEVO: Multi-Source Intelligence (descubierto en sports_recreation)
+
+**Concepto:** Tool de recomendación que combina múltiples fuentes de datos internas (classes + coaching history + equipment) para generar recommendations con confidence scoring.
+**Cuándo se aplica:** Tools que cruzan datos de múltiples repositorios del mismo agent.
+
+### Patrón NUEVO: HITL Auto-Approve (descubierto en satisfaction)
+
+**Concepto:** Tool que crea approval request pero lo auto-aprueba inmediatamente. Mantiene trazabilidad sin requerir intervención humana.
+**Cuándo se aplica:** Operaciones de socio que deben ser auditables pero no requieren aprobación (ej: encuestas de satisfacción).
+
+---
+
+## 5. AUDITORÍA COMPLETA — 8 AGENTS, 53 TOOLS
+
+### Tools por Agente
+
+#### 1. Cultural Social — 6 tools (SIN FRONTEND)
+
+| Tool | Approval | Tipo | Intel | Cross-domain key |
+|------|----------|------|-------|-----------------|
+| `organize_formal_gala` | HITL | mutation | — | → Facilities, → Finance |
+| `manage_entertainment_acts` | HITL/AUTO CRUD | CRUD | — | → Events |
+| `manage_cultural_program` | HITL/AUTO CRUD | CRUD | — | → Families, → Finance |
+| `manage_social_events` | AUTO | CRUD | — | → Events, → Facilities |
+| `manage_art_exhibitions` | AUTO | CRUD | — | → Facilities |
+| `get_cultural_calendar` | AUTO | data+fusion | Calendar fusion | → Events (event_get_calendar) |
+
+**Enums:** EventType(7), EventStatus(5), EntertainmentType(7), CulturalCategory(7), VenueType(6), FormalityLevel(5), ExhibitionStatus(5), PerformanceStatus(6), ArtistStatus(3)
+
+#### 2. Age Group — 7 tools (FRONTEND MÍNIMO)
+
+| Tool | Approval | Tipo | Intel | Cross-domain key |
+|------|----------|------|-------|-----------------|
+| `age_group_list` | AUTO | data | Summary stats | → Executive Dashboard |
+| `age_group_get_activities` | AUTO | data | — | ← Families (age-based) |
+| `age_group_register_activity` | HITL | mutation | — | → Facilities |
+| `age_group_get_demographics` | AUTO | intel | Demographics | → Executive Dashboard |
+| `age_group_get_participation` | AUTO | intel | Satisfaction + retention | → Satisfaction |
+| `age_group_recommend_activities` | AUTO | intel | Family-based recs | ← Families |
+| `age_group_update_activity` | SEMI | mutation | — | — |
+
+**Enums:** AgeGroupCategory(6), ActivityDifficulty(3), AgeGroupActivityStatus(3)
+
+#### 3. Facility Management — 7 tools (FRONTEND PARCIAL)
+
+| Tool | Approval | Tipo | Intel | Cross-domain key |
+|------|----------|------|-------|-----------------|
+| `manage_facilities` | AUTO | CRUD | — | ← Cultural Social |
+| `schedule_maintenance` | HITL | mutation | Cascade: emergency→facility status | → Compliance |
+| `coordinate_event_setup` | HITL | mutation | — | ← Cultural Social + Events |
+| `get_facility_occupancy` | AUTO | data+fusion | Occupancy | → SmartSchedule, → Events |
+| `manage_inspections` | AUTO | CRUD | — | → Compliance |
+| `report_facility_issue` | AUTO | mutation | Auto-creates maintenance | → Maintenance cascade |
+| `get_maintenance_schedule` | AUTO | data | — | → Compliance, → SmartSchedule |
+
+**Enums:** FacilityType(?), FacilityStatus(?), MaintenanceType(?), MaintenancePriority(?), MaintenanceStatus(?), InspectionResult(?), SetupStatus(?)
+
+#### 4. Satisfaction — 6 tools (FRONTEND EN ENGAGEMENT)
+
+| Tool | Approval | Tipo | Intel | Cross-domain key |
+|------|----------|------|-------|-----------------|
+| `submit_satisfaction_survey` | HITL(auto-approve) | mutation | Auto-computes score+sentiment | ← Events + Families |
+| `get_survey_for_event` | AUTO | data | — | → Events |
+| `analyze_event_satisfaction` | SEMI | intel | **AI-powered** sentiment | → Events, → Executive Dashboard |
+| `get_satisfaction_trends` | AUTO | intel | Historical trends | → Executive Dashboard, → Advisors |
+| `generate_satisfaction_report` | SEMI | report | Compound: analysis+trends+AI | → Board Reports |
+| `get_satisfaction_questions` | AUTO | data | Static 10 questions | — |
+
+**Enums:** SatisfactionCategory(10)
+
+#### 5. Sports Recreation — 7 tools (SIN FRONTEND)
+
+| Tool | Approval | Tipo | Intel | Cross-domain key |
+|------|----------|------|-------|-----------------|
+| `manage_court_reservations` | AUTO/HITL(conditional) | mutation | Conditional escalation | → Facilities |
+| `organize_tournament` | HITL | mutation | — | → Facilities, → Events |
+| `manage_fitness_classes` | AUTO | CRUD | — | ← AgeGroup, → Wellness |
+| `coordinate_coaching` | AUTO | CRUD | — | ← Families |
+| `manage_sport_leagues` | HITL/AUTO CRUD | CRUD | — | → Events |
+| `get_equipment_availability` | AUTO | data | Availability | → Facilities |
+| `get_sports_recommendations` | AUTO | intel | Multi-source intelligence | ← Families, ← Wellness |
+
+**Enums:** SportType(?), TournamentFormat(?), TournamentStatus(?), LeagueFormat(?), ClassType(?), SkillLevel(?), EquipmentCondition(?)
+
+#### 6. Proactive Recommendation — 8 tools (RE-AUDITADO)
+
+| Tool | Approval | Tipo | Intel | Cross-domain key |
+|------|----------|------|-------|-----------------|
+| `optimize_pricing` | HITL/AUTO CRUD | CRUD | Pricing strategy | → Finance |
+| `suggest_new_activities` | HITL/AUTO CRUD | CRUD | Demand-based | ← AgeGroup, ← Satisfaction |
+| `generate_family_recommendations` | AUTO | intel | Personalized recs | ← Families, ← AgeGroup |
+| `predict_event_attendance` | AUTO | intel | Heuristic prediction | ← Events |
+| `detect_scheduling_conflicts` | AUTO | intel | Cross-event conflicts | ↔ Events |
+| `personalize_communication` | AUTO | intel | Template-based | ← Families, ← Communication |
+| `identify_social_clusters` | AUTO | intel | Cluster analysis | ↔ Families |
+| `generate_quarterly_insights` | AUTO | intel/report | ALL domains aggregated | ← ALL |
+
+**Enums:** PricingStrategy(5), RecommendationType(6), RecommendationPriority(4), PredictionConfidence(3), ClusterType(5), InsightPeriod(4)
+
+#### 7. Member Engagement — 6 tools (FRONTEND DESALINEADO)
+
+| Tool | Approval | Tipo | Intel | Cross-domain key |
+|------|----------|------|-------|-----------------|
+| `get_engagement_insights` | AUTO | intel | Per-member at-risk detection | → Family Advisor (R1,R7,R8,R15) |
+| `design_reactivation_campaign` | HITL/AUTO CRUD | CRUD | Campaign targeting | ← Communication |
+| `manage_loyalty_rewards` | HITL/AUTO CRUD | CRUD | Points lifecycle | → Finance |
+| `submit_feedback` | AUTO | CRUD | Sentiment tracking | → Satisfaction |
+| `manage_referrals` | AUTO | CRUD | Referral cascade | → Family Advisor R15 |
+| `get_engagement_dashboard` | AUTO | data+aggregate | **5-source aggregation** | → Executive Dashboard |
+
+**Enums:** EngagementLevel(7), CampaignType(?), RewardType(?), RewardStatus(?), FeedbackChannel(6), FeedbackSentiment(3)
+
+---
+
+### Consolidación de Enums — Todos los Agents
+
+| Domain | Enums | Est. values | En domain-enums.ts |
+|--------|-------|-------------|-------------------|
+| Cultural Social | EventType(7), EventStatus(5), EntertainmentType(7), CulturalCategory(7), VenueType(6), FormalityLevel(5), ExhibitionStatus(5), PerformanceStatus(6), ArtistStatus(3) | ~51 | NO (domain-specific) |
+| Age Group | AgeGroupCategory(6), ActivityDifficulty(3), AgeGroupActivityStatus(3) | ~12 | AgeGroupCategory ✅ |
+| Facility Mgmt | FacilityType, FacilityStatus, MaintenanceType, MaintenancePriority, MaintenanceStatus, InspectionResult, SetupStatus | ~35 | NO (domain-specific) |
+| Satisfaction | SatisfactionCategory(10) | 10 | NO (domain-specific) |
+| Sports Rec | SportType, TournamentFormat, TournamentStatus, LeagueFormat, ClassType, SkillLevel, EquipmentCondition | ~35 | NO (domain-specific) |
+| Proactive Rec | PricingStrategy(5), RecommendationType(6), RecommendationPriority(4), PredictionConfidence(3), ClusterType(5), InsightPeriod(4) | ~27 | Partially (PriorityLevel, ConfidenceLevel) |
+| Member Eng | EngagementLevel(7), CampaignType, RewardType, RewardStatus, FeedbackChannel(6), FeedbackSentiment(3) | ~25 | EngagementLevel ✅ |
+| **Master (cross-domain)** | **16 enums** | **~80** | **✅ domain-enums.ts** |
+| **AI Intelligence** | **5 advisor, 3 approval, 12 domains** | **~20** | **✅ ai-intelligence.ts** |
+| **TOTAL ESTIMADO** | **~60 enums** | **~280 values** | — |
+
+---
+
+### MEGA CROSS-DOMAIN MAP — 8 agents, 53 tools
+
+```
+                         ┌─────────────────────────┐
+                         │    EXECUTIVE DASHBOARD   │
+                         │    (consume KPIs de      │
+                         │     todos los dominios)   │
+                         └────────────┬─────────────┘
+                                      │
+              ┌───────────────────────┼───────────────────────┐
+              │                       │                       │
+     ┌────────▼────────┐    ┌────────▼────────┐    ┌────────▼────────┐
+     │    FINANCE      │    │   PROACTIVE     │    │    ADVISOR      │
+     │  (revenue,      │    │  RECOMMENDATION │    │  INTELLIGENCE   │
+     │   budget,       │    │  (HUB CENTRAL   │    │  (AI tools,     │
+     │   LTV/CAC)      │    │   6 intel tools) │    │   narratives)   │
+     └────────┬────────┘    └────────┬────────┘    └─────────────────┘
+              │                      │
+    ┌─────────┼──────────┬───────────┼──────────┬──────────────┬──────────────┐
+    │         │          │           │          │              │              │
+    ▼         ▼          ▼           ▼          ▼              ▼              ▼
+┌────────┐┌────────┐┌────────┐┌──────────┐┌──────────┐┌────────────┐┌────────────┐
+│FAMILIES││ EVENTS ││WELLNESS││ CULTURAL ││ FACILITY ││ SATISFACTION││  ENGAGEMENT │
+│(25     ││(15     ││(12     ││+ SOCIAL  ││ MGMT     ││            ││             │
+│rules)  ││rules)  ││tools)  ││(6 tools) ││(7 tools) ││(6 tools)   ││(6 tools)    │
+└───┬────┘└───┬────┘└───┬────┘└────┬─────┘└────┬─────┘└─────┬──────┘└──────┬──────┘
+    │         │         │          │           │            │              │
+    ▼         ▼         ▼          ▼           ▼            ▼              ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                          AGE GROUP (7 tools)                                      │
+│                     SPORTS RECREATION (7 tools)                                   │
+│                                                                                  │
+│  ┌─── CROSS-DOMAIN CONNECTIONS ─────────────────────────────────────────────┐    │
+│  │                                                                          │    │
+│  │  Cultural Social ←→ Facilities (venue management)                        │    │
+│  │  Cultural Social ←→ Events (calendar fusion)                             │    │
+│  │  Cultural Social ←→ Finance (budget tracking)                            │    │
+│  │  Cultural Social ←→ Families (organizer attribution)                     │    │
+│  │                                                                          │    │
+│  │  Age Group ←→ Families (age-based recommendations)                       │    │
+│  │  Age Group ←→ Satisfaction (participation feedback)                      │    │
+│  │  Age Group ←→ Executive Dashboard (demographics)                         │    │
+│  │  Age Group ←→ Sports Recreation (age-appropriate classes)                │    │
+│  │                                                                          │    │
+│  │  Facilities ←→ Events (venue + event setup)                              │    │
+│  │  Facilities ←→ Compliance (inspections + maintenance)                    │    │
+│  │  Facilities ←→ SmartSchedule (occupancy availability)                    │    │
+│  │  Facilities ←→ Sports Recreation (courts + equipment)                    │    │
+│  │                                                                          │    │
+│  │  Satisfaction ←→ Events (post-event feedback loop)                       │    │
+│  │  Satisfaction ←→ Families (family-level sentiment)                       │    │
+│  │  Satisfaction ←→ Communication (sentiment → advisor R24)                 │    │
+│  │  Satisfaction ←→ Family Advisor (R1 engagement, R8 peak-risk)            │    │
+│  │                                                                          │    │
+│  │  Sports Recreation ←→ Wellness (fitness = wellness component)            │    │
+│  │  Sports Recreation ←→ Families (member coaching history)                 │    │
+│  │  Sports Recreation ←→ Events (tournaments + leagues)                     │    │
+│  │  Sports Recreation ←→ Facilities (courts + equipment location)           │    │
+│  │                                                                          │    │
+│  │  Member Engagement ←→ ALL (universal engagement signal)                  │    │
+│  │  Member Engagement ←→ Family Advisor (R1,R7,R8,R15)                      │    │
+│  │  Member Engagement ←→ Communication (channels + frequency)               │    │
+│  │  Member Engagement ←→ Finance (loyalty monetary value)                   │    │
+│  │  Member Engagement ←→ Satisfaction (feedback aggregation)                │    │
+│  │                                                                          │    │
+│  │  Proactive Recommendation ←→ ALL (hub central de cross-domain)           │    │
+│  │                                                                          │    │
+│  └──────────────────────────────────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 6. DOMAIN-ENUMS.TS — RESUMEN
+
+| Sección | Enums | Display Configs | Legacy Mappings | Type Guards |
+|---------|-------|----------------|-----------------|-------------|
+| 1. Member & Family | MemberTier(7), AgeGroupCategory(6), LifecycleStage(8), FamilyStatus(4), MemberRole(4) | 4 configs | 2 (age groups, member roles) | 2 |
+| 2. Engagement | EngagementLevel(7), Sentiment(3) | 2 configs | 2 (legacy 5→7, backend→master) | 1 |
+| 3. Events | EventCategory(8), EventStatus(7), RsvpStatus(5) | 3 configs | 2 (event type, event status) | 2 |
+| 4. Guests | TrialType(3), TrialStatus(6), GuestCheckInStatus(3), GuestRegistryStatus(4) | 3 configs | 2 (trial type, trial status) | 2 |
+| 5. Shared | TrendDirection(3), SeverityLevel(4), ConfidenceLevel(3), PriorityLevel(4), OperationStatus(8), ApprovalLevel(4) | 5 configs | 0 | 1 |
+| **TOTAL** | **16 enums, ~80 values** | **13 configs** | **9 mappings** | **8 guards** |
+
+---
+
+## 7. AI-INTELLIGENCE.TS — RESUMEN
+
+| Sección | Tipos | Nota |
+|---------|-------|------|
+| 1. AI Primitives | AIFactor, AIRecommendation, AIProjectedMetric, AITrendPoint, AIAlert, AIPositiveTrend, AIRiskFactor | Building blocks atómicos |
+| 2. Generic AI Outputs | AIPrediction\<T\>, AIAnalysis, AIHealthScore, AIFinding, AINarrative, AIScenario, AISimulation, AIActionPlan/Item, AIBrief | Types genéricos parameterizados |
+| 3. Advisor Types | AdvisorInsightBase, AdvisorCommand, AdvisorActionState, AdvisorReaction, AdvisorLayer | Advisor architecture types |
+| 4. Domain Aliases | EventAttendancePrediction, FinancialAnalysis, SatisfactionAnalysis, EngagementAnalysis, CommunicationAnalysis, FamilyIntelligence, WellnessAnalysis, EventOptimization, ConflictAnalysis | 8 aliases convenience |
+| 5. Response Wrappers | AIResponse\<T\>, AIConfidentResponse\<T\> | Standard response shapes |
+| 6. Constants | ADVISOR_IMPACT_DISPLAY, AI_DOMAINS, AI_DOMAIN_DISPLAY, REACTION_STATUS_DISPLAY | 4 configs |
+| 7. Helpers | getConfidenceLevel, getConfidenceDisplay, sortInsightsByPriority, filterInsightsByImpact, generateInsightId, generateReactionId | 6 utility functions |
+
+---
+
+## 8. ADVISOR ARCHITECTURE UPDATE
+
+### Advisors existentes (actualizado con auditoría):
+
+| Fase | Advisor | Reglas | Capas | Tools MCP consumidos | Frontend |
+|------|---------|--------|-------|---------------------|----------|
+| F17 | useRecommendationAdvisor | 7 | 1 | proactive_recommendation (8) | ✅ AdvisorBanner |
+| F18 | useFinancialAdvisor | 18 | 3 | finance (8 backend + 9 mock) | ✅ FinancialAdvisorBanner |
+| F19 | useEventAdvisor | 15 | 3 | events (9 backend + 7 mock) | ✅ EventAdvisorBanner |
+| F20 | useGlobalAdvisor | 25 | 5 | cross-agent (all) | ✅ GlobalAdvisorBanner |
+| F28 | useCommunicationAdvisor | 8 | 2 | communication (14) | ✅ CommunicationAdvisorBanner |
+| F29 | useFamilyAdvisor | 25 | 5 | family_profile (17) + cross-domain | ✅ FamilyAdvisorBanner |
+
+**Total: 98 Advisor rules + 5 AI tools + 11 actions + reactions + pre-fetch**
+
+### Advisors POTENCIALES (descubiertos en auditoría):
+
+| Domain | Herramientas disponibles | Rules estimadas | Capas sugeridas | Prioridad |
+|--------|-------------------------|----------------|-----------------|-----------|
+| **Cultural Social** | 6 tools (1 intel) | 8-12 | 2 (health + engagement) | MEDIA |
+| **Age Group** | 7 tools (3 intel) | 6-10 | 2 (demographics + participation) | MEDIA |
+| **Facility Management** | 7 tools (1 intel) | 10-15 | 3 (occupancy + maintenance + cross-event) | ALTA |
+| **Satisfaction** | 6 tools (3 intel, 2 AI) | 10-15 | 3 (per-event + trends + cross-domain) | ALTA |
+| **Sports Recreation** | 7 tools (1 intel) | 8-12 | 2 (participation + recommendations) | BAJA |
+| **Member Engagement** | 6 tools (3 intel) | 12-18 | 4 (per-member + campaigns + loyalty + referrals) | ALTA |
+
+---
+
+## 9. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F22 | Foundation, Auth, Navigation, Dashboard, Finance, Events, Communications, Global Advisor, AI Intelligence, Reaction System | ✅ |
+| F23-F25 | Adaptive Thresholds, Polish batch, IMPACT_CONFIG centralization | ✅ |
+| F26a-b | Mock → Backend Migration (wellness 6 tools) | ✅ |
+| F27 | RAG Core — Document Intelligence Engine | ✅ |
+| F28 | Communications Agent Audit + Enhancement (14 tools, 8 Advisor rules, RAG grounding) | ✅ |
+| F29 | Families: The Heart of the Club (17 tools, 25 Advisor rules) | ✅ |
+| **F30** | **Cross-Domain Audit + Type System Unification** | **🔄 EN PROGRESO** |
+| F31 | Type Migration Phase A — adapt domain types.ts | ⬜ SIGUIENTE |
+| F32 | Agent→Frontend Connection Phase B — 7 agents | ⬜ |
+| F33 | Wellness Module (pospuesto hasta conectar agents sueltos) | ⬜ |
+| F34+ | Cross-Family Intelligence, Token Audit, Predictive Pre-fetch, Ambassador Program | ⬜ |
+
+---
+
+## 10. PRÓXIMAS FASES — Desglose detallado
+
+### F30b — Type Migration Phase A (SIGUIENTE)
+
+**Objetivo:** Adaptar los 7 domain types.ts para importar de `domain-enums.ts` + `ai-intelligence.ts`. Eliminar dual systems.
+
+**Método:** Para cada archivo, calcular % de cambios. Si >30% → REWRITE. Si ≤30% → quirúrgico.
+
+| # | Archivo | Cambios estimados | % estimado | Método |
+|---|---------|-------------------|-----------|--------|
+| 1 | `features/events/types.ts` | Eliminar legacy types, import de master enums, re-export Bk* como primary | ~50% | **REWRITE** |
+| 2 | `features/engagement/types.ts` | Import EngagementLevel de master, eliminar legacy level map | ~20% | Quirúrgico |
+| 3 | `features/guests/types.ts` | Import TrialType/TrialStatus de master, eliminar duplicados | ~25% | Quirúrgico |
+| 4 | `features/facilities/types.ts` | Import FacilityType/Status (si se define), fix operatingHours | ~15% | Quirúrgico |
+| 5 | `features/members/types.ts` | Import TIER_CONFIG de master, add missing tiers | ~15% | Quirúrgico |
+| 6 | `features/dashboard/types.ts` | Import AGE_GROUP_MAP de master, import TIER_CONFIG de master | ~10% | Quirúrgico |
+| 7 | `features/recommendations/types.ts` | Re-export enums de master en vez de definir localmente | ~20% | Quirúrgico |
+
+**Archivos que el usuario debe pegar:**
+```
+1. Este checkpoint (siempre primero)
+2. frontend/src/shared/types/domain-enums.ts (ya creado en esta sesión)
+3. frontend/src/shared/types/ai-intelligence.ts (ya creado en esta sesión)
+4. frontend/src/features/events/types.ts (ya leído)
+5. frontend/src/features/engagement/types.ts (ya leído)
+6. frontend/src/features/guests/types.ts (ya leído)
+7. frontend/src/features/facilities/types.ts (ya leído)
+8. frontend/src/features/members/types.ts (ya leído)
+9. frontend/src/features/dashboard/types.ts (ya leído)
+10. frontend/src/features/recommendations/types.ts (ya leído)
+```
+
+### F30c — Agent→Frontend Connection Phase B
+
+**Objetivo:** Conectar los 7 agents auditados al frontend. Crear contracts, mocks, types, componentes.
+
+| # | Agent | Bloques propuestos | Prioridad |
+|---|-------|-------------------|-----------|
+| 1 | Member Engagement | Contracts + align existing components + Advisor | ALTA |
+| 2 | Facility Management | Contracts + align existing components + Advisor | ALTA |
+| 3 | Satisfaction | Contracts + align existing components | ALTA |
+| 4 | Cultural Social | Contracts + types + NEW dashboard + NEW components | ALTA |
+| 5 | Sports Recreation | Contracts + types + NEW dashboard + NEW components | MEDIA |
+| 6 | Age Group | Contracts + types + expand AgeBalanceWidget | MEDIA |
+| 7 | Proactive Recommendation | Contracts completos (5 faltantes) + fix hardcoded data | MEDIA |
+
+---
+
+## 11. PENDIENTES ACUMULADOS (CONSOLIDADO)
+
+| # | Issue | Severidad | Fase sugerida |
+|---|-------|-----------|---------------|
+| 1 | **Grep global tokens fantasma** | **CRÍTICA** | F33+ |
+| 2 | 53 contracts faltantes en contracts.ts | ALTA | F30c (Phase B) |
+| 3 | Cultural Social sin frontend (6 tools) | ALTA | F30c |
+| 4 | Sports Recreation sin frontend (7 tools) | ALTA | F30c |
+| 5 | Engagement frontend desalineado de backend | ALTA | F30b (Phase A) |
+| 6 | Facility Management frontend desalineado | ALTA | F30b (Phase A) |
+| 7 | DUPLICACIÓN: identify_social_clusters en 2 agents | ALTA | F30c |
+| 8 | HARDCODED: generate_quarterly_insights | ALTA | F30c |
+| 9 | Satisfaction survey shape diferente | ALTA | F30b (Phase A) |
+| 10 | TrialType duplicado en guests | MEDIA | F30b |
+| 11 | VenueType ≈ FacilityType duplicados | MEDIA | F30b |
+| 12 | predict_event_attendance con multiplicadores fijos | MEDIA | F30c |
+| 13 | personalize_communication no usa claude_service | MEDIA | F30c |
+| 14 | AgeGroupRepository sync vs async | BAJA | Futuro |
+| 15 | Backend real para family_profile (17 tools) | ALTA | Futuro |
+| 16 | Backend identify_social_clusters | ALTA | F33 |
+| 17 | compactCurrency duplicado 3+ archivos | BAJA | F25 |
+| 18 | font-ui sin prefijo ~50 instancias | MEDIA | F25 |
+| 19 | toLocaleString en vez de formatNumber ~8 | MEDIA | F25 |
+| 20 | Dashboard sub-componentes 7/12 pendientes | MEDIA | F8 |
+| 21 | Empty State Audit — 9 módulos | MEDIA | F25 |
+| 22 | get_financial_summary mock-only | MEDIA | F26 |
+| 23 | TierEconomics sin calcular en finance | MEDIA | F26 |
+| 24 | 4 Event AI tools mock-only sin UI | MEDIA | Futuro |
+| 25 | Web Vitals endpoint stub | BAJA | Futuro |
+| 26 | Advisor navigation fields inconsistentes | MEDIA | F25 |
+| 27 | Global Advisor TODO placeholders | MEDIA | F24 |
+| 28 | Keyframes duplicados | BAJA | F25 |
+
+---
+
+## 12. DECISION LOG
+
+| Decisión | Razón | Impacto |
+|----------|-------|---------|
+| Type System Unification via domain-enums.ts | 5 sistemas de tiers, 2 de age groups, etc. causaban inconsistencias cross-domain | UN archivo maestro reemplaza todas las duplicaciones |
+| AI Intelligence Type System via ai-intelligence.ts | Patrones AI repetidos across domains sin reutilización | Generic types + domain aliases permiten reutilización |
+| Backend como source of truth para enums | Los 7 values de EngagementLevel del backend son más completos que los 5 del frontend | Legacy mappings permiten migración incremental |
+| Propuesta 1+3 como eje arquitectónico, 2+4 como vehículo | 1+3 resuelven el problema de raíz. 2+4 son operación/transición | Claridad en qué es estrategia vs táctica |
+| Regla de bloque >30% REWRITE | Múltiples cambios quirúrgicos en mismo archivo desperdician tokens | Optimización de recursos por lectura |
+| Conditional HITL escalation (sports_recreation pattern) | Patrón nuevo descubierto: AUTO que escala a HITL por parámetros | Replicable para otros agents |
+| HITL Auto-Approve (satisfaction pattern) | Trazabilidad sin intervención humana para operaciones de socio | Replicable para SOCIO portal |
+| Domain-specific enums NO van al master | SportType, CulturalCategory, etc. solo se usan en 1 domain | Evita bloat en domain-enums.ts |
+| contracts.ts como 2do paso después de master enums | Ya tiene el patrón correcto pero 53 contracts faltantes | Phase B completa la integración |
+
+---
+
+## 13. VERIFICACIÓN CONTRA REGLAS
+
+### Archivos NUEVOS:
+
+| Regla | domain-enums.ts | ai-intelligence.ts |
+|-------|----------------|-------------------|
+| #1 Tokens | ✅ Solo Silver Tide CSS vars | ✅ Solo Silver Tide CSS vars |
+| #25 Token Discipline | ✅ Todos verificados contra @theme | ✅ Todos verificados contra @theme |
+
+### Hallazgos de auditoría cross-domain:
+
+| Regla | Estado | Hallazgo |
+|-------|--------|----------|
+| #1 Tokens | ⚠️ | FACILITY_TYPE_CONFIG en facilities/types.ts usa hex hardcoded (#5a7a9e, etc.) — acceptable para map pero flag |
+| #8 Formatters | ⚠️ | 8 instancias de toLocaleString pendientes (ya flagged en F25) |
+| #19 AI on-demand | ✅ | Todos los AI tools son on-demand o CTA-triggered |
+
+---
+
+## 14. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto:
+```
+1. Este checkpoint (siempre primero)
+2. frontend/src/shared/types/domain-enums.ts (ya creado)
+3. frontend/src/shared/types/ai-intelligence.ts (ya creado)
+4. Los 7 domain types.ts que necesitan migración (ya leídos en esta sesión)
+```
+
+### Paso 2 — Confirmar:
+```
+"Confirmá que entendés el Type System Unification (domain-enums.ts + ai-intelligence.ts) 
+y las reglas de entrega (bloque >30% REWRITE, ≤30% quirúrgico). Después decí 'Listo'."
+```
+
+### Paso 3 — Arrancar Phase A:
+```
+"Migrá events/types.ts — importa de domain-enums, elimina dual system, 
+calculá el % de cambios y decidí REWRITE o quirúrgico."
+```
+
+### Paso 4 — Phase B (después de A):
+```
+"Conectá member_engagement al frontend: contracts + align components + advisor."
+```
+
+---
+
+## 15. AGENTES AUDITADOS — LISTA ACTUALIZADA
+
+| # | Agente | Server | Tools | HITL | AUTO | SEMI | Intel | Frontend | Estado |
+|---|--------|--------|-------|------|------|------|-------|----------|--------|
+| 1 | `family_profile` | `family_profile` | 17 | 0 | 13 | 4 | 9 | FamilyList/Detail/Form/IntelligencePanel ✅ | ✅ F29 |
+| 2 | `finance` | `finance` | 17 | 3 | 11 | 3 | 4+ | FinancialDashboard ✅ | ✅ F18 |
+| 3 | `communication` | `communication` | 14 | 2 | 8 | 3 | 3 | CommunicationDashboard ✅ (8 tabs) | ✅ F28 |
+| 4 | `advisor_intelligence` | `advisor_intelligence` | 5 | 0 | 5 | 0 | 5 | GlobalAdvisorBanner ✅ | ✅ F21 |
+| 5 | `wellness` | `wellness` | 12 | 0 | 12 | 0 | 4 | WellnessDashboard ✅ | ✅ F26 |
+| 6 | `event_orchestrator` | `events` | 16 | 3 | 10 | 3 | 1 | EventCalendar/Detail/Form ✅ | ✅ F19 |
+| 7 | `executive_dashboard` | `executive_dashboard` | 8 | 2 | 6 | 0 | 2 | ExecutiveDashboard ✅ | ✅ F16 |
+| 8 | `proactive_recommendation` | `proactive_recommendation` | 8 | 2 | 6 | 0 | 6 | RecommendationsDashboard ✅ | ✅ F17+F30 |
+| 9 | `compliance` | `compliance` | 7 | 1 | 5 | 1 | 1 | ComplianceCheck ✅ | ✅ F15ext |
+| 10 | `document_intelligence` | `document_intelligence` | 8 | 2 | 5 | 1 | 4 | DocumentRepository + KnowledgeQuery ✅ | ✅ F27 |
+| 11 | **`cultural_social`** | `cultural_social` | **6** | **3** | **3** | **0** | **1** | **NINGUNO** | **✅ F30 audit** |
+| 12 | **`age_group`** | `age_group` | **7** | **1** | **5** | **1** | **3** | Solo AgeBalanceWidget | **✅ F30 audit** |
+| 13 | **`facility_management`** | `facility_management` | **7** | **2** | **5** | **0** | **1** | FacilityDetail/Map/Calendar (parcial) | **✅ F30 audit** |
+| 14 | **`satisfaction`** | `satisfaction` | **6** | **1** | **3** | **2** | **3** | SatisfactionReport/Survey (en engagement) | **✅ F30 audit** |
+| 15 | **`sports_recreation`** | `sports_recreation` | **7** | **2** | **5** | **0** | **1** | **NINGUNO** | **✅ F30 audit** |
+| 16 | **`member_engagement`** | `member_engagement` | **6** | **2** | **4** | **0** | **3** | EngagementDashboard/Campaigns (desalineado) | **✅ F30 audit** |
+| 17 | `guest_management` | `guest_management` | ? | ? | ? | ? | ? | GuestManagementDashboard (parcial) | ⬜ Sin auditar |
+
+**Totales: 16/17 agents auditados. ~135+ tools. 1 pendiente (guest_management).**
+
+---
+
+**F30 — Cross-Domain Audit + Type System Unification — PARTE 1 COMPLETA. 2 archivos nuevos, 8 agents auditados, 16 master enums, 12 generic AI types. Phase A (migration) y Phase B (connection) pendientes.**

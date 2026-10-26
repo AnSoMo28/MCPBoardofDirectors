@@ -1,0 +1,557 @@
+# CHECKPOINT — Phase 15: Operations Command Center
+
+**Fecha:** Mayo-Junio 2025
+**Sesiones completadas:** 2
+**Archivos creados/modificados:** 6 (contracts, factories, registry, DailyBriefing completo)
+**Tools MCP mapeadas:** 39 (de 5 agentes backend)
+**Tools MCP conectadas en DailyBriefing:** 6 (4 agentes)
+**Sub-componentes nuevos:** 8
+
+---
+
+## 1. ROL Y METODOLOGÍA
+
+**Rol:** AI Engineer Senior + Product Strategy Specialist del Castillo Country Club.
+
+**NO soy un monkey coder.** Mi proceso:
+
+```
+LEER AGENTES → AUDITAR COMPONENTES → MAPEAR TOOLS → IDENTIFICAR GAPS
+→ PROPONER ARQUITECTURA → EJECUTAR EN BLOQUES → VERIFICAR VS 22 REGLAS
+```
+# SYSTEM — Castillo Country Club AI Engineer
+
+## ROL
+
+Sos un **AI Engineer Senior + Product Strategy Specialist** para el proyecto Castillo Country Club.
+Tu trabajo NO es ser un "monkey coder" que parcha bugs línea por línea.
+
+Sos un ingeniero que:
+1. **Audita el módulo completo** antes de tocar nada — panorama entero, no archivos aislados
+2. **Identifica bugs, inconsistencias y oportunidades** — no solo "¿compila?" sino "¿esto tiene sentido como producto?"
+3. **Conecta tools MCP desaprovechadas** — si el backend tiene capabilities que el frontend no usa, proponé cómo integrarlas
+4. **Propone enriquecimiento estratégico** — qué sección se beneficia de qué data adicional
+5. **Ejecuta en bloques ordenados** — con justificación para cada uno
+6. **Verifica contra reglas de diseño** — cada componente contra las 22 reglas del design system
+7. **Plantea preguntas antes de asumir** — si falta contexto, preguntá antes de construir sobre suposiciones
+
+### Lo que NUNCA hacés:
+- Modificar código sin entender el contexto del módulo completo
+- Proponer fixes aislados sin ver el patrón sistémico
+- Asumir que algo funciona sin verificar la cadena completa (contract → factory → registry → hook → componente)
+- Agregar imports sin verificar que existen en el proyecto
+- Proponer soluciones que contradigan decisiones de diseño ya tomadas
+
+### Tu proceso mental (siempre):
+```
+LEER → AUDITAR → MAPEAR TOOLS → IDENTIFICAR GAPS → PROPONER PLAN → EJECUTAR EN BLOQUES → VERIFICAR
+```
+**Regla de oro:** Propongo y analizo ANTES de escribir código. El usuario aprueba antes de generar. Changelog detallado al final de cada bloque.
+
+**Patrón de trabajo por componente:**
+1. Leer todos los agentes backend relevantes
+2. Mapear tools: backend real vs mock vs inexistente
+3. Proponer arquitectura con niveles de carga (auto / on-demand / mutation)
+4. Dividir en bloques (B1 foundation → B2 cross-agent → B3 intelligence → B4 advisor)
+5. Ejecutar bloque por bloque con changelog
+6. Verificar contra las 22 reglas
+
+---
+
+## 2. AGENTES BACKEND PROCESADOS (5 agentes, 39 tools)
+
+### 2.1 ComplianceAgent — `compliance`
+**Archivo:** `backend/src/club_mcp/agents/compliance.py`
+**7 tools:**
+
+| # | Tool | Tipo | Aprobación | Descripción |
+|---|------|------|------------|-------------|
+| 1 | `compliance_audit_create` | mutation | HITL | Crear auditoría de cumplimiento |
+| 2 | `compliance_check_run` | mutation | SEMI | Ejecutar chequeo + agregar a auditoría |
+| 3 | `compliance_audit_get` | datos | AUTO | Detalle de una auditoría |
+| 4 | `compliance_document_register` | mutation | HITL | Registrar documento/certificado |
+| 5 | `compliance_alert_create` | mutation | SEMI | Crear alerta de cumplimiento |
+| 6 | `compliance_alert_list` | datos | AUTO | Listar alertas con filtros (area, status) |
+| 7 | `compliance_report_generate` | datos | AUTO | Reporte general por rango de fechas |
+
+**Enums:** `ComplianceArea`, `CheckStatus`, `RiskLevel`, `AuditStatus`
+
+---
+
+### 2.2 ExecutiveDashboardAgent — `executive_dashboard`
+**Archivo:** `backend/src/club_mcp/agents/executive_dashboard_agent.py`
+**8 tools:**
+
+| # | Tool | Tipo | Aprobación | Descripción |
+|---|------|------|------------|-------------|
+| 1 | `generate_quarterly_board_report` | mutation | HITL | Informe trimestral para la junta |
+| 2 | `export_report` | mutation | SEMI (HITL si externo) | Exportar reportes PDF/Excel/CSV |
+| 3 | `get_executive_summary` | datos | AUTO | Resumen ejecutivo consolidado |
+| 4 | `get_financial_overview` | datos | AUTO | Vista financiera P&L |
+| 5 | `get_membership_health` | datos | AUTO | Salud de membresía por tier |
+| 6 | `get_operational_pulse` | datos | AUTO | Pulso operativo del club |
+| 7 | `detect_anomalies` | datos | AUTO | Detección de anomalías cross-domain |
+| 8 | `get_age_group_balance` | datos | AUTO | Distribución etaria + coef. Gini |
+
+**Enums:** `DashboardPeriod`, `AnomalyDomain`, `AnomalySeverity`, `ExportFormat`, `ReportAudience`, `ReportQuarter`, `TrendDirection`
+
+**Response shapes clave:**
+- `get_executive_summary` → `{ summary: { id, period, date_from, date_to, membership, financial, operational, engagement, trends } }`
+- `get_operational_pulse` → `{ operational: { events_held, events_upcoming, avg_event_attendance, attendance_trend, facility_utilization_pct, maintenance_pending, guest_visits, active_trial_memberships, top_activities[] } }`
+- `detect_anomalies` → `{ anomalies: [{ id, domain, severity, title, description, context{}, suggested_action }], total_anomalies, severity_counts{} }`
+
+---
+
+### 2.3 FacilityManagementAgent — `facility_management`
+**Archivo:** `backend/src/club_mcp/agents/facility_management_agent.py`
+**7 tools:**
+
+| # | Tool | Tipo | Aprobación | Descripción |
+|---|------|------|------------|-------------|
+| 1 | `manage_facilities` | CRUD | AUTO | list, get, create, update_status |
+| 2 | `schedule_maintenance` | mutation | HITL | Programar mantenimiento |
+| 3 | `coordinate_event_setup` | mutation | HITL | Montaje para eventos |
+| 4 | `get_facility_occupancy` | datos | AUTO | Ocupación en tiempo real |
+| 5 | `manage_inspections` | CRUD | AUTO | list, get, create inspecciones |
+| 6 | `report_facility_issue` | mutation | AUTO | Reportar problemas |
+| 7 | `get_maintenance_schedule` | datos | AUTO | Calendario de mantenimiento |
+
+**Enums:** `FacilityType`, `FacilityStatus`, `MaintenanceType`, `MaintenancePriority`, `MaintenanceStatus`, `InspectionResult`, `SetupStatus`
+
+**Response shape clave:**
+- `get_facility_occupancy` → `{ occupancy: [{ facility_id, facility_name, facility_type, status, current_setups, active_maintenance, capacity, opening_time, closing_time }] }`
+
+---
+
+### 2.4 EventOrchestratorAgent — `event_orchestrator`
+**Archivo:** `backend/src/club_mcp/agents/event_orchestrator.py`
+**9 tools:**
+
+| # | Tool | Tipo | Aprobación | Descripción |
+|---|------|------|------------|-------------|
+| 1 | `event_create` | mutation | HITL | Crear evento |
+| 2 | `event_build_program` | mutation | SEMI | Itinerario/programa |
+| 3 | `event_manage_rsvps` | CRUD | AUTO (bulk≥10→HITL) | RSVPs |
+| 4 | `event_coordinate_vendors` | mutation | HITL | Proveedores |
+| 5 | `event_manage_capacity` | datos | AUTO | Capacidad del evento |
+| 6 | `event_get_analytics` | datos | AUTO | Métricas del evento |
+| 7 | `event_clone_template` | mutation | SEMI | Clonar como plantilla |
+| 8 | `event_get_calendar` | datos | AUTO | Calendario con conflictos integrados |
+| 9 | `event_generate_report` | mutation | SEMI (financial→HITL) | Reporte ejecutivo/financiero |
+
+**Enums:** `EventCategory`, `EventStatus`, `RSVPStatus`, `VendorContractStatus`
+
+**Nota:** `event_get_calendar` devuelve `conflict_days` y `has_conflicts` por día — conflicto integrado, NO tool separada.
+
+---
+
+### 2.5 ProactiveRecommendationAgent — `proactive_recommendation`
+**Archivo:** `backend/src/club_mcp/agents/proactive_recommendation_agent.py`
+**8 tools:**
+
+| # | Tool | Tipo | Aprobación | Descripción |
+|---|------|------|------------|-------------|
+| 1 | `optimize_pricing` | CRUD | HITL (create) | Optimizaciones de precio |
+| 2 | `suggest_new_activities` | CRUD | HITL (create) | Sugerencias de actividades |
+| 3 | `generate_family_recommendations` | datos | AUTO | Recomendaciones para familias |
+| 4 | `predict_event_attendance` | inteligencia | AUTO | Predicción de asistencia |
+| 5 | `detect_scheduling_conflicts` | datos | AUTO | Detección de conflictos |
+| 6 | `personalize_communication` | inteligencia | AUTO | Borradores personalizados |
+| 7 | `identify_social_clusters` | datos | AUTO | Clusters sociales |
+| 8 | `generate_quarterly_insights` | datos | AUTO | Informe trimestral (list, get, generate, update_status) |
+
+**Enums:** `PricingStrategy`, `RecommendationType`, `RecommendationPriority`, `PredictionConfidence`, `InsightPeriod`, `ClusterType`
+
+**Response shape clave:**
+- `generate_quarterly_insights` (action: generate) → `{ insight: { id, year, period, summary, total_members_active, events_held, avg_event_attendance, revenue_total, top_activities[], member_satisfaction_avg, key_achievements[], areas_for_improvement[], recommendations[], status, created_at } }`
+
+---
+
+## 3. RELACIONES CROSS-AGENT MAPEADAS
+
+```
+DailyBriefing (Operations Command Center)
+├── executive_dashboard/get_executive_summary     → auto-load (120s)
+├── executive_dashboard/get_operational_pulse      → auto-load (60s)
+├── compliance/compliance_alert_list               → on-demand B2 (cross-agent O3)
+├── facility_management/get_facility_occupancy     → on-demand B2 (cross-agent)
+├── executive_dashboard/detect_anomalies           → on-demand B3 (intelligence)
+└── proactive_recommendation/generate_quarterly_insights → on-demand B4 (deep insights)
+
+ComplianceCheck (SIGUIENTE — auditoría pendiente)
+├── compliance/compliance_report_generate          → auto-load (300s)
+├── compliance/compliance_alert_list               → auto-load
+├── compliance/compliance_audit_get                → detalle
+├── compliance/compliance_audit_create             → mutation HITL
+├── compliance/compliance_check_run                → mutation SEMI
+├── compliance/compliance_alert_create             → mutation SEMI
+├── compliance/compliance_document_register        → mutation HITL
+└── executive_dashboard/detect_anomalies(?)        → on-demand cross-agent (posible)
+
+SmartSchedule (PENDIENTE)
+├── facility_management/get_facility_occupancy     → auto-load
+├── facility_management/get_maintenance_schedule   → auto-load
+├── facility_management/manage_facilities          → list auto-load
+├── event_orchestrator/event_get_calendar          → cross-agent (conflictos)
+├── facility_management/coordinate_event_setup     → mutation HITL
+├── facility_management/report_facility_issue      → mutation AUTO
+└── proactive_recommendation/detect_scheduling_conflicts → on-demand intelligence
+```
+
+---
+
+## 4. MOCK SYSTEM — ESTADO ACTUAL
+
+### Archivos modificados:
+
+**contracts.ts — Interfaces nuevas (agregadas, nada borrado):**
+
+```typescript
+// Phase 15 Operations
+ExecutiveMembershipKPI, ExecutiveFinancialKPI, ExecutiveOperationalKPI,
+ExecutiveEngagementKPI, ExecutiveSummaryData, ExecutiveSummaryResponse
+OperationalPulseData, OperationalPulseResponse
+ComplianceAlert, ComplianceAlertListResponse
+FacilityOccupancyItem, FacilityOccupancyResponse
+AnomalyItem, DetectAnomaliesResponse
+QuarterlyInsightActivity, QuarterlyInsightData, QuarterlyInsightsResponse
+```
+
+**factories.ts — Factories nuevas (agregadas):**
+
+| Factory | Server | Tool | Data |
+|---------|--------|------|------|
+| `createMockExecutiveSummary` | executive_dashboard | get_executive_summary | Membership 1247 fam, Financial $4.25M, 45 eventos, NPS +35 |
+| `createMockOperationalPulse` | executive_dashboard | get_operational_pulse | 45 eventos, 72% utilización, 5 mant., 312 visitas, top 4 actividades |
+| `createMockComplianceAlertList` | compliance | compliance_alert_list | 5 alerts (1 critical, 1 high, 2 medium, 1 resolved) |
+| `createMockFacilityOccupancy` | facility_management | get_facility_occupancy | 12 instalaciones (pool, courts, event halls, gym, restaurant, golf, spa, parking, playground) |
+| `createMockDetectAnomalies` | executive_dashboard | detect_anomalies | 8 anomalías multi-domain (2 mem, 2 fin, 2 ops, 2 eng), filtrable por domain |
+| `createMockInsightsResponse` | proactive_recommendation | generate_quarterly_insights | Ya existía (Fase 10) |
+
+**mock-registry.ts — Entries nuevas:**
+
+```typescript
+executive_dashboard: {
+  export_report: ...,                       // existente
+  get_executive_summary: () => ...,         // NUEVO
+  get_operational_pulse: () => ...,         // NUEVO
+  detect_anomalies: (params) => ...,        // NUEVO (B3)
+},
+
+compliance: {                               // SECCIÓN NUEVA
+  compliance_alert_list: () => ...,         // B2 cross-agent
+},
+
+facility_management: {                      // SECCIÓN NUEVA
+  get_facility_occupancy: () => ...,        // B2 cross-agent
+},
+```
+
+**Nota:** La sección `operations` vieja (`operations_daily_briefing`, `operations_compliance_check`, `operations_smart_schedule`) sigue en el registry porque ComplianceCheck y SmartSchedule aún no se reescribieron. Se eliminará cuando se reescriban.
+
+---
+
+## 5. PATRONES ESTABLECIDOS EN ESTA FASE
+
+### Patrón A: Health Score Composite (B1)
+
+```typescript
+// Score 0-100 combinando 5 factores ponderados
+calculateHealthScore(summary) → { score, level, color }
+
+// Factores:
+//   Membership growth (0-20)    — growth_rate_pct
+//   Financial health (0-25)     — collection_rate + budget discipline
+//   Utilization (0-15)          — sweet spot 60-85%
+//   Satisfaction (0-20)         — satisfaction_score × 4
+//   Risk management (0-20)      — penalize churn_risk_count
+
+// Levels: ≥85 Excepcional(emerald), ≥65 Saludable(teal),
+//         ≥45 Atención(amber), <45 Crítico(rose)
+
+// Visual: SVG ring con stroke-dashoffset animado
+// Reutilizable en: Dashboard, Executive, Board Reports
+```
+
+### Patrón B: Cross-Agent On-Demand Section (B2)
+
+```tsx
+function CrossAgentSection({ summary }) {
+  const [shouldFetch, setShouldFetch] = useState(false);
+  const query = useMCPQuery("other_agent", "tool", {}, { enabled: shouldFetch });
+
+  // 1. CTA card → Button "Consultar/Verificar"
+  if (!shouldFetch) return <CTACard />;
+
+  // 2. Loading → Skeleton
+  if (query.isLoading) return <Skeleton />;
+
+  // 3. Error → SectionError con retry
+  if (query.isError) return <SectionError />;
+
+  // 4. Empty → green "all clear" card
+  if (empty) return <AllClearCard />;
+
+  // 5. Results → data + cross-reference insight con summary
+  return <Results insight={buildInsight(data, summary)} />;
+}
+```
+
+**Clave:** El `insight` siempre combina datos del agente externo CON el summary del executive. Ejemplo: "Hay 4 alertas de cumplimiento abiertas, 1 crítica. Con 12 eventos programados, recomendamos resolver antes del próximo evento."
+
+### Patrón C: Expandable Intelligence Card (B3)
+
+```tsx
+// AnomalyCard: severity-based visual + expandible
+// Always visible: severity badge, domain badge, title, description (2-line clamp)
+// Expanded: context data grid (mini-metrics) + suggested_action (CTA dorada)
+// Severity → border-left color, icon, badge color
+```
+
+### Patrón D: Domain Filter Dropdown (B3)
+
+```tsx
+// Dropdown reutilizable para multi-domain intelligence tools
+// - CTA + dropdown para seleccionar dominio
+// - Re-analyze con dominio diferente sin resetear estado
+// - "Nueva búsqueda" para volver al CTA inicial
+```
+
+### Patrón E: Two-Layer Intelligence (B4)
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  LAYER 1 — Instant (client-side)                        │
+│  Recomendaciones computadas de data ya cargada           │
+│  → 0ms latency, 0 network calls                         │
+│  → generateRecommendations(summary) → AdvisorReco[]     │
+│  → Priorizadas: critical → high → medium → positive      │
+│  → Cada una con acción navegable (route + toast)         │
+├──────────────────────────────────────────────────────────┤
+│  LAYER 2 — On-demand (MCP query)                         │
+│  "Insights Trimestrales Profundos" via CTA               │
+│  → generate_quarterly_insights                           │
+│  → 3-columnas: Logros / Mejoras / Recomendaciones        │
+│  → Stats bar con métricas clave                          │
+│  → Colapsable — no ocupa espacio si no se pide           │
+└──────────────────────────────────────────────────────────┘
+```
+
+### Patrón F: Action Routing
+
+```typescript
+// Cada recomendación puede tener una acción navegable
+action: {
+  label: "Gestionar retención",    // texto del botón
+  route: "/admin/members",         // useNavigate(route)
+  toast: "Abriendo gestión...",    // showToast feedback
+}
+
+// Responsive: desktop → texto + icon. Mobile → solo icon con aria-label
+```
+
+---
+
+## 6. 22 REGLAS — CHECK RÁPIDA POR COMPONENTE
+
+| Regla | DailyBriefing | ComplianceCheck (target) |
+|-------|---------------|--------------------------|
+| #1 Tokens | ✅ | Pendiente |
+| #2 No blur | ✅ | Pendiente |
+| #4 Skeleton | ✅ | Pendiente |
+| #5 ReducedMotion | ✅ | Pendiente |
+| #7 formatNumber | ✅ | Pendiente |
+| #11 focus-visible | ✅ | Pendiente |
+| #12 Touch targets | ✅ | Pendiente |
+| #14 EmptyState | ✅ | Pendiente |
+| #15 showToast | ✅ | Pendiente (mutations HITL) |
+| #17 Button | ✅ | Pendiente |
+| #19 On-demand AI | ✅ | Pendiente |
+| #20 Breakpoint | ✅ | Pendiente |
+| #21 Responsive | ✅ | Pendiente |
+| #22 cn() | ✅ | Pendiente |
+
+---
+
+## 7. DAILY BRIEFING — ESTRUCTURA FINAL
+
+```
+DailyBriefing.tsx (~850+ líneas)
+
+Imports
+├── lucide-react (22 icons)
+├── framer-motion
+├── shared/components/ui (Card, Button, Skeleton, showToast)
+├── shared/components/layout (SectionError, StaleDataBanner)
+├── shared/hooks (useMCPQuery, useDataFreshness, useReducedMotion, useBreakpoint)
+├── shared/lib (cn, formatNumber, getGreeting)
+├── shared/mocks/contracts (8 tipos)
+├── shared/components/export (ExportButton)
+└── react-router-dom (useNavigate)
+
+Helpers (6)
+├── calculateHealthScore(summary) → HealthScore
+├── buildContextLine(summary) → string
+├── buildComplianceInsight(alerts, summary) → string
+├── buildFacilityInsight(facilities, summary) → string
+├── buildAnomalyInsight(anomalies, summary) → string
+├── generateRecommendations(summary) → AdvisorRecommendation[]
+├── generateAdvisorNarrative(summary) → string
+├── formatContextKey(key) → string
+├── formatContextValue(value) → string
+└── formatDueDate(dateStr) → string
+
+Config objects (8)
+├── TREND_CONFIG, TREND_LABELS
+├── RISK_CONFIG, COMPLIANCE_AREA_LABELS
+├── FACILITY_STATUS_CONFIG
+├── ANOMALY_SEVERITY_CONFIG, ANOMALY_DOMAIN_CONFIG
+└── RECO_PRIORITY_CONFIG
+
+Sub-components (8)
+├── HealthScoreRing (SVG ring animado)
+├── PulseCard (icon + label + value + subtext)
+├── ActivityBar (horizontal participation bar)
+├── ComplianceStatus (on-demand B2)
+├── FacilityHealth (on-demand B2)
+├── AnomalyCard (expandable severity card)
+├── AnomalyIntelligence (on-demand B3, domain selector)
+├── DeepInsightsPanel (on-demand quarterly insights)
+└── AIOperationsAdvisor (client-side + deep CTA B4)
+
+Skeleton: BriefingSkeleton
+
+Main: DailyBriefing
+├── Queries: executive_summary (120s) + operational_pulse (60s)
+├── Sections (motion staggered):
+│   1. Header (health ring + greeting + summary)
+│   2. Stale data banner
+│   3. KPI Grid (4 cards)
+│   4. Operational Pulse (4 cards)
+│   5. Top Activities (bars + mobile cards)
+│   6. Trend Badges
+│   7. Compliance Status [CTA B2]
+│   8. Facility Health [CTA B2]
+│   9. Anomaly Intelligence [CTA B3]
+│  10. AI Operations Advisor [B4]
+│  11. Export
+└── Layout: motion.div container + staggered items
+```
+
+---
+
+## 8. ARCHIVOS CREADOS/MODIFICADOS — RESUMEN
+
+| # | Archivo | Tipo | Cambios |
+|---|---------|------|---------|
+| 1 | `shared/mocks/contracts.ts` | ADICIÓN | +18 interfaces (Executive, Operational, Compliance, Facility, Anomaly, Quarterly) |
+| 2 | `shared/mocks/factories.ts` | ADICIÓN | +6 factories (executive summary, operational pulse, compliance alerts, facility occupancy, detect anomalies, ya existía insights) |
+| 3 | `shared/mocks/mock-registry.ts` | ADICIÓN + FIX | +3 sections (executive_dashboard entries, compliance, facility_management) + 6 fixes (comas, duplicados) |
+| 4 | `features/operations/components/DailyBriefing.tsx` | REESCRITURA COMPLETA | ~850+ líneas, 8 sub-componentes, 6 tools MCP, 4 agentes |
+
+---
+
+## 9. DECISIONES DE DISEÑO TOMADAS
+
+| Decisión | Alternativa descartada | Razón |
+|----------|----------------------|-------|
+| 2 queries separadas (executive + pulse) | 1 query consolidada | Más granular, staleTime diferenciado, más fiel al backend real |
+| Health Score compuesto | Solo KPIs individuales | "One metric that matters" — el admin ve UN número |
+| AI Advisor con acciones navegables | Solo texto narrativo | Las acciones convierten insights en workflow |
+| Cross-agent: Compliance + Facilities | Solo compliance | Cubre 90% del valor operativo diario |
+| Client-side intelligence + deep on-demand | Todo on-demand | Layer 1 es instantáneo (0 latency), Layer 2 es profundo |
+| Domain selector en anomalies | Solo "analizar todo" | Permite foco administrativo por área |
+| Positive recs como compact cards | Mismo layout que critical | Las buenas noticias no necesitan el mismo peso visual |
+| SVG ring para health score | Barra horizontal o número | Más impacto visual, diferenciador de producto |
+| `compliance_alert_list` como cross-agent en DailyBriefing | Solo en ComplianceCheck | El admin necesita ver compliance status sin cambiar de tab |
+| `generate_quarterly_insights` como deep layer | Auto-cargar | Rule #19: on-demand siempre con CTA explícito |
+
+---
+
+## 10. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Archivo | Destino |
+|---|-------|-----------|---------|---------|
+| 1 | Sección `operations` vieja en registry (3 tools inexistentes) | MEDIA | mock-registry.ts | Eliminar cuando ComplianceCheck + SmartSchedule se reescriban |
+| 2 | `Skeleton` prop `variant="circular"` puede no existir | BAJA | DailyBriefing BriefingSkeleton | Verificar API de Skeleton component |
+| 3 | `border-l-3` no es clase Tailwind estándar | BAJA | DailyBriefing AnomalyCard/Advisor | Puede necesitar `border-l-[3px]` |
+| 4 | Raw `<button>` en positive recs cards (B4) | BAJA | DailyBriefing | Semánticamente correcto como action card, no disclosure |
+| 5 | `useNavigate` import de react-router-dom | INFO | DailyBriefing | Verificar que el proyecto usa react-router-dom v7 |
+
+---
+
+## 11. PRÓXIMO ARCHIVO: ComplianceCheck.tsx
+
+### Qué leer primero
+- `features/operations/components/ComplianceCheck.tsx` (el archivo actual)
+
+### Tools MCP a mapear para ComplianceCheck
+
+| # | Tool | Agente | Patrón esperado |
+|---|------|--------|-----------------|
+| 1 | `compliance_report_generate` | compliance | auto-load (300s) — reporte general |
+| 2 | `compliance_alert_list` | compliance | auto-load — alertas abiertas |
+| 3 | `compliance_audit_get` | compliance | on-demand — detalle de auditoría |
+| 4 | `compliance_audit_create` | compliance | mutation HITL — crear auditoría |
+| 5 | `compliance_check_run` | compliance | mutation SEMI — ejecutar chequeo |
+| 6 | `compliance_alert_create` | compliance | mutation SEMI — crear alerta |
+| 7 | `compliance_document_register` | compliance | mutation HITL — registrar documento |
+
+### Cross-agent candidato para ComplianceCheck
+
+| Tool | Agente | Justificación |
+|------|--------|---------------|
+| `detect_anomalies` (domain: financial/operational) | executive_dashboard | Anomalías que afectan cumplimiento |
+| `get_facility_occupancy` | facility_management | Estado de instalaciones para compliance checks |
+
+### Patrones a aplicar en ComplianceCheck
+
+| Patrón | De | Cómo se aplica |
+|--------|-----|----------------|
+| Health Score | B1 | Compliance health score (% cumplimiento, alertas abiertas, auditorías pendientes) |
+| Cross-Agent On-Demand | B2 | Anomalías de compliance + facility status |
+| Expandable Card | B3 | Detalle de auditoría con checks expandibles |
+| Action Routing | B4 | Navegar a crear auditoría, registrar documento |
+
+### Bloques propuestos para ComplianceCheck
+
+| # | Bloque | Contenido |
+|---|--------|-----------|
+| C1 | Foundation | Contracts + factory + componente con auto-load (report + alerts). Compliance Health Score. Error states + retry. |
+| C2 | Mutations | Forms para crear auditoría (HITL), ejecutar chequeo (SEMI), crear alerta (SEMI), registrar documento (HITL). ApprovalQueue integration. |
+| C3 | Intelligence | On-demand: anomaly detection (domain: financial/operational) + facility cross-reference. Insight cross-referenciado. |
+| C4 | AI Advisor | Client-side recommendations basadas en compliance data. Acciones: crear auditoría, registrar documento, resolver alerta. |
+
+### Checklist mental antes de ComplianceCheck
+
+1. ¿El componente actual usa tool inexistente (`operations_compliance_check`)?
+2. ¿Tiene raw `<button>` que necesitan ser `<Button>`?
+3. ¿Tiene imports de `EmptyState` desde `layout/` en vez de `ui/`?
+4. ¿Tiene `toLocaleString()` en vez de `formatNumber()`?
+5. ¿Tiene error states con retry?
+6. ¿Tiene loading states con `<Skeleton>`?
+7. ¿Respeta `useReducedMotion()`?
+8. ¿Tabla desktop + cards mobile?
+9. ¿focus-visible, min-h-[44px]?
+10. ¿Todos los colores con `var(--color-xxx)`?
+
+---
+
+## 12. QUICK START PARA CONTINUAR
+
+```
+1. El usuario pasa ComplianceCheck.tsx
+2. Auditoría completa del archivo:
+   - Bugs, violaciones de reglas, raw buttons, imports incorrectos
+   - Tools MCP que usa vs tools que debería usar
+   - Secciones faltantes o redundantes
+3. Proponer arquitectura (C1 → C2 → C3 → C4)
+4. Usuario aprueba
+5. Ejecutar bloque por bloque con changelog
+6. Verificar contra 22 reglas
+7. Repetir para SmartSchedule.tsx
+```
+
+---
+
+**Contexto completo capturado. Listo para ComplianceCheck.tsx cuando lo pases.**

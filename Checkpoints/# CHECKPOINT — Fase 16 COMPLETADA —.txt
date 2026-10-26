@@ -1,0 +1,174 @@
+# CHECKPOINT — Fase 16 COMPLETADA — ExecutiveDashboard Enhancement
+
+**Fecha:** Mayo 2026
+**Sesiones:** 2 (auditoría + ejecución)
+**Archivos creados:** 1 (`types.ts`)
+**Archivos modificados:** 7
+**Líneas nuevas/modificadas:** ~1,800+ estimado
+**Tools MCP conectadas:** 8/8 executive_dashboard
+
+---
+
+## 1. LO QUE SE CREÓ/MODIFICÓ
+
+| # | Archivo | Acción | Cambio |
+|---|---------|--------|--------|
+| 1 | `features/dashboard/types.ts` | **NUEVO** | ~430 líneas. Enums, 10 interfaces backend-aligned, 10 response types, 10 derived types, 7 config maps, 7 transform helpers, recommendation engine (12 reglas) |
+| 2 | `features/dashboard/ExecutiveDashboard.tsx` | **REWRITE** | 1 query auto-load, 2 queries on-demand, client-side advisor, mutations HITL/SEMI_AUTO, sub-page navigables, eliminado MOCK_INLINE |
+| 3 | `features/dashboard/components/KPICards.tsx` | **MODIFY** | KPIData importado desde types.ts, sparklines eliminados |
+| 4 | `features/dashboard/components/MembershipDonut.tsx` | **MODIFY** | TierData + TIER_CONFIG desde types.ts, tiers corregidos (basic/premium/vip) |
+| 5 | `features/dashboard/components/TopActivities.tsx` | **MODIFY** | ActivityData importado desde types.ts |
+| 6 | `features/dashboard/components/RevenueChart.tsx` | **REWRITE** | AreaChart → horizontal BarChart, RevenuePoint[] → RevenueSourceData[] |
+| 7 | `features/dashboard/components/AnomalyFeed.tsx` | **MODIFY** | Severity +1 nivel (critical), AnomalySeverity enum importado |
+| 8 | `features/dashboard/components/AgeBalanceWidget.tsx` | **MODIFY** | AgeGroupData importado desde types.ts |
+| 9 | `shared/mocks/contracts.ts` | **MODIFY** | Set B eliminado (9 types), re-exports desde dashboard/types.ts |
+| 10 | `shared/mocks/factories.ts` | **MODIFY** | +4 factories nuevas, -3 factories operations eliminadas |
+| 11 | `shared/mocks/mock-registry.ts` | **MODIFY** | +4 entries executive_dashboard, -8 líneas operations obsoletas |
+
+---
+
+## 2. ARQUITECTURA DE DATOS FINAL
+
+```
+Backend (Pydantic)
+  ├── MembershipKPI, FinancialKPI, OperationalKPI, EngagementKPI
+  │
+  ▼
+dashboard/types.ts (source of truth)
+  ├── Backend-aligned interfaces (1:1)
+  ├── Response types (wrappers)
+  ├── Derived types (KPIData, TierData, ActivityData, etc.)
+  ├── Config maps (TIER_CONFIG, ANOMALY_SEVERITY_CONFIG, etc.)
+  └── Transform helpers (summaryToKPIs, buildTierData, etc.)
+  │
+  ▼
+ExecutiveDashboard.tsx
+  ├── summaryToKPIs(summary)       → KPICards
+  ├── buildTierData(by_tier)       → MembershipDonut
+  ├── buildActivityData(top_act)   → TopActivities
+  ├── buildRevenueSources(fin)     → RevenueChart (BarChart)
+  ├── anomalyToUI(anomaly)         → AnomalyFeed
+  ├── ageGroupToUI(balance)        → AgeBalanceWidget
+  └── generateExecutiveRecommendations(summary, anomalies?, ageBalance?)
+  │
+  ▼
+Sub-componentes (sin cambio de interface)
+```
+
+---
+
+## 3. TOOLS MCP — ExecutiveDashboard (8/8)
+
+| Tool | Agente | Nivel de carga | staleTime | Destino |
+|------|--------|---------------|-----------|---------|
+| `get_executive_summary` | executive_dashboard | Auto-load (Layer 0) | 120s | KPICards, charts, transform helpers |
+| `get_operational_pulse` | executive_dashboard | Eliminado (redundante) | — | Summary ya incluye operational |
+| `detect_anomalies` | executive_dashboard | On-demand (Layer 1) | 0 | AnomalyFeed |
+| `get_age_group_balance` | executive_dashboard | On-demand (Layer 1) | 0 | AgeBalanceWidget |
+| `get_financial_overview` | executive_dashboard | Mock listo, sub-page | — | Navegación a /admin/finance |
+| `get_membership_health` | executive_dashboard | Mock listo, sub-page | — | Navegación a /admin/families |
+| `generate_quarterly_board_report` | executive_dashboard | HITL mutation | — | CTA → pending_approval |
+| `export_report` | executive_dashboard | SEMI_AUTO mutation | — | PDF/Excel/CSV buttons |
+
+---
+
+## 4. PATRONES APLICADOS
+
+| Patrón | Implementación |
+|--------|---------------|
+| Auto-load Context (Layer 0) | `get_executive_summary` con staleTime 120s |
+| On-demand Cross-Agent (Layer 1) | `detect_anomalies` + `get_age_group_balance` con CTA→loading→error→empty→results |
+| Client-side Intelligence (Layer 2) | `generateExecutiveRecommendations()` — 12 reglas, 0ms, 0 calls |
+| HITL mutation | `generate_quarterly_board_report` → pending_approval |
+| SEMI_AUTO mutation | `export_report` (internal direct, external→HITL) |
+| Sub-page navigable | Financial → /admin/finance, Membership → /admin/families |
+| Transform helpers | Backend shape → sub-component shape via functions |
+
+---
+
+## 5. HALLAZGOS RESUELTOS
+
+| # | Hallazgo | Severidad | Resolución |
+|---|---------|-----------|-----------|
+| 1 | Type mismatch masivo: componente vs backend vs factory | ALTA | types.ts como source of truth + transform helpers |
+| 2 | MOCK_INLINE: componente nunca mostró datos reales | ALTA | Eliminado. Consumo directo de factory/backend |
+| 3 | Tiers incorrectos: platino/oro/plata/bronce vs basic/premium/vip | ALTA | TIER_CONFIG en types.ts, buildTierData con keys correctas |
+| 4 | 4 tools sin factory ni registry | ALTA | 4 factories + 4 registry entries creadas |
+| 5 | Dos sets paralelos en contracts.ts | ALTA | Set B eliminado, re-exports desde types.ts |
+| 6 | ActivityData field mismatch (participants vs participation) | ALTA | buildActivityData() transforma fields |
+| 7 | Anomaly field mismatch (category vs domain, etc.) | ALTA | anomalyToUI() transforma fields |
+| 8 | Anomaly severity: 3 vs 4 niveles | ALTA | AnomalyFeed actualizado con critical |
+| 9 | AgeGroupData keys mismatch vs backend | ALTA | ageGroupToUI() + AGE_GROUP_MAP |
+| 10 | KPIData con sparklines inventadas | MEDIA | Sparklines eliminadas del type y render |
+| 11 | RevenuePoint[] sin fuente backend | MEDIA | BarChart con top_revenue_sources reales |
+| 12 | staleTime inconsistente (60s vs 120s) | MEDIA | Corregido a 120s |
+| 13 | YoY data sin backend | MEDIA | Toggle visible, yoyData=null, "No disponible" |
+| 14 | Raw buttons (HitlQueue, PeriodSelector) | MEDIA | HitlQueue ya en strip. PeriodSelector es disclosure pattern |
+| 15 | Sección operations obsoleta | BAJA | Eliminada del registry, factories, contracts |
+| 16-23 | Bajas (glass-card, Legend import, etc.) | BAJA | No bloqueantes, se resolvieron naturalmente |
+
+---
+
+## 6. DECISIONES DE DISEÑO
+
+| Decisión | Alternativa descartada | Razón |
+|----------|----------------------|-------|
+| Transform helpers en types.ts | Cambiar interfaces de sub-componentes | Sub-componentes están bien construidos. Transform layer es separación limpia |
+| RevenueChart → BarChart horizontal | Mantener AreaChart con mock time series | Datos reales son top_revenue_sources. BarChart es más útil |
+| YoY visible pero disabled | Ocultar completamente | UX: usuario ve que existe. Cuando backend provea data, solo hay que pasar prop |
+| Advisor como CTA expandible inline | Sub-page separada | Patrón consistente con anomalies y age balance. Un solo dashboard scroll |
+| Financial + Membership como sub-pages navegables | Secciones on-demand inline | Piden que sean sub-páginas (decisión del usuario). Complejidad de datos merece página dedicada |
+| 2 queries (summary + anomaly/age balance) | 3-4 queries auto-load | Summary ya incluye membership, financial, operational, engagement. Solo anomalies y age balance necesitan tools separadas |
+| Eliminar get_operational_pulse del componente | Mantener como segunda query | Summary ya tiene operational data. Query redundante |
+
+---
+
+## 7. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Fase sugerida |
+|---|-------|-----------|---------------|
+| 1 | **`glass-card` / `glass-input` / `aurora-btn`**: Verificar que las clases CSS existen en global.css (probable que sí, pero no verificado directamente) | BAJA | 16 o 22 |
+| 2 | **HitlQueue: raw `<button>` en rechazar**: Regla #17 violada. Solo visible si se reactiva la sección de HITL en el body del dashboard | BAJA | 22 |
+| 3 | **YoY data**: `YearOverYearToggle` con `yoyData={null}` — preparado para cuando backend implemente comparación interanual | INFO | Futuro |
+| 4 | **`get_financial_overview` y `get_membership_health`**: Factories creadas y registradas pero solo se usan como sub-pages navegables. Conectar como on-demand cuando se creen las sub-páginas | MEDIA | 18 / F16+ |
+| 5 | **Contracts: types de operations**: Verificar que no quedaron imports huérfanos en factories.ts después del borrado | BAJA | 16 cleanup |
+| 6 | **Factories obsoletas**: `createExecutiveSummary` (vieja) sigue importada para routing de `generate_ai_analysis`. Mantener hasta verificar | INFO | Futuro |
+| 7 | **`formatNumber` import**: Verificar que existe en `@/shared/lib/utils` — usado en types.ts helpers pero no verificado | BAJA | 16 cleanup |
+| 8 | **ChartTooltip en RevenueChart**: Tooltip re-escrito. Verificar que `SourcesTooltip` renderiza correctamente en producción | MEDIA | 16 testing |
+| 9 | **Date-scoped range**: ExecutiveDashboard no usa date-scoped queries como SmartSchedule. Summary siempre es del período seleccionado | INFO | Futuro |
+
+---
+
+## 8. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F15 | Foundation + all module dashboards (original) | ✅ |
+| F15ext-B1-B4 | DailyBriefing full stack enhancement | ✅ |
+| F15ext-C1-C3 | ComplianceCheck full stack enhancement | ✅ |
+| F15ext-S1-S4 | SmartSchedule full stack rewrite | ✅ |
+| **F16** | **ExecutiveDashboard Enhancement** | **✅ COMPLETADA** |
+| F17 | RecommendationsDashboard Enhancement | ⬜ SIGUIENTE |
+| F18 | FinancialDashboard Enhancement | ⬜ |
+| F19 | EventOrchestrator Dashboard Enhancement | ⬜ |
+| F20 | Global Cross-Agent Health | ⬜ |
+| F21 | Mutations Phase | ⬜ |
+| F22 | Polish Phase | ⬜ |
+
+---
+
+## 9. ARCHIVOS NECESARIOS PARA F17
+
+| # | Archivo | Ruta | Por qué |
+|---|---------|------|---------|
+| 1 | **Agente backend** | `backend/src/club_mcp/agents/proactive_recommendation_agent.py` | Tools exactas, params, response shapes, approval levels |
+| 2 | **Models** | `backend/src/club_mcp/models/proactive_recommendation.py` | Enums, Pydantic models, field names |
+| 3 | **Componente principal** | `frontend/src/features/recommendations/RecommendationsDashboard.tsx` | Estado actual, qué tools usa, qué viola reglas |
+
+Los sub-componentes (FamilyRecommendations, PredictAttendance, ActivitySuggester, PricingOptimizer, QuarterlyInsights, SchedulingConflicts, SocialClusters) los pido después de ver el componente principal.
+
+Los types ya existen en `features/recommendations/types.ts` — lo procesé como referencia en esta fase.
+
+---
+
+**Fase 16 cerrada. Listo para F17. Pasame los 3 archivos.**

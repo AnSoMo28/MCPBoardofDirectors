@@ -1,0 +1,509 @@
+/* src/features/facilities/components/SpatialStoryView.css */
+/* ═══════════════════════════════════════════════════════════════ */
+/* SPATIAL STORY VIEW — "La Crónica"                             */
+/*                                                                */
+/* Living Protocol:                                               */
+/*   SENSE 1: RESPIRACIÓN — energy bars breathe, frame fade      */
+/*   SENSE 2: REACCIÓN — timeline bar hover + node hover         */
+/*   SENSE 3: MEMORIA — energy % + severity encoding             */
+/*   SENSE 4: INTENCIÓN — play/pause + speed toggle              */
+/*   SENSE 5: SINIESTRÍA — high energy dominant, severity color  */
+/*   SENSE 6: EMPATÍA — data-mode responsive                     */
+/*   SENSE 7: NARRATIVA — frame narrative + resonance narrative  */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Container ── */
+.glass-fac-story {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* ═══ CONTROLS (Sense 4: INTENCIÓN) ═══════════════════════════ */
+
+.glass-fac-story__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.glass-fac-story__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 25%, transparent);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-silver-300);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.glass-fac-story__btn:hover {
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  color: var(--color-silver-100);
+}
+
+.glass-fac-story__btn[data-active="true"] {
+  border-color: color-mix(in srgb, var(--color-teal-400) 30%, transparent);
+  color: var(--color-teal-400);
+}
+
+.glass-fac-story__btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-teal-400);
+}
+
+.glass-fac-story__speed {
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 20%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-silver-400);
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  min-height: 36px;
+}
+
+.glass-fac-story__speed:hover {
+  background: color-mix(in srgb, var(--color-surface) 40%, transparent);
+  color: var(--color-silver-200);
+}
+
+.glass-fac-story__speed:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-teal-400);
+}
+
+.glass-fac-story__frame-info {
+  margin-left: auto;
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.glass-fac-story__frame-time {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-silver-200);
+}
+
+.glass-fac-story__frame-energy[data-level="high"] {
+  color: var(--color-teal-400);
+}
+.glass-fac-story__frame-energy[data-level="medium"] {
+  color: var(--color-amber-400);
+}
+.glass-fac-story__frame-energy[data-level="low"] {
+  color: var(--color-silver-500);
+}
+
+/* ═══ NARRATIVE (Sense 7) ═════════════════════════════════════ */
+/* Crossfade via key change */
+
+.glass-fac-story__narrative {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--color-silver-200);
+  line-height: 1.6;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-teal-400) 30%, transparent);
+  border-radius: 0 8px 8px 0;
+  /* Sense 1: entry animation on frame change */
+  animation: glass-fac-story-narrative-enter 0.4s ease-out;
+}
+
+@keyframes glass-fac-story-narrative-enter {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+[data-mode="alert"] .glass-fac-story__narrative {
+  border-left-color: color-mix(in srgb, var(--color-amber-400) 30%, transparent);
+}
+
+[data-mode="critical"] .glass-fac-story__narrative {
+  border-left-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+}
+
+/* ═══ GRAPH AREA ══════════════════════════════════════════════ */
+
+.glass-fac-story__graph-area {
+  min-height: 80px;
+  padding: 8px;
+  background: color-mix(in srgb, var(--color-surface) 25%, transparent);
+  border-radius: 10px;
+}
+
+.glass-fac-story__graph-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  /* Sense 1: frame transition */
+  animation: glass-fac-story-narrative-enter 0.3s ease-out;
+}
+
+.glass-fac-story__graph-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
+  min-width: 70px;
+
+  /* Sense 1: stagger entry */
+  opacity: 0;
+  animation: glass-fac-story-node-enter 0.3s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+
+  /* Sense 2: hover transition */
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+@keyframes glass-fac-story-node-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.glass-fac-story__graph-node:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-border) 35%, transparent);
+}
+
+.glass-fac-story__graph-node[data-active="true"] {
+  border-color: color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+}
+
+.glass-fac-story__graph-node-name {
+  font-size: 9px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  white-space: nowrap;
+}
+
+.glass-fac-story__graph-node-pct {
+  font-size: 14px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-silver-200);
+}
+
+/* ── Energy fill bar (CSS-driven color) ── */
+.glass-fac-story__graph-node-energy {
+  width: 100%;
+  height: 3px;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.glass-fac-story__graph-node-energy-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.glass-fac-story__graph-node-energy-fill[data-level="high"] {
+  background: var(--color-teal-400);
+}
+.glass-fac-story__graph-node-energy-fill[data-level="medium"] {
+  background: var(--color-amber-400);
+}
+.glass-fac-story__graph-node-energy-fill[data-level="low"] {
+  background: var(--color-silver-500);
+}
+
+/* ═══ 24H TIMELINE ════════════════════════════════════════════ */
+
+.glass-fac-story__timeline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 60px;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+.glass-fac-story__hour-bar {
+  flex: 1;
+  min-width: 0;
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  border-radius: 3px 3px 0 0;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 2px;
+  transition: background 0.2s ease, transform 0.2s ease;
+  min-height: 8px;
+}
+
+/* Sense 2: hover */
+.glass-fac-story__hour-bar:hover {
+  background: color-mix(in srgb, var(--color-teal-400) 20%, transparent);
+  transform: scaleY(1.1);
+  transform-origin: bottom;
+}
+
+/* Current bar */
+.glass-fac-story__hour-bar[data-current="true"] {
+  background: var(--color-teal-400);
+}
+
+/* Energy level colors */
+.glass-fac-story__hour-bar[data-level="high"]:not([data-current="true"]) {
+  background: color-mix(in srgb, var(--color-teal-400) 35%, transparent);
+}
+.glass-fac-story__hour-bar[data-level="medium"]:not([data-current="true"]) {
+  background: color-mix(in srgb, var(--color-amber-400) 30%, transparent);
+}
+.glass-fac-story__hour-bar[data-level="low"]:not([data-current="true"]) {
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+}
+
+.glass-fac-story__hour-bar:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-teal-400);
+}
+
+.glass-fac-story__hour-label {
+  font-size: 8px;
+  font-family: var(--font-display);
+  color: var(--color-silver-500);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.glass-fac-story__hour-bar[data-current="true"] .glass-fac-story__hour-label {
+  color: var(--color-silver-900);
+  font-weight: 700;
+}
+
+/* ═══ RIPPLE CASCADE (Sense 3 + 5) ════════════════════════════ */
+
+.glass-fac-story__ripples {
+  flex-shrink: 0;
+}
+
+.glass-fac-story__ripples-title {
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.glass-fac-story__ripple {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-surface) 35%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 12%, transparent);
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+
+  /* Sense 1: stagger */
+  opacity: 0;
+  animation: glass-fac-story-node-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.1s + 0.2s);
+}
+
+.glass-fac-story__ripple[data-severity="high"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent);
+}
+
+.glass-fac-story__ripple-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-amber-400);
+  flex-shrink: 0;
+}
+
+.glass-fac-story__ripple[data-severity="high"] .glass-fac-story__ripple-dot {
+  background: var(--color-rose-400);
+}
+
+.glass-fac-story__ripple-text {
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.glass-fac-story__ripple-meta {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ═══ RESONANCE PATTERNS (previously dead — now rendered) ═════ */
+
+.glass-fac-story__resonance {
+  flex-shrink: 0;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+}
+
+.glass-fac-story__resonance-title {
+  font-size: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-silver-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.glass-fac-story__resonance-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--color-border) 15%, transparent);
+
+  /* Sense 1: stagger */
+  opacity: 0;
+  animation: glass-fac-story-node-enter 0.4s ease-out forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.12s + 0.4s);
+}
+
+.glass-fac-story__resonance-trigger {
+  font-size: 12px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-silver-200);
+}
+
+.glass-fac-story__resonance-meta {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-500);
+}
+
+/* ═══ EMPTY STATE ═════════════════════════════════════════════ */
+
+.glass-fac-story--empty {
+  justify-content: center;
+  align-items: center;
+}
+
+.glass-fac-story__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--color-silver-500);
+}
+
+.glass-fac-story__empty svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.glass-fac-story__empty-text {
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-400);
+  max-width: 280px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ═══ LIGHT MODE ══════════════════════════════════════════════ */
+
+.light .glass-fac-story__narrative {
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  color: var(--color-silver-700);
+}
+
+.light .glass-fac-story__graph-node {
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+}
+
+.light .glass-fac-story__graph-node-pct {
+  color: var(--color-silver-700);
+}
+
+.light .glass-fac-story__hour-bar[data-current="true"] .glass-fac-story__hour-label {
+  color: var(--color-white);
+}
+
+/* ═══ REDUCED MOTION ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-fac-story__narrative {
+    animation: none;
+  }
+
+  .glass-fac-story__graph-node {
+    animation: none;
+    opacity: 1;
+  }
+
+  .glass-fac-story__graph-node:hover {
+    transform: none;
+  }
+
+  .glass-fac-story__hour-bar:hover {
+    transform: none;
+  }
+
+  .glass-fac-story__ripple,
+  .glass-fac-story__resonance-item {
+    animation: none;
+    opacity: 1;
+  }
+
+  .glass-fac-story__graph-node-energy-fill {
+    transition-duration: 0ms;
+  }
+}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .glass-fac-story__graph-nodes {
+    gap: 6px;
+  }
+
+  .glass-fac-story__graph-node {
+    min-width: 55px;
+    padding: 6px 8px;
+  }
+
+  .glass-fac-story__timeline {
+    height: 40px;
+  }
+}

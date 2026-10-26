@@ -1,0 +1,563 @@
+/* src/features/communications/components/NarrativeTimeline.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Narrative Timeline — The Living Novel                       */
+/* Phase 31 — Silver Tide Glass UI                            */
+/* Namespace: .glass-comm-narrative                           */
+/* ═══════════════════════════════════════════════════════════ */
+
+.glass-comm-narrative {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  background: color-mix(in srgb, var(--color-surface-1, #1a1a1a) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  border-radius: var(--radius-xl, 1rem);
+  padding: var(--space-4, 1rem);
+  backdrop-filter: blur(8px);
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+.narrative__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.narrative__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+}
+
+.narrative__health-badge {
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.narrative__health-badge[data-health="strong"] {
+  color: var(--color-emerald-400);
+  background: color-mix(in srgb, var(--color-emerald-400) 12%, transparent);
+}
+.narrative__health-badge[data-health="fragile"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+.narrative__health-badge[data-health="breaking"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+  animation: narrative-health-pulse 2s ease-in-out infinite;
+}
+
+.narrative__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8, 2rem) 0;
+  font-size: 0.88rem;
+  color: var(--text-muted, #7a7570);
+}
+
+.narrative__section-title {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #7a7570);
+  margin-bottom: var(--space-2, 0.5rem);
+}
+
+/* ── Phase Indicator ──────────────────────────────────── */
+
+.narrative__phases {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  padding: var(--space-1, 0.25rem) 0 var(--space-3, 0.75rem);
+}
+
+.narrative__phase-line {
+  position: absolute;
+  top: 7px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  border-radius: 1px;
+  z-index: 0;
+}
+
+.narrative__phase-line-fill {
+  height: 100%;
+  border-radius: 1px;
+  background: var(--color-teal-400);
+  transition: width 0.8s ease;
+}
+
+.glass-comm-narrative[data-health="breaking"] .narrative__phase-line-fill {
+  background: var(--color-rose-400);
+}
+.glass-comm-narrative[data-health="fragile"] .narrative__phase-line-fill {
+  background: var(--color-amber-400);
+}
+
+.narrative__phase-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+  z-index: 1;
+}
+
+.narrative__phase-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-primary) 15%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--text-primary) 20%, transparent);
+  transition: background 0.5s ease, border-color 0.5s ease;
+}
+
+.narrative__phase-step[data-past="true"] .narrative__phase-dot {
+  background: var(--color-teal-400);
+  border-color: var(--color-teal-400);
+}
+
+.narrative__phase-step[data-active="true"] .narrative__phase-dot {
+  background: var(--color-gold-400);
+  border-color: var(--color-gold-400);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+}
+
+.narrative__phase-label {
+  font-size: 0.6rem;
+  color: var(--text-muted, #7a7570);
+  opacity: 0.6;
+}
+
+.narrative__phase-step[data-active="true"] .narrative__phase-label {
+  color: var(--color-gold-400);
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* ── Story Arc SVG ────────────────────────────────────── */
+
+.narrative__arc-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.narrative__arc-svg {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  overflow: visible;
+}
+
+/* Phase bands */
+.narrative__phase-band[data-phase="setup"] { fill: var(--color-teal-400); }
+.narrative__phase-band[data-phase="development"] { fill: var(--color-gold-400); }
+
+/* Fill gradient */
+.narrative__arc-fill-top { stop-color: var(--color-teal-400); }
+.narrative__arc-fill-bottom { stop-color: transparent; }
+
+.glass-comm-narrative[data-health="fragile"] .narrative__arc-fill-top { stop-color: var(--color-amber-400); }
+.glass-comm-narrative[data-health="breaking"] .narrative__arc-fill-top { stop-color: var(--color-rose-400); }
+
+/* Main curve */
+.narrative__arc-curve {
+  stroke: var(--color-teal-400);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+.narrative__arc-curve[data-health="strong"] { stroke: var(--color-emerald-400); }
+.narrative__arc-curve[data-health="fragile"] {
+  stroke: var(--color-amber-400);
+  stroke-dasharray: "8 4";
+}
+.narrative__arc-curve[data-health="breaking"] {
+  stroke: var(--color-rose-400);
+  stroke-dasharray: "4 4";
+  opacity: 0.6;
+}
+
+/* Chapter points */
+.narrative__arc-pulse {
+  fill: none;
+  stroke: var(--color-teal-400);
+  stroke-width: 1;
+  opacity: 0.2;
+  animation: narrative-arc-pulse 3s ease-in-out infinite;
+}
+
+.narrative__arc-pulse[data-sentiment="very_positive"] { stroke: var(--color-emerald-400); }
+.narrative__arc-pulse[data-sentiment="positive"] { stroke: var(--color-teal-400); }
+.narrative__arc-pulse[data-sentiment="negative"] { stroke: var(--color-amber-400); }
+.narrative__arc-pulse[data-sentiment="very_negative"] { stroke: var(--color-rose-400); }
+
+.narrative__arc-dot {
+  fill: var(--color-teal-400);
+  transition: r 0.3s ease;
+}
+
+.narrative__arc-dot[data-sentiment="very_positive"] { fill: var(--color-emerald-400); }
+.narrative__arc-dot[data-sentiment="positive"] { fill: var(--color-teal-400); }
+.narrative__arc-dot[data-sentiment="neutral"] { fill: var(--color-silver-500); }
+.narrative__arc-dot[data-sentiment="negative"] { fill: var(--color-amber-400); }
+.narrative__arc-dot[data-sentiment="very_negative"] { fill: var(--color-rose-400); }
+
+.narrative__arc-point[data-expanded="true"] .narrative__arc-dot {
+  r: 6;
+}
+
+.narrative__arc-number {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 6px;
+  font-weight: 700;
+  fill: var(--color-surface-1, #1a1a1a);
+}
+
+/* Foreshadowing */
+.narrative__foreshadow-dot {
+  fill: none;
+  stroke: var(--color-silver-500);
+  stroke-width: 1.5;
+  stroke-dasharray: "3 2";
+  opacity: 0.5;
+  animation: narrative-foreshadow-pulse 4s ease-in-out infinite;
+}
+
+.narrative__foreshadow-label {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 7px;
+  fill: var(--text-muted, #7a7570);
+  opacity: 0.5;
+}
+
+/* ── Chapter Cards ────────────────────────────────────── */
+
+.narrative__chapters {
+  padding-top: var(--space-2, 0.5rem);
+}
+
+.narrative__chapter-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+  max-height: 20rem;
+  overflow-y: auto;
+}
+
+.narrative__chapter-card {
+  border-radius: var(--radius-md, 0.5rem);
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  border-left: 3px solid var(--color-silver-500);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  cursor: pointer;
+  opacity: 0;
+  animation: narrative-chapter-appear 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.08s);
+  transition: background 0.2s ease, border-color 0.3s ease;
+}
+
+.narrative__chapter-card:hover {
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.narrative__chapter-card[data-sentiment="very_positive"] { border-left-color: var(--color-emerald-400); }
+.narrative__chapter-card[data-sentiment="positive"] { border-left-color: var(--color-teal-400); }
+.narrative__chapter-card[data-sentiment="neutral"] { border-left-color: var(--color-silver-500); }
+.narrative__chapter-card[data-sentiment="negative"] { border-left-color: var(--color-amber-400); }
+.narrative__chapter-card[data-sentiment="very_negative"] { border-left-color: var(--color-rose-400); }
+
+.narrative__chapter-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+}
+
+.narrative__chapter-indicator {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-teal-400) 15%, transparent);
+}
+
+.narrative__chapter-indicator[data-sentiment="very_positive"] { background: color-mix(in srgb, var(--color-emerald-400) 15%, transparent); }
+.narrative__chapter-indicator[data-sentiment="negative"] { background: color-mix(in srgb, var(--color-amber-400) 15%, transparent); }
+.narrative__chapter-indicator[data-sentiment="very_negative"] { background: color-mix(in srgb, var(--color-rose-400) 15%, transparent); }
+
+.narrative__chapter-number {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.narrative__chapter-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.narrative__chapter-title {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.narrative__chapter-meta {
+  font-size: 0.68rem;
+  color: var(--text-muted, #7a7570);
+}
+
+.narrative__chapter-nodes-count {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 9999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  color: var(--text-muted, #7a7570);
+}
+
+.narrative__chapter-expanded {
+  padding-top: var(--space-2, 0.5rem);
+  margin-top: var(--space-2, 0.5rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 5%, transparent);
+  animation: narrative-expand 0.3s ease;
+}
+
+.narrative__chapter-summary {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.narrative__chapter-detail {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--text-muted, #7a7570);
+  margin-top: var(--space-1, 0.25rem);
+}
+
+/* ── Callbacks Ribbon ─────────────────────────────────── */
+
+.narrative__callbacks {
+  padding-top: var(--space-2, 0.5rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.narrative__callbacks-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem);
+}
+
+.narrative__callback-tag {
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.72rem;
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+  opacity: 0;
+  animation: narrative-callback-appear 0.3s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.06s);
+}
+
+/* ── Momentum Gauge ───────────────────────────────────── */
+
+.narrative__momentum {
+  padding-top: var(--space-2, 0.5rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.narrative__momentum-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  overflow: hidden;
+  margin-bottom: var(--space-1, 0.25rem);
+}
+
+.narrative__momentum-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--color-teal-400);
+  transition: width 1s ease;
+}
+
+.narrative__momentum-fill[data-momentum="strong"] { background: var(--color-emerald-400); }
+.narrative__momentum-fill[data-momentum="moderate"] { background: var(--color-amber-400); }
+.narrative__momentum-fill[data-momentum="weak"] { background: var(--color-rose-400); }
+
+.narrative__momentum-info {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2, 0.5rem);
+}
+
+.narrative__momentum-score {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.narrative__momentum-label {
+  font-size: 0.72rem;
+  color: var(--text-muted, #7a7570);
+}
+
+/* ── Briefing ─────────────────────────────────────────── */
+
+.narrative__briefing {
+  padding-top: var(--space-2, 0.5rem);
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.narrative__briefing-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+}
+
+.narrative__briefing-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.narrative__briefing-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #7a7570);
+}
+
+.narrative__briefing-value {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.narrative__briefing-moments {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.narrative__briefing-moment {
+  font-size: 0.75rem;
+  color: var(--text-muted, #7a7570);
+  padding-left: var(--space-3, 0.75rem);
+  position: relative;
+}
+
+.narrative__briefing-moment::before {
+  content: "›";
+  position: absolute;
+  left: 0;
+  color: var(--color-gold-400);
+  font-weight: 700;
+}
+
+/* ── Animations ───────────────────────────────────────── */
+
+@keyframes narrative-health-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes narrative-arc-pulse {
+  0%, 100% { r: 8; opacity: 0.15; }
+  50% { r: 12; opacity: 0.05; }
+}
+
+@keyframes narrative-foreshadow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes narrative-chapter-appear {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes narrative-expand {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 10rem; }
+}
+
+@keyframes narrative-callback-appear {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── Light Mode ───────────────────────────────────────── */
+
+.light .glass-comm-narrative {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  border-color: color-mix(in srgb, #000000 8%, transparent);
+}
+
+.light .narrative__chapter-card {
+  background: color-mix(in srgb, #000000 3%, transparent);
+}
+
+.light .narrative__chapter-card:hover {
+  background: color-mix(in srgb, #000000 6%, transparent);
+}
+
+.light .narrative__arc-number {
+  fill: #ffffff;
+}
+
+/* ── Reduced Motion ───────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .narrative__health-badge[data-health="breaking"],
+  .narrative__arc-pulse,
+  .narrative__foreshadow-dot {
+    animation: none !important;
+  }
+
+  .narrative__chapter-card,
+  .narrative__callback-tag {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .narrative__chapter-expanded {
+    animation: none !important;
+  }
+
+  .narrative__momentum-fill,
+  .narrative__phase-line-fill {
+    transition: none !important;
+  }
+}

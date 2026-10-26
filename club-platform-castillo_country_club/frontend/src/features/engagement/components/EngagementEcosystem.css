@@ -1,0 +1,285 @@
+/* src/features/engagement/components/EngagementEcosystem.css */
+/* ═══════════════════════════════════════════════════════════ */
+/* Glass namespace: glass-eng-ecosystem                        */
+/* "The Ecosystem" — 10-domain vitality map (SIGNATURE)        */
+/* ═══════════════════════════════════════════════════════════ */
+
+[data-glass-eng-ecosystem] {
+  --local-surface: var(--color-surface-1, #1a1a1a);
+  --local-surface-2: var(--color-surface-2, #222222);
+  --local-border: rgba(255, 255, 255, 0.06);
+  --local-text: var(--color-silver-200, #e0dcd4);
+  --local-text-muted: var(--color-silver-400, #8a8580);
+  --local-text-dim: var(--color-silver-500, #6a6560);
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
+
+.eng-ecosystem {
+  background: var(--local-surface);
+  border: 1px solid var(--local-border);
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  animation: eng-eco-fadeUp 0.6s ease forwards;
+  animation-delay: 0.2s;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.eng-ecosystem__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--local-border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.eng-ecosystem__title {
+  font-family: var(--font-display, "Italiana", serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--local-text);
+}
+
+.eng-ecosystem__header-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eng-ecosystem__stat {
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 11px;
+  color: var(--local-text-muted);
+}
+
+.eng-ecosystem__stat strong {
+  font-family: var(--font-mono, "DM Mono", monospace);
+  color: var(--local-text);
+  font-weight: 600;
+}
+
+.eng-ecosystem__stat--warning strong {
+  color: var(--color-rose-400);
+}
+
+/* ── SVG Canvas ─────────────────────────────────────────── */
+
+.eng-ecosystem__canvas {
+  flex: 1;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eng-ecosystem__canvas svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ── Domain circles ─────────────────────────────────────── */
+
+.eng-ecosystem__domain {
+  transition: transform 0.2s ease;
+}
+
+.eng-ecosystem__domain:hover {
+  transform: scale(1.02);
+}
+
+.eng-ecosystem__circle {
+  transition: fill-opacity 0.3s ease, stroke-width 0.3s ease;
+}
+
+.eng-ecosystem__domain:hover .eng-ecosystem__circle {
+  fill-opacity: 0.25;
+  stroke-width: 2.5;
+}
+
+.eng-ecosystem__label {
+  pointer-events: none;
+  user-select: none;
+}
+
+.eng-ecosystem__trend-icon {
+  pointer-events: none;
+  animation: eng-eco-trend-blink 3s ease-in-out infinite;
+}
+
+/* ── Pulse ring ─────────────────────────────────────────── */
+
+.eng-ecosystem__pulse-ring {
+  animation: eng-eco-pulse-ring 2.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* ── Symbiosis edges ────────────────────────────────────── */
+
+.eng-ecosystem__edge--highlighted {
+  stroke: var(--color-gold-400);
+  opacity: 0.5;
+}
+
+/* ── Signal flow dots ───────────────────────────────────── */
+
+.eng-ecosystem__flow-dot {
+  opacity: 0.7;
+}
+
+/* ── Legend ──────────────────────────────────────────────── */
+
+.eng-ecosystem__legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--local-border);
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.eng-ecosystem__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-ui, "DM Sans", sans-serif);
+  font-size: 10px;
+  color: var(--local-text-muted);
+}
+
+.eng-ecosystem__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.eng-ecosystem__legend-dot--thriving {
+  background: var(--color-emerald-400);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-emerald-400) 40%, transparent);
+}
+
+.eng-ecosystem__legend-dot--healthy {
+  background: var(--color-teal-400);
+}
+
+.eng-ecosystem__legend-dot--stressed {
+  background: var(--color-amber-400);
+}
+
+.eng-ecosystem__legend-dot--critical {
+  background: var(--color-rose-400);
+  animation: eng-eco-dot-pulse 1.5s ease-in-out infinite;
+}
+
+.eng-ecosystem__legend-dot--extinct {
+  background: var(--color-silver-500);
+  opacity: 0.4;
+}
+
+/* ── Keyframes ──────────────────────────────────────────── */
+
+@keyframes eng-eco-fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes eng-eco-pulse-ring {
+  0%, 100% {
+    r: calc(attr(r) + 8);
+    opacity: 0.3;
+  }
+  50% {
+    r: calc(attr(r) + 14);
+    opacity: 0.1;
+  }
+}
+
+@keyframes eng-eco-trend-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes eng-eco-dot-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+/* ── Light Mode ─────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  [data-glass-eng-ecosystem] {
+    --local-surface: #ffffff;
+    --local-surface-2: #f5f3f0;
+    --local-border: rgba(0, 0, 0, 0.08);
+    --local-text: #1a1a1a;
+    --local-text-muted: #5a5550;
+    --local-text-dim: #8a8580;
+  }
+}
+
+/* ── Reduced Motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .eng-ecosystem {
+    animation: none;
+    opacity: 1;
+  }
+
+  .eng-ecosystem__pulse-ring {
+    animation: none;
+    opacity: 0.2;
+  }
+
+  .eng-ecosystem__trend-icon {
+    animation: none;
+  }
+
+  .eng-ecosystem__legend-dot--critical {
+    animation: none;
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .eng-ecosystem {
+    padding: 16px;
+  }
+
+  .eng-ecosystem__canvas {
+    min-height: 220px;
+  }
+
+  .eng-ecosystem__legend {
+    gap: 10px;
+  }
+
+  .eng-ecosystem__legend-item {
+    font-size: 9px;
+  }
+}

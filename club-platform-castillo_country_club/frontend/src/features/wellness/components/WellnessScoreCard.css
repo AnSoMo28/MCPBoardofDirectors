@@ -1,0 +1,466 @@
+/* ═══════════════════════════════════════════════════════════════
+   Wellness Score Card — CSS
+   Castillo Country Club — Silver Tide Glass UI
+   Namespace: .glass-wsc
+   Keyframes prefix: wsc*
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Root ── */
+.glass-wsc {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 22px;
+  background: color-mix(in srgb, var(--color-surface-1) 92%, transparent);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Level-Driven Ambient Background (P4) ── */
+.glass-wsc::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 1.2s ease;
+}
+
+.glass-wsc[data-level="excellent"]::before {
+  background: radial-gradient(ellipse at 20% 30%, color-mix(in srgb, var(--color-gold-400) 6%, transparent), transparent 60%);
+}
+
+.glass-wsc[data-level="good"]::before {
+  background: radial-gradient(ellipse at 20% 30%, color-mix(in srgb, var(--color-teal-400) 5%, transparent), transparent 60%);
+}
+
+.glass-wsc[data-level="moderate"]::before {
+  background: radial-gradient(ellipse at 20% 30%, color-mix(in srgb, var(--color-amber-400) 5%, transparent), transparent 60%);
+}
+
+.glass-wsc[data-level="low"]::before {
+  background: radial-gradient(ellipse at 20% 30%, color-mix(in srgb, var(--color-amber-400) 7%, transparent), transparent 60%);
+}
+
+.glass-wsc[data-level="critical"]::before {
+  background: radial-gradient(ellipse at 20% 30%, color-mix(in srgb, var(--color-rose-400) 7%, transparent), transparent 60%);
+  animation: wscCriticalPulse 4s ease-in-out infinite;
+}
+
+@keyframes wscCriticalPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Critical scan line (P4) */
+.glass-wsc[data-level="critical"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-rose-400) 20%, transparent), transparent);
+  animation: wscScanLine 8s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes wscScanLine {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+/* ── Header ── */
+.wsc__header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wsc__header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wsc__header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wsc__header-title {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--color-silver-100);
+  line-height: 1.2;
+}
+
+.wsc__header-family {
+  font-size: 13px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+  margin-top: 2px;
+}
+
+.wsc__header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Trend Badge ── */
+.wsc__trend-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+/* ── Sparkline (P7) ── */
+.wsc__sparkline {
+  width: 60px;
+  height: 16px;
+  display: block;
+}
+
+.wsc__spark-dot {
+  animation: wscSparkGlow 2s ease-in-out infinite;
+}
+
+@keyframes wscSparkGlow {
+  0%, 100% { opacity: 0.8; r: 2; }
+  50% { opacity: 1; r: 2.8; }
+}
+
+/* ── Body ── */
+.wsc__body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .wsc__body {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+  }
+}
+
+/* ── Gauge ── */
+.wsc__gauge-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 180px;
+  height: 180px;
+}
+
+@media (min-width: 640px) {
+  .wsc__gauge-wrap { width: 192px; height: 192px; }
+}
+
+@media (min-width: 1024px) {
+  .wsc__gauge-wrap { width: 208px; height: 208px; }
+}
+
+.wsc__gauge-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Gauge Glow (P3: Halo) ── */
+.wsc__gauge-glow {
+  opacity: 0.12;
+}
+
+.wsc__gauge-glow--alert {
+  animation: wscHaloPulse 1.5s ease-in-out infinite;
+}
+
+.glass-wsc[data-mode="calm"] .wsc__gauge-glow--alert {
+  animation-duration: 6s;
+}
+
+.glass-wsc[data-mode="alert"] .wsc__gauge-glow--alert {
+  animation-duration: 3s;
+}
+
+.glass-wsc[data-mode="critical"] .wsc__gauge-glow--alert {
+  animation-duration: 1.5s;
+}
+
+@keyframes wscHaloPulse {
+  0%, 100% { opacity: 0.12; }
+  50% { opacity: 0.28; }
+}
+
+/* ── Milestone burst (P6) ── */
+.wsc__milestone-burst {
+  animation: wscBurst 1.2s ease-out 1;
+}
+
+@keyframes wscBurst {
+  0% { r: 2; opacity: 1; }
+  50% { r: 6; opacity: 0.4; }
+  100% { r: 2; opacity: 0.9; }
+}
+
+/* ── Center text ── */
+.wsc__gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.wsc__gauge-score {
+  font-size: 40px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+@media (min-width: 640px) {
+  .wsc__gauge-score { font-size: 48px; }
+}
+
+.wsc__gauge-level {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  margin-top: 4px;
+}
+
+/* ── Achievement badge (P6) ── */
+.wsc__achievement {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  white-space: nowrap;
+  animation: wscAchievementIn 0.6s ease;
+}
+
+.wsc__achievement svg {
+  color: var(--color-gold-400);
+}
+
+@keyframes wscAchievementIn {
+  0% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+  60% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+/* ── Pentagon (P2) ── */
+.wsc__pentagon {
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+}
+
+.wsc__pent-fill {
+  animation: wscPentBreath 4s ease-in-out infinite;
+}
+
+@keyframes wscPentBreath {
+  0%, 100% { opacity: 0.06; }
+  50% { opacity: 0.14; }
+}
+
+.wsc__vertex--weak {
+  animation: wscVertexWeak 2s ease-in-out infinite;
+}
+
+@keyframes wscVertexWeak {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.2; }
+}
+
+/* ── Dimensions (P5) ── */
+.wsc__dimensions {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.wsc__dim {
+  padding: 4px 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.wsc__dim--focused {
+  opacity: 1;
+}
+
+/* Dim non-focused when one is focused */
+.wsc__dimensions:has(.wsc__dim--focused) .wsc__dim:not(.wsc__dim--focused) {
+  opacity: 0.35;
+}
+
+.wsc__dim-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.wsc__dim-label {
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--color-silver-300);
+  transition: color 0.2s ease;
+}
+
+.wsc__dim--focused .wsc__dim-label {
+  color: var(--color-silver-100);
+}
+
+.wsc__dim-score {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.wsc__dim-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-surface-3);
+  overflow: hidden;
+}
+
+.wsc__dim-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+/* ── Footer ── */
+.wsc__footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+@media (min-width: 640px) {
+  .wsc__footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.wsc__footer-text {
+  font-size: 11px;
+  color: var(--color-silver-400);
+  font-family: var(--font-ui);
+}
+
+.wsc__footer-btn {
+  color: var(--color-gold-400) !important;
+  gap: 4px;
+  align-self: flex-start;
+}
+
+@media (min-width: 640px) {
+  .wsc__footer-btn { align-self: auto; }
+}
+
+/* ═══ Reduced Motion ═══ */
+@media (prefers-reduced-motion: reduce) {
+  .glass-wsc::before,
+  .glass-wsc::after {
+    animation: none !important;
+  }
+
+  .wsc__gauge-glow--alert {
+    animation: none !important;
+    opacity: 0.15;
+  }
+
+  .wsc__spark-dot,
+  .wsc__pent-fill,
+  .wsc__vertex--weak,
+  .wsc__milestone-burst {
+    animation: none !important;
+  }
+
+  .wsc__achievement {
+    animation: none;
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+
+/* ═══ Light Mode ═══ */
+.light .glass-wsc {
+  background: color-mix(in srgb, #ffffff 95%, transparent);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-wsc::before {
+  opacity: 0.4;
+}
+
+.light .glass-wsc[data-level="excellent"]::before {
+  background: radial-gradient(ellipse at 20% 30%, color-mix(in srgb, var(--color-gold-400) 4%, transparent), transparent 60%);
+}
+
+.light .glass-wsc[data-level="critical"]::before {
+  background: radial-gradient(ellipse at 20% 30%, color-mix(in srgb, var(--color-rose-400) 5%, transparent), transparent 60%);
+}
+
+.light .wsc__header-title { color: var(--color-silver-900); }
+.light .wsc__header-family { color: var(--color-silver-500); }
+.light .wsc__gauge-score { /* inherits style color */ }
+.light .wsc__dim-label { color: var(--color-silver-600); }
+.light .wsc__dim--focused .wsc__dim-label { color: var(--color-silver-900); }
+.light .wsc__footer-text { color: var(--color-silver-500); }
+.light .wsc__footer { border-top-color: rgba(0, 0, 0, 0.06); }
+.light .wsc__trend-badge { /* inherits style */ }
+.light .wsc__achievement {
+  color: var(--color-gold-500);
+  background: color-mix(in srgb, var(--color-gold-400) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+.light .wsc__achievement svg { color: var(--color-gold-500); }
+.light .wsc__dim-bar { background: var(--color-surface-2, #eee); }

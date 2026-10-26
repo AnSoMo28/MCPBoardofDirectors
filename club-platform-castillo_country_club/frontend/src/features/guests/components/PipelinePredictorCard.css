@@ -1,0 +1,331 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/PipelinePredictorCard.css
+   Phase 34 "The Gateway" — Pipeline Predictor Card (Rewrite)
+   Level 6+ Agency · Production Grade
+
+   BEM: .gst-predictor
+   Glass: .glass-gst-predictor
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glass Namespace ── */
+.glass-gst-predictor {
+  --glass-gst-predictor-version: 1;
+}
+
+/* ── Custom Properties ── */
+:root {
+  --gst-predictor-bg: rgba(18, 18, 26, 0.5);
+  --gst-predictor-border: rgba(255, 255, 255, 0.06);
+  --gst-predictor-text-primary: #f0ece4;
+  --gst-predictor-text-muted: #7a7570;
+  --gst-predictor-radius: 16px;
+  --gst-predictor-surface: rgba(255, 255, 255, 0.02);
+  --gst-predictor-surface-border: rgba(255, 255, 255, 0.04);
+
+  /* Metric colors */
+  --gst-predictor-teal: var(--color-teal-400, #26a69a);
+  --gst-predictor-amber: var(--color-amber-400, #f5a623);
+  --gst-predictor-emerald: var(--color-emerald-400, #4ecdc4);
+  --gst-predictor-gold: var(--color-gold-400, #d4a853);
+
+  /* Metric backgrounds */
+  --gst-predictor-teal-bg: var(--color-teal-bg, rgba(38, 166, 154, 0.08));
+  --gst-predictor-amber-bg: var(--color-amber-bg, rgba(245, 166, 35, 0.08));
+  --gst-predictor-emerald-bg: var(--color-emerald-bg, rgba(78, 205, 196, 0.08));
+  --gst-predictor-gold-bg: var(--color-gold-bg, rgba(212, 168, 83, 0.08));
+}
+
+/* ── Base ── */
+.gst-predictor {
+  position: relative;
+  background: var(--gst-predictor-bg);
+  border: 1px solid var(--gst-predictor-border);
+  border-radius: var(--gst-predictor-radius);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  opacity: 0;
+  animation: gst-predictor-fadeIn 0.5s ease 0.2s forwards;
+}
+
+.gst-predictor[data-state="empty"] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 24px;
+  gap: 8px;
+  animation: none;
+  opacity: 1;
+}
+
+.gst-predictor__empty-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--gst-predictor-text-muted);
+}
+
+.gst-predictor__empty-text {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 14px;
+  color: var(--gst-predictor-text-muted);
+  margin: 0;
+}
+
+/* ── Header ── */
+.gst-predictor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gst-predictor-surface-border);
+}
+
+.gst-predictor__header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gst-predictor__header-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--gst-predictor-emerald);
+}
+
+.gst-predictor__title {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gst-predictor-text-primary);
+  margin: 0;
+}
+
+.gst-predictor__header-health {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gst-predictor__health-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  color: var(--gst-predictor-text-muted);
+}
+
+.gst-predictor__health-value {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.gst-predictor__health-value[data-health-level="good"] {
+  color: var(--gst-predictor-emerald);
+}
+
+.gst-predictor__health-value[data-health-level="attention"] {
+  color: var(--gst-predictor-amber);
+}
+
+.gst-predictor__health-value[data-health-level="critical"] {
+  color: var(--gst-severity-high);
+}
+
+/* ── Metrics Grid ── */
+.gst-predictor__metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+
+.gst-predictor__metric {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gst-predictor-surface-border);
+  background: var(--gst-predictor-surface);
+}
+
+.gst-predictor__metric-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+/* ── Metric Icons — per metric type ── */
+.gst-predictor__metric-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.gst-predictor__metric[data-metric="guests"] .gst-predictor__metric-icon {
+  color: var(--gst-predictor-teal);
+}
+
+.gst-predictor__metric[data-metric="trials"] .gst-predictor__metric-icon {
+  color: var(--gst-predictor-amber);
+}
+
+.gst-predictor__metric[data-metric="conversions"] .gst-predictor__metric-icon {
+  color: var(--gst-predictor-emerald);
+}
+
+.gst-predictor__metric[data-metric="revenue"] .gst-predictor__metric-icon {
+  color: var(--gst-predictor-gold);
+}
+
+/* ── Metric Labels ── */
+.gst-predictor__metric-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gst-predictor-text-muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Metric Values — per metric type ── */
+.gst-predictor__metric-value {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0 0 4px 0;
+}
+
+.gst-predictor__metric[data-metric="guests"] .gst-predictor__metric-value {
+  color: var(--gst-predictor-teal);
+}
+
+.gst-predictor__metric[data-metric="trials"] .gst-predictor__metric-value {
+  color: var(--gst-predictor-amber);
+}
+
+.gst-predictor__metric[data-metric="conversions"] .gst-predictor__metric-value {
+  color: var(--gst-predictor-emerald);
+}
+
+.gst-predictor__metric[data-metric="revenue"] .gst-predictor__metric-value {
+  color: var(--gst-predictor-gold);
+}
+
+/* ── Metric Sub ── */
+.gst-predictor__metric-sub {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 10px;
+  color: var(--gst-predictor-text-muted);
+  margin: 0;
+}
+
+/* ── Peak Months ── */
+.gst-predictor__peak-months {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--gst-predictor-surface-border);
+  flex-wrap: wrap;
+}
+
+.gst-predictor__peak-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--gst-predictor-text-muted);
+  flex-shrink: 0;
+}
+
+.gst-predictor__peak-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  color: var(--gst-predictor-text-muted);
+}
+
+.gst-predictor__peak-tags {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gst-predictor__peak-tag {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--gst-predictor-teal);
+  background: var(--gst-predictor-teal-bg);
+}
+
+/* ── Animations ── */
+@keyframes gst-predictor-fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Reduced Motion ── */
+[data-prefers-reduced="true"] .gst-predictor {
+  animation: none;
+  opacity: 1;
+}
+
+/* ── Light Mode ── */
+.light .gst-predictor {
+  --gst-predictor-bg: rgba(255, 255, 255, 0.85);
+  --gst-predictor-border: rgba(0, 0, 0, 0.08);
+  --gst-predictor-text-primary: #1a1a2e;
+  --gst-predictor-text-muted: #6b6b78;
+  --gst-predictor-surface: rgba(0, 0, 0, 0.02);
+  --gst-predictor-surface-border: rgba(0, 0, 0, 0.04);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gst-predictor__metrics {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .gst-predictor__metric-value {
+    font-size: 16px;
+  }
+
+  .gst-predictor__header {
+    padding: 10px 12px;
+  }
+
+  .gst-predictor__peak-months {
+    padding: 8px 12px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .gst-predictor__metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Print ── */
+@media print {
+  .gst-predictor {
+    background: white;
+    border: 1px solid #ccc;
+    opacity: 1;
+    animation: none;
+  }
+
+  .gst-predictor__metric {
+    border-color: #eee;
+  }
+}

@@ -1,0 +1,140 @@
+/**
+ * @component ExecutiveIntelligenceStrip
+ * @namespace .glass-exec-*
+ * @depends globals.css (glass tokens, color-mix, font tokens)
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   EXECUTIVE INTELLIGENCE STRIP — Glass + Gauge + Animations
+   ═══════════════════════════════════════════════════════════ */
+
+.glass-exec-strip {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(1.2);
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  border: 1px solid var(--glass-border);
+  border-bottom: 2px solid rgba(201, 169, 110, 0.25);
+  border-radius: 16px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.glass-exec-strip::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 169, 110, 0.25), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.light .glass-exec-strip {
+  background: rgba(255, 255, 255, 0.80);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-color: rgba(0, 0, 0, 0.08);
+  border-bottom-color: rgba(201, 169, 110, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Individual metric card ── */
+.glass-exec-metric {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--metric-color, rgba(255, 255, 255, 0.10));
+  border-radius: 12px;
+  padding: 16px;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  cursor: default;
+}
+
+.glass-exec-metric:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+
+.light .glass-exec-metric {
+  background: rgba(255, 255, 255, 0.70);
+  backdrop-filter: none;
+  border-color: rgba(0, 0, 0, 0.08);
+  border-left-color: var(--metric-color, rgba(0, 0, 0, 0.12));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.light .glass-exec-metric:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Hover glow (color of domain) ── */
+.glass-exec-metric__glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 50%, var(--metric-glow, rgba(255, 255, 255, 0.03)) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.glass-exec-metric:hover .glass-exec-metric__glow {
+  opacity: 1;
+}
+
+/* ── Health gauge glow ── */
+.glass-exec-gauge {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--metric-color) 50%, transparent));
+}
+
+/* ── Pending badge pulse ── */
+@keyframes exec-badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+.glass-exec-badge--pending {
+  animation: exec-badge-pulse 2s ease-in-out infinite;
+}
+
+/* ── Briefing typewriter reveal ── */
+@keyframes briefing-word-reveal {
+  from { opacity: 0; filter: blur(4px); transform: translateY(2px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+.glass-exec-briefing-word {
+  display: inline;
+  opacity: 0;
+  animation: briefing-word-reveal 0.3s ease-out forwards;
+}
+
+/* ── Briefing button shimmer ── */
+@keyframes briefing-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.glass-exec-briefing-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-exec-briefing-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(201, 169, 110, 0.15) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: briefing-shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}

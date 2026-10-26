@@ -1,0 +1,610 @@
+/* ═══════════════════════════════════════════════════════════
+   src/features/guests/components/PrivateEventPlanner.css
+   Phase 34 "The Gateway" — Private Event Planner (Rewrite)
+   Level 6+ Agency · Production Grade
+
+   BEM: .evt-planner
+   Glass: .glass-evt-planner
+
+   Checklist: CSS-1 through CSS-40
+   ═══════════════════════════════════════════════════════════ */
+
+.glass-evt-planner {
+  --glass-evt-planner-version: 1;
+}
+
+:root {
+  --evt-planner-text-primary: #f0ece4;
+  --evt-planner-text-muted: #7a7570;
+  --evt-planner-text-dim: #555250;
+  --evt-planner-card-radius: 12px;
+  --evt-planner-surface: rgba(255, 255, 255, 0.02);
+  --evt-planner-surface-border: rgba(255, 255, 255, 0.04);
+  --evt-planner-surface-3: rgba(255, 255, 255, 0.08);
+
+  --evt-planner-gold: var(--color-gold-400, #d4a853);
+  --evt-planner-emerald: var(--color-emerald-400, #4ecdc4);
+  --evt-planner-teal: var(--color-teal-400, #26a69a);
+  --evt-planner-amber: var(--color-amber-400, #f5a623);
+  --evt-planner-rose: var(--color-rose-400, #e74c3c);
+  --evt-planner-abyss: var(--color-abyss, #0d0d0d);
+}
+
+/* ═══ §1 — BASE ═══════════════════════════════════════════ */
+
+.evt-planner {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ═══ §2 — LOADING ════════════════════════════════════════ */
+
+.evt-planner__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.evt-planner__skeleton {
+  height: 192px;
+  border-radius: var(--evt-planner-card-radius);
+}
+
+/* ═══ §3 — HEADER ═════════════════════════════════════════ */
+
+.evt-planner__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.evt-planner__header-count {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  color: var(--evt-planner-text-muted);
+  margin: 0;
+}
+
+/* ═══ §4 — EVENT LIST ═════════════════════════════════════ */
+
+.evt-planner__event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.evt-planner__event-card {
+  padding: 20px;
+  border-radius: var(--evt-planner-card-radius);
+  border: 1px solid var(--evt-planner-surface-border);
+  background: var(--evt-planner-surface);
+  opacity: 0;
+  animation: evt-planner-cardIn 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 0.05s);
+}
+
+.evt-planner__event-card[data-status="inquiry"] {
+  border-left: 3px solid var(--evt-planner-text-muted);
+}
+
+.evt-planner__event-card[data-status="planning"] {
+  border-left: 3px solid var(--evt-planner-gold);
+}
+
+.evt-planner__event-card[data-status="confirmed"] {
+  border-left: 3px solid var(--evt-planner-emerald);
+}
+
+.evt-planner__event-card[data-status="in_progress"] {
+  border-left: 3px solid var(--evt-planner-teal);
+}
+
+.evt-planner__event-card[data-status="completed"] {
+  border-left: 3px solid var(--evt-planner-text-dim);
+  opacity: 0.8;
+}
+
+.evt-planner__event-card[data-status="cancelled"] {
+  border-left: 3px solid var(--evt-planner-rose);
+  opacity: 0.6;
+}
+
+/* ═══ §5 — EVENT HEADER ═══════════════════════════════════ */
+
+.evt-planner__event-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 641px) {
+  .evt-planner__event-header {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.evt-planner__event-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.evt-planner__event-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.evt-planner__event-name {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--evt-planner-text-primary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ═══ §6 — BADGES ═════════════════════════════════════════ */
+
+.evt-planner__badge {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  color: var(--badge-color, var(--evt-planner-text-muted));
+  background: var(--badge-bg, rgba(255, 255, 255, 0.06));
+  white-space: nowrap;
+}
+
+/* ═══ §7 — EVENT META ═════════════════════════════════════ */
+
+.evt-planner__event-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.evt-planner__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--evt-planner-text-muted);
+}
+
+.evt-planner__meta-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* ═══ §8 — SERVICE TAGS (event display) ═══════════════════ */
+
+.evt-planner__service-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.evt-planner__service-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.evt-planner__service-tag-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.evt-planner__service-tag[data-service="catering"] {
+  color: var(--evt-planner-gold);
+  background: rgba(212, 168, 83, 0.1);
+}
+
+.evt-planner__service-tag[data-service="decoration"] {
+  color: var(--evt-planner-rose);
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.evt-planner__service-tag[data-service="entertainment"] {
+  color: var(--evt-planner-teal);
+  background: rgba(38, 166, 154, 0.1);
+}
+
+/* ═══ §9 — EVENT PIPELINE ═════════════════════════════════ */
+
+.evt-planner__event-pipeline {
+  margin-bottom: 4px;
+}
+
+/* ═══ §10 — PIPELINE STEPPER ══════════════════════════════ */
+
+.evt-planner__pipeline {
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding: 0 4px 4px;
+  gap: 0;
+}
+
+.evt-planner__pipeline-step {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.evt-planner__step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.evt-planner__step-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.evt-planner__step-dot[data-state="completed"] {
+  background: var(--evt-planner-emerald);
+  color: var(--evt-planner-abyss);
+}
+
+.evt-planner__step-dot[data-state="current"] {
+  background: var(--evt-planner-gold);
+  color: var(--evt-planner-abyss);
+  box-shadow:
+    0 0 0 2px var(--evt-planner-surface),
+    0 0 0 4px var(--evt-planner-gold);
+}
+
+.evt-planner__step-dot[data-state="future"] {
+  background: var(--evt-planner-surface-3);
+  color: var(--evt-planner-text-dim);
+}
+
+.evt-planner__step-dot[data-state="cancelled"] {
+  background: var(--evt-planner-rose);
+  color: white;
+}
+
+.evt-planner__step-check {
+  width: 12px;
+  height: 12px;
+}
+
+.evt-planner__step-number {
+  font-family: var(--font-mono, "DM Mono");
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.evt-planner__step-label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 8px;
+  margin-top: 4px;
+  white-space: nowrap;
+  max-width: 48px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.evt-planner__pipeline-step[data-state="current"] .evt-planner__step-label {
+  color: var(--evt-planner-text-primary);
+}
+
+.evt-planner__pipeline-step[data-state="completed"] .evt-planner__step-label,
+.evt-planner__pipeline-step[data-state="future"] .evt-planner__step-label {
+  color: var(--evt-planner-text-dim);
+}
+
+.evt-planner__step-connector {
+  width: 16px;
+  height: 2px;
+  margin: 0 2px 16px;
+  background: var(--evt-planner-surface-3);
+  transition: background 0.2s ease;
+}
+
+.evt-planner__step-connector[data-completed="true"] {
+  background: var(--evt-planner-emerald);
+}
+
+/* ═══ §11 — EVENT NOTES ═══════════════════════════════════ */
+
+.evt-planner__event-notes {
+  font-family: var(--font-body, "Source Serif 4");
+  font-size: 12px;
+  color: var(--evt-planner-text-dim);
+  margin: 12px 0 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--evt-planner-surface-border);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* ═══ §12 — MODAL BODY ════════════════════════════════════ */
+
+.evt-planner__modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* ═══ §13 — FORM GROUPS ═══════════════════════════════════ */
+
+.evt-planner__form-row {
+  display: grid;
+  gap: 16px;
+}
+
+.evt-planner__form-row[data-cols="2"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.evt-planner__form-row[data-cols="3"] {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.evt-planner__form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.evt-planner__label {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--evt-planner-text-primary);
+}
+
+/* ═══ §14 — INPUTS ════════════════════════════════════════ */
+
+.evt-planner__input {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 16px;
+  color: var(--evt-planner-text-primary);
+  background: var(--evt-planner-surface);
+  border: 1px solid var(--evt-planner-surface-border);
+  border-radius: var(--evt-planner-card-radius);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  min-height: 48px;
+}
+
+.evt-planner__input:focus {
+  border-color: var(--evt-planner-gold);
+  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.12);
+}
+
+.evt-planner__input[aria-invalid="true"] {
+  border-color: var(--evt-planner-rose);
+}
+
+.evt-planner__input[data-variant="mono"] {
+  font-family: var(--font-mono, "DM Mono");
+}
+
+.evt-planner__textarea {
+  resize: vertical;
+  font-family: var(--font-body, "Source Serif 4");
+  min-height: auto;
+}
+
+.evt-planner__error {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--evt-planner-rose);
+  margin: 0;
+}
+
+/* ═══ §15 — SERVICE CHIPS (form) ══════════════════════════ */
+
+.evt-planner__service-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.evt-planner__service-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 14px;
+  font-weight: 500;
+  border: 2px solid var(--evt-planner-surface-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--evt-planner-text-dim);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  min-height: 44px;
+  outline: none;
+}
+
+.evt-planner__service-btn:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.evt-planner__service-btn:focus-visible {
+  outline: 2px solid var(--evt-planner-gold);
+  outline-offset: 2px;
+}
+
+.evt-planner__service-btn[data-active="true"][data-service="catering"] {
+  border-color: var(--evt-planner-gold);
+  background: rgba(212, 168, 83, 0.1);
+  color: var(--evt-planner-gold);
+}
+
+.evt-planner__service-btn[data-active="true"][data-service="decoration"] {
+  border-color: var(--evt-planner-rose);
+  background: rgba(231, 76, 60, 0.1);
+  color: var(--evt-planner-rose);
+}
+
+.evt-planner__service-btn[data-active="true"][data-service="entertainment"] {
+  border-color: var(--evt-planner-teal);
+  background: rgba(38, 166, 154, 0.1);
+  color: var(--evt-planner-teal);
+}
+
+.evt-planner__service-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ═══ §16 — HITL NOTICE ═══════════════════════════════════ */
+
+.evt-planner__hitl-notice {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 168, 83, 0.12);
+  background: rgba(212, 168, 83, 0.06);
+}
+
+.evt-planner__hitl-text {
+  font-family: var(--font-ui, "DM Sans");
+  font-size: 12px;
+  color: var(--evt-planner-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ═══ §17 — MODAL ACTIONS ═════════════════════════════════ */
+
+.evt-planner__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+/* ═══ §18 — ANIMATIONS ════════════════════════════════════ */
+
+@keyframes evt-planner-cardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ §19 — REDUCED MOTION ════════════════════════════════ */
+
+[data-prefers-reduced="true"] .evt-planner__event-card {
+  animation: none;
+  opacity: 1;
+}
+
+[data-prefers-reduced="true"] .evt-planner__step-dot,
+[data-prefers-reduced="true"] .evt-planner__step-connector {
+  transition: none;
+}
+
+/* ═══ §20 — LIGHT MODE ════════════════════════════════════ */
+
+.light .evt-planner {
+  --evt-planner-text-primary: #1a1a2e;
+  --evt-planner-text-muted: #6b6b78;
+  --evt-planner-text-dim: #999;
+  --evt-planner-surface: rgba(0, 0, 0, 0.02);
+  --evt-planner-surface-border: rgba(0, 0, 0, 0.04);
+  --evt-planner-surface-3: rgba(0, 0, 0, 0.08);
+  --evt-planner-abyss: #ffffff;
+}
+
+.light .evt-planner__input {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.light .evt-planner__event-card {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* ═══ §21 — RESPONSIVE ════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .evt-planner__event-card {
+    padding: 16px;
+  }
+
+  .evt-planner__form-row[data-cols="2"],
+  .evt-planner__form-row[data-cols="3"] {
+    grid-template-columns: 1fr;
+  }
+
+  .evt-planner__step-label {
+    max-width: 36px;
+    font-size: 7px;
+  }
+
+  .evt-planner__step-connector {
+    width: 12px;
+  }
+
+  .evt-planner__step-dot {
+    width: 20px;
+    height: 20px;
+  }
+
+  .evt-planner__event-name {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .evt-planner__form-row[data-cols="3"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .evt-planner__step-connector {
+    width: 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .evt-planner__step-connector {
+    width: 32px;
+  }
+}
+
+/* ═══ §22 — PRINT ═════════════════════════════════════════ */
+
+@media print {
+  .evt-planner__event-card {
+    animation: none;
+    opacity: 1;
+    break-inside: avoid;
+  }
+
+  .evt-planner__event-header > button {
+    display: none;
+  }
+}

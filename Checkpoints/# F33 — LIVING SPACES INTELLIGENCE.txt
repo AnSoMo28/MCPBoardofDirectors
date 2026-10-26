@@ -1,0 +1,1373 @@
+# F33 — LIVING SPACES INTELLIGENCE
+
+## Architecture Decision
+
+**Crear `FacilityReservation` como modelo y tools dedicadas** — NO reutilizar court bookings de sports.
+
+Razón: Las reservas de facilities tienen semántica diferente a canchas deportivas (duración variable, coordinación con eventos, approval flows distintos). Un modelo dedicado nos da: booking real desde el dashboard, detección de conflictos con events/maintenance, datos de utilización basados en reservas reales (no snapshots), y cross-domain con sports (espacios compartidos) y events (venue availability). Pattern: 2 tools nuevas (`create_facility_reservation` HITL + `get_facility_reservations` AUTO), siguiendo el mismo patrón que `create_reservation` en sports.
+
+**Total tools F33: 7 existentes + 2 reservation + 4 intelligence = 13 tools** (alineado con sports 11, communications 14).
+
+---
+
+## La Propuesta: Living Spaces Intelligence
+
+No construimos un dashboard de facilities. Construimos un sistema que hace que las instalaciones del club **respiren con inteligencia** — que sepa qué espacios están vivos, cuáles necesitan atención, cuáles generan valor, y qué va a pasar mañana.
+
+### El concepto
+
+```
+LIVING SPACES INTELLIGENCE
+│
+├── VER: Live Occupancy Board — cada espacio tiene un pulso
+├── ENTENDER: 9-dimension analysis — utilization, maintenance, revenue, compliance...
+├── PREDECIR: Predictive Maintenance Scoring — formula compuesta (M2)
+├── OPTIMIZAR: Space ROI — revenue por m² por facility (M3)
+├── ACTUAR: 6 acciones ejecutables con one-click + HITL
+└── APRENDER: Reaction system + cross-domain feedback loop
+```
+
+### Lo que nadie tiene en clubes de CR
+
+| Feature | Software tradicional | Castillo F33 |
+|---------|---------------------|--------------|
+| Ver espacios | Lista de nombres | Live Occupancy Board con pulso en tiempo real |
+| Mantenimiento | Calendario reactivo | Predictive Maintenance Scoring (condition × age × usage × weather) |
+| Valor de espacios | No existe | Space ROI: revenue / (maintenance + opportunity cost) por m² |
+| Patrones | No existe | Heatmap 7×16: cuándo está lleno cada espacio |
+| Inteligencia | Tablas | 9 dimensions + advisor con 12 reglas + cross-domain signals |
+| Acciones | Forms manuales | 6 acciones one-click con approval intelligence |
+
+---
+
+## Backend Architecture
+
+### 4 Intelligence Tools (nuevas)
+
+| # | Tool | Approval | Propósito |
+|---|------|----------|-----------|
+| 1 | `get_facility_analytics` | AUTO | 9-dimension analysis: Health, Utilization, Maintenance Intel, Space Optimization, Revenue, Compliance, Event Readiness, Cross-Domain, Prediction |
+| 2 | `get_amenity_utilization` | AUTO | Granular utilization: per-facility %, peak hours, time series 7d/30d, hourly breakdown, forecast |
+| 3 | `get_space_optimization` | AUTO | Cross-domain suggestions: underutilized, conflicting, expansion candidates, ROI per space |
+| 4 | `get_facility_health` | AUTO | Composite health: 5 factors (utilization 25%, maintenance 25%, inspection 20%, satisfaction 15%, cost_efficiency 15%), grade A-F, trend |
+
+### 2 Reservation Tools (nuevas)
+
+| # | Tool | Approval | Propósito |
+|---|------|----------|-----------|
+| 5 | `create_facility_reservation` | HITL/SEMI | Booking con conflict detection. HITL para premium spaces (ballroom, restaurant), SEMI para standard |
+| 6 | `get_facility_reservations` | AUTO | Listar reservas por facility/date range |
+
+### 4 Response Models (nuevas)
+
+| Model | Fields clave |
+|-------|-------------|
+| `FacilityAnalyticsResponse` | dimensions[9], overall_score, cross_domain_signals[] |
+| `AmenityUtilizationItem` | facility_id, utilization_pct, current_occupancy, capacity, peak_hours[], trend, forecast_pct, time_series[] |
+| `SpaceOptimizationSuggestion` | facility_id, suggestion_type, current_use, suggested_use, estimated_impact, priority, roi_estimate |
+| `FacilityReservation` | id, facility_id, facility_name, family_id, family_name, date, start_time, end_time, status, guest_count, purpose, notes |
+
+### 6 Repo Analytics Methods (nuevas)
+
+| Method | Cómputo |
+|--------|---------|
+| `get_facility_analytics()` | Agrega: occupancy, maintenance, inspections, setups → 9 dimensions |
+| `get_amenity_utilization()` | Per-facility: capacity vs current, peak detection, time series |
+| `get_space_optimization()` | Cross-domain: underutilized (util<20% 30d), revenue vs cost, expansion |
+| `get_facility_health()` | 5-factor weighted score con trend calculation |
+| `create_reservation()` | CRUD reservation + conflict check |
+| `list_reservations()` | Filtros por facility/date/status |
+
+---
+
+## Advisor Architecture: `useFacilitiesAdvisor`
+
+### 12 Rules × 5 Layers
+
+| # | Rule | Condition | Impact | Layer | Action |
+|---|------|-----------|--------|-------|--------|
+| 1 | utilization-critical | util < 30% avg 7d | HIGH | Diagnostic | Cerrar para maint o reasignar |
+| 2 | utilization-excellent | util > 85% | LOW | Optimization | Expandir horario + pricing premium |
+| 3 | maintenance-overdue | overdue_count > 0 | HIGH | Diagnostic | Programar inmediatamente |
+| 4 | maintenance-cost-spike | cost > 2× trailing avg | MEDIUM | Strategy | Auditar proveedores + presupuesto |
+| 5 | inspection-overdue | next_inspection < today | MEDIUM | Compliance | Programar inspección |
+| 6 | inspection-fail-rate | fail_rate > 20% | HIGH | Diagnostic | Revisar estándares + capacitación |
+| 7 | space-underutilized | util < 20% por 30d | MEDIUM | Innovation | Evaluar reasignación de uso |
+| 8 | booking-conflict | overlapping reservations | HIGH | Execution | Resolver conflictos + policy |
+| 9 | revenue-negative-roi | maint_cost > revenue 90d | HIGH | Strategy | Evaluar cierre/renovación |
+| 10 | seasonal-demand-shift | seasonal_change imminent | MEDIUM | Prediction | Preparar transición |
+| 11 | cross-domain-event-surge | high_event_demand + low_venue | MEDIUM | Innovation | Expandir venues disponibles |
+| 12 | cross-domain-sports-overflow | sports_capacity > 90% | MEDIUM | Innovation | Redirect a facilities alternativas |
+
+### 6 Executable Actions
+
+| Insight | Tool | Server | Approval |
+|---------|------|--------|----------|
+| maint-schedule | `schedule_maintenance` | `facility_management` | HITL |
+| issue-report | `report_facility_issue` | `facility_management` | AUTO |
+| inspection-create | `manage_inspections` (create) | `facility_management` | AUTO |
+| setup-coordinate | `coordinate_event_setup` | `facility_management` | HITL |
+| facility-update | `manage_facilities` (update_status) | `facility_management` | AUTO |
+| reservation-create | `create_facility_reservation` | `facility_management` | SEMI |
+
+---
+
+## Cross-Domain Signals
+
+### Inbound (otros dominios → facilities)
+
+| Source | Signal | Impact |
+|--------|--------|--------|
+| Sports | Court utilization overflow | Redirect a facilities alternativas |
+| Events | Event demand surge | Venue availability alert |
+| Finance | Maintenance budget exceeded | Cost optimization pressure |
+| Communications | Member complaints sobre facilities | Satisfaction signal |
+| Wellness | Spa/gym demand patterns | Capacity planning |
+
+### Outbound (facilities → otros dominios)
+
+| Target | Signal | Impact |
+|--------|--------|--------|
+| Events | Venue availability | "Ballroom available next Saturday" |
+| Sports | Shared space conditions | "Court 3 closed for maintenance" |
+| Communications | Closure notifications | "Gym cerrado 15-16 junio" |
+| Finance | Maintenance costs | "₡2.3M en mantenimiento Q2" |
+
+---
+
+## Frontend Architecture
+
+### 22 Archivos (production-grade)
+
+| # | File | Type | Lines est. | Content |
+|---|------|------|-----------|---------|
+| 1 | `features/facilities/types.ts` | REWRITE | ~500 | Enums alineados con backend, configs, transforms, FacilitiesAdvisorInsight, FacilitiesAnalysis |
+| 2 | `shared/mocks/contracts.ts` | MODIFY | ~200 | 13 contract interfaces |
+| 3 | `shared/mocks/factories.ts` | MODIFY | ~180 | 13 mock factories |
+| 4 | `shared/mocks/mock-registry.ts` | MODIFY | ~70 | facility_management handlers |
+| 5 | `features/facilities/hooks/useFacilitiesMCP.ts` | NEW | ~120 | 9 data hooks + 4 action hooks typed |
+| 6 | `features/facilities/hooks/useFacilitiesAdvisor.ts` | NEW | ~380 | 12 rules, 6 actions, health score, engagement score |
+| 7 | `features/facilities/FacilitiesDashboard.tsx` | NEW | ~200 | 5-tab shell (spaces, bookings, maintenance, inspections, intelligence) |
+| 8 | `features/facilities/components/FacilitiesAdvisorBanner.tsx` | NEW | ~180 | Advisor con expand/collapse, insight cards, actions |
+| 9 | `features/facilities/components/LiveOccupancyBoard.tsx` | NEW | ~300 | **M1** — Real-time grid con PulseIndicator, capacity bars, quick actions |
+| 10 | `features/facilities/components/AmenityHeatmap.tsx` | NEW | ~300 | **Patrón nuevo** — 7×16 grid, 8 intensity levels, peak detection |
+| 11 | `features/facilities/components/MaintenanceIntelligence.tsx` | NEW | ~320 | **M2** — Predictive scoring, urgency cards, cost tracking |
+| 12 | `features/facilities/components/SpaceROI.tsx` | NEW | ~280 | **M3** — Revenue per m², cost comparison, expansion ROI |
+| 13 | `features/facilities/components/FacilitiesIntelligencePanel.tsx` | NEW | ~450 | 9-dimension accordion (patrón DimensionCard) |
+| 14 | `features/facilities/components/FacilityBookingPanel.tsx` | NEW | ~300 | Booking manager con calendar + list |
+| 15 | `features/facilities/components/FacilityBookingFormModal.tsx` | NEW | ~280 | HITL form: facility picker, date/time, conflict detection |
+| 16 | `features/facilities/components/MaintenanceFormModal.tsx` | NEW | ~270 | HITL form: type, priority, scheduling |
+| 17 | `features/facilities/components/InspectionPanel.tsx` | NEW | ~260 | Inspection tracking con results timeline |
+| 18 | `features/facilities/components/InspectionFormModal.tsx` | NEW | ~250 | AUTO form: facility, result, findings |
+| 19 | `features/facilities/components/EventSetupPanel.tsx` | NEW | ~280 | Event coordination con requirements |
+| 20 | `features/facilities/components/EventSetupFormModal.tsx` | NEW | ~260 | HITL form: event+facility, requirements |
+| 21 | `features/facilities/FacilityDetail.tsx` | REWRITE | ~400 | Detail con advisor, health ring, AI sections |
+| 22 | `features/facilities/FacilityMap.tsx` | REWRITE | ~350 | List view con LiveOccupancyBoard + filters |
+
+### 5 Nuevos Patterns
+
+| Pattern | Concepto | Cuándo aplicar |
+|---------|----------|----------------|
+| **P35: LiveOccupancyBoard** | Grid de espacios con PulseIndicator + capacity bar + quick actions | Cualquier dominio con recursos finitos en tiempo real |
+| **P36: PredictiveMaintenanceScoring** | Formula compuesta: condition × age × usage × last_maintenance × weather | Equipment, facilities, fleet |
+| **P37: SpaceROI** | Revenue per m²: (revenue_generated) / (maintenance_cost + opportunity_cost) | Cualquier asset con costo+revenue |
+| **P38: FacilityHeatmap** | 7×16 grid con 8 intensity levels, peak detection, temporal patterns | Cualquier recurso con patrones temporales |
+| **P39: CrossDomainSignalCards** | Cards narrativas con domain badge + signal text + impact indicator | Todos los IntelligencePanels |
+
+---
+
+## Block Plan (B0-B5)
+
+| Bloque | Contenido | Archivos | Dependencia |
+|--------|-----------|----------|-------------|
+| **B0** | Backend Intelligence: 4 new tools + 2 reservation tools + 4 models + 6 repo methods + advisor prompt | 4 backend files | Auditoría completa ✅ |
+| **B1** | Data Layer: types.ts rewrite + contracts + factories + registry + hooks + guards | 6 frontend files | B0 |
+| **B2** | Dashboard + Advisor: FacilitiesDashboard shell + useFacilitiesAdvisor + AdvisorBanner | 3 frontend files | B1 |
+| **B3** | Live Spaces: LiveOccupancyBoard + AmenityHeatmap + FacilityBookingPanel + BookingFormModal | 4 frontend files | B2 |
+| **B4** | Maintenance + Compliance: MaintenanceIntelligence + MaintenanceFormModal + InspectionPanel + InspectionFormModal + EventSetupPanel + EventSetupFormModal | 6 frontend files | B2 |
+| **B5** | Intelligence + Space ROI + Wiring: FacilitiesIntelligencePanel + SpaceROI + FacilityDetail rewrite + FacilityMap rewrite + final wiring | 4 frontend files | B3, B4 |
+
+---
+
+## Visual Design — Living Spaces Intelligence
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F33 — Living Spaces Intelligence | Castillo Country Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════════ */
+  /* SILVER TIDE DESIGN SYSTEM — Token Reference    */
+  /* ═══════════════════════════════════════════════ */
+  :root {
+    --color-abyss: #080B12;
+    --color-surface-0: #0D1117;
+    --color-surface-1: #151B24;
+    --color-surface-2: #1C2230;
+    --color-surface-3: #242C3A;
+
+    --color-silver-100: #F0F2F5;
+    --color-silver-200: #D8DCE4;
+    --color-silver-300: #B8C0CC;
+    --color-silver-400: #8A95A5;
+    --color-silver-500: #5C6978;
+    --color-silver-600: #3D4755;
+
+    --color-gold-200: #E8D49A;
+    --color-gold-300: #D4B96A;
+    --color-gold-400: #C9A96E;
+    --color-gold-500: #A88540;
+
+    --color-teal-300: #4AB8D0;
+    --color-teal-400: #2A9AB5;
+    --color-teal-500: #1E7A90;
+
+    --color-emerald-300: #6DD4A0;
+    --color-emerald-400: #3DAA70;
+
+    --color-amber-300: #E8C870;
+    --color-amber-400: #D4A840;
+
+    --color-rose-300: #E08890;
+    --color-rose-400: #C46470;
+
+    --color-terracotta-400: #D47A5A;
+
+    --font-display: "Cormorant Garamond", Georgia, serif;
+    --font-ui: "DM Sans", system-ui, sans-serif;
+    --font-mono: "DM Mono", "Courier New", monospace;
+
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--color-abyss);
+    color: var(--color-silver-200);
+    font-family: var(--font-ui);
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 50;
+    mix-blend-mode: screen;
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* LAYOUT                                         */
+  /* ═══════════════════════════════════════════════ */
+  .app {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    background: var(--color-surface-1);
+    border-right: 1px solid rgba(255,255,255,0.04);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebar-logo {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-gold-400);
+    padding: 0 12px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--color-silver-400);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .nav-item:hover { background: var(--color-surface-2); color: var(--color-silver-200); }
+  .nav-item.active {
+    background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+    color: var(--color-gold-400);
+    font-weight: 600;
+  }
+  .nav-icon { width: 18px; height: 18px; opacity: 0.7; }
+  .nav-item.active .nav-icon { opacity: 1; }
+
+  .main {
+    padding: 32px 40px;
+    max-width: 1400px;
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* HEADER                                         */
+  /* ═══════════════════════════════════════════════ */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-silver-100);
+    line-height: 1.1;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--color-silver-400);
+    margin-top: 4px;
+  }
+
+  .health-ring-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .health-ring {
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+
+  .health-ring svg {
+    transform: rotate(-90deg);
+    width: 80px;
+    height: 80px;
+  }
+
+  .health-ring .ring-bg {
+    fill: none;
+    stroke: var(--color-surface-3);
+    stroke-width: 6;
+  }
+
+  .health-ring .ring-fill {
+    fill: none;
+    stroke: var(--color-emerald-400);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 220;
+    stroke-dashoffset: 29;
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .health-ring .ring-value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .health-ring .ring-number {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-silver-100);
+    line-height: 1;
+  }
+
+  .health-ring .ring-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--color-silver-400);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .health-meta { display: flex; flex-direction: column; gap: 2px; }
+  .health-meta .grade {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-emerald-400);
+  }
+  .health-meta .level {
+    font-size: 12px;
+    color: var(--color-silver-400);
+  }
+  .health-meta .trend {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-emerald-400);
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* KPI STRIP                                      */
+  /* ═══════════════════════════════════════════════ */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .kpi-card {
+    background: var(--color-surface-1);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    animation: fadeUp 0.5s ease forwards;
+    opacity: 0;
+  }
+  .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+  .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+  .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+  .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+  .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+
+  .kpi-label {
+    font-size: 11px;
+    color: var(--color-silver-400);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .kpi-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-silver-500);
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* ADVISOR BANNER                                 */
+  /* ═══════════════════════════════════════════════ */
+  .advisor-banner {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--color-gold-400) 4%, var(--color-surface-1)) 0%, var(--color-surface-1) 100%);
+    border: 1px solid color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+    border-radius: var(--radius-xl);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s ease forwards;
+    opacity: 0;
+    animation-delay: 0.3s;
+  }
+
+  .advisor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .advisor-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-gold-400);
+  }
+
+  .advisor-title .sparkle {
+    width: 18px; height: 18px;
+    background: var(--color-gold-400);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+
+  .advisor-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+    color: var(--color-amber-400);
+    font-weight: 500;
+  }
+
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .insight-card {
+    background: var(--color-surface-0);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .insight-card:hover {
+    border-color: rgba(255,255,255,0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .insight-impact {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .impact-high {
+    background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+    color: var(--color-rose-400);
+  }
+  .impact-medium {
+    background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+    color: var(--color-amber-400);
+  }
+
+  .insight-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-silver-200);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .insight-desc {
+    font-size: 12px;
+    color: var(--color-silver-400);
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .insight-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-gold-400);
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .insight-action:hover {
+    background: color-mix(in srgb, var(--color-gold-400) 18%, transparent);
+    letter-spacing: 0.04em;
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* LIVE OCCUPANCY BOARD                           */
+  /* ═══════════════════════════════════════════════ */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-silver-100);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title .live-dot {
+    width: 8px; height: 8px;
+    background: var(--color-emerald-400);
+    border-radius: 50%;
+    animation: livePulse 2s ease-in-out infinite;
+  }
+
+  .section-subtitle {
+    font-size: 12px;
+    color: var(--color-silver-500);
+    font-family: var(--font-mono);
+  }
+
+  .occupancy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .facility-card {
+    background: var(--color-surface-1);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    animation: fadeUp 0.5s ease forwards;
+    opacity: 0;
+  }
+  .facility-card:nth-child(1) { animation-delay: 0.35s; }
+  .facility-card:nth-child(2) { animation-delay: 0.4s; }
+  .facility-card:nth-child(3) { animation-delay: 0.45s; }
+  .facility-card:nth-child(4) { animation-delay: 0.5s; }
+  .facility-card:nth-child(5) { animation-delay: 0.55s; }
+  .facility-card:nth-child(6) { animation-delay: 0.6s; }
+
+  .facility-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  .facility-card:hover {
+    border-color: rgba(255,255,255,0.12);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  }
+
+  .fc-pool::before { background: var(--color-teal-400); }
+  .fc-gym::before { background: var(--color-terracotta-400); }
+  .fc-court::before { background: var(--color-gold-400); }
+  .fc-restaurant::before { background: var(--color-amber-400); }
+  .fc-spa::before { background: var(--color-emerald-400); }
+  .fc-ballroom::before { background: var(--color-gold-300); }
+
+  .fc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .fc-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .fc-icon {
+    width: 44px; height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .fc-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-silver-100);
+    line-height: 1.2;
+  }
+
+  .fc-type {
+    font-size: 11px;
+    color: var(--color-silver-400);
+    margin-top: 1px;
+  }
+
+  .fc-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 10px;
+    border-radius: 99px;
+  }
+
+  .status-operational {
+    background: color-mix(in srgb, var(--color-emerald-400) 10%, transparent);
+    color: var(--color-emerald-400);
+  }
+  .status-busy {
+    background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+    color: var(--color-amber-400);
+  }
+  .status-critical {
+    background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+    color: var(--color-rose-400);
+  }
+  .status-maintenance {
+    background: color-mix(in srgb, var(--color-silver-400) 10%, transparent);
+    color: var(--color-silver-400);
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .status-operational .status-dot { background: var(--color-emerald-400); animation: livePulse 2s ease-in-out infinite; }
+  .status-busy .status-dot { background: var(--color-amber-400); animation: livePulse 1.5s ease-in-out infinite; }
+  .status-critical .status-dot { background: var(--color-rose-400); animation: livePulse 1s ease-in-out infinite; }
+  .status-maintenance .status-dot { background: var(--color-silver-400); }
+
+  .fc-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .fc-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .fc-metric-label {
+    font-size: 10px;
+    color: var(--color-silver-500);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .fc-metric-value {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-silver-200);
+  }
+
+  .fc-bar-container {
+    margin-bottom: 4px;
+  }
+
+  .fc-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .fc-bar-label {
+    font-size: 11px;
+    color: var(--color-silver-400);
+  }
+
+  .fc-bar-value {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .fc-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--color-surface-3);
+    overflow: hidden;
+  }
+
+  .fc-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .util-low .fc-bar-value { color: var(--color-emerald-400); }
+  .util-low .fc-bar-fill { background: var(--color-emerald-400); }
+  .util-med .fc-bar-value { color: var(--color-teal-400); }
+  .util-med .fc-bar-fill { background: var(--color-teal-400); }
+  .util-high .fc-bar-value { color: var(--color-amber-400); }
+  .util-high .fc-bar-fill { background: var(--color-amber-400); }
+  .util-critical .fc-bar-value { color: var(--color-rose-400); }
+  .util-critical .fc-bar-fill { background: var(--color-rose-400); }
+
+  /* ═══════════════════════════════════════════════ */
+  /* BOTTOM ROW                                     */
+  /* ═══════════════════════════════════════════════ */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 16px;
+  }
+
+  /* Heatmap */
+  .heatmap-panel {
+    background: var(--color-surface-1);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    animation: fadeUp 0.5s ease forwards;
+    opacity: 0;
+    animation-delay: 0.65s;
+  }
+
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: 48px repeat(16, 1fr);
+    gap: 2px;
+    margin-top: 12px;
+  }
+
+  .heatmap-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--color-silver-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 0;
+  }
+
+  .heatmap-header {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-silver-500);
+    text-align: center;
+    padding-bottom: 4px;
+  }
+
+  .heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    min-height: 18px;
+    transition: all 0.15s ease;
+    cursor: crosshair;
+  }
+  .heatmap-cell:hover {
+    transform: scale(1.3);
+    z-index: 10;
+    position: relative;
+    box-shadow: 0 0 8px rgba(0,0,0,0.5);
+  }
+
+  .h0 { background: rgba(255,255,255,0.02); }
+  .h1 { background: rgba(42,154,181,0.08); }
+  .h2 { background: rgba(42,154,181,0.15); }
+  .h3 { background: rgba(42,154,181,0.25); }
+  .h4 { background: rgba(201,169,110,0.18); }
+  .h5 { background: rgba(201,169,110,0.28); }
+  .h6 { background: rgba(212,168,64,0.35); }
+  .h7 { background: rgba(196,100,112,0.30); }
+
+  .heatmap-legend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--color-silver-500);
+  }
+  .heatmap-legend .hl-cell {
+    width: 14px; height: 14px;
+    border-radius: 2px;
+  }
+
+  /* Maintenance Intelligence */
+  .maint-panel {
+    background: var(--color-surface-1);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    animation: fadeUp 0.5s ease forwards;
+    opacity: 0;
+    animation-delay: 0.7s;
+  }
+
+  .maint-card {
+    padding: 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+  }
+  .maint-card:hover {
+    border-color: rgba(255,255,255,0.12);
+  }
+
+  .maint-urgency {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .urgency-critical {
+    background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+    color: var(--color-rose-400);
+  }
+  .urgency-high {
+    background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+    color: var(--color-amber-400);
+  }
+  .urgency-medium {
+    background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+    color: var(--color-teal-400);
+  }
+
+  .maint-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-silver-200);
+    margin-bottom: 2px;
+  }
+
+  .maint-detail {
+    font-size: 11px;
+    color: var(--color-silver-400);
+    margin-bottom: 8px;
+  }
+
+  .maint-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .maint-cost {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-gold-400);
+  }
+
+  .maint-action {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-gold-400);
+    cursor: pointer;
+    transition: letter-spacing 0.2s ease;
+  }
+  .maint-action:hover {
+    letter-spacing: 0.06em;
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* ANIMATIONS                                     */
+  /* ═══════════════════════════════════════════════ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes livePulse {
+    0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+    50%      { box-shadow: 0 0 0 5px transparent; opacity: 0.6; }
+  }
+
+  @keyframes breathe {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.7; }
+  }
+
+  /* ═══════════════════════════════════════════════ */
+  /* RESPONSIVE                                     */
+  /* ═══════════════════════════════════════════════ */
+  @media (max-width: 1200px) {
+    .occupancy-grid { grid-template-columns: repeat(2, 1fr); }
+    .insight-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .main { padding: 20px; }
+    .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+    .bottom-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .occupancy-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">Castillo CC</div>
+    <div class="nav-item"><span class="nav-icon">📊</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">👥</span> Familias</div>
+    <div class="nav-item"><span class="nav-icon">📅</span> Eventos</div>
+    <div class="nav-item"><span class="nav-icon">💰</span> Finanzas</div>
+    <div class="nav-item active"><span class="nav-icon">🏛️</span> Instalaciones</div>
+    <div class="nav-item"><span class="nav-icon">🏆</span> Deportes</div>
+    <div class="nav-item"><span class="nav-icon">💬</span> Comunicaciones</div>
+    <div class="nav-item"><span class="nav-icon">📋</span> Operaciones</div>
+    <div class="nav-item"><span class="nav-icon">🎯</span> Recomendaciones</div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- HEADER -->
+    <header class="page-header">
+      <div>
+        <h1>Instalaciones</h1>
+        <p class="page-subtitle">Living Spaces Intelligence &mdash; Castillo Country Club</p>
+      </div>
+      <div class="health-ring-container">
+        <div class="health-meta">
+          <span class="grade">A</span>
+          <span class="level">Excepcional</span>
+          <span class="trend">↑ Mejorando</span>
+        </div>
+        <div class="health-ring">
+          <svg viewBox="0 0 80 80">
+            <circle class="ring-bg" cx="40" cy="40" r="35" />
+            <circle class="ring-fill" cx="40" cy="40" r="35" />
+          </svg>
+          <div class="ring-value">
+            <span class="ring-number">87</span>
+            <span class="ring-label">Health</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- KPI STRIP -->
+    <section class="kpi-strip">
+      <div class="kpi-card">
+        <div class="kpi-label">Espacios Activos</div>
+        <div class="kpi-value" style="color: var(--color-teal-400)">12</div>
+        <div class="kpi-sub">de 14 totales</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Utilización Prom.</div>
+        <div class="kpi-value" style="color: var(--color-gold-400)">68%</div>
+        <div class="kpi-sub">↑ +4% vs semana pasada</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Mantenimiento</div>
+        <div class="kpi-value" style="color: var(--color-amber-400)">3</div>
+        <div class="kpi-sub">1 urgente · 2 programados</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Reservas Hoy</div>
+        <div class="kpi-value" style="color: var(--color-emerald-400)">18</div>
+        <div class="kpi-sub">4 pendientes aprobación</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Space ROI</div>
+        <div class="kpi-value" style="color: var(--color-gold-400)">₡2.1M</div>
+        <div class="kpi-sub">Revenue neto mensual</div>
+      </div>
+    </section>
+
+    <!-- ADVISOR BANNER -->
+    <section class="advisor-banner">
+      <div class="advisor-header">
+        <div class="advisor-title">
+          <span class="sparkle">✦</span>
+          Facilities Advisor &mdash; 3 insights requieren atención
+        </div>
+        <span class="advisor-badge">12 reglas · 0ms</span>
+      </div>
+      <div class="insight-grid">
+        <div class="insight-card">
+          <div class="insight-impact impact-high">● Alto</div>
+          <div class="insight-title">Piscina: utilización al 95%</div>
+          <div class="insight-desc">3 días consecutivos sobre capacidad. Socios reportan espera de 20+ minutos. Considerar horarios extendidos o sistema de turnos.</div>
+          <div class="insight-action">⚡ Ejecutar</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-impact impact-high">● Alto</div>
+          <div class="insight-title">Filtro de piscina vencido 15 días</div>
+          <div class="insight-desc">Mantenimiento preventivo atrasado. Riesgo de cierre temporal por salud. Costo estimado: ₡850,000.</div>
+          <div class="insight-action">📋 Programar maint.</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-impact impact-medium">● Medio</div>
+          <div class="insight-title">Salón principal: ROI negativo en Q2</div>
+          <div class="insight-desc">Costo de mantenimiento ₡1.2M vs revenue ₡800K. Evaluar renovación o reasignación de uso para eventos premium.</div>
+          <div class="insight-action">🤖 Análisis Profundo</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE OCCUPANCY BOARD -->
+    <section>
+      <div class="section-header">
+        <div class="section-title">
+          <span class="live-dot"></span>
+          Live Occupancy Board
+        </div>
+        <span class="section-subtitle">Actualizado hace 2 min</span>
+      </div>
+      <div class="occupancy-grid">
+        <!-- Pool -->
+        <div class="facility-card fc-pool">
+          <div class="fc-header">
+            <div class="fc-info">
+              <div class="fc-icon" style="background: color-mix(in srgb, var(--color-teal-400) 12%, transparent)">🏊</div>
+              <div><div class="fc-name">Piscina Principal</div><div class="fc-type">Piscina</div></div>
+            </div>
+            <div class="fc-status status-critical"><span class="status-dot"></span>Lleno</div>
+          </div>
+          <div class="fc-metrics">
+            <div class="fc-metric"><span class="fc-metric-label">Capacidad</span><span class="fc-metric-value">95 / 100</span></div>
+            <div class="fc-metric"><span class="fc-metric-label">Horario</span><span class="fc-metric-value">06:00 – 22:00</span></div>
+          </div>
+          <div class="fc-bar-container util-critical">
+            <div class="fc-bar-header"><span class="fc-bar-label">Utilización</span><span class="fc-bar-value">95%</span></div>
+            <div class="fc-bar"><div class="fc-bar-fill" style="width: 95%"></div></div>
+          </div>
+        </div>
+        <!-- Gym -->
+        <div class="facility-card fc-gym">
+          <div class="fc-header">
+            <div class="fc-info">
+              <div class="fc-icon" style="background: color-mix(in srgb, var(--color-terracotta-400) 12%, transparent)">💪</div>
+              <div><div class="fc-name">Gimnasio</div><div class="fc-type">Gimnasio</div></div>
+            </div>
+            <div class="fc-status status-operational"><span class="status-dot"></span>Normal</div>
+          </div>
+          <div class="fc-metrics">
+            <div class="fc-metric"><span class="fc-metric-label">Capacidad</span><span class="fc-metric-value">38 / 80</span></div>
+            <div class="fc-metric"><span class="fc-metric-label">Horario</span><span class="fc-metric-value">05:00 – 23:00</span></div>
+          </div>
+          <div class="fc-bar-container util-med">
+            <div class="fc-bar-header"><span class="fc-bar-label">Utilización</span><span class="fc-bar-value">48%</span></div>
+            <div class="fc-bar"><div class="fc-bar-fill" style="width: 48%"></div></div>
+          </div>
+        </div>
+        <!-- Tennis Court -->
+        <div class="facility-card fc-court">
+          <div class="fc-header">
+            <div class="fc-info">
+              <div class="fc-icon" style="background: color-mix(in srgb, var(--color-gold-400) 12%, transparent)">🎾</div>
+              <div><div class="fc-name">Cancha Tenis #1</div><div class="fc-type">Cancha deportiva</div></div>
+            </div>
+            <div class="fc-status status-busy"><span class="status-dot"></span>Ocupado</div>
+          </div>
+          <div class="fc-metrics">
+            <div class="fc-metric"><span class="fc-metric-label">Reservas hoy</span><span class="fc-metric-value">6 de 8</span></div>
+            <div class="fc-metric"><span class="fc-metric-label">Próx. disponible</span><span class="fc-metric-value">14:00</span></div>
+          </div>
+          <div class="fc-bar-container util-high">
+            <div class="fc-bar-header"><span class="fc-bar-label">Utilización</span><span class="fc-bar-value">75%</span></div>
+            <div class="fc-bar"><div class="fc-bar-fill" style="width: 75%"></div></div>
+          </div>
+        </div>
+        <!-- Restaurant -->
+        <div class="facility-card fc-restaurant">
+          <div class="fc-header">
+            <div class="fc-info">
+              <div class="fc-icon" style="background: color-mix(in srgb, var(--color-amber-400) 12%, transparent)">🍽️</div>
+              <div><div class="fc-name">Restaurante El Castillo</div><div class="fc-type">Restaurante</div></div>
+            </div>
+            <div class="fc-status status-operational"><span class="status-dot"></span>Normal</div>
+          </div>
+          <div class="fc-metrics">
+            <div class="fc-metric"><span class="fc-metric-label">Capacidad</span><span class="fc-metric-value">45 / 120</span></div>
+            <div class="fc-metric"><span class="fc-metric-label">Horario</span><span class="fc-metric-value">11:00 – 23:00</span></div>
+          </div>
+          <div class="fc-bar-container util-low">
+            <div class="fc-bar-header"><span class="fc-bar-label">Utilización</span><span class="fc-bar-value">38%</span></div>
+            <div class="fc-bar"><div class="fc-bar-fill" style="width: 38%"></div></div>
+          </div>
+        </div>
+        <!-- Spa -->
+        <div class="facility-card fc-spa">
+          <div class="fc-header">
+            <div class="fc-info">
+              <div class="fc-icon" style="background: color-mix(in srgb, var(--color-emerald-400) 12%, transparent)">🧖</div>
+              <div><div class="fc-name">Spa & Wellness</div><div class="fc-type">Spa</div></div>
+            </div>
+            <div class="fc-status status-maintenance"><span class="status-dot"></span>Mantenim.</div>
+          </div>
+          <div class="fc-metrics">
+            <div class="fc-metric"><span class="fc-metric-label">Estado</span><span class="fc-metric-value" style="color: var(--color-silver-400)">Cerrado temporal</span></div>
+            <div class="fc-metric"><span class="fc-metric-label">Reapertura</span><span class="fc-metric-value">16 jun</span></div>
+          </div>
+          <div class="fc-bar-container util-low">
+            <div class="fc-bar-header"><span class="fc-bar-label">Utilización</span><span class="fc-bar-value" style="color: var(--color-silver-500)">N/A</span></div>
+            <div class="fc-bar"><div class="fc-bar-fill" style="width: 0%"></div></div>
+          </div>
+        </div>
+        <!-- Ballroom -->
+        <div class="facility-card fc-ballroom">
+          <div class="fc-header">
+            <div class="fc-info">
+              <div class="fc-icon" style="background: color-mix(in srgb, var(--color-gold-300) 12%, transparent)">🏛️</div>
+              <div><div class="fc-name">Salón El Dorado</div><div class="fc-type">Salón de eventos</div></div>
+            </div>
+            <div class="fc-status status-operational"><span class="status-dot"></span>Disponible</div>
+          </div>
+          <div class="fc-metrics">
+            <div class="fc-metric"><span class="fc-metric-label">Capacidad</span><span class="fc-metric-value">0 / 200</span></div>
+            <div class="fc-metric"><span class="fc-metric-label">Próx. evento</span><span class="fc-metric-value">21 jun</span></div>
+          </div>
+          <div class="fc-bar-container util-low">
+            <div class="fc-bar-header"><span class="fc-bar-label">Utilización</span><span class="fc-bar-value">12%</span></div>
+            <div class="fc-bar"><div class="fc-bar-fill" style="width: 12%"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BOTTOM ROW: Heatmap + Maintenance -->
+    <section class="bottom-row">
+      <!-- Heatmap -->
+      <div class="heatmap-panel">
+        <div class="section-header">
+          <div class="section-title" style="font-size:16px">Utilization Heatmap</div>
+          <span class="section-subtitle">Promedio semanal · Todas las instalaciones</span>
+        </div>
+        <div class="heatmap-grid" id="heatmap"></div>
+        <div class="heatmap-legend">
+          <span>Bajo</span>
+          <div class="hl-cell h0"></div>
+          <div class="hl-cell h1"></div>
+          <div class="hl-cell h2"></div>
+          <div class="hl-cell h3"></div>
+          <div class="hl-cell h4"></div>
+          <div class="hl-cell h5"></div>
+          <div class="hl-cell h6"></div>
+          <div class="hl-cell h7"></div>
+          <span>Alto</span>
+        </div>
+      </div>
+
+      <!-- Maintenance Intelligence -->
+      <div class="maint-panel">
+        <div class="section-header">
+          <div class="section-title" style="font-size:16px">Maintenance Intelligence</div>
+        </div>
+        <div class="maint-card" style="background: color-mix(in srgb, var(--color-rose-400) 4%, var(--color-surface-0))">
+          <div class="maint-urgency urgency-critical">● Crítico</div>
+          <div class="maint-title">Piscina — Filtro de arena vencido</div>
+          <div class="maint-detail">15 días de atraso · Riesgo de cierre por salud · Predictive score: 92/100</div>
+          <div class="maint-footer">
+            <span class="maint-cost">₡850,000</span>
+            <span class="maint-action">Programar → </span>
+          </div>
+        </div>
+        <div class="maint-card" style="background: color-mix(in srgb, var(--color-amber-400) 3%, var(--color-surface-0))">
+          <div class="maint-urgency urgency-high">● Alto</div>
+          <div class="maint-title">Gimnasio — Aire acondicionado</div>
+          <div class="maint-detail">Mantenimiento preventivo en 5 días · Predictive score: 71/100</div>
+          <div class="maint-footer">
+            <span class="maint-cost">₡320,000</span>
+            <span class="maint-action">Programar → </span>
+          </div>
+        </div>
+        <div class="maint-card" style="background: var(--color-surface-0)">
+          <div class="maint-urgency urgency-medium">● Medio</div>
+          <div class="maint-title">Salón El Dorado — Pintura exterior</div>
+          <div class="maint-detail">Programado para julio · Predictive score: 45/100</div>
+          <div class="maint-footer">
+            <span class="maint-cost">₡1.2M</span>
+            <span class="maint-action">Ver detalle → </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Generate heatmap data
+  const data = [
+    [0,0,1,3,4,5,4,3,2,2,3,4,3,2,1,0],  // Lun
+    [0,0,1,3,5,5,4,3,2,3,4,5,4,2,1,0],  // Mar
+    [0,0,2,4,5,6,5,3,3,3,4,5,4,3,1,0],  // Mié
+    [0,0,1,3,4,5,4,3,2,3,4,5,4,2,1,0],  // Jue
+    [0,0,1,2,3,4,4,3,2,3,5,6,5,3,2,1],  // Vie
+    [0,1,3,5,6,7,6,5,4,4,5,6,5,4,3,1],  // Sáb
+    [0,1,3,5,6,6,5,4,3,3,4,4,3,2,1,0],  // Dom
+  ];
+  const days = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const hours = Array.from({length:16}, (_, i) => i + 6);
+
+  const grid = document.getElementById('heatmap');
+
+  // Header row
+  grid.appendChild(Object.assign(document.createElement('div'), {className:'heatmap-label'}));
+  hours.forEach(h => {
+    const el = document.createElement('div');
+    el.className = 'heatmap-header';
+    el.textContent = h + ':00';
+    grid.appendChild(el);
+  });
+
+  // Data rows
+  data.forEach((row, di) => {
+    const label = document.createElement('div');
+    label.className = 'heatmap-label';
+    label.textContent = days[di];
+    grid.appendChild(label);
+
+    row.forEach(val => {
+      const cell = document.createElement('div');
+      cell.className = `heatmap-cell h${val}`;
+      grid.appendChild(cell);
+    });
+  });
+</script>
+</body>
+</html>
+```
+
+---
+
+**Estas son mis propuestas. Decime:**
+
+- **"Todo"** → Arranco con B0 (Backend Intelligence) y construyo todo F33
+- **"Solo X"** → Selecciono lo que querés
+- **"Modificaciones"** → Ajusto la propuesta según tu feedback
+- **Cualquier instrucción personalizada**
+
+**También necesito que me pases para continuar la auditoría de B0:**
+
+```
+backend/src/club_mcp/ai/prompts.py
+```
+
+(Para ver los advisor prompts existentes y crear el de Facilities)

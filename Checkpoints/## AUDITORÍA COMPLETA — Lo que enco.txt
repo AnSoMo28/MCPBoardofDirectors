@@ -1,0 +1,221 @@
+## AUDITORÍA COMPLETA — Lo que encontré
+
+### Estado actual de Guest Management en el Mock System
+
+**Contracts.ts:** 6 interfaces existentes (las 6 tools originales: register_guest, plan_private_event, manage_trial_memberships, manage_guest_privileges, get_guest_analytics, guest_management_insights). **0 interfaces de intelligence.**
+
+**Factories.ts:** 6 factories existentes (una por tool original). **0 factories de intelligence.**
+
+**Patrón B4 verificado** (AgeGroup Intelligence): 7 interfaces limpias, naming consistente `{Domain}{TypeName}`, todas con `generated_at: string` donde aplica, campos tipados sin `any`, enums inline como union types (`"high" | "medium" | "low"`).
+
+### Lo que esto significa para el Nervous System
+
+Audité la propuesta contra el código real. Aquí va mi validación:
+
+---
+
+## VALIDACIÓN DE PROPUESTAS — Nervous System
+
+### PROPUESTA 1A (AgeGroup "Generational Intelligence") — VALIDADA CON AJUSTES
+
+| Propuesta original | Mi evaluación | Decisión |
+|---|---|---|
+| Backend B0: 4 tools nuevos | ✅ **Ya completado en F40-B0** — tools creadas y funcionando | **Eliminado del scope** — ya existe |
+| Repo upgrade con seed data | ✅ **Ya completado en F40-B0** — 47 activities, 12 families, 6 months | **Eliminado del scope** |
+| Frontend B4: 13 archivos, ~3,200 líneas (dashboard completo) | ❌ **NO es lo que el checkpoint define como B4.** El checkpoint dice B4 = alignment (contracts + factories + registry). Ya completado. | **Dashboard completo es F42** (checkpoint lo tiene como fase separada) |
+| Advisor useAgeGroupAdvisor (12 rules × 4 layers) | ⚠️ **Checkpoint dice F41** — "38 rules × 4 layers preparadas pero no creadas aún" | **F41** — no F40 |
+| Cross-domain signals | ✅ Production-grade. Pero los signals son **construidos en el Advisor hook**, no en el backend | **F41** cuando se creen los advisors |
+
+**Veredicto AgeGroup:** Backend ✅ hecho. Frontend alignment ✅ hecho (B4). Dashboard completo + Advisor → **F41-F42** como el checkpoint define. La propuesta Nervous System describe el destino final correcto, pero lo mezcla todo en F40 cuando son fases separadas.
+
+### PROPUESTA 1B (Guest Management "Conversion Intelligence") — VALIDADA CON ENRIQUECIMIENTO
+
+| Propuesta original | Mi evaluación | Decisión |
+|---|---|---|
+| Backend B1: 5 tools nuevos | ✅ **Ya completado en F40-B1** | **Eliminado del scope** |
+| Frontend B5: 13 archivos, ~3,400 líneas | ❌ **Checkpoint dice B5 = 3 archivos (alignment).** Dashboard completo = F42 | **B5 = alignment. F42 = dashboard** |
+| Conversion Funnel visual (SVG trapezoids) | 🔥 **EXCELENTE** — esto es production-grade, no maquillaje. El funnel es el diferenciador de Guest Intelligence | **Incluir en F42** como componente prioritario |
+| HotLeadsPanel (5+ visits sin trial) | 🔥 **Potente** — transforma data en acción directa | **F42** |
+| Advisor useGuestAdvisor (14 rules) | ✅ Correcto pero es **F41** | **F41** |
+| PrivilegeHeatmap | ⚠️ Cosmético. Los datos de privilegios ya están en get_guest_analytics. Un heatmap no agrega inteligencia nueva | **Eliminar** — reemplazar por algo que SÍ agregue valor |
+
+**Mejora que propongo para F42:**
+En vez de PrivilegeHeatmap (cosmético), propongo **"Conversion Predictor Card"** — para cada guest activo, muestra: visitas, días desde última visita, privilege engagement score, y probability de conversión a trial. Con CTA directa "Enviar invitación trial". Esto SÍ es inteligencia, no visualización bonita.
+
+### PROPUESTA 1C (Satisfaction "Sentiment Intelligence") — VALIDADA CON ENRIQUECIMIENTO
+
+| Propuesta original | Mi evaluación | Decisión |
+|---|---|---|
+| Backend B2: 4 tools + bug fix | ✅ **Ya completado en F40-B2** | **Eliminado del scope** |
+| Frontend B6: 13 archivos, ~3,100 líneas | ❌ **Checkpoint dice B6 = alignment** | **B6 = alignment. F42 = dashboard** |
+| CategoryRadarChart (10 categorías) | 🔥 **Excelente** — radar chart es el formato perfecto para satisfaction multi-dim | **F42 componente prioritario** |
+| CommentAnalysis (tag cloud con frecuencia) | ⚠️ **Depende de los comments en el seed data.** Si hay 5 comments, un tag cloud es absurdo. Si hay 40+, es potente | **F42 condicional** — solo si hay suficiente text data |
+| NPS estimation display | 🔥 **Production-grade** — los directores entienden NPS intuitivamente | **F42 componente prioritario** |
+| Advisor useSatisfactionAdvisor (12 rules) | ✅ F41 | **F41** |
+
+**Mejora que propongo para F42:**
+En vez de CommentAnalysis genérico, propongo **"Satisfaction Impact Matrix"** — scatter chart donde X = satisfaction score, Y = revenue impact, cada punto = event type. Los directores ven INMEDIATAMENTE qué tipos de eventos son "high revenue + high satisfaction" (invertir más) vs "low revenue + low satisfaction" (reformular). Esto conecta satisfaction con FINANCE — cross-domain real.
+
+### PROPUESTA 2 (F40 "Club Brain" — ML + Conversational) — VALIDADA PARCIALMENTE
+
+| Propuesta original | Mi evaluación | Decisión |
+|---|---|---|
+| Backend B3: ML Intelligence (10 tools) | ✅ **Ya completado en F40-B3** | **Eliminado del scope** |
+| Frontend B7: alignment | ✅ **Es lo que define el checkpoint** | **B7 = alignment** |
+| Predictive Feed en Executive Dashboard | 🔥🔥 **ESTO es el diferenciador.** Revenue forecast + churn comparison + anomaly detection integrados en el dashboard existente | **F42 componente PRIORITARIO — el #1** |
+| Club Simulation View ("El Sims") | 🔥 **Visionario** pero depende de data real para ser útil. Con mock data, es un demo visual. | **F42 componente SECUNDARIO** — construir la UI pero con awareness de que necesita data real |
+| Hypothetical Simulator | 🔥 **Potente** — "¿Qué pasa si...?" es la pregunta #1 de un director | **F42 componente PRIORITARIO #2** |
+| Club Manager Chat upgrade | ✅ Correcto. El chat ya existe, se enriquece con ML context | **F42 — upgrade incremental** |
+| Model Health Dashboard | ⚠️ **Cosmético en fase demo.** Los modelos son statistical approximations (exp smoothing, z-score). No hay drift real, no hay retraining. Un dashboard de "health" de modelos fake es misleading | **Posponer a F44** cuando haya data real y modelos reales |
+| ML Advisor (10 rules) | ✅ F41 | **F41** |
+
+**Mejora que propongo para la Chat:**
+En vez de solo "context sidebar", propongo **"Action Confirmation Flow"** en el chat: cuando el chat sugiere una acción (ej: "enviar campaña de retención"), el usuario puede ejecutar DIRECTAMENTE desde el chat con un botón. El chat se convierte en canal de EJECUCIÓN, no solo consulta. Esto conecta con el Action Bridge existente.
+
+---
+
+## PROPUESTAS ENRIQUECIDAS — Lo que propongo después de auditar
+
+### Principio rector (nuevo, post-auditoría):
+
+**NO mezclar fases.** La propuesta Nervous System describe el destino correcto pero mezcla 4 fases en una. Mi propuesta respeta la separación:
+
+| Fase | Qué contiene | Cuándo |
+|------|-------------|--------|
+| **F40** (actual) | Backend ✅ + Frontend alignment (B5-B8) | **Ahora** |
+| **F41** | Advisor rules para los 4 dominios (38 rules) | Después de F40 |
+| **F42** | Frontend dashboards + intelligence components | Después de F41 |
+| **F44** | ML models reales + Model Health Dashboard | Cuando haya data real |
+
+### Mejoras 2026-2027 — Re-validadas
+
+| # | Innovación | Mi evaluación post-auditoría | Estado |
+|---|-----------|------------------------------|--------|
+| 1 | **Predictive Intelligence Feed** | 🔥 EL diferenciador #1. Revenue forecast + churn ML vs rules + anomalies. Se integra en ExecutiveDashboard como sección on-demand | **F42 prioritario** |
+| 2 | **Conversion Funnel (Guest)** | 🔥 Transforma data cruda en visualización de negocio inteligente. Los directores ven el pipeline completo | **F42 prioritario** |
+| 3 | **Hypothetical Simulator** | 🔥 "¿Qué pasa si aumento la cuota 15%?" — pregunta real de directores | **F42 prioritario** |
+| 4 | **Satisfaction Impact Matrix** (MI NUEVA) | 🔥 Scatter chart satisfaction × revenue por event type. Cross-domain real | **F42** |
+| 5 | **Conversion Predictor Card** (MI NUEVA) | 🔥 Para cada guest: probability de conversión + CTA directa | **F42** |
+| 6 | **Chat Action Execution** (MI NUEVA) | 🔥 El chat ejecuta acciones, no solo consulta. Conecta con Action Bridge | **F42** |
+| 7 | **Category Radar Chart (Satisfaction)** | ✅ Formato correcto para multi-dim data | **F42** |
+| 8 | **NPS Display** | ✅ Los directores lo entienden intuitivamente | **F42** |
+| 9 | **Club Simulation View** | ⚠️ Visionario pero necesita data real para ser útil. Construir UI pero con mock-awareness | **F42 secundario** |
+| 10 | **Predictive Advisor Auto-Training** | ✅ Concepto correcto. Client-side con localStorage | **F44+** |
+| 11 | **Model Health Dashboard** | ⚠️ Posponer. Los modelos actuales son statistical approximations. Dashboard de health de modelos fake = misleading | **F44** |
+| 12 | **Club Nervous System (cross-signals)** | ✅ La visión es correcta. Cada dominio emite/consume signals. Pero los signals se construyen en advisors (F41), no en F40 | **F41-F42** |
+
+---
+
+## B5 — SCOPE DEFINITIVO
+
+### Qué es B5 (Guest Management Frontend Alignment)
+
+Exactamente lo que el checkpoint define. **3 archivos. Producción-grade. Patrón idéntico a B4.**
+
+**Archivos a modificar:**
+
+| # | Path completo | Acción | Qué se agrega |
+|---|---|---|---|
+| 1 | `frontend/src/shared/mocks/contracts.ts` | INSERT después de la sección `guest_management_insights_Contract` | +11 interfaces TypeScript |
+| 2 | `frontend/src/shared/mocks/factories.ts` | INSERT después de `createMockGuestManagementInsightsResponse` | +5 factory functions |
+| 3 | `frontend/src/shared/mocks/mock-registry.ts` | INSERT dentro del bloque `guest_management: { ... }` | +5 entries |
+
+### Interfaces a crear en contracts.ts
+
+Basado en el checkpoint B1 (backend models) + patrón B4 verificado:
+
+| # | Interface | Tool que la consume | Campos clave (del checkpoint) |
+|---|---|---|---|
+| 1 | `GuestHealthFactor` | get_guest_health_score | name, score, weight, weighted_score, impact, detail |
+| 2 | `GuestHealthScore` | get_guest_health_score | score, level, factors[], trend, summary, generated_at |
+| 3 | `ConversionFunnelStage` | get_conversion_funnel | stage, count, rate, avg_days, dropoff_reason, benchmark |
+| 4 | `ConversionFunnel` | get_conversion_funnel | stages[], total_visitors, overall_conversion, pipeline_value, generated_at |
+| 5 | `GuestTemporalTrend` | get_guest_analytics_enhanced | month, new_guests, repeat_guests, trials, conversions, events |
+| 6 | `GuestAnalyticsEnhanced` | get_guest_analytics_enhanced | total_guests, total_events, total_trials, monthly_trends[], top_referrers[], peak_days[], generated_at |
+| 7 | `GuestForecastItem` | get_guest_forecast | target, predicted_value, confidence_interval (low/high), factors[], seasonal_pattern |
+| 8 | `GuestDemandForecast` | get_guest_forecast | forecasts[], horizon_months, generated_at |
+| 9 | `GuestEngagementProposal` | generate_guest_engagement_proposals | proposal_id, proposal_type, title, description, target_family_ids[], priority, impact, confidence, cross_domain_signals[], suggested_action |
+| 10 | `GuestEngagementProposalList` | generate_guest_engagement_proposals | proposals[], total, high_priority_count, cross_domain_count, generated_at |
+| 11 | `GuestIntelligenceReport` | (aggregate — si el backend lo tiene) | health_score, funnel, analytics, forecast, proposals[], generated_at |
+
+### Factories a crear en factories.ts
+
+| # | Factory function | Retorna |
+|---|---|---|
+| 1 | `createMockGetGuestHealthScore()` | `{ status, message, health_score: { score: 72, level: "healthy", factors: [...], trend: "stable", ... } }` |
+| 2 | `createMockGetConversionFunnel()` | `{ status, message, funnel: { stages: [...], overall_conversion: 3.3, ... } }` |
+| 3 | `createMockGetGuestAnalyticsEnhanced()` | `{ status, message, analytics: { total_guests: 142, monthly_trends: [...], ... } }` |
+| 4 | `createMockGetGuestForecast()` | `{ status, message, forecast: { forecasts: [...], horizon_months: 6, ... } }` |
+| 5 | `createMockGenerateGuestEngagementProposals()` | `{ status, message, proposals: { proposals: [...], total: 5, ... } }` |
+
+### Mock registry entries
+
+```typescript
+// Dentro del bloque guest_management: { ... }
+get_guest_health_score: (params) => createMockGetGuestHealthScore(params),
+get_conversion_funnel: (params) => createMockGetConversionFunnel(params),
+get_guest_analytics_enhanced: (params) => createMockGetGuestAnalyticsEnhanced(params),
+get_guest_forecast: (params) => createMockGetGuestForecast(params),
+generate_guest_engagement_proposals: (params) => createMockGenerateGuestEngagementProposals(params),
+```
+
+### Data consistency targets (backend seed ↔ factory mock)
+
+| Métrica | Backend seed (B1) | Factory mock target |
+|---|---|---|
+| Health score | 72 | 72 |
+| Level | "healthy" | "healthy" |
+| Conversion rate (overall) | 3.3% (8 converted / 245 visitors) | 3.3% |
+| Trial conversion | 20% (4 de 20 trials) | 20% |
+| Total guests (6 months) | 142 | 142 |
+| Active trials | 2 | 2 |
+| Top referrer | fam-001 (Jiménez) | fam-001 |
+| Hot leads (5+ visits) | 4 | 4 |
+| Proposals count | 5 | 5 |
+
+---
+
+## LO QUE AÚN NECESITO PARA EJECUTAR B5
+
+Para garantizar **alineación 1:1 exacta** entre los Pydantic models del backend y las interfaces TypeScript:
+
+| # | Path completo | Qué voy a verificar |
+|---|---|---|
+| 1 | `backend/src/club_mcp/models/guest_management.py` | Los 11 models nuevos de intelligence (GuestHealthFactor, GuestHealthScore, ConversionFunnelStage, etc.) — campos exactos, tipos, defaults |
+| 2 | `frontend/src/shared/mocks/mock-registry.ts` | Estado actual del bloque `guest_management: { ... }` — para saber exactamente dónde insertar los 5 entries nuevos |
+
+**Pasame estos 2 archivos con sus paths completos y ejecuto B5 inmediatamente con el formato A→B.**
+
+---
+
+## CUESTIONAMIENTOS — Post-auditoría
+
+```
+❓ ¿El GuestIntelligenceReport existe como modelo en el backend o es un 
+   aggregate que solo el frontend necesita?
+   Si NO existe en el backend → no crear contract para él. Solo las 10 
+   interfaces que matchean las 5 tools reales.
+
+❓ ¿Los números del seed data del checkpoint son los definitivos?
+   (142 guests, 8 converted, 245 visitors, 20% trial conversion)
+   Necesito confirmar para que las factories sean exactas.
+
+❓ ¿B5-B7 se ejecutan en batch (todos juntos) o secuencialmente 
+   (uno por uno con confirmación)?
+   Mi recomendación: batch. El patrón es idéntico. Solo cambian 
+   los types y los números. 3 bloques en una pasada.
+```
+
+---
+
+**Resumen de mi posición después de auditar:**
+
+1. **Nervous System = visión correcta del destino final.** Pero NO es F40 — son F41 (advisors) + F42 (dashboards) + F44 (ML real).
+
+2. **F40 = backend ✅ + alignment frontend (B5-B8).** Eso es lo que ejecutamos ahora.
+
+3. **B5 está listo para ejecutar** tan pronto me confirmes los 2 archivos que necesito.
+
+4. **Las innovaciones propuestas son production-grade, no maquillaje.** Predictive Feed, Conversion Funnel, Hypothetical Simulator, Satisfaction Impact Matrix — todas transforman data en decisiones. Pero van en F42, no se mezclan con alignment.
+
+5. **3 mejoras nuevas que propuse:** Conversion Predictor Card (reemplaza PrivilegeHeatmap), Satisfaction Impact Matrix (reemplaza CommentAnalysis genérico), Chat Action Execution (conecta chat con Action Bridge).

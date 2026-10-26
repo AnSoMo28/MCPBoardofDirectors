@@ -1,0 +1,354 @@
+## BaseAgent + MCPTool — Desglose Completo
+
+**Archivo:** `backend/src/club_mcp/agents/base.py`
+**Dependencias:** `ApprovalEngine`, `ApprovalLevel`
+**Rol:** Es la base abstracta de TODOS los agentes del sistema. Cada agente hereda de aquí.
+
+---
+
+### Arquitectura General
+
+```
+BaseAgent (ABC)
+    ├── MCPTool (decorator) — registra metadatos en cada tool method
+    ├── register_with_mcp(mcp) — escanea y registra tools en MCP server
+    ├── _wrap_with_hitl(func, approval) — inyecta metadata HITL en response
+    └── _register_tools() — hook abstracto (legacy, no usado con @MCPTool)
+
+Cada agente concreto:
+    FinanceAgent(BaseAgent)
+    MemberEngagementAgent(BaseAgent)
+    CommunicationAgent(BaseAgent)
+    ...
+```
+
+---
+
+### Componente 1: `MCPTool` — Decorator
+
+**Propósito:** Marcar métodos como tools MCP con metadata de aprobación.
+
+**Constructor:**
+
+```python
+MCPTool(
+    name: str,              # Nombre del tool en el MCP server
+    description: str,       # Descripción para el schema MCP
+    approval: ApprovalLevel = AUTO,  # Nivel de aprobación
+    approver_roles: list[str] = [],  # Quién puede aprobar
+)
+```
+
+**Lo que hace al decorar:**
+
+```python
+func._mcp_tool = True           # Flag para discovery
+func._tool_name = self.name     # "finance_expense_create"
+func._tool_description = self.description
+func._tool_approval = self.approval  # ApprovalLevel.HITL
+func._tool_approver_roles = self.approver_roles  # ["admin"]
+```
+
+**Patrón de uso observado en los agentes:**
+
+```python
+# Patrón 1: Como keyword args (FinanceAgent)
+@MCPTool(
+    "finance_expense_create",
+    "Registrar un nuevo gasto del club. Requiere aprobación.",
+    approval=ApprovalLevel.HITL,
+)
+async def finance_expense_create(self, ...) -> dict: ...
+
+# Patrón 2: Como positional args (MemberEngagementAgent)
+@MCPTool(
+    name="get_engagement_insights",
+    description="Obtener análisis de engagement...",
+    approval=ApprovalLevel.AUTO,
+)
+async def get_engagement_insights(self, ...) -> dict: ...
+
+# Patrón 3: Con approver_roles (CommunicationAgent)
+@MCPTool(
+    name="broadcast_club_announcement",
+    description="Enviar un anuncio masivo...",
+    approval=ApprovalLevel.HITL,
+    approver_roles=["admin"],
+)
+async def broadcast_club_announcement(self, ...) -> dict: ...
+```
+
+**Hallazgos del decorator:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **`approver_roles` no se propaga al wrapper** — se guarda en `func._tool_approver_roles` pero `_wrap_with_hitl()` no lo usa ni lo incluye en el response | MEDIA | El caller no sabe quién puede aprobar. ApprovalQueue necesita este dato para filtrar |
+| 2 | **Sin schema de input/output** — no hay `input_schema` ni `output_schema` en el decorator | ALTA | MCP server no puede validar parámetros antes de llamar al tool. Frontend no puede construir forms dinámicos |
+| 3 | **Sin `version` field** — no hay tracking de versiones de tools | BAJA | Breaking changes sin detection |
+| 4 | **Sin `tags` o `category`** — no hay forma de agrupar tools por dominio | BAJA | Discovery manual |
+| 5 | **Sin `rate_limit` o `timeout`** — no hay control de frecuencia | MEDIA | Tool que se llama 100 veces/seg sin throttling |
+| 6 | `_tool_approval` es attribute en la función, no en la instancia — thread-safe porque es immutable post-decoración | OK | — |
+| 7 | Decorator no valida que `name` sea unique entre agentes | MEDIA | Si dos agentes registran el mismo nombre, colisión silenciosa |
+
+---
+
+### Componente 2: `BaseAgent` — Clase Abstracta
+
+**Atributos de clase (requeridos por subclases):**
+
+```python
+agent_name: str    # "finance", "member_engagement", "communication", etc.
+description: str   # Descripción legible del agente
+```
+
+**`__init__`:**
+
+```python
+def __init__(self) -> None:
+    self.approval_engine = ApprovalEngine()  # Default vacío
+    self._mcp: Any = None                    # Referencia al MCP server
+```
+
+**Hallazgos de `__init__`:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **`ApprovalEngine()` se instancia como default** — pero cada agente lo sobreescribe con el real inyectado | MEDIA | Si un agente olvida inyectar, usa un ApprovalEngine vacío que no persiste aprobaciones |
+| 2 | **`_mcp` es `Any`** — no hay interface tipada | BAJA | Sin type safety para las llamadas a `mcp.tool()` |
+| 3 | **Sin `notifier` en base** — cada agente lo maneja diferente | MEDIA | CommunicationAgent lo necesita, FinanceAgent no. Debería ser optional en base |
+
+---
+
+### Componente 3: `register_with_mcp(mcp)` — Discovery & Registration
+
+**Propósito:** Escanear la instancia del agente, encontrar métodos decorados con `@MCPTool`, y registrarlos en el servidor MCP.
+
+**Flujo:**
+
+```python
+def register_with_mcp(self, mcp: Any) -> int:
+    self._mcp = mcp
+    count = 0
+    
+    for attr_name in dir(self):          # 1. Escanear todos los attrs
+        if attr_name.startswith("_"):    # 2. Skip privados
+            continue
+        attr = getattr(self, attr_name, None)
+        if attr is None:                 # 3. Skip None
+            continue
+        if not callable(attr):           # 4. Skip non-callable
+            continue
+        if not getattr(attr, "_mcp_tool", False):  # 5. Solo @MCPTool
+            continue
+
+        # 6. Extraer metadata
+        tool_name = attr._tool_name
+        tool_desc = attr._tool_description
+        approval = attr._tool_approval
+
+        # 7. Wrapping HITL
+        wrapper = self._wrap_with_hitl(attr, approval)
+
+        # 8. Registrar en MCP
+        mcp.tool(name=tool_name, description=tool_desc)(wrapper)
+        count += 1
+
+    return count
+```
+
+**Hallazgos de `register_with_mcp`:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **`dir(self)` escanea TODOS los attrs públicos** — incluye métodos heredados de BaseAgent y Object. Filter por `_mcp_tool` lo mitiga, pero es ineficiente | BAJA | Performance menor, solo en startup |
+| 2 | **No registra `execute_X` methods** — los métodos `execute_expense_create`, `execute_announcement`, etc. NO están decorados con `@MCPTool` | INFO | **Correcto** — estos son internos, invocados post-aprobación por el ApprovalEngine, no por el MCP server |
+| 3 | **`mcp.tool()` es la API del framework MCP** — asume que el framework soporta `name` y `description` como kwargs | MEDIA | Si el framework cambia API, todos los agentes se rompen |
+| 4 | **Sin error handling** — si `mcp.tool()` falla, crash sin recovery | MEDIA | Un tool mal configurado impide registrar todos los tools del agente |
+| 5 | **Sin validación de nombre único** — si dos agentes registran el mismo `tool_name`, el último gana | ALTA | Silenciosamente sobreescribe tool de otro agente |
+| 6 | **`approver_roles` no se pasa a `mcp.tool()`** — el MCP server no sabe quién puede aprobar | ALTA | ApprovalEngine necesita saber los approver_roles para filtrar. ¿Cómo los obtiene? |
+| 7 | **Return count pero no se usa** — ningún caller verifica que el count sea el esperado | BAJA | Sin validación de que todos los tools se registraron |
+
+---
+
+### Componente 4: `_wrap_with_hitl(func, approval)` — HITL Metadata Injection
+
+**Propósito:** Envolver cada tool para inyectar metadata de aprobación en el response.
+
+**Flujo:**
+
+```python
+def _wrap_with_hitl(self, func, approval):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        result = await func(*args, **kwargs)  # Ejecuta el tool real
+        if isinstance(result, dict):
+            result["_approval_level"] = approval.value  # "auto", "hitl", etc.
+            result["_agent"] = self.agent_name           # "finance", etc.
+        return result
+    return wrapper
+```
+
+**Lo que se inyecta en cada response:**
+
+```json
+{
+  "status": "success",
+  "message": "...",
+  "data": {...},
+  "_approval_level": "auto",
+  "_agent": "finance"
+}
+```
+
+**Hallazgos de `_wrap_with_hitl`:**
+
+| # | Hallazgo | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **Metadata `_approval_level` y `_agent` son prefijo underscore** — se mezclan con los datos del tool | MEDIA | Frontend debe filtrar `_` keys para no mostrarlas en UI. Convención no documentada |
+| 2 | **`_approval_level` se agrega SIEMPRE** — incluso para AUTO tools que no necesitan aprobación | BAJA | Noise en responses AUTO |
+| 3 | **No agrega `_tool_name`** — el caller no sabe qué tool generó el response si lo recibe de forma genérica | MEDIA | ApprovalQueue necesita saber qué tool exacto fue invocado |
+| 4 | **No agrega `_approver_roles`** — el response no dice quién puede aprobar | ALTA | Frontend ApprovalQueue necesita filtrar approvals por rol del usuario actual |
+| 5 | **No agrega `_timestamp`** — no hay timestamp de cuándo se ejecutó el tool | BAJA | Audit trail incompleto |
+| 6 | **Mutates el dict original** — `result["_approval_level"] = ...` modifica el dict retornado por el tool | MEDIA | Si el tool reutiliza un dict (unlikely pero posible), side effect |
+| 7 | **Solo funciona con dict responses** — si un tool retorna string o modelo Pydantic, no inyecta metadata | MEDIA | Todos los tools actuales retornan dict, pero no hay garantía |
+| 8 | **No hay error handling** — si `func()` lanza excepción, el wrapper la propaga sin metadata | MEDIA | Error responses no tienen `_approval_level`, lo que podría confundir al ApprovalEngine |
+
+---
+
+### ApprovalLevel Enum (referenciado, no definido aquí)
+
+```python
+# De club_mcp.hitl.approval_types — importado pero no incluido en el archivo
+class ApprovalLevel(Enum):
+    AUTO = "auto"                    # Sin aprobación
+    SEMI_AUTO = "semi_auto"          # Aprobación condicional
+    HITL = "hitl"                    # Siempre requiere aprobación
+    ALWAYS_HUMAN = "always_human"    # Doble confirmación
+```
+
+**Mapeo observado de tools → approval levels:**
+
+| Level | Tools | Count |
+|-------|-------|-------|
+| AUTO | finance_budget_check, finance_account_status, get_engagement_insights, get_engagement_dashboard, submit_feedback, manage_referrals, manage_notification_templates, schedule_notification, get_notification_history, manage_communication_preferences | 10 |
+| SEMI_AUTO | finance_report_generate, finance_category_update, send_personalized_notification (≤100), send_board_package | 4 |
+| HITL | finance_expense_create, finance_invoice_create, finance_payment_process, design_reactivation_campaign, manage_loyalty_rewards (create), broadcast_club_announcement | 6 |
+| ALWAYS_HUMAN | manage_emergency_broadcast | 1 |
+| SEMI→HITL | send_personalized_notification (>100), export_report (external) | 2 |
+
+---
+
+### Análisis Cross-Cutting: ¿Cómo interactúa el ApprovalEngine con los tools?
+
+**Flujo completo HITL observado en los 3 agentes analizados:**
+
+```
+1. Frontend llama tool vía MCP
+2. Tool ejecuta validaciones de negocio
+3. Si HITL:
+   a. approval_engine.create_request(
+        agent="finance",
+        tool="finance_expense_create",
+        params={...},
+        requested_by="system",          ← hardcodeado
+        approval_level=ApprovalLevel.HITL,
+        risk_summary="...",             ← algunos tools lo proveen
+        estimated_impact="...",         ← algunos tools lo proveen
+        affected_count=N,               ← algunos tools lo proveen
+        approver_roles=["admin"],       ← algunos tools lo proveen
+      )
+   b. Retorna {status: "pending_approval", request_id: "uuid"}
+   c. ApprovalEngine almacena la request
+   d. Admin ve la request en ApprovalQueue
+   e. Admin aprueba/rechaza
+   f. Si aprueba → llama execute_X() directamente
+   
+4. Wrapper inyecta _approval_level y _agent
+5. Frontend recibe response con metadata
+```
+
+**Problemas en el flujo HITL:**
+
+| # | Problema | Severidad | Impacto |
+|---|---------|-----------|---------|
+| 1 | **`requested_by="system"` hardcoded en la mayoría de tools** — no se pasa el usuario real que hizo la request | ALTA | Sin audit trail. Admin no sabe quién pidió el gasto/emergencia/campaña |
+| 2 | **`execute_X()` no tiene protección** — cualquier caller puede llamar `execute_expense_create()` directamente sin pasar por HITL | ALTA | Bypass del sistema de aprobaciones. Solo el ApprovalEngine debería poder llamar execute |
+| 3 | **`execute_X()` no está decorado con `@MCPTool`** — no es accesible vía MCP, pero tampoco tiene decorator de protección | MEDIA | Si alguien obtiene referencia al agente, puede llamar execute directamente |
+| 4 | **`affected_count=0` en broadcast y emergency** — el approval request subestima el impacto | ALTA | Admin aprueba sin saber que afecta a 500 socios |
+| 5 | **`approver_roles` se pasa a `create_request()` pero no se propaga del decorator** — cada tool lo hardcodea individualmente | MEDIA | DRY violation: si el rol de aprobación cambia, hay que cambiar todos los tools |
+| 6 | **Sin `reject_callback`** — cuando admin rechaza, no hay callback al agente para cleanup | MEDIA | Gasto/emergencia queda en estado limbo |
+| 7 | **Sin `expires_at` en approval request** — requests pendientes pueden quedarse para siempre | ALTA | Emergency request de hace 3 meses sigue "pendiente" |
+| 8 | **Sin `priority` en approval requests** — emergencia y gasto menor tienen la misma prioridad en la cola | ALTA | Emergency debería aparecer primero en ApprovalQueue |
+
+---
+
+### Análisis: Patrones Multi-Action vs Single-Action
+
+**Observado en los 3 agentes:**
+
+| Patrón | Tools | Pros | Cons |
+|--------|-------|------|------|
+| **Single-action** (1 tool = 1 operación) | finance_expense_create, finance_invoice_create, broadcast_club_announcement, manage_emergency_broadcast, send_personalized_notification | Clear intent, easy to approve/reject individualmente | Many tools to register |
+| **Multi-action** (1 tool, param `action`) | design_reactivation_campaign, manage_loyalty_rewards, submit_feedback, manage_referrals, manage_notification_templates, schedule_notification, manage_communication_preferences | Fewer tools, grouped functionality | APPROVAL LEVEL VARÍA POR ACTION — create=HITL, list=AUTO |
+
+**Problema crítico del multi-action:**
+
+```python
+# manage_loyalty_rewards está decorado como HITL
+@MCPTool("manage_loyalty_rewards", ..., approval=ApprovalLevel.HITL)
+async def manage_loyalty_rewards(self, action="list", ...):
+    if action == "list":      # ← Esto NO necesita HITL
+        rewards = ...
+    if action == "create":    # ← Esto SÍ necesita HITL
+        approval_engine.create_request(...)
+    if action == "redeem":    # ← Esto NO necesita HITL
+        reward.update(...)
+```
+
+El decorator dice `HITL` pero `list`, `get`, y `redeem` son operaciones AUTO. La metadata `_approval_level` siempre será "hitl" aunque la operación real sea AUTO.
+
+**Impacto:** El ApprovalEngine y el frontend ven todos los calls como HITL cuando solo `create` lo necesita.
+
+---
+
+### Resumen Ejecutivo BaseAgent + MCPTool
+
+**Lo que funciona bien:**
+
+| Aspecto | Estado |
+|---------|--------|
+| Decorator pattern para discovery | ✅ Limpio y extensible |
+| HITL wrapper con metadata injection | ✅ Concepto correcto |
+| `@wraps(func)` preserva docstrings/nombres | ✅ |
+| ApprovalLevel enum con 4 niveles | ✅ Suficiente para el dominio |
+| `_register_tools()` abstracto como hook legacy | ✅ Correctamente deprecated |
+| Separación tool vs execute | ✅ Patrón HITL correcto |
+
+**Lo que necesita fix (ordenado por severidad):**
+
+| # | Hallazgo | Severidad | Fix sugerido |
+|---|---------|-----------|-------------|
+| 1 | `execute_X()` no tiene protección — bypass del HITL | ALTA | Agregar decorator `@requires_approval` o check de que caller es ApprovalEngine |
+| 2 | `requested_by="system"` hardcoded | ALTA | Pasar user context desde el MCP layer al tool |
+| 3 | `approver_roles` no se propaga del decorator al wrapper | ALTA | `_wrap_with_hitl` debe incluir `approver_roles` en el response |
+| 4 | Sin schema de input/output en MCPTool | ALTA | Agregar `input_model: BaseModel` opcional para auto-validación |
+| 5 | Multi-action tools reportan un solo approval level | ALTA | Split en tools separados o agregar `_dynamic_approval` callback |
+| 6 | Sin nombre único validation entre agentes | MEDIA | Check en `register_with_mcp` contra registry global |
+| 7 | `affected_count=0` en broadcasts | MEDIA | Calcular dinámicamente desde repo |
+| 8 | Sin expires_at en approval requests | MEDIA | TTL configurable por ApprovalLevel |
+| 9 | Sin priority en approval requests | MEDIA | Derivar de approval level (ALWAYS_HUMAN > HITL > SEMI) |
+| 10 | Metadata en response usa `_` prefix mixing con datos | BAJA | Wrap en `_metadata: {}` object |
+
+**KPIs que se derivan de la arquitectura HITL:**
+
+| KPI | Cálculo | Valor |
+|-----|---------|-------|
+| Approval Rate | approved / total_requests × 100 | Mide calidad de requests (si es muy alta, el HITL es innecesario) |
+| Avg Approval Time | mean(approved_at - created_at) | Mide eficiencia del admin |
+| Rejection Rate | rejected / total_requests × 100 | Mide riesgo real del sistema |
+| Hitl Volume | requests per day por tipo | Mide carga operativa del admin |
+| Auto-eligible Rate | requests que podrían ser AUTO / total | Mide oportunidad de automatización |
+
+---
+
+Listo. Esa es la base completa del sistema de agentes. Mandame el siguiente agente o archivo para continuar.

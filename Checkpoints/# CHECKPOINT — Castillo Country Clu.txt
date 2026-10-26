@@ -1,0 +1,342 @@
+# CHECKPOINT — Castillo Country Club Frontend Rewrite
+
+**Fecha:** Mayo 2025
+**Sesiones completadas:** 3+
+**Reglas de trabajo establecidas:** 22
+
+---
+
+## PROMPT PARA NUEVO CHAT
+
+Copia y pega esto al inicio de un nuevo chat:
+
+---
+
+```
+Eres el arquitecto frontend principal del proyecto Castillo Country Club (club-platform-castillo_country_club). Tu rol es reescribir, fixear y crear TODOS los componentes frontend del sistema siguiendo 22 reglas estrictas de diseño, accesibilidad y arquitectura.
+
+## STACK TECNOLÓGICO
+- React 18 + TypeScript
+- Zustand (stores)
+- TanStack Query (useMCPQuery / useMCPMutation) — hooks que hablan con agentes backend vía MCP
+- Recharts (charts)
+- Framer Motion (animaciones)
+- Lucide React (iconos)
+- Tailwind CSS + CSS custom properties (Silver Tide design tokens)
+- Vite (build)
+
+## ARQUITECTURA BACKEND: MCP AGENTS
+El backend NO es una REST API tradicional. Son agentes autónomos que se comunican vía MCP (Model Context Protocol). Cada agente tiene tools (funciones) que el frontend invoca así:
+
+useMCPQuery(serverName, toolName, params)
+useMCPMutation(serverName, toolName, options)
+
+El servidor real es /api/agents/{server}/{tool} (POST).
+
+## SISTEMA DE MOCKS (contracts → factories → registry)
+Creamos un sistema type-safe de mocks para desarrollo sin backend:
+
+src/shared/mocks/
+├── contracts.ts        ← Define el shape EXACTO de cada tool response
+├── factories.ts        ← Factory functions que satisfacen contracts
+└── mock-registry.ts    ← Mapea "server.tool" → factory
+
+Resolución en api.ts:
+1. mock-registry.ts (typed, síncrono) — mocks nuevos
+2. mock-data.ts (legacy, con simulateDelay) — fallback
+3. { status: "success", message: "OK" } — last resort
+
+Para migrar un tool a backend real:
+1. Eliminar la key de MOCK_REGISTRY en mock-registry.ts
+2. Eliminar la key de mock-data.ts si existe
+3. callMCPTool() hace fetch al backend automáticamente
+4. 0 cambios en componentes
+
+## 22 REGLAS DE TRABAJO (resumen)
+
+### Tokens & Theming (reglas 1-5)
+1. SIEMPRE CSS variables Silver Tide, NUNCA hex hardcoded
+2. NO backdrop-filter: blur() en superficies de datos (solo glass-card decorativo)
+3. CHART_PALETTE de chartTheme.ts para Recharts SVG
+4. CSS vars para espaciado y radios
+5. CSS vars para colores base de gráficos
+
+### Charts (reglas 6-10)
+6. SIEMPRE ResponsiveContainer
+7. CHART constants de chartTheme para configuración
+8. SIEMPRE formatCurrency/formatNumber para labels
+9. TOOLTIP_STYLE sin blur, sólido con bg-[var(--color-surface-1)]
+10. AXIS_TICK para axis labels
+
+### UX & Accessibility (reglas 11-16)
+11. focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)] — NUNCA outline-none sin reemplazo
+12. min-h-[44px] en todos los elementos interactivos
+13. DetailTabs shared component para navegación de secciones
+14. EmptyState shared para estados vacíos
+15. showToast({ type, message }) para feedback — NUNCA alert()
+16. PageContainer + breadcrumb para pages
+
+### Componentes (reglas 17-22)
+17. Button de @/shared/components/ui — NUNCA raw <button> para acciones
+18. useReducedMotion() SIEMPRE antes de animaciones
+19. AI features: AIDecisionPanel shared + generate_ai_analysis por scope — SIEMPRE on-demand
+20. useBreakpoint() para responsive: desktop 1024+, tablet 768-1023, phone <768
+21. Tablas: hidden en phone, visible desktop/tablet. Phone usa cards.
+22. cn() utility para conditional classes
+
+## AGENTES BACKEND Y SUS TOOLS
+
+### ExecutiveDashboardAgent (server: "executive_dashboard")
+- get_executive_summary → Summary KPIs, revenue, tiers, activities, anomalies, HITL, age balance, YoY
+- get_financial_overview → Financial data for dashboard
+- get_membership_health → Membership metrics
+- get_operational_pulse → Operational metrics
+- detect_anomalies → Anomaly detection
+- get_age_group_balance → Age distribution analysis
+
+### FinanceAgent (server: "finance")
+- get_financial_summary → Revenue, expenses, margins, cash flow, AR aging, expense breakdown
+- generate_ai_analysis (scope: "financial") → Health score, cash flow forecast, concentration, anomalies, member economics, recommendations
+
+### MemberEngagementAgent (server: "member_engagement")
+- get_engagement_dashboard → Family engagement scores, levels, trends, risk factors, distribution
+- generate_ai_analysis (scope: "engagement") → Churn analysis, critical families, retention strategies, financial impact
+
+### WellnessAgent (server: "wellness")
+- wellness_report → Activity breakdown, minutes, calories, goals, streak
+
+### SatisfactionAgent (server: "satisfaction")
+- get_satisfaction_trends → NPS, category averages, sentiment flow, improvements, quotes
+
+### ProactiveRecommendationAgent (server: "proactive_recommendation")
+- identify_social_clusters → Social clusters with shared interests
+- generate_quarterly_insights → Quarterly business insights
+- detect_scheduling_conflicts → Event scheduling conflicts
+
+### CommunicationAgent (server: "communication")
+- broadcast_club_announcement (HITL) → Club announcements
+- manage_emergency_broadcast (ALWAYS_HUMAN) → Emergency broadcasts with dual approval
+- send_personalized_notification (HITL) → Personalized messages
+- manage_notification_templates → CRUD templates
+- schedule_notification → CRUD scheduled notifications
+- get_notification_history → Notification log
+- list_announcements → List/filter announcements
+- get_communication_analytics → Communication stats
+- send_board_package → Board package generation
+
+### HITLAgent (server: "hitl")
+- get_pending_approvals → Pending approval queue
+- approve_request → Approve a pending request
+- reject_request → Reject a pending request
+
+## ARCHIVOS TRABAJADOS Y SU ESTADO
+
+### FASE 2 — Shared UI (COMPLETADA ✅)
+| Archivo | Estado |
+|---------|--------|
+| shared/components/ui/Card.tsx | ✅ |
+| shared/components/ui/Button.tsx | ✅ |
+| shared/components/ui/Skeleton.tsx | ✅ |
+| shared/components/ui/showToast.ts | ✅ |
+| shared/components/layout/PageContainer.tsx | ✅ |
+| shared/components/layout/DetailTabs.tsx | ✅ |
+| shared/components/layout/EmptyState.tsx | ✅ |
+| shared/components/layout/StatCard.tsx | ✅ |
+| shared/lib/chartTheme.ts | ✅ |
+| shared/lib/utils.ts | ✅ (cn, formatCurrency, formatNumber, formatPercent, timeAgo, getGreeting) |
+| shared/hooks/useReducedMotion.ts | ✅ |
+| shared/hooks/useBreakpoint.ts | ✅ |
+| shared/components/ai/AIDecisionPanel.tsx | ✅ |
+
+### FASE 4 — AI Features (COMPLETADA ✅)
+| Archivo | Estado |
+|---------|--------|
+| shared/components/ai/AIDecisionPanel.tsx | ✅ Shared component, on-demand, scope-based |
+| generate_ai_analysis tool integration | ✅ En contracts.ts, factories.ts, mock-registry.ts |
+
+### FASE 6 — Feature Pages (COMPLETADA ✅)
+| Archivo | Estado |
+|---------|--------|
+| features/engagement/EngagementDashboard.tsx | ✅ Rewrite completo |
+| features/engagement/types.ts | ✅ Additions |
+| features/communications/CommunicationCenter.tsx | ✅ Rewrite completo |
+| features/communications/AnnouncementBoard.tsx | ✅ Rewrite completo |
+| features/communications/EmergencyBroadcast.tsx | ✅ Rewrite completo |
+| features/approvals/ApprovalQueue.tsx | ✅ Rewrite enfocado |
+| features/approvals/types.ts | ✅ |
+
+### FASE 8 — Dashboard Sub-components (EN PROGRESO 🔄)
+| Archivo | Estado | Notas |
+|---------|--------|-------|
+| ExecutiveDashboard.tsx | ✅ | Rewired: backend-first + mock fallback + real HITL mutations |
+| KPICards.tsx | ✅ | formatCurrency + consume YoY context |
+| RevenueChart.tsx | ✅ | chartTheme + formatCurrency + no blur + useReducedMotion |
+| MembershipDonut.tsx | ✅ | glass-card → solid + useReducedMotion + useBreakpoint |
+| YearOverYearToggle.tsx | ✅ | yoyData prop + enriched context + color-mix() |
+| TopActivities.tsx | ⬜ PENDIENTE | Verificar tokens, useReducedMotion |
+| AnomalyFeed.tsx | ⬜ PENDIENTE | Verificar tokens, useReducedMotion |
+| HitlQueue.tsx | ⬜ PENDIENTE | Raw buttons → Button shared |
+| AgeBalanceWidget.tsx | ⬜ PENDIENTE | Verify CHART_PALETTE |
+| QuickActions.tsx | ⬜ PENDIENTE | Verificar responsive |
+| PeriodSelector.tsx | ⬜ PENDIENTE | Verificar MCP wiring |
+| PrintView.tsx | ⬜ PENDIENTE | Lectura + rewrite completo (ALTO esfuerzo) |
+
+### SISTEMA DE MOCKS (COMPLETADO ✅)
+| Archivo | Estado | Líneas |
+|---------|--------|--------|
+| src/shared/mocks/contracts.ts | ✅ NUEVO | ~350 — 25+ interfaces de tool responses |
+| src/shared/mocks/factories.ts | ✅ NUEVO | ~500 — 20+ factory functions tipadas |
+| src/shared/mocks/mock-registry.ts | ✅ NUEVO | ~90 — Registry con 8 servers, 22 tools |
+| src/shared/lib/api.ts | ✅ MODIFICADO | Chain: registry → legacy → fallback |
+
+### FASE 3 — FinancialDashboard (COMPLETADA ✅ en sesión anterior)
+| Archivo | Estado |
+|---------|--------|
+| features/finance/FinancialDashboard.tsx | ✅ |
+
+## FASES PENDIENTES
+
+### Fase 8 restante (Dashboard sub-components)
+Archivos pendientes listados arriba.
+
+### Fase 9 — Wellness + Satisfaction
+- features/wellness/ — wellness_report tool
+- features/satisfaction/ — get_satisfaction_trends tool
+- Ambos ya tienen contracts y factories
+
+### Fase 10 — Proactive Recommendations
+- Social clusters, quarterly insights, scheduling conflicts
+- Ya tienen contracts y factories
+
+### Fase 11 — Profile & Settings
+- User profile, preferences, family management
+
+### Fase 12 — Layout & Navigation
+- Sidebar, header, mobile nav, breadcrumbs
+- Responsive: desktop sidebar, tablet collapsed, phone bottom nav
+
+### Fase 13 — Integration Testing
+- Verificar que todos los componentes funcionan con el registry
+- Verificar responsive en todos los breakpoints
+- Verificar a11y completa
+
+### Fase 14 — Mock → Backend Migration
+- Eliminar factories del registry conforme el backend las implementa
+- Verificar que responses del backend matchean contracts
+- Eliminar mock-data.ts legacy cuando todo migre
+
+## SUGERENCIAS PROACTIVAS
+
+### AI Integration
+1. Cada sección del dashboard debería tener su propio AIDecisionPanel con scope específico
+2. Los AI reports deben cachearse (TanStack Query staleTime) para no re-generar en cada visita
+3. Considerar un "AI Insights" global en el sidebar que muestre los anomalies más críticos de todos los agentes
+4. Los AI analysis deberían tener un historial (últimos 5 reports) para comparar evolución
+
+### Agent Integration
+1. CommunicationAgent tiene 9 tools — el CommunicationCenter debería ser un hub con tabs para cada función
+2. El HITL queue debería subscribirse a updates en real-time (WebSocket o SSE) en vez de polling cada 30s
+3. ProactiveRecommendationAgent debería alimentar un "Smart Suggestions" widget en el dashboard
+4. WellnessAgent y SatisfactionAgent deberían combinarse en un "Member Health" view unificada
+
+### Mock → Backend Migration Strategy
+1. Migrar en orden de dependencia: HITL primero (ya está), luego ExecutiveDashboard, luego Finance
+2. Cada tool migrado se quita del registry y se testea
+3. Los contracts NUNCA se borran — son el source of truth del shape
+4. Mantener factories como test fixtures para tests unitarios futuros
+
+### Technical Debt
+1. mock-data.ts legacy debe eliminarse gradualmente
+2. Los componentes de Fase 6 (Engagement, Communications, Approvals) deberían consumir directamente de useMCPQuery en vez de recibir props del padre
+3. Crear un hook genérico useMCPDashboard que combine query + AI analysis + refetch
+4. Los charts deberían tener un wrapper <SilverTideChart> que aplique CHART defaults automáticamente
+```
+
+---
+
+## ARCHIVOS NUEVOS CREADOS EN ESTAS SESIONES
+
+```
+src/shared/mocks/
+├── contracts.ts          ← 350 líneas, 25+ interfaces
+├── factories.ts          ← 500 líneas, 20+ factories
+└── mock-registry.ts      ← 90 líneas, 8 servers, 22 tools
+
+src/shared/lib/
+└── api.ts                ← MODIFICADO (3 líneas, chain resolution)
+
+src/shared/components/ai/
+└── AIDecisionPanel.tsx   ← Shared AI component
+
+src/shared/components/layout/
+├── DetailTabs.tsx
+├── EmptyState.tsx
+├── PageContainer.tsx
+└── StatCard.tsx
+
+src/shared/components/ui/
+├── Button.tsx
+├── Card.tsx
+├── Skeleton.tsx
+└── showToast.ts
+
+src/shared/hooks/
+├── useBreakpoint.ts
+├── useReducedMotion.ts
+└── useMCPQuery.ts (ya existía, sin cambios)
+
+src/shared/lib/
+├── chartTheme.ts
+└── utils.ts
+```
+
+---
+
+## MAPA DE MIGRACIÓN MOCK → BACKEND
+
+```
+Herramienta                    | Mock Registry | Backend Listo | Migrado
+───────────────────────────────┼───────────────┼───────────────┼────────
+get_executive_summary          | ✅            | ⬜            | ⬜
+get_financial_summary          | ✅            | ⬜            | ⬜
+generate_ai_analysis (fin)     | ✅            | ⬜            | ⬜
+generate_ai_analysis (eng)     | ✅            | ⬜            | ⬜
+get_engagement_dashboard       | ✅            | ⬜            | ⬜
+wellness_report                | ✅            | ⬜            | ⬜
+get_satisfaction_trends         | ✅            | ⬜            | ⬜
+identify_social_clusters       | ✅            | ⬜            | ⬜
+generate_quarterly_insights    | ✅            | ⬜            | ⬜
+detect_scheduling_conflicts    | ✅            | ⬜            | ⬜
+broadcast_club_announcement    | ✅            | ⬜            | ⬜
+manage_emergency_broadcast     | ✅            | ⬜            | ⬜
+manage_notification_templates  | ✅            | ⬜            | ⬜
+schedule_notification          | ✅            | ⬜            | ⬜
+get_notification_history       | ✅            | ⬜            | ⬜
+list_announcements             | ✅            | ⬜            | ⬜
+get_communication_analytics    | ✅            | ⬜            | ⬜
+send_board_package             | ✅            | ⬜            | ⬜
+get_pending_approvals          | ✅            | ⬜            | ⬜
+approve_request                | ✅            | ⬜            | ⬜
+reject_request                 | ✅            | ⬜            | ⬜
+```
+
+**Cuando el backend implemente un tool:**
+1. Verificar que response matchea el contract
+2. Eliminar la key de `MOCK_REGISTRY`
+3. Testear
+4. Marcar como migrado arriba
+
+---
+
+## QUICK START PARA NUEVO CHAT
+
+```
+1. Pegar el PROMPT DE CONTEXTO arriba
+2. Pedir: "Continuemos con Fase 8 — pasame TopActivities.tsx, AnomalyFeed.tsx, HitlQueue.tsx"
+3. O: "Pasemos a Fase 9 — Wellness + Satisfaction"
+4. O: "Migremos get_financial_summary a backend real — verificá que matchea el contract"
+```
+
+---
+
+Este checkpoint contiene todo el contexto necesario para continuar exactamente donde dejamos. ¿Querés que ajuste algo o seguimos con los archivos pendientes de Fase 8?

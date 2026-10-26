@@ -1,0 +1,1078 @@
+/**
+ * Member360Dashboard — The Portrait Room
+ * Namespace: .glass-m360
+ * Keyframes prefix: m360-*
+ * @phase 30 — Block 2.2
+ */
+
+/* ═══════════════════════════════════════════════════════
+   ROOT TOKENS
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360 {
+  --m360-stagger-ms: 120ms;
+  --m360-glow-pulse-sec: 6s;
+  --m360-orb-rotation-sec: 30s;
+  --m360-ambient-intensity: 0.3;
+  --m360-animation-speed: 1;
+  --m360-temperature: 50;
+  --m360-state-color: var(--color-teal-400);
+
+  position: relative;
+  min-height: 100vh;
+  padding: var(--space-4, 1rem);
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIST MODE
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360--list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+}
+
+.glass-m360__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.glass-m360__title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+}
+
+.glass-m360__subtitle {
+  font-size: 0.875rem;
+  color: var(--color-silver-400);
+}
+
+/* ── Search ── */
+
+.glass-m360__search-wrap {
+  position: relative;
+  max-width: 28rem;
+}
+
+.glass-m360__search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-silver-500);
+  pointer-events: none;
+}
+
+.glass-m360__search-input {
+  width: 100%;
+  padding: 0.625rem 1rem 0.625rem 2.25rem;
+  border-radius: 0.5rem;
+  background: var(--color-surface-2);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 20%, transparent);
+  font-size: 0.875rem;
+  color: var(--color-silver-200);
+  min-height: 44px;
+  transition: border-color 0.2s ease;
+}
+
+.glass-m360__search-input::placeholder {
+  color: var(--color-silver-500);
+}
+
+.glass-m360__search-input:focus {
+  outline: none;
+  border-color: var(--color-gold-400);
+}
+
+/* ── Filters ── */
+
+.glass-m360__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.glass-m360__filter-divider {
+  width: 1px;
+  height: 1.5rem;
+  background: var(--color-surface-3);
+  margin: 0 0.25rem;
+}
+
+.glass-m360__pill {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-height: 36px;
+  background: var(--color-surface-2);
+  color: var(--color-silver-400);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.glass-m360__pill:hover {
+  border-color: color-mix(in srgb, var(--color-silver-600) 30%, transparent);
+}
+
+.glass-m360__pill--active {
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* ── Grid ── */
+
+.glass-m360__grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .glass-m360__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1280px) {
+  .glass-m360__grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── Temperature Card ── */
+
+.glass-m360__temp-card {
+  position: relative;
+  text-align: left;
+  border-radius: 18px;
+  padding: 1rem;
+  background: var(--color-surface-1);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 20%, transparent);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-m360__temp-card:hover {
+  border-color: color-mix(in srgb, var(--card-state-color, var(--color-gold-400)) 25%, transparent);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--card-state-color, var(--color-gold-400)) 10%, transparent);
+}
+
+.glass-m360__temp-card--animate {
+  opacity: 0;
+  animation: m360-fadeUp 0.4s ease forwards;
+}
+
+/* Card ambient glow */
+.glass-m360__card-glow {
+  position: absolute;
+  top: -30%;
+  right: -15%;
+  width: 50%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--card-state-color, var(--color-teal-400)) 0%, transparent 70%);
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+[data-member-state="thriving"] .glass-m360__card-glow { opacity: 0.12; }
+[data-member-state="disengaging"] .glass-m360__card-glow { opacity: 0.15; }
+
+/* Card layout */
+.glass-m360__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.glass-m360__card-avatar {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 2px solid var(--color-silver-600);
+  color: var(--color-silver-200);
+}
+
+.glass-m360__card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-m360__card-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-silver-100);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glass-m360__card-meta {
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glass-m360__card-ring {
+  flex-shrink: 0;
+}
+
+.glass-m360__card-ring-value {
+  transition: stroke-dashoffset 0.8s ease;
+}
+
+.glass-m360__card-ring-text {
+  font-family: var(--font-mono);
+}
+
+/* Badges */
+.glass-m360__card-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.glass-m360__state-badge {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.glass-m360__meta-badge {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DETAIL MODE — The Portrait Room
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360--detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6, 1.5rem);
+}
+
+/* ── Navigation ── */
+
+.glass-m360__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 10;
+}
+
+.glass-m360__back {
+  color: var(--color-silver-400);
+}
+
+.glass-m360__back:hover {
+  color: var(--color-silver-200);
+}
+
+.glass-m360__nav-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.glass-m360__mode-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.glass-m360__mode-badge[data-mode="calm"] {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+}
+
+.glass-m360__mode-badge[data-mode="alert"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+
+.glass-m360__mode-badge[data-mode="critical"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+  animation: m360-urgent-pulse 2s ease-in-out infinite;
+}
+
+.glass-m360__intelligence-score {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+}
+
+/* ── Loading ── */
+
+.glass-m360__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+}
+
+.glass-m360__loading-orb {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--m360-state-color) 0%, transparent 70%);
+  animation: m360-orb-breathe 2s ease-in-out infinite;
+}
+
+.glass-m360__loading-text {
+  font-size: 0.875rem;
+  color: var(--color-silver-400);
+  animation: m360-text-fade 1.5s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   THE ROOM — Spatial composition by mode
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360__room {
+  display: grid;
+  gap: var(--space-6, 1.5rem);
+  transition: grid-template-columns 0.5s ease;
+}
+
+/* calm: portrait left, narrative right */
+.glass-m360__room[data-mode="calm"] {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .glass-m360__room[data-mode="calm"] {
+    grid-template-columns: minmax(280px, 1fr) 2fr;
+  }
+  .glass-m360__room[data-mode="alert"] {
+    grid-template-columns: minmax(240px, 1fr) 2fr;
+  }
+  /* critical: narrative full width on top, portrait collapses */
+  .glass-m360__room[data-mode="critical"] {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Portrait Section ── */
+
+.glass-m360__portrait-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  align-items: center;
+}
+
+/* critical: portrait becomes compact */
+[data-mode="critical"] .glass-m360__portrait-section {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: var(--space-3, 0.75rem);
+}
+
+/* ── Narrative Section ── */
+
+.glass-m360__narrative-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+}
+
+/* critical: narrative is full width, prominent */
+[data-mode="critical"] .glass-m360__narrative-section {
+  order: -1;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PORTRAIT — SVG Orbital Rings
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360__portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+}
+
+.glass-m360__portrait-svg {
+  width: 200px;
+  height: 200px;
+}
+
+[data-mode="alert"] .glass-m360__portrait-svg {
+  width: 160px;
+  height: 160px;
+}
+
+[data-mode="critical"] .glass-m360__portrait-svg {
+  width: 60px;
+  height: 60px;
+}
+
+.glass-m360__portrait-ring {
+  transform-origin: center;
+  animation: m360-ring-orbit var(--ring-duration, 30s) linear infinite;
+}
+
+.glass-m360__portrait-ring:nth-child(even) {
+  animation-direction: reverse;
+}
+
+.glass-m360__portrait-orb-glow {
+  animation: m360-orb-breathe var(--m360-glow-pulse-sec) ease-in-out infinite;
+}
+
+.glass-m360__portrait-orb-core {
+  transition: fill 1s ease;
+}
+
+.glass-m360__portrait-temp-text {
+  font-family: var(--font-mono);
+}
+
+/* Portrait labels */
+.glass-m360__portrait-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.glass-m360__portrait-name {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+}
+
+.glass-m360__portrait-state {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.glass-m360__portrait-trend {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   NARRATIVE — AI Briefing
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360__narrative {
+  position: relative;
+  border-radius: 18px;
+  padding: 1.25rem;
+  background: var(--color-surface-1);
+  border: 1px solid color-mix(in srgb, var(--color-silver-600) 20%, transparent);
+  backdrop-filter: blur(10px) saturate(1.05);
+  overflow: hidden;
+}
+
+.glass-m360__narrative::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--m360-state-color) 0%, transparent 100%);
+}
+
+.glass-m360__narrative-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.glass-m360__narrative-icon {
+  font-size: 1.25rem;
+}
+
+.glass-m360__narrative-headline {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+}
+
+.glass-m360__narrative-subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-silver-400);
+  margin-bottom: 0.75rem;
+}
+
+.glass-m360__narrative-body {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-silver-300);
+}
+
+.glass-m360__narrative-action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-silver-600) 10%, transparent);
+}
+
+.glass-m360__narrative-action-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-gold-400);
+}
+
+.glass-m360__narrative-action-urgency {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.glass-m360__narrative-action-urgency[data-urgency="immediate"] {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 12%, transparent);
+  animation: m360-urgent-pulse 2s ease-in-out infinite;
+}
+
+.glass-m360__narrative-action-urgency[data-urgency="today"] {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 12%, transparent);
+}
+
+/* ── Typing effect ── */
+
+.glass-m360__typing {
+  display: inline;
+  background-image: linear-gradient(transparent calc(100% - 1px), var(--color-silver-400) 1px);
+  background-size: 0% 1px;
+  background-position: left bottom;
+  background-repeat: no-repeat;
+}
+
+/* ═══════════════════════════════════════════════════════
+   VITAL SIGNS GRID
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360__vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .glass-m360__vitals-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.glass-m360__vital-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--color-surface-0);
+  border: 1px solid color-mix(in srgb, var(--vital-color, var(--color-silver-600)) 15%, transparent);
+  opacity: 0;
+  animation: m360-fadeUp 0.4s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * var(--m360-stagger-ms));
+}
+
+.glass-m360__vital-card[data-status="critical"] {
+  border-color: color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+  animation: m360-fadeUp 0.4s ease forwards, m360-critical-border 3s ease-in-out infinite;
+  animation-delay: calc(var(--stagger-i, 0) * var(--m360-stagger-ms));
+}
+
+.glass-m360__vital-ring-wrap {
+  flex-shrink: 0;
+}
+
+.glass-m360__vital-arc {
+  transition: stroke-dashoffset 0.8s ease;
+}
+
+.glass-m360__vital-text {
+  font-family: var(--font-mono);
+}
+
+.glass-m360__vital-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.glass-m360__vital-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-silver-200);
+  text-transform: capitalize;
+}
+
+.glass-m360__vital-trend {
+  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+}
+
+.glass-m360__vital-trend[data-trend="improving"] { color: var(--color-emerald-400); }
+.glass-m360__vital-trend[data-trend="declining"] { color: var(--color-rose-400); }
+
+/* ═══════════════════════════════════════════════════════
+   CROSS-DOMAIN SIGNALS
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360__signals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.glass-m360__resonance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface-0);
+  font-size: 0.75rem;
+}
+
+.glass-m360__resonance[data-agreement="unanimous"] {
+  border-left: 3px solid var(--color-emerald-400);
+}
+
+.glass-m360__resonance[data-agreement="conflicting"] {
+  border-left: 3px solid var(--color-rose-400);
+}
+
+.glass-m360__resonance-label {
+  color: var(--color-silver-300);
+  font-weight: 500;
+}
+
+.glass-m360__resonance-confidence {
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+}
+
+.glass-m360__signal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.glass-m360__signal-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--color-surface-0);
+  font-size: 0.75rem;
+  opacity: 0;
+  animation: m360-fadeUp 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 60ms);
+}
+
+.glass-m360__signal-item[data-severity="critical"] {
+  border-left: 3px solid var(--color-rose-400);
+}
+
+.glass-m360__signal-item[data-severity="high"] {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+.glass-m360__signal-domain {
+  flex-shrink: 0;
+  font-weight: 500;
+  min-width: 6rem;
+}
+
+.glass-m360__signal-text {
+  flex: 1;
+  color: var(--color-silver-300);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glass-m360__signal-confidence {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--color-silver-500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PREDICTIONS
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360__predictions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.glass-m360__windows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.glass-m360__window {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 8px;
+  background: var(--color-surface-0);
+  font-size: 0.75rem;
+  opacity: 0;
+  animation: m360-fadeUp 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 80ms);
+}
+
+.glass-m360__window[data-status="imminent"] {
+  border: 1px solid color-mix(in srgb, var(--color-rose-400) 30%, transparent);
+  animation: m360-fadeUp 0.35s ease forwards, m360-urgent-pulse 2s ease-in-out infinite;
+}
+
+.glass-m360__window[data-status="closing"] {
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 20%, transparent);
+}
+
+.glass-m360__window-metric {
+  color: var(--color-silver-300);
+  font-weight: 500;
+}
+
+.glass-m360__window-status {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+}
+
+.glass-m360__window-days {
+  font-family: var(--font-mono);
+  color: var(--color-silver-500);
+}
+
+.glass-m360__trajectory {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface-0);
+  font-size: 0.75rem;
+}
+
+.glass-m360__trajectory-label {
+  font-weight: 500;
+  color: var(--color-silver-300);
+  text-transform: capitalize;
+}
+
+.glass-m360__trajectory-30d {
+  font-family: var(--font-mono);
+  color: var(--color-silver-400);
+}
+
+.glass-m360__trajectory-band {
+  font-size: 0.625rem;
+  color: var(--color-silver-600);
+}
+
+.glass-m360__nba {
+  padding: 0.625rem 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface-0);
+}
+
+.glass-m360__nba-strategy {
+  font-size: 0.8125rem;
+  color: var(--color-silver-200);
+  margin-bottom: 0.25rem;
+}
+
+.glass-m360__nba-outcome {
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ENGAGEMENT DNA
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360__dna {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.glass-m360__dna-channel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0;
+  opacity: 0;
+  animation: m360-fadeUp 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 60ms);
+}
+
+.glass-m360__dna-channel[data-preferred] {
+  font-weight: 600;
+}
+
+.glass-m360__dna-domain {
+  flex-shrink: 0;
+  min-width: 7rem;
+  font-size: 0.75rem;
+}
+
+.glass-m360__dna-bar-wrap {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-surface-3);
+  overflow: hidden;
+}
+
+.glass-m360__dna-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+
+.glass-m360__dna-score {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--color-silver-500);
+  min-width: 2rem;
+  text-align: right;
+}
+
+.glass-m360__dna-freq {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--color-silver-600);
+  min-width: 3rem;
+  text-align: right;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ADVISOR INSIGHTS
+   ═══════════════════════════════════════════════════════ */
+
+.glass-m360__insights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.glass-m360__insight {
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface-0);
+  opacity: 0;
+  animation: m360-fadeUp 0.35s ease forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 80ms);
+}
+
+.glass-m360__insight[data-impact="critical"] {
+  border-left: 3px solid var(--color-rose-400);
+}
+
+.glass-m360__insight[data-impact="high"] {
+  border-left: 3px solid var(--color-amber-400);
+}
+
+.glass-m360__insight[data-impact="medium"] {
+  border-left: 3px solid var(--color-teal-400);
+}
+
+.glass-m360__insight-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+
+.glass-m360__insight-impact {
+  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: var(--color-silver-500);
+}
+
+.glass-m360__insight-confidence {
+  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  color: var(--color-silver-600);
+}
+
+.glass-m360__insight-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  margin-bottom: 0.25rem;
+}
+
+.glass-m360__insight-reasoning {
+  font-size: 0.75rem;
+  color: var(--color-silver-400);
+  line-height: 1.5;
+}
+
+.glass-m360__insight-action {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-gold-400);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════════════
+   REVEAL ANIMATION
+   ═══════════════════════════════════════════════════════ */
+
+[data-revealed] {
+  opacity: 0;
+  animation: m360-fadeUp 0.5s ease forwards;
+}
+
+[data-revealed]:nth-child(2) { animation-delay: calc(var(--m360-stagger-ms) * 1); }
+[data-revealed]:nth-child(3) { animation-delay: calc(var(--m360-stagger-ms) * 2); }
+[data-revealed]:nth-child(4) { animation-delay: calc(var(--m360-stagger-ms) * 3); }
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes m360-fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes m360-orb-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.15); opacity: 0.5; }
+}
+
+@keyframes m360-ring-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes m360-urgent-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes m360-text-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes m360-critical-border {
+  0%, 100% { border-color: color-mix(in srgb, var(--color-rose-400) 20%, transparent); }
+  50% { border-color: color-mix(in srgb, var(--color-rose-400) 40%, transparent); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════ */
+
+.light .glass-m360__temp-card {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-m360__temp-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.light .glass-m360__card-glow { opacity: 0.05; }
+
+.light .glass-m360__narrative {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.06);
+  backdrop-filter: none;
+}
+
+.light .glass-m360__vital-card,
+.light .glass-m360__signal-item,
+.light .glass-m360__insight,
+.light .glass-m360__window,
+.light .glass-m360__trajectory,
+.light .glass-m360__nba,
+.light .glass-m360__resonance {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-m360__search-input {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #1a1a2e;
+}
+
+.light .glass-m360__loading-orb {
+  opacity: 0.15;
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-m360__temp-card--animate { opacity: 1; animation: none; }
+  .glass-m360__portrait-ring { animation: none; }
+  .glass-m360__portrait-orb-glow { animation: none; }
+  .glass-m360__loading-orb { animation: none; }
+  .glass-m360__loading-text { animation: none; }
+  .glass-m360__vital-card { opacity: 1; animation: none; }
+  .glass-m360__signal-item { opacity: 1; animation: none; }
+  .glass-m360__insight { opacity: 1; animation: none; }
+  .glass-m360__window { opacity: 1; animation: none; }
+  .glass-m360__dna-channel { opacity: 1; animation: none; }
+  .glass-m360__mode-badge[data-mode="critical"] { animation: none; }
+  [data-revealed] { opacity: 1; animation: none; }
+}

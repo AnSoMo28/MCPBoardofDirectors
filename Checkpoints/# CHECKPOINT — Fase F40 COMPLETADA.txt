@@ -1,0 +1,486 @@
+# CHECKPOINT — Fase F40 COMPLETADA — Backend Intelligence + Frontend Mock Alignment
+
+**Fecha:** Junio 2026
+**Sesiones completadas:** 2 (primera: backend B0-B3 + B4 frontend; segunda: B5-B8 frontend)
+**Archivos creados:** 3 nuevos backend + 11 modificados backend + 3 modificados frontend (×3 bloques)
+**Líneas nuevas:** ~12,000+ (backend ~5,500 + frontend ~6,500)
+**Tools MCP nuevas:** 23 (AgeGroup +4, Guest +5, Satisfaction +4, ML +10)
+**Tools MCP totales registradas:** 41+ (18 existentes + 23 nuevas)
+**Domain blocks nuevos en registry:** 2 (age_group, ml_intelligence)
+**Enum nuevo centralizado:** 1 (ScenarioType)
+**Enums reusados:** 5 (MemberHealthLevel ×4, SeverityLevel ×1)
+
+---
+
+## 0. ROL SUPER ENRIQUECIDO — REGLA DE ORO
+
+Sos **Principal AI Systems Architect** del proyecto Castillo AI Platform. Tu trabajo es construir un "Sistema de Decisión Inteligente" — NO un dashboard, NO un ERP, NO un CRM.
+
+### Las 10 disciplinas:
+1. FullStack Engineering
+2. UI/UX Architecture
+3. Product Strategy
+4. Private Club Operations (CR)
+5. AI/ML Architecture
+6. Financial Intelligence
+7. Marketing Intelligence
+8. ML & Gen AI
+9. AI Experience Design
+10. Creative Direction
+
+### Regla de oro (INVIOLABLE):
+**Yo propongo y analizo ANTES de escribir código. El usuario aprueba antes de generar. Changelog detallado al final de cada bloque. Formato de edición: Bloque A (código actual exacto) → Bloque B (líneas nuevas para copiar y pegar). Nunca mezclar. Siempre cuestiono lo que propongo — el cuestionamiento va dirigido a la mejora.**
+
+### ACTUALIZACIÓN F40:
+- **Cada sección de contracts.ts lleva su propio import** (NO un import global al inicio del archivo)
+- **Verificar paths ANTES de declarar cada bloque** — corrige error de `age_group_agent.py` vs `age_group.py`
+- **El patrón del mock-registry es domain-keyed object**:
+```typescript
+// CORRECTO:
+domain_name: {
+  tool_name: (params) => createMockToolName(params),
+},
+```
+
+---
+
+## 1. LO QUE ESTAMOS CONSTRUYENDO (recordatorio)
+
+Castillo AI Platform = "Sistema de Decisión Inteligente" para Castillo Country Club (CR).
+
+### Las 5 capas de inteligencia:
+1. **Datos** — repos con seed data realista
+2. **Contexto** — modelos Pydantic con validación estricta
+3. **Inteligencia client-side** — advisors, health scores, proposals
+4. **Cross-agent** — ML Intelligence agrega todos los dominios
+5. **Acción inteligente** — proposals con suggested_action cross-domain
+
+---
+
+## 2. LO QUE SE CREÓ EN ESTA FASE
+
+### Archivos Backend (Nuevos — Sesión 1)
+
+| # | Ruta | Líneas | Tools MCP |
+|---|------|--------|-----------|
+| 1 | `backend/src/club_mcp/models/ml_intelligence.py` | ~430 | 10 tools |
+| 2 | `backend/src/club_mcp/db/repositories/ml_intelligence_repo.py` | ~680 | — |
+| 3 | `backend/src/club_mcp/agents/ml_intelligence.py` | ~530 | 10 tools |
+
+### Archivos Backend (Modificados — Sesión 1)
+
+| # | Ruta | Tools nuevas |
+|---|------|-------------|
+| 1 | `backend/src/club_mcp/models/age_group.py` | +4 models |
+| 2 | `backend/src/club_mcp/db/repositories/age_group_repo.py` | +5 methods |
+| 3 | `backend/src/club_mcp/agents/age_group.py` | +4 tools |
+| 4 | `backend/src/club_mcp/models/guest_management.py` | +5 models |
+| 5 | `backend/src/club_mcp/db/repositories/guest_management_repo.py` | +5 methods |
+| 6 | `backend/src/club_mcp/agents/guest_management_agent.py` | +5 tools |
+| 7 | `backend/src/club_mcp/models/satisfaction.py` | +4 models + bug fix |
+| 8 | `backend/src/club_mcp/db/repositories/satisfaction_repo.py` | +4 methods + bug fix |
+| 9 | `backend/src/club_mcp/agents/satisfaction_agent.py` | +4 tools |
+
+### Archivos Frontend (Modificados — Sesiones 1+2)
+
+| # | Ruta | B4 (AgeGroup) | B5 (Guest) | B6 (Satisfaction) | B7 (ML) | B8 (Enums) |
+|---|------|--------------|-----------|-------------------|---------|------------|
+| 1 | `shared/mocks/contracts.ts` | +7 interfaces | +11 interfaces +1 import | +12 interfaces +1 import | +22 interfaces +1 import | +11 replacements |
+| 2 | `shared/mocks/factories.ts` | +4 factories | +5 factories | +4 factories | +10 factories | — |
+| 3 | `shared/mocks/mock-registry.ts` | +4 entries | +5 entries +5 imports | +4 entries +4 imports +satisfaction block | +10 entries +10 imports +ml_intelligence block | — |
+| 4 | `shared/types/domain-enums.ts` | — | — | — | — | +1 enum (ScenarioType) +display +type guard +reuse comment |
+
+---
+
+## 3. TOOLS MCP — MAPA COMPLETO F40
+
+### AgeGroup Agent — 11 tools (7 existentes + 4 nuevas)
+
+| Tool | Approval | Tipo |
+|------|----------|------|
+| `analyze_age_distribution` | AUTO | data |
+| `suggest_program` | SEMI→HITL | intel |
+| `manage_age_group_membership` | HITL | mutation |
+| `get_age_group_reports` | AUTO | data |
+| `get_activity_health_score` | AUTO | intel |
+| `get_age_recommendation_enhanced` | AUTO | intel |
+| `get_age_group_analytics_enhanced` | AUTO | intel |
+| `generate_age_group_engagement_proposals` | AUTO | intel |
+
+### Guest Management Agent — 11 tools (6 existentes + 5 nuevas)
+
+| Tool | Approval | Tipo |
+|------|----------|------|
+| `register_guest` | HITL | mutation |
+| `plan_private_event` | HITL | mutation |
+| `manage_trial_memberships` | HITL | mutation |
+| `manage_guest_privileges` | AUTO | CRUD |
+| `get_guest_analytics` | AUTO | data |
+| `guest_management_insights` | AUTO | intel |
+| `get_guest_health_score` | AUTO | intel |
+| `get_conversion_funnel` | AUTO | intel |
+| `get_guest_analytics_enhanced` | AUTO | intel |
+| `get_guest_forecast` | AUTO | intel |
+| `generate_guest_engagement_proposals` | AUTO | intel |
+
+### Satisfaction Agent — 10 tools (6 existentes + 4 nuevas)
+
+| Tool | Approval | Tipo |
+|------|----------|------|
+| `submit_satisfaction_survey` | HITL | mutation |
+| `get_survey_for_event` | AUTO | data |
+| `analyze_event_satisfaction` | SEMI | intel+AI |
+| `get_satisfaction_trends` | AUTO | data (FIXED) |
+| `generate_satisfaction_report` | SEMI | intel+AI |
+| `get_satisfaction_questions` | AUTO | data |
+| `get_satisfaction_health_score` | AUTO | intel |
+| `get_satisfaction_intelligence` | AUTO | intel |
+| `get_satisfaction_benchmark` | AUTO | intel |
+| `generate_satisfaction_engagement_proposals` | AUTO | intel |
+
+### ML Intelligence Agent — 10 tools (nuevo agente)
+
+| Tool | Approval | Tipo |
+|------|----------|------|
+| `get_data_quality_report` | AUTO | intel |
+| `get_anomaly_report` | AUTO | intel |
+| `get_demand_forecast` | AUTO | intel |
+| `get_revenue_forecast` | AUTO | intel |
+| `get_churn_ml_scores` | AUTO | intel |
+| `get_member_segments` | AUTO | intel |
+| `get_model_health` | AUTO | intel |
+| `chat_club_manager` | AUTO | intel+AI |
+| `explain_prediction` | AUTO | intel |
+| `simulate_hypothetical` | AUTO | intel+AI |
+
+---
+
+## 4. PATRONES ESTABLECIDOS EN F40
+
+### Patrón: Intelligence Layer (F40)
+
+```
+models/{domain}.py:
+  ├── Enums: {Domain}HealthLevel, {Domain}ProposalType
+  └── Models: {Domain}HealthFactor, HealthScore, Analytics, Proposal, etc.
+
+db/repositories/{domain}_repo.py:
+  ├── _seed_data(): realistic CR club data
+  ├── get_health_score(): 5 weighted factors → composite
+  ├── get_{domain}_analytics(): temporal + breakdowns
+  ├── generate_engagement_proposals(): 5 proposal types
+  └── helpers: _compute_{domain}_factors()
+
+agents/{domain}_agent.py:
+  └── +N @MCPTool: get_health_score, analytics_enhanced, proposals, etc.
+```
+
+### Patrón: Frontend Mock Alignment (F40)
+
+```
+contracts.ts:
+  └── +N interfaces TypeScript (1:1 Pydantic match)
+      └── import type { CentralizedEnum } from "@/shared/types/domain-enums";
+
+factories.ts:
+  └── +N createMock{ToolName}(params) → {status, message, ...data}
+
+mock-registry.ts:
+  └── domain: { tool: (params) => createMockX(params) }
+```
+
+### Patrón: Domain Keyed Registry
+
+```typescript
+// CORRECTO:
+domain_name: {
+  tool_name: (params) => createMockToolName(params),
+},
+```
+
+### Patrón: Section-scoped imports en contracts.ts
+
+```typescript
+// Cada sección lleva su propio import:
+// ── Section Name (FXX) ──
+import type { SomeType } from "@/shared/types/domain-enums";
+export interface SomeContract { ... }
+```
+
+### Patrón: Enum Reuse
+
+```
+5 propuestos como nuevos → 5 reusados de existentes:
+  AgeGroupHealthLevel      → MemberHealthLevel
+  GuestHealthLevel         → MemberHealthLevel
+  SatisfactionHealthLevel  → MemberHealthLevel
+  MLHealthLevel            → MemberHealthLevel
+  AnomalySeverity          → SeverityLevel
+```
+
+---
+
+## 5. HALLAZGOS Y BUG FIXES
+
+| # | Hallazgo | Severidad | Estado |
+|---|---------|-----------|--------|
+| 1 | Path incorrecto: `age_group_agent.py` vs `age_group.py` | ALTA | ✅ Resuelto sesión 1 |
+| 2 | Mock-registry patrón incorrecto (approval/handler vs domain-keyed) | ALTA | ✅ Resuelto sesión 1 |
+| 3 | BUG: `satisfaction_repo.get_satisfaction_trends` ignora parámetro `months` | ALTA | ✅ Resuelto B2 |
+| 4 | Trend primitiva en satisfaction (solo 2 últimos meses) | MEDIA | ✅ Mejorado a 3-month smoothing |
+| 5 | `response_rate_pct` sin calcular | MEDIA | ✅ Resuelto B2 |
+| 6 | Imports incompletos (`Any`, `uuid4`) en algunos archivos | BAJA | ✅ Resuelto |
+| 7 | Contracts.ts section-scoped imports (no global) | MEDIA | ✅ Documentado y aplicado B8 |
+| 8 | 16 enums "nuevos" que en realidad son 5 reuses + 10 inline | MEDIA | ✅ Resuelto B8 |
+
+---
+
+## 6. DECISIONES DE DISEÑO
+
+| # | Decisión | Razón | Impacto |
+|---|---------|-------|---------|
+| 1 | Seed data en repos Python (no contracts factories) | Backend necesita datos reales; frontend mock es espejo | Dos sistemas independientes pero consistentes |
+| 2 | Statistical algorithms reales (z-score, IQR, exp smoothing) | Production-grade, sin dependencies | Reutilizable con data real |
+| 3 | ML Intelligence como agente separado transversal | Central hub que ve TODOS los dominios | Mejor para cross-domain anomaly detection |
+| 4 | Claude para chat + simulate | Necesita razonamiento real | 2 tools dependen de Claude service |
+| 5 | Rule-based clustering (no K-means) | Sin dependencies numpy/sklearn | Output equivalente |
+| 6 | Corregir satisfaction months bug | Parámetro se ignoraba completamente | Filtros temporales ahora funcionan |
+| 7 | 3 scenarios en revenue forecast | Directores necesitan rango de posibilidades | Cada forecast tiene scenarios |
+| 8 | Exponential smoothing α=0.3 | Sin dependencies, suficiente para 6 meses | Upgrading con más data |
+| 9 | B0-B3 backend antes de B4-B7 frontend | Backend define types → frontend los espejea | Orden correcto |
+| 10 | 5 enums reusados, no duplicados | MemberHealthLevel ya cubre 4 health levels idénticos | Sin duplicación |
+| 11 | Section-scoped imports en contracts.ts | Patrón existente del archivo (cada sección independiente) | Consistencia |
+| 12 | ScenarioType como único enum nuevo centralizado | Es cross-domain (revenue + simulation) | Regla #27 |
+| 13 | 10 enums domain-specific quedan inline en contracts.ts | Son domain-specific, no cross-domain | Regla #27 |
+
+---
+
+## 7. ESTADO COMPLETO DE FASES
+
+| Fase | Contenido | Estado |
+|------|-----------|--------|
+| F1-F34 | Historial previo | ✅ |
+| **F40** | **Backend Intelligence + Frontend Mock Alignment** | **✅ COMPLETADA (9/9 bloques)** |
+| F40-B0 | AgeGroup backend (models + repo + agent + 4 tools) | ✅ |
+| F40-B1 | Guest Management backend (models + repo + agent + 5 tools) | ✅ |
+| F40-B2 | Satisfaction backend (models + repo + agent + 4 tools + bug fix) | ✅ |
+| F40-B3 | ML Intelligence backend (3 archivos nuevos + 10 tools) | ✅ |
+| F40-B4 | AgeGroup frontend (contracts +7, factories +4, registry +4) | ✅ |
+| F40-B5 | Guest Management frontend (contracts +11, factories +5, registry +5+5 imports) | ✅ |
+| F40-B6 | Satisfaction frontend (contracts +12, factories +4, registry +4+4 imports + block) | ✅ |
+| F40-B7 | ML Intelligence frontend (contracts +22, factories +10, registry +10+10 imports + block) | ✅ |
+| F40-B8 | Domain enums alignment (1 new enum, 5 reuses, 11 replacements, 3 section imports) | ✅ |
+| **F41** | **Advisor Rules creation (48 rules × 4 hooks)** | **⬜ SIGUIENTE** |
+| F42 | Frontend intelligence dashboards | ⬜ |
+| F43 | Integration testing | ⬜ |
+
+---
+
+## 8. MOCK SYSTEM — ESTADO COMPLETO POST-F40
+
+### AgeGroup (server: `age_group`)
+
+| Tool | Contract | Factory | Registry | Backend |
+|------|----------|---------|----------|---------|
+| `analyze_age_distribution` | ✅ | ✅ | ✅ | ✅ |
+| `suggest_program` | ✅ | ✅ | ✅ | ✅ |
+| `manage_age_group_membership` | ✅ | ✅ | ✅ | ✅ |
+| `get_age_group_reports` | ✅ | ✅ | ✅ | ✅ |
+| `get_activity_health_score` | ✅ B4 | ✅ B4 | ✅ B4 | ✅ B0 |
+| `get_age_recommendation_enhanced` | ✅ B4 | ✅ B4 | ✅ B4 | ✅ B0 |
+| `get_age_group_analytics_enhanced` | ✅ B4 | ✅ B4 | ✅ B4 | ✅ B0 |
+| `generate_age_group_engagement_proposals` | ✅ B4 | ✅ B4 | ✅ B4 | ✅ B0 |
+
+### Guest Management (server: `guest_management`)
+
+| Tool | Contract | Factory | Registry | Backend |
+|------|----------|---------|----------|---------|
+| `register_guest` | ✅ | ✅ | ✅ | ✅ |
+| `plan_private_event` | ✅ | ✅ | ✅ | ✅ |
+| `manage_trial_memberships` | ✅ | ✅ | ✅ | ✅ |
+| `manage_guest_privileges` | ✅ | ✅ | ✅ | ✅ |
+| `get_guest_analytics` | ✅ | ✅ | ✅ | ✅ |
+| `guest_management_insights` | ✅ | ✅ | ✅ | ✅ |
+| `get_guest_health_score` | ✅ B5 | ✅ B5 | ✅ B5 | ✅ B1 |
+| `get_conversion_funnel` | ✅ B5 | ✅ B5 | ✅ B5 | ✅ B1 |
+| `get_guest_analytics_enhanced` | ✅ B5 | ✅ B5 | ✅ B5 | ✅ B1 |
+| `get_guest_forecast` | ✅ B5 | ✅ B5 | ✅ B5 | ✅ B1 |
+| `generate_guest_engagement_proposals` | ✅ B5 | ✅ B5 | ✅ B5 | ✅ B1 |
+
+### Satisfaction (server: `satisfaction`)
+
+| Tool | Contract | Factory | Registry | Backend |
+|------|----------|---------|----------|---------|
+| `submit_satisfaction_survey` | ✅ | ✅ | ✅ | ✅ |
+| `get_survey_for_event` | ✅ | ✅ | ✅ | ✅ |
+| `analyze_event_satisfaction` | ✅ | ✅ | ✅ | ✅ |
+| `get_satisfaction_trends` | ✅ | ✅ | ✅ | ✅ (fixed) |
+| `generate_satisfaction_report` | ✅ | ✅ | ✅ | ✅ |
+| `get_satisfaction_questions` | ✅ | ✅ | ✅ | ✅ |
+| `get_satisfaction_health_score` | ✅ B6 | ✅ B6 | ✅ B6 | ✅ B2 |
+| `get_satisfaction_intelligence` | ✅ B6 | ✅ B6 | ✅ B6 | ✅ B2 |
+| `get_satisfaction_benchmark` | ✅ B6 | ✅ B6 | ✅ B6 | ✅ B2 |
+| `generate_satisfaction_engagement_proposals` | ✅ B6 | ✅ B6 | ✅ B6 | ✅ B2 |
+
+### ML Intelligence (server: `ml_intelligence`) — NUEVO
+
+| Tool | Contract | Factory | Registry | Backend |
+|------|----------|---------|----------|---------|
+| `get_data_quality_report` | ✅ B7 | ✅ B7 | ✅ B7 | ✅ B3 |
+| `get_anomaly_report` | ✅ B7 | ✅ B7 | ✅ B7 | ✅ B3 |
+| `get_demand_forecast` | ✅ B7 | ✅ B7 | ✅ B7 | ✅ B3 |
+| `get_revenue_forecast` | ✅ B7 | ✅ B7 | ✅ B7 | ✅ B3 |
+| `get_churn_ml_scores` | ✅ B7 | ✅ B7 | ✅ B7 | ✅ B3 |
+| `get_member_segments` | ✅ B7 | ✅ B7 | ✅ B7 | ✅ B3 |
+| `get_model_health` | ✅ B7 | ✅ B7 | ✅ B7 | ✅ B3 |
+| `chat_club_manager` | ✅ B7 | ✅ B7 | ✅ B7 | ✅ B3 |
+| `explain_prediction` | ✅ B7 | ✅ B7 | ✅ B7 | ✅ B3 |
+| `simulate_hypothetical` | ✅ B7 | ✅ B7 | ✅ B7 | ✅ B3 |
+
+---
+
+## 9. DOMAIN ENUMS — ESTADO POST-B8
+
+### Enums en `domain-enums.ts` (19 total)
+
+| # | Sección | Enum | Fase |
+|---|---------|------|------|
+| 1 | Member | MEMBER_TIERS (7) | F30 |
+| 2 | Member | AGE_GROUP_CATEGORIES (6) | F30 |
+| 3 | Member | LIFECYCLE_STAGES (8) | F30 |
+| 4 | Member | FAMILY_STATUSES (4) | F30 |
+| 5 | Member | MEMBER_ROLES (4) | F30 |
+| 6 | Engagement | ENGAGEMENT_LEVELS (7) | F30 |
+| 7 | Engagement | SENTIMENTS (3) | F30 |
+| 8 | Events | EVENT_CATEGORIES (8) | F30 |
+| 9 | Events | EVENT_STATUSES (7) | F30 |
+| 10 | Events | RSVP_STATUSES (5) | F30 |
+| 11 | Guests | TRIAL_TYPES (3) | F30 |
+| 12 | Guests | TRIAL_STATUSES (6) | F30 |
+| 13 | Guests | GUEST_CHECKIN_STATUSES (3) | F30 |
+| 14 | Guests | GUEST_REGISTRY_STATUSES (4) | F30 |
+| 15 | Shared | TREND_DIRECTIONS (3) | F30 |
+| 16 | Shared | SEVERITY_LEVELS (4) | F30 |
+| 17 | Shared | CONFIDENCE_LEVELS (3) | F30 |
+| 18 | Shared | PRIORITY_LEVELS (4) | F30 |
+| 19 | Shared | OPERATION_STATUSES (8) | F30 |
+| 20 | Shared | APPROVAL_LEVELS (4) | F30 |
+| 21 | Member360 | MEMBER_HEALTH_LEVELS (4) | F39 |
+| 22 | Member360 | CHURN_RISK_LEVELS (4) | F39 |
+| 23 | ML/Cross-domain | **SCENARIO_TYPES (3)** | **F40-B8** |
+
+### Enum Reuse Mapping (F40)
+
+| Propuesto | Se reemplaza por | Valores idénticos |
+|-----------|-----------------|-------------------|
+| AgeGroupHealthLevel | MemberHealthLevel | excellent, healthy, attention, critical |
+| GuestHealthLevel | MemberHealthLevel | excellent, healthy, attention, critical |
+| SatisfactionHealthLevel | MemberHealthLevel | excellent, healthy, attention, critical |
+| MLHealthLevel | MemberHealthLevel | excellent, healthy, attention, critical |
+| AnomalySeverity | SeverityLevel | low, medium, high, critical |
+
+---
+
+## 10. AGENTES AUDITADOS — LISTA ACTUALIZADA
+
+| # | Agente | Server | Tools | Inteligencia F40 | Frontend | Estado |
+|---|--------|--------|-------|-------------------|----------|--------|
+| 1 | `age_group` | `age_group` | 11 | +4 (health, recs_enhanced, analytics_enhanced, proposals) | ✅ B4+B8 | ✅ Completo |
+| 2 | `guest_management` | `guest_management` | 11 | +5 (health, funnel, analytics_enhanced, forecast, proposals) | ✅ B5+B8 | ✅ Completo |
+| 3 | `satisfaction` | `satisfaction` | 10 | +4 (health, intelligence, benchmark, proposals) + bug fix | ✅ B6+B8 | ✅ Completo |
+| 4 | `ml_intelligence` | `ml_intelligence` | 10 | ALL 10 (nuevo agente) | ✅ B7+B8 | ✅ Completo |
+| 5-14 | Otros 10 agents | — | — | Previos | ✅ Previos | ✅ Completo |
+
+---
+
+## 11. PENDIENTES ACUMULADOS
+
+| # | Issue | Severidad | Fase |
+|---|-------|-----------|------|
+| 1 | F41: Advisor hooks (48 rules × 4 hooks) | ALTA | F41 |
+| 2 | F42: Frontend intelligence dashboards | ALTA | F42 |
+| 3 | F42: Predictive Intelligence Feed en ExecutiveDashboard | ALTA | F42 |
+| 4 | F42: Conversion Funnel visualization (Guest) | ALTA | F42 |
+| 5 | F42: Hypothetical Simulator UI | ALTA | F42 |
+| 6 | F42: Satisfaction Category Radar Chart | ALTA | F42 |
+| 7 | F42: Chat Action Execution (upgrade AIChatWidget) | MEDIA | F42 |
+| 8 | Tokens fantasma — grep global por --color-text-primary/secondary/muted, --color-bg, --color-violet | ALTA | F33+ |
+| 9 | font-ui/font-mono prefix audit | MEDIA | F25 |
+| 10 | CLAUDE_CONTEXT.md necesita actualización post-F40 | MEDIA | Post-F41 |
+| 11 | ML models reales (reemplazar statistical approximations) | BAJA | F44 |
+| 12 | Real data integration (reemplazar seed data) | BAJA | F45 |
+| 13 | Model Health Dashboard (pospuesto — modelos actuales son approximations) | BAJA | F44 |
+
+---
+
+## 12. QUICK START PARA NUEVO CHAT
+
+### Paso 1 — Pegar contexto (en orden):
+```
+1. CLAUDE_CONTEXT.md (siempre primero)
+2. Este checkpoint
+```
+
+### Paso 2 — Confirmar rol:
+```
+"Confirmá que entendés tu rol y las reglas. Después decí 'Listo'."
+```
+
+### Paso 3 — Arrancar F41:
+```
+"Leé el patrón de advisor existente (useFinancialAdvisor o useSportsAdvisor) 
+y creá los 4 hooks nuevos de F41."
+```
+
+### Archivos necesarios para F41:
+```
+1. frontend/src/features/sports/hooks/useSportsAdvisor.ts (reference pattern)
+2. frontend/src/features/guests/types.ts (para imports de types)
+3. frontend/src/features/engagement/types.ts (para satisfaction types)
+4. frontend/src/shared/types/ai-intelligence.ts (para AdvisorInsightBase, AdvisorCommand)
+```
+
+---
+
+## 13. FASES RESTANTES
+
+| # | Fase | Contenido | Prioridad | Estado |
+|---|------|-----------|-----------|--------|
+| **F41** | **Advisor Rules (4 hooks × 48 rules)** | **ALTA** | **⬜ SIGUIENTE** |
+| F42 | Frontend intelligence dashboards + Advisor Banners | ALTA | ⬜ |
+| F43 | Integration testing + end-to-end | MEDIA | ⬜ |
+| F44 | ML models reales (GradientBoosting, ARIMA, etc.) | BAJA | ⬜ |
+| F45 | Real data integration | BAJA | ⬜ |
+
+---
+
+## 14. DECISION LOG F40
+
+| Decisión | Razón | Impacto |
+|----------|-------|---------|
+| Seed data en repos Python | Backend funciona independiente del frontend | Dos sistemas consistentes |
+| Statistical algorithms reales | Production-grade, sin dependencies | Reutilizable con data real |
+| ML Intelligence como agente transversal | Central hub cross-domain | Mejor anomaly detection |
+| Claude para chat + simulate | Razonamiento real | 2 tools dependen de Claude |
+| 5 enums reusados | Valores idénticos a existentes | Sin duplicación |
+| Section-scoped imports en contracts.ts | Patrón existente del archivo | Consistencia |
+| ScenarioType centralizado | Cross-domain (revenue + simulation) | Regla #27 |
+| 10 enums inline | Domain-specific | Regla #27 |
+| B8 como último bloque de F40 | Necesita B5-B7 completados primero | Orden dependency-aware |
+
+---
+
+**CHECKPOINT F40 COMPLETADO.**
+
+---
+
+Ahora arranco F41. Necesito ver el patrón de un advisor existente para replicarlo. Pasame estos archivos con sus paths completos:
+
+```
+1. frontend/src/features/sports/hooks/useSportsAdvisor.ts
+2. frontend/src/shared/types/ai-intelligence.ts
+```
+
+El primero me da el **patrón exacto** del hook advisor (rules, layers, impact scoring, action mapping). El segundo me da los **types base** (AdvisorInsightBase, AdvisorCommand, etc.) que los hooks nuevos deben usar.
+
+Espero ambos archivos.
