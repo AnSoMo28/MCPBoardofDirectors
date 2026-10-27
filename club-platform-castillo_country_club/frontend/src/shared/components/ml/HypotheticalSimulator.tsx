@@ -369,7 +369,7 @@ export function HypotheticalSimulator() {
           icon={<AlertTriangle className="w-8 h-8" />}
           title="Error en simulación"
           description="No se pudo completar el análisis hipotético."
-          action={{ label: "Reintentar", onClick: handleRetry }}
+          action={<Button onClick={handleRetry}>Reintentar</Button>}
         />
       </div>
     );

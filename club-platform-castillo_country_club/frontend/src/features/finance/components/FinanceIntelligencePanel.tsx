@@ -1140,7 +1140,7 @@ export default function FinanceIntelligencePanel() {
           icon={<AlertTriangle className="w-10 h-10" />}
           title="Error al generar análisis"
           description={(analysisQ.error as Error)?.message || "No se pudo completar el análisis financiero."}
-          action={{ label: "Reintentar", onClick: () => analysisQ.refetch() }}
+          action={<Button onClick={() => analysisQ.refetch()}>Reintentar</Button>}
         />
       )}
 
@@ -1183,7 +1183,7 @@ export default function FinanceIntelligencePanel() {
           icon={<AlertTriangle className="w-10 h-10" />}
           title="Error al generar briefing"
           description={(briefingQ.error as Error)?.message || "No se pudo generar el briefing."}
-          action={{ label: "Reintentar", onClick: () => briefingQ.refetch() }}
+          action={<Button onClick={() => briefingQ.refetch()}>Reintentar</Button>}
         />
       )}
       {briefing && (
@@ -1206,7 +1206,7 @@ export default function FinanceIntelligencePanel() {
           icon={<AlertTriangle className="w-10 h-10" />}
           title="Error en simulación"
           description={(scenarioQ.error as Error)?.message || "No se pudo completar la simulación."}
-          action={{ label: "Reintentar", onClick: () => scenarioQ.refetch() }}
+          action={<Button onClick={() => scenarioQ.refetch()}>Reintentar</Button>}
         />
       )}
       {scenario && (

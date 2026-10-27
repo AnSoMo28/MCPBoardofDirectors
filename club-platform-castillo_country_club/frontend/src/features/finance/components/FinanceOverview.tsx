@@ -470,7 +470,7 @@ export default function FinanceOverview() {
         icon={<AlertCircle className="w-12 h-12" />}
         title="Error al cargar"
         description={summaryQ.error instanceof Error ? summaryQ.error.message : "No se pudo cargar el resumen financiero."}
-        action={{ label: "Reintentar", onClick: () => summaryQ.refetch() }}
+        action={<Button onClick={() => summaryQ.refetch()}>Reintentar</Button>}
       />
     );
   }

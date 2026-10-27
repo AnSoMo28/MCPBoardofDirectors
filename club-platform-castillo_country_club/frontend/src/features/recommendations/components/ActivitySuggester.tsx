@@ -311,10 +311,7 @@ export function ActivitySuggester() {
           }
           title="Sin sugerencias de actividades"
           description="Proponga una nueva actividad para enviarla a aprobación."
-          action={{
-            label: "Nueva Sugerencia",
-            onClick: () => setShowForm(true),
-          }}
+          action={<Button onClick={() => setShowForm(true)}>Nueva Sugerencia</Button>}
         />
       )}
 

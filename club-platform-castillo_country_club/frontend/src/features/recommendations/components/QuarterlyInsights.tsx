@@ -236,10 +236,7 @@ export function QuarterlyInsights() {
           }
           title="Sin informes trimestrales"
           description="Genere su primer informe de insights trimestrales."
-          action={{
-            label: "Generar Informe",
-            onClick: () => setShowGenerateForm(true),
-          }}
+          action={<Button onClick={() => setShowGenerateForm(true)}>Generar Informe</Button>}
         />
       )}
 

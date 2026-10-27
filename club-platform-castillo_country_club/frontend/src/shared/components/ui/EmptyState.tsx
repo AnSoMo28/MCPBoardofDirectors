@@ -38,6 +38,7 @@ export interface EmptyStateProps {
   readonly action?: ReactNode;
   readonly secondaryAction?: ReactNode;
   readonly compact?: boolean;
+  readonly className?: string;  
 }
 
 
@@ -55,11 +56,12 @@ export function EmptyState({
   action,
   secondaryAction,
   compact = false,
+  className,
 }: EmptyStateProps) {
   return (
     <div
       data-testid="ui-emptystate"
-      className="ui-emptystate"
+      className={className ? `ui-emptystate ${className}` : "ui-emptystate"}
       data-compact={compact}
       role="status"
       aria-label={title}

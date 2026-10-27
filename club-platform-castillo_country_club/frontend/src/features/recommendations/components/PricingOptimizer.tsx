@@ -320,10 +320,7 @@ export function PricingOptimizer() {
           }
           title="Sin optimizaciones de precio"
           description="Cree su primera optimización de precio para enviarla a aprobación."
-          action={{
-            label: "Nueva Optimización",
-            onClick: () => setShowForm(true),
-          }}
+          action={<Button onClick={() => setShowForm(true)}>Nueva Optimización</Button>}
         />
       )}
 
