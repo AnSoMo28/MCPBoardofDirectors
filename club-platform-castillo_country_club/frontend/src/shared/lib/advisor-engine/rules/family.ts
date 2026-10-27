@@ -221,7 +221,7 @@ export function buildFamilyContext(
     preferences?: FamilyPreferences | null;
     enrichment?: EnrichmentState<FamilyEnrichmentData>;
   },
-  signals?: import("@/shared/lib/advisor-engine/types").DomainSignal[],
+  signals?: readonly import("@/shared/lib/advisor-engine/types").DomainSignal[],
 ): FamilyContext {
   const { family, activity = [], financial = null, social = [], preferences = null, enrichment } = rawData;
 

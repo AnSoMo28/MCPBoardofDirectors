@@ -133,7 +133,7 @@ function buildUtilizationLookup(
 // ═══════════════════════════════════════════════════════════════
 
 function buildAmbientState(
-  advisorInsights: import("@/shared/types/ai-intelligence").AdvisorInsightBase[],
+  advisorInsights: readonly import("@/shared/types/ai-intelligence").AdvisorInsightBase[],
   facilitiesAtRiskPct: number,
 ): { mode: FacilitiesDashboardMode; ambient: FacilitiesAmbientState } {
   // Map Advisor Engine impact levels to Facilities severity counts

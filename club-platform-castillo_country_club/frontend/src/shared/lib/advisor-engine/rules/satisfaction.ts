@@ -90,7 +90,7 @@ export interface SatisfactionContext extends BaseContext {
 
 export function buildSatisfactionCtx(
   rawData: unknown,
-  signals?: DomainSignal[],
+  signals?: readonly DomainSignal[],
 ): SatisfactionContext {
   const {
     healthScore: health,

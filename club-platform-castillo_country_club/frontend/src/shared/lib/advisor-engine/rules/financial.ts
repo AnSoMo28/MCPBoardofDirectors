@@ -94,7 +94,7 @@ export interface FinancialContext extends BaseContext {
 
 export function buildFinancialCtx(
   rawData: unknown,
-  signals?: import("../types").DomainSignal[],
+  signals?: readonly import("../types").DomainSignal[],
 ): FinancialContext {
   const { aiReport, summary } = rawData as {
     aiReport: AiFinancialReport | null | undefined;

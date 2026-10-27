@@ -67,7 +67,7 @@ export interface CommunicationContext extends BaseContext {
 
 export function buildCommunicationCtx(
   rawData: unknown,
-  signals?: DomainSignal[],
+  signals?: readonly DomainSignal[],
 ): CommunicationContext {
   const { analytics, history, scheduled } = rawData as {
     analytics: CommunicationAnalyticsData | undefined;

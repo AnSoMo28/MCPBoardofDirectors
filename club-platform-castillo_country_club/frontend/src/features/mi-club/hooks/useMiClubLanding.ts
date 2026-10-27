@@ -128,7 +128,7 @@ function composeBrief(
 
 function computePredictiveActions(
   family: Family | undefined,
-  events: Array<{ title: string; date_start: string }>,
+  events: ReadonlyArray<{ title: string; date_start: string }>,
   hasRecs: boolean,
 ): PredictiveAction[] {
   const actions: PredictiveAction[] = [];
@@ -371,7 +371,7 @@ function computeSeeds(
 
 function computeClubPulse(
   family: Family | undefined,
-  events: Array<{ title: string; date_start: string }>,
+  events: ReadonlyArray<{ title: string; date_start: string }>,
 ): ClubPulseData {
   const now = new Date();
   const todayEvents = events.filter((e) => {

@@ -194,7 +194,7 @@ export interface GuestContext extends BaseContext {
  */
 export function buildGuestCtx(
   rawData: unknown,
-  signals?: DomainSignal[],
+  signals?: readonly DomainSignal[],
   enrichment?: GuestEngineEnrichment,
 ): GuestContext {
   const {

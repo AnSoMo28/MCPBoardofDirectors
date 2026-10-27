@@ -86,7 +86,7 @@ function fmtColones(n: number): string {
 
 export function buildRecommendationCtx(
   rawData: unknown,
-  signals?: DomainSignal[],
+  signals?: readonly DomainSignal[],
 ): RecommendationContext {
   const { pricings, suggestions, insights } = rawData as {
     pricings: PricingOptimization[];

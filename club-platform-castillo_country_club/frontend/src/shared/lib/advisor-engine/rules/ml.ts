@@ -104,7 +104,7 @@ export interface MLContext extends BaseContext {
 
 export function buildMLCtx(
   rawData: unknown,
-  signals?: DomainSignal[],
+  signals?: readonly DomainSignal[],
 ): MLContext {
   const {
     dataQuality,

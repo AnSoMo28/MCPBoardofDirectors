@@ -119,7 +119,7 @@ export interface SportsContext extends BaseContext {
 
 export function buildSportsCtx(
   rawData: unknown,
-  signals?: DomainSignal[],
+  signals?: readonly DomainSignal[],
 ): SportsContext {
   const { analytics, health, calendar } = rawData as {
     analytics: SportsAnalytics_Contract | null;

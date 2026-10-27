@@ -84,7 +84,7 @@ export interface GlobalContext {
 
 export function buildGlobalCtx(
   rawData: unknown,
-  signals?: DomainSignal[],
+  signals?: readonly DomainSignal[],
 ): GlobalContext {
   const inputs = rawData as {
     summary?: ExecutiveSummaryData;

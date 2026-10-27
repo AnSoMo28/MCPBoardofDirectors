@@ -152,7 +152,7 @@ function monthsUntil(currentMonth: number, targetMonth: number): number {
 
 export function buildAgeGroupCtx(
   rawData: unknown,
-  signals?: DomainSignal[],
+  signals?: readonly DomainSignal[],
 ): AgeGroupContext {
   // ── Type-safe destructuring with defaults ──
   const raw = (typeof rawData === "object" && rawData !== null
