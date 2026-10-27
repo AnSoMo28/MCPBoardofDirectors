@@ -175,7 +175,7 @@ function ArenaContent({
         conflictCount={conflictCount}
         dateRange={{ from: todayISO(), to: futureDateISO(7) }}
       />
-      <CourtBookingPanel courtUtilization={analytics?.court_utilization ?? []} />
+      <CourtBookingPanel courtUtilization={analytics?.court_utilization ?? []} reservations={[]} />
     </div>
   );
 }
@@ -183,8 +183,8 @@ function ArenaContent({
 function TrajectoryContent() {
   return (
     <div className="spt-stage__panel-content">
-      <SkillProgression />
-      <CoachingPanel />
+      <SkillProgression profile={null} />
+      <CoachingPanel coaches={[]} sessions={[]} />
     </div>
   );
 }
@@ -198,9 +198,10 @@ function CompetitionContent({
     <div className="spt-stage__panel-content">
       <TournamentPanel
         tournamentMetrics={analytics?.tournament_metrics ?? DEFAULT_TOURNAMENT_METRICS}
+        tournaments={[]}
       />
       <BracketView tournamentName="Copa Castillo Tennis 2026" matches={[]} />
-      <LeaguePanel />
+      <LeaguePanel leagues={[]} />
     </div>
   );
 }
@@ -224,8 +225,8 @@ function BusinessContent({
 }) {
   return (
     <div className="spt-stage__panel-content">
-      <ClassesPanel classEnrollment={analytics?.class_enrollment ?? []} />
-      <EquipmentPanel equipmentHealth={analytics?.equipment_health ?? []} />
+      <ClassesPanel classes={analytics?.class_enrollment ?? []} />
+      <EquipmentPanel equipment={[]} equipmentHealth={analytics?.equipment_health ?? []} />
       <SportsIntelligencePanel analytics={analytics} />
     </div>
   );
