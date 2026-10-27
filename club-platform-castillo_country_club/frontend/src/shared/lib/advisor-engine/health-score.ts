@@ -82,21 +82,21 @@ const HEALTH_LEVELS: HealthLevelConfig[] = [
   },
   {
     grade: "B",
-    level: "saludable",
+    level: "healthy",
     color: "var(--color-teal-400)",
     bgColor: "color-mix(in srgb, var(--color-teal-400) 10%, transparent)",
     minScore: 65,
   },
   {
     grade: "C",
-    level: "atención",
+    level: "attention",
     color: "var(--color-amber-400)",
     bgColor: "color-mix(in srgb, var(--color-amber-400) 8%, transparent)",
     minScore: 45,
   },
   {
     grade: "D",
-    level: "crítico",
+    level: "critical",
     color: "var(--color-rose-400)",
     bgColor: "color-mix(in srgb, var(--color-rose-400) 8%, transparent)",
     minScore: 0,
@@ -118,9 +118,9 @@ function getHealthLevel(score: number): HealthLevelConfig {
  */
 function getFactorStatus(normalizedValue: number): HealthFactorStatus {
   if (normalizedValue >= 85) return "exceptional";
-  if (normalizedValue >= 65) return "saludable";
-  if (normalizedValue >= 45) return "atención";
-  return "crítico";
+  if (normalizedValue >= 65) return "healthy";
+  if (normalizedValue >= 45) return "attention";
+  return "critical";
 }
 
 // ═══════════════════════════════════════════════════════════
