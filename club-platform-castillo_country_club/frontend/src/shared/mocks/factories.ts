@@ -15,6 +15,8 @@
 //   2. Done. Frontend code unchanged.
 // ═══════════════════════════════════════════════════════════
 import { CHART_PALETTE } from "@/shared/lib/chartTheme";
+import { AnomalyDomain, AnomalySeverity, TrendDirection } from "@/features/dashboard/types";
+import { RiskLevel } from "@/features/recommendations/types";
 import type {
   get_financial_summary_Contract,
   generate_ai_analysis_financial_Contract,
@@ -1465,7 +1467,7 @@ export function createMockPricingResponse(
       expected_demand_change: 15,
       reasoning:
         "Alta demanda en temporada alta, capacidad limitada a 15 participantes por sesión",
-      risk_level: "medium",
+      risk_level: RiskLevel.Medium,
       status: SuggestionStatus.Proposed,
       created_at: DAYS_AGO_30,
       updated_at: DAYS_AGO_30,
@@ -1480,7 +1482,7 @@ export function createMockPricingResponse(
       expected_demand_change: -5,
       reasoning:
         "Temporada de diciembre: alta demanda para eventos privados de fin de año",
-      risk_level: "low",
+      risk_level: RiskLevel.Low,
       status: SuggestionStatus.Approved,
       created_at: DAYS_AGO_30,
       updated_at: NOW,
@@ -1495,7 +1497,7 @@ export function createMockPricingResponse(
       expected_demand_change: -8,
       reasoning:
         "Alinear precio con beneficios premium expandidos del plan 2025",
-      risk_level: "high",
+      risk_level: RiskLevel.High,
       status: SuggestionStatus.UnderReview,
       created_at: DAYS_AGO_7,
       updated_at: NOW,
@@ -10140,7 +10142,7 @@ export function createMockExecutiveSummary(): ExecutiveSummaryResponse {
         satisfaction_score: 4.2,
         loyalty_points_distributed: 125000,
         nps_score: 35.0,
-        engagement_trend: "improving",
+        engagement_trend: TrendDirection.Improving,
         at_risk_members: 23,
         highly_engaged_pct: 45.0,
         campaigns_active: 3,
@@ -10266,8 +10268,8 @@ export function createMockDetectAnomalies(
     // ── Membership ──
     {
       id: "anom_mem_001",
-      domain: "membership",
-      severity: "medium",
+      domain: AnomalyDomain.Membership,
+      severity: AnomalySeverity.Medium,
       title: "Segmento básico con churn elevado",
       description:
         "El segmento Basic muestra una tasa de cancelación 2.3x mayor que el promedio del último trimestre. 23 socios en riesgo activo.",
@@ -10282,8 +10284,8 @@ export function createMockDetectAnomalies(
     },
     {
       id: "anom_mem_002",
-      domain: "membership",
-      severity: "low",
+      domain: AnomalyDomain.Membership,
+      severity: AnomalySeverity.Low,
       title: "Baja participación en segmento jóvenes 18-30",
       description:
         "La participación del segmento jóvenes cayó 8% respecto al trimestre anterior. Solo el 45% asiste a actividades regularmente.",
@@ -10300,8 +10302,8 @@ export function createMockDetectAnomalies(
     // ── Financial ──
     {
       id: "anom_fin_001",
-      domain: "financial",
-      severity: "high",
+      domain: AnomalyDomain.Financial,
+      severity: AnomalySeverity.High,
       title: "Sobrecosto en Food & Beverage",
       description:
         "Los gastos de F&B superan el presupuesto en un 18% este trimestre. El sobrecosto acumulado es de $45,000.",
@@ -10316,8 +10318,8 @@ export function createMockDetectAnomalies(
     },
     {
       id: "anom_fin_002",
-      domain: "financial",
-      severity: "medium",
+      domain: AnomalyDomain.Financial,
+      severity: AnomalySeverity.Medium,
       title: "Cobranza pendiente acumulada",
       description:
         "$125,000 en cuotas pendientes de cobro. 34 familias con más de 60 días de atraso.",
@@ -10334,8 +10336,8 @@ export function createMockDetectAnomalies(
     // ── Operational ──
     {
       id: "anom_ops_001",
-      domain: "operational",
-      severity: "medium",
+      domain: AnomalyDomain.Operational,
+      severity: AnomalySeverity.Medium,
       title: "Utilización de piscina a la baja",
       description:
         "La utilización de la piscina disminuyó un 12% vs trimestre anterior, pasando de 70% a 58%.",
@@ -10350,8 +10352,8 @@ export function createMockDetectAnomalies(
     },
     {
       id: "anom_ops_002",
-      domain: "operational",
-      severity: "low",
+      domain: AnomalyDomain.Operational,
+      severity: AnomalySeverity.Low,
       title: "Tiempo de respuesta de mantenimiento elevado",
       description:
         "El tiempo promedio de respuesta a reportes de mantenimiento subió de 2.1 a 3.8 días.",
@@ -10368,8 +10370,8 @@ export function createMockDetectAnomalies(
     // ── Engagement ──
     {
       id: "anom_eng_001",
-      domain: "engagement",
-      severity: "high",
+      domain: AnomalyDomain.Engagement,
+      severity: AnomalySeverity.High,
       title: "NPS en descenso significativo",
       description:
         "El NPS bajó de +42 a +35 en el último trimestre. El detractor principal es la calidad del servicio de F&B.",
@@ -10386,8 +10388,8 @@ export function createMockDetectAnomalies(
     },
     {
       id: "anom_eng_002",
-      domain: "engagement",
-      severity: "medium",
+      domain: AnomalyDomain.Engagement,
+      severity: AnomalySeverity.Medium,
       title: "Caída en asistencia a eventos culturales",
       description:
         "Los eventos culturales (conciertos, exposiciones) tuvieron 30% menos asistencia que el trimestre anterior.",
@@ -11218,7 +11220,8 @@ export function createMockWellnessGoalList(params?: { family_id?: string; status
   return {
     status: "success",
     message: "🎯 3 objetivo(s) encontrado(s). ⚡ 2 activo(s).",
-    data: [
+    data: {
+      goals: [
       {
         id: "goal_abc12345",
         family_id: params?.family_id ?? "fam-001",
@@ -11260,6 +11263,7 @@ export function createMockWellnessGoalList(params?: { family_id?: string; status
       },
     ],
     total: 3,
+    },
   };
 }
 
