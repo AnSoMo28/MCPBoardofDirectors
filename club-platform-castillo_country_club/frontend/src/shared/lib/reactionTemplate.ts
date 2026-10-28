@@ -8,7 +8,7 @@
 //
 // 0 API calls. Pure function: (action, insightId) → reaction.
 // ═══════════════════════════════════════════════════════════
-
+import type { AdvisorReaction } from "@/shared/types/ai-intelligence";
 import type { AdvisorReactionInsight } from "@/features/dashboard/types";
 import type { AdvisorCommand } from "@/shared/types/ai-intelligence";
 
@@ -269,5 +269,26 @@ export function generateExecutingReaction(
     confidence: 0,
     server: action.server,
     tool: action.tool,
+  };
+}
+/**
+ * Adapts legacy AdvisorReactionInsight (camelCase, Date) to the canonical
+ * AdvisorReaction contract (snake_case, ISO string) required by
+ * AdvisorReactionCard. Interim bridge until B5 retires the legacy type.
+ */
+export function toAdvisorReaction(r: AdvisorReactionInsight): AdvisorReaction {
+  return {
+    id: r.id,
+    source_insight_id: r.sourceInsightId,
+    source_action: r.sourceAction,
+    status: r.status,
+    executed_at:
+      r.executedAt instanceof Date ? r.executedAt.toISOString() : String(r.executedAt),
+    reaction: r.reaction,
+    estimated_impact: r.estimatedImpact,
+    next_step: r.nextStep,
+    confidence: r.confidence,
+    server: r.server,
+    tool: r.tool,
   };
 }

@@ -716,7 +716,7 @@ export interface GravitationalModel {
 // Different from "satisfaction" — resonance is TEMPORAL and DEEP.
 
 export interface ResonancePattern {
-  currentIntensity(currentIntensity: any): unknown;
+  currentIntensity: number;    // 0-100 — current strength of the resonance
   eventDomain: ActivityDomain;
   eventTitle: string;
   impactDuration: number;     // days the effect lasted

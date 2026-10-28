@@ -37,6 +37,7 @@ import type {
 import { AdvisorReactionCard } from "@/shared/components/ui/AdvisorReactionCard";
 import type { AmbientMode } from "../hooks/useAmbientState";
 import './LivingCommandCenter.css';
+import { toAdvisorReaction } from "@/shared/lib/reactionTemplate";
 /* ── Types ── */
 
 interface LivingCommandCenterProps {
@@ -529,7 +530,7 @@ export default function LivingCommandCenter({ insights, financialContext, onNavi
                       .reverse()
                       .slice(0, 3)
                       .map((r) => (
-                        <AdvisorReactionCard key={r.id} reaction={r} />
+                        <AdvisorReactionCard key={r.id} reaction={toAdvisorReaction(r)} />
                       ))}
                   </div>
                 </motion.div>

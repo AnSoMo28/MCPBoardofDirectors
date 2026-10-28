@@ -30,7 +30,7 @@ import { IMPACT_CONFIG } from "@/shared/lib/ui/advisorConfig";
 import type { WellnessAdvisorInsight } from "../types";
 import type { AdvisorReactionInsight } from "@/features/dashboard/types";
 import "./WellnessAdvisorBanner.css";
-
+import { toAdvisorReaction } from "@/shared/lib/reactionTemplate";
 // ═══════════════════════════════════════════════════════════════
 // §1  Config
 // ═══════════════════════════════════════════════════════════════
@@ -238,7 +238,7 @@ export function WellnessAdvisorBanner({
           {reactions.map((reaction, i) => (
             <AdvisorReactionCard
               key={reaction.id}
-              reaction={reaction}
+              reaction={toAdvisorReaction(reaction)}
               showConnector={i < reactions.length - 1}
               isLast={i === reactions.length - 1}
             />

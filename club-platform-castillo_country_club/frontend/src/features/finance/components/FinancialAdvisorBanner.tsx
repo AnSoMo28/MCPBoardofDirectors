@@ -31,7 +31,7 @@ import { AdvisorReactionCard } from "@/shared/components/ui/AdvisorReactionCard"
 import AIInsightNarrative from "@/shared/components/ai/AIInsightNarrative";
 import type { AiFinancialReport } from "../types";
 import { usePrefetchTopNarratives } from "@/shared/hooks/useAdvisorNarrative";
-
+import { toAdvisorReaction } from "@/shared/lib/reactionTemplate";
 // ── Layer config ──
 
 const LAYER_CONFIG: Record<
@@ -208,7 +208,7 @@ export default function FinancialAdvisorBanner({
                   </div>
                   <div className="space-y-2">
                     {reactions.slice().reverse().map((reaction) => (
-                      <AdvisorReactionCard key={reaction.id} reaction={reaction} />
+                      <AdvisorReactionCard key={reaction.id} reaction={toAdvisorReaction(reaction)} />
                     ))}
                   </div>
                 </motion.div>

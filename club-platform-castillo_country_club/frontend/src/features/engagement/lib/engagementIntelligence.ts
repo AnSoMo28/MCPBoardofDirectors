@@ -516,7 +516,12 @@ export function computeResonance(
 
   // Social amplification: told others about it
   const socialAmplification = clamp(d.socialShares * 20, 0, 100);
-
+  // Current intensity: blend of identity integration + social amplification
+  const currentIntensity = clamp(
+    Math.round((identityIntegration + socialAmplification) / 2),
+    0,
+    100,
+  );
   return {
     eventDomain,
     eventTitle,
@@ -526,6 +531,7 @@ export function computeResonance(
     repeatSeeking,
     expansionBehavior,
     socialAmplification,
+    currentIntensity,
     timestamp: eventDate,
   };
 }
@@ -606,6 +612,7 @@ export function detectDNAMutations(
       );
 
       mutations.push({
+        id: null,        
         familyId: family.family_id,
         familyName: family.family_name,
         from: fromDesc,
@@ -842,6 +849,8 @@ export function identifyMomentsOfTruth(
         : "neutral" as const;
 
     moments.push({
+      sentimentBefore: "neutral",
+      sentimentAfter: outcome,      
       id: `mot_${familyId}_${event.date}`,
       date: event.date,
       type,
@@ -881,6 +890,8 @@ export function predictUpcomingMoments(
 
     if (nextAnniversary.getTime() - Date.now() < 90 * 24 * 60 * 60 * 1000) {
       predicted.push({
+        sentimentBefore: "neutral",
+        sentimentAfter: "neutral",        
         id: `pred_mot_anniversary_${familyId}`,
         date: nextAnniversary.toISOString().split("T")[0],
         type: "milestone",
@@ -898,6 +909,8 @@ export function predictUpcomingMoments(
   // Lifecycle transition prediction
   if (lifecycleStage === "plateau") {
     predicted.push({
+      sentimentBefore: "neutral",
+      sentimentAfter: "neutral",      
       id: `pred_mot_lifecycle_${familyId}`,
       date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       type: "identity_integration",

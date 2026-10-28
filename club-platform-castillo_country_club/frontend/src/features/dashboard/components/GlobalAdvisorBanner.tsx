@@ -40,7 +40,7 @@ import type { AdvisorBoardBriefResponse } from "@/shared/mocks/contracts";
 import { IMPACT_CONFIG } from "@/shared/lib/ui/advisorConfig";
 import type { CausalChain } from "@/shared/lib/advisor-engine/types";
 import { CausalChainViz } from "@/shared/components/ai/CausalChainViz";
-
+import { toAdvisorReaction } from "@/shared/lib/reactionTemplate";
 /* ══════════════════════════════════════════════════════════
    Layer config
    ══════════════════════════════════════════════════════════ */
@@ -387,7 +387,7 @@ export default function GlobalAdvisorBanner({
                   </div>
                   <div className="space-y-2">
                     {reactions.slice().reverse().map((reaction) => (
-                      <AdvisorReactionCard key={reaction.id} reaction={reaction} />
+                      <AdvisorReactionCard key={reaction.id} reaction={toAdvisorReaction(reaction)} />
                     ))}
                   </div>
                 </motion.div>
