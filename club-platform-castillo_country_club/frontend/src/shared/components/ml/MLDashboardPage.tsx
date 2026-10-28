@@ -21,7 +21,7 @@ import { ModelHealthPanel } from "./ModelHealthPanel";
 import { CalibrationDashboard } from "./CalibrationDashboard";
 import { useMLDashboardPage } from "./hooks/useMLDashboardPage";
 import type { BaseInsight as MLInsight } from "@/shared/components/AdvisorBanner";
-import '../../ml/ml-glass.css';
+import './ml-glass.css';
 import './MLDashboardPage.css';
 /* ──────────────────────────────────────
    Tab config

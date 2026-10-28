@@ -29,7 +29,7 @@ import { useBreakpoint } from "@/shared/hooks/useBreakpoint";
 import { useModelHealthPanel } from "./hooks/useModelHealthPanel";
 import { cn } from "@/shared/lib/utils";
 import type { ModelPerformance, DriftReport } from "@/shared/mocks/contracts";
-import '../../ml/ml-glass.css';
+import './ml-glass.css';
 import './ModelHealthPanel.css';
 
 // ═══════════════════════════════════════════════

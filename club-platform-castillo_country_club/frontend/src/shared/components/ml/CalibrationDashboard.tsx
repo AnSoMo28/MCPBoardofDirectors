@@ -14,7 +14,7 @@ import { cn } from "@/shared/lib/utils";
 import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
 import { useCalibrationDashboard } from "./hooks/useCalibrationDashboard";
 import type { CalibrationResult } from "@/shared/lib/advisor-engine/calibration-types";
-import '../../ml/ml-glass.css';
+import './ml-glass.css';
 import './CalibrationDashboard.css';
 /* ──────────────────────────────────────
    Helpers
