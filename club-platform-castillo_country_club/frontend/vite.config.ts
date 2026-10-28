@@ -100,7 +100,11 @@ export default defineConfig(({ mode }) => {
       // de navegadores que el CSS del sistema asume (@property, :has(),
       // color-mix(), container queries — todas baseline 2023). Si algún día se
       // baja este target, el CSS moderno lo reclamará aquí primero.
-      target: "baseline-widely-available",
+      target: ["chrome107", "edge107", "firefox104", "safari16"],
+      // NOTA Bld2: el alias "baseline-widely-available" NO se traduce en Vite 6.4.2
+      // (default real: "modules") — fuga verbatim a esbuild en vite:css-post y
+      // vite:esbuild-transpile; esbuild lo rechaza. Esta lista es el equivalente
+      // documentado del alias; re-evaluable al migrar a Vite 7+.
       rollupOptions: {
         output: {
           manualChunks,
