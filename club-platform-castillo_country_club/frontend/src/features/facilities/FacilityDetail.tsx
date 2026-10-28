@@ -673,9 +673,9 @@ function IntelligencePanel({ comfortScore, deterioration, ambientMode }: {
             <span className="fac-detail__intel-unit">/100</span>
             {comfortScore.factors.length > 0 && (
               <div className="fac-detail__intel-factors">
-                {comfortScore.factors.slice(0, 3).map((f: { name: string; value: string | number }, i: number) => (
+                {comfortScore.factors.slice(0, 3).map((f: string, i: number) => (
                   <span key={i} className="fac-detail__intel-factor">
-                    {f.name}: {f.value}
+                    {f}
                   </span>
                 ))}
               </div>

@@ -97,7 +97,7 @@ export function useGlobalAdvisor(
           "diagnostic") as GlobalAdvisorLayer,
         domain: "global" as const,
       })),
-      causalChains: result.causalChains,
+      causalChains: result.causalChains ? [...result.causalChains] : undefined,
     };
   }, [result, input.enabled]);
 }

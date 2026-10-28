@@ -620,7 +620,7 @@ function AnomalySectionForCompliance({
   const insight = useMemo(
     () =>
       anomalies
-        ? buildComplianceAnomalyInsight(anomalies, complianceData, alerts)
+        ? buildComplianceAnomalyInsight(anomalies as unknown as AnomalyItem[], complianceData, alerts)
         : "",
     [anomalies, complianceData, alerts],
   );

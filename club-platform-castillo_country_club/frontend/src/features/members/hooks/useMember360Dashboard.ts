@@ -292,7 +292,7 @@ export function useMember360Dashboard(
       advisorInsights.map((insight) => ({
         ...insight,
         resonance,
-        window: churnWindow,
+        window: churnWindow ?? undefined,
       })),
     );
   }, [advisorInsights, resonance, churnWindow]);

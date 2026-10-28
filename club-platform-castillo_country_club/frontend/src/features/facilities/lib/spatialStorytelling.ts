@@ -405,6 +405,7 @@ function buildFrame(input: FrameInput): TemporalGraphFrame {
       return {
         facility_id: f.id,
         facility_name: f.name,
+        name: f.name,
         facility_type: f.facility_type,
         status: f.status,
         current_occupancy: Math.round((occPct / 100) * f.capacity),

@@ -547,6 +547,7 @@ export function computeDeteriorationModel(
 
     return {
       name: template.name,
+      estimated_replacement_cost: template.replacement_cost,
       current_health: health,
       predicted_health_30d: predicted_30d,
       predicted_health_90d: predicted_90d,

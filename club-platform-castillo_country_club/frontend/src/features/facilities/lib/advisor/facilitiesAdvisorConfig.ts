@@ -177,7 +177,7 @@ export const FACILITIES_HEALTH_FACTORS: HealthFactorDef<FacilitiesContext>[] = [
 
 export const FACILITIES_ADVISOR_CONFIG: AdvisorConfig<FacilitiesContext> = {
   domain: "facilities",
-  buildCtx: buildFacilitiesCtx,
+  buildCtx: (rawData, signals) => buildFacilitiesCtx(rawData, signals ? [...signals] : undefined),
   rules: FACILITIES_RULES,
   healthFactors: FACILITIES_HEALTH_FACTORS,
 };
