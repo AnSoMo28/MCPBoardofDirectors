@@ -14,7 +14,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { jwtDecode } from "jwt-decode";
 import { signalBus } from "@/shared/lib/advisor-engine/signal-bus";
-
+import { setAuthDelegate } from "@/shared/lib/api";
 // ── Types ──
 
 import type { UserRole } from "@/shared/types/permissions";
@@ -223,3 +223,15 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 );
+// ═══ Registro del delegate de auth (inversión · P1 ciclo de chunks) ═══
+// api.ts ya NO importa este módulo (rompía el layering lib → stores y
+// sostenía el ciclo de chunks con el advisor-engine). El registro corre
+// en module scope: para el primer render ya está hecho (providers.tsx
+// importa este store en el bootstrap).
+setAuthDelegate({
+  getAccessToken: () => useAuthStore.getState().accessToken,
+  refreshAccessToken: async () => {
+    await useAuthStore.getState().refreshAccessToken();
+  },
+  logout: () => useAuthStore.getState().logout(),
+});

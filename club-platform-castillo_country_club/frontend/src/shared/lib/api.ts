@@ -56,10 +56,36 @@
 //     pérdida semántica). Ahora preserva APIError ya normalizados.
 // ═══════════════════════════════════════════════════════════
 
-// ═══ Shared — stores ═══
-// TS may not resolve the path in some environments; ignore missing-module error here.
-// @ts-ignore: TS2307 module not found
-import { useAuthStore } from "@/stores/auth.store";
+// ═══ Auth — delegate (inversión de dependencia · P1 ciclo de chunks) ═══
+// ANTES: este módulo importaba @/stores/auth.store — la capa de transporte
+// (lib) dependía hacia ARRIBA de la capa de estado. Como auth.store importa
+// signalBus del advisor-engine, y el engine importa utils/api de vuelta,
+// el edge sostenía el ciclo "Circular chunk: shared-* -> advisor-engine".
+// DESPUÉS: api expone un delegate; auth.store se registra al cargarse
+// (stores → lib: descendente y legal). Sin registro: fail-closed 401.
+export interface AuthDelegate {
+  /** Access token vigente, o null si no hay sesión. */
+  getAccessToken(): string | null;
+  /** Refresca la sesión; rechaza si el refresh falla. */
+  refreshAccessToken(): Promise<void>;
+  /** Cierra la sesión (401 / token inválido o expirado). */
+  logout(): void;
+}
+
+let authDelegate: AuthDelegate | null = null;
+
+/** Registra el proveedor de auth — lo llama auth.store.ts en module scope. */
+export function setAuthDelegate(delegate: AuthDelegate): void {
+  authDelegate = delegate;
+}
+
+/** Acceso fail-closed: nunca se procede sin auth registrada. */
+function auth(): AuthDelegate {
+  if (!authDelegate) {
+    throw new APIError("Auth delegate no registrado — auth.store debe inicializarse antes de usar api", 401);
+  }
+  return authDelegate;
+}
 
 // ═══ Shared — lib ═══
 import { resolveToolName } from "./toolNameAdapter";
@@ -178,12 +204,12 @@ function decodeTokenPayload(token: string): Record<string, unknown> | null {
  */
 async function refreshSession(): Promise<string> {
   try {
-    await useAuthStore.getState().refreshAccessToken();
-    const newToken = useAuthStore.getState().accessToken;
+    await auth().refreshAccessToken();
+    const newToken = auth().getAccessToken();
     if (!newToken) throw new Error("No token returned after refresh");
     return newToken;
   } catch {
-    useAuthStore.getState().logout();
+    auth().logout();
     throw new APIError("Error al refrescar sesión", 401);
   }
 }
@@ -196,17 +222,17 @@ async function refreshSession(): Promise<string> {
  * @throws APIError(401) if not authenticated, token malformed, or refresh fails
  */
 async function getAuthToken(): Promise<string> {
-  const { accessToken, logout } = useAuthStore.getState();
+  const accessToken = auth().getAccessToken();
 
   if (!accessToken) {
-    logout();
+    auth().logout();
     throw new APIError("No autenticado", 401);
   }
 
   const payload = decodeTokenPayload(accessToken);
 
   if (!payload || typeof payload.exp !== "number") {
-    logout();
+    auth().logout();
     throw new APIError("Token inválido", 401);
   }
 
@@ -287,7 +313,7 @@ async function backendCaller(
 
   // 401: session expired — logout, let global error handler show toast
   if (response.status === 401) {
-    useAuthStore.getState().logout();
+    auth().logout();
     throw new APIError("Sesión expirada", 401);
   }
 
@@ -332,7 +358,7 @@ async function backendCaller(
  */
 function isDevMockMode(): boolean {
   if (!import.meta.env.DEV) return false;
-  return useAuthStore.getState().accessToken === DEV_MOCK_TOKEN;
+  return authDelegate?.getAccessToken() === DEV_MOCK_TOKEN;
 }
 
 // ═══════════════════════════════════════════════════════════
