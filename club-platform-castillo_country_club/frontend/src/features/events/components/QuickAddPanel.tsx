@@ -52,7 +52,7 @@
 // [x] TAG_PRESETS not as const → as const
 // [x] LOCATION_CAPACITY not as const → as const
 // [x] Inline style for bars → CSS custom properties
-// [x] font-[family-name:var(--font-*)] → CSS font-family
+// [x] font-[ family-name:var(--font-*) ] → CSS font-family
 // [x] Button+Tailwind mixing → local CSS for specialized buttons
 // [x] Icon sizing via Tailwind → CSS sizing
 // ═══════════════════════════════════════════════════════════

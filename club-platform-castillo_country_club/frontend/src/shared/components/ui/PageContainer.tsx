@@ -26,7 +26,7 @@
 // [x] 25+ Tailwind utilities → pg-* BEM classes
 // [x] font-[family-name:var(--font-display)] → CSS font-family
 // [x] font-[family-name:var(--font-body)] → CSS font-family
-// [x] text-[var(--color-silver-*)] → CSS color tokens
+// [x] text-[ var(--color-silver-*) ] → CSS color tokens
 // [x] space-y-5 sm:space-y-6 → CSS gap + responsive
 // [x] flex items-center gap-* → CSS flex in BEM
 // [x] No data-testid → added

@@ -33,7 +33,7 @@
 //   - IIFE in JSX → extracted InsightCard section
 //   - Mutable interfaces → readonly
 //   - no-underline Tailwind → BEM
-//   - font-[family-name:var(--font-*)] → CSS font-family
+//   - font-[ family-name:var(--font-*) ] → CSS font-family
 //   - ConnectionRadar useReducedMotion → CSS pulse
 //   - Inline sparkline bar colors → data-attribute driven
 // ═══════════════════════════════════════════════════════════

@@ -31,7 +31,7 @@
 //   - 3 missing config functions → added to config.ts §29
 //   - status dot inline styles → BEM + data-active
 //   - avatar img inline classes → BEM
-//   - font-[family-name:var(--font-*)] → CSS font-family
+//   - font-[ family-name:var(--font-*) ] → CSS font-family
 //   - bg-[rgba(...)] → BEM
 //   - border-white/[0.06] → CSS var
 //   - Missing data-testid, role="region" → added

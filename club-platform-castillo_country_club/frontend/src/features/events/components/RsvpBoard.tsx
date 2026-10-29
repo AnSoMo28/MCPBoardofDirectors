@@ -28,7 +28,7 @@
 // ANTI-PATTERNS REMOVED:
 // [x] 1 glass-* undefined namespace → rsvpb-* BEM
 // [x] ~20 Tailwind utilities → rsvpb-* BEM
-// [x] font-[family-name:var(--font-*)] → CSS font-family
+// [x] font-[ family-name:var(--font-*) ] → CSS font-family
 // [x] w-4 h-4, w-3.5 h-3.5, w-12 h-12 → CSS sizing
 // [x] hidden sm:inline, hidden sm:flex → CSS responsive
 // [x] Inline style for icon colors → CSS custom property

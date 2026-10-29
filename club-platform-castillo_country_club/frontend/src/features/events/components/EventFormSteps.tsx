@@ -33,7 +33,7 @@
 // [x] Dead import: WizardStep (imported, never used) → removed
 // [x] Dead import: EVENT_STATUS_CONFIG (imported, never used) → removed
 // [x] Dead import: ACCESS_TYPE_CONFIG (imported, never used) → removed
-// [x] font-[family-name:var(--font-*)] (15+) → CSS font-family
+// [x] font-[ family-name:var(--font-*) ] (15+) → CSS font-family
 // [x] Inline styles for colors → CSS custom properties
 // [x] bg-[var(--color-amber-400)]/10 → color-mix()
 // [x] 0 data-testid → 7 attributes

@@ -29,7 +29,7 @@
 // ANTI-PATTERNS REMOVED:
 // [x] 1 glass-* undefined namespace → vg-* BEM
 // [x] ~20 Tailwind utilities → vg-* BEM
-// [x] font-[family-name:var(--font-*)] → CSS font-family
+// [x] font-[ family-name:var(--font-*) ] → CSS font-family
 // [x] w-3 h-3, w-12 h-12 → CSS sizing
 // [x] 0 data-testid → 5 attributes
 // [x] Props not readonly → readonly

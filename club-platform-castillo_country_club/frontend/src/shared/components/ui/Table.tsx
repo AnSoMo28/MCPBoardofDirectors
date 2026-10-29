@@ -19,7 +19,7 @@
  * [x] framer-motion (motion.tr, AnimatePresence) → CSS lifecycle (0KB)
  * [x] ~120 Tailwind utilities → BEM CSS classes (.ui-table__*)
  * [x] Math.random() skeleton widths → deterministic --skel-width
- * [x] font-[family-name:var(--font-*)] → CSS font-family
+ * [x] font-[ family-name:var(--font-*) ] → CSS font-family
  * [x] transition-colors → specific properties in CSS
  * [x] animate-pulse → ui-skeleton-shimmer via Skeleton.css
  * [x] accent-[var(--color-gold-400)] → CSS accent-color

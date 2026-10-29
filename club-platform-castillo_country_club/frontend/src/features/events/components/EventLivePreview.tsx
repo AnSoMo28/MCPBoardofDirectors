@@ -21,7 +21,7 @@
 // ANTI-PATTERNS REMOVED:
 // [x] 6 glass-* undefined namespaces → elp-* BEM
 // [x] ~8 Tailwind utilities → elp-* BEM
-// [x] font-[family-name:var(--font-*)] → CSS font-family
+// [x] font-[ family-name:var(--font-*) ] → CSS font-family
 // [x] w-3 h-3 → CSS sizing
 // [x] Inline styles for colors → CSS custom properties
 // [x] 0 data-testid → 5 attributes

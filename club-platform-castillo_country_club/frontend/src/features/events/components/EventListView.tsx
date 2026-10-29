@@ -40,7 +40,7 @@
 // [x] events prop mutable → readonly
 // [x] MONTH_NAMES not readonly → as const
 // [x] Inline style for capacity → CSS custom properties
-// [x] font-[family-name:var(--font-*)] → CSS font-family
+// [x] font-[ family-name:var(--font-*) ] → CSS font-family
 // [x] No light mode → CSS §8
 // [x] No print → CSS §11
 // [x] No responsive → CSS §10

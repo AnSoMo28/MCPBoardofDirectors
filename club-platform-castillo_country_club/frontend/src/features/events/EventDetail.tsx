@@ -42,8 +42,8 @@
 // [x] No § markers → §0-§2
 // [x] Inline Tailwind on Cancel button → ed-detail__action--danger CSS
 // [x] Hardcoded route "/admin/events" → EVENT_ROUTES.list
-// [x] font-[family-name:var(--font-*)] → CSS font-family
-// [x] text-[var(--color-*)] → CSS color tokens
+// [x] font-[ family-name:var(--font-*) ] → CSS font-family
+// [x] text-[ var(--color-*) ] → CSS color tokens
 // [x] border-white/[0.06] → CSS rgba
 // [x] bg-[var(--color-surface-2)] → CSS background
 // ═══════════════════════════════════════════════════════════

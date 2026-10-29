@@ -16,7 +16,7 @@
 //
 // ANTI-PATTERNS REMOVED:
 //   - cn() → data-hotspot, data-ripple, data-trend, data-health-level
-//   - Tailwind text-[var(--...)] → CSS [data-trend] selectors
+//   - Tailwind text-[ var(--...) ] → CSS [data-trend] selectors
 //   - .glass-cohort-vitals + .cv-* → .ag-vital__*
 //   - Inline props → named interfaces
 //   - Missing ARIA → role, aria-label

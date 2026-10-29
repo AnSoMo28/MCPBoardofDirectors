@@ -43,7 +43,7 @@
 // [x] Props not readonly → readonly
 // [x] Inline style for icon bg → CSS custom property
 // [x] STATUS_BADGE_VARIANT untyped → typed Record
-// [x] font-[family-name:var(--font-*)] → CSS font-family
+// [x] font-[ family-name:var(--font-*) ] → CSS font-family
 // [x] Icon sizing via Tailwind → CSS sizing
 // [x] Zero intelligence → capacity gauge + lifecycle bar
 // [x] Zero CTAs → optional action bar

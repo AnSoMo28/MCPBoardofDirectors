@@ -27,9 +27,9 @@
 // ANTI-PATTERNS REMOVED:
 // [x] 8 glass-* undefined namespaces → ptl-* BEM
 // [x] ~15 Tailwind utilities → ptl-* BEM
-// [x] font-[family-name:var(--font-*)] → CSS font-family
+// [x] font-[ family-name:var(--font-*) ] → CSS font-family
 // [x] w-12 h-12, w-3 h-3 → CSS sizing
-// [x] bg-[var(--color-*)]/15 → color-mix()
+// [x] bg-[ var(--color-*) ]/15 → color-mix()
 // [x] pt-2 space-y-1 → CSS gap
 // [x] 0 data-testid → 8 attributes
 // [x] Props not readonly → readonly

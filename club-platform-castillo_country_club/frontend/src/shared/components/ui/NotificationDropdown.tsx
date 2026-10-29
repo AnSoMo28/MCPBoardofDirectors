@@ -20,7 +20,7 @@
  * ANTI-PATTERNS REMOVED:
  * [x] framer-motion (4 instances) → CSS-only lifecycle (0KB)
  * [x] ~60 Tailwind utilities → BEM CSS
- * [x] font-[family-name:var(--font-*)] → CSS font-family
+ * [x] font-[ family-name:var(--font-*) ] → CSS font-family
  * [x] ease: [0.25,0.1,0.25,1] → Apple cubic-bezier(0.32, 0.72, 0, 1)
  * [x] style={{ backgroundColor: "color-mix(...)" }} → data-notif-type + CSS
  * [x] style={{ scrollbarWidth: "none" }} → CSS scrollbar-width

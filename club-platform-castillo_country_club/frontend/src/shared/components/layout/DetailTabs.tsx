@@ -27,8 +27,8 @@
 // [x] No print styles → CSS §8
 // [x] No responsive → CSS §7
 // [x] ARIA ID mismatch (instanceId prefix) → simplified IDs
-// [x] font-[family-name:var(--font-*)] → CSS font-family
-// [x] bg-[var(--color-*)]/[0.08] → CSS color-mix
+// [x] font-[ family-name:var(--font-*) ] → CSS font-family
+// [x] bg-[ var(--color-*) ]/[0.08] → CSS color-mix
 // ═══════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════

@@ -22,13 +22,13 @@
  *
  * ANTI-PATTERNS REMOVED:
  * [x] ~120+ Tailwind utilities → 100% BEM CSS (CommandPalette.css)
- * [x] font-[family-name:var(--font-*)] ×12 → CSS font-family
+ * [x] font-[ family-name:var(--font-*) ] ×12 → CSS font-family
  * [x] animate-[fadeIn/scaleIn] arbitrary → CSS transitions
  * [x] animate-spin → CSS keyframe
  * [x] style={{ background }} ×2 → CSS
  * [x] shadow-[0_24px_80px...] arbitrary → CSS
  * [x] border-white/[0.12], [0.06] → CSS rgba()
- * [x] bg-[var(--*)]/10 → CSS color-mix()
+ * [x] bg-[ var(--*) ]/10 → CSS color-mix()
  * [x] bg-[var(--color-surface-3)] ×5 → CSS
  * [x] glass-card old class → BEM CSS
  * [x] globalIdx mutable counter → itemIndexMap useMemo
