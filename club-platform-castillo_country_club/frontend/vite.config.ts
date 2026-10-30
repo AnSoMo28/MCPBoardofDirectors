@@ -49,14 +49,29 @@ function manualChunks(id: string): string | undefined {
   const normalized = id.replace(/\\/g, "/");
 
   if (!normalized.includes("/node_modules/")) {
-    if (normalized.includes("/src/shared/components/ui/")) return "shared-ui";
+    // DAG por capas — orden crítico: específico ANTES que genérico
+    // (advisor-engine vive dentro de lib/; la regla genérica lo absorbería).
+    //   shared-lib (fondo: lib + types + mocks)
+    //     ← advisor-engine ← shared-ui ← index/features (top)
+    // Antes: la fundación (utils/api/enums/mocks) se plegaba DENTRO de
+    // shared-ui y el engine la importaba de vuelta →
+    // "Circular chunk: shared-ui -> advisor-engine -> shared-ui".
     if (normalized.includes("/src/shared/lib/advisor-engine/")) return "advisor-engine";
+    if (
+      normalized.includes("/src/shared/lib/") ||
+      normalized.includes("/src/shared/types/") ||
+      normalized.includes("/src/shared/mocks/")
+    ) {
+      return "shared-lib";
+    }
+    if (normalized.includes("/src/shared/components/ui/")) return "shared-ui";
     return undefined;
   }
 
   if (/\/node_modules\/(react|react-dom|scheduler|react-router)\//.test(normalized)) {
     return "vendor-react";
   }
+  if (normalized.includes("/node_modules/lucide-react/")) return "vendor-icons";
   if (normalized.includes("/node_modules/@tanstack/react-query/")) {
     return "vendor-query";
   }
