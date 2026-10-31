@@ -6,7 +6,7 @@
 // @version     v2.0
 // @namespace   N/A — infrastructure layer
 // @keyframes   0
-// @depends     @/shared/mocks/mock-registry, ./migration-tracker
+// @depends     @/shared/mocks/mock-registry (lazy, dev-only), ./migration-tracker
 //
 // Replaces the 3-step fallback chain with a clean, observable
 // routing layer. Every call returns source metadata.
@@ -38,7 +38,26 @@
 // ═══════════════════════════════════════════════════════════
 
 // ═══ Shared — lib ═══
-import { getMockResponse } from "../../mocks/mock-registry";
+
+// ── P1-tamaño: lazy mock registry ──
+// El import estático arrastraba factories.ts (~630 kB source) al chunk
+// INICIAL para cada usuario de producción, donde isDevMockMode()
+// (import.meta.env.DEV → false) lo vuelve inalcanzable por diseño.
+// Dev: se carga en el primer call elegible (promesa memoizada).
+// Prod: la rama muere por constant-folding → los mocks NO existen en dist.
+type MockRegistryModule = typeof import("../../mocks/mock-registry");
+
+let mockRegistryPromise: Promise<MockRegistryModule> | null = null;
+
+function loadMockRegistry(): Promise<MockRegistryModule> | null {
+  if (import.meta.env.DEV) {
+    if (mockRegistryPromise === null) {
+      mockRegistryPromise = import("../../mocks/mock-registry");
+    }
+    return mockRegistryPromise;
+  }
+  return null;
+}
 import { migrationTracker as defaultMigrationTracker } from "./migration-tracker";
 
 // ═══════════════════════════════════════════════════════════
@@ -261,7 +280,24 @@ export async function routeMCPCall<T = unknown>(
   // ── Step 2: Try mock registry ──
   const mockStart = performance.now();
 
+  // P1-tamaño: el registry solo existe en builds de dev. En prod,
+  // import.meta.env.DEV es false en build-time → constant-folding.
+  const mockRegistry = loadMockRegistry();
+  if (mockRegistry === null) {
+    const latency = performance.now() - mockStart;
+    logRoute(shouldLog, "#C46470", server, tool, "NO MOCK REGISTERED", latency);
+    return {
+      source: "error",
+      error: `No mock registered for ${server}.${tool} (mock registry is dev-only)`,
+      server,
+      tool,
+      latency,
+      migrationStatus: migration.status,
+    };
+  }
+
   try {
+    const { getMockResponse } = await mockRegistry;
     const data = getMockResponse(server, tool, params);
     const latency = performance.now() - mockStart;
 
