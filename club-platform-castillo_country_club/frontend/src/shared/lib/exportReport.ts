@@ -6,11 +6,12 @@
 // Downloads directly to the user's machine.
 //
 // Production-grade: typed, accessible, branded.
-// Dependencies: jspdf, xlsx (SheetJS)
+// Dependencies: jspdf, xlsx (SheetJS) — cargadas con dynamic import()
+// DENTRO del generador de cada formato (lazy real, Pilar 8 del
+// MASTER_BASE): un CSV no descarga ninguna lib, un PDF solo jspdf,
+// un Excel solo xlsx. Nunca a nivel de módulo (top-level await):
+// eso bloquea la evaluación de shared-lib hasta descargarlas (eager).
 // ═══════════════════════════════════════════════════════════
-
-import jsPDF from "jspdf";
-import * as XLSX from "xlsx";
 
 // ── Types ──
 
@@ -62,7 +63,13 @@ const BG_DARK: [number, number, number] = [26, 26, 26]; // surface-2
 
 // ── PDF Generation ──
 
-function generatePDF(data: ExecutiveExportData, metadata: ExportMetadata): void {
+async function generatePDF(
+  data: ExecutiveExportData,
+  metadata: ExportMetadata,
+): Promise<void> {
+  // Lazy por formato: jspdf se descarga únicamente cuando el reporte es PDF.
+  const { default: jsPDF } = await import("jspdf");
+
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -74,8 +81,6 @@ function generatePDF(data: ExecutiveExportData, metadata: ExportMetadata): void 
   const margin = 20;
   const contentWidth = pageWidth - margin * 2;
   let y = margin;
-
-
 
   // ── Page 1: Cover ──
   doc.setFillColor(...BG_DARK);
@@ -388,9 +393,16 @@ function generatePDF(data: ExecutiveExportData, metadata: ExportMetadata): void 
 
   doc.save(metadata.file_name);
 }
+
 // ── Excel Generation ──
 
-function generateExcel(data: ExecutiveExportData, metadata: ExportMetadata): void {
+async function generateExcel(
+  data: ExecutiveExportData,
+  metadata: ExportMetadata,
+): Promise<void> {
+  // Lazy por formato: xlsx se descarga únicamente cuando el reporte es Excel.
+  const XLSX = await import("xlsx");
+
   const wb = XLSX.utils.book_new();
 
   // Sheet 1: KPIs
@@ -467,21 +479,33 @@ function generateExcel(data: ExecutiveExportData, metadata: ExportMetadata): voi
 
 // ── CSV Generation ──
 
+/**
+ * Escapado de celda CSV + neutralización de inyección de fórmulas
+ * (OWASP "CSV Injection"): comillas dobladas Y prefijo "'" cuando la
+ * celda arranca con =, +, -, @, tab o CR — si no, Excel ejecuta la
+ * fórmula al doble click. TODA celda derivada de datos pasa por aquí;
+ * los literales del encabezado son constantes compiladas y no pasan.
+ */
+function csvCell(value: string): string {
+  const escaped = value.replace(/"/g, '""');
+  return /^[=+\-\t\r]/.test(escaped) ? `'${escaped}` : escaped;
+}
+
 function generateCSV(data: ExecutiveExportData, metadata: ExportMetadata): void {
   const rows: string[] = [];
 
   // Header
-  rows.push(`"${CLUB_NAME} — ${data.reportTitle}"`);
-  rows.push(`"Período:","${data.period}"`);
-  rows.push(`"Generado:","${data.generatedAt}"`);
-  rows.push(`"Por:","${data.generatedBy}"`);
+  rows.push(`"${CLUB_NAME} — ${csvCell(data.reportTitle)}"`);
+  rows.push(`"Período:","${csvCell(data.period)}"`);
+  rows.push(`"Generado:","${csvCell(data.generatedAt)}"`);
+  rows.push(`"Por:","${csvCell(data.generatedBy)}"`);
   rows.push("");
 
   // KPIs
   rows.push('"INDICADORES CLAVE"');
   rows.push('"Indicador","Valor","Cambio"');
   data.kpis.forEach((kpi) => {
-    rows.push(`"${kpi.label}","${kpi.value}","${kpi.change ?? "—"}"`);
+    rows.push(`"${csvCell(kpi.label)}","${csvCell(kpi.value)}","${csvCell(kpi.change ?? "—")}"`);
   });
   rows.push("");
 
@@ -489,7 +513,7 @@ function generateCSV(data: ExecutiveExportData, metadata: ExportMetadata): void 
   rows.push('"FUENTES DE INGRESO"');
   rows.push('"Fuente","Monto","Porcentaje"');
   data.revenue.forEach((r) => {
-    rows.push(`"${r.source}","${r.amount}","${r.percentage}"`);
+    rows.push(`"${csvCell(r.source)}","${csvCell(r.amount)}","${csvCell(r.percentage)}"`);
   });
   rows.push("");
 
@@ -497,7 +521,7 @@ function generateCSV(data: ExecutiveExportData, metadata: ExportMetadata): void 
   rows.push('"MEMBRESÍA"');
   rows.push('"Tier","Socios","Porcentaje"');
   data.membership.forEach((m) => {
-    rows.push(`"${m.tier}","${m.count}","${m.percentage}"`);
+    rows.push(`"${csvCell(m.tier)}","${csvCell(m.count)}","${csvCell(m.percentage)}"`);
   });
   rows.push("");
 
@@ -505,7 +529,7 @@ function generateCSV(data: ExecutiveExportData, metadata: ExportMetadata): void 
   rows.push('"RECOMENDACIONES"');
   rows.push('"Prioridad","Título","Descripción"');
   data.recommendations.forEach((r) => {
-    rows.push(`"${r.priority.toUpperCase()}","${r.title.replace(/"/g, '""')}","${r.description.replace(/"/g, '""')}"`);
+    rows.push(`"${csvCell(r.priority.toUpperCase())}","${csvCell(r.title)}","${csvCell(r.description)}"`);
   });
   rows.push("");
 
@@ -514,11 +538,14 @@ function generateCSV(data: ExecutiveExportData, metadata: ExportMetadata): void 
     rows.push('"ALERTAS"');
     rows.push('"Severidad","Título","Descripción"');
     data.alerts.forEach((a) => {
-      rows.push(`"${a.severity.toUpperCase()}","${a.title.replace(/"/g, '""')}","${a.description.replace(/"/g, '""')}"`);
+      rows.push(`"${csvCell(a.severity.toUpperCase())}","${csvCell(a.title)}","${csvCell(a.description)}"`);
     });
   }
 
-  const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8;" });
+  // BOM UTF-8 + CRLF: el staff abre el CSV con doble click en Excel sobre
+  // Windows; sin BOM los acentos ("Membresía", "Descripción") llegan
+  // mojibakeados y con \n puro Excel no reconoce los renglones.
+  const blob = new Blob(["\ufeff" + rows.join("\r\n")], { type: "text/csv;charset=utf-8;" });
   triggerDownload(blob, metadata.file_name);
 }
 
@@ -542,23 +569,29 @@ function triggerDownload(blob: Blob, fileName: string): void {
 
 // ── Main export function ──
 
-export function exportReport(
+export async function exportReport(
   format: ExportFormat,
   data: ExecutiveExportData,
   metadata: ExportMetadata,
-): void {
+): Promise<void> {
   switch (format) {
     case "pdf":
-      generatePDF(data, metadata);
+      await generatePDF(data, metadata);
       break;
     case "excel":
-      generateExcel(data, metadata);
+      await generateExcel(data, metadata);
       break;
     case "csv":
       generateCSV(data, metadata);
       break;
-    default:
-      console.error(`[exportReport] Unsupported format: ${format}`);
+    default: {
+      // Fail-closed (filosofía de la casa): ExportFormat es una unión
+      // cerrada, llegar aquí en runtime significa un caller sin tipos
+      // rompiendo el contrato. Antes: console.error + promise resuelta
+      // y el toast cantaba "descargado" sin ningún archivo generado.
+      const exhaustive: never = format;
+      throw new Error(`[exportReport] Formato no soportado: ${String(exhaustive)}`);
+    }
   }
 }
 

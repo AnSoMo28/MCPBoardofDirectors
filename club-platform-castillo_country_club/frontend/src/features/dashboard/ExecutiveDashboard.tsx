@@ -280,7 +280,7 @@ export default function ExecutiveDashboard() {
     "executive_dashboard",
     "export_report",
     {
-      onSuccess: (data: unknown, _variables) => {
+      onSuccess: async (data: unknown, _variables) => {
         const d = data as { status: string; data: ExportMetadata };
         if (d.status === "success" && d.data) {
           const format = d.data.format;
@@ -290,8 +290,13 @@ export default function ExecutiveDashboard() {
             period,
             userName: user?.name ?? "Miembro",
           });
-          exportReport(format, exportData, d.data);
-          showToast({ type: "success", message: `Archivo ${d.data.file_name} descargado` });
+          try {
+            await exportReport(format, exportData, d.data);
+            showToast({ type: "success", message: `Archivo ${d.data.file_name} descargado` });
+          } catch (e) {
+            console.error("[export] falló la generación:", e);
+            showToast({ type: "error", message: "No se pudo generar el archivo de exportación" });
+          }
         } else {
           showToast({ type: "success", message: "Exportación exitosa" });
         }
