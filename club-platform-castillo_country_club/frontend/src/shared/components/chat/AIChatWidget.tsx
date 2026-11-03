@@ -14,6 +14,7 @@ import { showToast } from "@/shared/components/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/shared/lib/utils";
 import { useAIChat } from "./hooks/useAIChat";
+import { useChatStore } from "@/stores/chat.store";
 import type { ChatMessage } from "./hooks/useAIChat";
 import './AIChatWidget.css';
 
@@ -105,10 +106,9 @@ function NeuralTypingIndicator({ isAdvisor }: { isAdvisor: boolean }) {
    Chat Bubble — Glass Message
    ────────────────────────────────────── */
 
-function ChatBubble({ msg, queryClient, reduced }: {
+function ChatBubble({ msg, onExecute, reduced }: {
   msg: ChatMessage;
   onExecute: (action: ChatMessage["suggestedAction"]) => Promise<void>;
-  queryClient: ReturnType<typeof useQueryClient>;
   reduced: boolean;
 }) {
   const isUser = msg.role === "user";
@@ -196,15 +196,7 @@ function ChatBubble({ msg, queryClient, reduced }: {
                 params: msg.suggestedAction.params,
                 approval_level: (msg.suggestedAction.approval_level as "auto" | "semi" | "hitl") ?? "auto",
               }}
-              onExecute={async (action) => {
-                try {
-                  await callMCPTool(action.server, action.tool, action.params);
-                  queryClient.invalidateQueries();
-                  showToast({ type: "success", message: `Acción ejecutada: ${action.label}` });
-                } catch {
-                  showToast({ type: "error", message: `Error al ejecutar: ${action.label}` });
-                }
-              }}
+              onExecute={onExecute}
               compact
             />
           </div>
@@ -313,6 +305,11 @@ export function AIChatWidget() {
                     msg={msg}
                     onExecute={async (action) => {
                       if (!action) return;
+                      const bridge = useChatStore.getState().executeAction;
+                      if (bridge) {
+                        await bridge(action);
+                        return;
+                      }
                       try {
                         await callMCPTool(action.server, action.tool, action.params);
                         queryClient.invalidateQueries();
@@ -321,7 +318,6 @@ export function AIChatWidget() {
                         showToast({ type: "error", message: `Error al ejecutar: ${action.label}` });
                       }
                     }}
-                    queryClient={queryClient}
                     reduced={prefersReduced}
                   />
                 ))}

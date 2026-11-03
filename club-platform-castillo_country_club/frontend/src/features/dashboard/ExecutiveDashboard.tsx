@@ -217,6 +217,7 @@ export default function ExecutiveDashboard() {
 
   // ── Sync advisor context to chat store ──
   const setAdvisorContext = useChatStore((s) => s.setAdvisorContext);
+  const setExecuteAction = useChatStore((s) => s.setExecuteAction);
 
 
   /* ── The Pulse: Vital Signs (P63) ─────────────────────── */
@@ -384,7 +385,7 @@ export default function ExecutiveDashboard() {
     }
   };
   // ── Advisor Chat Action Bridge (F24) ──
-  async (chatAction: {
+  const handleChatAction = async (chatAction: {
         label: string;
         server: string;
         tool: string;
@@ -426,6 +427,13 @@ export default function ExecutiveDashboard() {
           showToast({ type: "error", message: `Error al ejecutar: ${chatAction.label}` });
         }
       };
+
+  // F24: bridge de acciones — expone el handler al widget global de chat
+  useEffect(() => {
+    setExecuteAction(handleChatAction);
+    return () => setExecuteAction(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [globalInsights, setExecuteAction]);
 
   const handleGeneratePlan = async () => {
     setIsPlanLoading(true);

@@ -353,7 +353,11 @@ export const router = createBrowserRouter([
       // Redirect deprecated route to new Portrait Room
       {
         path: "admin/members/intelligence",
-        element: <Navigate to="/admin/member-360" replace />,
+        element: (
+          <PermissionGate roles={["ADMIN", "STAFF", "JUNTA"]}>
+            <Navigate to="/admin/member-360" replace />
+          </PermissionGate>
+        ),
       },
 
       // ── Domain Dashboards ──
