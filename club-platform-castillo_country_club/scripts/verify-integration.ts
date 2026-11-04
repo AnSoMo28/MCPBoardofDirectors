@@ -72,6 +72,15 @@
  *          misaligned. Now: --json/--quiet/--check/--no-color, global
  *          try/catch with exit 3, dynamic-width ANSI-aware boxes, and a new
  *          advisory check 8 (orphan mocks) that reuses the shared context.
+ *   VI-12  check 8 counted only useMCPQuery refs: every useMCPMutation,
+ *          callMCPTool and advisor-engine {server, tool} data pair looked
+ *          like an orphan mock (38 of 90 were false positives here).
+ *          Check 8 now unions the four reference shapes; checks 2/6 keep
+ *          hook-only semantics. Check 4 was EOL-blind: a CRLF working copy
+ *          flagged <button at end of line via the leftover \r, an LF
+ *          checkout missed it (962 vs 436 baseline drift). The \r is now
+ *          stripped and the pattern accepts end-of-line — both converge
+ *          to the true count.
  */
 
 import * as fs from "node:fs";
@@ -117,6 +126,7 @@ interface ScanContext {
   registryKeys: Set<string>; // "server::tool"
   registryFound: boolean;
   mcpQueries: McpQueryRef[];
+  extraToolRefs: McpQueryRef[]; // VI-12: mutations, direct calls, advisor pairs
   backendTools: Set<string>;
   backendScanned: boolean;
   definedTokens: Set<string>;
@@ -140,7 +150,7 @@ interface CliOptions {
 
 class UsageError extends Error {}
 
-const TOOL_VERSION = "3.0.0";
+const TOOL_VERSION = "3.1.0";
 const MAX_DISPLAYED_FINDINGS = 40;
 const SNIPPET_MAX = 120;
 
@@ -172,6 +182,12 @@ const LEGACY_PHANTOM_TOKENS = [
 const DYNAMIC_IMPORT_RE = /\bimport\(\s*["']([^"']+)["']\s*\)/g;
 const MCP_QUERY_RE =
   /\buseMCPQuery\s*(?:<[^()]*>)?\(\s*["']([A-Za-z_][\w-]*)["']\s*,\s*["']([A-Za-z_][\w-]*)["']/g;
+const MCP_MUTATION_RE =
+  /\buseMCPMutation\s*(?:<[^()]*>)?\(\s*["']([A-Za-z_][\w-]*)["']\s*,\s*["']([A-Za-z_][\w-]*)["']/g;
+const MCP_DIRECT_RE =
+  /\bcallMCPTool\s*(?:<[^()]*>)?\(\s*["']([A-Za-z_][\w-]*)["']\s*,\s*["']([A-Za-z_][\w-]*)["']/g;
+const MCP_DATA_PAIR_RE =
+  /\bserver:\s*["']([A-Za-z_][\w-]*)["']\s*,\s*\n\s*tool:\s*["']([A-Za-z_][\w-]*)["']/g;
 const VAR_USE_RE = /var\(\s*(--[\w-]+)/g;
 const BARE_TOKEN_RE = /["'`](--[\w-]+)["'`]/g;
 
@@ -396,6 +412,31 @@ function collectMcpQueries(frontendSrc: string, tsFiles: string[]): McpQueryRef[
   return refs;
 }
 
+/** VI-12: non-hook tool references — mutations, direct calls, advisor data pairs. */
+function collectExtraToolRefs(frontendSrc: string, tsFiles: string[]): McpQueryRef[] {
+  const refs: McpQueryRef[] = [];
+  const patterns = [MCP_MUTATION_RE, MCP_DIRECT_RE, MCP_DATA_PAIR_RE];
+  for (const file of tsFiles) {
+    const relPath = relFrom(frontendSrc, file);
+    if (relPath.startsWith("shared/mocks/")) continue;
+    if (/\.(test|spec|stories)\.[tj]sx?$/.test(relPath)) continue;
+    const content = read(file);
+    if (!content) continue;
+    const offsets = lineIndex(content);
+    for (const re of patterns) {
+      for (const m of content.matchAll(re)) {
+        refs.push({
+          file: relPath,
+          line: lineAt(offsets, m.index ?? 0),
+          server: m[1]!,
+          tool: m[2]!,
+        });
+      }
+    }
+  }
+  return refs;
+}
+
 /** Test files excluded — they register fake tools (VI-01 precision). */
 function isBackendSource(abs: string, backendSrc: string): boolean {
   const relPath = relFrom(backendSrc, abs);
@@ -498,6 +539,7 @@ function buildContext(root: string): ScanContext {
   const registryFound = registryContent !== null;
 
   const mcpQueries = collectMcpQueries(frontendSrc, tsFiles);
+  const extraToolRefs = collectExtraToolRefs(frontendSrc, tsFiles);
   const backendTools = extractBackendToolNames(pyFiles);
 
   const definedTokens = extractDefinedTokens(cssFiles);
@@ -514,6 +556,7 @@ function buildContext(root: string): ScanContext {
     registryKeys,
     registryFound,
     mcpQueries,
+    extraToolRefs,
     backendTools,
     backendScanned,
     definedTokens,
@@ -765,7 +808,7 @@ function checkRawButtons(ctx: ScanContext): CheckOutcome {
     if (!content) continue;
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
-      if (/<button[\s>]/.test(lines[i]!)) {
+      if (/<button(?=[\s>]|$)/.test(lines[i]!.replace(/\r$/, ""))) {
         findings.push({
           file: relPath,
           line: i + 1,
@@ -963,14 +1006,20 @@ function checkDuplicateRoutes(ctx: ScanContext): CheckOutcome {
 
 function checkOrphanMocks(ctx: ScanContext): CheckOutcome {
   const findings: Finding[] = [];
-  const notes: string[] = ["Heuristic: only useMCPQuery(…) hook references count — direct registry calls are not tracked."];
+  const notes: string[] = [
+    "Heuristic (VI-12): references counted from useMCPQuery + useMCPMutation + callMCPTool + adjacent {server, tool} data pairs — direct registry calls are still not tracked.",
+  ];
 
   if (!ctx.registryFound) {
     notes.push("mock-registry.ts not found — nothing to check.");
     return outcome("orphan-mocks", "8. Orphan Mock Entries", "info", findings, [["registryKeys", 0]], notes);
   }
 
-  const usedKeys = new Set(ctx.mcpQueries.map((q) => `${q.server}::${q.tool}`));
+  const usedKeys = new Set(
+    ctx.mcpQueries
+      .concat(ctx.extraToolRefs)
+      .map((q) => `${q.server}::${q.tool}`),
+  );
   const orphansByServer = new Map<string, string[]>();
   let orphanCount = 0;
   for (const key of ctx.registryKeys) {
@@ -1000,6 +1049,7 @@ function checkOrphanMocks(ctx: ScanContext): CheckOutcome {
       ["registryKeys", ctx.registryKeys.size],
       ["referenced", ctx.registryKeys.size - orphanCount],
       ["orphanTools", orphanCount],
+      ["extraRefs", ctx.extraToolRefs.length],
     ],
     notes,
   );
