@@ -72,15 +72,6 @@
  *          misaligned. Now: --json/--quiet/--check/--no-color, global
  *          try/catch with exit 3, dynamic-width ANSI-aware boxes, and a new
  *          advisory check 8 (orphan mocks) that reuses the shared context.
- *   VI-12  check 8 counted only useMCPQuery refs: every useMCPMutation,
- *          callMCPTool and advisor-engine {server, tool} data pair looked
- *          like an orphan mock (38 of 90 were false positives here).
- *          Check 8 now unions the four reference shapes; checks 2/6 keep
- *          hook-only semantics. Check 4 was EOL-blind: a CRLF working copy
- *          flagged <button at end of line via the leftover \r, an LF
- *          checkout missed it (962 vs 436 baseline drift). The \r is now
- *          stripped and the pattern accepts end-of-line — both converge
- *          to the true count.
  */
 
 import * as fs from "node:fs";
@@ -126,8 +117,7 @@ interface ScanContext {
   registryKeys: Set<string>; // "server::tool"
   registryFound: boolean;
   mcpQueries: McpQueryRef[];
-  extraToolRefs: McpQueryRef[]; // VI-12: mutations, direct calls, advisor pairs
-  backendTools: Set<string>;
+  backendTools: Vi14BackendIndex;
   backendScanned: boolean;
   definedTokens: Set<string>;
   tokenSource: "css" | "legacy";
@@ -150,7 +140,7 @@ interface CliOptions {
 
 class UsageError extends Error {}
 
-const TOOL_VERSION = "3.1.0";
+const TOOL_VERSION = "3.0.0";
 const MAX_DISPLAYED_FINDINGS = 40;
 const SNIPPET_MAX = 120;
 
@@ -182,12 +172,6 @@ const LEGACY_PHANTOM_TOKENS = [
 const DYNAMIC_IMPORT_RE = /\bimport\(\s*["']([^"']+)["']\s*\)/g;
 const MCP_QUERY_RE =
   /\buseMCPQuery\s*(?:<[^()]*>)?\(\s*["']([A-Za-z_][\w-]*)["']\s*,\s*["']([A-Za-z_][\w-]*)["']/g;
-const MCP_MUTATION_RE =
-  /\buseMCPMutation\s*(?:<[^()]*>)?\(\s*["']([A-Za-z_][\w-]*)["']\s*,\s*["']([A-Za-z_][\w-]*)["']/g;
-const MCP_DIRECT_RE =
-  /\bcallMCPTool\s*(?:<[^()]*>)?\(\s*["']([A-Za-z_][\w-]*)["']\s*,\s*["']([A-Za-z_][\w-]*)["']/g;
-const MCP_DATA_PAIR_RE =
-  /\bserver:\s*["']([A-Za-z_][\w-]*)["']\s*,\s*\n\s*tool:\s*["']([A-Za-z_][\w-]*)["']/g;
 const VAR_USE_RE = /var\(\s*(--[\w-]+)/g;
 const BARE_TOKEN_RE = /["'`](--[\w-]+)["'`]/g;
 
@@ -412,31 +396,6 @@ function collectMcpQueries(frontendSrc: string, tsFiles: string[]): McpQueryRef[
   return refs;
 }
 
-/** VI-12: non-hook tool references — mutations, direct calls, advisor data pairs. */
-function collectExtraToolRefs(frontendSrc: string, tsFiles: string[]): McpQueryRef[] {
-  const refs: McpQueryRef[] = [];
-  const patterns = [MCP_MUTATION_RE, MCP_DIRECT_RE, MCP_DATA_PAIR_RE];
-  for (const file of tsFiles) {
-    const relPath = relFrom(frontendSrc, file);
-    if (relPath.startsWith("shared/mocks/")) continue;
-    if (/\.(test|spec|stories)\.[tj]sx?$/.test(relPath)) continue;
-    const content = read(file);
-    if (!content) continue;
-    const offsets = lineIndex(content);
-    for (const re of patterns) {
-      for (const m of content.matchAll(re)) {
-        refs.push({
-          file: relPath,
-          line: lineAt(offsets, m.index ?? 0),
-          server: m[1]!,
-          tool: m[2]!,
-        });
-      }
-    }
-  }
-  return refs;
-}
-
 /** Test files excluded — they register fake tools (VI-01 precision). */
 function isBackendSource(abs: string, backendSrc: string): boolean {
   const relPath = relFrom(backendSrc, abs);
@@ -445,66 +404,295 @@ function isBackendSource(abs: string, backendSrc: string): boolean {
   return !(/^test_.*\.py$/.test(base) || /_test\.py$/.test(base) || base === "conftest.py");
 }
 
-/**
- * Registration-based backend tool extraction (VI-01):
- *   @<anything>.tool / @tool decorator over (async) def — including the
- *   name="custom" kwarg form; .add_tool(...) / .register_tool(...) with a
- *   string first arg or name= kwarg; Tool(name=...) constructions.
- */
-function extractBackendToolNames(pyFiles: string[]): Set<string> {
-  const names = new Set<string>();
-  const DECORATOR_RE = /^[ \t]*@(?:[\w.]+\.)?tool\b/;
-  const DEF_RE = /^[ \t]*(?:async[ \t]+)?def[ \t]+([A-Za-z_][\w]*)/;
-  const ADD_TOOL_RE = /\.(?:add_tool|register_tool|addTool|registerTool)\s*\(/;
-  const ADD_TOOL_ARG_RE = /(?:add_tool|register_tool|addTool|registerTool)\s*\(\s*["']([A-Za-z_][\w-]*)["']/;
-  const NAME_KWARG_RE = /\bname\s*=\s*["']([A-Za-z_][\w-]*)["']/;
-  const TOOL_CTOR_RE = /(?:^|[.\s])Tool\s*\(/;
+// ═══ VI-14 · Backend tool extraction v2 (motor-based) — P2-C3 audit ═══
+//
+// Evidence (P2-C3 audit, 2026-11-04): the backend registers its tools via
+// BaseAgent.register_with_mcp(), which iterates dir(self) and calls
+// mcp.tool(name=...)(wrapper) — src/club_mcp/agents/base.py:62-86, driven by
+// server.py:138 over 18 agents. The v1 scan (@tool decorators, add_tool,
+// Tool(name=)) matched ZERO of those patterns in this codebase, so check 6
+// degraded to advisory. v2 mirrors the motor instead:
+//
+//   · per-agent specs: name="..." kwargs, {"name": "..."} dicts,
+//     name: str = "..." fields and ToolSpec("...") positional declarations
+//   · docstring "TOOLS:" blocks (snake tokens)
+//   · keys of TOOLS = {...} / tool_specs = [...] literals
+//   · fallback for spec-less agents (e.g. finance): public method names —
+//     exactly what dir(self) registers. HITL continuations (execute_*),
+//     _private and framework names are excluded.
+//
+// Server taxonomy = snake_case(agent class minus "Agent"), which matches the
+// mock-registry blocks 1:1 (family_profile, facility_management, finance...).
+
+interface Vi14ToolHit { server: string; name: string; sources: string[]; file: string; line: number; }
+interface Vi14DefHit { file: string; line: number; }
+interface Vi14BackendIndex {
+  flat: Set<string>;
+  byServer: Map<string, Set<string>>;
+  hits: Vi14ToolHit[];
+  defs: Map<string, Vi14DefHit[]>;
+  agents: string[];
+}
+
+/** Frontend server names → real platform servers (P2-C3 taxonomy drift). */
+const VI14_SERVER_RENAMES: Record<string, string[]> = {
+  families: ["family_profile"],
+  facilities: ["facility_management"],
+  guests: ["guest_management"],
+  engagement: ["member_engagement", "satisfaction"],
+  reports: ["executive_dashboard"],
+};
+
+/** snake_case(agent) → mock block name where they differ. */
+const VI14_AGENT_SERVER_ALIASES: Record<string, string> = {
+  event_orchestrator: "events",
+};
+
+/** Method names never registered as tools (HITL continuations, helpers). */
+const VI14_METHOD_EXCLUDE = new Set([
+  "wrapper", "handler", "callback", "main", "run", "call", "get", "setup", "teardown",
+]);
+
+/** Audited equivalences (P2-C3b/c/d evidence, 2026-11-04): "server.tool" → real names. */
+const VI14_EQUIVALENCES: Record<string, string[]> = {
+  "communication.get_communication_history": ["get_communication_analytics", "get_notification_history"],
+  "engagement.list_reactivation_campaigns": ["design_reactivation_campaign"],
+  "engagement.get_survey_results": ["analyze_event_satisfaction", "generate_satisfaction_report"],
+  "engagement.get_active_survey": ["get_survey_for_event"],
+  "facilities.list_reservations": ["get_facility_reservations"],
+  "facilities.get_facility": [],
+  "facilities.get_utilization": ["get_amenity_utilization"],
+  "facilities.get_reservations": ["get_facility_reservations"],
+  "facilities.list_available_facilities": ["manage_facilities"],
+  "finance.get_family_account": ["finance_account_status"],
+  "finance.get_transactions": [],
+  "finance.get_invoices": ["finance_invoice_create"],
+  "guests.get_today_guests": [],
+  "guests.get_today_summary": [],
+  "guests.list_trial_memberships": ["manage_trial_memberships"],
+  "families.search_families": ["family_search"],
+  "families.get_family": ["family_get_profile"],
+  "families.list_families": ["family_search"],
+  "reports.get_board_report": ["generate_quarterly_board_report", "send_board_package"],
+  "reports.get_risk_matrix": ["get_member_risk_assessment"],
+  "finance.narrative_generate": ["finance_narrative_generate", "generate_insight_narrative"],
+  "finance.scenario_simulate": ["finance_scenario_simulate", "simulate_scenario"],
+  "finance.stress_test": ["finance_stress_test"],
+  "finance.decision_simulate": ["finance_decision_simulate"],
+};
+
+function vi14Snake(name: string): string {
+  return name
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    .replace(/([A-Za-z])([0-9])/g, "$1_$2")
+    .toLowerCase();
+}
+
+function vi14AgentServer(className: string): string {
+  const base = /Agent$/.test(className) ? className.slice(0, -5) : className;
+  const snake = vi14Snake(base);
+  return VI14_AGENT_SERVER_ALIASES[snake] ?? snake;
+}
+
+function vi14Disp(file: string): string {
+  const parts = file.split(/[\\/]/);
+  return parts.length >= 2 ? parts.slice(-2).join("/") : file;
+}
+
+function extractBackendToolNames(pyFiles: string[]): Vi14BackendIndex {
+  const flat = new Set<string>();
+  const byServer = new Map<string, Set<string>>();
+  const defs = new Map<string, Vi14DefHit[]>();
+  const hits: Vi14ToolHit[] = [];
+  const agents: string[] = [];
+
+  const CLASS_RE = /^[ \t]*class[ \t]+([A-Za-z_]\w*)/;
+  const DEF_RE = /^[ \t]*(?:async[ \t]+)?def[ \t]+([A-Za-z_]\w*)/;
+  const TOOLS_DOC_RE = /\bTOOLS[ \t]*:/;
+  const TOOLS_ASG_RE = /\b(?:TOOLS|tool_specs|TOOL_SPECS|tool_registry|_TOOLS)[ \t]*=[ \t]*[{[]/;
+  const SNAKE_TOKEN_RE = /([a-z][a-z0-9]*_[a-z0-9_]{2,})/g;
+  const NAME_PATTERNS: RegExp[] = [
+    /\bname[ \t]*=[ \t]*["']([a-z][a-z0-9_]{3,50})["']/g,
+    /["']name["'][ \t]*:[ \t]*["']([a-z][a-z0-9_]{3,50})["']/g,
+    /\bname[ \t]*:[ \t]*[A-Za-z_]\w*[ \t]*=[ \t]*["']([a-z][a-z0-9_]{3,50})["']/g,
+    /\b(?:ToolSpec|Tool)[ \t]*\([ \t]*["']([a-z][a-z0-9_]{3,50})["']/g,
+  ];
+  const DICT_KEY_RE = /^[ \t]*["']?([a-z][a-z0-9_]{5,60})["']?[ \t]*:/;
+  const LIST_ITEM_RE = /^[ \t]*["']?([a-z][a-z0-9_]{5,60})["']?[ \t]*,?[ \t]*$/;
 
   for (const file of pyFiles) {
     const content = read(file);
     if (!content) continue;
     const lines = content.split("\n");
+    const disp = vi14Disp(file);
 
+    // capability map: every public def anywhere (agent methods, repo functions)
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]!;
+      const m = DEF_RE.exec(lines[i]!);
+      if (!m) continue;
+      const n = m[1]!;
+      if (n.startsWith("_") || VI14_METHOD_EXCLUDE.has(n)) continue;
+      const arr = defs.get(n) ?? [];
+      if (arr.length < 4) arr.push({ file: disp, line: i + 1 });
+      defs.set(n, arr);
+    }
 
-      if (DECORATOR_RE.test(line)) {
-        let defName: string | null = null;
-        let end = i;
-        for (let j = i + 1; j < Math.min(i + 16, lines.length); j++) {
-          const def = lines[j]!.match(DEF_RE);
-          if (def) {
-            defName = def[1]!;
-            end = j;
-            break;
-          }
-          if (/^(?:class |[A-Za-z_][\w]*[ \t]*=)/.test(lines[j]!)) break; // left decorator scope
-          end = j;
-        }
-        if (defName) {
-          names.add(defName);
-          const kw = lines.slice(i, end + 1).join("\n").match(NAME_KWARG_RE);
-          if (kw) names.add(kw[1]!);
+    // agent classes in this file (BaseAgent is the framework, not a server)
+    const agentClasses: string[] = [];
+    for (const l of lines) {
+      const m = CLASS_RE.exec(l);
+      if (m && /Agent$/.test(m[1]!) && m[1] !== "BaseAgent") agentClasses.push(m[1]!);
+    }
+    if (agentClasses.length === 0) continue;
+
+    const server = vi14AgentServer(agentClasses[0]!);
+    if (!agents.includes(server)) agents.push(server);
+
+    const authoritative = new Map<string, { sources: string[]; line: number }>();
+    const record = (name: string, source: string, line: number): void => {
+      const cur = authoritative.get(name);
+      if (cur) {
+        if (!cur.sources.includes(source)) cur.sources.push(source);
+        if (line < cur.line) cur.line = line;
+      } else {
+        authoritative.set(name, { sources: [source], line });
+      }
+    };
+
+    // 1) specs: name= in any of the four declaration styles
+    for (let i = 0; i < lines.length; i++) {
+      for (const re of NAME_PATTERNS) {
+        re.lastIndex = 0;
+        const m = re.exec(lines[i]!);
+        if (m) record(m[1]!, "spec name=", i + 1);
+      }
+    }
+
+    // 2) docstring TOOLS: blocks
+    for (let i = 0; i < lines.length; i++) {
+      if (!TOOLS_DOC_RE.test(lines[i]!)) continue;
+      for (let j = i + 1; j <= Math.min(lines.length - 1, i + 16); j++) {
+        const w = lines[j]!;
+        if (/"""/.test(w)) break;
+        for (const m of w.matchAll(SNAKE_TOKEN_RE)) {
+          record(m[1]!, "docstring TOOLS:", j + 1);
         }
       }
+    }
 
-      if (ADD_TOOL_RE.test(line)) {
-        const window = lines.slice(i, i + 4).join("\n");
-        const arg = window.match(ADD_TOOL_ARG_RE);
-        const kw = window.match(NAME_KWARG_RE);
-        const name = arg?.[1] ?? kw?.[1];
-        if (name) names.add(name);
+    // 3) keys of TOOLS = {...} / tool_specs = [...]
+    for (let i = 0; i < lines.length; i++) {
+      if (!TOOLS_ASG_RE.test(lines[i]!)) continue;
+      for (let j = i + 1; j <= Math.min(lines.length - 1, i + 40); j++) {
+        const w = lines[j]!;
+        if (/^[ \t]*[}\]][ \t]*,?[ \t]*$/.test(w)) break;
+        const mk = DICT_KEY_RE.exec(w);
+        if (mk) {
+          record(mk[1]!, "dict TOOLS=", j + 1);
+          continue;
+        }
+        const ml = LIST_ITEM_RE.exec(w);
+        if (ml) record(ml[1]!, "list tool_specs=", j + 1);
       }
+    }
 
-      if (TOOL_CTOR_RE.test(line)) {
-        const window = lines.slice(i, i + 4).join("\n");
-        const kw = window.match(NAME_KWARG_RE);
-        if (kw) names.add(kw[1]!);
+    // 4) method fallback ONLY for spec-less agents — mirrors dir(self)
+    if (authoritative.size === 0) {
+      for (let i = 0; i < lines.length; i++) {
+        const m = DEF_RE.exec(lines[i]!);
+        if (!m) continue;
+        const n = m[1]!;
+        if (n.startsWith("_") || /^execute_/.test(n) || VI14_METHOD_EXCLUDE.has(n)) continue;
+        record(n, "method (dir-motor fallback)", i + 1);
+      }
+    }
+
+    const names = byServer.get(server) ?? new Set<string>();
+    for (const [name, info] of authoritative) {
+      flat.add(name);
+      names.add(name);
+      hits.push({ server, name, sources: info.sources.slice(), file: disp, line: info.line });
+    }
+    byServer.set(server, names);
+  }
+
+  return { flat, byServer, hits, defs, agents };
+}
+
+interface Vi14RefCandidate { server: string; tool: string; via: string; }
+
+function vi14RefCandidates(server: string, tool: string): Vi14RefCandidate[] {
+  const out: Vi14RefCandidate[] = [{ server, tool, via: "exact" }];
+  for (const s of VI14_SERVER_RENAMES[server] ?? []) {
+    out.push({ server: s, tool, via: "server rename " + server + "->" + s });
+  }
+  const servers = [server, ...(VI14_SERVER_RENAMES[server] ?? [])];
+  for (const s of servers) {
+    out.push({ server: s, tool: s + "_" + tool, via: "compound " + s + "_" + tool });
+  }
+  return out;
+}
+
+type Vi14Status = "tool-backend" | "equivalente" | "servido-por-mock" | "capacidad-sin-tool" | "deuda-real";
+
+interface Vi14Classification {
+  status: Vi14Status;
+  real: string | null;
+  evidence: string[];
+}
+
+function vi14ClassifyRef(
+  server: string,
+  tool: string,
+  backend: Vi14BackendIndex,
+  registryKeys: Set<string>,
+): Vi14Classification {
+  const dotted = server + "." + tool;
+  const seed = VI14_EQUIVALENCES[dotted] ?? [];
+  const cands = vi14RefCandidates(server, tool);
+
+  // 1) the tool exists in the backend under the ref (renamed) server
+  for (const c of cands) {
+    if (backend.byServer.get(c.server)?.has(c.tool)) {
+      return { status: "tool-backend", real: c.server + "." + c.tool, evidence: [c.via + ": " + c.server + "::" + c.tool] };
+    }
+  }
+
+  // 2) audited equivalence registered in the backend (any server)
+  for (const n of seed) {
+    for (const [srv, set] of backend.byServer) {
+      if (set.has(n)) {
+        return { status: "equivalente", real: srv + "." + n, evidence: ["audited equivalence: " + srv + "::" + n] };
       }
     }
   }
-  return names;
+
+  // 3) mock coverage: exact / renamed / compound / audited equivalence
+  for (const c of cands) {
+    if (registryKeys.has(c.server + "::" + c.tool)) {
+      return { status: "servido-por-mock", real: c.server + "." + c.tool, evidence: [c.via + ": mock " + c.server + "::" + c.tool] };
+    }
+  }
+  for (const n of seed) {
+    for (const k of registryKeys) {
+      if (k.endsWith("::" + n)) {
+        return { status: "servido-por-mock", real: k.replace("::", "."), evidence: ["audited equivalence in mock: " + k] };
+      }
+    }
+  }
+
+  // 4) capability exists as a def but is not exposed as a tool
+  for (const n of [tool, ...seed]) {
+    const dh = backend.defs.get(n);
+    if (dh && dh.length > 0) {
+      return { status: "capacidad-sin-tool", real: null, evidence: ["def " + n + " (" + dh[0]!.file + ":" + dh[0]!.line + ") is not a registered tool"] };
+    }
+  }
+
+  return { status: "deuda-real", real: null, evidence: ["no trace in specs, docstrings, methods, defs or mock"] };
 }
+
+export { extractBackendToolNames, vi14ClassifyRef, vi14RefCandidates };
 
 /** Custom properties defined at declaration position (line start). */
 function extractDefinedTokens(cssFiles: string[]): Set<string> {
@@ -539,7 +727,6 @@ function buildContext(root: string): ScanContext {
   const registryFound = registryContent !== null;
 
   const mcpQueries = collectMcpQueries(frontendSrc, tsFiles);
-  const extraToolRefs = collectExtraToolRefs(frontendSrc, tsFiles);
   const backendTools = extractBackendToolNames(pyFiles);
 
   const definedTokens = extractDefinedTokens(cssFiles);
@@ -556,7 +743,6 @@ function buildContext(root: string): ScanContext {
     registryKeys,
     registryFound,
     mcpQueries,
-    extraToolRefs,
     backendTools,
     backendScanned,
     definedTokens,
@@ -808,7 +994,7 @@ function checkRawButtons(ctx: ScanContext): CheckOutcome {
     if (!content) continue;
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
-      if (/<button(?=[\s>]|$)/.test(lines[i]!.replace(/\r$/, ""))) {
+      if (/<button[\s>]/.test(lines[i]!)) {
         findings.push({
           file: relPath,
           line: i + 1,
@@ -892,57 +1078,88 @@ function checkPermissionGates(ctx: ScanContext): CheckOutcome {
 function checkBackendTools(ctx: ScanContext): CheckOutcome {
   const findings: Finding[] = [];
   const notes: string[] = [];
-  const degraded = !ctx.backendScanned || ctx.backendTools.size === 0;
+  const idx = ctx.backendTools;
+  const degraded = !ctx.backendScanned || idx.flat.size === 0;
 
   if (!ctx.backendScanned) {
-    notes.push(`Backend source not found at ${relFrom(ctx.root, ctx.backendSrc)} — backend coverage is unknown.`);
-  } else if (ctx.backendTools.size === 0) {
+    notes.push("Backend source not found at " + relFrom(ctx.root, ctx.backendSrc) + " — backend coverage is unknown.");
+  } else if (idx.flat.size === 0) {
     notes.push(
-      "Backend scanned but no tool registrations detected (@…tool decorators, add_tool/register_tool, Tool(name=…)). " +
-        "If the backend uses another convention, this check degrades to advisory — extend extractBackendToolNames.",
+      "VI-14 v2: backend scanned but no tools extracted from specs, TOOLS: docstrings or agent methods — extraction rules need review.",
     );
   }
-  notes.push("Extraction is registration-based: @<server>.tool / @tool over def (incl. name=), .add_tool(...), Tool(name=…).");
+  notes.push(
+    "VI-14 v2 (motor-based): tools extracted per agent — specs (name=), TOOLS: docstrings, tool_specs keys; spec-less agents expose their public methods (that is what dir(self) registers via BaseAgent.register_with_mcp).",
+  );
+  notes.push(
+    "Server renames applied: families->family_profile, facilities->facility_management, guests->guest_management, engagement->member_engagement/satisfaction, reports->executive_dashboard; mock compound keys (server_tool) recognized.",
+  );
+  notes.push("Audited equivalence map (P2-C3 audit, 2026-11-04) embedded as VI14_EQUIVALENCES — a ref is only 'missing' when no layer implements it.");
 
+  const counts: Record<Vi14Status, number> = {
+    "tool-backend": 0,
+    equivalente: 0,
+    "servido-por-mock": 0,
+    "capacidad-sin-tool": 0,
+    "deuda-real": 0,
+  };
   const missingBoth = new Map<string, McpQueryRef>();
-  const mockOnly = new Map<string, McpQueryRef>();
-  for (const q of ctx.mcpQueries) {
-    const key = `${q.server}::${q.tool}`;
-    const inMock = ctx.registryKeys.has(key);
-    const inBackend = ctx.backendTools.has(q.tool);
-    if (!inMock && !inBackend) missingBoth.set(key, q);
-    else if (inMock && !inBackend && !degraded) mockOnly.set(key, q);
-  }
 
-  for (const q of missingBoth.values()) {
-    findings.push({
-      file: q.file,
-      line: q.line,
-      message: degraded
-        ? `${q.server}.${q.tool} not in mock registry and backend detection is degraded — verify manually`
-        : `${q.server}.${q.tool} exists neither in the mock registry nor in the backend`,
-      severity: degraded ? "info" : "warning",
-    });
-  }
-  for (const q of mockOnly.values()) {
-    findings.push({
-      file: q.file,
-      line: q.line,
-      message: `${q.server}.${q.tool} is mock-only (backend implementation pending)`,
-      severity: "info",
-    });
+  for (const q of ctx.mcpQueries) {
+    const cls = vi14ClassifyRef(q.server, q.tool, idx, ctx.registryKeys);
+    counts[cls.status] += 1;
+    if (cls.status === "deuda-real") missingBoth.set(q.server + "::" + q.tool, q);
+
+    if (cls.status === "equivalente") {
+      findings.push({
+        file: q.file,
+        line: q.line,
+        message:
+          q.server + "." + q.tool + " is called under a name the platform never exposes — the real tool is " +
+          cls.real + " (" + cls.evidence.join("; ") + "); rewrite the ref (or alias the mock)",
+        severity: "warning",
+      });
+    } else if (cls.status === "capacidad-sin-tool") {
+      findings.push({
+        file: q.file,
+        line: q.line,
+        message:
+          q.server + "." + q.tool + " has backend capability but no registered tool — expose it or drop the ref (" +
+          cls.evidence.join("; ") + ")",
+        severity: "warning",
+      });
+    } else if (cls.status === "servido-por-mock") {
+      findings.push({
+        file: q.file,
+        line: q.line,
+        message: q.server + "." + q.tool + " is mock-only (backend implementation pending) — real name: " + cls.real,
+        severity: "info",
+      });
+    } else if (cls.status === "deuda-real") {
+      findings.push({
+        file: q.file,
+        line: q.line,
+        message:
+          q.server + "." + q.tool + " exists in neither mock nor backend under any audited name — genuine implementation debt",
+        severity: "warning",
+      });
+    }
   }
 
   return outcome(
     "backend-tools",
     "6. Tools Missing from Mock AND Backend",
-    degraded ? "info" : "warning",
+    degraded ? "info" : findings.some((f) => f.severity === "warning") ? "warning" : "info",
     findings,
     [
       ["refs", ctx.mcpQueries.length],
-      ["backendTools", ctx.backendTools.size],
+      ["backendTools", idx.flat.size],
+      ["backendAgents", idx.agents.length],
+      ["toolBackend", counts["tool-backend"]],
+      ["equivalente", counts["equivalente"]],
+      ["mockOnly", counts["servido-por-mock"]],
+      ["capacidadSinTool", counts["capacidad-sin-tool"]],
       ["missingBoth", missingBoth.size],
-      ["mockOnly", mockOnly.size],
     ],
     notes,
   );
@@ -1006,20 +1223,14 @@ function checkDuplicateRoutes(ctx: ScanContext): CheckOutcome {
 
 function checkOrphanMocks(ctx: ScanContext): CheckOutcome {
   const findings: Finding[] = [];
-  const notes: string[] = [
-    "Heuristic (VI-12): references counted from useMCPQuery + useMCPMutation + callMCPTool + adjacent {server, tool} data pairs — direct registry calls are still not tracked.",
-  ];
+  const notes: string[] = ["Heuristic: only useMCPQuery(…) hook references count — direct registry calls are not tracked."];
 
   if (!ctx.registryFound) {
     notes.push("mock-registry.ts not found — nothing to check.");
     return outcome("orphan-mocks", "8. Orphan Mock Entries", "info", findings, [["registryKeys", 0]], notes);
   }
 
-  const usedKeys = new Set(
-    ctx.mcpQueries
-      .concat(ctx.extraToolRefs)
-      .map((q) => `${q.server}::${q.tool}`),
-  );
+  const usedKeys = new Set(ctx.mcpQueries.map((q) => `${q.server}::${q.tool}`));
   const orphansByServer = new Map<string, string[]>();
   let orphanCount = 0;
   for (const key of ctx.registryKeys) {
@@ -1049,7 +1260,6 @@ function checkOrphanMocks(ctx: ScanContext): CheckOutcome {
       ["registryKeys", ctx.registryKeys.size],
       ["referenced", ctx.registryKeys.size - orphanCount],
       ["orphanTools", orphanCount],
-      ["extraRefs", ctx.extraToolRefs.length],
     ],
     notes,
   );
@@ -1217,7 +1427,7 @@ function buildJsonReport(
       cssFiles: ctx.cssFiles.length,
       pyFiles: ctx.pyFiles.length,
       backendDetected: ctx.backendScanned,
-      backendTools: ctx.backendTools.size,
+      backendTools: ctx.backendTools.flat.size,
       mockRegistryFound: ctx.registryFound,
       routerFound: ctx.routerContent !== null,
       tokenSource: ctx.tokenSource,
