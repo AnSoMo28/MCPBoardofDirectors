@@ -160,7 +160,7 @@ export function WellnessDashboard({ familyId: propFamilyId }: Props) {
         title="Wellness Inteligente"
         subtitle={
           d.selectedFamily
-            ? `Seleccionando: ${d.selectedFamily.familyName}`
+            ? `Seleccionando: ${d.selectedFamily.name}`
             : "Motor de análisis de bienestar integral"
         }
         breadcrumbs={[

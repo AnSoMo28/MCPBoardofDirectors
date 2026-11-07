@@ -510,9 +510,9 @@ export default function ReservationCalendar({
   const dateTo = viewMode === "week" ? weekDates[6] : anchorDate;
 
   const { data, isLoading, isError, error } = useMCPQuery<CalendarQueryResponse>(
-    "facilities",
-    "list_reservations",
-    { facilityId, dateFrom, dateTo },
+    "facility_management",
+    "get_facility_reservations",
+    { facility_id: facilityId, date_from: dateFrom, date_to: dateTo },
     { enabled: !!facilityId },
   );
 

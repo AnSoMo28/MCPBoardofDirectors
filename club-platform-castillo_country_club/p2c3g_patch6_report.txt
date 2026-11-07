@@ -1,0 +1,115 @@
+P2-C3g · g10-patch6 — C16 cadena completa: selector + useWellnessDashboard + consumidores
+
+══ A. Evidencia — selectedFamily / Family / imports en la cadena ══
+  ── src/features/wellness/hooks/useWellnessDashboard.ts (253 líneas) · selectedFamily|Family|familyName|memberCount|engagementScore ──
+      31│ import type { Family } from "@/features/families/types";
+      73│   const [selectedFamily, setSelectedFamily] = useState<Family | null>(
+      86│   // ── Family resolution ────────────────────────────────────
+      89│     propFamilyId || user?.familyId || selectedFamily?.id || "";
+     209│   // ── Family selection ─────────────────────────────────────
+     211│   const handleFamilySelect = useCallback((family: Family) => {
+     212│     setSelectedFamily(family);
+     218│     setSelectedFamily(null);
+     225│   const familyName =
+     227│     selectedFamily?.familyName ||
+     233│     familyName,
+     234│     selectedFamily,
+  ── useState con Family ──
+      73│   const [selectedFamily, setSelectedFamily] = useState<Family | null>(
+  ── imports families/types ──
+      31│ import type { Family } from "@/features/families/types";
+  ── otros archivos con selectedFamily: 5 ──
+    frontend/src/features/communications/hooks/usePersonalizedComposer.ts:
+       323│   const selectedFamily: ComposerFamilyOption | undefined = COMPOSER_FAMILY_OPTIONS.find(
+       326│   const tierCtx = selectedFamily ? COMPOSER_TIER_CONTEXT[selectedFamily.tier] : null;
+       349│     selectedFamily,
+    frontend/src/features/families/components/FamilyQuickPreview.tsx:
+         3│ // Phase 34+ Migration — Family Quick Preview Panel
+        15│ //   Family         → ../types.ts §1 ✅
+        53│ import type { Family } from "../types";
+       102│   readonly family: Family | null;
+       113│   family: Family,
+       122│       text: `Engagement en descenso — ${family.engagementScore}/100`,
+       126│   } else if (trend === "up" && family.engagementScore >= 55) {
+       129│       text: `Engagement creciendo — ${family.engagementScore}/100`,
+       168│   if (entries.length < 2 && family.engagementScore >= 70) {
+       171│       text: `Familia activa — ${family.engagementScore}/100 engagement`,
+       185│   family: Family,
+       201│   if (family.engagementScore < 50) {
+       205│       reason: `Engagement en ${family.engagementScore}/100`,
+       224│   if (family.engagementScore >= 80 && family.churnRisk === "low") {
+       238│     reason: `${family.memberCount} miembro${family.memberCount !== 1 ? "s" : ""} · ${TIER_CONFIG[family.tier]?.label ?? family.tier}`,
+       384│  *   family={selectedFamily}
+       528│         aria-label={`Vista previa de ${family.familyName}`}
+       538│                 {family.familyName}
+       542│                 {family.primaryContact.lastName} · {family.memberCount}{" "}
+       543│                 miembro{family.memberCount !== 1 ? "s" : ""}
+       603│                     {family.engagementScore}
+       609│                       data-positive={family.engagementScore >= clubBenchmarks.avgEngagement || undefined}
+       610│                       data-negative={family.engagementScore < clubBenchmarks.avgEngagement || undefined}
+       612│                       {family.engagementScore >= clubBenchmarks.avgEngagement ? "+" : ""}
+       613│                       {family.engagementScore - clubBenchmarks.avgEngagement}
+       622│                       data-zone={family.engagementScore >= 70 ? "hot" : family.engagementScore >= 40 ? "warm" : "cold"}
+    frontend/src/features/families/components/IntelligenceGlance.tsx:
+        42│ //   Family       → ../types.ts §1 ✅
+        64│ import type { Family } from "../types";
+        94│   readonly family: Family;
+       117│  *   family={selectedFamily}
+       185│       aria-label={`Intelligence glance para ${family.familyName}`}
+    frontend/src/features/finance/components/MemberProfitabilityMatrix.tsx:
+       240│    Family Detail Card — GLASS (selected from scatter)
+       410│   const selectedFamily = useMemo(
+       681│               {selectedFamily ? (
+       683│                   key={selectedFamily.family_id}
+       684│                   family={selectedFamily}
+    frontend/src/features/wellness/WellnessDashboard.tsx:
+       162│           d.selectedFamily
+       163│             ? `Seleccionando: ${d.selectedFamily.familyName}`
+       195│         subtitle={`${d.familyName} · Sin datos`}
+       230│       subtitle={`${d.familyName} · ${d.dateFrom} a ${d.dateTo}`}
+       288│             familyName={d.familyName}
+  ── WellnessDashboard.tsx · líneas con Family (¿importa el tipo?) ──
+    · ninguna (no importa Family — sólo consume d.*)
+
+══ B. Fila C16 — cadena selector + hook + consumidores ══
+  guards hook: param=1/1 · setSelected(family)=1/1 · useState-Family=1/1 · última import=l32
+  C16 REWRITE ✓ cadena completa:
+    · selector: WellnessFamilyItem(7 snake) local · onSelect re-tipado (igual que patch5)
+    · hook: SelectedFamily top-level · useState: const [selectedFamily, setSelectedFamily] = useState<Family | null>(
+      → const [selectedFamily, setSelectedFamily] = useState<SelectedFamily | null>(
+    · hook renames: familyName×1→.name · memberCount×0→.member_count · engagementScore×0→.engagement_score
+    · hook import: import Family eliminado
+    · frontend/src/features/communications/hooks/usePersonalizedComposer.ts: renames + sin import de Family
+    · frontend/src/features/families/components/FamilyQuickPreview.tsx: renames + import conservado — Family sigue en línea(s) 53,102,113,185
+    · frontend/src/features/families/components/IntelligenceGlance.tsx: renames + import conservado — Family sigue en línea(s) 64,94
+    · frontend/src/features/finance/components/MemberProfitabilityMatrix.tsx: renames + import conservado — Family sigue en línea(s) 240
+    · frontend/src/features/wellness/WellnessDashboard.tsx: renames + sin import de Family
+    ↻ gate tsc …
+  ✗ tsc FALLÓ — rollback total de la cadena:
+      src/features/wellness/hooks/useWellnessDashboard.ts:38 11 TS1005
+      src/features/wellness/hooks/useWellnessDashboard.ts:38 26 TS1005
+      src/features/wellness/hooks/useWellnessDashboard.ts:39 13 TS1005
+      src/features/wellness/hooks/useWellnessDashboard.ts:40 15 TS1005
+      src/features/wellness/hooks/useWellnessDashboard.ts:41 15 TS1005
+      src/features/wellness/hooks/useWellnessDashboard.ts:42 17 TS1005
+      src/features/wellness/hooks/useWellnessDashboard.ts:43 23 TS1005
+      src/features/wellness/hooks/useWellnessDashboard.ts:44 27 TS1005
+      src/features/wellness/hooks/useWellnessDashboard.ts:45 20 TS1005
+      src/features/wellness/hooks/useWellnessDashboard.ts:49 1 TS1109
+      src/features/wellness/hooks/useWellnessDashboard.ts:49 3 TS1434
+  ⤺ cadena revertida (sección A + errores arriba = evidencia para patch7)
+
+══ C. End-state ══
+  C16 no aplicado · #9 APLICADO (g8)
+  · entradas key:[…] en ledger VI14: 22
+  git diff --stat:
+.../communications/hooks/usePreferencesForm.ts     |  4 +-
+ .../features/engagement/ReactivationCampaigns.tsx  |  6 +-
+ .../frontend/src/features/engagement/types.ts      |  2 +-
+ .../src/features/facilities/FacilityMap.tsx        | 18 +++--
+ .../facilities/components/ReservationCalendar.tsx  |  6 +-
+ .../frontend/src/features/guests/GuestList.tsx     | 77 ++++++++++++++++------
+ .../src/features/guests/GuestRegistration.tsx      | 10 +--
+ .../wellness/components/WellnessFamilySelector.tsx |  6 +-
+ .../scripts/p2c3e_vi14_patch.ts                    |  3 -
+ 9 files changed, 86 insertions(+), 46 deletions(-)

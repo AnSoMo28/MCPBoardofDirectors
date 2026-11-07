@@ -124,7 +124,7 @@ export interface ReactivationCampaign {
 
 export interface CampaignListResponse {
   campaigns: ReactivationCampaign[];
-  total: number;
+  total?: number; // P2-C3g: backend no devuelve total
 }
 
 export type CampaignForm = {

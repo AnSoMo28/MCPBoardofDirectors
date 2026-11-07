@@ -493,20 +493,26 @@ export default function FacilityMap({
     "facility_management",
     "manage_facilities",
     {
+
       action: "list",
-      search: deferredSearch || undefined,
-      type: typeFilter || undefined,
-      status: statusFilter || undefined,
+
     },
   );
 
   const { data: utilizationData } = useMCPQuery<AmenityUtilizationResponse>(
-    "facilities",
-    "get_utilization",
+    "facility_management",
+    "get_amenity_utilization",
     {},
   );
 
-  const facilities = useMemo(() => data?.facilities ?? [], [data]);
+  const facilities = useMemo(() => {
+    const all = data?.facilities ?? [];
+    const q = deferredSearch.trim().toLowerCase();
+    return all.filter((f) => {
+      if (q && !(f.name ?? "").toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [data, deferredSearch]);
 
   // ── Spatial graph (Prop #5) ──
   const spatialGraph = useMemo(

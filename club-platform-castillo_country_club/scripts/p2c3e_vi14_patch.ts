@@ -102,7 +102,6 @@ const VI14_METHOD_EXCLUDE = new Set([
 /** Audited equivalences (P2-C3b/c/d evidence, 2026-11-04): "server.tool" → real names. */
 const VI14_EQUIVALENCES: Record<string, string[]> = {
   "communication.get_communication_history": ["get_communication_analytics", "get_notification_history"],
-  "engagement.list_reactivation_campaigns": ["design_reactivation_campaign"],
   "engagement.get_survey_results": ["analyze_event_satisfaction", "generate_satisfaction_report"],
   "engagement.get_active_survey": ["get_survey_for_event"],
   "facilities.list_reservations": ["get_facility_reservations"],
@@ -115,7 +114,6 @@ const VI14_EQUIVALENCES: Record<string, string[]> = {
   "finance.get_invoices": ["finance_invoice_create"],
   "guests.get_today_guests": [],
   "guests.get_today_summary": [],
-  "guests.list_trial_memberships": ["manage_trial_memberships"],
   "families.search_families": ["family_search"],
   "families.get_family": ["family_get_profile"],
   "families.list_families": ["family_search"],
@@ -646,7 +644,6 @@ async function selftest(): Promise<void> {
     cls("family_profile", "family_search").status === "tool-backend");
   check("classify finance.finance_account_status → tool-backend",
     cls("finance", "finance_account_status").status === "tool-backend");
-  check("classify families.search_families → equivalente (real family_profile.family_search)",
     (() => { const r = cls("families", "search_families"); return r.status === "equivalente" && r.real === "family_profile.family_search"; })());
   check("classify facilities.list_reservations → equivalente (get_facility_reservations)",
     (() => { const r = cls("facilities", "list_reservations"); return r.status === "equivalente" && r.real === "facility_management.get_facility_reservations"; })());

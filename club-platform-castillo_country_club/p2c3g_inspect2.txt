@@ -1,0 +1,1626 @@
+P2-C3g · g2-inspect2 — evidencia final para p2c3g_patch.ts
+  filas: 18 · olds únicos: 18 · reales únicos: 16
+  backend: 130 py · frontend/src: 813 ts/tsx
+
+══ A. shared/lib/api.ts — callMCPTool (envelope + fallback mock) ═══════════
+  574 líneas · callMCPTool @ línea 420
+   414  * @param agent — MCP server/agent name (e.g., "events", "financial")
+   415  * @param tool — Tool name (e.g., "get_calendar", "get_summary")
+   416  * @param params — Tool parameters
+   417  * @returns Parsed response typed as T
+   418  * @throws APIError — on routing failure, auth failure, or backend error
+   419  */
+   420 export async function callMCPTool<T = MCPResponse>(
+   421   agent: string,
+   422   tool: string,
+   423   params: Record<string, unknown> = {},
+   424 ): Promise<T> {
+   425   // G8-05: per-invocation capture — concurrency-safe (each callMCPTool
+   426   // has its own closure; no shared mutable state).
+   427   let backendError: unknown = null;
+   428 
+   429   const result = await routeMCPCall<T>(agent, tool, params, {
+   430     preferBackend: !isDevMockMode(),
+   431     fallbackToMock: isDevMockMode(),
+   432     devLogging: true,
+   433     backendCaller: async (
+   434       ...args: Parameters<typeof backendCaller>
+   435     ): Promise<unknown> => {
+   436       try {
+   437         return await backendCaller(...args);
+   438       } catch (error) {
+   439         backendError = error;
+   440         throw error;
+   441       }
+   442     },
+   443   });
+   444 
+   445   // Router returned an error — propagate as APIError
+   446   if (result.source === "error") {
+   447     if (backendError instanceof APIError) {
+   448       // Original status preserved (G8-05) — 401 stays 401.
+   449       throw backendError;
+   450     }
+   451     throw new APIError(
+   452       result.error ?? `Tool ${agent}.${tool} failed`,
+   453       500,
+   454     );
+   455   }
+   456 
+   457   // source is "backend" or "mock" — data is valid
+   458   return result.data;
+   459 }
+   460 
+   461 /**
+   462  * Get the migration report for the Settings page.
+   463  * Shows which MCP tools are served by backend vs mock registry.
+   464  */
+   465 export function getMigrationReport(): ReturnType<
+   466   typeof migrationTracker.getReport
+   467 > {
+   468   return migrationTracker.getReport();
+   469 }
+   470 
+   471 /**
+   472  * Health check — direct REST call (not MCP routed).
+   473  * Used to verify backend availability on app startup.
+   474  * Fails fast: 5s timeout (G8-07); malformed body → 502 (G8-08).
+   475  */
+   476 export async function healthCheck(): Promise<{
+   477   readonly status: string;
+   478   readonly agents: number;
+   479   readonly tools: number;
+   480 }> {
+   481   let response: unknown;
+   482   try {
+   483     response = await fetch(`${API_BASE}/health`, {
+   484       signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
+   485     });
+   486   } catch (error) {
+   487     if (isAbortLikeError(error)) {
+   488       throw new APIError("El servidor no respondió a tiempo", 408);
+   489     }
+   490     throw error;
+   491   }
+   492 
+   493   const maybeResp = response as { ok?: boolean; status?: number };
+   494   if (!maybeResp.ok || typeof maybeResp.status !== "number") {
+   495     throw new APIError(
+   496       `Health check failed: ${String(maybeResp.status)}`,
+   497       typeof maybeResp.status === "number" ? maybeResp.status : 502,
+   498     );
+   499   }
+   500 
+   501   const body: Record<string, unknown> | null = await parseJsonBody(response);
+   502   if (
+   503     body === null ||
+   504     typeof body.status !== "string" ||
+   505     typeof body.agents !== "number" ||
+   506     typeof body.tools !== "number"
+   507   ) {
+   508     throw new APIError("Respuesta de health no válida", 502);
+   509   }
+   510 
+   511   return { status: body.status, agents: body.agents, tools: body.tools };
+   512 }
+   513 
+   514 /**
+  ── líneas mock/env/fallback del archivo ──
+    13 //   2. Mock registry (typed factories)
+    14 //   3. Error (NO silent fallbacks)
+    25 // [x] "OK (no mock)" silent success → errors propagate always
+    47 // [x] G8-07: loginRequest/healthCheck sin timeout — un backend muerto
+    49 //     (10s auth / 5s health). backendCaller SIN timeout deliberado:
+   143 * Token used in development to signal mock mode.
+   144 * Combined with import.meta.env.DEV guard to ensure
+   147 const DEV_MOCK_TOKEN = "dev-token-no-real" as const;
+   153 * Auth/health endpoints must fail FAST — a dead backend cannot be
+   157 const HEALTH_TIMEOUT_MS = 5_000;
+   292 * take 10-30s. Fail-fast timeouts belong to auth/health only (G8-07).
+   353 * Whether the app is running in dev mock mode.
+   354 * Guarded by import.meta.env.DEV — NEVER returns true in production.
+   356 * When true, the MCP Router skips backend and uses mock registry.
+   359 function isDevMockMode(): boolean {
+   360 if (!import.meta.env.DEV) return false;
+   361 return authDelegate?.getAccessToken() === DEV_MOCK_TOKEN;
+   403 *   1. Backend — if available and not in dev mock mode
+   404 *   2. Mock registry — if backend failed and fallback is enabled
+   430 preferBackend: !isDevMockMode(),
+   431 fallbackToMock: isDevMockMode(),
+   457 // source is "backend" or "mock" — data is valid
+
+══ B. shared/mocks/mock-registry.ts — fábricas runtime (nombres reales) ════
+  705 líneas · primeras 26:
+     1 // src/shared/mocks/mock-registry.ts
+     2 // ═══════════════════════════════════════════════════════════
+     3 // Mock Registry — Castillo Country Club
+     4 //
+     5 // Maps server.tool keys to typed factory functions.
+     6 // callMCPTool() looks up this registry before hitting the backend.
+     7 //
+     8 // To migrate a tool to backend real:
+     9 //   1. Delete the key from MOCK_REGISTRY
+    10 //   2. callMCPTool() will automatically fall through to /api/mcp
+    11 //   3. Verify backend response matches the contract in contracts.ts
+    12 //
+    13 // Auditado: Fase 14b — Mayo 2025
+    14 //   - Fix #35: Eliminada key duplicada get_financial_summary
+    15 //   - Fix #36: Agregado import faltante createMockFinancialSummary
+    16 //   - Fix #37: Agregados 13 imports faltantes de Fase 13
+    17 //   - Fix NEW-A: getMockResponse ahora pasa params a factories
+    18 //   - Fix NEW-B: Eliminados 4 imports muertos
+    19 //   - Fix NEW-C: Eliminado código comentado obsoleto
+    20 //   - Fix NEW-D: MockFactory type acepta params opcionales
+    21 //   - Fix NEW-E: Eliminada referencia obsoleta a mock-data.ts
+    22 // ═══════════════════════════════════════════════════════════
+    23 import { normalizeEnums } from "./normalizeEnums";
+    24 
+    25 import {
+    26   createFinancialAIReport,
+  ── hits de nuestros nombres (viejo ∪ real) ──
+  ▹ communication.get_communication_history — sin hit
+  ▹ engagement.list_reactivation_campaigns — sin hit
+  ▹ engagement.get_survey_results — sin hit
+  ▹ engagement.get_active_survey — sin hit
+  ▹ facilities.get_utilization — sin hit
+  ▹ facilities.list_reservations — sin hit
+  ▹ finance.get_family_account — sin hit
+  ▹ finance.get_invoices — sin hit
+  ▹ guests.list_trial_memberships — sin hit
+  ▹ families.search_families — sin hit
+  ▹ facilities.list_available_facilities — sin hit
+  ▹ families.get_family — sin hit
+  ▹ facilities.get_reservations — sin hit
+  ▹ reports.get_board_report — sin hit
+  ▹ reports.get_risk_matrix — sin hit
+  ▹ families.list_families — sin hit
+  ▹ finance.narrative_generate — sin hit
+  ▹ finance.scenario_simulate — sin hit
+  ▹ communication.get_communication_analytics — sin hit
+  ▹ member_engagement.design_reactivation_campaign — sin hit
+  ▹ satisfaction.analyze_event_satisfaction — sin hit
+  ▹ satisfaction.get_survey_for_event — sin hit
+  ▹ facility_management.get_amenity_utilization — sin hit
+  ▹ facility_management.get_facility_reservations — sin hit
+  ▹ finance.finance_account_status — sin hit
+  ▹ finance.finance_invoice_create — sin hit
+  ▹ guest_management.manage_trial_memberships — sin hit
+  ▹ family_profile.family_search — sin hit
+  ▹ facility_management.manage_facilities — sin hit
+  ▹ family_profile.family_get_profile — sin hit
+  ▹ executive_dashboard.generate_quarterly_board_report — sin hit
+  ▹ member_360.get_member_risk_assessment — sin hit
+  ▹ advisor_intelligence.generate_insight_narrative — sin hit
+  ▹ advisor_intelligence.simulate_scenario — sin hit
+
+══ C. useCommunicationData.ts:1-60 — ¿qué tool sirve history? ══════════════
+     1 // ═══════════════════════════════════════════════════════════
+     2 // F47-B — Communication Data Hook
+     3 // Keys: .analytics, .history (verified), .scheduled (TBD)
+     4 // ═══════════════════════════════════════════════════════════
+     5 
+     6 import { useMemo } from "react";
+     7 import { useMCPQuery } from "@/shared/hooks/useMCPQuery";
+     8 import { normalizeEnums } from "@/shared/mocks/normalizeEnums";
+     9 import { useCommunicationAdvisor } from "./useCommunicationAdvisor";
+    10 import type { CommunicationAnalyticsData, HistoryItem, ScheduledItem } from "../types";
+    11 import type { RAGContext } from "@/shared/lib/advisor-engine/types";
+    12 
+    13 interface CommAnalyticsMCPResponse {
+    14   status: string;
+    15   message: string;
+    16   analytics: CommunicationAnalyticsData;
+    17 }
+    18 
+    19 interface HistoryMCPResponse {
+    20   status: string;
+    21   message: string;
+    22   history: unknown[];
+    23   total: number;
+    24 }
+    25 
+    26 // TODO F47-B: Verify key name against schedule_notification factory.
+    27 // Inferred: .scheduled — may be .notifications or .data.
+    28 interface ScheduledMCPResponse {
+    29   status: string;
+    30   message: string;
+    31   scheduled: unknown[];
+    32 }
+    33 
+    34 export interface UseCommunicationDataOptions {
+    35   enabled?: boolean;
+    36   staleTime?: number;
+    37   ragContext?: RAGContext[];
+    38 }
+    39 
+    40 export function useCommunicationData(options: UseCommunicationDataOptions = {}) {
+    41   const { enabled = true, staleTime = 120_000, ragContext } = options;
+    42 
+    43   const analyticsQuery = useMCPQuery<CommAnalyticsMCPResponse>(
+    44     "communication", "get_communication_analytics", {},
+    45     { staleTime, enabled },
+    46   );
+    47 
+    48   const historyQuery = useMCPQuery<HistoryMCPResponse>(
+    49     "communication", "get_notification_history", {},
+    50     { staleTime, enabled },
+    51   );
+    52 
+    53   const scheduledQuery = useMCPQuery<ScheduledMCPResponse>(
+    54     "communication", "schedule_notification", { action: "list" },
+    55     { staleTime: 60_000, enabled },
+    56   );
+    57 
+    58   const analytics: CommunicationAnalyticsData | null = useMemo(() => {
+    59     if (!analyticsQuery.data?.analytics) return null;
+    60     return normalizeEnums(
+
+══ D. backend — firmas completas y specs de los tools ambiguos ═════════════
+  ── D1 · spec family_search ──
+  ▸ backend/src/club_mcp/agents/family_profile.py:11
+          3 Club: Castillo Country Club (club de montana)
+          4 
+          5 TOOLS (16):
+          6   family_get_profile              🟢 AUTO        Consulta perfil
+          7   family_create_profile           🔴 HITL        Crear membresia
+          8   family_update_members           🔴 HITL        Agregar/quitar miembros
+          9   family_set_preferences          🟡 SEMI-AUTO   Actualizar preferencias
+         10   family_get_activity_hist        🟢 AUTO        Historial de actividades
+         11   family_search                   🟢 AUTO        Buscar familias
+         12   family_get_social_graph         🟢 AUTO        Grafo social
+         13   family_update_profile           🟡 SEMI-AUTO   Actualizar perfil (NEW)
+         14   family_predict_churn            🟢 AUTO        Prediccion churn (NEW)
+         15   family_recommend_activities     🟢 AUTO        Recomendar actividades (NEW)
+         16   family_social_match             🟢 AUTO        Coincidencias sociales (NEW)
+         17   family_engagement_plan          🟢 AUTO        Plan de engagement (NEW)
+         18   family_lifecycle_analysis       🟢 AUTO        Analisis ciclo vida (NEW)
+         19   family_360_insight              🟢 AUTO        Inteligencia 360 (NEW)
+         20   family_social_graph_enriched    🟢 AUTO        Grafo social enriquecido (NEW)
+         21   family_milestone_tracker        🟢 AUTO        Tracker de hitos (NEW)
+         22 """
+         23 
+         24 from __future__ import annotations
+         25 
+         26 import logging
+         27 from datetime import date
+         28 from typing import Any
+         29 from uuid import UUID
+         30 
+  ▸ backend/src/club_mcp/agents/family_profile.py:566
+        558             "family_name": family.name,
+        559             "activities": activities,
+        560             "total": len(activities),
+        561             "period": {"from": date_from or "inicio", "to": date_to or "presente"},
+        562             "message": f"La familia {family.name} ha participado en {len(activities)} actividades.",
+        563         }
+        564 
+        565     @MCPTool(
+        566         name="family_search",
+        567         description=(
+        568             "Busca familias por nombre, email, tier de membresia, "
+        569             "grupo etario de sus miembros, o nivel de engagement."
+        570         ),
+        571         approval=ApprovalLevel.AUTO,
+        572     )
+        573     async def search_families(
+        574         self,
+        575         query: str = "",
+        576         tier: str = "",
+        577         age_group: str = "",
+        578         engagement_min: int = 0,
+        579         limit: int = 50,
+        580     ) -> dict[str, Any]:
+        581         parsed_tier = None
+        582         parsed_age_group = None
+        583 
+        584         if tier:
+        585             try:
+  ── D2 · spec family_get_profile ──
+  ▸ backend/src/club_mcp/agents/base.py:24
+         16 
+         17 logger = logging.getLogger(__name__)
+         18 
+         19 
+         20 class MCPTool:
+         21     """
+         22     Decorator to mark a method as an MCP tool.
+         23     Usage:
+         24         @MCPTool("family_get_profile", "Obtiene el perfil", ApprovalLevel.AUTO)
+         25         async def get_profile(self, family_id: str) -> dict: ...
+         26     """
+         27 
+         28     def __init__(
+         29         self,
+         30         name: str,
+         31         description: str,
+         32         approval: ApprovalLevel = ApprovalLevel.AUTO,
+         33         approver_roles: Optional[list[str]] = None,
+         34     ) -> None:
+         35         self.name = name
+         36         self.description = description
+         37         self.approval = approval
+         38         self.approver_roles = approver_roles or []
+         39 
+         40     def __call__(self, func: Callable) -> Callable:
+         41         func._mcp_tool = True  # type: ignore[attr-defined]
+         42         func._tool_name = self.name  # type: ignore[attr-defined]
+         43         func._tool_description = self.description  # type: ignore[attr-defined]
+  ▸ backend/src/club_mcp/agents/family_profile.py:6
+          1 """
+          2 FamilyProfileAgent: Gestion de perfiles familiares.
+          3 Club: Castillo Country Club (club de montana)
+          4 
+          5 TOOLS (16):
+          6   family_get_profile              🟢 AUTO        Consulta perfil
+          7   family_create_profile           🔴 HITL        Crear membresia
+          8   family_update_members           🔴 HITL        Agregar/quitar miembros
+          9   family_set_preferences          🟡 SEMI-AUTO   Actualizar preferencias
+         10   family_get_activity_hist        🟢 AUTO        Historial de actividades
+         11   family_search                   🟢 AUTO        Buscar familias
+         12   family_get_social_graph         🟢 AUTO        Grafo social
+         13   family_update_profile           🟡 SEMI-AUTO   Actualizar perfil (NEW)
+         14   family_predict_churn            🟢 AUTO        Prediccion churn (NEW)
+         15   family_recommend_activities     🟢 AUTO        Recomendar actividades (NEW)
+         16   family_social_match             🟢 AUTO        Coincidencias sociales (NEW)
+         17   family_engagement_plan          🟢 AUTO        Plan de engagement (NEW)
+         18   family_lifecycle_analysis       🟢 AUTO        Analisis ciclo vida (NEW)
+         19   family_360_insight              🟢 AUTO        Inteligencia 360 (NEW)
+         20   family_social_graph_enriched    🟢 AUTO        Grafo social enriquecido (NEW)
+         21   family_milestone_tracker        🟢 AUTO        Tracker de hitos (NEW)
+         22 """
+         23 
+         24 from __future__ import annotations
+         25 
+  ── D3 · firma completa manage_trial_memberships ──
+  ▸ backend/src/club_mcp/agents/guest_management_agent.py:394
+        394     async def manage_trial_memberships(
+        395         self,
+        396         action: str = "list",
+        397         trial_id: str = "",
+        398         guest_name: str = "",
+        399         guest_email: str = "",
+        400         guest_phone: str = "",
+        401         referred_by_family_id: str = "",
+        402         trial_type: str = "",
+        403         start_date: str = "",
+        404         end_date: str = "",
+        405         privileges: str = "",
+        406         notes: str = "",
+        407         new_status: str = "",
+        408         requested_by: str = "system",
+        409     ) -> dict[str, Any]:
+        410         # \u2500\u2500 List \u2500\u2500
+        411         if action == "list":
+        412             trials = await self.repo.list_trial_memberships(
+        413                 referred_by_family_id=referred_by_family_id,
+        414                 trial_type=trial_type,
+        415             )
+        416             return {
+        417                 "status": "success",
+        418                 "message": (
+        419                     f"\U0001f4cb Encontramos "
+        420                     f"{len(trials)} membres\u00eda(s) de prueba."
+        421                 ),
+        422                 "trial_memberships": [
+        423                     t.model_dump(mode="json") for t in trials
+        424                 ],
+        425             }
+        426 
+        427         # \u2500\u2500 Get \u2500\u2500
+        428         if action == "get":
+        429             if not trial_id:
+        430                 return {
+        431                     "status": "error",
+        432                     "message": "Se requiere trial_id \U0001f50d",
+        433                 }
+        434             trial = await self.repo.get_trial_membership(trial_id)
+        435             if not trial:
+        436                 return {
+        437                     "status": "not_found",
+        438                     "message": (
+        439                         f"No encontramos la membres\u00eda "
+        440                         f"{trial_id} \U0001f614"
+        441                     ),
+        442                 }
+        443             return {
+  ── D4 · finance_account_status (firma + return) ──
+  ▸ backend/src/club_mcp/agents/finance.py:408
+        408     async def finance_account_status(
+        409         self,
+        410         family_id: str,
+        411     ) -> dict[str, Any]:
+        412         """Get account status for a family."""
+        413         status = self.repo.get_account_status(family_id)
+        414 
+        415         if not status or (not status.invoices and status.total_invoiced == 0):
+        416             return {
+        417                 "status": "success",
+        418                 "message": "📋 No hay actividad financiera para esta familia.",
+        419                 "data": {"family_id": family_id, "balance_due": 0},
+        420             }
+        421 
+        422         emoji = "✅" if status.balance_due <= 0 else "⚠️"
+        423         overdue_msg = (
+        424             f" ¡Tiene {status.overdue_count} factura(s) vencida(s) "
+        425             f"por ${status.overdue_amount:,.2f}!"
+        426             if status.overdue_count > 0
+        427             else ""
+        428         )
+        429 
+        430         return {
+        431             "status": "success",
+        432             "message": (
+        433                 f"{emoji} Estado de cuenta: "
+        434                 f"Facturado ${status.total_invoiced:,.2f}, "
+        435                 f"Pagado ${status.total_paid:,.2f}, "
+        436                 f"Saldo ${status.balance_due:,.2f}.{overdue_msg}"
+        437             ),
+        438             "data": status.model_dump(mode="json"),
+        439             "balance_due": status.balance_due,
+        440             "overdue_amount": status.overdue_amount,
+        441         }
+        442 
+        443     # ─────────────────────────────────────────────────────────
+        444     # Tool 7: finance_category_update  🟡 SEMI-AUTO
+        445     # ─────────────────────────────────────────────────────────
+        446 
+        447     @MCPTool(
+  ── D5 · get_facility_reservations (agent + repo) ──
+  ▸ backend/src/club_mcp/agents/facility_management_agent.py:726
+        726     async def get_facility_reservations(
+        727         self, facility_id: str = "", date_from: str = "",
+        728         date_to: str = "", status: str = "",
+        729     ) -> dict[str, Any]:
+        730         status_filter = None
+        731         if status:
+        732             try:
+        733                 status_filter = ReservationStatus(status)
+        734             except ValueError:
+        735                 return {
+        736                     "status": "error",
+        737                     "message": (
+        738                         f"Estado no válido: '{status}'. "
+        739                         f"Opciones: {', '.join(s.value for s in ReservationStatus)}"
+        740                     ),
+        741                 }
+        742         reservations = await self.repo.list_reservations(
+        743             facility_id=facility_id or None,
+        744             date_from=date_from or None,
+        745             date_to=date_to or None,
+        746             status=status_filter,
+        747         )
+        748         return {
+        749             "status": "success",
+        750             "message": f"📅 {len(reservations)} reserva(s) encontrada(s).",
+        751             "reservations": [r.model_dump(mode="json") for r in reservations],
+        752             "total": len(reservations),
+        753         }
+        754 
+        755     # ──────────────────────────────────────────────────
+        756     # 🟢 TOOL: GET FACILITY ANALYTICS (AUTO) — 9 DIM
+        757     # ──────────────────────────────────────────────────
+        758 
+        759     @MCPTool(
+        760         name="get_facility_analytics",
+        761         description=(
+        762             "Análisis de inteligencia de 9 dimensiones para instalaciones. "
+        763             "Incluye: Health Score, Utilización, Mantenimiento, "
+        764             "Optimización de Espacios, Revenue, Cumplimiento, "
+        765             "Preparación de Eventos, Señales Cross-Domain, Predictivo."
+        766         ),
+        767         approval=ApprovalLevel.AUTO,
+        768     )
+        769     async def get_facility_analytics(self) -> dict[str, Any]:
+        770         analytics = await self.repo.get_facility_analytics()
+        771         return {
+  ── D6 · repo facility — capacidad family_id ──
+  ▸ backend/src/club_mcp/db/repositories/facility_management_repo.py:406
+        406                 "family_id": r[3], "family_name": r[4],
+  ▸ backend/src/club_mcp/db/repositories/facility_management_repo.py:611
+        611             "family_id": data.family_id, "family_name": data.family_name,
+  ── D7 · communication_agent — herramientas con history ──
+     11 get_notification_history           🟢 AUTO           Historial de notificaciones enviadas
+   1107 name="get_notification_history",
+   1115 async def get_notification_history(
+   1129 "history": [],
+   1181 "history": [l.model_dump(mode="json") for l in filtered],
+  ── D7b · communication_agent — tools registrados ──
+    270 name="broadcast_club_announcement",
+    432 name="manage_emergency_broadcast",
+    590 name="send_personalized_notification",
+    792 name="manage_notification_templates",
+    952 name="schedule_notification",
+   1107 name="get_notification_history",
+   1190 name="manage_communication_preferences",
+   1359 name="send_board_package",
+   1407 "name": "Director de Junta",
+   1419 "name": "Director de Junta",
+   1424 "name": "Vicepresidente",
+   1429 "name": "Tesorero",
+   1434 "name": "Secretario",
+   1481 name="list_announcements",
+   1536 name="update_announcement_status",
+   1638 name="get_communication_analytics",
+   1837 name="generate_communication_insights",
+   2256 name="get_communication_health",
+   2449 name="get_campaign_performance",
+  ── D8 · executive_dashboard — líneas con risk ──
+    116 risk_summary=(
+    193 risk_assessment=[
+    290 risk_summary=(
+    370 churn_risk_count=23,
+    417 at_risk_members=23,
+    536 churn_risk_count=23,
+    557 f"En riesgo: {membership.churn_risk_count}"
+    935 "risk_summary": req.risk_summary,
+  ── D8b · executive_dashboard_agent — tools registrados ──
+     72 name="generate_quarterly_board_report",
+    229 name="export_report",
+    335 name="get_executive_summary",
+    405 {"name": "Tennis", "participation": 450, "change_pct": 12.0},
+    406 {"name": "Swimming", "participation": 380, "change_pct": 8.0},
+    407 {"name": "Yoga", "participation": 290, "change_pct": 15.0},
+    408 {"name": "Golf", "participation": 210, "change_pct": 5.0},
+    466 name="get_financial_overview",
+    516 name="get_membership_health",
+    568 name="get_operational_pulse",
+    590 {"name": "Tennis", "participation": 450, "change_pct": 12.0},
+    591 {"name": "Swimming", "participation": 380, "change_pct": 8.0},
+    592 {"name": "Yoga", "participation": 290, "change_pct": 15.0},
+    593 {"name": "Golf", "participation": 210, "change_pct": 5.0},
+    614 name="detect_anomalies",
+    767 name="get_age_group_balance",
+    893 name="get_pending_approvals",
+    969 name="approve_request",
+   1042 name="reject_request",
+  ── D9 · get_survey_for_event (return) ──
+  ▸ backend/src/club_mcp/agents/satisfaction_agent.py:268
+        268     async def get_survey_for_event(
+        269         self,
+        270         event_id: str = "",
+        271     ) -> dict[str, Any]:
+        272         if not event_id:
+        273             return {
+        274                 "status": "error",
+        275                 "message": "Se requiere event_id 📋",
+        276             }
+        277 
+        278         surveys = await self.repo.get_surveys_by_event(event_id)
+        279 
+        280         return {
+        281             "status": "success",
+        282             "message": (
+        283                 f"📋 {len(surveys)} encuesta(s) para evento '{event_id}'"
+        284             ),
+        285             "total": len(surveys),
+        286             "surveys": [s.model_dump(mode="json") for s in surveys],
+        287         }
+        288 
+        289     # ═══════════════════════════════════════════════════
+        290     # 🟡 TOOL: ANALYZE EVENT SATISFACTION (SEMI)
+        291     # ═══════════════════════════════════════════════════
+        292 
+        293     @MCPTool(
+        294         name="analyze_event_satisfaction",
+        295         description=(
+        296             "Generar análisis de satisfacción con IA para un evento. "
+        297             "Incluye sentiment, categorías, tendencias y recomendaciones."
+        298         ),
+        299         approval=ApprovalLevel.SEMI_AUTO,
+        300     )
+        301     async def analyze_event_satisfaction(
+        302         self,
+        303         event_id: str = "",
+        304         requested_by: str = "system",
+        305     ) -> dict[str, Any]:
+        306         if not event_id:
+        307             return {
+  ── D10 · analyze_event_satisfaction (return) ──
+  ▸ backend/src/club_mcp/agents/satisfaction_agent.py:301
+        301     async def analyze_event_satisfaction(
+        302         self,
+        303         event_id: str = "",
+        304         requested_by: str = "system",
+        305     ) -> dict[str, Any]:
+        306         if not event_id:
+        307             return {
+        308                 "status": "error",
+        309                 "message": "Se requiere event_id 📋",
+        310             }
+        311 
+        312         analysis = await self._compute_event_analysis(event_id)
+        313         if not analysis:
+        314             return {
+        315                 "status": "error",
+        316                 "message": f"No hay encuestas para evento '{event_id}'",
+        317             }
+        318 
+        319         surveys = analysis["surveys"]
+        320         total = analysis["total"]
+        321         overall_avg = analysis["overall_avg"]
+        322         category_averages = analysis["category_averages"]
+        323         sentiment_dist = analysis["sentiment_dist"]
+        324 
+        325         # AI-powered recommendations if Claude available
+        326         ai_recommendations: list[str] = []
+        327         top_praises: list[str] = []
+        328         top_improvements: list[str] = []
+        329         key_quotes: list[str] = []
+        330 
+        331         if self.claude_service:
+        332             try:
+        333                 event_data = {
+        334                     "event_id": event_id,
+        335                     "event_name": surveys[0].event_name if surveys else "",
+        336                     "total_responses": total,
+        337                     "overall_avg": overall_avg,
+        338                     "category_averages": category_averages,
+        339                     "comments": [
+        340                         s.comment for s in surveys if s.comment
+        341                     ],
+        342                 }
+  ── D11 · design_reactivation_campaign ──
+  ▸ backend/src/club_mcp/agents/member_engagement_agent.py:180
+        180     async def design_reactivation_campaign(
+        181         self,
+        182         action: str = "list",
+        183         campaign_id: str = "",
+        184         name: str = "",
+        185         campaign_type: str = "reactivation",
+        186         description: str = "",
+        187         target_member_ids: str = "",
+        188         target_engagement_level: str = "",
+        189         channels: str = "email",
+        190         message_template: str = "",
+        191         start_date: str = "",
+        192         end_date: str = "",
+        193         budget: float = 0.0,
+        194         new_status: str = "",
+        195         notes: str = "",
+        196         requested_by: str = "system",
+        197     ) -> dict[str, Any]:
+        198         # ── List ──
+        199         if action == "list":
+        200             campaigns = await self.repo.list_campaigns()
+        201             return {
+        202                 "status": "success",
+        203                 "message": f"📋 Encontramos {len(campaigns)} campañas.",
+        204                 "campaigns": [c.model_dump(mode="json") for c in campaigns],
+        205             }
+        206 
+        207         # ── Get ──
+        208         if action == "get":
+        209             if not campaign_id:
+        210                 return {
+        211                     "status": "error",
+        212                     "message": "Se requiere campaign_id 🤔",
+        213                 }
+        214             campaign = await self.repo.get_campaign(campaign_id)
+        215             if not campaign:
+        216                 return {
+        217                     "status": "not_found",
+        218                     "message": (
+        219                         f"No encontramos la campaña {campaign_id} 😊"
+        220                     ),
+        221                 }
+        222             return {
+        223                 "status": "success",
+        224                 "campaign": campaign.model_dump(mode="json"),
+        225             }
+        226 
+        227         # ── Create → HITL ──
+        228         if action == "create":
+        229             if not all([name, description, start_date, end_date]):
+        230                 return {
+        231                     "status": "error",
+        232                     "message": (
+        233                         "Faltan campos obligatorios: name, description, "
+        234                         "start_date, end_date 📋"
+        235                     ),
+        236                 }
+        237 
+        238             try:
+        239                 ct = CampaignType(campaign_type)
+        240             except ValueError:
+        241                 return {
+  ── D12 · manage_facilities ──
+  ▸ backend/src/club_mcp/agents/facility_management_agent.py:86
+         86     async def manage_facilities(
+         87         self,
+         88         action: str = "list",
+         89         facility_id: str = "",
+         90         name: str = "",
+         91         facility_type: str = "",
+         92         location: str = "",
+         93         capacity: int = 0,
+         94         description: str = "",
+         95         amenities: str = "",
+         96         opening_time: str = "06:00",
+         97         closing_time: str = "22:00",
+         98         responsible_member_id: str = "",
+         99         new_status: str = "",
+        100         notes: str = "",
+        101     ) -> dict[str, Any]:
+        102         if action == "list":
+        103             type_filter = None
+        104             if facility_type:
+        105                 try:
+        106                     type_filter = FacilityType(facility_type)
+        107                 except ValueError:
+        108                     pass
+        109             facilities = await self.repo.list_facilities(facility_type=type_filter)
+        110             return {
+        111                 "status": "success",
+        112                 "message": f"📋 Encontramos {len(facilities)} instalaciones.",
+        113                 "facilities": [f.model_dump(mode="json") for f in facilities],
+        114             }
+        115 
+        116         if action == "get":
+        117             if not facility_id:
+        118                 return {"status": "error", "message": "Se requiere facility_id 🤔"}
+        119             facility = await self.repo.get_facility(facility_id)
+        120             if not facility:
+        121                 return {
+        122                     "status": "not_found",
+        123                     "message": f"No encontramos la instalación {facility_id} 😊",
+        124                 }
+        125             return {"status": "success", "facility": facility.model_dump(mode="json")}
+        126 
+        127         if action == "create":
+        128             if not all([name, facility_type]):
+        129                 return {
+        130                     "status": "error",
+        131                     "message": "Faltan campos obligatorios: name, facility_type 📋",
+        132                 }
+        133             try:
+        134                 ft = FacilityType(facility_type)
+        135             except ValueError:
+        136                 return {
+        137                     "status": "error",
+        138                     "message": (
+        139                         f"Tipo no válido: '{facility_type}'. "
+        140                         f"Opciones: {', '.join(f.value for f in FacilityType)}"
+        141                     ),
+        142                 }
+        143             amenity_list = (
+  ── D13 · get_amenity_utilization (agent + repo) ──
+  ▸ backend/src/club_mcp/agents/facility_management_agent.py:790
+        790     async def get_amenity_utilization(
+        791         self, facility_type: str = "",
+        792     ) -> dict[str, Any]:
+        793         type_filter = None
+        794         if facility_type:
+        795             try:
+        796                 type_filter = FacilityType(facility_type)
+        797             except ValueError:
+        798                 return {
+        799                     "status": "error",
+        800                     "message": (
+        801                         f"Tipo no válido: '{facility_type}'. "
+        802                         f"Opciones: {', '.join(f.value for f in FacilityType)}"
+        803                     ),
+        804                 }
+        805         utilization = await self.repo.get_amenity_utilization(facility_type=type_filter)
+        806         return {
+        807             "status": "success",
+        808             "message": f"📊 Utilización promedio: {utilization.overall_utilization_pct}%",
+        809             **utilization.model_dump(mode="json"),
+        810         }
+        811 
+        812     # ──────────────────────────────────────────────────
+        813     # 🟢 TOOL: GET SPACE OPTIMIZATION (AUTO)
+        814     # ──────────────────────────────────────────────────
+        815 
+        816     @MCPTool(
+        817         name="get_space_optimization",
+        818         description=(
+        819             "Análisis de optimización de espacios cross-domain. "
+        820             "Detecta: espacios subutilizados, sobrecargados, "
+        821             "ROI negativo, candidatos a expansión."
+        822         ),
+        823         approval=ApprovalLevel.AUTO,
+        824     )
+        825     async def get_space_optimization(self) -> dict[str, Any]:
+        826         optimization = await self.repo.get_space_optimization()
+        827         return {
+        828             "status": "success",
+        829             "message": (
+        830                 f"🏗️ {len(optimization.suggestions)} sugerencia(s) de optimización. "
+        831                 f"{optimization.underutilized_count} subutilizados, "
+  ▸ backend/src/club_mcp/db/repositories/facility_management_repo.py:785
+        785     async def get_amenity_utilization(
+        786         self, facility_type: Optional[FacilityType] = None,
+        787     ) -> AmenityUtilizationResponse:
+        788         """Per-facility utilization analysis with time series."""
+        789         today = datetime.now(tz=timezone.utc)
+        790         today_str = today.strftime("%Y-%m-%d")
+        791 
+        792         facilities = await self.list_facilities(facility_type=facility_type)
+        793         reservations = await self.list_reservations()
+        794 
+        795         items: list[AmenityUtilizationItem] = []
+        796         total_cap = 0
+        797         total_occ = 0
+        798         peak_facility = ("", 0.0)
+        799         lowest_facility = ("", 100.0)
+        800 
+        801         for f in facilities:
+        802             # Current occupancy from today's reservations
+        803             today_res = [
+        804                 r for r in reservations
+        805                 if r.facility_id == f.id
+        806                 and r.date == today_str
+        807                 and r.status in (ReservationStatus.CONFIRMED, ReservationStatus.PENDING)
+        808             ]
+        809             current = sum(r.guest_count for r in today_res)
+        810             util_pct = round(current / f.capacity * 100, 1) if f.capacity > 0 else 0.0
+        811 
+        812             # Peak hours from reservation patterns
+        813             hour_counts: dict[int, int] = defaultdict(int)
+        814             for r in reservations:
+        815                 if r.facility_id == f.id and r.status != ReservationStatus.CANCELLED:
+        816                     start_h = int(r.start_time.split(":")[0])
+        817                     end_h = int(r.end_time.split(":")[0])
+        818                     for h in range(start_h, min(end_h, 24)):
+        819                         hour_counts[h] += 1
+        820             sorted_hours = sorted(hour_counts.items(), key=lambda x: -x[1])
+        821             peak_hours = [f"{h:02d}:00" for h, _ in sorted_hours[:3]]
+        822 
+        823             # Time series (7-day deterministic)
+        824             series = self._generate_utilization_series(f.id, 7)
+        825 
+        826             # Trend
+  ── D14 · generate_quarterly_board_report (params + return) ──
+  ▸ backend/src/club_mcp/agents/executive_dashboard_agent.py:82
+         82     async def generate_quarterly_board_report(
+         83         self,
+         84         year: int = 0,
+         85         quarter: str = "",
+         86         requested_by: str = "system",
+         87     ) -> dict[str, Any]:
+         88         if not all([year, quarter]):
+         89             return {
+         90                 "status": "error",
+         91                 "message": (
+         92                     "Se requiere year y quarter (Q1, Q2, Q3, Q4) \U0001f4cb"
+         93                 ),
+         94             }
+         95 
+         96         try:
+         97             rq = ReportQuarter(quarter)
+         98         except ValueError:
+         99             return {
+        100                 "status": "error",
+        101                 "message": (
+        102                     f"Trimestre no v\u00e1lido: '{quarter}'. "
+        103                     f"Opciones: {', '.join(q.value for q in ReportQuarter)}"
+        104                 ),
+        105             }
+        106 
+        107         approval = await self.approval_engine.create_request(
+        108             agent=self.agent_name,
+        109             tool="generate_quarterly_board_report",
+        110             params={
+        111                 "year": year,
+        112                 "quarter": quarter,
+        113             },
+        114             requested_by=requested_by,
+        115             approval_level=ApprovalLevel.HITL,
+        116             risk_summary=(
+        117                 f"Informe trimestral {quarter} {year} para "
+        118                 f"la junta directiva. Incluye datos financieros "
+        119                 f"y operativos consolidados."
+        120             ),
+        121             estimated_impact="Distribuci\u00f3n a junta directiva",
+        122             affected_count=0,
+        123             approver_roles=["admin"],
+  ── D15 · member_360.get_member_risk_assessment ──
+  ▸ backend/src/club_mcp/agents/member_360_agent.py:284
+        284     async def get_member_risk_assessment(self, member_id: str) -> dict[str, Any]:
+        285         member_error = self._member_lookup_error(member_id)
+        286         if member_error:
+        287             return member_error
+        288         result = self.repo.get_risk_assessment(member_id)
+        289         return MemberRiskAssessmentResponse(**result).model_dump(mode="json")
+        290 
+        291     # ─── Tool 10: Search Members 360 ─────────────────────────────────────────
+        292 
+        293     @MCPTool(
+        294         name="search_members_360",
+        295         description=(
+        296             "Buscar socios con preview 360°: health score, churn risk, "
+        297             "engagement, lifecycle stage. Filtrable por tier, health level, churn risk."
+        298         ),
+        299         approval=ApprovalLevel.AUTO,
+        300     )
+        301     async def search_members_360(
+        302         self,
+        303         query: str | None = None,
+        304         tier: str | None = None,
+        305         health_level: str | None = None,
+        306         churn_risk: str | None = None,
+        307         journey_stage: str | None = None,
+        308         sort_by: str = "health_score_desc",
+        309         page: int = 1,
+        310         page_size: int = 20,
+        311     ) -> dict[str, Any]:
+        312         if page < 1 or not 1 <= page_size <= 100:
+        313             return {
+        314                 "status": "error",
+        315                 "message": "page must be positive and page_size must be between 1 and 100.",
+        316             }
+        317 
+        318         if health_level and health_level not in {
+        319             level.value for level in MemberHealthLevel
+        320         }:
+        321             return {"status": "error", "message": "health_level is not valid."}
+        322         if churn_risk and churn_risk not in {
+        323             risk.value for risk in ChurnRiskLevel
+  ── D16 · advisor_intelligence (2 tools) ──
+  ▸ backend/src/club_mcp/agents/advisor_intelligence.py:105
+        105     async def generate_insight_narrative(
+        106         self,
+        107         insight_data: dict[str, Any],
+        108         financial_context: Optional[dict[str, Any]] = None,
+        109         events_context: Optional[dict[str, Any]] = None,
+        110         role: str = "admin",
+        111     ) -> dict[str, Any]:
+        112         """Transform a deterministic insight into an AI-powered narrative."""
+        113         insight_id = insight_data.get("id", "unknown")
+        114 
+        115         # Build prompt with available context
+        116         fin_ctx = json.dumps(financial_context, ensure_ascii=False, indent=2) if financial_context else "No disponible"
+        117         evt_ctx = json.dumps(events_context, ensure_ascii=False, indent=2) if events_context else "No disponible"
+        118 
+        119         user_prompt = ADVISOR_NARRATIVE_PROMPT.format(
+        120             insight_data=json.dumps(insight_data, ensure_ascii=False, indent=2),
+        121             financial_context=fin_ctx,
+        122             events_context=evt_ctx,
+        123             role=role,
+        124             insight_id=insight_id,
+        125         )
+        126 
+        127         fallback = {
+        128             "insight_id": insight_id,
+        129             "root_cause": "No se pudo generar análisis automático.",
+        130             "benchmark_comparison": "",
+        131             "recommendation": "Revisar manualmente los datos del insight.",
+        132             "estimated_impact": "",
+        133             "full_narrative": insight_data.get("reasoning", ""),
+        134             "adjusted_confidence": insight_data.get("confidence", 50),
+        135         }
+        136 
+        137         result = await self.claude.generate_json(
+        138             system_prompt=ADVISOR_NARRATIVE_SYSTEM,
+        139             user_prompt=user_prompt,
+        140             max_tokens=1500,
+        141             fallback=fallback,
+        142         )
+        143 
+        144         # Validate structure
+  ── D17 · advisor_intelligence.simulate_scenario ──
+  ▸ backend/src/club_mcp/agents/advisor_intelligence.py:231
+        231     async def simulate_scenario(
+        232         self,
+        233         base_data: dict[str, Any],
+        234         proposed_changes: list[dict[str, Any]],
+        235         timeframe: str = "quarter",
+        236     ) -> dict[str, Any]:
+        237         """Simulate financial scenarios with projected outcomes."""
+        238         user_prompt = ADVISOR_SCENARIO_PROMPT.format(
+        239             base_data=json.dumps(base_data, ensure_ascii=False, indent=2),
+        240             proposed_changes=json.dumps(proposed_changes, ensure_ascii=False, indent=2),
+        241             timeframe=timeframe,
+        242         )
+        243 
+        244         fallback = {
+        245             "scenarios": [],
+        246             "risk_assessment": "No se pudo generar simulación automática.",
+        247             "recommended_scenario": "base",
+        248         }
+        249 
+        250         result = await self.claude.generate_json(
+        251             system_prompt=ADVISOR_SCENARIO_SYSTEM,
+        252             user_prompt=user_prompt,
+        253             max_tokens=2000,
+        254             fallback=fallback,
+        255         )
+        256 
+        257         try:
+        258             validated = ScenarioSimulationResult(**result)
+        259             return {
+        260                 "status": "success",
+        261                 "simulation": validated.model_dump(),
+        262                 "_approval_level": ApprovalLevel.AUTO.value,
+        263                 "_agent": self.agent_name,
+        264             }
+        265         except Exception as exc:
+        266             logger.warning("[AdvisorIntel] Simulation validation failed: %s", exc)
+        267             return {
+        268                 "status": "success",
+        269                 "simulation": result if isinstance(result, dict) else fallback,
+        270                 "_approval_level": ApprovalLevel.AUTO.value,
+
+══ E. contracts.ts — interfaces de los tools reales ════════════════════════
+  ▸ communication.get_communication_analytics → get_communication_analytics_Contract @ 1450
+       1040 export interface get_communication_analytics_Contract extends BaseToolResponse {
+       1041   analytics: {
+       1042     period: string;
+       1043     total_sent: number;
+       1044     total_recipients: number;
+       1045     delivery_rate_pct: number;
+       1046     avg_recipients_per_send: number;
+       1047     best_day_to_send: string;
+       1048     best_hour_to_send: string;
+       1049     channel_breakdown: Array<{
+       1050       channel: string;
+       1051       count: number;
+       1052       percentage: number;
+       1053     }>;
+       1054     type_breakdown: Array<{
+       1055       type: string;
+       1056       count: number;
+  ▸ member_engagement.design_reactivation_campaign → design_reactivation_campaign_Contract @ 1340
+        339 export interface design_reactivation_campaign_Contract extends BaseToolResponse {
+        340   data: {
+        341     campaign_id: string;
+        342     name: string;
+        343     campaign_type: CampaignType;
+        344     status: string;
+        345     target_families: Array<{
+        346       family_id: string;
+        347       family_name: string;
+        348       engagement_level: string;
+        349       risk_level: string;
+        350       ltv_at_risk: number;
+        351     }>;
+        352     total_targeted: number;
+        353     channel_strategy: {
+        354       primary_channel: string;
+        355       secondary_channel: string;
+  ▸ satisfaction.analyze_event_satisfaction → analyze_event_satisfaction_Contract @ 1357
+        552 export interface analyze_event_satisfaction_Contract extends BaseToolResponse {
+        553   data: {
+        554     event_id: string;
+        555     event_title: string;
+        556     analysis_date: string;
+        557     overall_score: number;
+        558     overall_sentiment: "positive" | "neutral" | "negative";
+        559     total_surveys_analyzed: number;
+        560     category_scores: Array<{
+        561       category: SatisfactionCategory;
+        562       avg_score: number;
+        563       trend: "improving" | "stable" | "declining";
+        564       benchmark: number;
+        565       delta: number;
+        566     }>;
+        567     sentiment_analysis: {
+        568       positive_pct: number;
+  ▸ satisfaction.get_survey_for_event → get_survey_for_event_Contract @ 1356
+        519 export interface get_survey_for_event_Contract extends BaseToolResponse {
+        520   data: {
+        521     event_id: string;
+        522     event_title: string;
+        523     event_date: string;
+        524     surveys: Array<{
+        525       survey_id: string;
+        526       family_id: string;
+        527       family_name: string;
+        528       overall_score: number;
+        529       sentiment: "positive" | "neutral" | "negative";
+        530       nps_score: number | null;
+        531       ratings: Record<SatisfactionCategory, number>;
+        532       comments: string | null;
+        533       submitted_at: string;
+        534     }>;
+        535     total_surveys: number;
+  ▹ facility_management.get_amenity_utilization — sin entry
+  ▹ facility_management.get_facility_reservations — sin entry
+  ▹ finance.finance_account_status — sin entry
+  ▹ finance.finance_invoice_create — sin entry
+  ▸ guest_management.manage_trial_memberships → manage_trial_memberships_Contract @ 1507
+       1671 export interface manage_trial_memberships_Contract extends BaseToolResponse {
+       1672   data: {
+       1673     trial_membership: {
+       1674       id: string;
+       1675       guest_name: string;
+       1676       guest_email: string;
+       1677       guest_phone: string;
+       1678       referred_by_family_id: string;
+       1679       trial_type: string;
+       1680       start_date: string;
+       1681       end_date: string;
+       1682       status: string;
+       1683       privileges: string[];
+       1684       notes: string;
+       1685       created_at: string;
+       1686       updated_at: string;
+       1687     };
+  ▹ family_profile.family_search — sin entry
+  ▸ facility_management.manage_facilities → manage_facilities_Contract @ 1346
+       4083 export interface manage_facilities_Contract extends BaseToolResponse {
+       4084   data: {
+       4085     facility_id: string;
+       4086     facility_name: string;
+       4087     facility_type: FacilityType;
+       4088     status: FacilityStatus;
+       4089     capacity: number;
+       4090     current_occupancy: number;
+       4091     location: string;
+       4092     description: string;
+       4093     opening_time: string;
+       4094     closing_time: string;
+       4095     amenities: string[];
+       4096     active_setups: number;
+       4097     active_maintenance: number;
+       4098     last_inspection_date: string | null;
+       4099     last_inspection_result: InspectionResult | null;
+  ▹ family_profile.family_get_profile — sin entry
+  ▹ executive_dashboard.generate_quarterly_board_report — sin entry
+  ▹ member_360.get_member_risk_assessment — sin entry
+  ▸ advisor_intelligence.generate_insight_narrative → AdvisorInsightNarrativeResponse @ 1454
+       4797 export interface AdvisorInsightNarrativeResponse {
+       4798   status: string;
+       4799   narrative: {
+       4800     insight_id: string;
+       4801     root_cause: string;
+       4802     benchmark_comparison: string;
+       4803     recommendation: string;
+       4804     estimated_impact: string;
+       4805     full_narrative: string;
+       4806     adjusted_confidence: number;
+       4807   };
+       4808   _approval_level: string;
+       4809   _agent: string;
+       4810 }
+       4811 
+       4812 // ── Advisor Intelligence: generate_action_plan ──────────
+       4813 
+  ▸ advisor_intelligence.simulate_scenario → AdvisorScenarioResponse @ 1456
+       4846 export interface AdvisorScenarioResponse {
+       4847   status: string;
+       4848   simulation: {
+       4849     scenarios: AdvisorScenarioProjection[];
+       4850     risk_assessment: string;
+       4851     recommended_scenario: string;
+       4852   };
+       4853   _approval_level: string;
+       4854   _agent: string;
+       4855 }
+       4856 
+       4857 // ── Advisor Intelligence: generate_board_brief ──────────
+       4858 
+       4859 export interface AdvisorBoardBriefQA {
+       4860   question: string;
+       4861   answer: string;
+       4862 }
+
+══ F. tipos consumidores — los genéricos de los 18 call-sites ══════════════
+  ▸ HistoryItem @ features/communications/types.ts:192
+        192 export interface HistoryItem {
+        193   id: string;
+        194   notification_type: string;
+        195   title: string;
+        196   channel: string;
+        197   recipient_count: number;
+        198   status: string;
+        199   sent_at: string;
+        200   created_by: string;
+        201   notes?: string;
+        202 }
+        203 
+        204 export interface HistoryResponse {
+        205   history: HistoryItem[];
+        206   total: number;
+        207 }
+  ▸ CampaignListResponse @ features/engagement/ReactivationCampaigns.tsx:63
+         63   type CampaignListResponse,
+         64   type CampaignForm,
+         65   CAMPAIGN_STATUS_CONFIG,
+         66   CAMPAIGN_CHANNEL_OPTIONS,
+         67   CAMPAIGN_TARGET_OPTIONS,
+         68   OFFER_OPTIONS,
+         69 } from "./types";
+         70 import "./ReactivationCampaigns.css";
+         71 
+         72 
+         73 // ══════════════════════════════════════════════════════════════
+         74 // CONSTANTS
+         75 // ══════════════════════════════════════════════════════════════
+         76 
+         77 const STEPS = [
+         78   { key: "target", label: "Objetivo", Icon: Target },
+  ▸ SurveyResultsResponse @ features/engagement/SatisfactionReport.tsx:45
+         45   type SurveyResultsResponse,
+         46   type QuestionSummary,
+         47   type SurveyInsight,
+         48   type SurveyComment,
+         49   SENTIMENT_CONFIG,
+         50 } from "./types";
+         51 import "./SatisfactionReport.css";
+         52 
+         53 
+         54 // ══════════════════════════════════════════════════════════════
+         55 // CONSTANTS
+         56 // ══════════════════════════════════════════════════════════════
+         57 const INSIGHT_TYPE_CONFIG: Record<
+         58   string,
+         59   { Icon: LucideIcon; label: string; color: string; bgColor: string }
+         60 > = {
+  ▸ SurveyTemplate @ features/engagement/types.ts:157
+        157 export interface SurveyTemplate {
+        158   id: string;
+        159   name: string;
+        160   description: string;
+        161   event_type: string;
+        162   questions: SurveyQuestion[];
+        163   is_active: boolean;
+        164   usage_count: number;
+        165   avg_completion_rate: number;
+        166 }
+        167 
+        168 export interface SurveyResponse {
+        169   id: string;
+        170   survey_id: string;
+        171   survey_name: string;
+        172   family_id: string;
+  ▸ AmenityUtilizationResponse @ features/facilities/types.ts:565
+        565 export interface AmenityUtilizationResponse {
+        566   overall_utilization_pct: number;
+        567   facilities: AmenityUtilizationItem[];
+        568   total_capacity: number;
+        569   total_occupancy: number;
+        570   peak_facility: string;
+        571   lowest_facility: string;
+        572   generated_at: string;
+        573 }
+        574 
+        575 export interface SpaceOptimizationSuggestion {
+        576   facility_id: string;
+        577   facility_name: string;
+        578   suggestion_type: string;
+        579   current_use: string;
+        580   suggested_use: string;
+  ▸ CalendarQueryResponse @ features/facilities/components/ReservationCalendar.tsx:49
+         49 interface CalendarQueryResponse {
+         50   reservations: FacilityReservation[];
+         51 }
+         52 
+         53 // ═══════════════════════════════════════════════════════════
+         54 // CONSTANTS
+         55 // ═══════════════════════════════════════════════════════════
+         56 
+         57 const OPEN_HOUR = 6;
+         58 const CLOSE_HOUR = 22;
+         59 const WEEK_DAYS = 7;
+         60 const SKELETON_ROWS = CLOSE_HOUR - OPEN_HOUR;
+         61 
+         62 const HOUR_SLOTS: ReadonlyArray<number> = (() => {
+         63   const slots: number[] = [];
+         64   for (let h = OPEN_HOUR; h < CLOSE_HOUR; h++) slots.push(h);
+  ▸ FamilyAccountData @ features/finance/types.ts:46
+         46 export interface FamilyAccountData {
+         47   family_id: string;
+         48   family_name: string;
+         49   account_number: string;
+         50   balance: number;
+         51   credit_limit: number;
+         52   status: "current" | "overdue" | "suspended";
+         53   last_payment_date: string | null;
+         54   last_payment_amount: number | null;
+         55   next_due_date: string;
+         56   monthly_dues: number;
+         57   ytd_spent: number;
+         58   ytd_paid: number;
+         59   aging_30: number;
+         60   aging_60: number;
+         61   aging_90_plus: number;
+  ▸ Invoice @ features/finance/types.ts:85
+         85 export interface Invoice {
+         86   id: string;
+         87   invoice_number: string;
+         88   date: string;
+         89   due_date: string;
+         90   amount: number;
+         91   paid_amount: number;
+         92   balance: number;
+         93   status: "paid" | "partial" | "pending" | "overdue" | "cancelled";
+         94   items: InvoiceItem[];
+         95   notes?: string;
+         96 }
+         97 
+         98 export interface InvoiceItem {
+         99   description: string;
+        100   quantity: number;
+  ▸ TrialListResponse @ features/guests/components/TrialMembershipManager.tsx:58
+         58 interface TrialListResponse {
+         59   readonly status: string;
+         60   readonly message: string;
+         61   readonly trial_memberships: readonly TrialMembershipItem[];
+         62 }
+         63 
+         64 interface TrialMutationResponse {
+         65   readonly status: string;
+         66   readonly message: string;
+         67   readonly trial_membership?: TrialMembershipItem;
+         68   readonly request_id?: string;
+         69   readonly details?: Record<string, unknown>;
+         70 }
+         71 
+         72 // ═══════════════════════════════════════════════════════════
+         73 // §2 — HELPERS
+  ▸ FamilySearchResponse @ features/guests/GuestRegistration.tsx:70
+         70 interface FamilySearchResponse {
+         71   readonly families: readonly FamilySearchResult[];
+         72 }
+         73 
+         74 interface FacilityListResponse {
+         75   readonly facilities: readonly FacilityOption[];
+         76 }
+         77 
+         78 type FormErrors = Partial<Record<keyof GuestCheckInForm | "host_search", string>>;
+         79 
+         80 // ═══════════════════════════════════════════════════════════
+         81 // §2 — CONSTANTS
+         82 // ═══════════════════════════════════════════════════════════
+         83 
+         84 const STEPS = [
+         85   { label: "Anfitrión", icon: <Users className="w-4 h-4" /> },
+  ▸ FacilityListResponse @ features/facilities/types.ts:211
+        211 export interface FacilityListResponse {
+        212   status: string;
+        213   message?: string;
+        214   facilities: Facility[];
+        215 }
+        216 
+        217 export const MAINTENANCE_TYPE_DISPLAY: Record<MaintenanceType, DisplayConfig> = {
+        218   preventive: {
+        219     label: "Preventivo",
+        220     color: "var(--color-teal-400)",
+        221     bgColor: "color-mix(in srgb, var(--color-teal-400) 10%, transparent)",
+        222   },
+        223   corrective: {
+        224     label: "Correctivo",
+        225     color: "var(--color-amber-400)",
+        226     bgColor: "color-mix(in srgb, var(--color-amber-400) 10%, transparent)",
+  ▸ FamilyDetailResponse @ features/families/types.ts:248
+        248 export interface FamilyDetailResponse {
+        249   readonly family: Family;
+        250   readonly recentActivity: readonly ActivityRecord[];
+        251   readonly financialSummary: FinancialSummary;
+        252   readonly socialConnections: readonly SocialConnection[];
+        253   readonly preferences?: FamilyPreferences;
+        254 }
+        255 
+        256 export interface ActivityRecord {
+        257   readonly id: string;
+        258   readonly type: ActivityType;
+        259   readonly description: string;
+        260   readonly date: string;
+        261   readonly amount?: number;
+        262 }
+        263 
+  ▸ ReservationListResponse @ features/facilities/types.ts:878
+        878 export interface ReservationListResponse {
+        879   status: string;
+        880   message?: string;
+        881   reservations: Reservation[];
+        882   total: number;
+        883 }
+        884 
+        885 /** @deprecated Use MaintenanceTask — camelCase legacy wrapper */
+        886 export interface MaintenanceRecord {
+        887   id: string;
+        888   facilityId: string;
+        889   facilityName: string;
+        890   type: MaintenanceType;
+        891   status: MaintenanceStatus;
+        892   priority: MaintenancePriority;
+        893   description: string;
+  ▸ BoardReport @ features/reports/types.ts:29
+         29 export interface BoardReport {
+         30   id: string;
+         31   title: string;
+         32   type: ReportType;
+         33   period: string;
+         34   status: ReportStatus;
+         35   generated_at: string;
+         36   generated_by: "ai" | "human";
+         37   approved_by?: string;
+         38   sections: ReportSection[];
+         39   executive_summary: string;
+         40   metadata: ReportMetadata;
+         41 }
+         42 
+         43 export interface ReportSection {
+         44   id: string;
+  ▸ RiskSummary @ features/reports/types.ts:79
+         79 export interface RiskSummary {
+         80   total_risks: number;
+         81   critical: number;
+         82   high: number;
+         83   medium: number;
+         84   low: number;
+         85   items: RiskItem[];
+         86 }
+         87 
+         88 // ── Report config maps ──
+         89 
+         90 export const REPORT_TYPE_CONFIG: Record<
+         91   ReportType,
+         92   { label: string; description: string }
+         93 > = {
+         94   monthly: {
+  ▸ FamilyListResponse @ features/families/types.ts:231
+        231 export interface FamilyListResponse {
+        232   readonly families: readonly Family[];
+        233   readonly total: number;
+        234   readonly page: number;
+        235   readonly totalPages: number;
+        236   readonly limit: number;
+        237 }
+        238 
+        239 export interface FamilyFilters {
+        240   readonly search: string;
+        241   readonly status: FamilyStatus | "";
+        242   readonly tier: MemberTier | "";
+        243   readonly churnRisk: ChurnRisk | "";
+        244   readonly page: number;
+        245   readonly limit: number;
+        246 }
+  ▸ FinanceNarrativeGenerateResponse @ shared/mocks/contracts.ts:2162
+       2162 export interface FinanceNarrativeGenerateResponse {
+       2163   status: string;
+       2164   message: string;
+       2165   data: NarrativeGenerateData;
+       2166 }
+       2167 
+       2168 // ── Tool: export_report (HITL — mock-only) ──
+       2169 // Fase 14b — Export Intelligence
+       2170 
+       2171 export interface ExportSectionIncluded {
+       2172   section_id: string;
+       2173   title: string;
+       2174   pages: number;
+       2175 }
+       2176 
+       2177 export interface ExportReportData {
+  ▸ FinanceScenarioSimulateResponse @ shared/mocks/contracts.ts:1915
+       1915 export interface FinanceScenarioSimulateResponse {
+       1916   status: string;
+       1917   message: string;
+       1918   data: ScenarioSimulationData;
+       1919 }
+       1920 
+       1921 // ── Tool 10: finance_opportunities_scan (AUTO — NEW AI) ──
+       1922 
+       1923 export interface FinanceOpportunitiesScanResponse {
+       1924   status: string;
+       1925   message: string;
+       1926   data: OpportunityScanData;
+       1927 }
+       1928 
+       1929 // ── Tool 11: finance_board_briefing (AUTO — NEW AI) ──
+       1930 
+
+══ G. mock-data.ts — shapes que devolvía el mock viejo ═════════════════════
+  ▸ mockFamilyAccount @ 525
+        525 function mockFamilyAccount() {
+        526   return {
+        527     status: "success",
+        528     account: {
+        529       family_id: "fam-001",
+        530       family_name: "Rodríguez Vargas",
+        531       account_number: "CTA-001",
+        532       balance: -185_000,
+        533       credit_limit: 500_000,
+        534       status: "current",
+        535       last_payment_date: dAgo(15),
+        536       last_payment_amount: 250_000,
+        537       next_due_date: dFuture(13),
+        538       monthly_dues: 185_000,
+  ▸ mockGetReservations @ 477
+        477 function mockGetReservations() {
+        478   return {
+        479     status: "success",
+        480     reservations: [
+        481       { id: "res-001", facilityId: "fac-002", facilityName: "Cancha de Tenis", familyId: "fam-001", familyName: "Rodríguez Vargas", 
+        482       { id: "res-002", facilityId: "fac-002", facilityName: "Cancha de Tenis", familyId: "fam-004", familyName: "Castro Brenes", dat
+        483       { id: "res-003", facilityId: "fac-004", facilityName: "Salón de Eventos", familyId: "fam-002", familyName: "Quirós Jiménez", d
+        484       { id: "res-004", facilityId: "fac-001", facilityName: "Piscina", familyId: "fam-003", familyName: "Mora Solano", date: dateOnl
+        485     ],
+        486     total: 4,
+        487   };
+        488 }
+        489 
+        490 // ─────────────────────────────────────────────────
+  ▸ mockBoardReport @ 829
+        829 function mockBoardReport(params: Record<string, unknown>) {
+        830   const period = (params.period as string) || "2025-Q1";
+        831   return {
+        832     status: "success",
+        833     id: "rpt-001",
+        834     title: `Reporte de Junta Directiva — ${period}`,
+        835     type: "quarterly",
+        836     period,
+        837     generated_at: dAgo(5),
+        838     generated_by: "ai",
+        839     approved_by: "Lic. Patricia Herrera",
+        840     executive_summary: `El ${period} cerró con resultados financieros sólidos. Los ingresos totales alcanzaron los ₡125 millones, un
+        841     sections: [
+        842       { id: "sec-001", title: "Situación Financiera", content: "Los ingresos por cuotas representaron el 62% del total, seguidos por
+  ▸ mockRiskMatrix @ 859
+        859 function mockRiskMatrix() {
+        860   return {
+        861     status: "success",
+        862     total_risks: 6,
+        863     critical: 1,
+        864     high: 2,
+        865     medium: 2,
+        866     low: 1,
+        867     items: [
+        868       { id: "risk-001", title: "Flujo de caja trimestral", description: "Riesgo de desbalance estacional en ingresos durante Q3.", c
+        869       { id: "risk-002", title: "Rotación de personal clave", description: "El chef ejecutivo y gerente tienen ofertas de la competen
+        870       { id: "risk-003", title: "Satisfacción socios nuevos", description: "Socios 2024 muestran NPS 15 puntos menor que socios histó
+        871       { id: "risk-004", title: "Cumplimiento ambiental", description: "Nueva regulación de aguas residuales requiere actualización."
+        872       { id: "risk-005", title: "Competencia clubes privados", description: "Nuevo club en Santa Ana ofrece instalaciones modernas.",
+  ▸ mockSurveyResults @ 701
+        701 function mockSurveyResults() {
+        702   return {
+        703     status: "success",
+        704     survey_id: "srv-001",
+        705     survey_name: "Encuesta de Satisfacción Q1 2025",
+        706     total_responses: 89,
+        707     completion_rate: 79.5,
+        708     avg_overall_score: 4.2,
+        709     avg_nps: 72,
+        710     nps_distribution: { promoters: 65, passives: 17, detractors: 7 },
+        711     question_summaries: [
+        712       { question_id: "q1", question: "Calidad de las instalaciones", type: "rating", avg_score: 4.5 },
+        713       { question_id: "q2", question: "Servicio al cliente", type: "rating", avg_score: 4.1 },
+        714       { question_id: "q3", question: "Actividades disponibles", type: "rating", avg_score: 4.3 },
+  ▸ mockGetSurvey @ 733
+        733 function mockGetSurvey() {
+        734   return {
+        735     status: "success",
+        736     id: "srv-001",
+        737     name: "Encuesta de Satisfacción Q1 2025",
+        738     description: "Tu opinión nos ayuda a mejorar.",
+        739     event_type: "general",
+        740     is_active: true,
+        741     usage_count: 1,
+        742     avg_completion_rate: 79.5,
+        743     questions: [
+        744       { id: "q1", order: 1, type: "nps" as const, question: "¿Qué tan probable es que recomiendes el Castillo a un amigo?", required
+        745       { id: "q2", order: 2, type: "rating" as const, question: "Calidad de las instalaciones", description: "Del 1 al 5", required: 
+        746       { id: "q3", order: 3, type: "choice" as const, question: "¿Tu actividad favorita?", required: true, options: ["Golf", "Tenis",
+  ▸ mockListFamilies @ 195
+        195 function mockListFamilies(_params: Record<string, unknown>) {
+        196   return {
+        197     status: "success",
+        198     families: FAMILIES,
+        199     total: FAMILIES.length,
+        200     page: 1,
+        201     totalPages: 1,
+        202     limit: 20,
+        203   };
+        204 }
+        205 
+        206 function mockGetFamilyDetail(params: Record<string, unknown>) {
+        207   const id = (params.family_id as string) || (params.id as string) || "fam-001";
+        208   const fam = FAMILIES.find((f) => f.id === id) || FAMILIES[0];
+  ▸ mockGetFamilyDetail @ 206
+        206 function mockGetFamilyDetail(params: Record<string, unknown>) {
+        207   const id = (params.family_id as string) || (params.id as string) || "fam-001";
+        208   const fam = FAMILIES.find((f) => f.id === id) || FAMILIES[0];
+        209   return {
+        210     status: "success",
+        211     family: {
+        212       ...fam,
+        213       notes: "Familia muy activa en eventos deportivos",
+        214       members: [
+        215         { ...fam.primaryContact },
+        216         {
+        217           id: "m-010",
+        218           firstName: "María Fernanda",
+        219           lastName: "Rojas",

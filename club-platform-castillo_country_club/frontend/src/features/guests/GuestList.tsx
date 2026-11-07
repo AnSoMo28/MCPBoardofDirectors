@@ -60,7 +60,6 @@ import { timeAgo } from "@/shared/lib/utils";
 
 import {
   type GuestListResponse,
-  type TrialListResponse,
   type GuestTodaySummary,
   GUEST_STATUS_CONFIG,
   TRIAL_STATUS_CONFIG,
@@ -74,6 +73,32 @@ import "./GuestList.css";
 
 type Tab = "today" | "trials";
 
+/**
+ * P2-C3g #9 — envelope + item de manage_trial_memberships(action="list").
+ * Backend (guest_management_agent.py, rama list): { status, message, trial_memberships[] }
+ * — sin total/conversion_rate/active_count y sin paginacion server-side (E3/E4).
+ * Campos FE-only no vienen del backend → opcionales (degradacion documentada, deuda C3h).
+ */
+interface TrialListEnvelope {
+  status: string;
+  message?: string;
+  trial_memberships?: BackendTrialItem[];
+}
+
+interface BackendTrialItem {
+  id: string;
+  guest_name: string;
+  trial_type: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  /** FE-only — el modelo backend (13 campos) no los envia. */
+  host_family_name?: string;
+  trial_type_label?: string;
+  activities_attended?: number;
+  conversion_probability?: number | null;
+}
+
 // ═══════════════════════════════════════════════════════════
 // §2 — CONSTANTS
 // ═══════════════════════════════════════════════════════════
@@ -83,6 +108,9 @@ const STATUS_OPTIONS = [
   { value: "departed", label: "Salió" },
   { value: "no_show", label: "No se presentó" },
 ] as const;
+
+/** P2-C3g #9 — el backend no pagina el list de trials → paginacion client-side. */
+const TRIALS_PAGE_SIZE = 10;
 
 // ═══════════════════════════════════════════════════════════
 // §3 — HELPERS
@@ -145,10 +173,10 @@ export default function GuestList() {
     { enabled: activeTab === "today", refetchInterval: 60_000 },
   );
 
-  const trialsQ = useMCPQuery<TrialListResponse>(
+  const trialsQ = useMCPQuery<TrialListEnvelope>(
     "guests",
-    "list_trial_memberships",
-    { page: trialPage, page_size: 10 },
+    "manage_trial_memberships",
+    { action: "list" },
     { enabled: activeTab === "trials", placeholderData: keepPreviousData },
   );
 
@@ -171,6 +199,17 @@ export default function GuestList() {
   };
 
   const stats = summaryQ.data;
+
+  // ── P2-C3g #9 · adaptador client-side (deuda C3h: KPIs y paginacion en backend) ──
+  const trials = trialsQ.data?.trial_memberships ?? [];
+  const trialsTotal = trials.length;
+  const activeTrials = trials.filter((t) => t.status === "active").length;
+  const trialPages = Math.max(1, Math.ceil(trialsTotal / TRIALS_PAGE_SIZE));
+  const currentTrialPage = Math.min(trialPage, trialPages);
+  const pagedTrials = trials.slice(
+    (currentTrialPage - 1) * TRIALS_PAGE_SIZE,
+    currentTrialPage * TRIALS_PAGE_SIZE,
+  );
 
   return (
     <PageContainer
@@ -401,7 +440,7 @@ export default function GuestList() {
               )}
 
               {/* Empty */}
-              {!trialsQ.isLoading && (!trialsQ.data || trialsQ.data.trials.length === 0) && (
+              {!trialsQ.isLoading && trials.length === 0 && (
                 <div className="gst-list__empty">
                   <EmptyState
                     title="Sin membresías de prueba"
@@ -421,25 +460,22 @@ export default function GuestList() {
               )}
 
               {/* Data */}
-              {trialsQ.data && trialsQ.data.trials.length > 0 && (
+              {trialsQ.data && trials.length > 0 && (
                 <>
-                  {/* Conversion rate banner */}
-                  {trialsQ.data.conversion_rate > 0 && (
+                  {/* P2-C3g #9 · banner degradado — backend no expone conversion_rate (deuda C3h) */}
+                  {activeTrials > 0 && (
                     <div className="gst-list__conversion-banner">
                       <Sparkles className="gst-list__conversion-icon" />
                       <div className="gst-list__conversion-info">
-                        <p className="gst-list__conversion-rate">
-                          Tasa de conversión: {trialsQ.data.conversion_rate.toFixed(1)}%
-                        </p>
                         <p className="gst-list__conversion-active">
-                          {trialsQ.data.active_count} trials activos
+                          {activeTrials} trials activos
                         </p>
                       </div>
                     </div>
                   )}
 
                   <div className="gst-list__trial-list" role="list" aria-label="Membresías de prueba">
-                    {trialsQ.data.trials.map((trial, i) => {
+                    {pagedTrials.map((trial, i) => {
                       const tCfg = TRIAL_STATUS_CONFIG[trial.status] ?? TRIAL_STATUS_CONFIG.active;
                       const daysLeft =
                         trial.status === "active"
@@ -475,7 +511,8 @@ export default function GuestList() {
                             </div>
 
                             <p className="gst-list__trial-host">
-                              Invitado por {trial.host_family_name} · {trial.trial_type_label}
+                              Invitado por {trial.host_family_name ?? "—"} ·{" "}
+                              {trial.trial_type_label ?? trial.trial_type}
                             </p>
 
                             <div className="gst-list__trial-meta">
@@ -491,9 +528,9 @@ export default function GuestList() {
                                   month: "short",
                                 })}
                               </span>
-                              {trial.activities_attended > 0 && (
+                              {(trial.activities_attended ?? 0) > 0 && (
                                 <span className="gst-list__meta-item">
-                                  {trial.activities_attended} actividades
+                                  {trial.activities_attended ?? 0} actividades
                                 </span>
                               )}
                             </div>
@@ -525,23 +562,23 @@ export default function GuestList() {
                   </div>
 
                   {/* Pagination */}
-                  {trialsQ.data.total > 10 && (
+                  {trialsTotal > TRIALS_PAGE_SIZE && (
                     <nav className="gst-list__pagination" aria-label="Paginación de trials">
                       <p className="gst-list__pagination-total">
-                        {trialsQ.data.total} membresías en total
+                        {trialsTotal} membresías en total
                       </p>
                       <div className="gst-list__pagination-actions">
                         <Button
                           variant="ghost"
                           onClick={() => setTrialPage((p) => Math.max(1, p - 1))}
-                          disabled={trialPage === 1}
+                          disabled={currentTrialPage === 1}
                         >
                           Anterior
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={() => setTrialPage((p) => p + 1)}
-                          disabled={trialsQ.data.trials.length < 10}
+                          disabled={currentTrialPage >= trialPages}
                         >
                           Siguiente
                         </Button>

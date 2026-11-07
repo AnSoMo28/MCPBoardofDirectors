@@ -1,0 +1,247 @@
+P2-C3g · g8-patch4 — cierre de C3g: #9 + C16 con pre-flights y cirugia de ledger
+  filas: C16 campos familia (regex global) · #9 trials -> manage_trial_memberships{action:"list"}
+
+══ A. Pre-flight HITL — ¿gate central en el registro de tools? ══
+  · create_request( / ApprovalEngine( — hits por archivo:
+      backend/src/club_mcp/agents/age_group.py: 1
+      backend/src/club_mcp/agents/base.py: 1
+      backend/src/club_mcp/agents/communication_agent.py: 3
+      backend/src/club_mcp/agents/compliance.py: 2
+      backend/src/club_mcp/agents/cultural_social_agent.py: 3
+      backend/src/club_mcp/agents/document_intelligence_agent.py: 3
+      backend/src/club_mcp/agents/event_orchestrator.py: 4
+      backend/src/club_mcp/agents/executive_dashboard_agent.py: 2
+      backend/src/club_mcp/agents/facility_management_agent.py: 3
+      backend/src/club_mcp/agents/family_profile.py: 2
+      backend/src/club_mcp/agents/finance.py: 3
+      backend/src/club_mcp/agents/guest_management_agent.py: 3
+      backend/src/club_mcp/agents/member_engagement_agent.py: 2
+      backend/src/club_mcp/agents/proactive_recommendation_agent.py: 2
+      backend/src/club_mcp/agents/satisfaction_agent.py: 1
+      backend/src/club_mcp/agents/sports_recreation_agent.py: 3
+      backend/src/club_mcp/agents/wellness.py: 1
+      backend/src/club_mcp/hitl/approval_engine.py: 1
+      backend/src/club_mcp/server.py: 1
+  ── backend/src/club_mcp/agents/base.py:62 · register_with_mcp (+55 lineas) ──
+      62│     def register_with_mcp(self, mcp: Any) -> int:
+      63│         """
+      64│         Scan for @MCPTool-decorated methods and register them with the MCP server.
+      65│         Returns the number of tools registered.
+      66│         """
+      67│         self._mcp = mcp
+      68│         count = 0
+      69│         for attr_name in dir(self):
+      70│             if attr_name.startswith("_"):
+      71│                 continue
+      72│             attr = getattr(self, attr_name, None)
+      73│             if attr is None:
+      74│                 continue
+      75│             if not callable(attr):
+      76│                 continue
+      77│             if not getattr(attr, "_mcp_tool", False):
+      78│                 continue
+      79│ 
+      80│             tool_name: str = attr._tool_name
+      81│             tool_desc: str = attr._tool_description
+      82│             approval: ApprovalLevel = attr._tool_approval
+      83│ 
+      84│             wrapper = self._wrap_with_hitl(attr, approval)
+      85│ 
+      86│             mcp.tool(name=tool_name, description=tool_desc)(wrapper)
+      87│             count += 1
+      88│             logger.debug(
+      89│                 "[%s] Registered tool: %s (approval=%s)",
+      90│                 self.agent_name, tool_name, approval.value,
+      91│             )
+      92│ 
+      93│         logger.info("[%s] Registered %d tools", self.agent_name, count)
+      94│         return count
+      95│ 
+      96│     def _wrap_with_hitl(
+      97│         self,
+      98│         func: Callable,
+      99│         approval: ApprovalLevel,
+     100│     ) -> Callable:
+     101│         """
+     102│         Wraps a tool method to inject HITL metadata into the response.
+     103│         Does NOT block execution - that logic lives in each tool.
+     104│         This wrapper adds metadata so the caller knows the approval level.
+     105│         """
+     106│ 
+     107│         @wraps(func)
+     108│         async def wrapper(*args: Any, **kwargs: Any) -> Any:
+     109│             result = await func(*args, **kwargs)
+     110│             if isinstance(result, dict):
+     111│                 result["_approval_level"] = approval.value
+     112│                 result["_agent"] = self.agent_name
+     113│             return result
+     114│ 
+     115│         return wrapper
+     116│ 
+  ── backend/src/club_mcp/agents/base.py:20 · MCPTool (+70 lineas) ──
+      20│ class MCPTool:
+      21│     """
+      22│     Decorator to mark a method as an MCP tool.
+      23│     Usage:
+      24│         @MCPTool("family_get_profile", "Obtiene el perfil", ApprovalLevel.AUTO)
+      25│         async def get_profile(self, family_id: str) -> dict: ...
+      26│     """
+      27│ 
+      28│     def __init__(
+      29│         self,
+      30│         name: str,
+      31│         description: str,
+      32│         approval: ApprovalLevel = ApprovalLevel.AUTO,
+      33│         approver_roles: Optional[list[str]] = None,
+      34│     ) -> None:
+      35│         self.name = name
+      36│         self.description = description
+      37│         self.approval = approval
+      38│         self.approver_roles = approver_roles or []
+      39│ 
+      40│     def __call__(self, func: Callable) -> Callable:
+      41│         func._mcp_tool = True  # type: ignore[attr-defined]
+      42│         func._tool_name = self.name  # type: ignore[attr-defined]
+      43│         func._tool_description = self.description  # type: ignore[attr-defined]
+      44│         func._tool_approval = self.approval  # type: ignore[attr-defined]
+      45│         func._tool_approver_roles = self.approver_roles  # type: ignore[attr-defined]
+      46│         return func
+      47│ 
+      48│ 
+      49│ class BaseAgent(ABC):
+      50│     """
+      51│     Abstract base class for all MCP agents.
+      52│     Subclasses must implement agent_name, description, and _register_tools().
+      53│     """
+      54│ 
+      55│     agent_name: str
+      56│     description: str
+      57│ 
+      58│     def __init__(self) -> None:
+      59│         self.approval_engine = ApprovalEngine()
+      60│         self._mcp: Any = None
+      61│ 
+      62│     def register_with_mcp(self, mcp: Any) -> int:
+      63│         """
+      64│         Scan for @MCPTool-decorated methods and register them with the MCP server.
+      65│         Returns the number of tools registered.
+      66│         """
+      67│         self._mcp = mcp
+      68│         count = 0
+      69│         for attr_name in dir(self):
+      70│             if attr_name.startswith("_"):
+      71│                 continue
+      72│             attr = getattr(self, attr_name, None)
+      73│             if attr is None:
+      74│                 continue
+      75│             if not callable(attr):
+      76│                 continue
+      77│             if not getattr(attr, "_mcp_tool", False):
+      78│                 continue
+      79│ 
+      80│             tool_name: str = attr._tool_name
+      81│             tool_desc: str = attr._tool_description
+      82│             approval: ApprovalLevel = attr._tool_approval
+      83│ 
+      84│             wrapper = self._wrap_with_hitl(attr, approval)
+      85│ 
+      86│             mcp.tool(name=tool_name, description=tool_desc)(wrapper)
+      87│             count += 1
+      88│             logger.debug(
+      89│                 "[%s] Registered tool: %s (approval=%s)",
+  ── backend/src/club_mcp/agents/member_engagement_agent.py:199 · design_reactivation_campaign rama list (+18) ──
+     199│         if action == "list":
+     200│             campaigns = await self.repo.list_campaigns()
+     201│             return {
+     202│                 "status": "success",
+     203│                 "message": f"📋 Encontramos {len(campaigns)} campañas.",
+     204│                 "campaigns": [c.model_dump(mode="json") for c in campaigns],
+     205│             }
+     206│ 
+     207│         # ── Get ──
+     208│         if action == "get":
+     209│             if not campaign_id:
+     210│                 return {
+     211│                     "status": "error",
+     212│                     "message": "Se requiere campaign_id 🤔",
+     213│                 }
+     214│             campaign = await self.repo.get_campaign(campaign_id)
+     215│             if not campaign:
+     216│                 return {
+  VEREDICTO A: sin gate central — el HITL se materializa con create_request DENTRO de
+    las ramas de escritura; la rama list (E3 l411-425) retorna directo → action="list" pasa.
+
+══ B. Pre-flight C16 — consumidores de WellnessFamilySelector ══
+  (el tsc de patch3 no validaba consumidores: el tipo Props roto degradaba a any)
+  ── frontend/src/features/wellness/WellnessDashboard.tsx · uso JSX con contexto ──
+     129│         ]}
+     130│       >
+     131│         <WellnessFamilySelector selectedId="" onSelect={d.handleFamilySelect} />
+     132│       </PageContainer>
+     133│     );
+     134│   }
+     135│ 
+     136│   // ── No family (SOCIO) ──
+     137│   if (!d.familyId) {
+     138│     return (
+     139│       <PageContainer
+     140│         title="Wellness Inteligente"
+     141│         subtitle="Motor de análisis de bienestar integral"
+     142│         breadcrumbs={[
+     143│           { label: "Inicio", href: "/admin" },
+    ⋮
+     201│         {d.isAdmin && (
+     202│           <div className="mb-6">
+     203│             <WellnessFamilySelector
+     204│               selectedId={d.familyId}
+     205│               onSelect={d.handleFamilySelect}
+     206│             />
+     207│           </div>
+     208│         )}
+     209│         <EmptyState
+     210│           icon={<Activity className="w-8 h-8" />}
+     211│           title="Sin datos de bienestar"
+     212│           description="No se encontraron datos para esta familia en el período seleccionado."
+     213│           action={
+     214│             <Button variant="primary" onClick={() => d.refetchReport?.()}>
+     215│               Reintentar
+    ⋮
+
+══ C. Fila C16 — WellnessFamilySelector.tsx (regex global) ══
+  anclas: import=true · .familyName=3/3 · .memberCount=2/2 · Family=3/2
+  C16 DEMORADO — anclas no coinciden con E1 (¿el archivo cambio desde g7?)
+
+══ D. Fila #9 — GuestList.tsx · trials ══
+  · rama list verificada (E3): { status, message, trial_memberships } sin create_request
+  · E4: conversion_rate/active_count/total NO existen en el envelope backend → degradacion D5
+  #9 REWRITE ✓ query→manage_trial_memberships{action:"list"} (sin page/page_size: no estan
+    en la firma backend) · envelope+item locales · adaptador client-side:
+    · paginacion client-side (TRIALS_PAGE_SIZE=10, slice) · total→length · active_count→filter
+    · banner degradado a "N trials activos" (conversion_rate no existe en backend)
+    · item: host_family_name→"—" · trial_type_label→trial_type · activities/probability opcionales
+    ↻ gate tsc …
+  ✓ tsc OK — fila #9 APLICADA
+
+══ E. Cirugía del ledger VI14_EQUIVALENCES ══
+  · entrada eliminada: "guests.list_trial_memberships": ["manage_trial_memberships"],
+  · entradas de equivalencia restantes en el ledger: 22
+
+══ F. End-state ══
+  C16 no aplicado · #9 APLICADO ✓
+  cola C3h — nuevas por #9 (deuda backend de guest_management):
+    · manage_trial_memberships(list) sin total/conversion_rate/active_count/paginacion
+    · item sin host_family_name/trial_type_label/activities_attended/conversion_probability
+  inventario D (9 llamadas viejas en archivos tocados) — proximo ciclo C3h
+  resumen corrida: aplicados 1 · demorados 1
+
+  git diff --stat:
+.../communications/hooks/usePreferencesForm.ts     |  4 +-
+ .../features/engagement/ReactivationCampaigns.tsx  |  6 +-
+ .../frontend/src/features/engagement/types.ts      |  2 +-
+ .../src/features/facilities/FacilityMap.tsx        | 18 +++--
+ .../facilities/components/ReservationCalendar.tsx  |  6 +-
+ .../frontend/src/features/guests/GuestList.tsx     | 77 ++++++++++++++++------
+ .../src/features/guests/GuestRegistration.tsx      | 10 +--
+ .../wellness/components/WellnessFamilySelector.tsx |  6 +-
+ .../scripts/p2c3e_vi14_patch.ts                    |  3 -
+ 9 files changed, 86 insertions(+), 46 deletions(-)

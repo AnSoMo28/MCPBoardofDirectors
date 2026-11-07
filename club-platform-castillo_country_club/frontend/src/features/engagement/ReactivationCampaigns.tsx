@@ -105,9 +105,9 @@ export function ReactivationCampaigns() {
 
   // ── Queries ──────────────────────────────────────────────
   const campaignsQ = useMCPQuery<CampaignListResponse>(
-    "engagement",
-    "list_reactivation_campaigns",
-    {},
+    "member_engagement",
+    "design_reactivation_campaign",
+    { action: "list" },
     { placeholderData: keepPreviousData },
   );
 

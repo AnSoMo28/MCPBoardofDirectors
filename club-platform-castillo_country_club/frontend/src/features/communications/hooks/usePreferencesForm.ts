@@ -83,8 +83,8 @@ export function usePreferencesForm() {
   // ── History query (for intelligence layer) ─────
   const historyQ = useMCPQuery<{ history: HistoryItem[] }>(
     "communication",
-    "get_communication_history",
-    { member_id: searchedMember ?? "", limit: 100 },
+    "get_notification_history",
+    { limit: 100 },
     { enabled: !!searchedMember, staleTime: 60_000 },
   );
 

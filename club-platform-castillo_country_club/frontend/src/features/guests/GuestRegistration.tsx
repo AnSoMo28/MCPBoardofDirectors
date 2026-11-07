@@ -125,16 +125,16 @@ export default function GuestRegistration() {
 
   // ── Queries ──
   const hostQ = useMCPQuery<FamilySearchResponse>(
-    "families",
-    "search_families",
+    "family_profile",
+    "family_search",
     { query: hostSearch, limit: 8 },
     { enabled: hostSearch.length >= 2 },
   );
 
   const facilityQ = useMCPQuery<FacilityListResponse>(
-    "facilities",
-    "list_available_facilities",
-    {},
+    "facility_management",
+    "manage_facilities",
+    { action: "list" },
     { staleTime: 60_000 },
   );
 

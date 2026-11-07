@@ -13,27 +13,44 @@ import { Input } from "@/shared/components/ui/Input";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { cn } from "@/shared/lib/utils";
 
-import type { Family, FamilyListResponse } from "@/features/families/types";
+/**
+ * P2-C3g C16 — items de family_search: FamilyBrief
+ * (backend/src/club_mcp/models/family.py · 7 campos snake_case).
+ * El tipo compartido (families/types, 14 campos camelCase) queda como deuda C3h.
+ */
+interface WellnessFamilyItem {
+  id: string;
+  name: string;
+  tier: string;
+  status: string;
+  member_count: number;
+  engagement_score: number;
+  join_date: string;
+}
+
+interface WellnessFamilyListResponse {
+  families: WellnessFamilyItem[];
+}
 
 interface Props {
   selectedId: string;
-  onSelect: (family: Family) => void;
+  onSelect: (family: WellnessFamilyItem) => void;
 }
 
 export function WellnessFamilySelector({ selectedId, onSelect }: Props) {
   const [search, setSearch] = useState("");
 
-  const { data: familiesResp, isLoading } = useMCPQuery<FamilyListResponse>(
-    "families",
-    "list_families",
-    { page: 1, limit: 100, search: search || undefined },
+  const { data: familiesResp, isLoading } = useMCPQuery<WellnessFamilyListResponse>(
+    "family_profile",
+    "family_search",
+    { query: search || "", limit: 100 },
     { staleTime: 60_000 },
   );
 
   const families = familiesResp?.families ?? [];
   const filtered = search
     ? families.filter((f) =>
-        f.familyName.toLowerCase().includes(search.toLowerCase()),
+        f.name.toLowerCase().includes(search.toLowerCase()),
       )
     : families;
 
@@ -109,7 +126,7 @@ export function WellnessFamilySelector({ selectedId, onSelect }: Props) {
                       : "var(--color-silver-300)",
                   }}
                 >
-                  {family.familyName.charAt(0)}
+                  {family.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p
@@ -120,11 +137,11 @@ export function WellnessFamilySelector({ selectedId, onSelect }: Props) {
                         : "var(--color-silver-200)",
                     }}
                   >
-                    {family.familyName}
+                    {family.name}
                   </p>
                   <p className="font-mono text-[10px] text-[var(--color-silver-500)]">
-                    {family.memberCount} miembro
-                    {family.memberCount !== 1 ? "s" : ""} · {family.tier}
+                    {family.member_count} miembro
+                    {family.member_count !== 1 ? "s" : ""} · {family.tier}
                   </p>
                 </div>
                 <Badge

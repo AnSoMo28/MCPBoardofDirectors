@@ -1,0 +1,108 @@
+P2-C3g · g9-patch5 — C16: guards corregidos (Family=3, residuo=1) + consumidor adaptativo
+
+══ A. Pre-flight — handleFamilySelect en frontend/src ══
+  frontend/src/features/wellness/hooks/useWellnessDashboard.ts:211│ const handleFamilySelect = useCallback((family: Family) => {
+  frontend/src/features/wellness/hooks/useWellnessDashboard.ts:235│ handleFamilySelect,
+  frontend/src/features/wellness/WellnessDashboard.tsx:131│ <WellnessFamilySelector selectedId="" onSelect={d.handleFamilySelect} />
+  frontend/src/features/wellness/WellnessDashboard.tsx:205│ onSelect={d.handleFamilySelect}
+  ── frontend/src/features/wellness/hooks/useWellnessDashboard.ts · contexto (±16 alrededor de la línea 211) ──
+     196│       } else {
+     197│         setModalInsight(insight);
+     198│       }
+     199│     },
+     200│     [advisorInsights, executeAction],
+     201│   );
+     202│ 
+     203│   const handleModalConfirm = useCallback(async () => {
+     204│     if (!modalInsight) return;
+     205│     await executeAction(modalInsight);
+     206│     setModalInsight(null);
+     207│   }, [modalInsight, executeAction]);
+     208│ 
+     209│   // ── Family selection ─────────────────────────────────────
+     210│ 
+     211│   const handleFamilySelect = useCallback((family: Family) => {
+     212│     setSelectedFamily(family);
+     213│     setReactions([]);
+     214│     setActionStates({});
+     215│   }, []);
+     216│ 
+     217│   const resetFamily = useCallback(() => {
+     218│     setSelectedFamily(null);
+     219│     setReactions([]);
+     220│     setActionStates({});
+     221│   }, []);
+     222│ 
+     223│   // ── Derived ──────────────────────────────────────────────
+     224│ 
+     225│   const familyName =
+     226│     queries.profileData?.family_name ||
+     227│     selectedFamily?.familyName ||
+  ── frontend/src/features/wellness/WellnessDashboard.tsx · contexto (±16 alrededor de la línea 131) ──
+     116│     { id: "family", label: "Familia", icon: Users },
+     117│     { id: "business", label: "Negocio", icon: BarChart3 },
+     118│   ];
+     119│ 
+     120│   // ── No family (ADMIN) ──
+     121│   if (!d.familyId && d.isAdmin) {
+     122│     return (
+     123│       <PageContainer
+     124│         title="Wellness Inteligente"
+     125│         subtitle="Motor de análisis de bienestar integral"
+     126│         breadcrumbs={[
+     127│           { label: "Inicio", href: "/admin" },
+     128│           { label: "Wellness", href: "/admin/wellness" },
+     129│         ]}
+     130│       >
+     131│         <WellnessFamilySelector selectedId="" onSelect={d.handleFamilySelect} />
+     132│       </PageContainer>
+     133│     );
+     134│   }
+     135│ 
+     136│   // ── No family (SOCIO) ──
+     137│   if (!d.familyId) {
+     138│     return (
+     139│       <PageContainer
+     140│         title="Wellness Inteligente"
+     141│         subtitle="Motor de análisis de bienestar integral"
+     142│         breadcrumbs={[
+     143│           { label: "Inicio", href: "/admin" },
+     144│           { label: "Wellness", href: "/admin/wellness" },
+     145│         ]}
+     146│       >
+     147│         <EmptyState
+
+══ B. Fila C16 — WellnessFamilySelector.tsx ══
+  anclas: import=true · .familyName=3/3 · .memberCount=2/2 · Family=3/3 (cabecera línea 2 incluida)
+  C16 REWRITE ✓ .familyName→.name(×3) · .memberCount→.member_count(×2) · import→interfaces locales
+    WellnessFamilyItem(7 snake)/WellnessFamilyListResponse · onSelect re-tipado
+    ↻ gate tsc (pasada 1) …
+  ✗ tsc FALLÓ (pasada 1): 2 error(es) — en selector: 0 · otros archivos: 1
+      src/features/wellness/WellnessDashboard.tsx:131 47 TS2322
+      src/features/wellness/WellnessDashboard.tsx:205 15 TS2322
+  ↻ pasada 2 — re-tipo de consumidores: `: Family` → `: Pick<Family, "id">` (±12 líneas
+    de cada handleFamilySelect — Pick mantiene vivo el import y, por contravarianza,
+    WellnessFamilyItem (tiene id) pasa a ser asignable al parámetro)
+    · frontend/src/features/wellness/WellnessDashboard.tsx: sin patrón ': Family' cerca de handleFamilySelect
+    ✎ frontend/src/features/wellness/hooks/useWellnessDashboard.ts:
+      211│ const handleFamilySelect = useCallback((family: Family) => {
+        → const handleFamilySelect = useCallback((family: Pick<Family, "id">) => {
+    ↻ gate tsc (pasada 2) …
+  ✗ tsc FALLÓ (pasada 2) — rollback total de la fila:
+      src/features/wellness/hooks/useWellnessDashboard.ts:212 23 TS2345
+  ⤺ selector + consumidores revertidos (evidencia arriba + sección A para patch6)
+
+══ C. End-state ══
+  C16 no aplicado · #9 APLICADO (g8)
+  · entradas key:[…] en el ledger VI14: 22 (misma regex que patch4)
+  git diff --stat:
+.../communications/hooks/usePreferencesForm.ts     |  4 +-
+ .../features/engagement/ReactivationCampaigns.tsx  |  6 +-
+ .../frontend/src/features/engagement/types.ts      |  2 +-
+ .../src/features/facilities/FacilityMap.tsx        | 18 +++--
+ .../facilities/components/ReservationCalendar.tsx  |  6 +-
+ .../frontend/src/features/guests/GuestList.tsx     | 77 ++++++++++++++++------
+ .../src/features/guests/GuestRegistration.tsx      | 10 +--
+ .../wellness/components/WellnessFamilySelector.tsx |  6 +-
+ .../scripts/p2c3e_vi14_patch.ts                    |  3 -
+ 9 files changed, 86 insertions(+), 46 deletions(-)
