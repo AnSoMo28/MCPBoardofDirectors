@@ -1,0 +1,1336 @@
+P2-C3h · h1-backlog — mapa consolidado de deuda tras C3g
+  base: 00417eb P2-C3g: migrar frontend a tools MCP reales (#1 #2 #5 #6 #9 #10 #11 #16, D5, C16)
+
+══ A. Manifest C3g (p2c3g_manifest.json) ══
+  · 18 filas (una por línea, truncadas a 400 chars):
+    {"n":1,"file":"features/communications/hooks/usePreferencesForm.ts","line":84,"old":"communication.get_communication_history","real":"communication.get_communication_analytics","cls":"LOSSY","why":"history → analytics: shape distinto","context":["   83     // ── History query (for intelligence layer) ─────","   84 >   const historyQ = useMCPQuery<{ history: HistoryItem[] }>(","   85       \"commun …
+    {"n":2,"file":"features/engagement/ReactivationCampaigns.tsx","line":107,"old":"engagement.list_reactivation_campaigns","real":"member_engagement.design_reactivation_campaign","cls":"RISKY","why":"list → design: generación, no listado","context":["  106     // ── Queries ──────────────────────────────────────────────","  107 >   const campaignsQ = useMCPQuery<CampaignListResponse>(","  108       \ …
+    {"n":3,"file":"features/engagement/SatisfactionReport.tsx","line":331,"old":"engagement.get_survey_results","real":"satisfaction.analyze_event_satisfaction","cls":"LOSSY","why":"survey_results → análisis computado","context":["  330   export function SatisfactionReport({ surveyId: propId }: SatisfactionReportProps) {","  331 >   const resultsQ = useMCPQuery<SurveyResultsResponse>(","  332       \" …
+    {"n":4,"file":"features/engagement/SatisfactionSurvey.tsx","line":271,"old":"engagement.get_active_survey","real":"satisfaction.get_survey_for_event","cls":"LOSSY","why":"active_survey → probablemente exige event_id","context":["  270     // ── Data fetching ────────────────────────────────────────","  271 >   const surveyQ = useMCPQuery<SurveyTemplate>(","  272       \"engagement\","],"oldElsewhe …
+    {"n":5,"file":"features/facilities/FacilityMap.tsx","line":503,"old":"facilities.get_utilization","real":"facility_management.get_amenity_utilization","cls":"SAFE","why":"get_utilization → amenity_utilization (alcance amenity)","context":["  502   ","  503 >   const { data: utilizationData } = useMCPQuery<AmenityUtilizationResponse>(","  504       \"facilities\","],"oldElsewhere":[],"realInFronten …
+    {"n":6,"file":"features/facilities/components/ReservationCalendar.tsx","line":512,"old":"facilities.list_reservations","real":"facility_management.get_facility_reservations","cls":"SAFE","why":"list/get_reservations → get_facility_reservations","context":["  511   ","  512 >   const { data, isLoading, isError, error } = useMCPQuery<CalendarQueryResponse>(","  513       \"facilities\","],"oldElsewh …
+    {"n":7,"file":"features/finance/hooks/useFamilyAccount.ts","line":31,"old":"finance.get_family_account","real":"finance.finance_account_status","cls":"LOSSY","why":"family_account → status: shape parcial","context":["   30   export function useFamilyAccount({ familyId, txPage, txType, activeTab }: Opts) {","   31 >   const accountQ = useMCPQuery<FamilyAccountData>(","   32       \"finance\","],"ol …
+    {"n":8,"file":"features/finance/hooks/useFamilyAccount.ts","line":50,"old":"finance.get_invoices","real":"finance.finance_invoice_create","cls":"RISKY","why":"get_invoices (lectura) → create (ESCRITURA)","context":["   49   ","   50 >   const invQ = useMCPQuery<Invoice[]>(","   51       \"finance\","],"oldElsewhere":[],"realInFrontend":[],"abs":"frontend/src/features/finance/hooks/useFamilyAccount …
+    {"n":9,"file":"features/guests/GuestList.tsx","line":148,"old":"guests.list_trial_memberships","real":"guest_management.manage_trial_memberships","cls":"RISKY","why":"list → manage: dispatch CRUD","context":["  147   ","  148 >   const trialsQ = useMCPQuery<TrialListResponse>(","  149       \"guests\","],"oldElsewhere":[],"realInFrontend":[{"file":"shared/mocks/contracts.ts","line":1507}],"abs":"f …
+    {"n":10,"file":"features/guests/GuestRegistration.tsx","line":127,"old":"families.search_families","real":"family_profile.family_search","cls":"SAFE","why":"search_families / list_families → family_search","context":["  126     // ── Queries ──","  127 >   const hostQ = useMCPQuery<FamilySearchResponse>(","  128       \"families\","],"oldElsewhere":[],"realInFrontend":[],"abs":"frontend/src/featur …
+    {"n":11,"file":"features/guests/GuestRegistration.tsx","line":134,"old":"facilities.list_available_facilities","real":"facility_management.manage_facilities","cls":"RISKY","why":"list_available → manage: dispatch CRUD","context":["  133   ","  134 >   const facilityQ = useMCPQuery<FacilityListResponse>(","  135       \"facilities\","],"oldElsewhere":[],"realInFrontend":[{"file":"shared/mocks/contr …
+    {"n":12,"file":"features/mi-club/hooks/useMiClubLanding.ts","line":435,"old":"families.get_family","real":"family_profile.family_get_profile","cls":"SAFE","why":"get_family → family_get_profile","context":["  434     /* ── Family ── */","  435 >   const familyQ = useMCPQuery<FamilyDetailResponse>(","  436       \"families\","],"oldElsewhere":[],"realInFrontend":[],"abs":"frontend/src/features/mi-c …
+    {"n":13,"file":"features/mi-club/hooks/useMyReservations.ts","line":201,"old":"facilities.get_reservations","real":"facility_management.get_facility_reservations","cls":"SAFE","why":"list/get_reservations → get_facility_reservations","context":["  200       refetch,","  201 >   } = useMCPQuery<ReservationListResponse>(","  202       \"facilities\","],"oldElsewhere":[{"file":"shared/lib/mock-data.t …
+    {"n":14,"file":"features/reports/hooks/useBoardReport.ts","line":104,"old":"reports.get_board_report","real":"executive_dashboard.generate_quarterly_board_report","cls":"SAFE","why":"get → generate (compute+return); revisar params","context":["  103       error,","  104 >   } = useMCPQuery<BoardReport>(","  105       \"reports\","],"oldElsewhere":[{"file":"shared/lib/mock-data.ts","line":950,"tag" …
+    {"n":15,"file":"features/reports/hooks/useBoardReport.ts","line":114,"old":"reports.get_risk_matrix","real":"member_360.get_member_risk_assessment","cls":"SAFE","why":"risk_matrix → risk_assessment; revisar shape","context":["  113       isLoading: isRiskLoading,","  114 >   } = useMCPQuery<RiskSummary>(","  115       \"reports\","],"oldElsewhere":[{"file":"shared/lib/mock-data.ts","line":951,"tag …
+    {"n":16,"file":"features/wellness/components/WellnessFamilySelector.tsx","line":26,"old":"families.list_families","real":"family_profile.family_search","cls":"SAFE","why":"search_families / list_families → family_search","context":["   25   ","   26 >   const { data: familiesResp, isLoading } = useMCPQuery<FamilyListResponse>(","   27       \"families\","],"oldElsewhere":[{"file":"shared/lib/mock- …
+    {"n":17,"file":"shared/components/export/hooks/useDecisionDocument.ts","line":86,"old":"finance.narrative_generate","real":"advisor_intelligence.generate_insight_narrative","cls":"SAFE","why":"narrative_generate → generate_insight_narrative","context":["   85     /* ── Queries (staggered) ── */","   86 >   const narrativeQ = useMCPQuery<FinanceNarrativeGenerateResponse>(","   87       \"finance\", …
+    {"n":18,"file":"shared/components/export/hooks/useDecisionDocument.ts","line":93,"old":"finance.scenario_simulate","real":"advisor_intelligence.simulate_scenario","cls":"SAFE","why":"scenario_simulate → simulate_scenario","context":["   92   ","   93 >   const scenarioQ = useMCPQuery<FinanceScenarioSimulateResponse>(","   94       \"finance\","],"oldElsewhere":[{"file":"shared/mocks/contracts.ts", …
+
+══ B. Ledger VI14_EQUIVALENCES (scripts/p2c3e_vi14_patch.ts) ══
+  · 22 entradas:
+    communication.get_communication_history → ["get_communication_analytics", "get_notification_history"]
+    engagement.get_survey_results → ["analyze_event_satisfaction", "generate_satisfaction_report"]
+    engagement.get_active_survey → ["get_survey_for_event"]
+    facilities.list_reservations → ["get_facility_reservations"]
+    facilities.get_facility → []
+    facilities.get_utilization → ["get_amenity_utilization"]
+    facilities.get_reservations → ["get_facility_reservations"]
+    facilities.list_available_facilities → ["manage_facilities"]
+    finance.get_family_account → ["finance_account_status"]
+    finance.get_transactions → []
+    finance.get_invoices → ["finance_invoice_create"]
+    guests.get_today_guests → []
+    guests.get_today_summary → []
+    families.search_families → ["family_search"]
+    families.get_family → ["family_get_profile"]
+    families.list_families → ["family_search"]
+    reports.get_board_report → ["generate_quarterly_board_report", "send_board_package"]
+    reports.get_risk_matrix → ["get_member_risk_assessment"]
+    finance.narrative_generate → ["finance_narrative_generate", "generate_insight_narrative"]
+    finance.scenario_simulate → ["finance_scenario_simulate", "simulate_scenario"]
+    finance.stress_test → ["finance_stress_test"]
+    finance.decision_simulate → ["finance_decision_simulate"]
+
+══ C. Registro backend — @MCPTool por agente ══
+  · 23 archivos de agente · 136 tools (sanity: C3g cerró con 169)
+    family_profile.py · agent_name=family_profile · 16 tools
+    communication_agent.py · agent_name=communication · 14 tools
+    facility_management_agent.py · agent_name=facility_management · 13 tools
+    executive_dashboard_agent.py · agent_name=executive_dashboard · 11 tools
+    sports_recreation_agent.py · agent_name=sports_recreation · 11 tools
+    guest_management_agent.py · agent_name=guest_management · 10 tools
+    member_360_agent.py · agent_name=member_360 · 10 tools
+    ml_intelligence.py · agent_name=? · 10 tools
+    satisfaction_agent.py · agent_name=satisfaction · 10 tools
+    cultural_social_agent.py · agent_name=cultural_social · 9 tools
+    document_intelligence_agent.py · agent_name=document_intelligence · 8 tools
+    proactive_recommendation_agent.py · agent_name=proactive_recommendation · 8 tools
+    member_engagement_agent.py · agent_name=member_engagement · 6 tools
+
+══ D. Hook useMCPQuery (fuente) ══
+  ── frontend/src/shared/hooks/useMCPQuery.ts (189 líneas) ──
+       1│ // src/shared/hooks/useMCPQuery.ts
+       2│ // ═══════════════════════════════════════════════════════════
+       3│ // MCP QUERY — React Query integration for MCP tool calls
+       4│ //
+       5│ // @level       Level 6+ Agency · Apple Production Grade · 2027
+       6│ // @namespace   N/A — shared hook
+       7│ // @keyframes   0
+       8│ // @depends     @tanstack/react-query, @/shared/lib/api
+       9│ //
+      10│ // The PRIMARY data-fetching hook for all features.
+      11│ // Wraps React Query's useQuery/useMutation around callMCPTool.
+      12│ //
+      13│ // Every feature that needs backend data uses this hook:
+      14│ //   const { data, isLoading, error } = useMCPQuery<T>(
+      15│ //     "events", "get_calendar", { month: "2026-08" }
+      16│ //   );
+      17│ //
+      18│ // Architecture:
+      19│ //   Feature Component → useMCPQuery → callMCPTool → routeMCPCall → Backend
+      20│ //
+      21│ // PRE-WRITE VERIFICATION:
+      22│ // [x] callMCPTool signature: (agent, tool, params?) → Promise<T>
+      23│ // [x] callMCPTool throws APIError on failure (never returns null/error)
+      24│ // [x] React Query queryFn handles thrown errors → error state
+      25│ // [x] React Query v5 hashes queryKey by value (params stable for JSON-serializable)
+      26│ // [x] UseMutationOptions.onSuccess receives 3 params in v5: (data, variables, context)
+      27│ // [x] options spread BEFORE custom handlers to prevent silent override
+      28│ //
+      29│ // ANTI-PATTERNS REMOVED:
+      30│ // [x] useExecutiveSummary domain hook → moved to features/dashboard/hooks/
+      31│ // [x] `params as Record<string, unknown>` cast → generic constraint P extends Record
+      32│ // [x] No retry defaults → MCP-sensible: 1 retry, exponential backoff
+      33│ // [x] No section markers → §1-§3
+      34│ // [x] Spread order bug (options AFTER onSuccess) → options first, then override
+      35│ // [x] onSuccess arity (4 args → 3 args per React Query v5)
+      36│ // [x] User onSuccess silently swallowed → explicitly delegated
+      37│ // ═══════════════════════════════════════════════════════════
+      38│ 
+      39│ import {
+      40│   useQuery,
+      41│   useMutation,
+      42│   useQueryClient,
+      43│   type UseQueryOptions,
+      44│   type UseMutationOptions,
+      45│ } from "@tanstack/react-query";
+      46│ import { callMCPTool } from "../lib/api";
+      47│ 
+      48│ // ═══════════════════════════════════════════════════════════
+      49│ // §1 CONSTANTS
+      50│ // ═══════════════════════════════════════════════════════════
+      51│ 
+      52│ /**
+      53│  * Default retry count for MCP queries.
+      54│  * One retry handles transient network issues without
+      55│  * overwhelming a potentially busy multi-agent backend.
+      56│  */
+      57│ const MCP_QUERY_RETRY_COUNT = 1;
+      58│ 
+      59│ /**
+      60│  * Exponential backoff delay capped at 10 seconds.
+      61│  * Prevents thundering herd on backend recovery.
+      62│  */
+      63│ function mcpRetryDelay(attemptIndex: number): number {
+      64│   return Math.min(1000 * 2 ** attemptIndex, 10_000);
+      65│ }
+      66│ 
+      67│ // ═══════════════════════════════════════════════════════════
+      68│ // §2 QUERY HOOK
+      69│ // ═══════════════════════════════════════════════════════════
+      70│ 
+      71│ /**
+      72│  * Fetch data from an MCP agent tool via React Query.
+      73│  *
+      74│  * This is the standard data-fetching hook for ALL features.
+      75│  * It wraps React Query around callMCPTool, providing:
+      76│  *   - Automatic caching (configurable via options)
+      77│  *   - Loading/error states
+      78│  *   - Background refetching
+      79│  *   - Retry with exponential backoff
+      80│  *   - Deduplication of identical concurrent queries
+      81│  *
+      82│  * @typeParam T — Expected response type from the MCP tool
+      83│  * @param agent — MCP server/agent name (e.g., "events", "financial")
+      84│  * @param tool — Tool name (e.g., "get_calendar", "get_summary")
+      85│  * @param params — Tool parameters. Must be JSON-serializable for stable query keys.
+      86│  * @param options — React Query options (staleTime, refetchInterval, etc.)
+      87│  * @returns React Query result with data, isLoading, error, etc.
+      88│  *
+      89│  * @example
+      90│  * // Basic usage
+    ⋮ (99 líneas más — ver archivo)
+
+══ E. Callsites frontend — useMCPQuery/useMCPMutation (sólo literales) ══
+  · 296 callsites en 813 archivos TS/TSX
+  · mapeo agent-key → archivo backend:
+      advisor_intelligence → ⚠ SIN ARCHIVO
+      age_group        → ⚠ SIN ARCHIVO
+      communication    → communication_agent.py (14 tools, fuzzy(communication))
+      compliance       → ⚠ SIN ARCHIVO
+      document_intelligence → document_intelligence_agent.py (8 tools, fuzzy(document_intelligence))
+      engagement       → member_engagement_agent.py (6 tools, conocido)
+      events           → ⚠ SIN ARCHIVO
+      executive_dashboard → executive_dashboard_agent.py (11 tools, fuzzy(executive_dashboard))
+      facilities       → facility_management_agent.py (13 tools, conocido)
+      facility_management → facility_management_agent.py (13 tools, fuzzy(facility_management))
+      families         → family_profile.py (16 tools, fuzzy(family))
+      family_profile   → family_profile.py (16 tools, conocido)
+      finance          → ⚠ SIN ARCHIVO
+      guest_management → guest_management_agent.py (10 tools, fuzzy(guest_management))
+      guests           → guest_management_agent.py (10 tools, conocido)
+      hitl             → ⚠ SIN ARCHIVO
+      member_engagement → member_engagement_agent.py (6 tools, fuzzy(member_engagement))
+      ml_intelligence  → ml_intelligence.py (10 tools, fuzzy(ml_intelligence))
+      proactive_recommendation → proactive_recommendation_agent.py (8 tools, fuzzy(proactive_recommendation))
+      reports          → ⚠ SIN ARCHIVO
+      satisfaction     → satisfaction_agent.py (10 tools, fuzzy(satisfaction))
+      sports_recreation → sports_recreation_agent.py (11 tools, fuzzy(sports_recreation))
+      wellness         → ⚠ SIN ARCHIVO
+
+  ▸ REAL: 174 · MIGRABLE: 6 · DEUDA-BACKEND: 116
+    (sanity REAL por agent-key: advisor_intelligence=0 · age_group=0 · communication=35 · compliance=0 · document_intelligence=4 · engagement=0 · events=0 · executive_dashboard=12 · facilities=0 · facility_management=7 · families=0 · family_profile=16 · finance=0 · guest_management=24 · guests=1 · hitl=0 · member_engagement=3 · ml_intelligence=20 · proactive_recommendation=36 · reports=0 · satisfaction=12 · sports_recreation=4 · wellness=0)
+
+  ── MIGRABLES (tool existe — adaptador de params/respuesta, estilo C3g) ──
+    ✎ engagement.get_survey_results → analyze_event_satisfaction|generate_satisfaction_report (en OTRO agente: analyze_event_satisfaction @ satisfaction_agent.py) · frontend/src/features/engagement/SatisfactionReport.tsx:331 (Query)
+          const resultsQ = useMCPQuery<SurveyResultsResponse>(
+            "engagement",
+            "get_survey_results",
+            propId ? { survey_id: propId } : {},
+            { staleTime: 120_000 },
+          );
+        
+          // ── Loading ─────────────────────────────────────────────
+    ✎ engagement.get_active_survey → get_survey_for_event (en OTRO agente: get_survey_for_event @ satisfaction_agent.py) · frontend/src/features/engagement/SatisfactionSurvey.tsx:271 (Query)
+          const surveyQ = useMCPQuery<SurveyTemplate>(
+            "engagement",
+            "get_active_survey",
+            surveyId ? { survey_id: surveyId } : {},
+            { staleTime: 300_000 },
+          );
+        
+          const submitMut = useMCPMutation<unknown, Record<string, unknown>>(
+    ✎ families.get_family → family_get_profile · frontend/src/features/mi-club/hooks/useMiClubLanding.ts:435 (Query)
+          const familyQ = useMCPQuery<FamilyDetailResponse>(
+            "families",
+            "get_family",
+            { familyId: user?.familyId || "" },
+            { enabled: !!user?.familyId },
+          );
+        
+          /* ── Events ── */
+    ✎ facilities.get_reservations → get_facility_reservations · frontend/src/features/mi-club/hooks/useMyReservations.ts:201 (Query)
+          } = useMCPQuery<ReservationListResponse>(
+            "facilities",
+            "get_reservations",
+            { family_id: user?.familyId || "" },
+            { enabled: !!user?.familyId },
+          );
+        
+          const reservations = data?.reservations ?? [];
+    ✎ reports.get_board_report → generate_quarterly_board_report|send_board_package (en OTRO agente: generate_quarterly_board_report @ executive_dashboard_agent.py) · frontend/src/features/reports/hooks/useBoardReport.ts:104 (Query)
+          } = useMCPQuery<BoardReport>(
+            "reports",
+            "get_board_report",
+            { period: selectedPeriod },
+            { staleTime: 5 * 60_000, placeholderData: keepPreviousData },
+          );
+        
+          const {
+    ✎ reports.get_risk_matrix → get_member_risk_assessment (en OTRO agente: get_member_risk_assessment @ member_360_agent.py) · frontend/src/features/reports/hooks/useBoardReport.ts:114 (Query)
+          } = useMCPQuery<RiskSummary>(
+            "reports",
+            "get_risk_matrix",
+            { period: selectedPeriod },
+            { staleTime: 5 * 60_000 },
+          );
+        
+          /* ── Derived ── */
+
+  ── DEUDA-BACKEND (crear tool backend o degradar frontend) ──
+    ✗ age_group.get_activity_health_score (sin entrada ledger) · frontend/src/features/age-group/hooks/useAgeGroupData.ts:116 (Query)
+          const healthQuery = useMCPQuery<HealthScoreMCPResponse>(
+            "age_group",
+            "get_activity_health_score",
+            {},
+            { staleTime: effectiveStaleTime, enabled },
+          );
+        
+          const analyticsQuery = useMCPQuery<AnalyticsMCPResponse>(
+    ✗ age_group.get_age_group_analytics_enhanced (sin entrada ledger) · frontend/src/features/age-group/hooks/useAgeGroupData.ts:123 (Query)
+          const analyticsQuery = useMCPQuery<AnalyticsMCPResponse>(
+            "age_group",
+            "get_age_group_analytics_enhanced",
+            {},
+            { staleTime: effectiveStaleTime, enabled },
+          );
+        
+          const recommendationsQuery = useMCPQuery<RecommendationsMCPResponse>(
+    ✗ age_group.get_age_recommendation_enhanced (sin entrada ledger) · frontend/src/features/age-group/hooks/useAgeGroupData.ts:130 (Query)
+          const recommendationsQuery = useMCPQuery<RecommendationsMCPResponse>(
+            "age_group",
+            "get_age_recommendation_enhanced",
+            {},
+            { staleTime: 300_000, enabled },
+          );
+        
+          const proposalsQuery = useMCPQuery<ProposalsMCPResponse>(
+    ✗ age_group.generate_age_group_engagement_proposals (sin entrada ledger) · frontend/src/features/age-group/hooks/useAgeGroupData.ts:137 (Query)
+          const proposalsQuery = useMCPQuery<ProposalsMCPResponse>(
+            "age_group",
+            "generate_age_group_engagement_proposals",
+            {},
+            { staleTime: 300_000, enabled },
+          );
+        
+          // ── Normalization ──
+    ✗ hitl.get_pending_approvals (sin entrada ledger) · frontend/src/features/approvals/hooks/useApprovalQueue.ts:126 (Query)
+          } = useMCPQuery<ApprovalListResponse>(
+            "hitl",
+            "get_pending_approvals",
+            {},
+            { refetchInterval: 30_000 },
+          );
+        
+          /* ── Mutations ── */
+    ✗ hitl.approve_request (sin entrada ledger) · frontend/src/features/approvals/hooks/useApprovalQueue.ts:136 (Mutation)
+          const approveMut = useMCPMutation<
+            unknown,
+            { request_id: string; approved_by: string; note: string }
+          >("hitl", "approve_request", {
+            onSuccess: () => {
+              showToast({
+                type: "success",
+                message: "Solicitud aprobada correctamente",
+    ✗ hitl.reject_request (sin entrada ledger) · frontend/src/features/approvals/hooks/useApprovalQueue.ts:157 (Mutation)
+          const rejectMut = useMCPMutation<
+            unknown,
+            { request_id: string; rejected_by: string; reason: string }
+          >("hitl", "reject_request", {
+            onSuccess: () => {
+              showToast({ type: "info", message: "Solicitud rechazada" });
+              setProcessingId(null);
+              refetch();
+    ✗ communication.communications_campaign_generate (sin entrada ledger) · frontend/src/features/communications/components/CampaignGenerator.tsx:221 (Query)
+          const query = useMCPQuery<CommunicationsCampaignGenerateData>(
+            "communication", "communications_campaign_generate",
+            { segment, objective, channel },
+            { enabled: shouldFetch },
+          );
+          const analyticsQ = useMCPQuery<CommunicationAnalyticsResponse>(
+            "communication", "get_communication_analytics",
+            { period: "last_90_days" },
+    ✗ communication.communication_insights (sin entrada ledger) · frontend/src/features/communications/components/CommunicationAnalytics.tsx:135 (Query)
+          const insightsQ = useMCPQuery<CommunicationInsightsResponse>(
+            "communication",
+            "communication_insights",
+            {},
+            { enabled: shouldFetch, staleTime: 300_000 },
+          );
+        
+          const insights: CommunicationIntelligenceInsight[] = insightsQ.data?.insights ?? [];
+    ✗ communication.communication_insights (sin entrada ledger) · frontend/src/features/communications/components/CommunicationOverview.tsx:691 (Query)
+          const aiInsightsQ = useMCPQuery<CommunicationInsightsResponse>(
+            "communication",
+            "communication_insights",
+            {},
+            { enabled: aiInsightsEnabled, staleTime: 0 },
+          );
+        
+          // ── Data extraction ───────────────────────────────────
+    ✗ communication.communications_sentiment_analyze (sin entrada ledger) · frontend/src/features/communications/components/SentimentMonitor.tsx:574 (Query)
+          const query = useMCPQuery<CommunicationsSentimentAnalyzeData>(
+            "communication", "communications_sentiment_analyze",
+            {},
+            { staleTime: 300_000 },
+          );
+        
+          const analyticsQ = useMCPQuery<CommunicationAnalyticsResponse>(
+            "communication", "get_communication_analytics",
+    ✗ communication.communications_generate_personalized (sin entrada ledger) · frontend/src/features/communications/hooks/usePersonalizedComposer.ts:225 (Query)
+          const genQ = useMCPQuery<CommunicationsGeneratePersonalizedData>(
+            "communication",
+            "communications_generate_personalized",
+            { family_id: familyId, channel, occasion },
+            { enabled: triggerFetch },
+          );
+        
+          // ── Disable trigger after data arrives ─────────
+    ✗ finance.generate_ai_analysis (sin entrada ledger) · frontend/src/features/dashboard/components/ExecutiveIntelligenceStrip.tsx:288 (Query)
+          const healthQ = useMCPQuery<{ status: string; data: AiFinancialReport }>(
+            "finance", "generate_ai_analysis",
+            { scope: "financial", period },
+            { staleTime: 300_000 },
+          );
+          const healthScore = healthQ.data?.data?.health_score;
+        
+          /* ── Pending approvals count ── */
+    ✗ hitl.get_pending_approvals (sin entrada ledger) · frontend/src/features/dashboard/components/ExecutiveIntelligenceStrip.tsx:296 (Query)
+          const approvalsQ = useMCPQuery<ApprovalListResponse>(
+            "hitl", "get_pending_approvals", {},
+            { staleTime: 60_000 },
+          );
+          const pendingCount = useMemo(() => {
+            if (!approvalsQ.data?.requests) return 0;
+            return approvalsQ.data.requests.filter((r) => r.status === "pending").length;
+          }, [approvalsQ.data]);
+    ✗ events.event_get_calendar (sin entrada ledger) · frontend/src/features/dashboard/components/ExecutiveIntelligenceStrip.tsx:307 (Query)
+          const calendarQ = useMCPQuery<CalendarResponse>(
+            "events", "event_get_calendar",
+            { month: todayStr.slice(0, 7) },
+            { staleTime: 120_000 },
+          );
+          const eventsToday = useMemo(() => {
+            if (!calendarQ.data?.events) return 0;
+            return calendarQ.data.events.filter((e) => e.date === todayStr).length;
+    ✗ finance.finance_board_briefing (sin entrada ledger) · frontend/src/features/dashboard/components/ExecutiveIntelligenceStrip.tsx:318 (Query)
+          const briefingQ = useMCPQuery<BriefingResponse>(
+            "finance", "finance_board_briefing",
+            { period },
+            { enabled: briefingEnabled, staleTime: 300_000 },
+          );
+          const briefingText = useMemo(() => {
+            if (!briefingQ.data) return null;
+            const d = briefingQ.data;
+    ✗ hitl.approve_request (sin entrada ledger) · frontend/src/features/dashboard/ExecutiveDashboard.tsx:323 (Mutation)
+          const approveMut = useMCPMutation("hitl", "approve_request", {
+            onSuccess: () => {
+              showToast({ type: "success", message: "Solicitudes aprobadas" });
+              globalData.summaryQuery.refetch();
+            },
+            onError: (err: Error) => showToast({ type: "error", message: err.message }),
+          });
+        
+    ✗ advisor_intelligence.generate_board_brief (sin entrada ledger) · frontend/src/features/dashboard/ExecutiveDashboard.tsx:331 (Mutation)
+          const boardBriefMut = useMCPMutation("advisor_intelligence", "generate_board_brief", {
+            onSuccess: (data: unknown) => {
+              const d = data as { brief: import("@/shared/mocks/contracts").AdvisorBoardBriefResponse["brief"] };
+              if (d.brief) {
+                setBriefResult(d.brief);
+              }
+              showToast({ type: "success", message: "Briefing generado" });
+            },
+    ✗ finance.generate_ai_analysis (sin entrada ledger) · frontend/src/features/dashboard/hooks/useGlobalData.ts:61 (Query)
+          const aiReportQuery = useMCPQuery<AiAnalysisMCPResponse>(
+            "finance", "generate_ai_analysis",
+            { scope: "financial" },
+            { staleTime: 300_000, enabled },
+          );
+        
+          const calendarQuery = useMCPQuery<EventCalendarMCPResponse>(
+            "events", "event_get_calendar", {},
+    ✗ events.event_get_calendar (sin entrada ledger) · frontend/src/features/dashboard/hooks/useGlobalData.ts:67 (Query)
+          const calendarQuery = useMCPQuery<EventCalendarMCPResponse>(
+            "events", "event_get_calendar", {},
+            { staleTime: 60_000, enabled },
+          );
+        
+          const approvalsQuery = useMCPQuery<PendingApprovalsMCPResponse>(
+            "hitl", "get_pending_approvals", {},
+            { staleTime: 30_000, enabled },
+    ✗ hitl.get_pending_approvals (sin entrada ledger) · frontend/src/features/dashboard/hooks/useGlobalData.ts:72 (Query)
+          const approvalsQuery = useMCPQuery<PendingApprovalsMCPResponse>(
+            "hitl", "get_pending_approvals", {},
+            { staleTime: 30_000, enabled },
+          );
+        
+          // ── 2. Extract ──────────────────────────────────────────
+        
+          const summary: ExecutiveSummaryData | undefined = useMemo(() => {
+    ✗ wellness.wellness_report (sin entrada ledger) · frontend/src/features/engagement/hooks/useEngagementData.ts:187 (Query)
+          const wellnessQ = useMCPQuery<WellnessMCPResponse>(
+            "wellness",
+            "wellness_report",
+            { period: "current_quarter" },
+            {
+              staleTime: staleTimeOverrides?.wellness ?? ft.reference,
+              enabled: enabled && deepDiveEnabled,
+            },
+    ✗ engagement.create_reactivation_campaign (sin entrada ledger) · frontend/src/features/engagement/ReactivationCampaigns.tsx:115 (Mutation)
+          const createMut = useMCPMutation<unknown, CampaignForm>(
+            "engagement",
+            "create_reactivation_campaign",
+            {
+              onSuccess: () => {
+                showToast({ type: "success", message: "Campaña creada exitosamente" });
+                setView("list");
+                resetForm();
+    ✗ engagement.pause_campaign (sin entrada ledger) · frontend/src/features/engagement/ReactivationCampaigns.tsx:133 (Mutation)
+          const pauseMut = useMCPMutation<unknown, { id: string }>(
+            "engagement",
+            "pause_campaign",
+            {
+              onSuccess: () => showToast({ type: "success", message: "Campaña pausada" }),
+              onError: (err: unknown) => {
+                showToast({ type: "error", message: err instanceof Error ? err.message : "Error" });
+              },
+    ✗ engagement.resume_campaign (sin entrada ledger) · frontend/src/features/engagement/ReactivationCampaigns.tsx:144 (Mutation)
+          const resumeMut = useMCPMutation<unknown, { id: string }>(
+            "engagement",
+            "resume_campaign",
+            {
+              onSuccess: () => showToast({ type: "success", message: "Campaña reanudada" }),
+              onError: (err: unknown) => {
+                showToast({ type: "error", message: err instanceof Error ? err.message : "Error" });
+              },
+    ✗ engagement.cancel_campaign (sin entrada ledger) · frontend/src/features/engagement/ReactivationCampaigns.tsx:155 (Mutation)
+          const cancelMut = useMCPMutation<unknown, { id: string }>(
+            "engagement",
+            "cancel_campaign",
+            {
+              onSuccess: () => showToast({ type: "success", message: "Campaña cancelada" }),
+              onError: (err: unknown) => {
+                showToast({ type: "error", message: err instanceof Error ? err.message : "Error" });
+              },
+    ✗ engagement.submit_survey_response (sin entrada ledger) · frontend/src/features/engagement/SatisfactionSurvey.tsx:278 (Mutation)
+          const submitMut = useMCPMutation<unknown, Record<string, unknown>>(
+            "engagement",
+            "submit_survey_response",
+            {
+              onSuccess: () => {
+                setSubmitted(true);
+                showToast({ type: "success", message: "¡Gracias por tu opinión!" });
+              },
+    ✗ events.event_predict_attendance (sin entrada ledger) · frontend/src/features/events/components/EventIntelligencePanel.tsx:962 (Query)
+          const predictQ = useMCPQuery<PredictData>(
+            "events", "event_predict_attendance", queryParams,
+            { ...staleOptions, enabled: !!enabled.predict },
+          );
+        
+          const optimizeQ = useMCPQuery<OptimizeData>(
+            "events", "event_recommend_optimization", queryParams,
+            { ...staleOptions, enabled: !!enabled.optimize },
+    ✗ events.event_recommend_optimization (sin entrada ledger) · frontend/src/features/events/components/EventIntelligencePanel.tsx:967 (Query)
+          const optimizeQ = useMCPQuery<OptimizeData>(
+            "events", "event_recommend_optimization", queryParams,
+            { ...staleOptions, enabled: !!enabled.optimize },
+          );
+        
+          const conflictQ = useMCPQuery<ConflictData>(
+            "events", "event_conflict_detection", queryParams,
+            { ...staleOptions, enabled: !!enabled.conflict },
+    ✗ events.event_conflict_detection (sin entrada ledger) · frontend/src/features/events/components/EventIntelligencePanel.tsx:972 (Query)
+          const conflictQ = useMCPQuery<ConflictData>(
+            "events", "event_conflict_detection", queryParams,
+            { ...staleOptions, enabled: !!enabled.conflict },
+          );
+        
+          const boostQ = useMCPQuery<BoostData>(
+            "events", "event_engagement_boost", queryParams,
+            { ...staleOptions, enabled: !!enabled.boost },
+    ✗ events.event_engagement_boost (sin entrada ledger) · frontend/src/features/events/components/EventIntelligencePanel.tsx:977 (Query)
+          const boostQ = useMCPQuery<BoostData>(
+            "events", "event_engagement_boost", queryParams,
+            { ...staleOptions, enabled: !!enabled.boost },
+          );
+        
+          const queries: Record<string, ReturnType<typeof useMCPQuery>> = {
+            predict: predictQ,
+            optimize: optimizeQ,
+    ✗ events.event_get_calendar (sin entrada ledger) · frontend/src/features/events/hooks/useEventCalendar.ts:324 (Query)
+          const calendarQuery = useMCPQuery<{
+            readonly data?: {
+              readonly calendar?: readonly CalendarDay[];
+            };
+          }>("events", "event_get_calendar", queryParams);
+        
+          const createEventMutation = useMCPMutation<
+            { readonly data?: { readonly status?: string } },
+    ✗ events.event_create (sin entrada ledger) · frontend/src/features/events/hooks/useEventCalendar.ts:330 (Mutation)
+          const createEventMutation = useMCPMutation<
+            { readonly data?: { readonly status?: string } },
+            Record<string, unknown>
+          >("events", "event_create", {
+            onSuccess: (responseData) => {
+              const status = responseData?.data?.status;
+              if (status === "pending_approval") {
+                showToast({
+    ✗ events.event_manage_capacity (sin entrada ledger) · frontend/src/features/events/hooks/useEventCalendar.ts:360 (Mutation)
+          const capacityMut = useMCPMutation(
+            "events",
+            "event_manage_capacity",
+            {
+              onSuccess: () => {
+                showToast({
+                  type: "success",
+                  message: "Capacidad actualizada",
+    ✗ events.event_clone_template (sin entrada ledger) · frontend/src/features/events/hooks/useEventCalendar.ts:376 (Mutation)
+          const cloneMut = useMCPMutation(
+            "events",
+            "event_clone_template",
+            {
+              onSuccess: () => {
+                showToast({
+                  type: "success",
+                  message: "Evento clonado",
+    ✗ events.event_get_calendar (sin entrada ledger) · frontend/src/features/events/hooks/useEventData.ts:17 (Query)
+        //   useMCPQuery("events", "event_get_calendar")
+        //     → EventCalendarMCPResponse.data (CalendarDay[])
+        //     → normalizeEnums (format normalization)
+        //     → useEventAdvisor (15 rules, health score, signals)
+        //     → { calendarDays, insights, isLoading, isError, ... }
+        //
+        // Key: .data (verified: backend returns { data: CalendarDay[] })
+        //
+    ✗ events.event_get_calendar (sin entrada ledger) · frontend/src/features/events/hooks/useEventData.ts:107 (Query)
+          readonly calendarQuery: ReturnType<typeof useMCPQuery<EventCalendarMCPResponse>>;
+        }
+        
+        // ═══════════════════════════════════════════════════════════
+        // §2 HOOK
+        // ═══════════════════════════════════════════════════════════
+        
+        /**
+    ✗ events.get_event (sin entrada ledger) · frontend/src/features/events/hooks/useEventDetail.ts:181 (Query)
+          const eventQuery = useMCPQuery<EventDetailResponse>(
+            "events",
+            "get_event",
+            queryParams,
+            { enabled: !!id },
+          );
+        
+          // ── §3.3 Mutations ──
+    ✗ events.update_event_status (sin entrada ledger) · frontend/src/features/events/hooks/useEventDetail.ts:190 (Mutation)
+          const updateStatusMut = useMCPMutation<StatusResponse, Record<string, unknown>>(
+            "events",
+            "update_event_status",
+            {
+              onSuccess: (resp) => {
+                if (resp?.status === "pending_approval") {
+                  showToast({
+                    type: "info",
+    ✗ events.event_clone_template (sin entrada ledger) · frontend/src/features/events/hooks/useEventDetail.ts:217 (Mutation)
+          const cloneMut = useMCPMutation<CloneResponse, Record<string, unknown>>(
+            "events",
+            "event_clone_template",
+            {
+              onSuccess: (resp) => {
+                const clonedId = resp?.data?.id;
+                showToast({
+                  type: "success",
+    ✗ events.event_generate_report (sin entrada ledger) · frontend/src/features/events/hooks/useEventDetail.ts:238 (Mutation)
+          const reportMut = useMCPMutation<unknown, Record<string, unknown>>(
+            "events",
+            "event_generate_report",
+            {
+              onSuccess: () => {
+                showToast({
+                  type: "success",
+                  message: TOAST_MESSAGES.reportGenerated,
+    ✗ events.get_event (sin entrada ledger) · frontend/src/features/events/hooks/useEventForm.ts:352 (Query)
+          const editQuery = useMCPQuery<EventDetailQueryResponse>(
+            "events",
+            "get_event",
+            queryParams,
+            { enabled: isEditing },
+          );
+        
+          // Fill form from fetched event data
+    ✗ events.event_create (sin entrada ledger) · frontend/src/features/events/hooks/useEventForm.ts:390 (Mutation)
+          const createMut = useMCPMutation<CreateResponse, Record<string, unknown>>(
+            "events",
+            "event_create",
+            {
+              onSuccess: (resp) => {
+                const status = resp?.data?.status;
+                const createdId = resp?.data?.id;
+        
+    ✗ events.update_event (sin entrada ledger) · frontend/src/features/events/hooks/useEventForm.ts:426 (Mutation)
+          const updateMut = useMCPMutation<unknown, Record<string, unknown>>(
+            "events",
+            "update_event",
+            {
+              onSuccess: () => {
+                showToast({
+                  type: "success",
+                  message: TOAST_MESSAGES.updated,
+    ✗ facilities.get_facility → ledger: [] sin tool backend · frontend/src/features/facilities/FacilityDetail.tsx:735 (Query)
+          } = useMCPQuery<FacilityDetailData>(
+            "facilities",
+            "get_facility",
+            { facilityId: id },
+            { enabled: !!id },
+          );
+        
+          // ── Intelligence from dashboard hub ──
+    ✗ finance.finance_invoice_create (sin entrada ledger) · frontend/src/features/finance/components/BillingCenter.tsx:232 (Mutation)
+          const invoiceMut = useMCPMutation<FinanceInvoiceCreateResponse>(
+            "finance",
+            "finance_invoice_create",
+            {
+              onSuccess: (data) => {
+                showToast({ type: "success", message: data.message ?? "Factura creada. Pendiente de aprobación." });
+                resetInvoiceForm();
+                setActiveView("account");
+    ✗ finance.finance_payment_process (sin entrada ledger) · frontend/src/features/finance/components/BillingCenter.tsx:248 (Mutation)
+          const paymentMut = useMCPMutation<FinancePaymentProcessResponse>(
+            "finance",
+            "finance_payment_process",
+            {
+              onSuccess: (data) => {
+                showToast({ type: "success", message: data.message ?? "Pago registrado. Pendiente de aprobación." });
+                resetPaymentForm();
+                setActiveView("account");
+    ✗ finance.finance_account_status (sin entrada ledger) · frontend/src/features/finance/components/BillingCenter.tsx:266 (Query)
+          const accountQ = useMCPQuery<FinanceAccountStatusResponse>(
+            "finance",
+            "finance_account_status",
+            { family_id: familyId },
+            { enabled: !!familyId, staleTime: 30_000 },
+          );
+        
+          const account = accountQ.data?.data;
+    ✗ finance.finance_budget_check (sin entrada ledger) · frontend/src/features/finance/components/BudgetManager.tsx:248 (Query)
+          const budgetQ = useMCPQuery<FinanceBudgetCheckResponse>(
+            "finance",
+            "finance_budget_check",
+            { period },
+            { staleTime: 120_000 },
+          );
+        
+          const budget = budgetQ.data?.data;
+    ✗ finance.finance_category_update (sin entrada ledger) · frontend/src/features/finance/components/BudgetManager.tsx:259 (Mutation)
+          const updateMut = useMCPMutation<FinanceCategoryUpdateResponse>(
+            "finance",
+            "finance_category_update",
+            {
+              onSuccess: (data) => {
+                showToast({ type: "success", message: data.message ?? "Presupuesto actualizado" });
+                setEditingCategory(null);
+                setEditValue("");
+    ✗ finance.finance_decision_simulate (sin entrada ledger) · frontend/src/features/finance/components/DecisionCockpit.tsx:274 (Query)
+          const decisionQ = useMCPQuery<FinanceDecisionSimulateResponse>(
+            "finance",
+            "finance_decision_simulate",
+            { decision_text: decisionText },
+            { enabled: shouldFetch },
+          );
+        
+          const data = decisionQ.data?.data;
+    ✗ finance.finance_expense_create (sin entrada ledger) · frontend/src/features/finance/components/ExpenseManager.tsx:84 (Mutation)
+          const expenseMut = useMCPMutation<FinanceExpenseCreateResponse>(
+            "finance",
+            "finance_expense_create",
+            {
+              onSuccess: (data) => {
+                showToast({ type: "success", message: data.message ?? "Gasto registrado. Pendiente de aprobación." });
+                resetForm();
+                budgetQ.refetch();
+    ✗ finance.finance_budget_check (sin entrada ledger) · frontend/src/features/finance/components/ExpenseManager.tsx:101 (Query)
+          const budgetQ = useMCPQuery<FinanceBudgetCheckResponse>(
+            "finance",
+            "finance_budget_check",
+            { period: "quarterly" },
+            { staleTime: 120_000 },
+          );
+        
+          const budgetLines = useMemo(() => {
+    ✗ finance.generate_ai_analysis (sin entrada ledger) · frontend/src/features/finance/components/FinanceAnalytics.tsx:886 (Query)
+          const aiQ = useMCPQuery<{ status: string; data: AiFinancialReport }>(
+            "finance",
+            "generate_ai_analysis",
+            { scope: "financial", period },
+            { staleTime: 300_000 },
+          );
+        
+          const ai = aiQ.data?.data;
+    ✗ finance.generate_ai_analysis (sin entrada ledger) · frontend/src/features/finance/components/FinanceIntelligencePanel.tsx:992 (Query)
+          const analysisQ = useMCPQuery<{ status: string; message: string; data: AiFinancialReport }>(
+            "finance",
+            "generate_ai_analysis",
+            { period },
+            { enabled: analysisOn, staleTime: 0 },
+          );
+        
+          const briefingQ = useMCPQuery<{ status: string; data: BoardBriefingData }>(
+    ✗ finance.finance_board_briefing (sin entrada ledger) · frontend/src/features/finance/components/FinanceIntelligencePanel.tsx:999 (Query)
+          const briefingQ = useMCPQuery<{ status: string; data: BoardBriefingData }>(
+            "finance",
+            "finance_board_briefing",
+            {},
+            { enabled: briefingOn, staleTime: 0 },
+          );
+        
+          const scenarioQ = useMCPQuery<{ status: string; data: ScenarioSimulationData }>(
+    ✗ finance.finance_scenario_simulate (sin entrada ledger) · frontend/src/features/finance/components/FinanceIntelligencePanel.tsx:1006 (Query)
+          const scenarioQ = useMCPQuery<{ status: string; data: ScenarioSimulationData }>(
+            "finance",
+            "finance_scenario_simulate",
+            {},
+            { enabled: scenarioOn, staleTime: 0 },
+          );
+        
+          const report = analysisQ.data?.data;
+    ✗ finance.get_financial_summary (sin entrada ledger) · frontend/src/features/finance/components/FinanceOverview.tsx:402 (Query)
+          const summaryQ = useMCPQuery<FinancialSummary>(
+            "finance",
+            "get_financial_summary",
+            { period: "current_quarter" },
+            { staleTime: 60_000 },
+          );
+        
+          const aiQ = useMCPQuery<{ status: string; data: AiFinancialReport }>(
+    ✗ finance.generate_ai_analysis (sin entrada ledger) · frontend/src/features/finance/components/FinanceOverview.tsx:409 (Query)
+          const aiQ = useMCPQuery<{ status: string; data: AiFinancialReport }>(
+            "finance",
+            "generate_ai_analysis",
+            { scope: "financial", period: "current_quarter" },
+            { staleTime: 300_000 },
+          );
+        
+          const ai = aiQ.data?.data;
+    ✗ finance.finance_scenario_simulate (sin entrada ledger) · frontend/src/features/finance/components/FinancialIntelligence.tsx:461 (Query)
+          const simQ = useMCPQuery<{ status: string; data: ScenarioSimulationData }>(
+            "finance", "finance_scenario_simulate", { variables }, { staleTime: 300_000 },
+          );
+          const sim = simQ.data?.data;
+        
+          const updateVar = useCallback((key: string, val: number) => {
+            setVariables((prev) => ({ ...prev, [key]: val }));
+          }, []);
+    ✗ finance.finance_opportunities_scan (sin entrada ledger) · frontend/src/features/finance/components/FinancialIntelligence.tsx:857 (Query)
+          const scanQ = useMCPQuery<{ status: string; data: OpportunityScanData }>(
+            "finance", "finance_opportunities_scan", {}, { staleTime: 600_000 },
+          );
+          const scan = scanQ.data?.data;
+        
+          const filtered = useMemo(() => {
+            if (!scan) return [];
+            let list = scan.opportunities;
+    ✗ finance.finance_board_briefing (sin entrada ledger) · frontend/src/features/finance/components/FinancialIntelligence.tsx:1180 (Query)
+          const briefingQ = useMCPQuery<{ status: string; data: BoardBriefingData }>(
+            "finance", "finance_board_briefing", {}, { staleTime: 600_000 },
+          );
+          const briefing = briefingQ.data?.data;
+        
+          if (briefingQ.isLoading) {
+            return (
+              <div className="space-y-4">
+    ✗ finance.finance_member_profitability (sin entrada ledger) · frontend/src/features/finance/components/MemberProfitabilityMatrix.tsx:365 (Query)
+          const profQ = useMCPQuery<{ status: string; data: MemberProfitabilityData }>(
+            "finance",
+            "finance_member_profitability",
+            {},
+            { staleTime: 300_000 },
+          );
+        
+          const data = profQ.data?.data;
+    ✗ finance.finance_narrative_generate (sin entrada ledger) · frontend/src/features/finance/components/NarrativeEngine.tsx:569 (Query)
+          const narrativeQ = useMCPQuery<{ status: string; data: NarrativeGenerateData }>(
+            "finance",
+            "finance_narrative_generate",
+            { period, audience, detail_level: detailLevel },
+            { enabled: shouldFetch, staleTime: 600_000 },
+          );
+        
+          const narrative = narrativeQ.data?.data;
+    ✗ finance.finance_report_generate (sin entrada ledger) · frontend/src/features/finance/components/ReportGenerator.tsx:453 (Mutation)
+          const reportMut = useMCPMutation<FinanceReportGenerateResponse>(
+            "finance",
+            "finance_report_generate",
+            {
+              onSuccess: () => {
+                showToast({ type: "success", message: "Reporte generado exitosamente" });
+                // Simulate distribution
+                const activeChannels = channels.filter((ch) => ch.enabled);
+    ✗ finance.finance_seasonal_calendar (sin entrada ledger) · frontend/src/features/finance/components/SeasonalCalendar.tsx:460 (Query)
+          const calQ = useMCPQuery<{ status: string; data: SeasonalCalendarData }>(
+            "finance",
+            "finance_seasonal_calendar",
+            {},
+            { staleTime: 3_600_000 },
+          );
+        
+          const cal = calQ.data?.data;
+    ✗ finance.finance_stress_test (sin entrada ledger) · frontend/src/features/finance/components/StressTestPanel.tsx:515 (Query)
+          const testQ = useMCPQuery<{ status: string; data: StressTestData }>(
+            "finance",
+            "finance_stress_test",
+            {
+              scenario: activeScenario,
+              iterations,
+              variables: activeScenario === "custom" ? debouncedVars : undefined,
+            },
+    ✗ finance.generate_ai_analysis (sin entrada ledger) · frontend/src/features/finance/FinancialDashboard.tsx:160 (Query)
+          const aiQuery = useMCPQuery<{
+            status: string;
+            data: AiFinancialReport;
+          }>(
+            "finance",
+            "generate_ai_analysis",
+            { scope: "financial", period: "current_quarter" },
+            { staleTime: 300_000 },
+    ✗ finance.get_financial_summary (sin entrada ledger) · frontend/src/features/finance/FinancialDashboard.tsx:170 (Query)
+          const summaryQuery = useMCPQuery<FinancialSummary>(
+            "finance",
+            "get_financial_summary",
+            { period: "current_quarter" },
+            { staleTime: 60_000 },
+          );
+        
+          // ── Ambient Intelligence (Propuesta 4) ──
+    ✗ finance.finance_category_update (sin entrada ledger) · frontend/src/features/finance/FinancialDashboard.tsx:214 (Mutation)
+          const categoryUpdateMut = useMCPMutation(
+            "finance",
+            "finance_category_update",
+            {
+              onSuccess: () => {
+                showToast({ type: "success", message: "Categorías actualizadas" });
+                summaryQuery.refetch();
+              },
+    ✗ finance.finance_report_generate (sin entrada ledger) · frontend/src/features/finance/FinancialDashboard.tsx:227 (Mutation)
+          const reportGenerateMut = useMCPMutation(
+            "finance",
+            "finance_report_generate",
+            {
+              onSuccess: () => {
+                showToast({ type: "success", message: "Reporte generado" });
+              },
+              onError: (err: Error) =>
+    ✗ finance.get_family_account → ledger: [finance_account_status] sin tool backend · frontend/src/features/finance/hooks/useFamilyAccount.ts:31 (Query)
+          const accountQ = useMCPQuery<FamilyAccountData>(
+            "finance",
+            "get_family_account",
+            familyId ? { family_id: familyId } : {},
+            { staleTime: 60_000 },
+          );
+        
+          const txQ = useMCPQuery<TransactionListResponse>(
+    ✗ finance.get_transactions → ledger: [] sin tool backend · frontend/src/features/finance/hooks/useFamilyAccount.ts:38 (Query)
+          const txQ = useMCPQuery<TransactionListResponse>(
+            "finance",
+            "get_transactions",
+            {
+              ...(familyId ? { family_id: familyId } : {}),
+              page: txPage,
+              page_size: 15,
+              ...(txType ? { type: txType } : {}),
+    ✗ finance.get_invoices → ledger: [finance_invoice_create] sin tool backend · frontend/src/features/finance/hooks/useFamilyAccount.ts:50 (Query)
+          const invQ = useMCPQuery<Invoice[]>(
+            "finance",
+            "get_invoices",
+            familyId ? { family_id: familyId } : {},
+            { enabled: activeTab === "invoices" },
+          );
+        
+          const account = accountQ.data;
+    ✗ finance.get_financial_summary (sin entrada ledger) · frontend/src/features/finance/hooks/useFinanceData.ts:36 (Query)
+          const summaryQuery = useMCPQuery<FinancialSummary>(
+            "finance", "get_financial_summary", {},
+            { staleTime, enabled },
+          );
+        
+          const aiReportQuery = useMCPQuery<AiAnalysisMCPResponse>(
+            "finance", "generate_ai_analysis",
+            { scope: "financial" },
+    ✗ finance.generate_ai_analysis (sin entrada ledger) · frontend/src/features/finance/hooks/useFinanceData.ts:41 (Query)
+          const aiReportQuery = useMCPQuery<AiAnalysisMCPResponse>(
+            "finance", "generate_ai_analysis",
+            { scope: "financial" },
+            { staleTime: 300_000, enabled },
+          );
+        
+          // ── 2. Extract + Normalize ──────────────────────────────
+        
+    ✗ guest_management.guest_management_insights (sin entrada ledger) · frontend/src/features/guests/components/GuestAnalytics.tsx:280 (Query)
+          const insightsQ = useMCPQuery<GuestInsightsResponse>(
+            "guest_management",
+            "guest_management_insights",
+            {},
+            { enabled: shouldFetch, staleTime: 300_000 },
+          );
+        
+          const insights = insightsQ.data?.insights ?? [];
+    ✗ guests.get_today_guests → ledger: [] sin tool backend · frontend/src/features/guests/GuestList.tsx:162 (Query)
+          const todayQ = useMCPQuery<GuestListResponse>(
+            "guests",
+            "get_today_guests",
+            { ...(statusFilter ? { status: statusFilter } : {}) },
+            { enabled: activeTab === "today", refetchInterval: 60_000 },
+          );
+        
+          const summaryQ = useMCPQuery<GuestTodaySummary>(
+    ✗ guests.get_today_summary → ledger: [] sin tool backend · frontend/src/features/guests/GuestList.tsx:169 (Query)
+          const summaryQ = useMCPQuery<GuestTodaySummary>(
+            "guests",
+            "get_today_summary",
+            {},
+            { enabled: activeTab === "today", refetchInterval: 60_000 },
+          );
+        
+          const trialsQ = useMCPQuery<TrialListEnvelope>(
+    ✗ guests.checkout_guest (sin entrada ledger) · frontend/src/features/guests/GuestList.tsx:184 (Mutation)
+          const checkoutMut = useMCPMutation<unknown, { checkin_id: string }>(
+            "guests",
+            "checkout_guest",
+            {
+              onSuccess: () => showToast({ type: "success", message: "Salida registrada" }),
+              onError: (err) =>
+                showToast({
+                  type: "error",
+    ✗ guests.register_guest_checkin (sin entrada ledger) · frontend/src/features/guests/GuestRegistration.tsx:142 (Mutation)
+          const checkinMut = useMCPMutation<unknown, GuestCheckInForm>(
+            "guests",
+            "register_guest_checkin",
+            {
+              onSuccess: () => {
+                setSubmitted(true);
+                showToast({ type: "success", message: "Invitado registrado exitosamente" });
+              },
+    ✗ events.list_events (sin entrada ledger) · frontend/src/features/mi-club/hooks/useMiClubLanding.ts:443 (Query)
+          const eventsQ = useMCPQuery<EventListResponse>(
+            "events",
+            "list_events",
+            { status: "published", limit: 10 },
+          );
+        
+          /* ── Recommendations (on-demand) ── */
+          const [showRecommendations, setShowRecommendations] =
+    ✗ compliance.compliance_report_generate (sin entrada ledger) · frontend/src/features/operations/components/ComplianceCheck.tsx:1269 (Query)
+          const reportQ = useMCPQuery<ComplianceReportResponse>(
+            "compliance",
+            "compliance_report_generate",
+            { date_from, date_to },
+            { staleTime: 300_000 },
+          );
+        
+          const alertsQ = useMCPQuery<ComplianceAlertListResponse>(
+    ✗ compliance.compliance_alert_list (sin entrada ledger) · frontend/src/features/operations/components/ComplianceCheck.tsx:1276 (Query)
+          const alertsQ = useMCPQuery<ComplianceAlertListResponse>(
+            "compliance",
+            "compliance_alert_list",
+            {},
+            { staleTime: 300_000 },
+          );
+        
+          /* ── Freshness ── */
+    ✗ compliance.compliance_alert_list (sin entrada ledger) · frontend/src/features/operations/components/DailyBriefing.tsx:845 (Query)
+          const query = useMCPQuery<ComplianceAlertListResponse>(
+            "compliance",
+            "compliance_alert_list",
+            {},
+            { enabled: shouldFetch, staleTime: 300_000 },
+          );
+        
+          const data = query.data;
+    ✗ events.event_get_calendar (sin entrada ledger) · frontend/src/features/operations/components/SmartSchedule.tsx:370 (Query)
+          const query = useMCPQuery<CalendarDayResponse>(
+            "events",
+            "event_get_calendar",
+            { date_from: dateRange.date_from, date_to: dateRange.date_to },
+            { enabled: shouldFetch, staleTime: 0 },
+          );
+        
+          const calData = query.data;
+    ✗ events.event_get_calendar (sin entrada ledger) · frontend/src/features/operations/components/SmartSchedule.tsx:1570 (Query)
+          const eventsQ = useMCPQuery<CalendarDayResponse>(
+            "events",
+            "event_get_calendar",
+            { date_from: dateRange.date_from, date_to: dateRange.date_to },
+            { enabled: shouldAnalyze, staleTime: 0 },
+          );
+        
+          const conflictsQ = useMCPQuery<SchedulingConflictsResponse>(
+    ✗ wellness.wellness_insights (sin entrada ledger) · frontend/src/features/wellness/components/WellnessAIAdvisor.tsx:232 (Query)
+          } = useMCPQuery<WellnessInsightsResponse>(
+            "wellness",
+            "wellness_insights",
+            { family_id: familyId },
+            { enabled: insightsTriggered, staleTime: 300_000 },
+          );
+        
+          const {
+    ✗ wellness.wellness_predict (sin entrada ledger) · frontend/src/features/wellness/components/WellnessAIAdvisor.tsx:244 (Query)
+          } = useMCPQuery<WellnessPredictResponse>(
+            "wellness",
+            "wellness_predict",
+            { family_id: familyId },
+            { enabled: predictionsTriggered, staleTime: 300_000 },
+          );
+        
+          const insights = insightsResp?.data;
+    ✗ wellness.wellness_correlate (sin entrada ledger) · frontend/src/features/wellness/components/WellnessBusinessInsights.tsx:314 (Query)
+          const { data: correlateResp, isLoading, error } = useMCPQuery<WellnessCorrelateResponse>(
+            "wellness",
+            "wellness_correlate",
+            { family_id: familyId || "all" },
+            { enabled: shouldFetch, staleTime: 300_000 },
+          );
+        
+          const data = correlateResp?.data;
+    ✗ wellness.wellness_profile_get (sin entrada ledger) · frontend/src/features/wellness/components/WellnessFamilyMap.tsx:182 (Query)
+          } = useMCPQuery<WellnessProfileGetResponse>(
+            "wellness",
+            "wellness_profile_get",
+            { family_id: familyId },
+            { staleTime: 300_000 },
+          );
+        
+          const now = new Date();
+    ✗ wellness.wellness_report (sin entrada ledger) · frontend/src/features/wellness/components/WellnessFamilyMap.tsx:196 (Query)
+            useMCPQuery<WellnessReportResponse>(
+              "wellness",
+              "wellness_report",
+              { family_id: familyId, date_from: dateFrom, date_to: dateTo },
+              { staleTime: 120_000 },
+            );
+        
+          const isLoading = loadingProfile || loadingReport;
+    ✗ wellness.wellness_recommendations (sin entrada ledger) · frontend/src/features/wellness/components/WellnessGoals.tsx:173 (Query)
+          const { data: goalsResp, isLoading } = useMCPQuery<WellnessGoalsResponse>(
+            "wellness",
+            "wellness_recommendations",
+            { family_id: familyId },
+            { staleTime: 120_000 },
+          );
+        
+          // P3: Parse from response
+    ✗ wellness.wellness_anomalies (sin entrada ledger) · frontend/src/features/wellness/components/WellnessRiskRadar.tsx:247 (Query)
+          } = useMCPQuery<WellnessAnomaliesResponse>(
+            "wellness",
+            "wellness_anomalies",
+            { family_id: familyId },
+            { enabled: shouldFetch, staleTime: 300_000 },
+          );
+        
+          const anomalies = anomaliesResp?.data?.anomalies ?? [];
+    ✗ wellness.wellness_profile_get (sin entrada ledger) · frontend/src/features/wellness/hooks/useWellnessQueries.ts:56 (Query)
+          const profile = useMCPQuery<WellnessProfileGetResponse>(
+            "wellness",
+            "wellness_profile_get",
+            { family_id: familyId },
+            { staleTime: 300_000, enabled },
+          );
+        
+          const report = useMCPQuery<WellnessReportResponse>(
+    ✗ wellness.wellness_report (sin entrada ledger) · frontend/src/features/wellness/hooks/useWellnessQueries.ts:63 (Query)
+          const report = useMCPQuery<WellnessReportResponse>(
+            "wellness",
+            "wellness_report",
+            { family_id: familyId, date_from: dateFrom, date_to: dateTo },
+            { staleTime: 60_000, enabled },
+          );
+        
+          const prevReport = useMCPQuery<WellnessReportResponse>(
+    ✗ wellness.wellness_report (sin entrada ledger) · frontend/src/features/wellness/hooks/useWellnessQueries.ts:70 (Query)
+          const prevReport = useMCPQuery<WellnessReportResponse>(
+            "wellness",
+            "wellness_report",
+            {
+              family_id: familyId,
+              date_from: prevDateFrom,
+              date_to: prevDateTo,
+            },
+    ✗ wellness.wellness_recommendations (sin entrada ledger) · frontend/src/features/wellness/hooks/useWellnessQueries.ts:81 (Query)
+          const recommendations = useMCPQuery<WellnessRecommendationsResponse>(
+            "wellness",
+            "wellness_recommendations",
+            { family_id: familyId },
+            { staleTime: 300_000, enabled },
+          );
+        
+          // ── Intelligence queries (P20) ───────────────────────────
+    ✗ wellness.wellness_predict (sin entrada ledger) · frontend/src/features/wellness/hooks/useWellnessQueries.ts:90 (Query)
+          const predictions = useMCPQuery<WellnessPredictResponse>(
+            "wellness",
+            "wellness_predict",
+            { family_id: familyId },
+            { staleTime: 120_000, enabled },
+          );
+        
+          const anomalies = useMCPQuery<WellnessAnomaliesResponse>(
+    ✗ wellness.wellness_anomalies (sin entrada ledger) · frontend/src/features/wellness/hooks/useWellnessQueries.ts:97 (Query)
+          const anomalies = useMCPQuery<WellnessAnomaliesResponse>(
+            "wellness",
+            "wellness_anomalies",
+            { family_id: familyId },
+            { staleTime: 60_000, enabled },
+          );
+        
+          const correlate = useMCPQuery<WellnessCorrelateResponse>(
+    ✗ wellness.wellness_correlate (sin entrada ledger) · frontend/src/features/wellness/hooks/useWellnessQueries.ts:104 (Query)
+          const correlate = useMCPQuery<WellnessCorrelateResponse>(
+            "wellness",
+            "wellness_correlate",
+            { family_id: familyId },
+            { staleTime: 300_000, enabled },
+          );
+        
+          const insights = useMCPQuery<WellnessInsightsResponse>(
+    ✗ wellness.wellness_insights (sin entrada ledger) · frontend/src/features/wellness/hooks/useWellnessQueries.ts:111 (Query)
+          const insights = useMCPQuery<WellnessInsightsResponse>(
+            "wellness",
+            "wellness_insights",
+            { family_id: familyId },
+            { staleTime: 120_000, enabled },
+          );
+        
+          // ── Loading ──────────────────────────────────────────────
+    ✗ executive_dashboard.generate_ai_analysis (sin entrada ledger) · frontend/src/shared/components/ai/AIDecisionPanel.tsx:679 (Mutation)
+          const mutation = useMCPMutation<AiExecutiveReport, { scope: string; period: string }>(
+            "executive_dashboard",
+            "generate_ai_analysis",
+            {
+              onSuccess: () => showToast({ type: "success", message: "Análisis generado exitosamente" }),
+              onError: (err) =>
+                showToast({
+                  type: "error",
+    ✗ advisor_intelligence.simulate_scenario (sin entrada ledger) · frontend/src/shared/components/ai/AISimulationPanel.tsx:548 (Query)
+          const { data, isLoading, isError } = useMCPQuery<AdvisorScenarioResponse>(
+            "advisor_intelligence",
+            "simulate_scenario",
+            { base_data: baseData, proposed_changes: proposedChanges, timeframe },
+            { staleTime: 300_000 },
+          );
+        
+          const handleTimeframeChange = (tf: string) => {
+    ✗ finance.narrative_generate → ledger: [finance_narrative_generate, generate_insight_narrative] sin tool backend · frontend/src/shared/components/export/hooks/useDecisionDocument.ts:86 (Query)
+          const narrativeQ = useMCPQuery<FinanceNarrativeGenerateResponse>(
+            "finance",
+            "narrative_generate",
+            { period: "mayo_2026", audience: "junta", detail_level: "ejecutivo" },
+            { enabled: isOpen, staleTime: 600_000 },
+          );
+        
+          const scenarioQ = useMCPQuery<FinanceScenarioSimulateResponse>(
+    ✗ finance.scenario_simulate → ledger: [finance_scenario_simulate, simulate_scenario] sin tool backend · frontend/src/shared/components/export/hooks/useDecisionDocument.ts:93 (Query)
+          const scenarioQ = useMCPQuery<FinanceScenarioSimulateResponse>(
+            "finance",
+            "scenario_simulate",
+            { variables: {} },
+            { enabled: isOpen && stage >= 1, staleTime: 300_000 },
+          );
+        
+          const stressQ = useMCPQuery<FinanceStressTestResponse>(
+    ✗ finance.stress_test → ledger: [finance_stress_test] sin tool backend · frontend/src/shared/components/export/hooks/useDecisionDocument.ts:100 (Query)
+          const stressQ = useMCPQuery<FinanceStressTestResponse>(
+            "finance",
+            "stress_test",
+            { scenario: "recession" },
+            { enabled: isOpen && stage >= 2, staleTime: 300_000 },
+          );
+        
+          const decisionQ = useMCPQuery<FinanceDecisionSimulateResponse>(
+    ✗ finance.decision_simulate → ledger: [finance_decision_simulate] sin tool backend · frontend/src/shared/components/export/hooks/useDecisionDocument.ts:107 (Query)
+          const decisionQ = useMCPQuery<FinanceDecisionSimulateResponse>(
+            "finance",
+            "decision_simulate",
+            { decision_text: "Última decisión estratégica evaluada" },
+            { enabled: isOpen && stage >= 3, staleTime: 300_000 },
+          );
+        
+          /* ── Extract data ── */
+    ✗ hitl.get_pending_approvals (sin entrada ledger) · frontend/src/shared/components/layout/NotificationCenter.tsx:168 (Query)
+          const approvalsQ = useMCPQuery<ApprovalListResponse>(
+            "hitl",
+            "get_pending_approvals",
+            {},
+            { staleTime: 60_000, refetchInterval: 60_000 },
+          );
+        
+          const todayStr = new Date().toISOString().split("T")[0];
+    ✗ events.event_get_calendar (sin entrada ledger) · frontend/src/shared/components/layout/NotificationCenter.tsx:177 (Query)
+          const calendarQ = useMCPQuery<CalendarResponse>(
+            "events",
+            "event_get_calendar",
+            { month: todayStr.slice(0, 7) },
+            { staleTime: 120_000, refetchInterval: 120_000 },
+          );
+        
+          const anomalyQ = useMCPQuery<DetectAnomaliesResponse>(
+    ✗ events.event_get_calendar (sin entrada ledger) · frontend/src/shared/components/layout/WelcomeModal.tsx:202 (Query)
+          const calendarQ = useMCPQuery<TodayEventsResponse>(
+            "events",
+            "event_get_calendar",
+            { month: todayStr.slice(0, 7) },
+            { staleTime: 120_000, enabled: isOpen },
+          );
+        
+          /* ── Live data map ── */
+    ✗ advisor_intelligence.simulate_scenario (sin entrada ledger) · frontend/src/shared/components/ml/hooks/useHypotheticalSimulator.ts:17 (Query)
+          const simQuery = useMCPQuery<SimulationResponse>(
+            "advisor_intelligence",
+            "simulate_scenario",
+            { question },
+            { enabled: shouldFetch && question.length > 5, staleTime: 300_000 },
+          );
+        
+          const handleSimulate = useCallback(() => {
+    ✗ advisor_intelligence.generate_insight_narrative (sin entrada ledger) · frontend/src/shared/hooks/useAdvisorNarrative.ts:35 (Query)
+          return useMCPQuery<AdvisorInsightNarrativeResponse>(
+            "advisor_intelligence",
+            "generate_insight_narrative",
+            {
+              insight_data: insightData,
+              financial_context: financialContext,
+              events_context: eventsContext,
+              role,
+    ✗ hitl.get_pending_approvals (sin entrada ledger) · frontend/src/shared/hooks/useGlobalStatus.ts:44 (Query)
+          const approvalsQ = useMCPQuery<ApprovalListResponse>(
+            "hitl",
+            "get_pending_approvals",
+            {},
+            {
+              enabled: showApprovals,
+              staleTime: 60_000,
+              refetchInterval: 60_000,
+    ✗ events.event_get_calendar (sin entrada ledger) · frontend/src/shared/hooks/useGlobalStatus.ts:57 (Query)
+          const calendarQ = useMCPQuery<CalendarResponse>(
+            "events",
+            "event_get_calendar",
+            { month: todayStr.slice(0, 7) },
+            {
+              enabled: showEventsBadge,
+              staleTime: 120_000,
+              refetchInterval: 120_000,
+    ✗ age_group.get_activity_health_score (sin entrada ledger) · frontend/src/shared/hooks/usePulseVitals.ts:164 (Query)
+          const ageGroupQ = useMCPQuery<AgeGroupHealthMCPResponse>(
+            "age_group", "get_activity_health_score", {},
+            { staleTime: 300_000, enabled: expandVitals },
+          );
+        
+          const mlQ = useMCPQuery<DataQualityMCPResponse>(
+            "ml_intelligence", "get_data_quality_report", {},
+            { staleTime: 300_000, enabled: expandVitals },
+
+  ── tools de los agentes involucrados en deuda/migrables ──
+    engagement → member_engagement_agent.py (6 tools):
+      get_engagement_insights(AUTO) · design_reactivation_campaign(HITL) · manage_loyalty_rewards(HITL) · submit_feedback(AUTO) · manage_referrals(AUTO) · get_engagement_dashboard(AUTO)
+    families → family_profile.py (16 tools):
+      family_get_profile(AUTO) · family_create_profile(HITL) · family_update_members(HITL) · family_set_preferences(SEMI_AUTO) · family_get_activity_history(AUTO) · family_search(AUTO) · family_get_social_graph(AUTO) · family_update_profile(SEMI_AUTO) · family_predict_churn(AUTO) · family_recommend_activities(AUTO) · family_social_match(AUTO) · family_engagement_plan(AUTO) · family_lifecycle_analysis(AUTO) · family_360_insight(AUTO) · family_social_graph_enriched(AUTO) · family_milestone_tracker(AUTO)
+    facilities → facility_management_agent.py (13 tools):
+      manage_facilities(AUTO) · schedule_maintenance(HITL) · coordinate_event_setup(HITL) · get_facility_occupancy(AUTO) · manage_inspections(AUTO) · report_facility_issue(AUTO) · get_maintenance_schedule(AUTO) · create_facility_reservation(HITL) · get_facility_reservations(AUTO) · get_facility_analytics(AUTO) · get_amenity_utilization(AUTO) · get_space_optimization(AUTO) · get_facility_health(AUTO)
+    reports: ⚠ sin archivo backend mapeado
+    age_group: ⚠ sin archivo backend mapeado
+    hitl: ⚠ sin archivo backend mapeado
+    communication → communication_agent.py (14 tools):
+      broadcast_club_announcement(HITL) · manage_emergency_broadcast(ALWAYS_HUMAN) · send_personalized_notification(SEMI_AUTO) · manage_notification_templates(AUTO) · schedule_notification(AUTO) · get_notification_history(AUTO) · manage_communication_preferences(AUTO) · send_board_package(SEMI_AUTO) · list_announcements(AUTO) · update_announcement_status(SEMI_AUTO) · get_communication_analytics(AUTO) · generate_communication_insights(AUTO) · get_communication_health(AUTO) · get_campaign_performance(AUTO)
+    finance: ⚠ sin archivo backend mapeado
+    events: ⚠ sin archivo backend mapeado
+    advisor_intelligence: ⚠ sin archivo backend mapeado
+    wellness: ⚠ sin archivo backend mapeado
+    guest_management → guest_management_agent.py (10 tools):
+      plan_private_event(HITL) · manage_trial_memberships(HITL) · register_guest(SEMI_AUTO) · manage_guest_privileges(AUTO) · get_guest_analytics(AUTO) · get_guest_health_score(AUTO) · get_conversion_funnel(AUTO) · get_guest_analytics_enhanced(AUTO) · get_guest_forecast(AUTO) · generate_guest_engagement_proposals(AUTO)
+    guests → guest_management_agent.py (10 tools):
+      plan_private_event(HITL) · manage_trial_memberships(HITL) · register_guest(SEMI_AUTO) · manage_guest_privileges(AUTO) · get_guest_analytics(AUTO) · get_guest_health_score(AUTO) · get_conversion_funnel(AUTO) · get_guest_analytics_enhanced(AUTO) · get_guest_forecast(AUTO) · generate_guest_engagement_proposals(AUTO)
+    compliance: ⚠ sin archivo backend mapeado
+    executive_dashboard → executive_dashboard_agent.py (11 tools):
+      generate_quarterly_board_report(HITL) · export_report(SEMI_AUTO) · get_executive_summary(AUTO) · get_financial_overview(AUTO) · get_membership_health(AUTO) · get_operational_pulse(AUTO) · detect_anomalies(AUTO) · get_age_group_balance(AUTO) · get_pending_approvals(AUTO) · approve_request(AUTO) · reject_request(AUTO)
+
+══ F. Entradas del ledger SIN callsite vivo (candidatas a limpieza) ══
+    · communication.get_communication_history → ["get_communication_analytics", "get_notification_history"]
+    · facilities.list_reservations → ["get_facility_reservations"]
+    · facilities.get_utilization → ["get_amenity_utilization"]
+    · facilities.list_available_facilities → ["manage_facilities"]
+    · families.search_families → ["family_search"]
+    · families.list_families → ["family_search"]
+
+══ G. Probe de python ══
+  ✓ python --version → Python 3.14.4
+  ✓ ast.parse disponible — gate sintáctico listo para parches .py
+
+══ H. Deuda de campos/envelopes heredada de C3g ══
+  · Reservation (facilities/types) ↔ FacilityReservation: 9 renames camel→snake (facilityId, facilityName, familyId, familyName, startTime, endTime, guestCount, createdBy, createdAt)
+  · Family compartido (families/types, 14 camel) ↔ FamilyBrief backend (7 snake): unificar o adaptar en C3h
+  · manage_trial_memberships(list): sin total/conversion_rate/active_count/paginación server-side
+  · TrialMembership ítem: FE sin par backend (guest_id, host_family_id, host_family_name, trial_type_label, facilities_access, activities_attended, feedback_score, conversion_probability) · backend sin par FE (referred_by_family_id, privileges, updated_at)
+  · D5 FacilityMap: facility_type descartado por falta de evidencia de enum — filtro tipo/estado sólo client-side
+  · ReactivationCampaign FE(18) ↔ backend(16): mismatch de campos (target_level/channel/… vs campaign_type/target_member_ids/…)
+
+══ fin h1 — con este reporte se arma el plan de batches C3h ══

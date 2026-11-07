@@ -1,0 +1,118 @@
+P2-C3h · b0t — fix §5 (2ª caída): _load_repo_class no encuentra la clase
+
+  · escribe SOLO backend/src/club_mcp/bootstrap.py (+ backup .b0t.bak)
+
+── §0 Guardas ──
+  · bootstrap.py existe ✓
+  · ancla-raise presente 1 vez ✓ (línea 104, indent 4 espacios)
+
+── §A · _load_repo_class (fuente actual) + claves de repo ──
+  · función (l.94 en adelante):
+      l.94 │ def _load_repo_class(repo_key: str) -> type:
+      l.95 │     module_name = f"club_mcp.db.repositories.{repo_key}"
+      l.96 │     module = importlib.import_module(module_name)
+      l.97 │     target = repo_key.removesuffix("_repo")
+      l.98 │     for attr_name in dir(module):
+      l.99 │         attr = getattr(module, attr_name)
+      l.100 │         if not inspect.isclass(attr):
+      l.101 │             continue
+      l.102 │         if _snake(attr_name).removesuffix("_repository") == target:
+      l.103 │             return attr
+      l.104 │     raise LookupError(f"Repository class not found for '{repo_key}' in {module_name}")
+      l.105 │ 
+      l.106 │ 
+  · claves _repo literales en bootstrap.py: age_group_repo, communication_repo, compliance_repo, cultural_social_repo, document_intelligence_repo, event_repo, executive_dashboard_repo, facility_management_repo, family_repo, guest_management_repo, member_360_repo, member_engagement_repo, ml_intelligence_repo, proactive_recommendation_repo, satisfaction_repo, sports_recreation_repo, wellness_repo
+  · llamadas repo_for(/pname == (primeras 12):
+      l.177 │ def repo_for(key: str) -> Any:
+      l.187 │ doc_repo = repo_for("document_intelligence_repo")
+      l.196 │ if pname == "self":
+      l.199 │ if pname == "repo":
+      l.204 │ kwargs[pname] = repo_for(repo_key)
+      l.205 │ elif pname == "approval_engine":
+      l.207 │ elif pname == "notifier":
+      l.209 │ elif pname == "claude_service":
+      l.211 │ elif pname == "club_config":
+      l.213 │ elif pname == "rag_service":
+
+── §B · inventario db/repositories + predicción por clave ──
+  · db/repositories/: __init__.py, age_group_repo.py, communication_repo.py, compliance_repo.py, cultural_social_repo.py, document_intelligence_repo.py, event_repo.py, executive_dashboard_repo.py, facility_management_repo.py, family_repo.py, finance_repo.py, guest_management_repo.py, member_360_repo.py, member_engagement_repo.py, ml_intelligence_repo.py, proactive_recommendation_repo.py, satisfaction_repo.py, sports_recreation_repo.py, wellness_repo.py
+  · age_group_repo → CANDIDATA AgeGroupRepository (club_mcp.db.repositories.age_group_repo ✓)
+  · communication_repo → CANDIDATA CommunicationRepository (club_mcp.db.repositories.communication_repo ✓)
+  · compliance_repo → CANDIDATA ComplianceRepository (club_mcp.db.repositories.compliance_repo ✓)
+  · cultural_social_repo → CANDIDATA CulturalSocialRepository (club_mcp.db.repositories.cultural_social_repo ✓)
+  · document_intelligence_repo → CANDIDATA DocumentIntelligenceRepository (club_mcp.db.repositories.document_intelligence_repo ✓)
+  · event_repo → CANDIDATA EventRepository (club_mcp.db.repositories.event_repo ✓)
+  · executive_dashboard_repo → CANDIDATA ExecutiveDashboardRepository (club_mcp.db.repositories.executive_dashboard_repo ✓)
+  · facility_management_repo → CANDIDATA FacilityManagementRepository (club_mcp.db.repositories.facility_management_repo ✓)
+  · family_repo → CANDIDATA FamilyRepository (club_mcp.db.repositories.family_repo ✓)
+  · guest_management_repo → CANDIDATA GuestManagementRepository (club_mcp.db.repositories.guest_management_repo ✓)
+  · member_360_repo → CANDIDATA Member360Repository (club_mcp.db.repositories.member_360_repo ✓)
+  · member_engagement_repo → CANDIDATA MemberEngagementRepository (club_mcp.db.repositories.member_engagement_repo ✓)
+  · ml_intelligence_repo → ESCANEO_UNICO MLIntelligenceRepository (única clase pública del módulo ✓)
+  · proactive_recommendation_repo → CANDIDATA ProactiveRecommendationRepository (club_mcp.db.repositories.proactive_recommendation_repo ✓)
+  · satisfaction_repo → CANDIDATA SatisfactionRepository (club_mcp.db.repositories.satisfaction_repo ✓)
+  · sports_recreation_repo → CANDIDATA SportsRecreationRepository (club_mcp.db.repositories.sports_recreation_repo ✓)
+  · wellness_repo → CANDIDATA WellnessRepository (club_mcp.db.repositories.wellness_repo ✓)
+  · resumen: 17 clave(s) · CANDIDATA 16 · ESCANEO_UNICO 1 · AMBIGUO 0 · MODULO_INEXISTENTE 0 · SIN_CLASES 0
+
+── §C · parche bootstrap._load_repo_class (fallback de resolución) ──
+  ✓ backup: backend/src/club_mcp/bootstrap.py.b0t.bak (bytes originales)
+  ✓ parche aplicado: línea 104 → bloque fallback de 34 líneas
+  ✓ py_compile bootstrap.py
+  · región parcheada (primeras líneas):
+      l.102 │         if _snake(attr_name).removesuffix("_repository") == target:
+      l.103 │             return attr
+      l.104 │     # P2-C3h b0t: fallback — convención de nombre + escaneo del módulo
+      l.105 │     from importlib import import_module as _b0t_import
+      l.106 │     _b0t_mod = None
+      l.107 │     _b0t_err = None
+      l.108 │     try:
+      l.109 │         _b0t_mod = _b0t_import(module_name)
+      l.110 │     except ModuleNotFoundError as _b0t_e:
+      l.111 │         _b0t_err = _b0t_e
+      l.112 │     if _b0t_mod is not None:
+      l.113 │         _b0t_parts = [p.title() if not p.isdigit() else p for p in repo_key.split("_")]
+      l.114 │         _b0t_base = "".join(_b0t_parts)
+      l.115 │         _b0t_strip = repo_key[:-5] if repo_key.endswith("_repo") else repo_key
+
+── §D · re-smoke ──
+  · predicción: todas las claves resolvibles — sin blockers conocidos en repos
+  · corriendo: uv run python scripts/smoke_b0.py (cwd=backend, PYTHONPATH=src)
+    warning: `VIRTUAL_ENV=C:/Users/nipag/Documents/MCPClubesPrivados/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+    Traceback (most recent call last):
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\scripts\smoke_b0.py", line 144, in <module>
+        main()
+        ~~~~^^
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\scripts\smoke_b0.py", line 27, in main
+        rt = get_runtime()
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\bootstrap.py", line 310, in get_runtime
+    …
+        cls = _agent_class(module_name)
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\bootstrap.py", line 141, in _agent_class
+        module = importlib.import_module(f"club_mcp.agents.{module_name}")
+      File "C:\Python314\Lib\importlib\__init__.py", line 88, in import_module
+        return _bootstrap._gcd_import(name[level:], package, level)
+               ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "<frozen importlib._bootstrap>", line 1406, in _gcd_import
+      File "<frozen importlib._bootstrap>", line 1371, in _find_and_load
+      File "<frozen importlib._bootstrap>", line 1342, in _find_and_load_unlocked
+      File "<frozen importlib._bootstrap>", line 938, in _load_unlocked
+      File "<frozen importlib._bootstrap_external>", line 759, in exec_module
+      File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\agents\ml_intelligence.py", line 34, in <module>
+        from club_mcp.services.approval_service import ApprovalLevel, MCPTool
+    ModuleNotFoundError: No module named 'club_mcp.services'
+  ✗ SMOKE exit=2 — pegar el reporte completo
+
+── §E · git / rollback ──
+  · git status bootstrap.py: ?? club-platform-castillo_country_club/backend/src/club_mcp/bootstrap.py
+  · rollback exacto: mv backend/src/club_mcp/bootstrap.py.b0t.bak backend/src/club_mcp/bootstrap.py (restaura los bytes previos, incluido CRLF si lo había)
+
+── siguiente paso ──
+  · pegar el output COMPLETO de p2c3h_b0t_report.txt en el chat.
+  · VERDE → h7 gate superado → b0u (ml_intelligence + test_rbac, triage de b0s §C/§D) y luego B1/B2.
+  · ROJO con "No module named 'club_mcp.db.repositories.X'" o "Repository module not found for 'X'" → módulo ausente real → b0u crea/redirige.
+  · ROJO con "Repository class not found … (candidatas: …; clases definidas: …)" → módulo AMBIGUO → b0u decide.
+  · ROJO con OTRO error → ya no es tema de repos: pegarlo igual (instancia de agentes, prompts, etc.).
+  · NO relanzar B0 (§4 consumió anclas).
+

@@ -1,0 +1,849 @@
+P2-C3h · h2-registry — registro backend real + transporte + reclasificación
+  base: 00417eb P2-C3g: migrar frontend a tools MCP reales (#1 #2 #5 #6 #9 #10 #11 #16, D5, C16)
+
+══ A. Forense — conteo crudo vs registro por archivo ══
+  advisor_intelligence.py              @MCPTool=  5 · ApprovalLevel= 15 · registro=  0  ⚠
+  age_group.py                         @MCPTool= 11 · ApprovalLevel= 12 · registro=  0  ⚠
+  age_group_activity.py                @MCPTool=  0 · ApprovalLevel=  0 · registro=  0
+  base.py                              @MCPTool=  1 · ApprovalLevel=  2 · registro=  0  ⚠
+  base_agent.py                        @MCPTool=  0 · ApprovalLevel=  0 · registro=  0
+  communication_agent.py               @MCPTool= 14 · ApprovalLevel= 17 · registro= 14
+  compliance.py                        @MCPTool=  7 · ApprovalLevel=  9 · registro=  0  ⚠
+  cultural_social_agent.py             @MCPTool=  9 · ApprovalLevel= 12 · registro=  9
+  document_intelligence_agent.py       @MCPTool=  8 · ApprovalLevel= 11 · registro=  8
+  event_orchestrator.py                @MCPTool= 11 · ApprovalLevel= 15 · registro=  0  ⚠
+  executive_dashboard_agent.py         @MCPTool= 11 · ApprovalLevel= 13 · registro= 11
+  facility_management_agent.py         @MCPTool= 13 · ApprovalLevel= 16 · registro= 13
+  family_profile.py                    @MCPTool= 16 · ApprovalLevel= 18 · registro= 16
+  finance.py                           @MCPTool= 14 · ApprovalLevel= 17 · registro=  0  ⚠
+  guest_management_agent.py            @MCPTool= 10 · ApprovalLevel= 13 · registro= 10
+  member_360_agent.py                  @MCPTool= 10 · ApprovalLevel= 10 · registro= 10
+  member_engagement_agent.py           @MCPTool=  6 · ApprovalLevel=  8 · registro=  6
+  ml_intelligence.py                   @MCPTool= 10 · ApprovalLevel= 10 · registro= 10
+  proactive_recommendation_agent.py    @MCPTool=  8 · ApprovalLevel= 10 · registro=  8
+  satisfaction_agent.py                @MCPTool= 10 · ApprovalLevel= 11 · registro= 10
+  sports_recreation_agent.py           @MCPTool= 11 · ApprovalLevel= 14 · registro= 11
+  wellness.py                          @MCPTool= 12 · ApprovalLevel= 13 · registro=  0  ⚠
+  __init__.py                          @MCPTool=  0 · ApprovalLevel=  0 · registro=  0
+
+  ── evidencia de los 7 archivo(s) ⚠ (hasta 2 decoradores c/u) ──
+  ── backend/src/club_mcp/agents/advisor_intelligence.py · 0 decoradores con name= ──
+    (sin decoradores con name= — contexto de la primera aparición de ApprovalLevel:)
+      83│     def __init__(
+      84│         self,
+      85│         claude_service: ClaudeService,
+      86│         approval_engine: ApprovalEngine,
+      87│         notifier: HITLNotifier,
+      88│     ) -> None:
+      89│         super().__init__()
+      90│         self.claude = claude_service
+      91│         self.approval_engine = approval_engine
+      92│         self.notifier = notifier
+      93│ 
+      94│     def _register_tools(self) -> None:
+      95│         """Legacy hook — tools registered via @MCPTool decorator."""
+      96│         pass
+      97│ 
+      98│     # ── Tool 1: Insight Narrative ──────────────────────────
+      99│ 
+     100│     @MCPTool(
+     101│         "generate_insight_narrative",
+     102│         "Genera análisis narrativo profundo para un insight del Advisor",
+     103│         ApprovalLevel.AUTO,
+     104│     )
+     105│     async def generate_insight_narrative(
+     106│         self,
+     107│         insight_data: dict[str, Any],
+     108│         financial_context: Optional[dict[str, Any]] = None,
+  ── backend/src/club_mcp/agents/age_group.py · 0 decoradores con name= ──
+    (sin decoradores con name= — contexto de la primera aparición de ApprovalLevel:)
+      47│         self.repo = age_group_repo or AgeGroupRepository()
+      48│         if approval_engine is not None:
+      49│             self.approval_engine = approval_engine
+      50│         self.notifier = notifier
+      51│ 
+      52│     def _register_tools(self) -> None:
+      53│         pass
+      54│ 
+      55│     # ═══════════════════════════════════════════════════
+      56│     # 🟢 DATA TOOLS (upgraded from original)
+      57│     # ═══════════════════════════════════════════════════
+      58│ 
+      59│     # ─────────────────────────────────────────────────────────
+      60│     # Tool 1: age_group_list  🟢 AUTO
+      61│     # ─────────────────────────────────────────────────────────
+      62│ 
+      63│     @MCPTool(
+      64│         "age_group_list",
+      65│         "Listar todos los grupos etarios con conteo de miembros, "
+      66│         "actividades y balance demográfico.",
+      67│         approval=ApprovalLevel.AUTO,
+      68│     )
+      69│     async def age_group_list(self) -> dict[str, Any]:
+      70│         """List all age groups with member counts, activity counts,
+      71│         and balance status."""
+      72│         groups = await self.repo.list_age_groups()
+  ── backend/src/club_mcp/agents/base.py · 0 decoradores con name= ──
+    (sin decoradores con name= — contexto de la primera aparición de ApprovalLevel:)
+       4│ """
+       5│ 
+       6│ from __future__ import annotations
+       7│ 
+       8│ import logging
+       9│ from abc import ABC, abstractmethod
+      10│ from enum import Enum
+      11│ from functools import wraps
+      12│ from typing import Any, Callable, Optional
+      13│ 
+      14│ from club_mcp.hitl.approval_engine import ApprovalEngine
+      15│ from club_mcp.hitl.approval_types import ApprovalLevel
+      16│ 
+      17│ logger = logging.getLogger(__name__)
+      18│ 
+      19│ 
+      20│ class MCPTool:
+      21│     """
+      22│     Decorator to mark a method as an MCP tool.
+      23│     Usage:
+      24│         @MCPTool("family_get_profile", "Obtiene el perfil", ApprovalLevel.AUTO)
+      25│         async def get_profile(self, family_id: str) -> dict: ...
+      26│     """
+      27│ 
+      28│     def __init__(
+      29│         self,
+  ── backend/src/club_mcp/agents/compliance.py · 0 decoradores con name= ──
+    (sin decoradores con name= — contexto de la primera aparición de ApprovalLevel:)
+      30│         compliance_repo: ComplianceRepository,
+      31│         approval_engine: Any = None,
+      32│         notifier: Any = None,
+      33│     ) -> None:
+      34│         super().__init__()
+      35│         self.repo = compliance_repo
+      36│         if approval_engine is not None:
+      37│             self.approval_engine = approval_engine
+      38│         self.notifier = notifier
+      39│ 
+      40│     def _register_tools(self) -> None:
+      41│         pass
+      42│ 
+      43│     # ─────────────────────────────────────────────────────────
+      44│     # Tool 1: compliance_audit_create  🔴 HITL
+      45│     # ─────────────────────────────────────────────────────────
+      46│ 
+      47│     @MCPTool(
+      48│         "compliance_audit_create",
+      49│         "Crear una nueva auditoría de cumplimiento. Requiere aprobación.",
+      50│         approval=ApprovalLevel.HITL,
+      51│     )
+      52│     async def compliance_audit_create(
+      53│         self,
+      54│         title: str,
+      55│         area: str,
+  ── backend/src/club_mcp/agents/event_orchestrator.py · 0 decoradores con name= ──
+    (sin decoradores con name= — contexto de la primera aparición de ApprovalLevel:)
+      31│         self,
+      32│         event_repo: EventRepository,
+      33│         approval_engine: Any = None,
+      34│         notifier: Any = None,
+      35│         club_config: dict[str, Any] | None = None,
+      36│     ) -> None:
+      37│         super().__init__()
+      38│         self.event_repo = event_repo
+      39│         if approval_engine is not None:
+      40│             self.approval_engine = approval_engine
+      41│         self.notifier = notifier
+      42│         self.club_config = club_config or {}
+      43│ 
+      44│     # ─────────────────────────────────────────────────────────
+      45│     # Tool 1: event_create  🔴 HITL
+      46│     # ─────────────────────────────────────────────────────────
+      47│ 
+      48│     @MCPTool(
+      49│         "event_create",
+      50│         "Crear un nuevo evento en el club. Requiere aprobación del administrador.",
+      51│         approval=ApprovalLevel.HITL,
+      52│     )
+      53│     async def event_create(self, event_data: dict[str, Any]) -> dict[str, Any]:
+      54│         """Create a new club event (HITL — requires admin approval)."""
+      55│         try:
+      56│             validated = EventCreate(**event_data)
+  ── backend/src/club_mcp/agents/finance.py · 0 decoradores con name= ──
+    (sin decoradores con name= — contexto de la primera aparición de ApprovalLevel:)
+      64│         notifier: Any = None,
+      65│         family_repo: FamilyRepository | None = None,
+      66│     ) -> None:
+      67│         super().__init__()
+      68│         self.repo = finance_repo
+      69│         if approval_engine is not None:
+      70│             self.approval_engine = approval_engine
+      71│         self.notifier = notifier
+      72│         self.family_repo = family_repo
+      73│ 
+      74│     def _register_tools(self) -> None:
+      75│         pass
+      76│ 
+      77│     # ─────────────────────────────────────────────────────────
+      78│     # Tool 1: finance_expense_create  🔴 HITL
+      79│     # ─────────────────────────────────────────────────────────
+      80│ 
+      81│     @MCPTool(
+      82│         "finance_expense_create",
+      83│         "Registrar un nuevo gasto del club. Requiere aprobación.",
+      84│         approval=ApprovalLevel.HITL,
+      85│     )
+      86│     async def finance_expense_create(
+      87│         self,
+      88│         description: str,
+      89│         amount: float,
+  ── backend/src/club_mcp/agents/wellness.py · 0 decoradores con name= ──
+    (sin decoradores con name= — contexto de la primera aparición de ApprovalLevel:)
+      30│         wellness_repo: WellnessRepository,
+      31│         approval_engine: Any = None,
+      32│         notifier: Any = None,
+      33│     ) -> None:
+      34│         super().__init__()
+      35│         self.repo = wellness_repo
+      36│         if approval_engine is not None:
+      37│             self.approval_engine = approval_engine
+      38│         self.notifier = notifier
+      39│ 
+      40│     def _register_tools(self) -> None:
+      41│         pass
+      42│ 
+      43│     # ─────────────────────────────────────────────────────────
+      44│     # Tool 1: wellness_profile_get  🟢 AUTO
+      45│     # ─────────────────────────────────────────────────────────
+      46│ 
+      47│     @MCPTool(
+      48│         "wellness_profile_get",
+      49│         "Obtener el perfil de bienestar de una familia.",
+      50│         approval=ApprovalLevel.AUTO,
+      51│     )
+      52│     async def wellness_profile_get(
+      53│         self,
+      54│         family_id: str,
+      55│     ) -> dict[str, Any]:
+
+══ B. Registro REAL — tools por agente ══
+  · 23 archivos de agente · 136 tools (h1: 136 · referencia C3g: 169)
+    family_profile.py · agent=family_profile · 16
+      family_get_profile(AUTO) · family_create_profile(HITL) · family_update_members(HITL) · family_set_preferences(SEMI_AUTO)
+      family_get_activity_history(AUTO) · family_search(AUTO) · family_get_social_graph(AUTO) · family_update_profile(SEMI_AUTO)
+      family_predict_churn(AUTO) · family_recommend_activities(AUTO) · family_social_match(AUTO) · family_engagement_plan(AUTO)
+      family_lifecycle_analysis(AUTO) · family_360_insight(AUTO) · family_social_graph_enriched(AUTO) · family_milestone_tracker(AUTO)
+    communication_agent.py · agent=communication · 14
+      broadcast_club_announcement(HITL) · manage_emergency_broadcast(ALWAYS_HUMAN) · send_personalized_notification(SEMI_AUTO) · manage_notification_templates(AUTO)
+      schedule_notification(AUTO) · get_notification_history(AUTO) · manage_communication_preferences(AUTO) · send_board_package(SEMI_AUTO)
+      list_announcements(AUTO) · update_announcement_status(SEMI_AUTO) · get_communication_analytics(AUTO) · generate_communication_insights(AUTO)
+      get_communication_health(AUTO) · get_campaign_performance(AUTO)
+    facility_management_agent.py · agent=facility_management · 13
+      manage_facilities(AUTO) · schedule_maintenance(HITL) · coordinate_event_setup(HITL) · get_facility_occupancy(AUTO)
+      manage_inspections(AUTO) · report_facility_issue(AUTO) · get_maintenance_schedule(AUTO) · create_facility_reservation(HITL)
+      get_facility_reservations(AUTO) · get_facility_analytics(AUTO) · get_amenity_utilization(AUTO) · get_space_optimization(AUTO)
+      get_facility_health(AUTO)
+    executive_dashboard_agent.py · agent=executive_dashboard · 11
+      generate_quarterly_board_report(HITL) · export_report(SEMI_AUTO) · get_executive_summary(AUTO) · get_financial_overview(AUTO)
+      get_membership_health(AUTO) · get_operational_pulse(AUTO) · detect_anomalies(AUTO) · get_age_group_balance(AUTO)
+      get_pending_approvals(AUTO) · approve_request(AUTO) · reject_request(AUTO)
+    sports_recreation_agent.py · agent=sports_recreation · 11
+      manage_court_reservations(AUTO) · organize_tournament(HITL) · manage_fitness_classes(AUTO) · coordinate_coaching(AUTO)
+      manage_sport_leagues(HITL) · get_equipment_availability(AUTO) · get_sports_recommendations(AUTO) · get_sports_analytics(AUTO)
+      get_sports_health_summary(AUTO) · get_sports_calendar(AUTO) · generate_sports_proposals(AUTO)
+    guest_management_agent.py · agent=guest_management · 10
+      plan_private_event(HITL) · manage_trial_memberships(HITL) · register_guest(SEMI_AUTO) · manage_guest_privileges(AUTO)
+      get_guest_analytics(AUTO) · get_guest_health_score(AUTO) · get_conversion_funnel(AUTO) · get_guest_analytics_enhanced(AUTO)
+      get_guest_forecast(AUTO) · generate_guest_engagement_proposals(AUTO)
+    member_360_agent.py · agent=member_360 · 10
+      get_member_360_profile(AUTO) · get_member_health_score(AUTO) · get_member_journey(AUTO) · get_member_churn_prediction(AUTO)
+      get_member_ltv_analysis(AUTO) · get_member_activity_summary(AUTO) · get_member_social_profile(AUTO) · generate_member_engagement_proposals(AUTO)
+      get_member_risk_assessment(AUTO) · search_members_360(AUTO)
+    ml_intelligence.py · agent=? · 10
+      get_data_quality_report(AUTO) · get_anomaly_report(AUTO) · get_demand_forecast(AUTO) · get_revenue_forecast(AUTO)
+      get_churn_ml_scores(AUTO) · get_member_segments(AUTO) · get_model_health(AUTO) · chat_club_manager(AUTO)
+      explain_prediction(AUTO) · simulate_hypothetical(AUTO)
+    satisfaction_agent.py · agent=satisfaction · 10
+      submit_satisfaction_survey(HITL) · get_survey_for_event(AUTO) · analyze_event_satisfaction(SEMI_AUTO) · get_satisfaction_trends(AUTO)
+      generate_satisfaction_report(SEMI_AUTO) · get_satisfaction_questions(AUTO) · get_satisfaction_health_score(AUTO) · get_satisfaction_intelligence(AUTO)
+      get_satisfaction_benchmark(AUTO) · generate_satisfaction_engagement_proposals(AUTO)
+    cultural_social_agent.py · agent=cultural_social · 9
+      organize_formal_gala(HITL) · manage_entertainment_acts(HITL) · manage_cultural_program(HITL) · manage_social_events(AUTO)
+      manage_art_exhibitions(AUTO) · get_cultural_calendar(AUTO) · get_cultural_analytics(AUTO) · get_cultural_summary(AUTO)
+      generate_cultural_proposals(AUTO)
+    document_intelligence_agent.py · agent=document_intelligence · 8
+      search_documents(AUTO) · knowledge_query(AUTO) · query_documents(AUTO) · search_similar(AUTO)
+      get_repository_stats(AUTO) · ingest_document(SEMI_AUTO) · generate_knowledge_report(HITL) · manage_document_access(HITL)
+    proactive_recommendation_agent.py · agent=proactive_recommendation · 8
+      optimize_pricing(HITL) · suggest_new_activities(HITL) · generate_family_recommendations(AUTO) · predict_event_attendance(AUTO)
+      detect_scheduling_conflicts(AUTO) · personalize_communication(AUTO) · identify_social_clusters(AUTO) · generate_quarterly_insights(AUTO)
+    member_engagement_agent.py · agent=member_engagement · 6
+      get_engagement_insights(AUTO) · design_reactivation_campaign(HITL) · manage_loyalty_rewards(HITL) · submit_feedback(AUTO)
+      manage_referrals(AUTO) · get_engagement_dashboard(AUTO)
+
+══ C. Transporte frontend — shared/lib/api.ts ══
+  ── frontend/src/shared/lib/api.ts (574 líneas) ──
+       1│ // src/shared/lib/api.ts
+       2│ // ═══════════════════════════════════════════════════════════
+       3│ // API CLIENT — Castillo Country Club Intelligence Platform
+       4│ //
+       5│ // @level       Level 6+ Agency · Apple Production Grade · 2027
+       6│ // @version     v2.1
+       7│ // @namespace   N/A — infrastructure layer
+       8│ // @keyframes   0
+       9│ // @depends     @/stores/auth.store, ./toolNameAdapter, @/shared/lib/mcp
+      10│ //
+      11│ // Routing priority (via mcp-router.ts):
+      12│ //   1. Backend (if available + preferred)
+      13│ //   2. Mock registry (typed factories)
+      14│ //   3. Error (NO silent fallbacks)
+      15│ //
+      16│ // PRE-WRITE VERIFICATION:
+      17│ // [x] All imports verified against seen files
+      18│ // [x] routeMCPCall signature matches mcp-router.ts
+      19│ // [x] No showToast import (moved to QueryClient global onError)
+      20│ // [x] No "OK trick" (dev mode errors propagate as errors)
+      21│ // [x] JWT decode handles base64url encoding (RFC 4648 §5)
+      22│ // [x] Concurrent refresh deduplication via shared Promise
+      23│ //
+      24│ // ANTI-PATTERNS REMOVED (v1):
+      25│ // [x] "OK (no mock)" silent success → errors propagate always
+      26│ // [x] showToast in infrastructure layer → handled by QueryClient
+      27│ // [x] atob() without base64url normalization → fixed
+      28│ // [x] Race condition on concurrent token refresh → Promise dedup
+      29│ // [x] APIError not exported → exported for instanceof checks
+      30│ // [x] Magic string "dev-token-no-real" → extracted constant + env guard
+      31│ // [x] api object with || (falsy trap) → removed entirely
+      32│ // [x] Missing section markers → §1-§6 added
+      33│ //
+      34│ // FIXES APPLIED (v2):
+      35│ // [x] B-03: pendingRefresh rejection normalized to APIError(401)
+      36│ // [x] B-04: TODO comment block removed (tracked in MANIFEST.BREAKING_CHANGES.BC-02)
+      37│ //
+      38│ // FIXES APPLIED (v2.1) — hallazgos G8 (auditoría Lote 4 / BC-02 package):
+      39│ // [x] G8-05 (CRITICAL): callMCPTool re-envolvía TODO error del router
+      40│ //     con status 500 hardcodeado → un 401 del backend llegaba a la UI
+      41│ //     como 500, rompiendo el retry-policy y la clasificación 401-aware
+      42│ //     de BC-02 (providers.tsx). Ahora el APIError ORIGINAL del backend
+      43│ //     se conserva con su status real (captura por-invocación,
+      44│ //     concurrency-safe).
+      45│ // [x] G8-06: decodeTokenPayload sin padding — atob() rechaza input
+      46│ //     base64url sin pad en motores estrictos. padEnd restaurado.
+      47│ // [x] G8-07: loginRequest/healthCheck sin timeout — un backend muerto
+      48│ //     colgaba el login indefinidamente. AbortSignal.timeout añadido
+      49│ //     (10s auth / 5s health). backendCaller SIN timeout deliberado:
+      50│ //     los tools MCP con IA tardan legítimamente 10-30s.
+      51│ // [x] G8-08: respuestas 2xx sin guard — json() malformado exponía un
+      52│ //     SyntaxError crudo; login sin access_token crasheaba tarde en los
+      53│ //     consumidores. Guards de forma + mapeo 502.
+      54│ // [x] G8-09: getAuthToken re-normalizaba el rechazo del refresh
+      55│ //     enmascarando el mensaje original (B-03 aplicado dos veces con
+      56│ //     pérdida semántica). Ahora preserva APIError ya normalizados.
+      57│ // ═══════════════════════════════════════════════════════════
+      58│ 
+      59│ // ═══ Auth — delegate (inversión de dependencia · P1 ciclo de chunks) ═══
+      60│ // ANTES: este módulo importaba @/stores/auth.store — la capa de transporte
+      61│ // (lib) dependía hacia ARRIBA de la capa de estado. Como auth.store importa
+      62│ // signalBus del advisor-engine, y el engine importa utils/api de vuelta,
+      63│ // el edge sostenía el ciclo "Circular chunk: shared-* -> advisor-engine".
+      64│ // DESPUÉS: api expone un delegate; auth.store se registra al cargarse
+      65│ // (stores → lib: descendente y legal). Sin registro: fail-closed 401.
+      66│ export interface AuthDelegate {
+      67│   /** Access token vigente, o null si no hay sesión. */
+      68│   getAccessToken(): string | null;
+      69│   /** Refresca la sesión; rechaza si el refresh falla. */
+      70│   refreshAccessToken(): Promise<void>;
+      71│   /** Cierra la sesión (401 / token inválido o expirado). */
+      72│   logout(): void;
+      73│ }
+      74│ 
+      75│ let authDelegate: AuthDelegate | null = null;
+      76│ 
+      77│ /** Registra el proveedor de auth — lo llama auth.store.ts en module scope. */
+      78│ export function setAuthDelegate(delegate: AuthDelegate): void {
+      79│   authDelegate = delegate;
+      80│ }
+      81│ 
+      82│ /** Acceso fail-closed: nunca se procede sin auth registrada. */
+      83│ function auth(): AuthDelegate {
+      84│   if (!authDelegate) {
+      85│     throw new APIError("Auth delegate no registrado — auth.store debe inicializarse antes de usar api", 401);
+      86│   }
+      87│   return authDelegate;
+      88│ }
+      89│ 
+      90│ // ═══ Shared — lib ═══
+      91│ import { resolveToolName } from "./toolNameAdapter";
+      92│ // Use relative import to avoid alias resolution issues in some environments
+      93│ import { routeMCPCall, migrationTracker } from "./mcp";
+      94│ 
+      95│ // ═══════════════════════════════════════════════════════════
+      96│ // §1 TYPES
+      97│ // ═══════════════════════════════════════════════════════════
+      98│ 
+      99│ /**
+     100│  * Default MCP response shape. Consumers should define their own
+     101│  * typed responses and pass them as generic T to callMCPTool.
+     102│  *
+     103│  * @example
+     104│  * const result = await callMCPTool<EventsResponse>("events", "list", params);
+     105│  */
+     106│ export interface MCPResponse {
+     107│   readonly status: "success" | "error" | "pending_approval";
+     108│   readonly message: string;
+     109│   readonly [key: string]: unknown;
+     110│ }
+     111│ 
+     112│ /**
+     113│  * Structured API error with HTTP status code and optional response body.
+     114│  * Exported so consumers can use instanceof checks in error handlers.
+     115│  *
+     116│  * @example
+     117│  * catch (error) {
+     118│  *   if (error instanceof APIError && error.status === 401) {
+     119│  *     // redirect to login
+     120│  *   }
+     121│  * }
+     122│  */
+     123│ export class APIError extends Error {
+     124│   public readonly status: number;
+     125│   public readonly data?: unknown;
+     126│ 
+     127│   constructor(message: string, status: number, data?: unknown) {
+     128│     super(message);
+     129│     this.name = "APIError";
+     130│     this.status = status;
+     131│     this.data = data;
+     132│   }
+     133│ }
+     134│ 
+
+══ E. Misterio hitl — aprobaciones en backend ══
+  ── tools de aprobación (/pending|approve|reject|approval/i) ──
+    executive_dashboard_agent.py: get_pending_approvals(AUTO) · approve_request(AUTO) · reject_request(AUTO)
+  ── literal "hitl" como agente/ruta en backend/src ──
+    backend/src/club_mcp/ai/prompts.py:590│ - Las acciones con approval_level "hitl" deben tener confirmMessage en params
+    backend/src/club_mcp/hitl/approval_types.py:18│ HITL = "hitl"
+  ── capa HTTP en backend/src (FastAPI/APIRouter) ──
+    ✓ backend/src/club_mcp/api/app.py
+    ✓ backend/src/club_mcp/api/routes/agents.py
+        27│ @router.post("/{agent_name}/{tool_name}")
+    ✓ backend/src/club_mcp/api/routes/auth.py
+        24│ @router.post("/login")
+        61│ @router.post("/refresh")
+        85│ @router.get("/me")
+    ✓ backend/src/club_mcp/api/routes/chat.py
+        21│ @router.post("/")
+    ✓ backend/src/club_mcp/api/routes/documents.py
+        87│ @router.post("/upload")
+       276│ @router.get("/supported")
+    ✓ backend/src/club_mcp/api/routes/health.py
+        10│ @router.get("/health")
+
+══ F. Ledger — reconciliación con registro corregido ══
+    MUERTO · communication.get_communication_history → ["get_communication_analytics", "get_notification_history"] · en backend: get_communication_analytics @ communication_agent.py, get_notification_history @ communication_agent.py
+    vivo  · engagement.get_survey_results → ["analyze_event_satisfaction", "generate_satisfaction_report"] · en backend: analyze_event_satisfaction @ satisfaction_agent.py, generate_satisfaction_report @ satisfaction_agent.py
+    vivo  · engagement.get_active_survey → ["get_survey_for_event"] · en backend: get_survey_for_event @ satisfaction_agent.py
+    MUERTO · facilities.list_reservations → ["get_facility_reservations"] · en backend: get_facility_reservations @ facility_management_agent.py
+    vivo  · facilities.get_facility → []
+    MUERTO · facilities.get_utilization → ["get_amenity_utilization"] · en backend: get_amenity_utilization @ facility_management_agent.py
+    vivo  · facilities.get_reservations → ["get_facility_reservations"] · en backend: get_facility_reservations @ facility_management_agent.py
+    MUERTO · facilities.list_available_facilities → ["manage_facilities"] · en backend: manage_facilities @ facility_management_agent.py
+    vivo  · finance.get_family_account → ["finance_account_status"]
+    vivo  · finance.get_transactions → []
+    vivo  · finance.get_invoices → ["finance_invoice_create"]
+    vivo  · guests.get_today_guests → []
+    vivo  · guests.get_today_summary → []
+    MUERTO · families.search_families → ["family_search"] · en backend: family_search @ family_profile.py
+    vivo  · families.get_family → ["family_get_profile"] · en backend: family_get_profile @ family_profile.py
+    MUERTO · families.list_families → ["family_search"] · en backend: family_search @ family_profile.py
+    vivo  · reports.get_board_report → ["generate_quarterly_board_report", "send_board_package"] · en backend: generate_quarterly_board_report @ executive_dashboard_agent.py, send_board_package @ communication_agent.py
+    vivo  · reports.get_risk_matrix → ["get_member_risk_assessment"] · en backend: get_member_risk_assessment @ member_360_agent.py
+    vivo  · finance.narrative_generate → ["finance_narrative_generate", "generate_insight_narrative"]
+    vivo  · finance.scenario_simulate → ["finance_scenario_simulate", "simulate_scenario"]
+    vivo  · finance.stress_test → ["finance_stress_test"]
+    vivo  · finance.decision_simulate → ["finance_decision_simulate"]
+
+══ fin h2 — con esto se arma el plan de batches C3h ══
+     135│ // ═══════════════════════════════════════════════════════════
+     136│ // §2 CONSTANTS
+     137│ // ═══════════════════════════════════════════════════════════
+     138│ 
+     139│ /** Base URL for all API calls. Same-origin in production. */
+     140│ const API_BASE = "/api" as const;
+     141│ 
+     142│ /**
+     143│  * Token used in development to signal mock mode.
+     144│  * Combined with import.meta.env.DEV guard to ensure
+     145│  * this NEVER activates in production builds.
+     146│  */
+     147│ const DEV_MOCK_TOKEN = "dev-token-no-real" as const;
+     148│ 
+     149│ /** Refresh token when less than this many ms remain until expiry. */
+     150│ const AUTH_TOKEN_EXPIRY_MARGIN_MS = 60_000;
+     151│ 
+     152│ /**
+     153│  * Auth/health endpoints must fail FAST — a dead backend cannot be
+     154│  * allowed to hang the login screen (G8-07).
+     155│  */
+     156│ const AUTH_TIMEOUT_MS = 10_000;
+     157│ const HEALTH_TIMEOUT_MS = 5_000;
+     158│ 
+     159│ // ═══════════════════════════════════════════════════════════
+     160│ // §3 AUTH UTILITIES
+     161│ // ═══════════════════════════════════════════════════════════
+     162│ 
+     163│ /**
+     164│  * Shared Promise for deduplicating concurrent token refreshes.
+     165│  * When multiple API calls detect an expiring token simultaneously,
+     166│  * only ONE refresh request is made. Others await the same Promise.
+     167│  */
+     168│ let pendingRefresh: Promise<string> | null = null;
+     169│ 
+     170│ /**
+     171│  * Decode JWT payload without signature verification.
+     172│  * Handles base64url encoding per RFC 4648 §5, restoring the padding
+     173│  * omitted by JWT encoders — atob() rejects unpadded input on some
+     174│  * engines when length % 4 === 2|3 (G8-06).
+     175│  *
+     176│  * NOTE: This does NOT verify the token signature.
+     177│  * Signature verification is the backend's responsibility.
+     178│  *
+     179│  * @returns Decoded payload object, or null if token is malformed
+     180│  */
+     181│ function decodeTokenPayload(token: string): Record<string, unknown> | null {
+     182│   try {
+     183│     const parts = token.split(".");
+     184│     if (parts.length !== 3 || !parts[1]) return null;
+     185│ 
+     186│     // base64url → base64 (RFC 4648 §5) + padding restaurado
+     187│     const base64 = parts[1]
+     188│       .replace(/-/g, "+")
+     189│       .replace(/_/g, "/")
+     190│       .padEnd(parts[1].length + ((4 - (parts[1].length % 4)) % 4), "=");
+     191│     const json = atob(base64);
+     192│     const parsed: unknown = JSON.parse(json);
+     193│ 
+     194│     if (typeof parsed !== "object" || parsed === null) return null;
+     195│     return parsed as Record<string, unknown>;
+     196│   } catch {
+     197│     return null;
+     198│   }
+     199│ }
+     200│ 
+     201│ /**
+     202│  * Execute a token refresh. On failure, logs out and throws.
+     203│  * This function is called by getAuthToken — never directly.
+     204│  */
+     205│ async function refreshSession(): Promise<string> {
+     206│   try {
+     207│     await auth().refreshAccessToken();
+     208│     const newToken = auth().getAccessToken();
+     209│     if (!newToken) throw new Error("No token returned after refresh");
+     210│     return newToken;
+     211│   } catch {
+     212│     auth().logout();
+     213│     throw new APIError("Error al refrescar sesión", 401);
+     214│   }
+     215│ }
+     216│ 
+     217│ /**
+     218│  * Get a valid authentication token, refreshing if near expiry.
+     219│  * Deduplicates concurrent refresh attempts via the shared pendingRefresh Promise.
+     220│  *
+     221│  * @returns Valid access token string
+     222│  * @throws APIError(401) if not authenticated, token malformed, or refresh fails
+     223│  */
+     224│ async function getAuthToken(): Promise<string> {
+     225│   const accessToken = auth().getAccessToken();
+     226│ 
+     227│   if (!accessToken) {
+     228│     auth().logout();
+     229│     throw new APIError("No autenticado", 401);
+     230│   }
+    ⋮ (resto — sólo líneas con agent/route/mock/call):
+     283│  * Injected into routeMCPCall for testability and separation of concerns.
+     291│  * Deliberately NO timeout: MCP tools backed by AI agents legitimately
+     306│     `${API_BASE}/agents/${server}/${resolvedTool}`,
+     353│  * Whether the app is running in dev mock mode.
+     356│  * When true, the MCP Router skips backend and uses mock registry.
+     357│  * When false (or in prod), the MCP Router tries backend first.
+     359│ function isDevMockMode(): boolean {
+     361│   return authDelegate?.getAccessToken() === DEV_MOCK_TOKEN;
+     402│  * Routing (via routeMCPCall):
+     403│  *   1. Backend — if available and not in dev mock mode
+     404│  *   2. Mock registry — if backend failed and fallback is enabled
+     408│  * status) is captured per-invocation and re-thrown when the router
+     409│  * reports an error — the router's error channel is stringly-typed and
+     414│  * @param agent — MCP server/agent name (e.g., "events", "financial")
+     420│ export async function callMCPTool<T = MCPResponse>(
+     421│   agent: string,
+     425│   // G8-05: per-invocation capture — concurrency-safe (each callMCPTool
+     429│   const result = await routeMCPCall<T>(agent, tool, params, {
+     430│     preferBackend: !isDevMockMode(),
+     431│     fallbackToMock: isDevMockMode(),
+     445│   // Router returned an error — propagate as APIError
+     452│       result.error ?? `Tool ${agent}.${tool} failed`,
+     457│   // source is "backend" or "mock" — data is valid
+     463│  * Shows which MCP tools are served by backend vs mock registry.
+     472│  * Health check — direct REST call (not MCP routed).
+     478│   readonly agents: number;
+     505│     typeof body.agents !== "number" ||
+     511│   return { status: body.status, agents: body.agents, tools: body.tools };
+     515│  * Login request — direct REST call (not MCP routed).
+  ── superficie de mocks (imports de mocks) ──
+  · 88 archivos importan mocks · primeros 12: frontend/src/features/age-group/components/AgeGroupDistributionPanel.tsx, frontend/src/features/age-group/components/AgeGroupHealthScore.tsx, frontend/src/features/age-group/components/AgeGroupIntelligencePanel.tsx, frontend/src/features/age-group/components/AgeGroupProgramsPanel.tsx, frontend/src/features/age-group/components/AgeGroupTrendsPanel.tsx, frontend/src/features/age-group/hooks/useAgeGroupAdvisor.ts, frontend/src/features/age-group/hooks/useAgeGroupData.ts, frontend/src/features/age-group/types.ts, frontend/src/features/communications/components/CampaignGenerator.tsx, frontend/src/features/communications/components/PersonalizedCommunication.tsx, frontend/src/features/communications/components/SentimentMonitor.tsx, frontend/src/features/communications/hooks/useCommunicationData.ts
+
+══ D. Reclasificación de callsites (registro corregido) ══
+  · 295 callsites (h1: 296 — incluye ~1 comentario que ahora se filtra)
+  · mapeo agent-key → agente backend:
+      advisor_intelligence     → ⚠ SIN AGENTE (candidato cross-agent)
+      age_group                → ⚠ SIN AGENTE (candidato cross-agent)
+      communication            → communication_agent.py (14 tools, conocido)
+      compliance               → ⚠ SIN AGENTE (candidato cross-agent)
+      document_intelligence    → document_intelligence_agent.py (8 tools, conocido)
+      engagement               → member_engagement_agent.py (6 tools, conocido)
+      events                   → ⚠ SIN AGENTE (candidato cross-agent)
+      executive_dashboard      → executive_dashboard_agent.py (11 tools, conocido)
+      facilities               → facility_management_agent.py (13 tools, conocido)
+      facility_management      → facility_management_agent.py (13 tools, conocido)
+      families                 → family_profile.py (16 tools, conocido)
+      family_profile           → family_profile.py (16 tools, conocido)
+      finance                  → ⚠ SIN AGENTE (candidato cross-agent)
+      guest_management         → guest_management_agent.py (10 tools, conocido)
+      guests                   → guest_management_agent.py (10 tools, conocido)
+      hitl                     → ⚠ SIN AGENTE (candidato cross-agent)
+      member_engagement        → member_engagement_agent.py (6 tools, conocido)
+      ml_intelligence          → ml_intelligence.py (10 tools, conocido)
+      proactive_recommendation → proactive_recommendation_agent.py (8 tools, conocido)
+      reports                  → ⚠ SIN AGENTE (candidato cross-agent)
+      satisfaction             → satisfaction_agent.py (10 tools, conocido)
+      sports_recreation        → sports_recreation_agent.py (11 tools, conocido)
+      wellness                 → ⚠ SIN AGENTE (candidato cross-agent)
+
+  ▸ REAL 174 · MIGRABLE 2 · MIGRABLE-OTRO-AGENTE 12 · DEUDA-BACKEND 107
+    (h1 decía: REAL 174 · MIGRABLE 6 · DEUDA 116 — la diferencia es el parser)
+    REAL por agent-key: advisor_intelligence=0 · age_group=0 · communication=35 · compliance=0 · document_intelligence=4 · engagement=0 · events=0 · executive_dashboard=12 · facilities=0 · facility_management=7 · families=0 · family_profile=16 · finance=0 · guest_management=24 · guests=1 · hitl=0 · member_engagement=3 · ml_intelligence=20 · proactive_recommendation=36 · reports=0 · satisfaction=12 · sports_recreation=4 · wellness=0
+
+  ── MIGRABLE (misma agent-key · tool equivalente en el agente) ──
+    ✎ families.get_family → family_get_profile · frontend/src/features/mi-club/hooks/useMiClubLanding.ts:435 (Query)
+          const familyQ = useMCPQuery<FamilyDetailResponse>(
+            "families",
+            "get_family",
+            { familyId: user?.familyId || "" },
+            { enabled: !!user?.familyId },
+          );
+        
+    ✎ facilities.get_reservations → get_facility_reservations · frontend/src/features/mi-club/hooks/useMyReservations.ts:201 (Query)
+          } = useMCPQuery<ReservationListResponse>(
+            "facilities",
+            "get_reservations",
+            { family_id: user?.familyId || "" },
+            { enabled: !!user?.familyId },
+          );
+        
+
+  ── MIGRABLE-OTRO-AGENTE (la tool vive en otro agente → cambiar agent-key) ──
+    ✎ hitl.get_pending_approvals · get_pending_approvals @ executive_dashboard_agent.py · frontend/src/features/approvals/hooks/useApprovalQueue.ts:126 (Query)
+          } = useMCPQuery<ApprovalListResponse>(
+            "hitl",
+            "get_pending_approvals",
+            {},
+            { refetchInterval: 30_000 },
+          );
+        
+    ✎ hitl.approve_request · approve_request @ executive_dashboard_agent.py · frontend/src/features/approvals/hooks/useApprovalQueue.ts:136 (Mutation)
+          const approveMut = useMCPMutation<
+            unknown,
+            { request_id: string; approved_by: string; note: string }
+          >("hitl", "approve_request", {
+            onSuccess: () => {
+              showToast({
+                type: "success",
+    ✎ hitl.reject_request · reject_request @ executive_dashboard_agent.py · frontend/src/features/approvals/hooks/useApprovalQueue.ts:157 (Mutation)
+          const rejectMut = useMCPMutation<
+            unknown,
+            { request_id: string; rejected_by: string; reason: string }
+          >("hitl", "reject_request", {
+            onSuccess: () => {
+              showToast({ type: "info", message: "Solicitud rechazada" });
+              setProcessingId(null);
+    ✎ hitl.get_pending_approvals · get_pending_approvals @ executive_dashboard_agent.py · frontend/src/features/dashboard/components/ExecutiveIntelligenceStrip.tsx:296 (Query)
+          const approvalsQ = useMCPQuery<ApprovalListResponse>(
+            "hitl", "get_pending_approvals", {},
+            { staleTime: 60_000 },
+          );
+          const pendingCount = useMemo(() => {
+            if (!approvalsQ.data?.requests) return 0;
+            return approvalsQ.data.requests.filter((r) => r.status === "pending").length;
+    ✎ hitl.approve_request · approve_request @ executive_dashboard_agent.py · frontend/src/features/dashboard/ExecutiveDashboard.tsx:323 (Mutation)
+          const approveMut = useMCPMutation("hitl", "approve_request", {
+            onSuccess: () => {
+              showToast({ type: "success", message: "Solicitudes aprobadas" });
+              globalData.summaryQuery.refetch();
+            },
+            onError: (err: Error) => showToast({ type: "error", message: err.message }),
+          });
+    ✎ hitl.get_pending_approvals · get_pending_approvals @ executive_dashboard_agent.py · frontend/src/features/dashboard/hooks/useGlobalData.ts:72 (Query)
+          const approvalsQuery = useMCPQuery<PendingApprovalsMCPResponse>(
+            "hitl", "get_pending_approvals", {},
+            { staleTime: 30_000, enabled },
+          );
+        
+          // ── 2. Extract ──────────────────────────────────────────
+        
+    ✎ engagement.get_survey_results → analyze_event_satisfaction|generate_satisfaction_report · analyze_event_satisfaction @ satisfaction_agent.py · frontend/src/features/engagement/SatisfactionReport.tsx:331 (Query)
+          const resultsQ = useMCPQuery<SurveyResultsResponse>(
+            "engagement",
+            "get_survey_results",
+            propId ? { survey_id: propId } : {},
+            { staleTime: 120_000 },
+          );
+        
+    ✎ engagement.get_active_survey → get_survey_for_event · get_survey_for_event @ satisfaction_agent.py · frontend/src/features/engagement/SatisfactionSurvey.tsx:271 (Query)
+          const surveyQ = useMCPQuery<SurveyTemplate>(
+            "engagement",
+            "get_active_survey",
+            surveyId ? { survey_id: surveyId } : {},
+            { staleTime: 300_000 },
+          );
+        
+    ✎ reports.get_board_report → generate_quarterly_board_report|send_board_package · generate_quarterly_board_report @ executive_dashboard_agent.py · frontend/src/features/reports/hooks/useBoardReport.ts:104 (Query)
+          } = useMCPQuery<BoardReport>(
+            "reports",
+            "get_board_report",
+            { period: selectedPeriod },
+            { staleTime: 5 * 60_000, placeholderData: keepPreviousData },
+          );
+        
+    ✎ reports.get_risk_matrix → get_member_risk_assessment · get_member_risk_assessment @ member_360_agent.py · frontend/src/features/reports/hooks/useBoardReport.ts:114 (Query)
+          } = useMCPQuery<RiskSummary>(
+            "reports",
+            "get_risk_matrix",
+            { period: selectedPeriod },
+            { staleTime: 5 * 60_000 },
+          );
+        
+    ✎ hitl.get_pending_approvals · get_pending_approvals @ executive_dashboard_agent.py · frontend/src/shared/components/layout/NotificationCenter.tsx:168 (Query)
+          const approvalsQ = useMCPQuery<ApprovalListResponse>(
+            "hitl",
+            "get_pending_approvals",
+            {},
+            { staleTime: 60_000, refetchInterval: 60_000 },
+          );
+        
+    ✎ hitl.get_pending_approvals · get_pending_approvals @ executive_dashboard_agent.py · frontend/src/shared/hooks/useGlobalStatus.ts:44 (Query)
+          const approvalsQ = useMCPQuery<ApprovalListResponse>(
+            "hitl",
+            "get_pending_approvals",
+            {},
+            {
+              enabled: showApprovals,
+              staleTime: 60_000,
+
+  ── DEUDA-BACKEND (sin tool en ningún agente) ──
+    ✗ age_group.get_activity_health_score · frontend/src/features/age-group/hooks/useAgeGroupData.ts:116 (Query)
+    ✗ age_group.get_age_group_analytics_enhanced · frontend/src/features/age-group/hooks/useAgeGroupData.ts:123 (Query)
+    ✗ age_group.get_age_recommendation_enhanced · frontend/src/features/age-group/hooks/useAgeGroupData.ts:130 (Query)
+    ✗ age_group.generate_age_group_engagement_proposals · frontend/src/features/age-group/hooks/useAgeGroupData.ts:137 (Query)
+    ✗ communication.communications_campaign_generate · frontend/src/features/communications/components/CampaignGenerator.tsx:221 (Query)
+    ✗ communication.communication_insights · frontend/src/features/communications/components/CommunicationAnalytics.tsx:135 (Query)
+    ✗ communication.communication_insights · frontend/src/features/communications/components/CommunicationOverview.tsx:691 (Query)
+    ✗ communication.communications_sentiment_analyze · frontend/src/features/communications/components/SentimentMonitor.tsx:574 (Query)
+    ✗ communication.communications_generate_personalized · frontend/src/features/communications/hooks/usePersonalizedComposer.ts:225 (Query)
+    ✗ finance.generate_ai_analysis · frontend/src/features/dashboard/components/ExecutiveIntelligenceStrip.tsx:288 (Query)
+    ✗ events.event_get_calendar · frontend/src/features/dashboard/components/ExecutiveIntelligenceStrip.tsx:307 (Query)
+    ✗ finance.finance_board_briefing · frontend/src/features/dashboard/components/ExecutiveIntelligenceStrip.tsx:318 (Query)
+    ✗ advisor_intelligence.generate_board_brief · frontend/src/features/dashboard/ExecutiveDashboard.tsx:331 (Mutation)
+    ✗ finance.generate_ai_analysis · frontend/src/features/dashboard/hooks/useGlobalData.ts:61 (Query)
+    ✗ events.event_get_calendar · frontend/src/features/dashboard/hooks/useGlobalData.ts:67 (Query)
+    ✗ wellness.wellness_report · frontend/src/features/engagement/hooks/useEngagementData.ts:187 (Query)
+    ✗ engagement.create_reactivation_campaign · frontend/src/features/engagement/ReactivationCampaigns.tsx:115 (Mutation)
+    ✗ engagement.pause_campaign · frontend/src/features/engagement/ReactivationCampaigns.tsx:133 (Mutation)
+    ✗ engagement.resume_campaign · frontend/src/features/engagement/ReactivationCampaigns.tsx:144 (Mutation)
+    ✗ engagement.cancel_campaign · frontend/src/features/engagement/ReactivationCampaigns.tsx:155 (Mutation)
+    ✗ engagement.submit_survey_response · frontend/src/features/engagement/SatisfactionSurvey.tsx:278 (Mutation)
+    ✗ events.event_predict_attendance · frontend/src/features/events/components/EventIntelligencePanel.tsx:962 (Query)
+    ✗ events.event_recommend_optimization · frontend/src/features/events/components/EventIntelligencePanel.tsx:967 (Query)
+    ✗ events.event_conflict_detection · frontend/src/features/events/components/EventIntelligencePanel.tsx:972 (Query)
+    ✗ events.event_engagement_boost · frontend/src/features/events/components/EventIntelligencePanel.tsx:977 (Query)
+    ✗ events.event_get_calendar · frontend/src/features/events/hooks/useEventCalendar.ts:324 (Query)
+    ✗ events.event_create · frontend/src/features/events/hooks/useEventCalendar.ts:330 (Mutation)
+    ✗ events.event_manage_capacity · frontend/src/features/events/hooks/useEventCalendar.ts:360 (Mutation)
+    ✗ events.event_clone_template · frontend/src/features/events/hooks/useEventCalendar.ts:376 (Mutation)
+    ✗ events.event_get_calendar · frontend/src/features/events/hooks/useEventData.ts:107 (Query)
+    ✗ events.get_event · frontend/src/features/events/hooks/useEventDetail.ts:181 (Query)
+    ✗ events.update_event_status · frontend/src/features/events/hooks/useEventDetail.ts:190 (Mutation)
+    ✗ events.event_clone_template · frontend/src/features/events/hooks/useEventDetail.ts:217 (Mutation)
+    ✗ events.event_generate_report · frontend/src/features/events/hooks/useEventDetail.ts:238 (Mutation)
+    ✗ events.get_event · frontend/src/features/events/hooks/useEventForm.ts:352 (Query)
+    ✗ events.event_create · frontend/src/features/events/hooks/useEventForm.ts:390 (Mutation)
+    ✗ events.update_event · frontend/src/features/events/hooks/useEventForm.ts:426 (Mutation)
+    ✗ facilities.get_facility (ledger: []) · frontend/src/features/facilities/FacilityDetail.tsx:735 (Query)
+    ✗ finance.finance_invoice_create · frontend/src/features/finance/components/BillingCenter.tsx:232 (Mutation)
+    ✗ finance.finance_payment_process · frontend/src/features/finance/components/BillingCenter.tsx:248 (Mutation)
+    ✗ finance.finance_account_status · frontend/src/features/finance/components/BillingCenter.tsx:266 (Query)
+    ✗ finance.finance_budget_check · frontend/src/features/finance/components/BudgetManager.tsx:248 (Query)
+    ✗ finance.finance_category_update · frontend/src/features/finance/components/BudgetManager.tsx:259 (Mutation)
+    ✗ finance.finance_decision_simulate · frontend/src/features/finance/components/DecisionCockpit.tsx:274 (Query)
+    ✗ finance.finance_expense_create · frontend/src/features/finance/components/ExpenseManager.tsx:84 (Mutation)
+    ✗ finance.finance_budget_check · frontend/src/features/finance/components/ExpenseManager.tsx:101 (Query)
+    ✗ finance.generate_ai_analysis · frontend/src/features/finance/components/FinanceAnalytics.tsx:886 (Query)
+    ✗ finance.generate_ai_analysis · frontend/src/features/finance/components/FinanceIntelligencePanel.tsx:992 (Query)
+    ✗ finance.finance_board_briefing · frontend/src/features/finance/components/FinanceIntelligencePanel.tsx:999 (Query)
+    ✗ finance.finance_scenario_simulate · frontend/src/features/finance/components/FinanceIntelligencePanel.tsx:1006 (Query)
+    ✗ finance.get_financial_summary · frontend/src/features/finance/components/FinanceOverview.tsx:402 (Query)
+    ✗ finance.generate_ai_analysis · frontend/src/features/finance/components/FinanceOverview.tsx:409 (Query)
+    ✗ finance.finance_scenario_simulate · frontend/src/features/finance/components/FinancialIntelligence.tsx:461 (Query)
+    ✗ finance.finance_opportunities_scan · frontend/src/features/finance/components/FinancialIntelligence.tsx:857 (Query)
+    ✗ finance.finance_board_briefing · frontend/src/features/finance/components/FinancialIntelligence.tsx:1180 (Query)
+    ✗ finance.finance_member_profitability · frontend/src/features/finance/components/MemberProfitabilityMatrix.tsx:365 (Query)
+    ✗ finance.finance_narrative_generate · frontend/src/features/finance/components/NarrativeEngine.tsx:569 (Query)
+    ✗ finance.finance_report_generate · frontend/src/features/finance/components/ReportGenerator.tsx:453 (Mutation)
+    ✗ finance.finance_seasonal_calendar · frontend/src/features/finance/components/SeasonalCalendar.tsx:460 (Query)
+    ✗ finance.finance_stress_test · frontend/src/features/finance/components/StressTestPanel.tsx:515 (Query)
+    ✗ finance.generate_ai_analysis · frontend/src/features/finance/FinancialDashboard.tsx:160 (Query)
+    ✗ finance.get_financial_summary · frontend/src/features/finance/FinancialDashboard.tsx:170 (Query)
+    ✗ finance.finance_category_update · frontend/src/features/finance/FinancialDashboard.tsx:214 (Mutation)
+    ✗ finance.finance_report_generate · frontend/src/features/finance/FinancialDashboard.tsx:227 (Mutation)
+    ✗ finance.get_family_account (ledger: [finance_account_status]) · frontend/src/features/finance/hooks/useFamilyAccount.ts:31 (Query)
+    ✗ finance.get_transactions (ledger: []) · frontend/src/features/finance/hooks/useFamilyAccount.ts:38 (Query)
+    ✗ finance.get_invoices (ledger: [finance_invoice_create]) · frontend/src/features/finance/hooks/useFamilyAccount.ts:50 (Query)
+    ✗ finance.get_financial_summary · frontend/src/features/finance/hooks/useFinanceData.ts:36 (Query)
+    ✗ finance.generate_ai_analysis · frontend/src/features/finance/hooks/useFinanceData.ts:41 (Query)
+    ✗ guest_management.guest_management_insights · frontend/src/features/guests/components/GuestAnalytics.tsx:280 (Query)
+    ✗ guests.get_today_guests (ledger: []) · frontend/src/features/guests/GuestList.tsx:162 (Query)
+    ✗ guests.get_today_summary (ledger: []) · frontend/src/features/guests/GuestList.tsx:169 (Query)
+    ✗ guests.checkout_guest · frontend/src/features/guests/GuestList.tsx:184 (Mutation)
+    ✗ guests.register_guest_checkin · frontend/src/features/guests/GuestRegistration.tsx:142 (Mutation)
+    ✗ events.list_events · frontend/src/features/mi-club/hooks/useMiClubLanding.ts:443 (Query)
+    ✗ compliance.compliance_report_generate · frontend/src/features/operations/components/ComplianceCheck.tsx:1269 (Query)
+    ✗ compliance.compliance_alert_list · frontend/src/features/operations/components/ComplianceCheck.tsx:1276 (Query)
+    ✗ compliance.compliance_alert_list · frontend/src/features/operations/components/DailyBriefing.tsx:845 (Query)
+    ✗ events.event_get_calendar · frontend/src/features/operations/components/SmartSchedule.tsx:370 (Query)
+    ✗ events.event_get_calendar · frontend/src/features/operations/components/SmartSchedule.tsx:1570 (Query)
+    ✗ wellness.wellness_insights · frontend/src/features/wellness/components/WellnessAIAdvisor.tsx:232 (Query)
+    ✗ wellness.wellness_predict · frontend/src/features/wellness/components/WellnessAIAdvisor.tsx:244 (Query)
+    ✗ wellness.wellness_correlate · frontend/src/features/wellness/components/WellnessBusinessInsights.tsx:314 (Query)
+    ✗ wellness.wellness_profile_get · frontend/src/features/wellness/components/WellnessFamilyMap.tsx:182 (Query)
+    ✗ wellness.wellness_report · frontend/src/features/wellness/components/WellnessFamilyMap.tsx:196 (Query)
+    ✗ wellness.wellness_recommendations · frontend/src/features/wellness/components/WellnessGoals.tsx:173 (Query)
+    ✗ wellness.wellness_anomalies · frontend/src/features/wellness/components/WellnessRiskRadar.tsx:247 (Query)
+    ✗ wellness.wellness_profile_get · frontend/src/features/wellness/hooks/useWellnessQueries.ts:56 (Query)
+    ✗ wellness.wellness_report · frontend/src/features/wellness/hooks/useWellnessQueries.ts:63 (Query)
+    ✗ wellness.wellness_report · frontend/src/features/wellness/hooks/useWellnessQueries.ts:70 (Query)
+    ✗ wellness.wellness_recommendations · frontend/src/features/wellness/hooks/useWellnessQueries.ts:81 (Query)
+    ✗ wellness.wellness_predict · frontend/src/features/wellness/hooks/useWellnessQueries.ts:90 (Query)
+    ✗ wellness.wellness_anomalies · frontend/src/features/wellness/hooks/useWellnessQueries.ts:97 (Query)
+    ✗ wellness.wellness_correlate · frontend/src/features/wellness/hooks/useWellnessQueries.ts:104 (Query)
+    ✗ wellness.wellness_insights · frontend/src/features/wellness/hooks/useWellnessQueries.ts:111 (Query)
+    ✗ executive_dashboard.generate_ai_analysis · frontend/src/shared/components/ai/AIDecisionPanel.tsx:679 (Mutation)
+    ✗ advisor_intelligence.simulate_scenario · frontend/src/shared/components/ai/AISimulationPanel.tsx:548 (Query)
+    ✗ finance.narrative_generate (ledger: [finance_narrative_generate, generate_insight_narrative]) · frontend/src/shared/components/export/hooks/useDecisionDocument.ts:86 (Query)
+    ✗ finance.scenario_simulate (ledger: [finance_scenario_simulate, simulate_scenario]) · frontend/src/shared/components/export/hooks/useDecisionDocument.ts:93 (Query)
+    ✗ finance.stress_test (ledger: [finance_stress_test]) · frontend/src/shared/components/export/hooks/useDecisionDocument.ts:100 (Query)
+    ✗ finance.decision_simulate (ledger: [finance_decision_simulate]) · frontend/src/shared/components/export/hooks/useDecisionDocument.ts:107 (Query)
+    ✗ events.event_get_calendar · frontend/src/shared/components/layout/NotificationCenter.tsx:177 (Query)
+    ✗ events.event_get_calendar · frontend/src/shared/components/layout/WelcomeModal.tsx:202 (Query)
+    ✗ advisor_intelligence.simulate_scenario · frontend/src/shared/components/ml/hooks/useHypotheticalSimulator.ts:17 (Query)
+    ✗ advisor_intelligence.generate_insight_narrative · frontend/src/shared/hooks/useAdvisorNarrative.ts:35 (Query)
+    ✗ events.event_get_calendar · frontend/src/shared/hooks/useGlobalStatus.ts:57 (Query)
+    ✗ age_group.get_activity_health_score · frontend/src/shared/hooks/usePulseVitals.ts:164 (Query)

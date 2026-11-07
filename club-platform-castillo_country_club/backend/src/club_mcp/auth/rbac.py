@@ -1,8 +1,29 @@
-"""Role-Based Access Control: permissions, role matrix, tool mapping."""
+"""Role-Based Access Control: permissions, role matrix, tool policy.
 
+P2-C3h B0 — policy derived from the real agent registry:
+
+* The OLD TOOL_PERMISSION_MAP (~50 entries) was ~75% phantom tool names
+  that never existed (family_create, event_list, finance_get_overview...)
+  while ~146 REAL tools had NO gate — any authenticated role could call
+  the financial AI analysis.
+* NEW: permission_for(agent, tool, approval) derives the required
+  permission from a per-agent (read, write) POLICY plus explicit
+  OVERRIDES. Write-ness = approval level in WRITE_LEVELS.
+* Coverage invariant: every registered tool MUST map to a permission —
+  scripts/smoke_b0.py asserts 196/196.
+* Routes re-check on the CANONICAL pair AFTER alias resolution.
+
+Role matrix changes (documented & reviewable):
+* admin: + domains the admin console actually drives, + APPROVE_REQUESTS
+  (previously granted to NO role — approvals were 403 for everyone),
+  + VIEW_ANOMALIES.
+* staff: + VIEW_WELLNESS (class scheduling).
+* socio: + VIEW_WELLNESS, + VIEW_FACILITIES (mi-club reads).
+"""
 from __future__ import annotations
 
 from enum import Enum
+from typing import Optional
 
 
 class Permission(str, Enum):
@@ -76,7 +97,6 @@ class Permission(str, Enum):
 
 # ═══════════════════════════════════════════════════
 # ROLE → PERMISSIONS MATRIX
-# SOCIO: 6 | STAFF: 8 | ADMIN: 15 | JUNTA: 5
 # ═══════════════════════════════════════════════════
 
 ROLE_PERMISSIONS: dict[str, set[Permission]] = {
@@ -87,6 +107,9 @@ ROLE_PERMISSIONS: dict[str, set[Permission]] = {
         Permission.VIEW_SATISFACTION,
         Permission.VIEW_GUESTS,
         Permission.VIEW_RECOMMENDATIONS,
+        # B0: mi-club reads
+        Permission.VIEW_WELLNESS,
+        Permission.VIEW_FACILITIES,
     },
     "staff": {
         Permission.VIEW_FAMILY_PROFILE,
@@ -97,6 +120,8 @@ ROLE_PERMISSIONS: dict[str, set[Permission]] = {
         Permission.VIEW_FACILITIES,
         Permission.VIEW_GUESTS,
         Permission.MANAGE_GUESTS,
+        # B0: scheduling de clases
+        Permission.VIEW_WELLNESS,
     },
     "admin": {
         Permission.VIEW_FAMILY_PROFILE,
@@ -115,6 +140,21 @@ ROLE_PERMISSIONS: dict[str, set[Permission]] = {
         Permission.VIEW_SATISFACTION,
         Permission.MANAGE_SATISFACTION,
         Permission.MANAGE_USERS,
+        # B0: dominios que la consola admin realmente usa
+        Permission.VIEW_COMMUNICATIONS,
+        Permission.MANAGE_COMMUNICATIONS,
+        Permission.VIEW_FACILITIES,
+        Permission.MANAGE_FACILITIES,
+        Permission.VIEW_ENGAGEMENT,
+        Permission.MANAGE_ENGAGEMENT,
+        Permission.VIEW_GUESTS,
+        Permission.MANAGE_GUESTS,
+        Permission.VIEW_DOCUMENTS,
+        Permission.MANAGE_DOCUMENTS,
+        Permission.VIEW_RECOMMENDATIONS,
+        Permission.VIEW_ANOMALIES,
+        # B0: antes no lo tenía NINGÚN rol — aprobar era 403 universal
+        Permission.APPROVE_REQUESTS,
     },
     "junta": {
         Permission.VIEW_DASHBOARD,
@@ -133,83 +173,60 @@ def check_permission(role: str, permission: Permission) -> bool:
 
 
 # ═══════════════════════════════════════════════════
-# TOOL → MINIMUM PERMISSION MAPPING
+# REGISTRY-DERIVED TOOL POLICY
+# (read, write) por agente — write = semi_auto/hitl/always_human
 # ═══════════════════════════════════════════════════
 
-TOOL_PERMISSION_MAP: dict[str, Permission] = {
-    # ── Family Profile ──
-    "family_get_profile": Permission.VIEW_FAMILY_PROFILE,
-    "family_create": Permission.EDIT_FAMILY_PROFILE,
-    "family_update": Permission.EDIT_FAMILY_PROFILE,
-    "family_search": Permission.VIEW_FAMILY_PROFILE,
-    "family_social_compatibility": Permission.VIEW_FAMILY_PROFILE,
+WRITE_LEVELS = {"semi_auto", "hitl", "always_human"}
 
-    # ── Event Orchestrator ──
-    "event_create": Permission.CREATE_EVENTS,
-    "event_list": Permission.VIEW_EVENTS,
-    "event_get_details": Permission.VIEW_EVENTS,
-    "event_update": Permission.MANAGE_EVENTS,
-    "event_cancel": Permission.MANAGE_EVENTS,
-
-    # ── Finance ──
-    "finance_get_overview": Permission.VIEW_FINANCIAL,
-    "finance_generate_invoice": Permission.MANAGE_FINANCIAL,
-
-    # ── Wellness ──
-    "wellness_get_profile": Permission.VIEW_WELLNESS,
-    "wellness_create_program": Permission.MANAGE_WELLNESS,
-
-    # ── Compliance ──
-    "compliance_get_status": Permission.VIEW_COMPLIANCE,
-    "compliance_create_policy": Permission.MANAGE_COMPLIANCE,
-
-    # ── Sports ──
-    "sports_get_activities": Permission.VIEW_SPORTS,
-    "sports_create_activity": Permission.MANAGE_SPORTS,
-
-    # ── Cultural ──
-    "cultural_get_events": Permission.VIEW_CULTURAL,
-    "cultural_create_event": Permission.MANAGE_CULTURAL,
-
-    # ── Communication ──
-    "communication_send_message": Permission.MANAGE_COMMUNICATIONS,
-    "communication_get_messages": Permission.VIEW_COMMUNICATIONS,
-    "send_board_package": Permission.GENERATE_BOARD_REPORT,
-
-    # ── Facilities ──
-    "facility_get_status": Permission.VIEW_FACILITIES,
-    "facility_create_maintenance": Permission.MANAGE_FACILITIES,
-
-    # ── Engagement ──
-    "engagement_get_score": Permission.VIEW_ENGAGEMENT,
-    "engagement_create_campaign": Permission.MANAGE_ENGAGEMENT,
-
-    # ── Guests ──
-    "guest_register": Permission.VIEW_GUESTS,
-    "guest_manage": Permission.MANAGE_GUESTS,
-
-    # ── Recommendations ──
-    "recommendation_get": Permission.VIEW_RECOMMENDATIONS,
-
-    # ── Documents ──
-    "document_get": Permission.VIEW_DOCUMENTS,
-    "document_create": Permission.MANAGE_DOCUMENTS,
-
-    # ── Executive Dashboard ──
-    "get_executive_summary": Permission.VIEW_DASHBOARD,
-    "get_financial_overview": Permission.VIEW_FINANCIAL,
-    "get_membership_health": Permission.VIEW_DASHBOARD,
-    "get_operational_pulse": Permission.VIEW_DASHBOARD,
-    "detect_anomalies": Permission.VIEW_ANOMALIES,
-    "export_report": Permission.EXPORT_REPORTS,
-    "generate_quarterly_board_report": Permission.GENERATE_BOARD_REPORT,
-    "get_age_group_balance": Permission.VIEW_DASHBOARD,
-
-    # ── Satisfaction ──
-    "submit_satisfaction_survey": Permission.SUBMIT_SURVEY,
-    "get_survey_for_event": Permission.VIEW_SATISFACTION,
-    "analyze_event_satisfaction": Permission.MANAGE_SATISFACTION,
-    "get_satisfaction_trends": Permission.VIEW_SATISFACTION,
-    "generate_satisfaction_report": Permission.MANAGE_SATISFACTION,
-    "get_satisfaction_questions": Permission.VIEW_SATISFACTION,
+AGENT_POLICY: dict[str, tuple[Permission, Permission]] = {
+    "family_profile": (Permission.VIEW_FAMILY_PROFILE, Permission.EDIT_FAMILY_PROFILE),
+    "event_orchestrator": (Permission.VIEW_EVENTS, Permission.MANAGE_EVENTS),
+    "finance": (Permission.VIEW_FINANCIAL, Permission.MANAGE_FINANCIAL),
+    "wellness": (Permission.VIEW_WELLNESS, Permission.MANAGE_WELLNESS),
+    "compliance": (Permission.VIEW_COMPLIANCE, Permission.MANAGE_COMPLIANCE),
+    "sports_recreation": (Permission.VIEW_SPORTS, Permission.MANAGE_SPORTS),
+    "cultural_social": (Permission.VIEW_CULTURAL, Permission.MANAGE_CULTURAL),
+    "communication": (Permission.VIEW_COMMUNICATIONS, Permission.MANAGE_COMMUNICATIONS),
+    "facility_management": (Permission.VIEW_FACILITIES, Permission.MANAGE_FACILITIES),
+    "member_engagement": (Permission.VIEW_ENGAGEMENT, Permission.MANAGE_ENGAGEMENT),
+    "guest_management": (Permission.VIEW_GUESTS, Permission.MANAGE_GUESTS),
+    "proactive_recommendation": (Permission.VIEW_RECOMMENDATIONS, Permission.MANAGE_ENGAGEMENT),
+    "document_intelligence": (Permission.VIEW_DOCUMENTS, Permission.MANAGE_DOCUMENTS),
+    "executive_dashboard": (Permission.VIEW_DASHBOARD, Permission.EXPORT_REPORTS),
+    "satisfaction": (Permission.VIEW_SATISFACTION, Permission.MANAGE_SATISFACTION),
+    "member_360": (Permission.VIEW_DASHBOARD, Permission.VIEW_DASHBOARD),
+    "ml_intelligence": (Permission.VIEW_DASHBOARD, Permission.VIEW_DASHBOARD),
+    "advisor_intelligence": (Permission.VIEW_DASHBOARD, Permission.VIEW_DASHBOARD),
+    "age_group": (Permission.VIEW_DASHBOARD, Permission.MANAGE_EVENTS),
 }
+
+TOOL_PERMISSION_OVERRIDES: dict[tuple[str, str], Permission] = {
+    ("event_orchestrator", "event_create"): Permission.CREATE_EVENTS,
+    ("executive_dashboard", "export_report"): Permission.EXPORT_REPORTS,
+    ("executive_dashboard", "generate_quarterly_board_report"): Permission.GENERATE_BOARD_REPORT,
+    ("executive_dashboard", "get_pending_approvals"): Permission.APPROVE_REQUESTS,
+    ("executive_dashboard", "approve_request"): Permission.APPROVE_REQUESTS,
+    ("executive_dashboard", "reject_request"): Permission.APPROVE_REQUESTS,
+    ("communication", "send_board_package"): Permission.GENERATE_BOARD_REPORT,
+    ("satisfaction", "submit_satisfaction_survey"): Permission.SUBMIT_SURVEY,
+    ("age_group", "age_group_get_activities"): Permission.VIEW_EVENTS,
+    ("age_group", "age_group_recommend_activities"): Permission.VIEW_RECOMMENDATIONS,
+    ("proactive_recommendation", "optimize_pricing"): Permission.MANAGE_FINANCIAL,
+}
+
+
+def permission_for(agent: str, tool: str, approval: str) -> Optional[Permission]:
+    """Required permission for a canonical (agent, tool) pair.
+
+    Returns None only for unknown agents — smoke_b0 asserts this never
+    happens for registered tools (196/196 coverage).
+    """
+    override = TOOL_PERMISSION_OVERRIDES.get((agent, tool))
+    if override is not None:
+        return override
+    policy = AGENT_POLICY.get(agent)
+    if policy is None:
+        return None
+    read_perm, write_perm = policy
+    return write_perm if str(approval).lower() in WRITE_LEVELS else read_perm

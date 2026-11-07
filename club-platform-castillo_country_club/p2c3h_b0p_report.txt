@@ -1,0 +1,33 @@
+P2-C3h · b0p — parche separadores de ruta (Windows)
+
+── §0 · prueba de plataforma ──
+  · process.platform: win32
+  · path.join("backend","src","club_mcp","auth","rbac.py") → "backend\\src\\club_mcp\\auth\\rbac.py"
+  · demo.endsWith("auth/rbac.py") → false
+  · CONFIRMADO: aquí path.join produce '\' y el guard compara con '/' → nunca matchea.
+    Por eso tu re-run listó rbac.py + routes/agents.py PESI a que la exclusión existe.
+
+── §1 · inventario de comparaciones de ruta con '/' ──
+  · auto-parcheables: 1 (2 sitios)
+      l.1330 (2) · if (p.endsWith("auth/rbac.py") || p.endsWith("api/routes/agents.py")) continue;
+  · solo reporte: 0
+
+── §2 · parche ──
+  · backup creado: scripts\p2c3h_b0.ts.bak_winpatch
+      l.1330 ANTES : if (p.endsWith("auth/rbac.py") || p.endsWith("api/routes/agents.py")) continue;
+      l.1330 AHORA : if (p.replaceAll("\\", "/").endsWith("auth/rbac.py") || p.replaceAll("\\", "/").endsWith("api/routes/agents.py
+  · 2 comparaciones normalizadas en 1 líneas.
+
+── §3 · verificación ──
+  · sitios frágiles restantes fuera de templates: 0 ✓
+  · líneas antes/después: 1516/1516 ✓
+  · l.1330 normalizada: ✓
+
+── §4 · veredicto ──
+  · parche aplicado. Relanzar B0:
+      npx tsx scripts/p2c3h_b0.ts
+  · rollback del parche si algo se ve raro:
+      cp scripts\p2c3h_b0.ts.bak_winpatch scripts\p2c3h_b0.ts
+  · si aborta MÁS ALLÁ de §1: pegar p2c3h_b0p_report.txt completo en el chat
+    (los sitios 'solo reporte' del §1 son los siguientes sospechosos).
+

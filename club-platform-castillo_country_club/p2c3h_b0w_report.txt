@@ -1,0 +1,56 @@
+P2-C3h · b0w — waiver TP-1 + predicción del re-run (read-only)
+
+── §A · tool_permissions.py: ¿está muerto? ──
+  · usa Permission.: sí · importa Permission: NO → NameError latente (nunca pudo importarse sin reventar)
+  · importadores en TODO backend/ (src+tests+scripts): 0
+  · .pyc huérfanos: 0 (nunca compilado → nunca importado)
+
+── §B · guard §1 real de scripts/p2c3h_b0.ts (autoridad: tu disco) ──
+      ⋮
+   925 │ P2-C3h B0 — policy derived from the real agent registry:
+   926 │ 
+   927 │ * The OLD TOOL_PERMISSION_MAP (~50 entries) was ~75% phantom tool names
+   928 │   that never existed (family_create, event_list, finance_get_overview...)
+   929 │   while ~146 REAL tools had NO gate — any authenticated role could call
+      ⋮
+  1319 │ say("── §1 Guardas previas ──");
+  1320 │ {
+  1321 │   // Guard A: TOOL_PERMISSION_MAP sin otros importers
+  1322 │   const offenders: string[] = [];
+  1323 │   const stack = [path.join(BE, "src")];
+  1324 │   while (stack.length) {
+      ⋮
+  1327 │       const p = path.join(dir, e.name);
+  1328 │       if (e.isDirectory()) { if (e.name !== "__pycache__") stack.push(p); continue; }
+  1329 │       if (!e.name.endsWith(".py")) continue;
+  1330 │       if (p.endsWith("auth/rbac.py") || p.endsWith("api/routes/agents.py")) continue;
+  1331 │       if (read(p).includes("TOOL_PERMISSION_MAP")) offenders.push(rel(p));
+  1332 │     }
+  1333 │   }
+  1334 │   if (offenders.length) {
+  1335 │     say(`  ✗ TOOL_PERMISSION_MAP usado en: ${offenders.join(", ")} — abortando (revisar antes)`);
+  1336 │     process.exit(1);
+  1337 │   }
+  1338 │   say("  · TOOL_PERMISSION_MAP sin importers externos ✓");
+  1339 │ }
+  1340 │ say("");
+
+── §C · predicción del re-run (walk TOOL_PERMISSION_MAP sobre backend/src) ──
+  · tokens .py citados por el guard: src/club_mcp/agents/base.py | s (REST bypasses base.py | auth/rbac.py | api/routes/agents.py | src/club_mcp/registry.py | src/club_mcp/bootstrap.py | scripts/smoke_b0.py | src/club_mcp/api/app.py | src/club_mcp/api/routes/agents.py | src/club_mcp/server.py | src/club_mcp/auth/rbac.py | src/club_mcp/agents/family_profile.py | src/club_mcp/hitl/approval_engine.py
+  citado     · backend/src/club_mcp/auth/rbac.py
+  BLOQUEANTE · backend/src/club_mcp/auth/tool_permissions.py
+  citado     · backend/src/club_mcp/api/routes/agents.py
+
+  · tu aborto listó rbac.py + routes/agents.py ADEMÁS del desconocido: el guard no los
+    excluyó del LISTADO; §B muestra si los excluye del ABORTO (expected-set) o no (estricto).
+  · bloqueante actual: tool_permissions.py — el único uso NO citado por el guard.
+  · tras removerlo, todos los usos restantes están citados → §1 debería pasar.
+
+── veredicto ──
+  ✓ WAIVER: código muerto confirmado (0 importadores · NameError latente · sin .pyc).
+    remover (reversible):
+      git rm backend/src/club_mcp/auth/tool_permissions.py
+    rollback: git checkout HEAD -- backend/src/club_mcp/auth/tool_permissions.py
+    luego re-run:
+      npx tsx scripts/p2c3h_b0.ts
+

@@ -35,6 +35,18 @@ class ApprovalEngine:
     def __init__(self) -> None:
         self._requests: dict[UUID, ApprovalRequest] = {}
         self._callbacks: dict[UUID, Callable] = {}
+        # P2-C3h B0.5 — cierra el loop HITL: antes aprobar solo cambiaba
+        # el status y los 38 execute_* de los agentes quedaban huérfanos.
+        self._executors: dict[tuple[str, str], Callable] = {}
+        self._executions: dict[UUID, Any] = {}
+
+    def register_executor(self, agent: str, tool: str, executor: Callable) -> None:
+        """Registrar el ejecutor post-aprobación para (agent, tool)."""
+        self._executors[(agent, tool)] = executor
+
+    def get_execution(self, request_id: UUID) -> Any | None:
+        """Resultado del ejecutor para una solicitud aprobada (si hubo)."""
+        return self._executions.get(request_id)
 
 
 
@@ -96,6 +108,23 @@ class ApprovalEngine:
                 await callback(**request.params)
             except Exception:
                 logger.exception("[HITL] Callback failed for approved request %s", request_id)
+
+        # B0.5 — despachar el ejecutor registrado (si existe) con los
+        # params originales. El fallo se loguea y captura, nunca es fatal:
+        # la aprobación ya está vigente.
+        executor = self._executors.get((request.agent, request.tool))
+        if executor is not None:
+            try:
+                self._executions[request_id] = await executor(**request.params)
+                logger.info("[HITL] Executor ok para %s/%s", request.agent, request.tool)
+            except Exception:
+                logger.exception(
+                    "[HITL] Executor falló para %s/%s", request.agent, request.tool
+                )
+                self._executions[request_id] = {
+                    "status": "error",
+                    "message": "Aprobado, pero la ejecución post-aprobación falló (ver logs).",
+                }
 
         return request
 

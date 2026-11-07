@@ -1,0 +1,89 @@
+P2-C3h · b0d — diagnóstico post-aborto §1 (read-only)
+00417eb P2-C3g: migrar frontend a tools MCP reales (#1 #2 #5 #6 #9 #10 #11 #16, D5, C16)
+
+── 1 · los cambios previos del árbol ──
+?? p2c3h_backlog_report.txt
+?? p2c3h_evidence_report.txt
+?? p2c3h_registry2_report.txt
+?? p2c3h_registry_report.txt
+?? p2c3h_wiring_report.txt
+?? scripts/p2c3h_b0.ts
+?? scripts/p2c3h_b0d.ts
+?? scripts/p2c3h_backlog.ts
+?? scripts/p2c3h_evidence.ts
+?? scripts/p2c3h_registry.ts
+?? scripts/p2c3h_registry2.ts
+?? scripts/p2c3h_wiring.ts
+
+  diff tracked:
+· sin cambios tracked
+
+── 2 · artefactos B0 en disco (¿un run previo aplicó algo?) ──
+  no      · backend/src/club_mcp/registry.py
+  no      · backend/src/club_mcp/bootstrap.py
+  no      · backend/scripts/smoke_b0.py
+  original   · approval_engine.py (B0.5 executores)
+  original   · family_profile.py (firma ctor)
+
+── 3 · auth/tool_permissions.py — el archivo que ninguna corrida forense dumpó ──
+  · 42 líneas · dump completo:
+  # tool_permissions.py
+  # Cada tool del MCP se mapea a un permiso mínimo necesario
+  
+  TOOL_PERMISSION_MAP: dict[str, Permission] = {
+      # FamilyProfileAgent
+      "create_family_profile": Permission.EDIT_FAMILIES,
+      "get_family_profile": Permission.VIEW_ALL_FAMILIES,  # socio solo ve la suya
+      "search_families": Permission.VIEW_ALL_FAMILIES,
+      "update_family_members": Permission.EDIT_FAMILIES,
+      "set_family_preferences": Permission.EDIT_OWN_PROFILE,
+      "get_family_activity_history": Permission.VIEW_OWN_PROFILE,
+      "get_family_social_graph": Permission.VIEW_ALL_FAMILIES,
+  
+      # ExecutiveDashboardAgent
+      "get_executive_summary": Permission.VIEW_DASHBOARD,
+      "get_financial_overview": Permission.VIEW_FINANCIALS,
+      "get_membership_health": Permission.VIEW_DASHBOARD,
+      "get_operational_pulse": Permission.VIEW_OPERATIONS,
+      "detect_anomalies": Permission.VIEW_ANOMALIES,
+      "generate_quarterly_board_report": Permission.GENERATE_REPORTS,
+      "export_report": Permission.GENERATE_REPORTS,
+  
+      # FinanceAgent
+      "get_family_financial_status": Permission.VIEW_OWN_FINANCES,
+      "get_financial_dashboard": Permission.VIEW_FINANCIALS,
+      "process_monthly_dues": Permission.VIEW_FINANCIALS,
+      "handle_refund_or_credit": Permission.APPROVE_HITL,
+  
+      # GuestManagementAgent
+      "register_guest": Permission.REGISTER_GUESTS,
+      "manage_guest_privileges": Permission.MANAGE_GUESTS,
+      "plan_private_event": Permission.MANAGE_EVENTS,
+      "get_guest_analytics": Permission.VIEW_DASHBOARD,
+  
+      # CommunicationAgent
+      "send_personalized_notification": Permission.MANAGE_COMMUNICATIONS,
+      "broadcast_club_announcement": Permission.MANAGE_COMMUNICATIONS,
+      "manage_emergency_broadcast": Permission.MANAGE_COMMUNICATIONS,
+  
+      # ... etc para los 103 tools
+  }
+  
+
+── 4 · importers de tool_permissions en backend/src ──
+src/club_mcp/auth/tool_permissions.py:1:# tool_permissions.py
+
+── 5 · integridad del scripts/p2c3h_b0.ts que corrí (corrupción del pegado) ──
+  · 1516 líneas en disco
+  OK      · guard §1: exclusión rbac/agents
+  OK      · payload registry.py
+  OK      · payload bootstrap.py
+  OK      · payload app.py
+  OK      · payload routes/agents.py
+  OK      · payload server.py
+  OK      · payload rbac.py
+  OK      · payload smoke_b0.py
+  OK      · parche family_profile.__init__
+  OK      · parche approval_engine.approve
+  OK      · sección gates §5
+
