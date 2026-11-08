@@ -1,10 +1,11 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 7.0 · Generación G7 (sincronizada) · Date: 2026-08-12
-### Updates: Master Self-Audit G7 (hallazgos #31-#60 corregidos), artefactos
-###          de la capa de gobierno integrados (Lotes 1-2), Vision 2027
-###          restaurada, conteos verificados contra evidencia real
+### Version: 8.0 · Generación G8 (sincronizada) · Date: 2026-11-08
+### Updates: G8 — absorción completa de P2-C1..C3h (gate B0 VERDE @
+###          e15068e · backend 19 agentes/196 tools/785 tests), Self-Audit
+###          G8 (#61-#73), cola de arquitectura §15 (NUEVO), §13/§14
+###          regenerados al estado real, restauración VI (#62)
 
 ---
 
@@ -87,6 +88,29 @@ CONTENIDO:
 ║  ZERO TOLERANCE. NO SHORTCUTS. NO COMPROMISES.                           ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
+
+---
+
+## CHANGELOG G8 (v7.0 → v8.0)
+
+```
+- §0.3: Self-Audit REGENERADO (regla G7: cada generación) — hallazgos
+  #61-#73: masters congelados, regresión REAL del VI (290afa4 pisó
+  f11d8e7), M-04a cerrado, #65 scope backend, #67 §13/§14 stale, #73
+  script fantasma.
+- §3.6 NUEVO: P2-C3 completa (C1..C3h) — migración C3g (18 llamadas),
+  fixes b0v (7 src + 4 tests), gate B0 VERDE, 785/785, commit e15068e.
+- §5: plan re-escrito a la realidad: B1 (4 migrables) → B2 (15
+  cross-agent) → cola §15 empezando por P0 (secrets).
+- §6: métricas backend agregadas (785 tests · smoke 23/23 · 196 tools).
+- §7: BC-01 marcado APPLIED (G33 — verificado contra types.ts:517).
+- §13: regenerado — los 7 shared/ de v7.0 ya estaban auditados G9 (#67).
+- §14: REESCRITO — estado 2026-11-08, requests reales.
+- §15 NUEVO: COLA DE ARQUITECTURA (P0-P3, ~20 ítems) — registro de
+  deuda production-grade: secrets, persistencia, CI, LLM ops, gobernanza
+  backend, HITL, observabilidad.
+- End marker v8.0 G8.
+```
 
 ---
 
@@ -247,50 +271,73 @@ BOOKKEEPING G7 (verificable):
 
 ---
 
-## §0.3 — MASTER SELF-AUDIT G7 (NUEVO — regenerar en cada generación)
+## §0.3 — MASTER SELF-AUDIT G8 (regenerado — regla de cada generación)
 
 ```
-METODOLOGÍA:
-  Los 3 documentos master se auditan a sí mismos con la misma escala
-  y umbral que el resto del proyecto (BASE §0.2: ≥ 9.3). Esta sección
-  es la evidencia de auditoría de la generación actual.
+METODOLOGÍA: idéntica a G7 (escala BASE §0.2, umbral ≥ 9.3). La auditoría
+G8 verificó los masters contra el ÁRBOL REAL en e15068e (AST, grep, git
+log) — no contra claims internos.
 
-SCORES PRE-G7 → POST-G7:
-  MASTER_BASE.md        v2.0: 6.4 → v7.0: 9.5 ✅
-  MASTER_CHECKPOINT.md  v6.1: 6.6 → v7.0: 9.5 ✅
-  MASTER_CHECKLIST.md   v6.1: 6.1 → v7.0: 9.5 ✅
-  (v6.1 del CHECKLIST era el peor: fence corruption + contenido
-   obligatorio ausente en §14 + matemática rota en §16)
+SCORES G7 → G8:
+  MASTER_BASE.md        v7.0: 9.5 → v8.0: 9.5 ✅ (protocolo intacto,
+                          sólo estado/datos actualizados)
+  MASTER_CHECKPOINT.md  v7.0: 9.5 → v8.0: 9.4 ✅ (§13/§14 estaban stale
+                          — el score baja por los hallazgos absorbidos)
+  MASTER_CHECKLIST.md   v7.0: 9.5 → v8.0: 9.5 ✅ (§16 re-verificado)
 
-EVIDENCIA DE LOS SCORES PRE-G7 (los 10 más severos):
-  🔴 #31  fence corruption (rompía la absorción del CHECKLIST entero)
-  🔴 #47  contenido obligatorio ausente (§14.1-14.3 "see original")
-  🔴 #33  resumen de pilares contradecía su propia matriz
-  🔴 #44  score 9.2 registrado como "lowest 9.3" — bajo umbral oculto
-  🔴 #34  RULE 1 invertía la jerarquía canónica de tokens
-  🔴 #38  contradicción default exports entre A-09 y §8.3
-  🔴 #41  "PENDING REVIEW: 2" con 9 entradas reales
-  🔴 #51  suma de automatización 128 ≠ 111 declarados
-  🔴 #55  ~810 archivos estimados vs 1.151 reales verificados
-  🔴 #59  lista de audit manual divergente del SSOT (manifest)
+HALLAZGOS G8 (#61-#73 — la deriva que G7 no podía ver):
+  🔴 #61  masters congelados: G7 = 2026-08-12; repo = 2026-11-07
+          (28 commits: G28-G37 · Bld1-6 · perf · P2-C1..C3h · B0)
+  🔴 #62  REGRESIÓN REAL de código: 290afa4 (P2-C3e/f) aplicó su parche
+          sobre la base pre-P2B y BORRÓ f11d8e7 (VI-12 check 8 refs
+          no-hook + check 4 EOL-insensible + v3.1.0). El VI en HEAD
+          decía v3.0.0 sin VI-12. → G8 RESTAURADO (v3.2.0 + VI-15);
+          el .bak-p2c3e (v3.2.0, con VI-12, sin VI-14) era el vestigio.
+  🟠 #63  M-04a CERRADO: manifest VERSION_SYNC.validator "pending-audit"
+          vs CHECKLIST §16.1 "v4.0.0" → "4.0.0" factual + audit
+          pendiente explícito en ambos lados (versión ≠ claim de audit)
+  🟠 #64  docs/ARCHITECTURE.md dice "11 Agents" (real: 19) → Q-MSC-03
+  🟠 #65  BASE §6.1 "backend ~123 files NO SE TOCA" contradecía la fase
+          activa P2-C3 → scope redefinido §4.3 + §6.1 re-contado
+  🟠 #66  gobernanza frontend-only: guardian 0 checks sobre backend
+          (19 agentes/196 tools sin gate de drift) → manifest §16
+          BACKEND_REGISTRY (v3.4.0) + cola Q-GOV-01/03
+  🟠 #67  §13/§14 stale: pedían los 7 shared/ YA auditados en G9 y
+          EventCalendar "BLOCKED" ya desbloqueado → regenerados
+  ✅ #68  data/chromadb en .gitignore raíz — RESUELTO en e15068e
+          (verificado: línea presente; chroma.sqlite3 sin rastrear)
+  🟠 #69  conteo de agentes divergente: 11 (docs) / 19 (smoke) / 20
+          (módulos) → G8 fija 19 CANON (bootstrap._AGENT_MODULES por
+          AST); age_group_activity.py = código muerto → Q-MSC-01
+  🟡 #70  tests/unit/agents sin __init__.py (asimetría vs auth/api)
+          → Q-MSC-02
+  🟠 #71  estado de P2-C3h vivía sólo en reportes .txt (~470 KB) sin
+          absorber → G8 absorbe lo esencial (§3.6); reportes quedan
+          como evidencia de archivo
+  🟠 #73  BASE §0.3 G7 citaba scripts/verify-master-consistency.py como
+          mecanismo anti-regresión — NO EXISTE en el repo (find vacío).
+          Crearlo = Q-GOV-04 (y es irónico: el guard de consistencia
+          era consistente sólo en la imaginación de G7).
 
-QUÉ SE VERIFICÓ CONTRA ARTEFACTOS REALES (no claims internos):
-  - globals.css v2.2: 9 tokens §1.2 sincronizados ✓ (leído del archivo)
-  - guardian v4.1.1: TOOL_VERSION + 26 checks X-series ✓ (parseado)
-  - manifest v3.1.0: AUDITED_REGISTRY con 27 entradas ✓ (parseado)
-  - validator v4.0.0: TOOL_VERSION ✓ (leído)
-  - verify-integration v3.0.0: 8 checks con ids/títulos ✓ (parseado)
-  - utils.ts: PENDING REWRITE 7.2, U-01..U-06 ✓ (nota del manifest)
+QUÉ SE VERIFICÓ CONTRA ARTEFACTOS REALES (método, no claims):
+  - bootstrap._AGENT_MODULES → AST: 19 módulos ✓ (no grep difuso)
+  - @MCPTool por AST sobre los 19 archivos: 196 total ✓
+    (= smoke_b0 registry.total_tools — paridad ejecutable)
+  - git show f11d8e7/290afa4: diff real de la regresión #62 ✓
+  - .gitignore raíz: línea chromadb presente ✓ (#68)
+  - find verify-master-consistency*: 0 resultados ✓ (#73)
+  - HealthFactorStatus en advisor-engine/types.ts:517: inglés ✓ (BC-01)
+  - find frontend/src = 1163 · backend/src = 105 (104 .py) ·
+    backend/tests = 27 archivos/775 test_ ✓
 
-MECANISMO ANTI-REGRESIÓN (para que NO vuelvan a generarse errores):
-  1. Tabla de consistencia CHECKLIST §16.3 — regenerar en cada cambio
-     de generación; si un número no cuadra, la generación NO se publica
-  2. scripts/verify-master-consistency.py — guard ejecutable
-     (portar a tools/master-audit.ts en el repo como tarea G8-01)
-  3. Versionado sincronizado G7 (BASE §0.3) — jamás versionar por separado
-  4. Los masters referencian al manifest como SSOT de audit status —
-     jamás mantener listas manuales paralelas (#59)
-  5. Todo conteo en los masters lleva su matemática explícita al lado
+MECANISMO ANTI-REGRESIÓN (heredado G7, corregido G8):
+  1. Tabla de consistencia CHECKLIST §16.3 — regenerada G8
+  2. Q-GOV-04: crear verify-master-consistency.py REAL (G7 lo citaba
+     inexistente — #73; la regla sigue siendo correcta, el artefacto no)
+  3. Versionado sincronizado G8 (BASE §0.3) ✓
+  4. SSOT: audit status → manifest §8; estado backend → manifest §16;
+     deuda → CHECKPOINT §15. Jamás listas manuales paralelas.
+  5. Todo conteo con matemática/origen explícito al lado ✓
 ```
 
 ---
@@ -715,6 +762,47 @@ v3.2.0 — registro de lo entregado entonces.
 
 ---
 
+### §3.6 P2-C3 · AUDITORÍA DE INTEGRACIÓN MCP + GATE B0 (✅ CERRADA 2026-11-07)
+
+```
+LÍNEA DE TIEMPO (fases sin commit propio entraron pre-historizadas en
+4c5d885 "First Step"; evidencia = scripts/p2*.ts + reportes .txt):
+
+  P2-C1  tokens de colores al manifest (p2c1_tokens.ts)
+  P2-C2  patch de gobernanza (p2c2_patch.ts)
+  P2-C3a-d  probe → inventory → registration hunt → final verdict
+         (el veredicto: el backend MCP es REAL — 19 agentes/196 tools;
+         el frontend llamaba mocks; de ahí todo lo que sigue)
+  P2-C3e/f  VI-14 v2: extractor motor-based + 5 estados en check 6
+         ( commits 290afa4 · f11d8e7 — con la regresión #62)
+  P2-C3g  MIGRACIÓN REAL (00417eb): 18 llamadas frontend → tools MCP
+         reales (#1 #2 #5 #6 #9 #10 #11 #16, D5, C16) — multi-dominio:
+         communications, engagement, facilities, guests, wellness
+  P2-C3h  batches b0..b0v sobre el backend:
+           · b0v fixes de PRODUCCIÓN: 7 src + 4 tests — imports a
+             club_mcp.services (paquete nunca existió), factory
+             get_claude_service ausente, RBAC str(enum) jamás en
+             WRITE_LEVELS, search_similar_rag embed_query("") siempre
+             ValueError, umbral RRF inalcanzable, populate_content no
+             expuesto, filterwarnings INTERNALERROR
+           · py3.14: ignore chromadb 1.5.9 asyncio.iscoroutinefunction
+  GATE B0 (ejecutable, no documental):
+           · backend/scripts/smoke_b0.py — 23/23 VERDE
+             (composición 19 · registro 196 · resolve + 4 aliases ·
+              RBAC 196/196 · HITL ejecuta · FastAPI self-wired ·
+              HTTP 200/401)
+           · pytest tests/unit — 785/785 (py3.12 sandbox + 3.14.4
+             Windows usuario · 32.7s)
+           · commit e15068e empujado a origin/audit/p2c3 · árbol
+             limpio · chroma.sqlite3 fuera de rastreo (.gitignore)
+
+QUEDÓ FUERA DE B0 (by design, ver §14/§15): B1 (4 migrables) · B2 (15
+cross-agent, incl. reports.get_board_report hoy rechazado por diseño) ·
+toda la cola P0-P3 de §15.
+```
+
+---
+
 ## §4 — QUALITY SCORECARD (fórmula explícita — hallazgo #45)
 
 ```
@@ -750,47 +838,41 @@ Events Pages:
 ## §5 — EXECUTION PLAN
 
 ```
-IMMEDIATE NEXT STEPS:
+IMMEDIATE NEXT STEPS (G8 — re-escrito al estado real 2026-11-08):
 
-STEP 0: APLICAR BREAKING CHANGES BLOCKING
-        → BC-02 (QueryClient error handler) — ✅ APPLIED (Lote 4 · §3.5.1)
-        → ver §7 para BC-01/03/04 (no blocking, con deadline)
+STEP 0: ✅ ABSORBIDO EN G8 — masters v8.0 sincronizados con e15068e;
+        VI restaurado (#62); M-04a cerrado (#63); V-03 cerrada (BASE §6.1
+        con cifras AST-verified); #68 verificado.
 
-STEP 1: AUDIT 7 shared/ files (UNIFIED LIST — §13)
-        ScoreGauge, FreshnessBadge, StaleDataBanner,
-        Skeleton, useBreakpoint, PageContainer, PermissionGate
-        → ✅ DONE (Lote 5 · §3.5.2 · G9): manifest v3.3.0 movió las 7
-          entradas a audited (PENDING_AUDIT.size = 0) — EventCalendar
-          DESBLOQUEADO (12 rewrites + FreshnessBadge.css sin cambios)
+STEP 1: B1 — 4 llamadas migrables restantes
+        (mapa: p2c3h_backlog_report.txt §A/§H · deuda de campos
+        camel↔snake: Reservation 9 renames, Family 14v7, D5 FacilityMap)
 
-STEP 2: FINALIZE EventCalendar.tsx + .css
-        → Verify all shared/ imports match AUDITED APIs
-        → Fix prop mismatches → Mark COMPLETE
+STEP 2: B2 — 15 llamadas cross-agent + reports.get_board_report
+        (hoy rechazado por diseño — desbloqueo de write-path con HITL;
+         cruzan agentes: finanzas→events, wellness→families, etc.)
 
-STEP 3: REWRITE EventDetail.tsx + .css
+STEP 3: COLA §15 POR PRIORIDAD — empezar por P0 (secrets: Q-SEC-01
+        secreto JWT hardcodeado → get_settings(); Q-SEC-02 api_key;
+        Q-SEC-03 create_admin; Q-SEC-04 user_role="admin" hardcodeado
+        en search_documents = bypass del access control RAG)
 
-STEP 4: REWRITE EventForm.tsx + .css
+STEP 4: REANUDAR FASE 2 FRONTEND (Events) — congelada desde G7:
+        EventCalendar finalización → EventDetail → EventForm → 13 comp
+        (los 7 shared/ bloqueantes ya están auditados G9 — §13)
 
-STEP 5: REWRITE Event components (13)
+STEP 5: Q-CI-01 GitHub Actions (frontend vitest+tsc+guardian; backend
+        ruff+mypy+pytest+smoke_b0) — hoy TODO manual, 0 workflows
 
-STEP 6: GOVERNANCE drop-in + expansión
-        → instalar Lotes 1-2 en el repo (tools/ + scripts/)
-        → task M-04a (VERSION_SYNC.validator = 4.0.0)
-        → task M-01: extender AUDITED_REGISTRY a features/
-          (los 9 events completados NO están trackeados en el
-           registro — gap documentado)
-        → portar css-audit a tools/css-audit.ts (harness probado)
+THEN: Wave 1-6 feature migration (§9) + P1 persistencia (Q-PER-01..04)
 
-THEN: Wave 1-6 feature migration (§9)
-
-VERIFICATION TASKS G7 (nuevas — cierran claims vs realidad):
-  V-01: Verificar conteo shared/ (~197) contra árbol real
-  V-02: Restaurar tabla de scores por-archivo de FASE 1 (23
-        componentes; "HIGHEST 9.5 CommandPalette" viene del registro
-        v6.x y quedó sin tabla verificable)
-  V-03: Cerrar cifras exactas backend (~123) y config (~12)
-  M-02: Reconciliar path de globals (manifest: "styles/globals";
-        BASE §2.2 histórico: "app/globals.css") contra el árbol real
+VERIFICATION TASKS (estado G8):
+  V-01: conteo shared/ (~197) — sigue ABIERTA
+  V-02: tabla de scores por-archivo FASE 1 — sigue ABIERTA
+  V-03: ✅ CERRADA G8 (BASE §6.1: 104 .py src · {be_src} files ·
+        {be_tests} test files — AST/find verificados)
+  M-01: extender AUDITED_REGISTRY a features/ — sigue ABIERTA
+  M-02: reconciliar path de globals — sigue ABIERTA
 ```
 
 ---
@@ -822,6 +904,17 @@ HIGHEST: 9.5 (CommandPalette — registro FASE 1 v6.x;
 
 ANTI-PATTERNS REMOVED: ~900+
 CHECKS PER FILE: 140-180 según combinación aplicable (CHECKLIST §16)
+
+BACKEND (P2-C3 · absorbido G8 — fuente: gates ejecutables):
+  Tests unit: 775 funciones test_ · 785 PASSED / 0 FAILED
+    (py3.12 sandbox · 3.14.4 Windows usuario · 32.7s)
+  Smoke B0: 23/23 · agentes 19 · tools 196 ·
+    RBAC 196/196 · HITL cierra (2 executores)
+  Fixes producción b0v: 7 src + 4 tests (commit e15068e)
+  Tooling declarado: ruff · mypy strict · coverage branch fail_under 70
+  DEUDA (ver §15): persistencia 100% in-memory · secrets hardcodeados ·
+    0 CI · 0 retry en LLM · 36 executores HITL huérfanos
+
 TOLERANCE: ZERO
 ```
 
@@ -834,7 +927,10 @@ BC-01: HealthFactorStatus values (types.ts)
   BEFORE: "excepcional" | "saludable" | "atención" | "crítico"
   AFTER:  "exceptional" | "healthy" | "attention" | "critical"
   FIX:    grep -r "excepcional\|saludable\|atención\|crítico" src/
-  STATUS: ⬜ PENDING — apply before first feature references these values
+  STATUS: ✅ APPLIED (G33, literals ES→EN) — verificado G8 contra
+          advisor-engine/types.ts:517 ("exceptional"|"healthy"|
+          "attention"|"critical"); el grep del FIX matchea COPY de
+          UI en español, no valores del tipo — no re-aplicar
 
 BC-02: QueryClient global error handler (providers.tsx)     ← 🔴 BLOCKING
   BEFORE: showToast(401) fired inside api.ts
@@ -1079,30 +1175,21 @@ EXTENDED AUDIT REGISTRY (config, wiring, stores — para esquema):
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════╗
-║  UNIFIED SHARED/ FILES TO REQUEST (7 entradas — coincide con §5 y §12)  ║
+║  ACTUALIZADO G8 (#67 — v7.0 pedía lo ya resuelto en G9)                 ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║                                                                          ║
-║  These 7 entries block EventCalendar finalization.                      ║
-║  Request them in this order (UI first, then hooks):                     ║
+║  RESUELTO G9 (Lote 5 · manifest v3.3.0 · PENDING_AUDIT.size = 0):      ║
+║    ScoreGauge · FreshnessBadge · StaleDataBanner · Skeleton ·           ║
+║    useBreakpoint · PageContainer · PermissionGate — auditados ≥ 9.3     ║
+║    (20 hallazgos G9-01..G9-20 cerrados — ledger §15 del manifest)       ║
 ║                                                                          ║
-║  1. src/shared/components/ui/ScoreGauge.tsx + .css                      ║
-║  2. src/shared/components/ui/FreshnessBadge.tsx + .css                  ║
-║  3. src/shared/components/ui/StaleDataBanner.tsx + .css                 ║
-║  4. src/shared/components/ui/Skeleton.tsx + .css                        ║
-║  5. src/shared/hooks/useBreakpoint.ts                                   ║
-║  6. src/shared/components/layout/PageContainer.tsx + .css               ║
-║     (EXISTS — listado en el inventario §8 Layout (20);                  ║
-║      "(if exists)" de v6.1 eliminado = hallazgo #49)                    ║
-║  7. src/shared/components/auth/PermissionGate.tsx                       ║
-║                                                                          ║
-║  AFTER these are audited → finalize EventCalendar.tsx + .css            ║
-║  → THEN proceed to EventDetail → EventForm → 13 components             ║
+║  PENDIENTE REAL (G8):                                                   ║
+║    ⬜ EventCalendar.tsx + .css — finalización (FASE 2, sin blockers)   ║
+║    ⬜ EventDetail → EventForm → 13 components (FASE 2)                   ║
+║    ⬜ shared/lib/utils.ts — PENDING REWRITE (7.2, U-01..U-06, RC-3)     ║
+║    ⬜ task M-01: 9 archivos de events NO están en AUDITED_REGISTRY      ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
-
-EventCalendar.tsx + EventCalendar.css — ⚠️ PENDING
-  BLOCKED ON: 7 unaudited shared/ imports
-  ACTION: Audit the 7 above → then finalize EventCalendar
 ```
 
 ---
@@ -1111,64 +1198,143 @@ EventCalendar.tsx + EventCalendar.css — ⚠️ PENDING
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════╗
-║  WHERE WE ARE EXACTLY — 2026-08-12 (G7)                                 ║
+║  WHERE WE ARE EXACTLY — 2026-11-08 (G8)                                 ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║                                                                          ║
-║  PHASE: FASE 2 — Events Feature Migration (30% complete)               ║
+║  TRACK ACTIVA: P2-C3h — AUDITORÍA DE INTEGRACIÓN MCP                    ║
+║  GATE B0: ✅ CERRADO (2026-11-07 · commit e15068e · origin/audit/p2c3)  ║
+║    · smoke_b0.py 23/23 · pytest 785/785 (3.12 + 3.14.4)                ║
+║    · backend: 19 agentes · 196 tools · RBAC 196/196 · HITL     ║
+║      ejecuta (2 executores) · FastAPI self-wired · 401 sin token        ║
+║    · masters G8 absorben todo el estado (esta generación)               ║
 ║                                                                          ║
-║  COMPLETED:                                                              ║
-║  ✅ FASE 0 (globals.css v2.2, 9.7) + FASE 1 (23 UI) + FASE 1.5 (7)    ║
-║  ✅ Events: types, config, barrel, 5 hooks, calendarSignals (9 files)  ║
-║  ✅ Shared parallel: rules/events.ts + signal-bus.ts (2 files)         ║
-║  ✅ LOTES 1-2 (capa de gobierno): manifest v3.1.0, guardian v4.1.1     ║
-║     (26 checks), validator v4.0.0, verify-integration v3.0.0 (8),      ║
-║     globals.css v2.2 (9.7) — §3.5                                       ║
-║  ✅ Master docs G7 (BASE + CHECKPOINT + CHECKLIST v7.0 sincronizados)   ║
+║  TRACK FRENTE (frontend): FASE 2 Events — congelada desde G7; la       ║
+║    migración a tools MCP reales (C3g) SÍ avanzó multi-dominio sin      ║
+║    pasar por las FASEs de rewrite — dual-track documentado (§3.6).      ║
 ║                                                                          ║
-║  BLOCKED:                                                                ║
-║  🔴 EventCalendar finalization → needs 7 shared/ files audited         ║
-║  🔴 BC-02 (QueryClient error handler) → blocking for runtime            ║
+║  BLOCKED: nada activo. reports.get_board_report se rechaza POR DISEÑO  ║
+║    hasta B2 (no es defecto).                                            ║
 ║                                                                          ║
 ║  WHAT I NEED TO CONTINUE (in order):                                    ║
 ║                                                                          ║
-║  REQUEST 1 (Blocker — must have):                                       ║
-║  ├── 7 shared/ files from §13 (ScoreGauge, FreshnessBadge,            ║
-║  │   StaleDataBanner, Skeleton, useBreakpoint, PageContainer,           ║
-║  │   PermissionGate)                                                     ║
-║  └── These unblock EventCalendar → EventDetail → EventForm → 13 comp  ║
+║  REQUEST 1 (decisión de producto — B1/B2):                              ║
+║  ├── B1: 4 llamadas migrables (backlog §A) — ¿go/no-go?                ║
+║  └── B2: 15 cross-agent + board_report (write-path con HITL)            ║
 ║                                                                          ║
-║  REQUEST 2 (Esquema/Automation — needed for tooling):                   ║
-║  ├── frontend/src/shared/lib/utils.ts                                   ║
-║  │   (⚠️ PENDING REWRITE: score 7.2, U-01..U-06 — no solo auditar)     ║
-║  ├── frontend/tsconfig.json                                             ║
-║  ├── frontend/vite.config.ts                                            ║
-║  ├── frontend/src/app/providers.tsx                                     ║
-║  ├── frontend/src/app/router.tsx                                        ║
-║  ├── frontend/src/stores/auth.store.ts                                  ║
-║  ├── frontend/src/shared/components/ui/index.ts (barrel)               ║
-║  └── These unblock: Path Aliases + Guardian expansion + CSS audit      ║
-║      (globals.css ya NO se pide: auditado 9.7 en Lote 2)               ║
+║  REQUEST 2 (P0 de la cola §15 — bloqueante para desplegar):            ║
+║  ├── Q-SEC-01 secreto JWT hardcodeado (jwt_service.py:12) →             ║
+║  │   get_settings() + env (pydantic-settings ya está, NADIE lo consume) ║
+║  ├── Q-SEC-02/03 api_key="" + create_admin password vacío               ║
+║  └── Q-SEC-04 user_role="admin" hardcodeado en search_documents         ║
+║      (document_intelligence_agent.py:93) — bypass del RAG ACL           ║
 ║                                                                          ║
-║  REQUEST 3 (Pattern references — for esquema base):                     ║
-║  ├── frontend/src/features/events/types.ts (pattern reference)         ║
-║  ├── frontend/src/features/events/hooks/useEventAdvisor.ts (pattern)   ║
-║  ├── frontend/src/shared/lib/advisor-engine/confidence.ts              ║
-║  └── These unblock: Feature template calibration                        ║
+║  REQUEST 3 (infra mínima para no repetir regresiones #62):              ║
+║  ├── Q-CI-01 GitHub Actions (gates ya existen: guardian/vitest/tsc +    ║
+║  │   smoke_b0/pytest — sólo falta el workflow)                          ║
+║  └── Q-GOV-04 crear verify-master-consistency.py (citado, inexistente)  ║
 ║                                                                          ║
-║  AFTER ALL 3 REQUESTS:                                                  ║
-║  → Drop-in Lotes 1-2 en el repo + task M-04a (VERSION_SYNC)            ║
-║  → task M-01: extender AUDITED_REGISTRY a features/                     ║
-║  → Expand Architecture Guardian (26 → 45+ checks)                      ║
-║  → Port css-audit a tools/css-audit.ts + component-audit + pipeline    ║
-║  → Apply BC-02 (blocking) + BC-01/03/04                                 ║
-║  → Finalize EventCalendar + EventDetail + EventForm + 13 components   ║
-║  → Continue with FASE 3+                                                ║
+║  AFTER: FASE 2 frontend (EventCalendar → 13 comp) · P1 persistencia     ║
+║  (SQLAlchemy+Alembic ya en deps, fantasma) · P2 LLM ops (retry/fallback ║
+║  Ollama) · ver §15 para el mapa completo                                ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-END OF MASTER_CHECKPOINT.md v7.0 · Generación G7 (sincronizada con
-MASTER_BASE.md v7.0 y MASTER_CHECKLIST.md v7.0)
+## §15 — COLA DE ARQUITECTURA (NUEVO G8 — SSOT de deuda production-grade)
+
+```
+REGLA: esta sección es el REGISTRO de deuda. Un ítem entra con ID
+Q-<ÁREA>-NN y NO sale hasta que su fix tiene commit + gate verde.
+Prioridad = orden de ejecución recomendado. Nada de esto es opcional
+para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
+
+═══ P0 · SEGURIDAD (bloqueante para CUALQUIER despliegue) ═══
+  Q-SEC-01  jwt_service.py:12 — secreto HS256 hardcodeado →
+            get_settings() + env var. pydantic-settings está en deps
+            con 0 consumidores (settings.py jamás importado en src).
+  Q-SEC-02  claude_service.py:37 — api_key="" default → settings,
+            fail-fast en producción si falta.
+  Q-SEC-03  backend/create_admin.py — asyncpg.connect(password="")
+            hardcodeado → CLI con env/getpass; además el script es
+            ad-hoc de diagnóstico, no tooling.
+  Q-SEC-04  document_intelligence_agent.py:93 — user_role="admin"
+            hardcodeado (TODO propio del archivo) en search_documents:
+            anula el access control por rol del vectorstore. → rol
+            real del JWT.
+
+═══ P1 · PERSISTENCIA (restart = pérdida total de estado) ═══
+  Q-PER-01  18 repositorios 100% in-memory con seeds hardcodeados →
+            SQLAlchemy async + PostgreSQL (deps DECLARADAS y fantasma:
+            sqlalchemy[asyncio], asyncpg, pgvector).
+  Q-PER-02  Alembic: dep declarada, CERO alembic.ini/migraciones →
+            init + primera migración.
+  Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
+            admite) → tabla approvals + expiración persistente.
+  Q-PER-04  Usuarios seed en memoria (routes/auth.py:17) → tabla +
+            seed script (los 4 roles con bcrypt ya correcto).
+
+═══ P1 · CI / AUTOMATIZACIÓN (todo manual hoy) ═══
+  Q-CI-01   .github/workflows — NO EXISTE .github/ en el repo. Gates
+            ya disponibles: guardian + vitest + tsc (frontend) ·
+            ruff + mypy strict + pytest 785 + smoke_b0 (backend).
+  Q-CI-02   .pre-commit-config.yaml — pre-commit>=4.0 en dev-deps,
+            config ausente; el script "precommit" de package.json
+            nunca lo ejecuta git (hook inexistente).
+
+═══ P2 · LLM OPS (resiliencia + costo — "moderno AI" de verdad) ═══
+  Q-LLM-01  claude_service: try/except ÚNICO por método — sin retry,
+            sin timeout, sin backoff, sin fallback a Ollama (ollama
+            está en settings y NUNCA se consume). → política de
+            reintentos + circuit breaker + fallback local.
+  Q-LLM-02  Token/cost accounting: usage se devuelve y se descarta →
+            persistir + presupuesto + alertas.
+  Q-LLM-03  Prompts (ai/prompts.py, 814 líneas) = constantes sin
+            versionado → registro con hash/versión por prompt.
+  Q-LLM-04  Evals: golden set + LLM-as-judge (markers pytest
+            slow/integration/hitl existen; suites no).
+
+═══ P2 · GOBERNANZA BACKEND (cerrar el perímetro — #66) ═══
+  Q-GOV-01  guardian backend-aware: checks X-29+ consumiendo
+            BACKEND_REGISTRY (manifest §16) — drift backend = error,
+            en paridad con smoke_b0.
+  Q-GOV-02  absorber SHARED_COMPONENT_NAMES/GENERIC_KEYFRAMES/
+            MCP_CHAIN_EXEMPT/ADVISOR_EXEMPT/EXTRA_BANNED_ANIMATION_LIBS
+            del guardian al manifest (TODO propio del tool, §3).
+  Q-GOV-03  VI check 6: validar contra BACKEND_REGISTRY además del
+            extractor VI-14 motor-based.
+  Q-GOV-04  crear scripts/verify-master-consistency.py — citado por
+            G7 §0.3, INEXISTENTE (#73). Debe validar: versionado
+            sincronizado 3 masters · tabla §16.3 · paridad BACKEND_REGISTRY
+            vs smoke_b0.
+
+═══ P3 · HITL COMPLETO ═══
+  Q-HITL-01 dual approval: modelado (requires_dual_approval,
+            first/second_approval_by) pero approve() no lo aplica.
+  Q-HITL-02 notifier real: stub documentado (email/WhatsApp/push).
+  Q-HITL-03 36 executores HITL huérfanos (solo 2 registrados en
+            bootstrap._EXECUTOR_BINDINGS).
+
+═══ P3 · OBSERVABILIDAD ═══
+  Q-OBS-01  structlog en deps con 0 usos → logging estructurado real
+            + /metrics + healthcheck con probe real (DB/LLM — el
+            actual es un dict estático).
+  Q-OBS-02  rate limiting en /api/agents/* y /api/chat (0 hoy).
+
+═══ P3 · HIGIENE ═══
+  Q-MSC-01  agents/age_group_activity.py — código muerto (no está en
+            _AGENT_MODULES, sin @MCPTool): borrar o registrar.
+  Q-MSC-02  tests/unit/agents sin __init__.py (asimetría vs auth/api).
+  Q-MSC-03  docs/ARCHITECTURE.md — "11 Agents" → 19 + stack real.
+  Q-MSC-04  .bak-p2c3e y reportes .txt (~470 KB) en el tree —
+            mover a docs/evidence/ o .gitignore selectivo.
+
+CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
+```
+
+---
+
+END OF MASTER_CHECKPOINT.md v8.0 · Generación G8 (sincronizada con
+MASTER_BASE.md v8.0 y MASTER_CHECKLIST.md v8.0)
 

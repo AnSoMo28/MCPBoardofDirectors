@@ -12,6 +12,7 @@
  * LINEAGE: repo v2.1 (data-rich) ⊕ AI-gen v1.0 (schema/canon-mapped)
  *          → v3.0.0 FUSION → v3.1.0 RECONCILIATION → v3.2.0 BC-02 APPLIED
  *          → v3.3.0 PAQUETE 1 AUDITED (REQUEST 1 §13 · EventCalendar unlock)
+          → v3.4.0 G8 BACKEND REGISTRY (absorción P2-C3 · gate B0 VERDE)
  *          (see §14-§15 AUDIT LEDGERS).
  *
  * v3.1.0 reconciles this file against the tool that enforces it:
@@ -56,6 +57,7 @@
  * §5  Rule registry                §12 Version sync
  * §6  Breaking changes             §13 Helpers (computed stats + coverage)
  * §7  Feature domain map           §14-§15 Audit ledgers
+ * §16 Backend registry (G8)        (new — club_mcp MCP server state)
  *
  * ID POLICY (critical — fixes RC-1/AC-X01):
  *   - A check that matches a canon CHECKLIST ID 1:1 REUSES that ID
@@ -191,8 +193,8 @@ export interface PlannedTokenMeta {
 
 /* ═══════════════════ §2  DESIGN TOKENS ═══════════════════ */
 
-export const MANIFEST_VERSION = "3.3.0";
-export const MANIFEST_DATE = "2026-10-24";
+export const MANIFEST_VERSION = "3.4.0";
+export const MANIFEST_DATE = "2026-11-08";
 
 export const TOKENS = {
   colors: {
@@ -1208,6 +1210,7 @@ export const ROLLOUT = {
   gates: [
     { id: "BC-02", blocking: true, detail: "QueryClient onError before EventCalendar" },
     { id: "SHARED-7", blocking: true, detail: "7 pending shared/ before EventCalendar — CLOSED v3.3.0 (PENDING_AUDIT.size = 0)" },
+    { id: "B0-SMOKE", blocking: true, detail: "backend gate B0 VERDE @ e15068e — smoke_b0 23/23 · pytest 785/785 (py3.12 + 3.14.4)" },
     { id: "TOKEN-DIFF", blocking: false, detail: "globals.css vs TOKENS diff scan (K-1 verification)" },
     { id: "AURA-VALUES", blocking: false, detail: "PLANNED_TOKENS values registration (AC-4)" },
     { id: "EXPORT-LISTS", blocking: false, detail: "MODULES export lists vs implementations (AC-6) — incl. ToastContainer (MF-11)" },
@@ -1217,9 +1220,10 @@ export const ROLLOUT = {
 /* ═══════════════════ §12  VERSION SYNC ═══════════════════ */
 
 export const VERSION_SYNC = {
-  manifest: "3.3.0", // bumped with MANIFEST_VERSION (self-consistency; tools unchanged)
+  manifest: "3.4.0", // G8: BACKEND_REGISTRY added; frontend surfaces unchanged
   guardian: "4.1.1",   // verified against production digest (1.151 files, 30.075 violations)
-  validator: "pending-audit", // validate-shared-imports NOT yet audited — do not fake a number (MF-06)
+  validator: "4.0.0",  // FILE version (TOOL_VERSION) — its own AUDIT is still pending (M-04a G8: a factual version is not an audit claim)
+  verifyIntegration: "3.2.0", // G8 restore: VI-12 (f11d8e7) re-applied over VI-14 v2 — regression 290afa4 = VI-15
   mcpRouter: "2.1.0",
   advisorEngine: "2.1.0",
 } as const;
@@ -1574,3 +1578,68 @@ export function getMigrationProgress(): {
  * data-testid/keyframe names extracted as classes; animation:none
  * counted as keyframe reference).
  */
+
+
+/* ═══════════════════ §16  BACKEND REGISTRY (G8 — v3.4.0) ═══════════════════
+ *
+ * Estado REAL del backend MCP (club_mcp) en el commit e15068e — la misma
+ * clase de SSOT que §8 AUDITED_REGISTRY, para el lado backend. Generado
+ * desde el árbol real (bootstrap._AGENT_MODULES + AST de decoradores
+ * @MCPTool — NUNCA hand-counted, fix clase RM-3). Verificado contra
+ * backend/scripts/smoke_b0.py (registry.total_tools == 196).
+ *
+ * CONSUMERS (roadmap — cola Q-GOV-01/Q-GOV-03, CHECKPOINT §15):
+ *   - guardian X-29+ backend-aware checks (paridad con smoke_b0)
+ *   - verify-integration check 6: validar contra este registro además
+ *     del extractor motor-based VI-14
+ * HOY no lo consume ninguna tool: es ley declarada con gap de enforcement
+ * EXPLÍCITO (mismo patrón que X-11/X-24 "planned" — MF-03).
+ *
+ * El gate ejecutable del backend NO es este registro: es
+ * backend/scripts/smoke_b0.py (23/23) + pytest tests/unit (785/785).
+ */
+
+export interface BackendAgentEntry {
+  /** Módulo python bajo src/club_mcp/agents/ (sin extensión). */
+  readonly module: string;
+  /** Decoradores @MCPTool en funciones/métodos (AST — sin docstrings). */
+  readonly tools: number;
+}
+
+export const BACKEND_REGISTRY = {
+  /** Commit auditado (rama audit/p2c3). */
+  commit: "e15068e",
+  date: "2026-11-07",
+  /** Gates ejecutables del backend (los que CI debería correr — Q-CI-01). */
+  smokeGate: "backend/scripts/smoke_b0.py",
+  unitGate: "uv run python -m pytest tests/unit -q",
+  python: ">=>=3.12 (dev verificado: 3.12 sandbox · 3.14.4 Windows)",
+  agents: [
+    { module: "family_profile", tools: 16 },
+    { module: "event_orchestrator", tools: 11 },
+    { module: "age_group", tools: 11 },
+    { module: "finance", tools: 14 },
+    { module: "wellness", tools: 12 },
+    { module: "compliance", tools: 7 },
+    { module: "sports_recreation_agent", tools: 11 },
+    { module: "cultural_social_agent", tools: 9 },
+    { module: "communication_agent", tools: 14 },
+    { module: "facility_management_agent", tools: 13 },
+    { module: "member_engagement_agent", tools: 6 },
+    { module: "guest_management_agent", tools: 10 },
+    { module: "proactive_recommendation_agent", tools: 8 },
+    { module: "document_intelligence_agent", tools: 8 },
+    { module: "executive_dashboard_agent", tools: 11 },
+    { module: "satisfaction_agent", tools: 10 },
+    { module: "advisor_intelligence", tools: 5 },
+    { module: "member_360_agent", tools: 10 },
+    { module: "ml_intelligence", tools: 10 },
+  ] as const,
+  totalTools: 196,
+  /** Invariantes verificadas por smoke_b0 (registry introspection runtime). */
+  rbacCoverage: "196/196 (permission_for nunca None — smoke §4)",
+  hitlExecutorsRegistered: 2, // de ~38 execute_* — bootstrap._EXECUTOR_BINDINGS (cola Q-HITL-03)
+  gateB0: "VERDE 2026-11-07 (smoke 23/23 · pytest 785/785 · FastAPI self-wired)",
+  /** Cola de deuda arquitectónica backend — SSOT: CHECKPOINT §15. */
+  queueRef: "MASTER_CHECKPOINT.md §15",
+} as const;

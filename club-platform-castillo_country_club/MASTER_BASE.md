@@ -1,8 +1,9 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 7.0 · Generación G7 (sincronizada) · Date: 2026-08-12
-### Source: v2.0 + Master Self-Audit G7 (hallazgos #31-#60 → CHECKPOINT §0.1, §0.3)
+### Version: 8.0 · Generación G8 (sincronizada) · Date: 2026-11-08
+### Source: G7 + Absorción P2-C3 completa (C1..C3h · gate B0 VERDE ·
+###          backend MCP 19 agentes/196 tools) + Self-Audit G8 (#61-#73 → CHECKPOINT §0.3)
 
 ---
 
@@ -44,6 +45,38 @@ CONTENIDO:
 - §9: absorbe el protocolo de sesión completo (fuente canónica única).
 - §9.1: mapa completo — añadidos §7, §0.3, CHECKPOINT §0.3, CHECKLIST §16.3.
 - §10: masters pre-G7 añadidos a fuentes deprecadas.
+```
+
+---
+
+## CHANGELOG G8 (v7.0 → v8.0)
+
+```
+CONTEXTO: los masters G7 quedaron congelados en 2026-08-12 (FASE 2 Events
+30%); el repo avanzó 28 commits hasta 2026-11-07 (G28-G37, Bld1-6, perf,
+P2-C1..C3h completa, gate B0 VERDE). G8 absorbe esa historia (#61) y
+re-sincroniza la capa documental con la realidad ejecutable.
+
+ESTRUCTURA:
+- Sin secciones nuevas de protocolo: §4/§5 intactos. Lo nuevo es ESTADO
+  (CHECKPOINT §3.6/§14/§15) y DATOS (manifest §16, BASE §6.1).
+- Versionado sincronizado G8 = v8.0 en los 3 masters (regla §0.3 intacta).
+
+CONTENIDO:
+- §4.3: "✗ Change backend API contracts" → boundary refinado: el backend
+  está bajo auditoría P2-C3 desde 2026-10 con gate EJECUTABLE (#65).
+- §6.1: backend re-contado contra el árbol real (104 .py src · 19 agentes
+  · 196 tools · 27 test files/785 tests) — "NO SE TOCA"/"22 agents" era
+  stale (#65/#69); tools/ y scripts/ a versiones reales (manifest v3.4.0,
+  VI v3.2.0 — regresión 290afa4 restaurada #62; #73: verify-master-
+  consistency.py citado en G7 NO existe → cola Q-GOV-04).
+- §9: paso 7 nuevo — sesiones que tocan backend usan gates ejecutables
+  (smoke_b0 + pytest), no los checklists A-J.
+- §9.1: filas nuevas (CHECKPOINT §15 cola · manifest §16 backend ·
+  CHECKPOINT §3.6/§14 estado P2-C3).
+- §10: masters G7 añadidos a fuentes deprecadas (misma mecánica que G7
+  hizo con los pre-G7).
+- §0.3: ejemplo de generación actualizado a G8.
 ```
 
 ---
@@ -204,7 +237,7 @@ TAXONOMÍA DE ESTADOS (criterios explícitos — resuelve #40):
   SÍMBOLOS: ✅/🔶/⬜/🔴 — NUNCA mezclar (v2.0 usaba "✅ PARCIAL")
 
 VERSIONADO (anti-drift — resuelve #29/#60):
-  Los 3 master comparten NÚMERO DE GENERACIÓN (G7 = v7.0).
+  Los 3 master comparten NÚMERO DE GENERACIÓN (G8 = v8.0).
   Se versionan JUNTOS: cualquier cambio en cualquiera bumpa la
   generación completa. PROHIBIDO versionarlos por separado.
   Cada generación debe: (1) regenerar CHECKPOINT §0.3 (Master
@@ -745,7 +778,10 @@ I DON'T:
   ✗ Change @theme {} architecture
   ✗ Move shared/ files without approval
   ✗ Invent values without provenance
-  ✗ Change backend API contracts
+  ✗ Change backend API contracts SIN gate — el backend está bajo
+    auditoría P2-C3 desde 2026-10: todo cambio en src/club_mcp REQUIERE
+    backend/scripts/smoke_b0.py VERDE (23/23) + pytest tests/unit 785/785
+    (protocolo P2-C3: CHECKPOINT §3.6; SSOT backend: manifest §16)
 ```
 
 ---
@@ -921,34 +957,55 @@ frontend/src/                          ← 1.151 archivos (digest verificado
 │
 └── main.tsx
 
-backend/src/club_mcp/             ← ~123 files (NO SE TOCA)
-├── agents/                       ← 22 MCP agents
-├── ai/                           ← Claude service + prompts
-├── api/                          ← FastAPI routes (5 route files)
-├── auth/                         ← JWT, RBAC, middleware
-├── config/                       ← Settings
-├── db/repositories/              ← 18 repos
-├── hitl/                         ← Human-in-the-loop
-├── models/                       ← 20 domain models
-├── rag/                          ← RAG pipeline (8 modules)
-└── server.py
+backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
+│                                   e15068e · G8 absorbe el estado real;
+│                                   v7.0 decía "~123 files NO SE TOCA" = #65)
+├── src/club_mcp/                 ← 104 módulos .py (verificado G8)
+│   ├── agents/                   ← 19 agentes MCP · 196 tools @MCPTool
+│   │                               (age_group_activity.py muerto → cola
+│   │                               Q-MSC-01; v7.0 decía "22" = #69)
+│   ├── ai/                       ← claude_service + prompts (sin retry/
+│   │                               timeout/fallback → cola Q-LLM-01)
+│   ├── api/                      ← FastAPI routes (5 routers)
+│   ├── auth/                     ← JWT, RBAC 196/196, middleware
+│   │                               (secreto JWT hardcodeado → Q-SEC-01)
+│   ├── config/                   ← pydantic-settings SIN consumidores
+│   ├── db/repositories/          ← 18 repos in-memory → Q-PER-01
+│   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
+│   ├── models/                   ← 22 módulos de esquemas
+│   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
+│   └── server.py                 ← entry point MCP (adaptador delgado)
+├── tests/unit/                   ← 27 archivos · 785 tests PASSED
+└── scripts/smoke_b0.py           ← gate ejecutable B0 (23/23)
 
-frontend/tools/                   ← Automation (estado real G7)
-├── architecture.manifest.ts      ← v3.3.0 — SSOT (27 entradas registro; BC-02 + REQUEST 1 APPLIED)
+frontend/tools/                   ← Automation (estado real G8)
+├── architecture.manifest.ts      ← v3.4.0 — SSOT (27 entradas registro +
+│                                   §16 BACKEND_REGISTRY: 19 agentes ·
+│                                   196 tools · gate B0 · VERSION_SYNC con
+│                                   validator 4.0.0 factual — M-04a #63)
 ├── architecture-guardian.ts      ← v4.1.1 — 26 checks X-series
-├── validate-shared-imports.ts    ← v4.0.0 — registry-driven
+│                                   (backend-aware checks → cola Q-GOV-01;
+│                                   absorción de tool-data → Q-GOV-02)
+├── validate-shared-imports.ts    ← v4.0.0 — registry-driven (audit del
+│                                   tool pendiente — #63 documentado)
 └── (pendientes: css-audit, component-audit,
     feature-integration-audit, pre-commit-pipeline)
 
-scripts/
+scripts/                          ← hermano de frontend/ (G25)
 ├── setup.sh
-├── verify-integration.ts         ← v3.0.0 — 8 checks (--json CI)
-└── verify-master-consistency.py  ← guard G7 de los 3 masters
+├── verify-integration.ts         ← v3.2.0 — 8 checks + VI-12 restaurado
+│                                   (regresión 290afa4 = #62, fix G8)
+├── p2a..p2c3h_*.ts               ← herramientas de las fases de auditoría
+│                                   (evidencia ejecutable — §3.6 CHECKPOINT)
+└── bld*/g14/g20/g21/g28*        ← escáneres y fixes typecheck/build
+    ⚠ #73: verify-master-consistency.py CITADO en G7 §0.3 NO EXISTE
+    en el repo — crearlo (regla G8 + tabla §16.3) = cola Q-GOV-04
 
-TOTAL PROYECTO: ≈ 1.286 archivos
-  frontend 1.151 (verificado) + backend ~123 + config ~12
-  (v2.0 decía ~945 con frontend ~810 — corregido contra digest real;
-   cerrar cifra exacta de backend/config: task V-03)
+TOTAL PROYECTO: ≈ 1.294+ archivos (verificado G8)
+  frontend/src 1163 (find G8; digest G7 = 1.151 — delta post-C3g)
+  + backend/src 105 (104 .py) + backend/tests 27 (775 test_)
+  (v7.0 decía ~1.286 con backend ~123 — task V-03 CERRADA en G8:
+   cifras computadas contra el árbol; config/ se trackea vía manifest §16)
 ```
 
 ---
@@ -1078,6 +1135,14 @@ EN CADA NUEVA SESIÓN:
 
 6. REPETIR para cada archivo hasta completar la FASE
 
+7. SI LA SESIÓN TOCA BACKEND (src/club_mcp o tests/unit):
+   a) El gate es EJECUTABLE, no documental:
+      backend/scripts/smoke_b0.py (23/23) · pytest tests/unit (785/785)
+   b) La SSOT del estado backend es manifest §16 BACKEND_REGISTRY (v3.4.0)
+      + CHECKPOINT §15 (cola) — NO reportes .txt sueltos (#71)
+   c) El protocolo de auditoría §4 (checklists A-J) es FRONTEND; el
+      backend sigue el protocolo P2-C3 (CHECKPOINT §3.6)
+
 ⚠️ PARCIAL PASTE HANDLING:
    Si un archivo no cabe en 1 mensaje:
    → Partir en 2-3 bloques
@@ -1150,6 +1215,9 @@ AUTOMATION MAPPING + Consistencia CHECKLIST        §16
 ─────────────────────────────── ───────────────── ─────────
 Audit Status (SSOT real)        architecture.manifest.ts §8
 (AUDITED_REGISTRY — 27 entradas; los masters sólo resumen)
+Backend registry (SSOT)         architecture.manifest.ts §16 (G8)
+Cola de arquitectura            CHECKPOINT        §15 (NUEVO G8)
+Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 ```
 
 ---
@@ -1160,6 +1228,14 @@ Audit Status (SSOT real)        architecture.manifest.ts §8
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  DEPRECATED SOURCES — Do NOT use these as reference                  ║
 ╠══════════════════════════════════════════════════════════════════════╣
+║                                                                      ║
+║  ❌ Masters G7 (v7.0 · 2026-08-12):                                  ║
+║     REASON (G8): congelados 3 meses — no conocen P2-C1..C3h, el      ║
+║     backend MCP (19 agentes · 196 tools), el gate B0 VERDE ni los    ║
+║     785 tests (#61); §13/§14 CHECKPOINT pedía lo ya resuelto G9      ║
+║     (#67); citaba un script inexistente (#73).                       ║
+║     VALID CONCEPTS: TODOS preservados en G8 (protocolos §4/§5/§9     ║
+║     intactos — G8 cambia ESTADO y DATOS, no el protocolo).           ║
 ║                                                                      ║
 ║  ❌ Masters pre-G7:                                                  ║
 ║     MASTER_BASE.md v1.0/v2.0 · MASTER_CHECKPOINT.md v3.0-v6.1 ·    ║
@@ -1192,7 +1268,7 @@ Audit Status (SSOT real)        architecture.manifest.ts §8
 
 ---
 
-END OF MASTER_BASE.md v7.0 · Generación G7 (sincronizada con
-MASTER_CHECKPOINT.md v7.0 y MASTER_CHECKLIST.md v7.0)
+END OF MASTER_BASE.md v8.0 · Generación G8 (sincronizada con
+MASTER_CHECKPOINT.md v8.0 y MASTER_CHECKLIST.md v8.0)
 
 

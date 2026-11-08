@@ -1,11 +1,11 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 7.0 · Generación G7 (sincronizada) · 180 checks · ZERO tolerance
-### Updates: Master Self-Audit G7 — §14 restaurado completo (referencias
-###          colgantes eliminadas), §11 con conteo real (52), §12 sin
-###          colisión terminológica, §16 con matemática verificable +
-###          tabla de consistencia anti-drift (§16.3)
+### Version: 8.0 · Generación G8 (sincronizada) · 180 checks · ZERO tolerance
+### Updates: G8 — §16.1/§16.3 regenerados al estado real del repo
+###          (manifest v3.4.0 · VI v3.2.0 restaurado · gates backend
+###          agregados); checks A-J intactos (180 — el estándar no
+###          cambia, cambia la evidencia)
 
 ---
 
@@ -45,6 +45,27 @@ CONTENIDO:
   explícita por claim — regenerar en cada generación.
 - GRAND TOTAL: matemática verificada (180 = suma por checklist;
   combinaciones aplicables re-verificadas).
+```
+
+---
+
+## CHANGELOG G8 (v7.0 → v8.0)
+
+```
+- Los 180 checks A-J NO cambian: el estándar de calidad frontend es
+  estable. Lo que cambia es §16 (estado de automatización) porque el
+  repo cambió debajo: manifest v3.4.0 (BACKEND_REGISTRY), VI v3.2.0
+  (regresión 290afa4 restaurada — CHECKPOINT §0.3 #62), validator
+  v4.0.0 factual (M-04a #63), gates del backend incorporados a la
+  tabla (smoke_b0 · pytest 785 · ruff/mypy strict).
+- §16.1: filas nuevas smoke_b0.py y pytest; verify-master-consistency
+  marcado ⚠ INEXISTENTE (#73 — citado desde G7).
+- §16.3: tabla regenerada — filas backend (19 agentes · 196 tools ·
+  785 tests) + versión manifest 3.4.0 + VI 3.2.0.
+- Nota de scope: los checks A-J son el gate de CALIDAD FRONTEND; el
+  backend tiene su propio gate EJECUTABLE (smoke_b0 + pytest +
+  ruff/mypy) — no se mezclan los números (principio §12 CHECKPOINT G7
+  de colisiones terminológicas).
 ```
 
 ---
@@ -822,13 +843,20 @@ architecture-guardian.ts        A,B,C,F,H,I subsets     ✅ v4.1.1 · 26 checks
                                  sin X-11/X-24)          digest producción:
                                                         1.151 files,
                                                         30.075 violaciones,
-                                                        8.0/10)
-validate-shared-imports.ts      J + I (registry)        ✅ v4.0.0 · registry-
-                                                        driven (manifest SSOT)
-verify-integration.ts           F (integración)         ✅ v3.0.0 · 8 checks
+                                                        8.0/10; backend-aware
+                                                        → cola Q-GOV-01)
+validate-shared-imports.ts      J + I (registry)        ✅ v4.0.0 (versión
+                                                        FACTUAL del archivo —
+                                                        audit del tool
+                                                        pendiente, #63; no
+                                                        es claim de audit)
+verify-integration.ts           F (integración)         ✅ v3.2.0 · 8 checks
                                                         (router/mcp/tokens/
                                                         buttons/gates/tools/
                                                         routes/mocks) + --json
+                                                        · VI-12 restaurado
+                                                        G8 (#62: 290afa4
+                                                        borró f11d8e7)
 css-audit.ts                    B (35)                  ⬜ TO CREATE — harness
                                                         Python probado en
                                                         scripts/css-audit/
@@ -837,8 +865,22 @@ component-audit.ts              C (14)                  ⬜ TO CREATE
 feature-integration-audit.ts    D (4) + E (5) + G (3)   ⬜ TO CREATE
 pre-commit-pipeline.ts          orchestrator            ⬜ TO CREATE
 
+═══ GATES BACKEND (P2-C3 · track separada del estándar A-J) ═══
+backend/scripts/smoke_b0.py     composición+registro+   ✅ 23/23 VERDE
+                                resolve+RBAC+HITL+      (e15068e; gate
+                                FastAPI+HTTP            ejecutable B0)
+backend pytest tests/unit       unit backend            ✅ 785/785
+                                                        (py3.12 + 3.14.4)
+backend ruff + mypy strict      estilo/tipos backend    ✅ config en
+                                                        pyproject (manual —
+                                                        sin CI → Q-CI-01)
+scripts/verify-master-          consistencia masters    ⚠ INEXISTENTE (#73) —
+consistency.py                                          citado desde G7 §0.3;
+                                                        crear = Q-GOV-04
+
 (v6.1 decía guardian "~45" y validator "v2.0" — stale #56/#51;
- G7 registra lo que EXISTE hoy y lo que falta.)
+ G7 registra lo que EXISTE; G8 añade la track backend — 19 agentes ·
+ 196 tools · 785 tests, SSOT manifest §16.)
 ```
 
 ### §16.2 Cobertura por Checklist (asignación G7 — verificable)
@@ -903,8 +945,12 @@ Archivos feature/shared compl. 65             1+46+7+11 = 65 ✓
 Pending review                 14 físicos     2 (EventCalendar) + 12 (7 shared/) ✓
 AUDITED_REGISTRY               27 entradas    15+4+7+1 = 27 ✓ (manifest §8)
 Checks guardian                26             X-01..X-28 sin X-11/X-24 ✓
-Checks verify-integration      8              8 ids verificados ✓
-Frontend files                 1.151          digest de producción guardian v4.1.1 ✓
+Checks verify-integration      8              8 ids verificados ✓ (VI v3.2.0 G8)
+Manifest version               3.4.0          §16 BACKEND_REGISTRY G8 (BACKEND_REGISTRY.agents.length = 19) ✓
+Backend agentes                19              bootstrap._AGENT_MODULES por AST (G8) = smoke_b0 ✓
+Backend tools                  196              @MCPTool AST por archivo (G8) = registry.total_tools ✓
+Backend tests unit             785            pytest tests/unit PASSED (py3.12+3.14.4) ✓
+Frontend files                 1163          find G8 (digest G7 = 1.151 — delta post-C3g) ✓
 ```
 
 ### §16.4 CHECKLIST GRAND TOTAL (matemática explícita)
@@ -948,6 +994,6 @@ Frontend files                 1.151          digest de producción guardian v4.
 
 ---
 
-END OF MASTER_CHECKLIST.md v7.0 · Generación G7 (sincronizada con
-MASTER_BASE.md v7.0 y MASTER_CHECKPOINT.md v7.0)
+END OF MASTER_CHECKLIST.md v8.0 · Generación G8 (sincronizada con
+MASTER_BASE.md v8.0 y MASTER_CHECKPOINT.md v8.0)
 
