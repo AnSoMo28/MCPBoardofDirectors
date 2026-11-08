@@ -172,6 +172,10 @@ class DocumentIntelligenceAgent(BaseAgent):
                 category=category_filter or None,
                 document_type=document_type_filter or None,
             )
+            # b0v: la búsqueda híbrida devuelve content="" — poblar desde
+            # el vectorstore, igual que RAGService.search_documents hace
+            # internamente (sin esto el caller recibía fragments vacíos).
+            candidates = self.repo.rag.populate_content(candidates)
 
             if not candidates:
                 return {

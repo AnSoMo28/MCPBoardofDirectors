@@ -26,6 +26,11 @@ class TestHealth:
         assert "agents_count" in data
         assert "tools_count" in data
 
-    def test_health_with_no_agents(self, client):
+    def test_health_with_no_agents(self):
+        # B0 (F-3): create_api_app() sin args auto-cablea el runtime
+        # completo (19 agentes). Para probar "sin agentes" hay que
+        # inyectar la lista vacía explícitamente.
+        app = create_api_app(agents_list=[])
+        client = TestClient(app)
         data = client.get("/api/health").json()
         assert data["agents_count"] == 0

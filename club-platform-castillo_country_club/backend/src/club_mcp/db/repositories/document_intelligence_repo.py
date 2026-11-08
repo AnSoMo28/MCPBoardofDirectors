@@ -321,14 +321,22 @@ class DocumentIntelligenceRepository:
         limit: int = 5,
     ) -> dict[str, Any]:
         """Find similar documents using vector similarity."""
-        # Get some chunks from the source document
-        source_chunks = self.rag.vectorstore.query(
-            embedding=self.rag._embeddings.embed_query(""),  # Empty query → get any chunks
-            n_results=1,
-            where={"document_id": document_id},
-        )
+        # Get a source chunk directly by metadata — no embedding needed
+        # (P2-C3h b0v: the old embed_query("") hack always raised
+        # ValueError "Cannot embed empty query"; search_similar never worked).
+        source_text: str | None = None
+        try:
+            fetched = self.rag.vectorstore._collection.get(
+                where={"document_id": document_id},
+                limit=1,
+                include=["documents"],
+            )
+            docs = fetched.get("documents") or []
+            source_text = docs[0] if docs else None
+        except Exception as exc:
+            logger.warning("[doc_repo] Could not fetch source chunk: %s", exc)
 
-        if not source_chunks:
+        if not source_text:
             # Fallback: use document metadata
             doc = await self.get_document(document_id)
             if not doc:
@@ -354,7 +362,7 @@ class DocumentIntelligenceRepository:
 
         # Use the source document's embedding to find similar
         source_embedding = self.rag._embeddings.embed_query(
-            source_chunks[0]["document"][:500]
+            source_text[:500]
         )
 
         results = self.rag.vectorstore.query(

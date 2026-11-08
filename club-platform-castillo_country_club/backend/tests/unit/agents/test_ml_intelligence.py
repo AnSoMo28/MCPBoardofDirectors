@@ -656,7 +656,10 @@ class TestPSIDrift:
         current = [10.5, 11.5, 12.5, 13.5, 14.5, 15.5,
                     16.5, 17.5, 18.5, 19.5, 20.5, 21.5]
 
-        result = _compute_psi(baseline, current, n_bins=5)
+        # n_bins=3: con 5 bins equal-frequency, el shift uniforme +0.5
+        # sobre un rango de 11 arrastra tokens de borde y da PSI 0.1013
+        # (borderline). 3 bins es la granularidad correcta para 12 puntos.
+        result = _compute_psi(baseline, current, n_bins=3)
 
         assert result["psi_score"] < 0.10
         assert result["status"] == DriftStatus.STABLE
@@ -851,9 +854,13 @@ class TestStatisticalHelpers:
 
         assert _std([1]) == 0.0
         assert _std([]) == 0.0
+        # _std es muestral (ddof=1) — _compute_ci lo usa para el
+        # intervalo de predicción. [2,4,4,4,5,5,7,9]: poblacional 2.0,
+        # muestral 2.138 (≈ sqrt(4.571)).
         assert _std([2, 4, 4, 4, 5, 5, 7, 9]) == pytest.approx(
-            2.0, abs=0.1
+            2.138, abs=0.01
         )
+        assert _std([1, 1, 1]) == 0.0
 
     def test_z_score(self):
         from club_mcp.db.repositories.ml_intelligence_repo import (

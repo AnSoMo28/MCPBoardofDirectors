@@ -229,4 +229,7 @@ def permission_for(agent: str, tool: str, approval: str) -> Optional[Permission]
     if policy is None:
         return None
     read_perm, write_perm = policy
-    return write_perm if str(approval).lower() in WRITE_LEVELS else read_perm
+    # approval llega como str ("auto") o como ApprovalLevel (spec del
+    # registry); str(enum) da "ApprovalLevel.HITL" y nunca matchea.
+    level = getattr(approval, "value", approval)
+    return write_perm if str(level).lower() in WRITE_LEVELS else read_perm

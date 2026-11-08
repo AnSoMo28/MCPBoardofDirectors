@@ -152,6 +152,10 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "strict"
+# pytest-asyncio>=0.25: sin esto, la DeprecationWarning de loop scope
+# escala a error por filterwarnings=["error",...] y pytest muere con
+# INTERNALERROR antes de colectar un solo test.
+asyncio_default_fixture_loop_scope = "function"
 timeout = 30
 addopts = [
     "-v",
@@ -169,6 +173,14 @@ filterwarnings = [
     "ignore::DeprecationWarning:datetime.*",
     "error",
     "ignore::DeprecationWarning:pydantic.main.*",
+    # Python 3.14: chromadb 1.5.9 usa asyncio.iscoroutinefunction en su import
+    # (telemetry/opentelemetry/__init__.py:128), deprecado desde 3.14. En
+    # filterwarnings las entradas POSTERIORES tienen mayor precedencia (pytest
+    # aplica la lista en orden inverso), por lo que este ignore DEBE ir despues
+    # de "error": si va antes, el warning escala a error y revientan los 48
+    # tests de document_intelligence en el setup del fixture doc_repo.
+    # Eliminar esta linea cuando chromadb > 1.5.9 arregle el import.
+    "ignore:'asyncio.iscoroutinefunction' is deprecated:DeprecationWarning",
 ]
 
 # ═══════════════════════════════════════════════════════════

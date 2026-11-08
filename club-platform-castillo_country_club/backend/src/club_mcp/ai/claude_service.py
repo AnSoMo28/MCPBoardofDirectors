@@ -317,3 +317,20 @@ class ClaudeService:
         # Fallback: return raw content wrapped in dict
         return fallback if fallback is not None else {"raw_content": content}
 
+
+_claude_service_instance: ClaudeService | None = None
+
+
+def get_claude_service() -> ClaudeService:
+    """Singleton factory for the shared ClaudeService instance.
+
+    ml_intelligence (y cualquier agente que no reciba la inyección del
+    bootstrap) resuelve su cliente Claude por acá, igual que el patrón
+    document_intelligence. Thread-safe por GIL; la primera llamada paga
+    la construcción, el resto reutiliza la instancia (y su cliente HTTP).
+    """
+    global _claude_service_instance
+    if _claude_service_instance is None:
+        _claude_service_instance = ClaudeService()
+    return _claude_service_instance
+
