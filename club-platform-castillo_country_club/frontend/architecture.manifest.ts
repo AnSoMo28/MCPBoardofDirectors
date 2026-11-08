@@ -12,7 +12,8 @@
  * LINEAGE: repo v2.1 (data-rich) ⊕ AI-gen v1.0 (schema/canon-mapped)
  *          → v3.0.0 FUSION → v3.1.0 RECONCILIATION → v3.2.0 BC-02 APPLIED
  *          → v3.3.0 PAQUETE 1 AUDITED (REQUEST 1 §13 · EventCalendar unlock)
-          → v3.4.0 G8 BACKEND REGISTRY (absorción P2-C3 · gate B0 VERDE)
+ *          → v3.4.0 G8 BACKEND REGISTRY (absorción P2-C3 · gate B0 VERDE)
+ *          → v3.5.0 M-01-T1 REGISTRY (G10 · 7 módulos alto uso · J-09 507→180)
  *          (see §14-§15 AUDIT LEDGERS).
  *
  * v3.1.0 reconciles this file against the tool that enforces it:
@@ -193,7 +194,7 @@ export interface PlannedTokenMeta {
 
 /* ═══════════════════ §2  DESIGN TOKENS ═══════════════════ */
 
-export const MANIFEST_VERSION = "3.4.0";
+export const MANIFEST_VERSION = "3.5.0";
 export const MANIFEST_DATE = "2026-11-08";
 
 export const TOKENS = {
@@ -958,6 +959,24 @@ export const AUDITED_REGISTRY: readonly AuditedEntry[] = [
   { path: "shared/components/auth/PermissionGate", status: "audited", phase: "G9", score: 9.3,
     notes: "EventCalendar unlocked (§13 #7) — G9-17..G9-20 fixed; legacy denied CSS preserved (§9 of its css)" },
 
+  // ── M-01 TRANCHE 1 · G10 — módulos de alto uso (7 · 327 instancias J-09) ──
+  // Auditoría de evidencia (g10): exports vs símbolos importados, guardian
+  // propio del archivo, tsc repo-wide green. Nada registrado sin evidencia.
+  { path: "shared/hooks/useReducedMotion", status: "audited", phase: "M-01-T1", score: 9.5,
+    notes: "30 LOC · 1 export · 123 consumidores resuelven · guardian propio 0/0" },
+  { path: "shared/components/ui/Badge", status: "audited", phase: "M-01-T1", score: 9.4,
+    notes: "106 LOC · 4 exports (Badge/BadgeProps/BadgeSize/BadgeVariant) · 39 consumidores · guardian 0/0" },
+  { path: "shared/components/ui/Toast", status: "audited", phase: "M-01-T1", score: 9.4,
+    notes: "302 LOC · 6 exports (ToastContainer + API imperativa showToast) · 30 consumidores · guardian 0/0" },
+  { path: "shared/components/ui/Card", status: "audited", phase: "M-01-T1", score: 9.4,
+    notes: "274 LOC · 10 exports (familia Card*) · 20 consumidores · guardian 0/0" },
+  { path: "shared/lib/chartTheme", status: "audited", phase: "M-01-T1", score: 9.0,
+    notes: "61 LOC · 5 exports · 21 consumidores · 12 X-23 preexistente (Recharts exige hex): 9/12 map 1:1 a tokens VERIFIED; terracotta #D47A5A, sage #5B8A6A, tooltipBg #1C2230 sin token counterpart (claim drift del header — tokenización pendiente)" },
+  { path: "shared/components/AdvisorBanner", status: "reverify-on-use", phase: "M-01-T1", score: 8.8,
+    notes: "247 LOC · 4 exports · 24 consumidores tsc-green · 29 warns propios (C-19/X-22/X-25/X-27) — re-auditar al reescribir" },
+  { path: "shared/mocks/contracts", status: "reverify-on-use", phase: "M-01-T1", score: 8.6,
+    notes: "7257 LOC · 549 exports · 60 consumidores tsc-green · deuda estilo: 2409 X-22 (readonly) + 1 X-28 (Inter L2480) · deep audit = M-01-T2" },
+
   // ── Calibration material (REQUEST 3 — not blockers) ──
   { path: "shared/lib/advisor-engine/confidence", status: "config", phase: "REQUEST 3",
     notes: "calibración de checks heurísticos D/G" },
@@ -1220,7 +1239,7 @@ export const ROLLOUT = {
 /* ═══════════════════ §12  VERSION SYNC ═══════════════════ */
 
 export const VERSION_SYNC = {
-  manifest: "3.4.0", // G8: BACKEND_REGISTRY added; frontend surfaces unchanged
+  manifest: "3.5.0", // M-01-T1: 7 módulos alto uso registrados (G10)
   guardian: "4.1.1",   // verified against production digest (1.151 files, 30.075 violations)
   validator: "4.0.0",  // FILE version (TOOL_VERSION) — its own AUDIT is still pending (M-04a G8: a factual version is not an audit claim)
   verifyIntegration: "3.2.0", // G8 restore: VI-12 (f11d8e7) re-applied over VI-14 v2 — regression 290afa4 = VI-15
