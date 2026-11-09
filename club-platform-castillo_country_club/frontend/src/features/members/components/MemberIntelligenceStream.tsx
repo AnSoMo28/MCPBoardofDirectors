@@ -14,6 +14,7 @@
 import type { ReactNode } from "react";
 import type { DashboardMode } from "../types";
 import type { FocusPanelId } from "../hooks/useMember360Dashboard";
+import "./MemberIntelligenceStream.css";
 
 interface MemberIntelligenceStreamProps {
   mode: DashboardMode;
