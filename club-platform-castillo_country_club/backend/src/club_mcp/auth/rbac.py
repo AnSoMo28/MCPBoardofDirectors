@@ -205,6 +205,7 @@ TOOL_PERMISSION_OVERRIDES: dict[tuple[str, str], Permission] = {
     ("event_orchestrator", "event_create"): Permission.CREATE_EVENTS,
     ("executive_dashboard", "export_report"): Permission.EXPORT_REPORTS,
     ("executive_dashboard", "generate_quarterly_board_report"): Permission.GENERATE_BOARD_REPORT,
+    ("executive_dashboard", "get_board_report"): Permission.VIEW_DASHBOARD,
     ("executive_dashboard", "get_pending_approvals"): Permission.APPROVE_REQUESTS,
     ("executive_dashboard", "approve_request"): Permission.APPROVE_REQUESTS,
     ("executive_dashboard", "reject_request"): Permission.APPROVE_REQUESTS,

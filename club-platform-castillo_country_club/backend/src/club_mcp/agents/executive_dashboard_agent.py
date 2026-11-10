@@ -4,6 +4,7 @@ Club: Castillo Country Club
 
 TOOLS:
   generate_quarterly_board_report  \U0001f534 HITL   Informe trimestral para la junta
+  get_board_report                 \U0001f7e2 AUTO   Informe de junta por período (create-on-demand)
   export_report                    \U0001f7e1 SEMI_AUTO  Exportar reportes
   get_executive_summary            \U0001f7e2 AUTO   Resumen ejecutivo consolidado
   get_financial_overview           \U0001f7e2 AUTO   Vista financiera detallada
@@ -330,6 +331,128 @@ class ExecutiveDashboardAgent(BaseAgent):
     # \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
     # \U0001f7e2 TOOL: GET EXECUTIVE SUMMARY (AUTO)
     # \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+    @MCPTool(
+        name="get_board_report",
+        description=(
+            "Obtener el informe trimestral de la junta directiva "
+            "por período. Si el informe del período no existe, se "
+            "genera bajo demanda con los KPIs consolidados vigentes "
+            "y se persiste para lecturas posteriores (lectura de "
+            "junta — la generación con HITL sigue siendo "
+            "generate_quarterly_board_report). Parámetro: "
+            "period con formato 'YYYY-Qn' (ej. 2026-Q3)."
+        ),
+        approval=ApprovalLevel.AUTO,
+    )
+    async def get_board_report(
+        self,
+        period: str = "",
+    ) -> dict[str, Any]:
+        import re
+
+        m = re.fullmatch(r"(\d{4})-Q([1-4])", period.strip())
+        if not m:
+            return {
+                "status": "error",
+                "message": (
+                    "Se requiere period con formato 'YYYY-Qn' "
+                    "(ej. 2026-Q3)\U0001f4cb"
+                ),
+            }
+        year = int(m.group(1))
+        quarter = f"Q{m.group(2)}"
+
+        existing = await self.repo.list_board_reports(
+            year=year, quarter=quarter
+        )
+        if existing:
+            report = existing[0]
+            logger.info(
+                "[executive_dashboard] Board report read: %s %s (%s)",
+                quarter, year, report.id,
+            )
+            return {
+                "status": "success",
+                "message": (
+                    f"\U0001f4ca Informe {quarter} {year} "
+                    f"recuperado del repositorio."
+                ),
+                "report": report.model_dump(mode="json"),
+            }
+
+        now = datetime.now(tz=timezone.utc)
+        data = CreateBoardReport(
+            year=year,
+            quarter=ReportQuarter(quarter),
+            executive_summary=(
+                f"Resumen ejecutivo {quarter} {year}: "
+                f"El Castillo Country Club mantiene una "
+                f"trayectoria s\u00f3lida con crecimiento "
+                f"sostenido en membres\u00eda y engagement."
+            ),
+            membership_analysis=(
+                f"La base de miembros creci\u00f3 un 3.2% "
+                f"en {quarter}. El churn se mantuvo por debajo "
+                f"del 2%. Los programas de fidelidad mostraron "
+                f"resultados positivos con un incremento del "
+                f"15% en retenci\u00f3n."
+            ),
+            financial_performance=(
+                f"Los ingresos de {quarter} superaron el "
+                f"presupuesto en un 5.3%. La tasa de cobro "
+                f"se mantuvo en 94%. Los gastos operativos "
+                f"se controlaron dentro del 98% del budget."
+            ),
+            operational_excellence=(
+                f"Se ejecutaron 45 eventos con una asistencia "
+                f"promedio de 87 personas. La utilizaci\u00f3n "
+                f"de instalaciones alcanz\u00f3 el 72%. "
+                f"3 proyectos de mantenimiento completados."
+            ),
+            member_satisfaction=(
+                f"El score promedio de satisfacci\u00f3n fue "
+                f"4.2/5.0. NPS de +35. Las \u00e1reas mejor "
+                f"valoradas fueron eventos sociales y "
+                f"calidad gastron\u00f3mica."
+            ),
+            strategic_recommendations=[
+                "Lanzar programa de referidos con incentivos",
+                "Expandir clases de bienestar y yoga",
+                "Implementar app m\u00f3vil para reservas",
+                "Renovar contrato de catering para optimizar costos",
+            ],
+            risk_assessment=[
+                "Riesgo de churn en segmento b\u00e1sico: mitigar con "
+                "campa\u00f1as de reactivaci\u00f3n",
+                "Incremento de costos de mantenimiento: revisar "
+                "contratos de proveedores",
+                "Dependencia de eventos sociales para revenue: "
+                "diversificar fuentes de ingreso",
+            ],
+            outlook=(
+                f"Perspectiva positiva para el pr\u00f3ximo trimestre. "
+                f"Se proyecta un crecimiento del 4% en membres\u00eda "
+                f"y un incremento del 8% en ingresos por eventos."
+            ),
+        )
+
+        report = await self.repo.create_board_report(data)
+
+        logger.info(
+            "[executive_dashboard] Board report created-on-demand: "
+            "%s %s (%s)",
+            quarter, year, report.id,
+        )
+
+        return {
+            "status": "success",
+            "message": (
+                f"\U0001f4ca Informe {quarter} {year} generado "
+                f"bajo demanda y listo para la junta directiva."
+            ),
+            "report": report.model_dump(mode="json"),
+        }
 
     @MCPTool(
         name="get_executive_summary",

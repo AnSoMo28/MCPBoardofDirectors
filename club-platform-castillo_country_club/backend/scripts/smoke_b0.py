@@ -34,7 +34,7 @@ def main() -> None:
     check("agent_name duplicados = 0", len(names) == len(set(names)))
 
     # ── Registro ──
-    check("196 tools en registro", rt.registry.total_tools == 196, f"got {rt.registry.total_tools}")
+    check("197 tools en registro", rt.registry.total_tools == 197, f"got {rt.registry.total_tools}")
     print(
         "  · tools/agent:",
         ", ".join(f"{a}={len(t)}" for a, t in sorted(rt.registry.tools_by_agent.items())),
@@ -56,11 +56,12 @@ def main() -> None:
     r = rt.registry.resolve("executive_dashboard", "generate_ai_analysis")
     check("cross-agent generate_ai_analysis → finance", r.spec.agent == "finance")
 
-    try:
-        rt.registry.resolve("reports", "get_board_report")
-        check("reports.get_board_report rechazado (pendiente B2)", False)
-    except Exception as exc:
-        check("reports.get_board_report rechazado (pendiente B2)", True, str(exc))
+    # B2: reports.get_board_report registrado (read AUTO + create-on-demand)
+    r = rt.registry.resolve("reports", "get_board_report")
+    check(
+        "compat reports.get_board_report → executive_dashboard (B2)",
+        r.spec.agent == "executive_dashboard" and r.spec.name == "get_board_report" and r.via_compat,
+    )
 
     # ── RBAC ──
     from club_mcp.auth.rbac import Permission, check_permission, permission_for
@@ -79,7 +80,7 @@ def main() -> None:
         for s in tools.values()
         if permission_for(a, s.name, s.approval) is None
     ]
-    check("RBAC cubre 196/196", not missing, f"faltan: {missing[:5]}")
+    check("RBAC cubre 197/197", not missing, f"faltan: {missing[:5]}")
 
     # ── HITL closure (B0.5) ──
     async def hitl_flow():
@@ -107,7 +108,7 @@ def main() -> None:
     from club_mcp.api.app import app
 
     check("app.state.agents == 19", app.state.agents_count == 19, str(app.state.agents_count))
-    check("app.state.tools == 196", app.state.tools_count == 196, str(app.state.tools_count))
+    check("app.state.tools == 197", app.state.tools_count == 197, str(app.state.tools_count))
 
     # ── HTTP (si httpx está disponible) ──
     try:
@@ -122,8 +123,8 @@ def main() -> None:
         check("GET /api/health 200", resp.status_code == 200, str(resp.status_code))
         resp = client.get("/api/agents")
         check(
-            "GET /api/agents catalog 200 + 196 tools",
-            resp.status_code == 200 and resp.json().get("total_tools") == 196,
+            "GET /api/agents catalog 200 + 197 tools",
+            resp.status_code == 200 and resp.json().get("total_tools") == 197,
             f"{resp.status_code} {str(resp.json())[:200]}",
         )
         resp = client.post(
@@ -136,7 +137,7 @@ def main() -> None:
     if FAILURES:
         print(f"✗ B0 SMOKE: {len(FAILURES)} fallo(s): {FAILURES}")
         sys.exit(1)
-    print("✓ B0 SMOKE VERDE: 19 agentes · 196 tools · compat · RBAC 196/196 · HITL cierra")
+    print("✓ B0 SMOKE VERDE: 19 agentes · 197 tools · compat · RBAC 197/197 · HITL cierra")
 
 
 if __name__ == "__main__":

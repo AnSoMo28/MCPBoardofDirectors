@@ -29,8 +29,10 @@ from club_mcp.agents.base import BaseAgent
 # ═══════════════════════════════════════════════════════════
 # Legacy -> canonical maps (DATA — edit here, no code changes)
 # Seeded ONLY with pairs verified in P2-C3h h3/h4 (params+read
-# compatible). Param-mismatch pairs (reports.*, satisfaction survey
-# reads, etc.) wait for their adapter batches (B2/B3).
+# compatible). B2 landed: reports → executive_dashboard with
+# get_board_report registered (params compatible). Param-mismatch
+# pairs (reports.get_risk_matrix, satisfaction survey reads, etc.)
+# wait for their adapter batches (B3+).
 # ═══════════════════════════════════════════════════════════
 
 AGENT_ALIASES: dict[str, str] = {
@@ -39,6 +41,7 @@ AGENT_ALIASES: dict[str, str] = {
     "facilities": "facility_management",
     "hitl": "executive_dashboard",
     "engagement": "member_engagement",
+    "reports": "executive_dashboard",
 }
 
 # Key: canonical agent. Value: {legacy_tool: canonical_tool | (agent, tool)}
@@ -68,8 +71,10 @@ TOOL_ALIASES: dict[str, dict[str, Any]] = {
         # cross-agent: the tool lives in finance, params match exactly
         "generate_ai_analysis": ("finance", "generate_ai_analysis"),
     },
-    # reports.* intentionally unmapped: per-tool cross-agent targets with
-    # param adapters -> batch B2.
+    # reports.* → B2: get_board_report is now a real tool under
+    # executive_dashboard (same name, so no TOOL_ALIASES entry needed —
+    # AGENT_ALIASES.reports handles the server rename). Remaining
+    # reports.* refs (get_risk_matrix) wait for their adapter batches.
 }
 
 
