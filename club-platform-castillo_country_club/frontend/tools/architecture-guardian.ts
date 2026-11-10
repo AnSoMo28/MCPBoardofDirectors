@@ -307,7 +307,7 @@ function assertManifestShape(mod: unknown): ManifestContract {
  * architecture.manifest (BASE §1.3 anti-duplication).
  */
 
-const TOOL_VERSION = "4.1.1";
+const TOOL_VERSION = "4.1.2";
 const CACHE_FILE = ".arch-guardian-cache.json";
 const MAX_CYCLES = 10;
 const HEADER_SCAN_LINES = 40;
@@ -871,6 +871,10 @@ const checkX15_MaterialEasing: CheckDef = {
   },
 };
 
+// AG-29: single source of truth for the X-16 fixable-declaration shape —
+// the detector's autoFixable flag and the fixer's matcher stay in lockstep.
+const X16_BARE_DECL = /^([ \t]*)(backdrop-filter\s*:\s*)([^;\n]+?)([ \t]*;?[ \t]*)$/;
+
 const checkX16_WebkitBackdrop: CheckDef = {
   key: "X-16",
   keys: ["X-16"],
@@ -878,16 +882,28 @@ const checkX16_WebkitBackdrop: CheckDef = {
   appliesTo: (c) => c.ext === "css",
   run: (ctx) => {
     const out: Violation[] = [];
-    const re = /(^|[^-\w])backdrop-filter\s*:/;
+    // AG-29 (β): value-aware, bidirectional ±2 window. v4.1.1 scanned a
+    // backward-only window for ANY -webkit- property, while this codebase
+    // places the mirror AFTER the standard property — 279/437 flags were
+    // declarations whose mirror sat on the next line.
+    const decl = /(^|[^-\w])backdrop-filter\s*:\s*([^;]+)/;
+    const mir = /(^|[^-\w])-webkit-backdrop-filter\s*:\s*([^;]+)/;
     ctx.lines.forEach((line, i) => {
       if (isCommentLine(line)) return;
-      if (re.test(line)) {
-        const lookback = ctx.lines.slice(Math.max(0, i - 2), i + 1).join("\n");
-        if (!/-webkit-backdrop-filter\s*:/.test(lookback)) {
-          out.push(mkViolation(ctx, "X-16", i + 1,
-            "backdrop-filter without -webkit-backdrop-filter mirror",
-            { autoFixable: true, suggestion: "Add -webkit-backdrop-filter on the line before (Safari/iOS)" }));
-        }
+      const m = decl.exec(line);
+      if (m === null) return;
+      const value = normalizeColorLiteral(m[2]);
+      const scope = ctx.lines.slice(Math.max(0, i - 2), Math.min(ctx.lines.length, i + 3));
+      const mirrored = scope.some((w) => {
+        const wm = mir.exec(w);
+        return wm !== null && normalizeColorLiteral(wm[2]) === value;
+      });
+      if (!mirrored) {
+        // AG-29 (γ): truthful per violation — the fixer writes exactly the
+        // single-line-declaration shape, nothing else.
+        out.push(mkViolation(ctx, "X-16", i + 1,
+          "backdrop-filter without -webkit-backdrop-filter mirror",
+          { autoFixable: X16_BARE_DECL.test(line), suggestion: "Add -webkit-backdrop-filter with the same value on the adjacent line (Safari/iOS)" }));
       }
     });
     return out;
@@ -1744,14 +1760,26 @@ function fixWebkitBackdropMirror(text: string): { text: string; fixes: number } 
   const lines = text.split("\n");
   const out: string[] = [];
   let fixes = 0;
-  const bare = /^([ \t]*)(backdrop-filter\s*:\s*)([^;\n]+?)([ \t]*;?[ \t]*)$/;
+  const bare = X16_BARE_DECL;
   const mirror = /^([ \t]*)-webkit-backdrop-filter\s*:\s*([^;\n]+?)([ \t]*;?[ \t]*)$/;
-  for (const line of lines) {
+  // AG-29 (α): v4.1.1 checked only the PREVIOUS line for an existing
+  // mirror, but this codebase convention places the mirror AFTER the
+  // property → --fix duplicated the mirror that already followed (G11
+  // shipped 4 such duplicates). Prev OR next (±1) with the same normalized
+  // value → already mirrored, no write.
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
     const m = bare.exec(line);
     if (m !== null) {
+      const value = normalizeColorLiteral(m[3]);
       const prev = out.length > 0 ? out[out.length - 1] : "";
       const pm = mirror.exec(prev);
-      const alreadyMirrored = pm !== null && normalizeColorLiteral(pm[2]) === normalizeColorLiteral(m[3]);
+      const alreadyMirrored =
+        (pm !== null && normalizeColorLiteral(pm[2]) === value) ||
+        lines.slice(i + 1, i + 2).some((next) => {
+          const nm = mirror.exec(next);
+          return nm !== null && normalizeColorLiteral(nm[2]) === value;
+        });
       if (!alreadyMirrored) {
         const semi = m[4].includes(";") ? ";" : "";
         out.push(`${m[1]}-webkit-backdrop-filter: ${m[3].trim()}${semi}`);
@@ -2543,4 +2571,22 @@ if (invokedAsCli) {
  * [x] AG-28 --changed: `git ls-files --others` emits CWD-relative paths from
  *          a subdirectory — untracked files were dropped when root ≠ repo
  *          top (false-green). Fixed with --full-name.
+ *
+ * v4.1.2 — G13 sandbox audit (Linux clone, byte-verified evidence):
+ * [x] AG-29 X-16 detector/fixer misaligned — 3 defects, sandbox-reproduced
+ *          on the full tree (1156 files, 437 auto-fixable claimed):
+ *          (α) fixer checked only the PREVIOUS line for an existing mirror;
+ *          repo convention is mirror AFTER → v4.1.1 --fix wrote a duplicate
+ *          right above the real one (4 shipped in G11/WellnessAnomalyRadar;
+ *          sandbox repro wrote 279). Now: prev OR next, same normalized
+ *          value.
+ *          (β) detector scanned a backward-only 2-line window for ANY
+ *          -webkit- property → 279/437 flags were false positives (mirror
+ *          on the NEXT line). Now: value-aware bidirectional ±2 window.
+ *          (γ) autoFixable truthful per violation — true only when the
+ *          line matches the fixer's own single-line-declaration shape
+ *          (X16_BARE_DECL, shared const: detector and fixer in lockstep).
+ *          Sandbox-verified: v4.1.1 full --fix = 437 writes incl. 279
+ *          duplicates; 4.1.2 = writes only the genuinely-missing mirrors
+ *          and re-runs clean (idempotency holds).
  */

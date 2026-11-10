@@ -194,8 +194,8 @@ export interface PlannedTokenMeta {
 
 /* ═══════════════════ §2  DESIGN TOKENS ═══════════════════ */
 
-export const MANIFEST_VERSION = "3.6.0";
-export const MANIFEST_DATE = "2026-11-09";
+export const MANIFEST_VERSION = "3.6.1";
+export const MANIFEST_DATE = "2026-11-10";
 
 export const TOKENS = {
   colors: {
@@ -1374,8 +1374,8 @@ export const ROLLOUT = {
 /* ═══════════════════ §12  VERSION SYNC ═══════════════════ */
 
 export const VERSION_SYNC = {
-  manifest: "3.6.0", // M-01-T2: 67 módulos J-09 restantes — J-09 180→0 (G12)
-  guardian: "4.1.1",   // verified against production digest (1.151 files, 30.075 violations)
+  manifest: "3.6.1", // G13: guardian 4.1.2 (AG-29 X-16 detector/fixer alineados) — sync con tool
+  guardian: "4.1.2",   // 4.1.1 verified against production digest (1.151 files, 30.075 violations); 4.1.2 = AG-29 (α/β/γ, sandbox-verified)
   validator: "4.0.0",  // FILE version (TOOL_VERSION) — its own AUDIT is still pending (M-04a G8: a factual version is not an audit claim)
   verifyIntegration: "3.2.0", // G8 restore: VI-12 (f11d8e7) re-applied over VI-14 v2 — regression 290afa4 = VI-15
   mcpRouter: "2.1.0",
