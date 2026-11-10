@@ -14719,3 +14719,82 @@ export function createMockSubmitFeedback(
     },
   };
 }
+
+// ── reports.get_board_report (B2 — dev mock, backend ya sirve el tool) ──
+// Shape = features/reports/types.BoardReport (lo que consume
+// BoardReportsPage). El backend real devuelve BoardReportData
+// {id, year, quarter, executive_summary, membership_analysis, ...};
+// la vista administra ambos shapes via metadata/sections derivadas.
+export function createMockGetBoardReport(
+  params?: Record<string, unknown>,
+): import("@/features/reports/types").BoardReport {
+  const period = (params?.period as string) || "2026-Q3";
+  const [yearS, quarter] = period.split("-Q");
+  const year = Number(yearS) || 2026;
+  const quarterNum = Number(quarter) || 3;
+  const prevQuarter = quarterNum === 1 ? `Q4 ${year - 1}` : `Q${quarterNum - 1} ${year}`;
+  const reportId = `rpt-${year}-Q${quarterNum}`;
+
+  return {
+    id: reportId,
+    title: `Reporte de Junta Directiva — ${period}`,
+    type: "quarterly",
+    period,
+    status: "published",
+    generated_at: new Date().toISOString(),
+    generated_by: "ai",
+    approved_by: "Lic. Patricia Herrera",
+    sections: [
+      {
+        id: "sec-001",
+        title: "Situación Financiera",
+        content:
+          `Los ingresos por cuotas representaron el 62% del total, seguidos de ` +
+          `instalaciones (14%) y eventos (12%). Los gastos se mantuvieron dentro ` +
+          `del presupuesto con un margen neto del 28.8%.`,
+        type: "narrative",
+      },
+      {
+        id: "sec-002",
+        title: "Análisis de Membresía",
+        content:
+          `La tasa de retención se mantiene en 94%. Sin embargo, 17 familias ` +
+          `(12%) muestran señales de desengagement. Causas principales: falta ` +
+          `de actividades para jóvenes (35%), insatisfacción con relación ` +
+          `calidad-precio (28%).`,
+        type: "narrative",
+        ai_confidence: 0.85,
+      },
+      {
+        id: "sec-003",
+        title: "Recomendaciones Estratégicas",
+        content:
+          `1. Programa de reactivación para familias en riesgo.\n` +
+          `2. Ampliar horario del gimnasio a 5AM-10PM.\n` +
+          `3. Crear programa de actividades juveniles.\n` +
+          `4. Evaluar inversión en señalización digital para golf.\n` +
+          `5. Fortalecer comunicación con notificaciones push.`,
+        type: "recommendation",
+        ai_confidence: 0.78,
+      },
+    ],
+    executive_summary:
+      `El ${period} cerró con resultados financieros sólidos. Los ingresos ` +
+      `totales alcanzaron los ₡125 millones, un crecimiento del 8.2% respecto ` +
+      `a ${prevQuarter}. La membresía se mantiene en 145 familias activas, ` +
+      `con 17 identificadas como en riesgo.\n\n` +
+      `El NPS de satisfacción se mantiene en 72 puntos. Las instalaciones ` +
+      `deportivas muestran una ocupación promedio del 61%, con la cancha de ` +
+      `tenis como la más demandada (85%).`,
+    metadata: {
+      total_families: 145,
+      active_members: 487,
+      revenue_total: 125_000_000,
+      revenue_change_pct: 8.2,
+      occupancy_rate: 61.5,
+      satisfaction_nps: 72,
+      youth_engagement_pct: 68,
+      senior_engagement_pct: 55,
+    },
+  };
+}

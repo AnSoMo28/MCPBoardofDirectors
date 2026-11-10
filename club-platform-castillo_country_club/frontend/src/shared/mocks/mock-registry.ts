@@ -225,6 +225,9 @@ import {
   createMockGetAgeGroupAnalyticsEnhanced,
   createMockGenerateAgeGroupEngagementProposals,
 
+  // ── Reports (B2) ──────────────────────────────────────
+  createMockGetBoardReport,
+
   // ── Guest Management Intelligence (F40) ──────────────
   createMockGetGuestHealthScore,
   createMockGetConversionFunnel,
@@ -646,7 +649,16 @@ export const MOCK_REGISTRY: Record<string, Record<string, MockFactory>> = {
     generate_age_group_engagement_proposals: (params) =>
       createMockGenerateAgeGroupEngagementProposals(params),
 
-  }
+  },
+
+  // ── Reports (B2) — dev mock; el tool real ya vive en el backend
+  //    (executive_dashboard.get_board_report, AUTO + create-on-demand).
+  //    Este server existe para DEV sin backend: el router prefiere backend
+  //    en cuanto haya sesión real (ver mcp-router Step 1).
+  reports: {
+    get_board_report: (params) => createMockGetBoardReport(params),
+  },
+};
 };
 
 // ── Lookup Function ──
