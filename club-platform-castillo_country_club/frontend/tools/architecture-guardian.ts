@@ -307,7 +307,7 @@ function assertManifestShape(mod: unknown): ManifestContract {
  * architecture.manifest (BASE §1.3 anti-duplication).
  */
 
-const TOOL_VERSION = "4.1.2";
+const TOOL_VERSION = "4.1.3";
 const CACHE_FILE = ".arch-guardian-cache.json";
 const MAX_CYCLES = 10;
 const HEADER_SCAN_LINES = 40;
@@ -1036,6 +1036,27 @@ const checkB77B78B79_Keyframes: CheckDef = {
   },
 };
 
+const BOUNDARY_BEFORE = new Set([" ", "\t", ":", ",", "(", "[", "{", '"', "'", "`"]);
+const BOUNDARY_AFTER = new Set([" ", "\t", ",", ";", ")", "]", "}", '"', "'", "`"]);
+
+/** AG-30: a banned font counts only when it stands as a standalone font token
+ * (quoted, in a stack, or after a font-family colon) — never inside an
+ * identifier (setInterval, Interface, colorInterpolationFilters), a Spanish
+ * word (Interés) or hyphenated prose (Inter-generational). */
+function isFontToken(line: string, font: string): boolean {
+  let at = line.indexOf(font);
+  while (at !== -1) {
+    const before = at === 0 ? "" : line[at - 1];
+    const end = at + font.length;
+    const after = end >= line.length ? "" : line[end];
+    if ((at === 0 || BOUNDARY_BEFORE.has(before)) && (after === "" || BOUNDARY_AFTER.has(after))) {
+      return true;
+    }
+    at = line.indexOf(font, at + 1);
+  }
+  return false;
+}
+
 const checkX28_BannedFonts: CheckDef = {
   key: "X-28",
   keys: ["X-28"],
@@ -1047,11 +1068,20 @@ const checkX28_BannedFonts: CheckDef = {
   run: (ctx) => {
     const out: Violation[] = [];
     for (const font of getManifest().BANNED_FONTS) {
-      const idx = ctx.content.indexOf(font);
-      if (idx >= 0 && !isCommentLine(ctx.lines[ctx.lineOf(idx) - 1] ?? "")) {
-        out.push(mkViolation(ctx, "X-28", ctx.lineOf(idx),
-          `Banned font family: ${font}`,
-          { suggestion: "Use --font-display / --font-mono / --font-ui tokens" }));
+      // AG-30: the v4.1.2 indexOf substring match flagged identifiers,
+      // Spanish words and hyphenated prose — 109/111 hits tree-wide were
+      // false positives (sandbox-measured); the 2 real system-ui fallback
+      // stacks (facilities) still fire. One hit per font per file, as before.
+      let flagged = false;
+      for (let i = 0; i < ctx.lines.length && !flagged; i += 1) {
+        const line = ctx.lines[i];
+        if (isCommentLine(line)) continue;
+        if (isFontToken(line, font)) {
+          out.push(mkViolation(ctx, "X-28", i + 1,
+            `Banned font family: ${font}`,
+            { suggestion: "Use --font-display / --font-mono / --font-ui tokens" }));
+          flagged = true;
+        }
       }
     }
     return out;
@@ -2589,4 +2619,17 @@ if (invokedAsCli) {
  *          Sandbox-verified: v4.1.1 full --fix = 437 writes incl. 279
  *          duplicates; 4.1.2 = writes only the genuinely-missing mirrors
  *          and re-runs clean (idempotency holds).
+ *
+ * v4.1.3 — G14 sandbox audit (T3 evidence pass):
+ * [x] AG-30 X-28 banned-font detector matched raw substrings —
+ *          identifiers (setInterval, Interface, Internal,
+ *          colorInterpolationFilters), Spanish words (Interés) and
+ *          hyphenated prose (Inter-generational) all contain "Inter":
+ *          109/111 hits tree-wide were false positives (sandbox-measured
+ *          full run; only 2 real system-ui fallback stacks in facilities).
+ *          Now a banned font fires only as a standalone font token
+ *          (isFontToken: boundary chars around the name — quoted, in a
+ *          stack, or after a font-family colon). Same one-hit-per-font-
+ *          per-file semantics as v4.1.2. Errors 15303→15194 with zero
+ *          source changes; no real usage missed (grep cross-check).
  */
