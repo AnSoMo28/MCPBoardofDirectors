@@ -175,16 +175,18 @@
  *     tokens exist (--radius-xl/--radius-lg). Tokenized.
  */
 
-@import "tailwindcss" source(".");
+@import "tailwindcss" source("..");
 
-/* B6-QA: los fixtures del check-3 usan la forma compacta real de la clase
- * ("text-[var(--color-*)]") SOLO como string de prueba del masker — Tailwind
- * v4 escanea .ts/.tsx como candidatos y genera utility CSS inválida para
- * ambos. source() define la raíz de contenido (aquí: el propio src/, donde
- * viven los componentes que realmente USAN utilities); las herramientas de
- * governance (tools/, scripts/) contienen la sintaxis que POLICIAN, no la
- * que usan — nunca deben generar CSS. */
-@source not "../tools";
+/* B6-QA v3 (post-mortem del 0002): source() es relativo al STYLESHEET
+ * (src/styles/), no al root del frontend. 0002 usó source(".") → la raíz
+ * de escaneo colapsó a solo este directorio: 0 archivos .tsx escaneados,
+ * la capa de utilities ENTERA desapareció del bundle (index.css 207kB →
+ * 118kB ≈ solo el CSS hand-authored; .flex/.grid/.items-center: 0 en dist
+ * contra 1716/559/875 usos reales en src/). v3: source("..") = src/
+ * completo — estilos + los componentes que USAN las utilities. tools/ y
+ * scripts/ quedan fuera POR CONSTRUCCIÓN (viven fuera de src/): contienen
+ * la sintaxis que POLICIAN, no la que usan. El gate tools/verify-build-css
+ * blinda esta capa para siempre (falla si el bundle pierde las utilities). */
 
 
 /* ═══════════════════════════════════════════════════════════════
