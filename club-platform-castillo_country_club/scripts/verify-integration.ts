@@ -129,6 +129,7 @@ interface ScanContext {
   backendScanned: boolean;
   definedTokens: Set<string>;
   tokenSource: "css" | "legacy";
+  compatAliases: Map<string, string>; // legacy "server.tool" -> canonical "server.tool" (registry.py)
 }
 
 interface Totals {
@@ -685,10 +686,34 @@ function vi14ClassifyRef(
   tool: string,
   backend: Vi14BackendIndex,
   registryKeys: Set<string>,
+  compatAliases?: Map<string, string>,
 ): Vi14Classification {
   const dotted = server + "." + tool;
   const seed = VI14_EQUIVALENCES[dotted] ?? [];
   const cands = vi14RefCandidates(server, tool);
+
+  // 0) B3: the backend registry itself resolves this legacy key
+  // (AGENT_ALIASES + TOOL_ALIASES in registry.py, applied by the
+  // dispatch layer with Deprecation headers). The ref is served —
+  // it is a compat key, not missing debt.
+  const canonicalKey = compatAliases?.get(dotted);
+  if (canonicalKey) {
+    const [cs, ct] = canonicalKey.split(".");
+    if (backend.byServer.get(cs)?.has(ct)) {
+      return {
+        status: "tool-backend",
+        real: canonicalKey,
+        evidence: ["registry.py compat alias: " + dotted + " -> " + canonicalKey],
+      };
+    }
+    if (registryKeys.has(cs + "::" + ct)) {
+      return {
+        status: "servido-por-mock",
+        real: canonicalKey,
+        evidence: ["registry.py compat alias (mock): " + dotted + " -> " + canonicalKey],
+      };
+    }
+  }
 
   // 1) the tool exists in the backend under the ref (renamed) server
   for (const c of cands) {
@@ -758,6 +783,7 @@ function buildContext(root: string): ScanContext {
   const pyFiles = backendScanned
     ? walk(backendSrc, [".py"]).filter((f) => isBackendSource(f, backendSrc))
     : [];
+  const compatAliases = extractBackendCompatAliases(backendSrc);
 
   const routerContent = read(path.join(frontendSrc, "app", "router.tsx"));
 
@@ -788,7 +814,92 @@ function buildContext(root: string): ScanContext {
     backendScanned,
     definedTokens,
     tokenSource,
+    compatAliases,
   };
+}
+
+/**
+ * B3: parse AGENT_ALIASES + TOOL_ALIASES from the backend registry.py —
+ * the same DATA the dispatch layer applies at runtime (with Deprecation/
+ * Sunset headers). This keeps the verifier in sync with the single source
+ * of truth instead of a hand-maintained equivalence table.
+ */
+function extractBackendCompatAliases(backendSrc: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const registryPath = path.join(backendSrc, "registry.py");
+  const content = read(registryPath);
+  if (!content) return out;
+
+  // AGENT_ALIASES: { "legacy": "canonical", ... } — plain string dict.
+  const agentBlock = matchBalancedDict(content, "AGENT_ALIASES");
+  const agentRenames: Record<string, string> = {};
+  if (agentBlock) {
+    for (const m of agentBlock.matchAll(/["']([a-z_]+)["']\s*:\s*["']([a-z_]+)["']/g)) {
+      agentRenames[m[1]!] = m[2]!;
+    }
+  }
+
+  // TOOL_ALIASES: nested { canonical_agent: { legacy: target } } where
+  // target is "tool", ("agent", "tool") or AliasAdapter(target=(...)).
+  // The canonical agent lives in the OUTER dict key of each inner block,
+  // so we scan inner blocks one at a time.
+  const toolBlock = matchBalancedDict(content, "TOOL_ALIASES");
+  if (toolBlock) {
+    const INNER_RE = /"([a-z_0-9]+)":\s*\{/g;
+    for (const inner of toolBlock.matchAll(INNER_RE)) {
+      const canonicalAgent = inner[1]!;
+      const innerBlock = matchBalancedDictFrom(toolBlock, inner.index ?? 0);
+      if (!innerBlock) continue;
+      const ENTRY_RE = /"([a-z_0-9]+)"\s*:\s*(?:\(\s*"([a-z_0-9]+)"\s*,\s*"([a-z_0-9]+)"\s*\)|"([a-z_0-9]+)"|AliasAdapter\(\s*target\s*=\s*\(\s*"([a-z_0-9]+)"\s*,\s*"([a-z_0-9]+)"\s*\))/g;
+      for (const m of innerBlock.matchAll(ENTRY_RE)) {
+        const legacyTool = m[1]!;
+        const tAgent = m[2] ?? m[5] ?? canonicalAgent;
+        const tTool = m[3] ?? m[6] ?? m[4];
+        if (tTool === undefined || tTool === legacyTool) continue;
+        const legacyServers = new Set<string>([canonicalAgent]);
+        for (const [legacyName, canonical] of Object.entries(agentRenames)) {
+          if (canonical === canonicalAgent) legacyServers.add(legacyName);
+        }
+        for (const [feName, targets] of Object.entries(VI14_SERVER_RENAMES)) {
+          if (targets.includes(canonicalAgent)) legacyServers.add(feName);
+        }
+        for (const s of legacyServers) {
+          out.set(s + "." + legacyTool, tAgent + "." + tTool);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/** Extract the {...} literal of `NAME: dict[str, ...] = { ... }`. */
+function matchBalancedDict(content: string, name: string): string | null {
+  const assign = content.indexOf(name + ": dict");
+  const start = assign >= 0 ? content.indexOf("{", assign) : -1;
+  if (start < 0) return null;
+  let depth = 0;
+  for (let i = start; i < content.length; i++) {
+    if (content[i] === "{") depth++;
+    else if (content[i] === "}") {
+      depth--;
+      if (depth === 0) return content.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+
+function matchBalancedDictFrom(content: string, from: number): string | null {
+  const start = content.indexOf("{", from);
+  if (start < 0) return null;
+  let depth = 0;
+  for (let i = start; i < content.length; i++) {
+    if (content[i] === "{") depth++;
+    else if (content[i] === "}") {
+      depth--;
+      if (depth === 0) return content.slice(start, i + 1);
+    }
+  }
+  return null;
 }
 
 // ═════════════════════════════════════════════════════ checks ════════════
@@ -1147,7 +1258,7 @@ function checkBackendTools(ctx: ScanContext): CheckOutcome {
   const missingBoth = new Map<string, McpQueryRef>();
 
   for (const q of ctx.mcpQueries) {
-    const cls = vi14ClassifyRef(q.server, q.tool, idx, ctx.registryKeys);
+    const cls = vi14ClassifyRef(q.server, q.tool, idx, ctx.registryKeys, ctx.compatAliases);
     counts[cls.status] += 1;
     if (cls.status === "deuda-real") missingBoth.set(q.server + "::" + q.tool, q);
 

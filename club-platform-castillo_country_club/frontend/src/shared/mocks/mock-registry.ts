@@ -256,6 +256,11 @@ import {
   createMockSubmitFeedback,
   createExecutiveAiAnalysis,
   createMockIdentifySocialClusters,
+
+  // ── B3 (risk matrix + today guests) ─────────────────
+  createMockGetRiskMatrix,
+  createMockGetTodayGuests,
+  createMockGetTodaySummary,
 } from "./factories";
 
 
@@ -444,6 +449,9 @@ export const MOCK_REGISTRY: Record<string, Record<string, MockFactory>> = {
 
   // ── Guest Management ──
   guest_management: {
+    // B3: today board (the real tools landed in B3 — AUTO reads).
+    get_today_guests: (params) => createMockGetTodayGuests(params),
+    get_today_summary: (params) => createMockGetTodaySummary(params),
     register_guest: (params) =>
       createMockRegisterGuestResponse(params),
     plan_private_event: (params) =>
@@ -651,14 +659,15 @@ export const MOCK_REGISTRY: Record<string, Record<string, MockFactory>> = {
 
   },
 
-  // ── Reports (B2) — dev mock; el tool real ya vive en el backend
-  //    (executive_dashboard.get_board_report, AUTO + create-on-demand).
-  //    Este server existe para DEV sin backend: el router prefiere backend
-  //    en cuanto haya sesión real (ver mcp-router Step 1).
+  // ── Reports (B2/B3) — dev mock; los tools reales ya viven en el backend
+  //    (executive_dashboard.get_board_report + get_risk_matrix, AUTO +
+  //    create-on-demand). Este server existe para DEV sin backend: el
+  //    router prefiere backend en cuanto haya sesión real (ver mcp-router
+  //    Step 1).
   reports: {
     get_board_report: (params) => createMockGetBoardReport(params),
+    get_risk_matrix: (params) => createMockGetRiskMatrix(params),
   },
-};
 };
 
 // ── Lookup Function ──

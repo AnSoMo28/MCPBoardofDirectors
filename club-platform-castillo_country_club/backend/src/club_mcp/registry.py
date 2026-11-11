@@ -324,6 +324,16 @@ class AgentRegistry:
         adapter = _alias_adapter(alias_entry)
         via_tool = (target_tool != tool_key) or (target_agent != canonical_agent)
 
+        # Cross-agent aliases must execute on the TARGET agent's instance,
+        # not the requested server's (e.g. engagement.get_active_survey →
+        # satisfaction.active_survey runs on SatisfactionAgent).
+        if agent_key != target_agent and target_agent != canonical_agent:
+            cross_agent = self._agents.get(target_agent)
+            if cross_agent is None:
+                raise ResolutionError(agent_key, tool_key, self._suggest(agent_key, tool_key))
+        else:
+            cross_agent = agent
+
         spec = self._tools.get(target_agent, {}).get(target_tool)
         if spec is None:
             raise ResolutionError(agent_key, tool_key, self._suggest(agent_key, tool_key))
@@ -331,7 +341,7 @@ class AgentRegistry:
         if via_agent or via_tool:
             self.compat_hits[f"{agent_key}.{tool_key}"] += 1
         return Resolved(
-            agent=agent,
+            agent=cross_agent or agent,
             spec=spec,
             requested=(agent_key, tool_key),
             canonical=(target_agent, target_tool),

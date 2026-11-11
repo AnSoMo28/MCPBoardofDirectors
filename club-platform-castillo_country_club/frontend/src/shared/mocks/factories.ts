@@ -14798,3 +14798,153 @@ export function createMockGetBoardReport(
     },
   };
 }
+
+// ══════════════════════════════════════════════════════════════
+// B3 — risk matrix + today guests (dev mocks mirroring the real
+// backend tools registered in B3: executive_dashboard.get_risk_matrix
+// and guest_management.get_today_guests/get_today_summary).
+// ══════════════════════════════════════════════════════════════
+
+export function createMockGetRiskMatrix(
+  params?: Record<string, unknown>,
+): import("@/features/reports/types").RiskSummary {
+  const period = (params?.period as string) || "2026-Q4";
+  const [yearS, quarter] = period.split("-Q");
+  const year = Number(yearS) || 2026;
+  const quarterNum = Number(quarter) || 4;
+  const identified = `${year}-${quarterNum === 1 ? "01" : quarterNum === 2 ? "04" : quarterNum === 3 ? "07" : "10"}-01`;
+
+  const seed: Array<
+    [string, string, number, number, string, string]
+  > = [
+    ["Churn segmento básico", "membership", 3, 4, "Campañas de reactivación + encuestas de salida al segmento.", "Directora de Membresía"],
+    ["Incremento de costos de mantenimiento", "financial", 3, 3, "Revisión trimestral de contratos de proveedores.", "Administración"],
+    ["Dependencia de eventos sociales para revenue", "financial", 2, 4, "Diversificar fuentes de ingreso (convenciones, alquiler externo).", "Directora de Finanzas"],
+    ["Incidente de seguridad en instalaciones", "operational", 2, 4, "Protocolo de seguridad + simulacros trimestrales.", "Jefe de Operaciones"],
+    ["Latencia en herramientas de datos", "systems", 2, 2, "Monitoreo y presupuesto de infraestructura.", "TI"],
+    ["Baja asistencia a actividades de bienestar", "engagement", 2, 3, "Programa de incentivos por asistencia.", "Coordinación de Bienestar"],
+  ];
+
+  const items = seed.map(([title, category, probability, impact, mitigation, owner], i) => {
+    const score = probability * impact;
+    const level = score >= 12 ? "critical" : score >= 8 ? "high" : score >= 4 ? "medium" : "low";
+    return {
+      id: `risk-${year}-Q${quarterNum}-${String(i + 1).padStart(2, "0")}`,
+      title,
+      description: `${title} — señal monitoreada por la plataforma.`,
+      category,
+      probability,
+      impact,
+      score,
+      level,
+      mitigation,
+      owner,
+      identified_at: identified,
+    } as import("@/features/reports/types").RiskItem;
+  });
+
+  const critical = items.filter((i) => i.level === "critical").length;
+  const high = items.filter((i) => i.level === "high").length;
+  const medium = items.filter((i) => i.level === "medium").length;
+  const low = items.filter((i) => i.level === "low").length;
+  return { total_risks: items.length, critical, high, medium, low, items };
+}
+
+export function createMockGetTodayGuests(
+  params?: Record<string, unknown>,
+): import("@/features/guests/types").GuestListResponse {
+  const status = (params?.status as string) || "";
+  const today = "2026-06-05";
+  const all = [
+    {
+      id: "gci-001",
+      guest_name: "Andrés Mora",
+      guest_id: "gst-001",
+      id_number: "1-1020-3040",
+      host_family_id: "fam-002",
+      host_family_name: "Familia Mora",
+      host_member_name: "Diego Mora",
+      facility_id: "fac-tennis",
+      facility_name: "Canchas de Tenis",
+      check_in_time: `${today}T09:40:00Z`,
+      check_out_time: null,
+      status: "active" as const,
+      purpose: "social",
+      purpose_label: "Social",
+      notes: "Visita #6",
+      approved_by: "mem-005",
+      approved_by_name: "Diego Mora",
+    } as unknown as import("@/features/guests/types").GuestCheckIn,
+    {
+      id: "gci-002",
+      guest_name: "Valentina Solano",
+      guest_id: "gst-002",
+      id_number: "1-2030-4050",
+      host_family_id: "fam-004",
+      host_family_name: "Familia Solano",
+      host_member_name: "María Elena Solano",
+      facility_id: "fac-pool",
+      facility_name: "Piscina Principal",
+      check_in_time: `${today}T08:15:00Z`,
+      check_out_time: `${today}T16:30:00Z`,
+      status: "departed" as const,
+      purpose: "family",
+      purpose_label: "Familiar",
+      notes: "Visita #3",
+      approved_by: "mem-015",
+      approved_by_name: "María Elena Solano",
+    } as unknown as import("@/features/guests/types").GuestCheckIn,
+    {
+      id: "gci-003",
+      guest_name: "Daniela Montero",
+      guest_id: "gst-003",
+      id_number: "1-3040-5060",
+      host_family_id: "fam-008",
+      host_family_name: "Familia Montero",
+      host_member_name: "Silvia Montero",
+      facility_id: "fac-gym",
+      facility_name: "Gimnasio",
+      check_in_time: `${today}T10:00:00Z`,
+      check_out_time: null,
+      status: "active" as const,
+      purpose: "social",
+      purpose_label: "Social",
+      notes: "Visita #4",
+      approved_by: "mem-035",
+      approved_by_name: "Silvia Montero",
+    } as unknown as import("@/features/guests/types").GuestCheckIn,
+  ];
+  const checkins = status ? all.filter((c) => c.status === status) : all;
+  const active_count = checkins.filter((c) => c.status === "active").length;
+  const departed_count = checkins.filter((c) => c.status === "departed").length;
+  return {
+    checkins,
+    total: checkins.length,
+    date: today,
+    active_count,
+    departed_count,
+    total_count: checkins.length,
+  };
+}
+
+export function createMockGetTodaySummary(
+  _params?: Record<string, unknown>,
+): import("@/features/guests/types").GuestTodaySummary {
+  const today = "2026-06-05";
+  return {
+    date: today,
+    total_expected: 3,
+    checked_in: 3,
+    departed: 1,
+    currently_present: 2,
+    by_facility: [
+      { facility_id: "fac-pool", facility_name: "Piscina Principal", count: 1 },
+      { facility_id: "fac-gym", facility_name: "Gimnasio", count: 1 },
+      { facility_id: "fac-tennis", facility_name: "Canchas de Tenis", count: 1 },
+    ],
+    by_purpose: [
+      { purpose: "social", label: "Social", count: 2 },
+      { purpose: "family", label: "Familiar", count: 1 },
+    ],
+  } as unknown as import("@/features/guests/types").GuestTodaySummary;
+}
