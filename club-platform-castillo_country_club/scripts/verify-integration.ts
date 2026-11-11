@@ -79,6 +79,27 @@
  *          shapes again, check 4 is EOL-insensitive again. Version = 3.2.0
  *          (VI-14 v2 + VI-12 — the 3.2.0 the .bak anticipated). Regression
  *          documented in MASTER_CHECKPOINT §0.3 (#62).
+ *   VI-16  (B6) check 3 flagged noise, not debt: 27 of its 32 warnings were
+ *          migration comments ("// [x] text-[var(--color-*)] → CSS") and 4
+ *          were BEM modifier fragments ("--approval" in a *Class field,
+ *          concatenated into .glass-notification-item--approval — the class
+ *          EXISTS). Fix: shared stripLine masker (line + block comments,
+ *          CRLF, string-literal aware), template-literal prefixes verified
+ *          as families (var(--gca-${…}) → 14 concrete tokens — wired),
+ *          JS-write sites (style-object keys / setProperty) excluded as
+ *          definitions, quoted prefix fragments (toContain("var(--color-"))
+ *          excluded as assertion noise. TS side: 32w+6i → 0. Regression
+ *          suite: src/tools/__tests__/verify-integration.check3.test.ts.
+ *   VI-17  (B6) check 3 never looked at the CSS side — where the real debt
+ *          lived: 49 tokens used in var() with NO fallback and NO definition
+ *          anywhere (713 uses) silently resolve to `unset` at runtime
+ *          (--color-surface ×154, --space-2 ×70, --gst-accent ×53 …).
+ *          Now: var() reads in CSS against never-defined tokens with no
+ *          fallback are warned (capped at 20 per run, full list in --json);
+ *          reads WITH fallbacks are self-healing and stay silent; tokens
+ *          written from JS (style-object keys, setProperty, @property) are
+ *          wired by construction. ScanContext gains jsWrittenTokens.
+ *          Version = 3.3.0.
  */
 
 import * as fs from "node:fs";
@@ -130,6 +151,12 @@ interface ScanContext {
   definedTokens: Set<string>;
   tokenSource: "css" | "legacy";
   compatAliases: Map<string, string>; // legacy "server.tool" -> canonical "server.tool" (registry.py)
+  /** VI-17: custom properties WRITTEN from TS/TSX — style-object keys,
+   * setProperty() targets, @property declarations. A var(--x) read in CSS
+   * with a fallback whose token is never defined anywhere still resolves
+   * (the fallback), so only no-fallback reads against never-defined tokens
+   * are true runtime defects. */
+  jsWrittenTokens: Set<string>;
 }
 
 interface Totals {
@@ -149,7 +176,7 @@ interface CliOptions {
 
 class UsageError extends Error {}
 
-const TOOL_VERSION = "3.2.0";
+const TOOL_VERSION = "3.3.0";
 const MAX_DISPLAYED_FINDINGS = 40;
 const SNIPPET_MAX = 120;
 
@@ -189,8 +216,70 @@ const MCP_DATA_PAIR_RE =
   /\bserver:\s*["']([A-Za-z_][\w-]*)["']\s*,\s*\n\s*tool:\s*["']([A-Za-z_][\w-]*)["']/g;
 const VAR_USE_RE = /var\(\s*(--[\w-]+)/g;
 const BARE_TOKEN_RE = /["'`](--[\w-]+)["'`]/g;
+// VI-16: what follows a var(--x) match — used to detect template-literal
+// prefixes (var(--gca-${…}) resolves to REAL tokens at runtime, the literal
+// "--gca-" itself is not one). Also detects degenerate "--x-" fragments in
+// quoted strings (e.g. borderClass: "--approval" concatenated by the caller
+// into a BEM modifier — not a standalone token reference).
 
 // ═══════════════════════════════════════════════════ helpers ═════════════
+
+/**
+ * VI-16: one line of source with comments blanked out ("no code here"),
+ * CRLF normalized. Tracks /** ── *\/ block state ACROSS lines via the
+ * caller-held `blockState` object — the same convention p2c1_tokens.ts
+ * already uses. Lines inside a block comment return "" (still counted for
+ * line numbers). Not a tokenizer: it assumes no regex-literal in src
+ * contains quote characters (verified over frontend/src: none do) and no
+ * // appears inside a string (url(// forms are %-encoded in this codebase).
+ */
+function stripLine(rawLine: string, blockState: { inBlock: boolean }): string {
+  let s = rawLine.replace(/\r$/, "");
+  if (blockState.inBlock) {
+    const end = s.indexOf("*/");
+    if (end === -1) return "";
+    blockState.inBlock = false;
+    s = s.slice(end + 2);
+  }
+  let out = "";
+  let i = 0;
+  while (i < s.length) {
+    const c = s[i]!;
+    // single-line comment: rest of line is gone
+    if (c === "/" && s[i + 1] === "/") break;
+    // block comment opens: skip to close (may span lines)
+    if (c === "/" && s[i + 1] === "*") {
+      const end = s.indexOf("*/", i + 2);
+      if (end === -1) {
+        blockState.inBlock = true;
+        break;
+      }
+      i = end + 2;
+      continue;
+    }
+    // string literals survive (var(--x) inside them is still a live ref),
+    // but a "//" or "/*" INSIDE a quoted string would corrupt the masker.
+    // Guard: skip strings wholesale and re-emit them — they are code.
+    if (c === '"' || c === "'" || c === "`") {
+      const quote = c;
+      let j = i + 1;
+      while (j < s.length) {
+        if (s[j] === "\\") {
+          j += 2;
+          continue;
+        }
+        if (s[j] === quote) break;
+        j++;
+      }
+      out += s.slice(i, Math.min(j + 1, s.length));
+      i = Math.min(j + 1, s.length);
+      continue;
+    }
+    out += c;
+    i++;
+  }
+  return out;
+}
 
 function read(filePath: string): string | null {
   try {
@@ -771,27 +860,93 @@ function vi14ClassifyRef(
 }
 
 export { extractBackendToolNames, extractBackendCompatAliases, vi14ClassifyRef, vi14RefCandidates };
+// VI-16/17 (B6): exported for the regression suite under
+// frontend/src/tools/__tests__/ — the stripLine masker and the CSS-side
+// collector are the two pieces the new tests pin down.
+export { stripLine, collectJsWrittenTokens };
 
-/** Custom properties defined at declaration position (line start). */
+/** Custom properties defined at declaration position — VI-17: inside a
+ *  declaration block only. Custom properties are legally declared at ANY
+ *  indentation inside a rule (".glass-wafm[data-fitness-level='advanced']
+ *  { --wfm-level: … }"), which never sits at line start. But "--x:" shapes
+ *  also occur inside SELECTORS (".ui-badge--gold:hover") — those are class
+ *  names, not declarations. Distinguishing signal: a declaration always
+ *  follows a `{` on the same logical line-chain; we track brace depth and
+ *  only match tokens followed by ":" while depth > 0. Comments are masked
+ *  first so header prose cannot fake a definition. */
 function extractDefinedTokens(cssFiles: string[]): Set<string> {
   const tokens = new Set<string>();
-  const DECL_RE = /^[ \t]*(--[\w-]+)[ \t]*:/;
   for (const file of cssFiles) {
     const content = read(file);
     if (!content) continue;
+    const blockState = { inBlock: false };
+    let braceDepth = 0;
     for (const rawLine of content.split("\n")) {
-      const m = rawLine.match(DECL_RE);
-      if (m) tokens.add(m[1]!);
+      const code = stripLine(rawLine, blockState);
+      if (!code) continue;
+      // declarations live inside { … }; selectors and @-headers live outside.
+      // Update depth from the masked line (braces in comments don't count).
+      for (let i = 0; i < code.length; i++) {
+        if (code[i] === "{") braceDepth++;
+        else if (code[i] === "}") braceDepth = Math.max(0, braceDepth - 1);
+      }
+      // the token: colon pair AFTER an opening brace on the same line wins:
+      // ".x--gold:hover { --gold: 1 }" → the pair after "{" is the declaration.
+      const braceIdx = code.indexOf("{");
+      const declPart = braceIdx >= 0 ? code.slice(braceIdx + 1) : code;
+      const inBlockNow = braceIdx >= 0 || braceDepth > 0;
+      if (!inBlockNow) continue;
+      for (const m of declPart.matchAll(/--[\w-]+(?=\s*:)/g)) tokens.add(m[0]!);
     }
   }
   return tokens;
+}
+
+/**
+ * VI-17: custom properties WRITTEN from TS/TSX or declared @property in CSS.
+ * These are definition sites, not reads — a CSS `var(--x, fallback)` whose
+ * token is JS-written is fully wired even though no stylesheet ever
+ * declares it (the runtime wiring is the whole point).
+ */
+function collectJsWrittenTokens(tsFiles: string[], cssFiles: string[]): Set<string> {
+  const written = new Set<string>();
+  // TS side: style-object keys ("--x": …) and setProperty("--x", …)
+  for (const file of tsFiles) {
+    const content = read(file);
+    if (!content) continue;
+    const lines = content.split("\n");
+    const blockState = { inBlock: false };
+    for (const rawLine of lines) {
+      const code = stripLine(rawLine, blockState);
+      if (!code) continue;
+      for (const m of code.matchAll(BARE_TOKEN_RE)) {
+        const afterTok = code.slice((m.index ?? 0) + m[0].length);
+        const beforeTok = code.slice(0, Math.max(0, m.index ?? 0));
+        if (/^\s*:/.test(afterTok) || /\.setProperty\(\s*$/.test(beforeTok.trimEnd())) {
+          written.add(m[1]!);
+        }
+      }
+    }
+  }
+  // CSS side: @property declarations
+  for (const file of cssFiles) {
+    const content = read(file);
+    if (!content) continue;
+    for (const m of content.matchAll(/@property\s+(--[\w-]+)/g)) written.add(m[1]!);
+  }
+  return written;
 }
 
 function buildContext(root: string): ScanContext {
   const frontendSrc = path.join(root, "frontend", "src");
   const backendSrc = path.join(root, "backend", "src", "club_mcp");
 
-  const tsFiles = walk(frontendSrc, [".ts", ".tsx"]).filter((f) => !f.endsWith(".d.ts"));
+  // VI-17: test fixtures are deliberately-phantom by construction (the
+  // check-3 regression suite quotes undefined tokens as its own fixtures).
+  // Same exclusion the raw-button check already applies to *.test.tsx.
+  const tsFiles = walk(frontendSrc, [".ts", ".tsx"]).filter(
+    (f) => !f.endsWith(".d.ts") && !/\.(test|spec)\.[tj]sx?$/.test(f),
+  );
   const cssFiles = walk(frontendSrc, [".css"]);
   const backendScanned = isDir(backendSrc);
   const pyFiles = backendScanned
@@ -812,6 +967,9 @@ function buildContext(root: string): ScanContext {
 
   const definedTokens = extractDefinedTokens(cssFiles);
   const tokenSource: "css" | "legacy" = definedTokens.size > 0 ? "css" : "legacy";
+  // VI-17: tokens written from JS (style-object keys / setProperty) or via
+  // @property — they make CSS var() reads with fallbacks legitimate.
+  const jsWrittenTokens = collectJsWrittenTokens(tsFiles, cssFiles);
 
   return {
     root,
@@ -829,6 +987,7 @@ function buildContext(root: string): ScanContext {
     backendScanned,
     definedTokens,
     tokenSource,
+    jsWrittenTokens,
     compatAliases,
   };
 }
@@ -1085,6 +1244,8 @@ function checkPhantomTokens(ctx: ScanContext): CheckOutcome {
   const used = new Set<string>();
   const mentioned = new Set<string>();
   let varRefs = 0;
+  let dynamicRefs = 0; // VI-16: var(--x-${…}) template prefixes — resolve at runtime
+  let fragmentRefs = 0; // VI-16: "--approval"-style fragments concatenated by callers
 
   if (ctx.tokenSource === "legacy") {
     notes.push("No CSS custom properties found under frontend/src — using the frozen v2 phantom-token list (8 tokens).");
@@ -1093,9 +1254,13 @@ function checkPhantomTokens(ctx: ScanContext): CheckOutcome {
       const content = read(file);
       if (!content) continue;
       const lines = content.split("\n");
+      const blockState = { inBlock: false };
       for (let i = 0; i < lines.length; i++) {
+        // VI-16: legacy list scanned over masked code only (was raw lines)
+        const code = stripLine(lines[i]!, blockState);
+        if (!code) continue;
         for (const token of LEGACY_PHANTOM_TOKENS) {
-          if (lines[i]!.includes(token)) {
+          if (code.includes(token)) {
             findings.push({
               file: relPath,
               line: i + 1,
@@ -1123,42 +1288,188 @@ function checkPhantomTokens(ctx: ScanContext): CheckOutcome {
     const relPath = relFrom(ctx.frontendSrc, file);
     const content = read(file);
     if (!content) continue;
-    const offsets = lineIndex(content);
     const lines = content.split("\n");
+    const blockState = { inBlock: false };
 
     // Local inline definitions ("--x": value) count as defined for this file.
     const locallyDefined = new Set<string>();
-    for (const m of content.matchAll(BARE_TOKEN_RE)) {
-      if (/^\s*:/.test(content.slice((m.index ?? 0) + m[0].length))) locallyDefined.add(m[1]!);
+    for (const raw of lines) {
+      const m = raw.replace(/\r$/, "").match(/(--[\w-]+)\s*:/);
+      if (m && /^\s*:/.test(raw.slice(raw.indexOf(m[1]!) + m[1]!.length))) locallyDefined.add(m[1]!);
     }
 
-    for (const m of content.matchAll(VAR_USE_RE)) {
-      varRefs++;
-      used.add(m[1]!);
-      if (ctx.definedTokens.has(m[1]!)) continue;
-      const line = lineAt(offsets, m.index ?? 0);
-      findings.push({
-        file: relPath,
-        line,
-        message: `var(${m[1]}) is not defined in any CSS under src/ — resolves to nothing at runtime`,
-        snippet: snippetOf(lines[line - 1] ?? ""),
-        severity: "warning",
-      });
+    for (let i = 0; i < lines.length; i++) {
+      const code = stripLine(lines[i]!, blockState);
+      if (!code) continue;
+
+      // VI-16: byte offsets are unstable after masking (comments removed).
+      // Findings report the RAW line number, which is just i + 1 — masked
+      // offsets are no longer translated back (the masker keeps every
+      // character count stable, only comment text is blanked).
+      const rawLine = lines[i]!;
+      const lineBase = i + 1; // 1-based
+
+      // var(--x) references — masked code only
+      for (const m of code.matchAll(VAR_USE_RE)) {
+        varRefs++;
+        used.add(m[1]!);
+        // VI-16: template-literal prefix? var(--gca-${…}) — the whole
+        // expression resolves to REAL tokens at runtime; prefix families
+        // are collected and verified below instead of flagged one by one.
+        const after = code.slice((m.index ?? 0) + m[0].length);
+        if (/^\s*\$\{/.test(after) || /^\s*["'`]\s*\$\{/.test(after)) {
+          dynamicRefs++;
+          continue;
+        }
+        // VI-16: quoted prefix fragment? toContain("var(--color-") — the
+        // string itself IS the partial (assertion over a prefix, p2c1's
+        // NOISE policy). Shape: match ends where the enclosing string ends.
+        if (/^\s*["'`]/.test(after) && /-$/.test(m[1]!)) {
+          fragmentRefs++;
+          continue;
+        }
+        if (ctx.definedTokens.has(m[1]!)) continue;
+        findings.push({
+          file: relPath,
+          line: lineBase,
+          message: `var(${m[1]}) is not defined in any CSS under src/ — resolves to nothing at runtime`,
+          snippet: snippetOf(rawLine),
+          severity: "warning",
+        });
+      }
+
+      // bare "--x" mentions in strings — masked code only
+      for (const m of code.matchAll(BARE_TOKEN_RE)) {
+        const tok = m[1]!;
+        if (locallyDefined.has(tok)) continue;
+        mentioned.add(tok);
+        if (ctx.definedTokens.has(tok) || used.has(tok)) continue;
+        // VI-16: JS-driven custom property? Two shapes:
+        //   a) style-object key  "--stagger-i": i  (definition site)
+        //   b) setProperty call  setProperty("--dtabs-ix", …) (definition site)
+        // Both are WRITES, not reads: they define the token for the CSS side
+        // (consumed with a fallback at read sites). Distinguishing shape:
+        // the match is immediately followed by ":" (object key) or is
+        // preceded by setProperty( on the same masked line.
+        const afterTok = code.slice((m.index ?? 0) + m[0].length);
+        const beforeTok = code.slice(0, Math.max(0, m.index ?? 0));
+        const isObjectKey = /^\s*:/.test(afterTok);
+        const isSetProperty = /\.setProperty\(\s*$/.test(beforeTok.trimEnd());
+        // VI-16: BEM modifier fragment? A quoted "--approval" stored in a
+        // *Class field is concatenated into a class name by its consumer
+        // (glass-notification-item${borderClass} → …--approval), matching
+        // .glass-notification-item--approval in CSS. "--" doubles as the
+        // BEM separator, so context decides: class fragment ≠ token ref.
+        // Short BEM suffixes (no --color-/--font- family) inside a *Class
+        // field are the canonical shape of these fragments.
+        // NOTE: BARE_TOKEN_RE captures the token WITH its quotes, so the
+        // field-name anchor must live entirely in `beforeTok`.
+        const isClassFragment =
+          /[A-Za-z_$][\w$]*(Class|Classes|Modifier|Variant)s?\s*:\s*$/.test(beforeTok.trimEnd()) &&
+          !/^(color|font|radius|shadow|space|text|size)-/.test(tok);
+        if (isObjectKey || isSetProperty || isClassFragment) {
+          fragmentRefs++;
+          continue;
+        }
+        findings.push({
+          file: relPath,
+          line: lineBase,
+          message: `Token ${tok} mentioned in a string but not defined in any CSS (possible phantom)`,
+          snippet: snippetOf(rawLine),
+          severity: "info",
+        });
+      }
     }
 
-    for (const m of content.matchAll(BARE_TOKEN_RE)) {
-      if (locallyDefined.has(m[1]!)) continue;
-      mentioned.add(m[1]!);
-      if (ctx.definedTokens.has(m[1]!) || used.has(m[1]!)) continue;
-      const line = lineAt(offsets, m.index ?? 0);
-      findings.push({
-        file: relPath,
-        line,
-        message: `Token ${m[1]} mentioned in a string but not defined in any CSS (possible phantom)`,
-        snippet: snippetOf(lines[line - 1] ?? ""),
-        severity: "info",
-      });
+    // VI-16: template-literal prefixes get first-class treatment — verify
+    // the FAMILY resolves: at least one concrete token with the prefix must
+    // exist in CSS, else the prefix itself is the phantom.
+    const fam = new Map<string, { files: Set<string>; line: number }>();
+    {
+      const ls = { inBlock: false };
+      for (let i = 0; i < lines.length; i++) {
+        const code = stripLine(lines[i]!, ls);
+        for (const m of code.matchAll(VAR_USE_RE)) {
+          const after = code.slice((m.index ?? 0) + m[0].length);
+          if (/^\s*\$\{/.test(after) || /^\s*["'`]\s*\$\{/.test(after)) {
+            if (!fam.has(m[1]!)) fam.set(m[1]!, { files: new Set(), line: i + 1 });
+            fam.get(m[1]!)!.files.add(relPath);
+          }
+        }
+      }
     }
+    for (const [prefix, meta] of fam) {
+      const family = [...ctx.definedTokens].filter((t) => t.startsWith(prefix));
+      if (family.length === 0) {
+        findings.push({
+          file: [...meta.files][0]!,
+          line: meta.line,
+          message: `var(${prefix}…) template-literal prefix matches NO token in CSS — every interpolation of this family is phantom`,
+          snippet: snippetOf(lines[meta.line - 1] ?? ""),
+          severity: "warning",
+        });
+      } else {
+        notes.push(`Dynamic prefix ${prefix}… resolves to ${family.length} concrete token(s) in CSS — wired.`);
+      }
+    }
+  }
+
+  // ── VI-17: the CSS side was never scanned. A var(--x) READ inside CSS
+  // against a token that is nowhere defined, with NO fallback, is the
+  // true runtime defect: the declaration silently drops to `unset`.
+  // Reads with fallbacks are self-healing (that is what fallbacks are for)
+  // and JS-written tokens are wired by construction. What remains is the
+  // real debt — surfaced per file, capped to the same advisory envelope.
+  let cssVarUses = 0;
+  let cssWithFallback = 0;
+  const cssPhantomByToken = new Map<string, { files: Map<string, number>; firstLine: number }>();
+  for (const file of ctx.cssFiles) {
+    const relPath = relFrom(ctx.frontendSrc, file);
+    const content = read(file);
+    if (!content) continue;
+    const lines = content.split("\n");
+    // comments masked (header prose documents tokens like "var(--x-${…})")
+    const blockState = { inBlock: false };
+    for (let i = 0; i < lines.length; i++) {
+      for (const m of stripLine(lines[i]!, blockState).matchAll(/var\(\s*(--[\w-]+)(\s*,)?/g)) {
+        cssVarUses++;
+        const tok = m[1]!;
+        if (m[2]) {
+          cssWithFallback++;
+          continue;
+        }
+        if (ctx.definedTokens.has(tok) || ctx.jsWrittenTokens.has(tok)) continue;
+        let entry = cssPhantomByToken.get(tok);
+        if (!entry) {
+          entry = { files: new Map(), firstLine: i + 1 };
+          cssPhantomByToken.set(tok, entry);
+        }
+        entry.files.set(relPath, (entry.files.get(relPath) ?? 0) + 1);
+      }
+    }
+  }
+  const CSS_TOKEN_WARN_CAP = 20;
+  const cssPhantomTokens = [...cssPhantomByToken.entries()].sort(
+    (a, b) => [...b[1].files.values()].reduce((x, y) => x + y, 0) - [...a[1].files.values()].reduce((x, y) => x + y, 0),
+  );
+  for (const [tok, entry] of cssPhantomTokens.slice(0, CSS_TOKEN_WARN_CAP)) {
+    const uses = [...entry.files.values()].reduce((x, y) => x + y, 0);
+    const [firstFile] = [...entry.files.keys()];
+    findings.push({
+      file: firstFile!,
+      line: entry.firstLine,
+      message: `CSS var(${tok}) — token never defined in any CSS, no fallback, not JS-written (${uses} use(s) across ${entry.files.size} file(s))`,
+      snippet: snippetOf((read(path.join(ctx.frontendSrc, firstFile!)) ?? "").split("\n")[entry.firstLine - 1] ?? ""),
+      severity: "warning",
+    });
+  }
+  if (cssPhantomTokens.length > CSS_TOKEN_WARN_CAP) {
+    notes.push(
+      `${cssPhantomTokens.length - CSS_TOKEN_WARN_CAP} more never-defined CSS token(s) beyond the reporting cap — see --json for the full list.`,
+    );
+  }
+  if (cssPhantomTokens.length === 0 && cssVarUses > 0) {
+    notes.push(`CSS side: ${cssVarUses} var() reads · ${cssWithFallback} with fallback · 0 never-defined no-fallback reads.`);
   }
 
   const unused = [...ctx.definedTokens].filter((t) => !used.has(t) && !mentioned.has(t));
@@ -1176,6 +1487,8 @@ function checkPhantomTokens(ctx: ScanContext): CheckOutcome {
     [
       ["defined", ctx.definedTokens.size],
       ["varRefs", varRefs],
+      ["dynamicRefs", dynamicRefs],
+      ["fragmentRefs", fragmentRefs],
       ["undefinedVar", phantomVar],
       ["bareMentions", findings.length - phantomVar],
       ["definedUnused", unused.length],

@@ -133,7 +133,7 @@ export default defineConfig(({ mode }) => {
       // desde "vitest" (globals: false) — estilo de la casa: nada implícito.
       environment: "happy-dom",
       globals: false,
-      include: ["src/**/*.{test,spec}.{ts,tsx}"],
+      include: ["src/**/*.{test,spec}.{ts,tsx}", "tools/__tests__/**/*.{test,spec}.{ts,tsx}"],
       restoreMocks: true,
     },
   };

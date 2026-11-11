@@ -89,7 +89,24 @@ const bailoutExisting = new Map<string, string>(); // tokens definidos por una e
 const scanCss = cssFiles.filter((f) => path.resolve(f) !== path.resolve(OUT_CSS));
 for (const f of scanCss) {
   const txt = fs.readFileSync(f, "utf8");
-  for (const m of txt.matchAll(/--[\w-]+(?=\s*:)/g)) defined.add(m[0]);
+  // B6: declaraciones SOLO dentro de bloques { … } — el regex anywhere
+  // confundía ".ui-badge--gold:hover" (selector BEM) con una definición
+  // de --gold y la cadena rota var(--gold) quedaba invisible para el VI.
+  const blockState = { inBlock: false };
+  let braceDepth = 0;
+  for (const rawLine of txt.split("\n")) {
+    const line = stripLine(rawLine.replace(/\r$/, ""), blockState);
+    if (!line) continue;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === "{") braceDepth++;
+      else if (line[i] === "}") braceDepth = Math.max(0, braceDepth - 1);
+    }
+    const braceIdx = line.indexOf("{");
+    const declPart = braceIdx >= 0 ? line.slice(braceIdx + 1) : line;
+    const inBlockNow = braceIdx >= 0 || braceDepth > 0;
+    if (!inBlockNow) continue;
+    for (const m of declPart.matchAll(/--[\w-]+(?=\s*:)/g)) defined.add(m[0]);
+  }
 }
 if (fs.existsSync(OUT_CSS)) {
   for (const line of fs.readFileSync(OUT_CSS, "utf8").split("\n")) {
@@ -202,6 +219,59 @@ for (const f of tsFiles) {
   });
 }
 
+// B6 · VI-17: lado CSS — el generador solo miraba TS/TSX, pero VI v3.3.0
+// también flaggea var() reads en CSS contra tokens nunca definidos y sin
+// fallback. Mismo registro de refs (misma clasificación KEEP/ALIAS/
+// DERIVED/…): el bailout sigue siendo la única capa transitoria.
+// Reads CON fallback se auto-curan (para eso existe el fallback) → no se
+// emiten: re-definirlos duplicaría una decisión que el autor ya tomó.
+// @property declara un token real → ya está en `defined` vía el scan.
+// Los tokens JS-written (style-object keys / setProperty) son wiring
+// runtime legítimo: VI v3.3.0 los excluye de sus warnings y acá igual.
+const jsWritten = new Set<string>();
+for (const f of tsFiles) {
+  const lines = fs.readFileSync(f, "utf8").split("\n");
+  const blockState = { inBlock: false };
+  lines.forEach((raw) => {
+    const line = stripLine(raw.replace(/\r$/, ""), blockState);
+    for (const m of line.matchAll(/["'`](--[\w-]+)["'`]/g)) {
+      const after = line.slice((m.index ?? 0) + m[0].length);
+      const before = line.slice(0, Math.max(0, m.index ?? 0));
+      if (/^\s*:/.test(after) || /\.setProperty\(\s*$/.test(before.trimEnd())) {
+        jsWritten.add(m[1] as string);
+      }
+    }
+  });
+}
+let cssVarRefs = 0;
+let cssFbRefs = 0;
+// B6: el propio bailout también se escanea para READS — es un CSS vivo:
+// un var(--gold) dentro de él es deuda exactamente igual que en cualquier
+// otro archivo (la cadena rota --color-gold: var(--gold) vivía ahí, invisible
+// porque el generador lo excluía de scanCss al calcular DEFINICIONES).
+// Las definiciones siguen sin contándose (el bailout se regenera completo).
+const bailoutReadScan = fs.existsSync(OUT_CSS) ? [OUT_CSS] : [];
+for (const f of [...scanCss, ...bailoutReadScan]) {
+  const lines = fs.readFileSync(f, "utf8").split("\n");
+  lines.forEach((raw, i) => {
+    // CSS no tiene template literals ni strings-con-código: los data-URLs
+    // de este repo usan %23 (no '#'), así que un escaneo lineal directo es
+    // suficiente (y los comentarios /* */ no contienen var() de deuda).
+    const line = raw.replace(/\r$/, "");
+    for (const m of line.matchAll(VAR_PLAIN_RE)) {
+      cssVarRefs++;
+      const after = line.slice((m.index ?? 0) + m[0].length);
+      if (/^\s*,/.test(after)) {
+        cssFbRefs++;
+        continue; // con fallback → auto-curativo, no deuda
+      }
+      const tok = m[1] as string;
+      if (jsWritten.has(tok)) continue; // wiring JS legítimo
+      refs.push({ tok, file: rel(f), line: i + 1 }); // refCount se arma abajo, junto al resto
+    }
+  });
+}
+
 // ── clasificación ─────────────────────────────────────────────────────
 type Policy = "KEEP" | "FALLBACK" | "ALIAS" | "DERIVED" | "ASSUMED" | "DYNAMIC" | "THEME" | "NOISE";
 interface Phantom {
@@ -278,6 +348,71 @@ function classify(tok: string): Phantom {
       uses,
       files,
       note: "default Tailwind v4 exacto (theme.css instalado) — emitido en @layer theme",
+    };
+  }
+
+  // B6 · ALIAS-SEMÁNTICO (lado CSS): tokens no tipados cuya intención está
+  // documentada por el canon de globals.css. Evidencia: --color-surface se
+  // consume como color-mix(..., var(--color-surface) 30%, transparent) en
+  // FacilityDetail.css:37 — es la base translúcida de paneles; la familia
+  // --color-surface-N está en globals (§ superficie). Sin esta regla caerían
+  // en ASSUMED #94a3b8 (un gris opaco que rompería 20 archivos de Facilities).
+  // ANTES de KEEP: una ejecución --write previa del propio B6 sembró
+  // ASSUMEDs neutros que no son decisiones de diseño — no se congelan.
+  const SEMANTIC_ALIASES: Record<string, string> = {
+    // bases de superficie → familia canon de globals.css
+    "--color-surface": "var(--color-surface-1)",
+    "--color-border-default": "var(--color-border)",
+    "--color-white": "rgba(255, 255, 255, 0.92)",
+    // familia glass (globals [VERIFIED] --glass-bg/--glass-border)
+    "--glass-bg-hover": "color-mix(in srgb, var(--glass-bg) 60%, rgba(255, 255, 255, 0.04))",
+    "--glass-border-hover": "color-mix(in srgb, var(--glass-border) 70%, rgba(255, 255, 255, 0.10))",
+    // escala tipográfica/espaciado (globals define radius/space implícitos
+    // por convención Tailwind: --text-sm/--text-xs/--space-N)
+    "--text-sm": "0.875rem",
+    "--text-xs": "0.75rem",
+    "--text-base": "1rem",
+    "--text-lg": "1.125rem",
+    "--text-xl": "1.25rem",
+    "--text-2xl": "1.5rem",
+    "--text-3xl": "1.875rem",
+    "--space-1": "0.25rem",
+    "--space-2": "0.5rem",
+    "--space-3": "0.75rem",
+    "--space-4": "1rem",
+    "--space-6": "1.5rem",
+    "--radius-full": "9999px",
+    // familia gst (guests): la convención de la feature define --gst-*
+    // en ConversionPipeline.css — el acento es el dorado del club
+    "--gst-accent": "var(--color-gold-400)",
+    // --gold: cadena rota del bailout viejo (--color-gold: var(--gold)
+    // apuntaba a un token que nunca existió). El dorado canónico es
+    // --color-gold-400 [VERIFIED] en globals.css: cierra la cadena y
+    // Placeholder.tsx (bg-[var(--color-gold)]/10) recupera el color real.
+    "--gold": "var(--color-gold-400)",
+    "--gst-text-primary": "var(--gst-pipeline-text-primary)",
+    "--gst-text-muted": "var(--gst-pipeline-text-muted)",
+    "--gst-severity-high": "var(--color-rose-400)",
+    "--gst-severity-medium": "var(--color-amber-400)",
+    "--gst-severity-low": "var(--color-emerald-400)",
+    "--gst-severity-critical": "var(--color-rose-500)",
+    "--gst-temp-hot": "var(--color-rose-400)",
+    "--gst-temp-warm": "var(--color-amber-400)",
+    "--gst-temp-cool": "var(--color-teal-400)",
+    "--gst-temp-cold": "var(--color-sky-400)",
+    "--gst-temp-frozen": "var(--color-silver-300)",
+    "--gst-temp-blazing": "var(--color-red-400)",
+    // mapa de bienestar: nivel → altura del pin (runtime wiring documentado)
+    "--wfm-level": "3",
+  };
+  if (SEMANTIC_ALIASES[tok] !== undefined) {
+    return {
+      tok,
+      policy: "ALIAS",
+      value: SEMANTIC_ALIASES[tok] as string,
+      uses,
+      files,
+      note: "alias semántico (canon globals.css / convención de feature)",
     };
   }
 
