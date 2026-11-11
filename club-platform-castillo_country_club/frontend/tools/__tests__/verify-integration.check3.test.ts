@@ -2,7 +2,7 @@
  * VI check-3 detector regression suite (B6 · VI-16/VI-17).
  *
  * The detector stopped flagging noise so the REAL debt became visible:
- *   - 27 migration comments ("// [x] text-[var(--color-*)] → CSS") — masked
+ *   - 27 migration comments ("// [x] text-[ var(--color-*) ] → CSS") — masked
  *   - 4 template-literal prefixes var(--gca-${…}) — family-verified, wired
  *   - BEM fragments ("--approval" in borderClass) — class suffix, not token
  *   - style-object keys / setProperty sites — WRITES, definitions not reads
@@ -11,20 +11,34 @@
  *     (the 49-token/713-use debt the check had never looked at)
  *
  * Import gate: VI14_NO_MAIN=1 (the B4 convention) keeps main() from
- * running while importing as a library.
+ * running while importing as a library. The import is DYNAMIC and happens
+ * AFTER the flag is set — a static import is hoisted above any
+ * process.env assignment, so the gate flag would arrive too late and the
+ * full CLI scan (2.7s + a complete report on stdout) would run inside the
+ * test runner. Dynamic import is the only shape that guarantees ordering.
  */
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
-process.env.VI14_NO_MAIN = "1";
-// Direct relative path to the script — tools/ compiles under
-// tsconfig.node.json (allowImportingTsExtensions: true, same as
-// architecture-guardian.ts), and vitest transforms it on the fly.
-import { stripLine, collectJsWrittenTokens } from "../../../scripts/verify-integration.ts";
+type ViLib = {
+  stripLine: (line: string, state: { inBlock: boolean }) => string;
+  collectJsWrittenTokens: (tsFiles: string[], cssFiles: string[]) => Set<string>;
+};
+
+let vi: ViLib;
+
+beforeAll(async () => {
+  process.env.VI14_NO_MAIN = "1";
+  // Direct relative path to the script — tools/ compiles under
+  // tsconfig.node.json (allowImportingTsExtensions: true, same as
+  // architecture-guardian.ts), and vitest transforms it on the fly.
+  // Dynamic (post-flag) so the library gate is already armed on load.
+  vi = (await import("../../../scripts/verify-integration.ts")) as ViLib;
+});
 
 describe("stripLine (VI-16 comment masker)", () => {
   it("masks line comments, keeps code before them", () => {
     const st = { inBlock: false };
-    expect(stripLine("const a = 1; // var(--color-x)", st)).toBe("const a = 1; ");
+    expect(vi.stripLine("const a = 1; // var(--color-x)", st)).toBe("const a = 1; ");
     expect(st.inBlock).toBe(false);
   });
 
@@ -33,37 +47,37 @@ describe("stripLine (VI-16 comment masker)", () => {
     // masked output may keep leading indentation (the detector's
     // `if (!code) continue` treats whitespace-only as masked anyway);
     // what matters is that NO token text survives.
-    expect(stripLine("    // [x] font-[family-name:var(--font-*)] → CSS", st).trim()).toBe("");
-    expect(stripLine("/* block start", st)).toBe("");
+    expect(vi.stripLine("    // [x] font-[family-name:var(--font-*)] → CSS", st).trim()).toBe("");
+    expect(vi.stripLine("/* block start", st)).toBe("");
     expect(st.inBlock).toBe(true);
-    expect(stripLine(" * [x] text-[var(--color-pearl)] → var(--color-silver-100)", st)).toBe("");
-    expect(stripLine(" */", st)).toBe("");
+    expect(vi.stripLine(" * [x] text-[var(--color-pearl)] → var(--color-silver-100)", st)).toBe("");
+    expect(vi.stripLine(" */", st)).toBe("");
     expect(st.inBlock).toBe(false);
   });
 
   it("resumes code after a same-line block comment closes", () => {
     const st = { inBlock: false };
-    expect(stripLine("const b = 2; /* c */ const d = 3;", st)).toBe("const b = 2;  const d = 3;");
+    expect(vi.stripLine("const b = 2; /* c */ const d = 3;", st)).toBe("const b = 2;  const d = 3;");
   });
 
   it("keeps string literals intact (refs inside them stay visible)", () => {
     const st = { inBlock: false };
-    expect(stripLine('  borderClass: "--approval",', st)).toBe('  borderClass: "--approval",');
-    expect(stripLine('  expect(t.color).toContain("var(--color-");', st)).toBe(
+    expect(vi.stripLine('  borderClass: "--approval",', st)).toBe('  borderClass: "--approval",');
+    expect(vi.stripLine('  expect(t.color).toContain("var(--color-");', st)).toBe(
       '  expect(t.color).toContain("var(--color-");',
     );
   });
 
   it("normalizes CRLF without changing masking", () => {
     const st = { inBlock: false };
-    expect(stripLine("const a = 1;\r", st)).toBe("const a = 1;");
+    expect(vi.stripLine("const a = 1;\r", st)).toBe("const a = 1;");
   });
 
   it("does not treat // inside a string as a comment (strings survive wholesale)", () => {
     const st = { inBlock: false };
     // url("data:image/svg+xml,...") style payloads never contain // here,
     // but if they did the string guard skips them instead of truncating.
-    expect(stripLine('const u = "a//b"; const v = 1;', st)).toBe('const u = "a//b"; const v = 1;');
+    expect(vi.stripLine('const u = "a//b"; const v = 1;', st)).toBe('const u = "a//b"; const v = 1;');
   });
 });
 
@@ -88,7 +102,7 @@ describe("collectJsWrittenTokens (VI-17 definition sites)", () => {
         'borderClass: "--approval",',
       ].join("\n"),
     });
-    const written = collectJsWrittenTokens([`${dir}/comp.tsx`], []);
+    const written = vi.collectJsWrittenTokens([`${dir}/comp.tsx`], []);
     expect(written.has("--stagger-i")).toBe(true);
     expect(written.has("--dtabs-ix")).toBe(true);
     expect(written.has("--ghost-key")).toBe(false);
@@ -100,7 +114,7 @@ describe("collectJsWrittenTokens (VI-17 definition sites)", () => {
     const dir = mk({
       "s.css": "@property --spin-dur { syntax: '<length>'; inherits: false; }\n.g { animation: var(--spin-dur); }",
     });
-    const written = collectJsWrittenTokens([], [`${dir}/s.css`]);
+    const written = vi.collectJsWrittenTokens([], [`${dir}/s.css`]);
     expect(written.has("--spin-dur")).toBe(true);
   });
 });

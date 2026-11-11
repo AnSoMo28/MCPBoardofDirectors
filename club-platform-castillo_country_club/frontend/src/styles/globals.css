@@ -175,7 +175,16 @@
  *     tokens exist (--radius-xl/--radius-lg). Tokenized.
  */
 
-@import "tailwindcss";
+@import "tailwindcss" source(".");
+
+/* B6-QA: los fixtures del check-3 usan la forma compacta real de la clase
+ * ("text-[var(--color-*)]") SOLO como string de prueba del masker — Tailwind
+ * v4 escanea .ts/.tsx como candidatos y genera utility CSS inválida para
+ * ambos. source() define la raíz de contenido (aquí: el propio src/, donde
+ * viven los componentes que realmente USAN utilities); las herramientas de
+ * governance (tools/, scripts/) contienen la sintaxis que POLICIAN, no la
+ * que usan — nunca deben generar CSS. */
+@source not "../tools";
 
 
 /* ═══════════════════════════════════════════════════════════════
