@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.0 · Generación G9 (sincronizada) · Date: 2026-11-11
+### Version: 9.1 · Generación G10 (Ola 0 blindaje) · Date: 2026-11-11
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos
@@ -109,6 +109,43 @@ CONTENIDO:
   deuda production-grade: secrets, persistencia, CI, LLM ops, gobernanza
   backend, HITL, observabilidad.
 - End marker v8.0 G8.
+```
+
+---
+
+## CHANGELOG G10 (v9.0 → v9.1)
+
+```
+OLA 0 — BLINDAJE (PATH NEXT-STEPS-2027) CERRADA:
+- .github/workflows/ci.yml (Q-CI-01 ✗→✓): 4 jobs — consistency ·
+  frontend (build+verify-build-css+VI+vitest/guardian/eslint ratchet) ·
+  backend (uv sync+pytest 818+smoke+ruff/mypy ratchet) · ci-summary.
+  Estrategia: GATES DUROS bloquean (hoy verdes) · DEUDA CONGELADA en
+  backend/docs/evidence/ci-baseline.json (ratchet: subir = ROJO,
+  bajar = bienvenida). Greps del ratchet VALIDADOS contra logs reales.
+- scripts/verify-master-consistency.py v1.0.0 (Q-GOV-04 ✗→✓,
+  citado inexistente desde G7 #73 — YA EXISTE): MC-01..09
+  (masters↔manifest↔tools) + IG-01..04 (BACKEND_REGISTRY §16 vs AST
+  del árbol). 13/13 VERDE exit 0 · MUTATION-TESTED. En CI y pre-commit.
+  Primer run cazó 2 drifts REALES: verify-build-css sin TOOL_VERSION
+  const (agregada) y mcp-router/advisor-engine headers v2.0 vs
+  VERSION_SYNC 2.1.0 desde G8 (bump v2.1) — el checker se pagó solo
+  el día 1 (lección #77: VERSION_SYNC ya tiene enforcement).
+- .pre-commit-config.yaml + .githooks/ (Q-CI-02 ✗→✓): 9 hooks;
+  guardian-ratchet y css-token-boundary TESTEADOS (exit 0). El
+  `pnpm run precommit` decorativo ahora es real (pre-commit install).
+- Evidencia (Q-MSC-04 ✗→✓): 27 .txt/json de trabajo → docs/evidence/
+  (26 en club + 1 en backend; raíz y backend/ limpios).
+- DECISION-0006 (Intelligence as Code, propuesta del socio): núcleo
+  ADOPTADO como olas 5-6 del PATH (ai.manifest+AI Guardian slice+red
+  team+evals business); reorganización de dirs ARCHIVADA con criterio
+  objetivo. El consistency checker YA ES el primer slice del AI
+  Guardian (AG-01/03 aplicado a la capa documental). Doc: docs/
+  decisions/DECISION-0006-IAC.md.
+- DEUDA QUANTIFICADA (baseline congelado, §15): vitest 6 · guardian
+  15198 · eslint 1583 · ruff 1288 (892 autofixables) · mypy strict 735.
+  Existía ANTES de e15068e; la CI la vuelve visible y ratcheteable.
+- END: masters v9.1; protocolo intacto (regla G8/G9).
 ```
 
 ---
@@ -1352,12 +1389,29 @@ EXTENDED AUDIT REGISTRY (config, wiring, stores — para esquema):
 ║  └── Q-SEC-04 user_role="admin" hardcodeado en search_documents         ║
 ║      (document_intelligence_agent.py:93) — bypass del RAG ACL           ║
 ║                                                                          ║
-║  REQUEST 3 (infra mínima para no repetir regresiones #62):              ║
+║  REQUEST 3 ✅ RESUELTO G10 (Ola 0 blindaje — ver CHANGELOG G10):              ║
 ║  ├── Q-CI-01 GitHub Actions (gates ya existen: guardian/vitest/tsc +    ║
 ║  │   smoke_b0/pytest — sólo falta el workflow)                          ║
-║  └── Q-GOV-04 crear verify-master-consistency.py (citado, inexistente)  ║
+║  └── Q-GOV-04 verify-master-consistency.py v1.0.0 EXISTE (13/13 VERDE)  ║
 ║                                                                          ║
-║  NEXT (orden §15): Q-CI-01 GitHub Actions (gates TODOS existen ya:    ║
+║  OLA 0 ✅ CERRADA (2026-11-11 G10): CI 4 jobs + consistency checker
+║      v1.0.0 (13/13 VERDE, 2 drifts reales cazados día 1) + pre-commit
+║      real + evidencia ordenada + DECISION-0006 (IAC adoptado olas 5-6).
+║      NEXT (orden §15): Ola 1 SEGURIDAD P0 (Q-SEC-01..04):
+║      secrets a env + rol real del JWT en RAG — red-team RT-01 mínimo
+║      como gate de salida (injection no revela secret).
+║      (Q-CI-01/02, Q-GOV-04, Q-MSC-04 CERRADOS este commit — ver §15.)
+║                                                                          ║
+║  DEUDA CUANTIFICADA (ratchet CI — backend/docs/evidence/ci-baseline   ║
+║  .json · congelada 2026-11-11 @ 03dc0bd · SUBIR = CI ROJA):           ║
+║  ├── vitest 6 fails (guests/lib tests stale PRE-e15068e — deuda      ║
+║  │   #G10-1, no de G9/B-series)                                      ║
+║  ├── guardian 15198 err (muro M-01/FASE 2 — score 8.2 vs 9.3)       ║
+║  ├── eslint 1583 err (nunca fue gate; unused/any en legacy)         ║
+║  ├── ruff 1288 err (892 autofixables — ratchet-down fácil)          ║
+║  └── mypy strict 735 err (typing capa db/ legacy)                   ║
+
+║      PANORAMA: gates TODOS existen ya:    ║
 ║      frontend guardian/vitest/tsc/verify-build-css · backend          ║
 ║      ruff/mypy/pytest/smoke — sólo falta el workflow YAML)            ║
 ║  AFTER: FASE 2 frontend (EventCalendar → 13 comp) · P1 persistencia     ║
@@ -1462,6 +1516,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.0 · Generación G9 (sincronizada con
+END OF MASTER_CHECKPOINT.md v9.1 · Generación G10 (sincronizada con
 MASTER_BASE.md v8.0 y MASTER_CHECKLIST.md v8.0)
 

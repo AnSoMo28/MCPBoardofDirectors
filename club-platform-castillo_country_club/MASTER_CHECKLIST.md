@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.0 · Generación G9 (sincronizada) · 180 checks · ZERO tolerance
+### Version: 9.1 · Generación G10 (Ola 0 blindaje) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian 4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -67,6 +67,43 @@ CONTENIDO:
   backend tiene su propio gate EJECUTABLE (smoke_b0 + pytest +
   ruff/mypy) — no se mezclan los números (principio §12 CHECKPOINT G7
   de colisiones terminológicas).
+```
+
+---
+
+## CHANGELOG G10 (v9.0 → v9.1)
+
+```
+OLA 0 — BLINDAJE (PATH NEXT-STEPS-2027) CERRADA:
+- .github/workflows/ci.yml (Q-CI-01 ✗→✓): 4 jobs — consistency ·
+  frontend (build+verify-build-css+VI+vitest/guardian/eslint ratchet) ·
+  backend (uv sync+pytest 818+smoke+ruff/mypy ratchet) · ci-summary.
+  Estrategia: GATES DUROS bloquean (hoy verdes) · DEUDA CONGELADA en
+  backend/docs/evidence/ci-baseline.json (ratchet: subir = ROJO,
+  bajar = bienvenida). Greps del ratchet VALIDADOS contra logs reales.
+- scripts/verify-master-consistency.py v1.0.0 (Q-GOV-04 ✗→✓,
+  citado inexistente desde G7 #73 — YA EXISTE): MC-01..09
+  (masters↔manifest↔tools) + IG-01..04 (BACKEND_REGISTRY §16 vs AST
+  del árbol). 13/13 VERDE exit 0 · MUTATION-TESTED. En CI y pre-commit.
+  Primer run cazó 2 drifts REALES: verify-build-css sin TOOL_VERSION
+  const (agregada) y mcp-router/advisor-engine headers v2.0 vs
+  VERSION_SYNC 2.1.0 desde G8 (bump v2.1) — el checker se pagó solo
+  el día 1 (lección #77: VERSION_SYNC ya tiene enforcement).
+- .pre-commit-config.yaml + .githooks/ (Q-CI-02 ✗→✓): 9 hooks;
+  guardian-ratchet y css-token-boundary TESTEADOS (exit 0). El
+  `pnpm run precommit` decorativo ahora es real (pre-commit install).
+- Evidencia (Q-MSC-04 ✗→✓): 27 .txt/json de trabajo → docs/evidence/
+  (26 en club + 1 en backend; raíz y backend/ limpios).
+- DECISION-0006 (Intelligence as Code, propuesta del socio): núcleo
+  ADOPTADO como olas 5-6 del PATH (ai.manifest+AI Guardian slice+red
+  team+evals business); reorganización de dirs ARCHIVADA con criterio
+  objetivo. El consistency checker YA ES el primer slice del AI
+  Guardian (AG-01/03 aplicado a la capa documental). Doc: docs/
+  decisions/DECISION-0006-IAC.md.
+- DEUDA QUANTIFICADA (baseline congelado, §15): vitest 6 · guardian
+  15198 · eslint 1583 · ruff 1288 (892 autofixables) · mypy strict 735.
+  Existía ANTES de e15068e; la CI la vuelve visible y ratcheteable.
+- END: masters v9.1; protocolo intacto (regla G8/G9).
 ```
 
 ---
@@ -873,6 +910,20 @@ verify-integration.ts           F (integración)         ✅ v3.3.0 · 8 checks
                                                         · VI-16 comment masker
                                                         · VI-17 definition
                                                         sites (B6)
+scripts/verify-master-consistency.py  M (docs↔tree)      ✅ v1.0.0 — 13 checks
+                                                        (MC-01..09 IG-01..04)
+                                                        · 13/13 VERDE exit 0
+                                                        · mutation-tested ·
+                                                        en CI + pre-commit
+                                                        (Q-GOV-04 ✗→✓)
+.github/workflows/ci.yml         infra (CI)             ✅ 4 jobs — gates
+                                                        duros (build·css·VI·
+                                                        pytest·smoke·consist.)
+                                                        + ratchet deuda
+                                                        (Q-CI-01 ✗→✓)
+.pre-commit-config.yaml +        infra (hooks)          ✅ 9 hooks · local
+.githooks/                                              ratchet + consistency
+                                                        (Q-CI-02 ✗→✓)
 verify-build-css.ts             B (output)              ✅ v1.0.0 — GATE
                                                         POST-BUILD (B6-QA):
                                                         sonda del bundle dist/
@@ -1025,6 +1076,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.0 · Generación G9 (sincronizada con
-MASTER_BASE.md v9.0 y MASTER_CHECKPOINT.md v9.0)
+END OF MASTER_CHECKLIST.md v9.1 · Generación G10 (sincronizada con
+MASTER_BASE.md v9.1 y MASTER_CHECKPOINT.md v9.1)
 

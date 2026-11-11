@@ -1,6 +1,11 @@
 /**
  * verify-build-css — post-build bundle probe (B6-QA v3 gate).
  *
+ * @version v1.0.0 — TOOL_VERSION consumido por VERSION_SYNC del manifest;
+ *          verificado por scripts/verify-master-consistency.py (MC-03).
+ *          G10-0001: era el único tool sin versión detectable (hallazgo
+ *          MC-03-01 del primer run del consistency checker).
+ *
  * Post-mortem del 0002: `@import "tailwindcss" source(".")` es relativo al
  * STYLESHEET (src/styles/), no al root — el escaneo colapsó a solo .css y
  * la capa de utilities ENTERA desapareció del bundle (207kB → 118kB,
@@ -31,6 +36,8 @@
 import { execSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+
+const TOOL_VERSION = "1.0.0"; // VERSION_SYNC.verifyBuildCss — MC-03 verifica esto
 
 const args = process.argv.slice(2);
 const quiet = args.includes("--quiet");

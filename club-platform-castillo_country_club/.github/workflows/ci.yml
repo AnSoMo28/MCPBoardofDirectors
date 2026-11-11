@@ -1,0 +1,212 @@
+# CI — Castillo AI Platform · G10 · Ola 0.1 (Q-CI-01 → CERRADO)
+#
+# Estrategia HONESTA (lección del P0 0002: un gate verde no prueba nada
+# del artefacto; un CI rojo por deuda vieja prueba que nadie lo mira):
+#
+#   1. GATES DUROS (bloquean el merge — hoy están VERDES):
+#      build + verify:build-css (OUTPUT real del bundle) · VI ·
+#      consistency (masters↔manifest↔árbol) · pytest 818 · smoke B0.
+#
+#   2. RATCHET DE DEUDA (bloquean si SUBEN; ideally bajan):
+#      La deuda pre-G10 está medida y congelada en backend/docs/evidence/
+#      ci-baseline.json: vitest 6 fails · guardian 15198 err · eslint
+#      1583 err · ruff 1288 · mypy 735. Un PR que sube cualquiera de
+#      esas cifras NO pasa. Bajarlas es siempre bienvenido (y actualiza
+#      el baseline con --fix-baseline en el mismo PR).
+#
+#   3. TODO corre en PR + push a audit/*; el master del repo de
+#      trabajo es audit/p2c3 (dual-track documentado en CHECKPOINT §3.6).
+#
+# Corrida de referencia (sandbox G10, 2026-11-11): frontend ~4 min
+# (build 18.3s + vitest 90s) · backend ~4 min (uv sync 90s + pytest 13s
+# + smoke 8s) — dentro del budget gratis de GitHub Actions.
+
+name: CI
+
+on:
+  push:
+    branches: [audit/**]
+  pull_request:
+    branches: [audit/**, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: club-platform-castillo_country_club
+
+jobs:
+  # ════════════════════════════════════════════════════════════════
+  # JOB 1 — CONSISTENCY (el slice del AI Guardian, DECISION-0006 §5)
+  # Sin deps de node ni python: corre en 2 segundos.
+  # ════════════════════════════════════════════════════════════════
+  consistency:
+    name: masters ↔ manifest ↔ árbol (MC-01..09 · IG-01..04)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: verify-master-consistency
+        run: python scripts/verify-master-consistency.py
+
+  # ════════════════════════════════════════════════════════════════
+  # JOB 2 — FRONTEND (gates duros + ratchet de deuda)
+  # ════════════════════════════════════════════════════════════════
+  frontend:
+    name: frontend (build · css · VI · vitest · guardian · lint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: club-platform-castillo_country_club/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: club-platform-castillo_country_club/frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+
+      # GATE DURO 1 — type-check + build (tsc -b && vite build)
+      - name: "build (tsc -b && vite build)"
+        run: pnpm run build
+
+      # GATE DURO 2 — sonda del OUTPUT: el gate que cazó el P0 0002
+      - name: verify-build-css (post-build bundle probe)
+        run: pnpm run verify:build-css
+
+      # GATE DURO 3 — integración (8 checks VI v3.3.0)
+      - name: verify-integration
+        run: pnpm run verify:integration
+
+      # RATCHET - vitest: deuda congelada (6 fails pre-G10, features
+      # guests/lib desincronizadas ANTES de e15068e - deuda #G10-1)
+      - name: vitest ratchet (fails <= baseline)
+        run: |
+          set +e
+          pnpm run test 2>&1 | tee /tmp/vitest.log
+          FAILS=$(grep -oE "Tests  [0-9]+ failed" /tmp/vitest.log | grep -oE "[0-9]+" || echo 0)
+          BASE=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['vitest_fails'])")
+          echo "fails=$FAILS baseline=$BASE"
+          if [ "$FAILS" -gt "$BASE" ]; then
+            echo "::error::vitest debt subió ($FAILS > $BASE) - fix los tests nuevos o actualiza baseline con justificación"
+            exit 1
+          fi
+
+      # RATCHET - guardian: 15198 err congelados (muro M-01, FASE 2 sin
+      # migrar; score 8.2 vs threshold 9.3 = deuda conocida §15)
+      - name: guardian ratchet (errors <= baseline)
+        run: |
+          set +e
+          pnpm run guardian 2>&1 | tee /tmp/guardian.log
+          ERRS=$(grep -oE "errors: +[0-9]+" /tmp/guardian.log | grep -oE "[0-9]+" || echo 0)
+          BASE=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['guardian_errors'])")
+          echo "guardian errors=$ERRS baseline=$BASE"
+          if [ "$ERRS" -gt "$BASE" ]; then
+            echo "::error::guardian debt subió ($ERRS > $BASE) - las X-series no pueden empeorar"
+            exit 1
+          fi
+
+      # RATCHET - eslint: 1583 err congelados
+      - name: lint ratchet (errors <= baseline)
+        run: |
+          set +e
+          pnpm run lint 2>&1 | tee /tmp/eslint.log
+          ERRS=$(grep -oE "[0-9]+ problems \([0-9]+ errors" /tmp/eslint.log | grep -oE "\([0-9]+" | tr -d "(" || echo 0)
+          BASE=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['eslint_errors'])")
+          echo "eslint errors=$ERRS baseline=$BASE"
+          if [ "$ERRS" -gt "$BASE" ]; then
+            echo "::error::eslint debt subió ($ERRS > $BASE)"
+            exit 1
+          fi
+
+      - name: upload dist artifact (evidencia del OUTPUT)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: club-platform-castillo_country_club/frontend/dist/
+          retention-days: 7
+
+  # ════════════════════════════════════════════════════════════════
+  # JOB 3 — BACKEND (gates duros + ratchet)
+  # ════════════════════════════════════════════════════════════════
+  backend:
+    name: backend (pytest 818 · smoke B0 · ruff · mypy)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: club-platform-castillo_country_club/backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        run: pipx install uv
+      - name: Setup Python 3.12
+        run: uv python install 3.12
+
+      # GATE DURO 4 — la suite completa (818/818)
+      - name: uv sync + pytest 818
+        run: |
+          uv sync
+          uv pip install -e .
+          uv run pytest tests/unit -q
+
+      # GATE DURO 5 — el gate ejecutable B0 (19 agentes · 207 tools · RBAC)
+      - name: smoke_b0 (composicion+registro+RBAC+HITL+HTTP)
+        run: uv run python scripts/smoke_b0.py
+
+      # RATCHET — ruff: 1288 err congelados (892 autofixables: UP045/UP017/F401)
+      - name: ruff ratchet (errors <= baseline)
+        run: |
+          set +e
+          uvx ruff check src tests 2>&1 | tee /tmp/ruff.log
+          ERRS=$(grep -oE "Found [0-9]+ errors" /tmp/ruff.log | grep -oE "[0-9]+" || echo 0)
+          BASE=$(python3 -c "import json;print(json.load(open('docs/evidence/ci-baseline.json'))['ruff_errors'])")
+          echo "ruff errors=$ERRS baseline=$BASE"
+          if [ "$ERRS" -gt "$BASE" ]; then
+            echo "::error::ruff debt subió ($ERRS > $BASE) — 892 son autofixables: ruff check --fix baja el piso"
+            exit 1
+          fi
+
+      # RATCHET — mypy strict: 735 err congelados
+      - name: mypy strict ratchet (errors <= baseline)
+        run: |
+          set +e
+          uv pip install mypy || true
+          uv run mypy src/club_mcp 2>&1 | tee /tmp/mypy.log
+          ERRS=$(grep -oE "Found [0-9]+ errors" /tmp/mypy.log | grep -oE "[0-9]+" || echo 0)
+          BASE=$(python3 -c "import json;print(json.load(open('docs/evidence/ci-baseline.json'))['mypy_errors'])")
+          echo "mypy errors=$ERRS baseline=$BASE"
+          if [ "$ERRS" -gt "$BASE" ]; then
+            echo "::error::mypy debt subió ($ERRS > $BASE)"
+            exit 1
+          fi
+
+  # ════════════════════════════════════════════════════════════════
+  # JOB 4 — RESUMEN (falla el PR si cualquier gate duro o ratchet rompió)
+  # ════════════════════════════════════════════════════════════════
+  ci-summary:
+    name: CI verdict (gates duros + ratchets)
+    needs: [consistency, frontend, backend]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: verdict
+        run: |
+          echo "consistency: ${{ needs.consistency.result }}"
+          echo "frontend:    ${{ needs.frontend.result }}"
+          echo "backend:     ${{ needs.backend.result }}"
+          if [ "${{ needs.consistency.result }}" != "success" ] || \
+             [ "${{ needs.frontend.result }}" != "success" ] || \
+             [ "${{ needs.backend.result }}" != "success" ]; then
+            echo "::error::CI ROJO — ver jobs arriba (gates duros o ratchet de deuda)"
+            exit 1
+          fi
+          echo "CI VERDE — gates duros ✓ ratchets ✓"
