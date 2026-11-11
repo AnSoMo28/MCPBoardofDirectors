@@ -6,6 +6,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useRef } from "react";
+import './WebGLBackground.css';
 
 export default function WebGLBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,7 +43,7 @@ export default function WebGLBackground() {
     <div
       ref={containerRef}
       aria-hidden="true"
-      className="fixed inset-0 z-0 pointer-events-none"
+      className="web-g-l-background fixed inset-0 z-0 pointer-events-none"
     />
   );
 }

@@ -1,0 +1,77 @@
+/**
+ * @component PricingOptimizer
+ * @namespace .pricing-optimizer
+ * @archetype chart · domain gold
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados pricing-optimizer-*.
+ */
+.pricing-optimizer {
+  position: relative;
+}
+
+/* Draw-in: las barras/series crecen desde la base al montar */
+.pricing-optimizer__bar, .pricing-optimizer__series {
+  animation: pricing-optimizer-grow 0.7s var(--ease-apple) 1 backwards;
+}
+
+.pricing-optimizer__bar:nth-child(2n), .pricing-optimizer__series:nth-child(2n) { animation-delay: 0.07s; }
+.pricing-optimizer__bar:nth-child(3n), .pricing-optimizer__series:nth-child(3n) { animation-delay: 0.13s; }
+.pricing-optimizer__bar:nth-child(5n), .pricing-optimizer__series:nth-child(5n) { animation-delay: 0.19s; }
+
+@keyframes pricing-optimizer-grow {
+  from { transform: scaleY(0.02); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.pricing-optimizer__bar, .pricing-optimizer__series {
+  transform-origin: bottom;
+}
+
+/* Hover de dato: la barra respira y levita */
+.pricing-optimizer__bar:hover, .pricing-optimizer__series:hover {
+  animation: pricing-optimizer-hover-float 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--color-gold-400) 18.8%, transparent));
+}
+
+@keyframes pricing-optimizer-hover-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Grid de fondo: cruces tenues que aparecen al hover del chart */
+.pricing-optimizer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-gold-400) 3.9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-gold-400) 3.9%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-apple);
+  pointer-events: none;
+}
+
+.pricing-optimizer:hover::before {
+  opacity: 1;
+}
+
+/* Tooltip-ancla: aro del dominio */
+.pricing-optimizer__datum:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.light .pricing-optimizer::before {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-gold-700) 4.7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-gold-700) 4.7%, transparent) 1px, transparent 1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pricing-optimizer__bar, .pricing-optimizer__series, .pricing-optimizer__bar:hover, .pricing-optimizer__series:hover { animation: none; filter: none; }
+  .pricing-optimizer::before { transition: none; }
+}

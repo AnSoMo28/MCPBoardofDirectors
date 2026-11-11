@@ -37,6 +37,7 @@ import {
   formatEnrollment,
 } from '../types';
 import ProgramFormModal from './ProgramFormModal';
+import './ProgramsPanel.css';
 
 // ══════════════════════════════════════════════════════════
 //  TYPES
@@ -166,7 +167,7 @@ export default function ProgramsPanel() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="programs-panel flex items-center justify-center py-24">
         <Loader2 className="h-8 w-8 animate-spin text-[var(--color-teal-400)]" />
       </div>
     );

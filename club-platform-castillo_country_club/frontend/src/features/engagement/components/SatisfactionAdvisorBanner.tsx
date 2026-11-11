@@ -8,6 +8,7 @@ import { AdvisorBanner } from "@/shared/components/AdvisorBanner";
 import { Star } from "lucide-react";
 
 import type { BaseInsight } from "@/shared/components/AdvisorBanner";
+import './SatisfactionAdvisorBanner.css';
 
 // ═══ DOMAIN CONFIG ═════════════════════════════════════════════════════════
 

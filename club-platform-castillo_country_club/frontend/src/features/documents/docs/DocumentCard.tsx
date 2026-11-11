@@ -10,6 +10,7 @@ import {
 } from "@/features/documents/types";
 import { TYPE_ICONS } from "./TypeChip";
 import { highlightTerms } from "@/shared/lib/highlight";
+import './DocumentCard.css';
 
 /* ═══════════════════════════════════════
    Component
@@ -47,7 +48,7 @@ export function DocumentCard({
       }
       tabIndex={0}
     >
-      <div className="glass-docs__card-body">
+      <div className="document-card glass-docs__card-body">
         {/* Header */}
         <div className="glass-docs__card-header">
           <div

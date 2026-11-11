@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import type { SatisfactionHealthScore } from "@/shared/mocks/contracts";
+import './SatisfactionHealthScoreCard.css';
 
 // ═══ CONFIG ═════════════════════════════════════════════════════════════════
 
@@ -114,7 +115,7 @@ export function SatisfactionHealthScoreCard({ healthScore, className }: Props) {
       )}
     >
       {/* Score header */}
-      <div className="p-4 pb-3 flex items-center gap-4">
+      <div className="satisfaction-health-score-card p-4 pb-3 flex items-center gap-4">
         <div
           className="flex-shrink-0 w-16 h-16 rounded-xl flex items-center justify-center"
           style={{ backgroundColor: levelCfg.bgColor }}

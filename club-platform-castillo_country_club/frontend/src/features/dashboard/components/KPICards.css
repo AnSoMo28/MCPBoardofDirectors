@@ -1,0 +1,63 @@
+/**
+ * @component KPICards
+ * @namespace .k-p-i-cards
+ * @archetype cards · domain gold
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados k-p-i-cards-*.
+ */
+.k-p-i-cards {
+  /* contenedor de tarjetas — la grilla no anima, las tarjetas sí */
+  display: grid;
+  gap: 12px;
+}
+
+/* Tarjetas hijas: llegada escalonada + aura al hover */
+.k-p-i-cards > * {
+  position: relative;
+  animation: k-p-i-cards-card-in 0.5s var(--ease-apple) 1 backwards;
+  transition: transform 0.28s var(--ease-spring), box-shadow 0.28s var(--ease-apple);
+}
+
+.k-p-i-cards > *:nth-child(2n) { animation-delay: 0.07s; }
+.k-p-i-cards > *:nth-child(3n) { animation-delay: 0.12s; }
+.k-p-i-cards > *:nth-child(5n) { animation-delay: 0.18s; }
+
+@keyframes k-p-i-cards-card-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* El aura: luz radial que sigue al hover desde el borde superior */
+.k-p-i-cards > *::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% -20%, color-mix(in srgb, var(--color-gold-400) 14.9%, transparent) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease-apple);
+  pointer-events: none;
+}
+
+.k-p-i-cards > *:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-float);
+}
+
+.k-p-i-cards > *:hover::after {
+  opacity: 1;
+}
+
+.light .k-p-i-cards > *:hover {
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--color-abyss) 12%, transparent);
+}
+
+.light .k-p-i-cards > *::after {
+  background: radial-gradient(ellipse at 50% -20%, color-mix(in srgb, var(--color-gold-700) 11%, transparent) 0%, transparent 60%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .k-p-i-cards > *, .k-p-i-cards > *::after, .k-p-i-cards > *:hover { animation: none; transition: none; transform: none; }
+}

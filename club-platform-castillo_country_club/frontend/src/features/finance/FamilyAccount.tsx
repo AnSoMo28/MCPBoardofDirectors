@@ -27,6 +27,7 @@ import AgingWaterfall from "./components/family-account/AgingWaterfall";
 import PaymentSimulator from "./components/family-account/PaymentSimulator";
 import TransactionTimeline from "./components/family-account/TransactionTimeline";
 import InvoiceJourney from "./components/family-account/InvoiceJourney";
+import './FamilyAccount.css';
 
 /* ── Tabs ────────────────────────────────────────── */
 
@@ -77,7 +78,7 @@ export default function FamilyAccount({ familyId: propId }: Props = {}) {
   if (accountQ.isLoading) {
     return (
       <PageContainer title="Cuenta Familiar" subtitle="Cargando…">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="family-account grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">

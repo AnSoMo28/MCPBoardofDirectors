@@ -91,6 +91,7 @@ import {
 import { useChatStore } from "@/stores/chat.store";
 import { callMCPTool } from "@/shared/lib/api";
 import { DetailTabs } from "@/shared/components/layout/DetailTabs";
+import './ExecutiveDashboard.css';
 
 /* ══════════════════════════════════════════════════════════
    Skeleton
@@ -98,7 +99,7 @@ import { DetailTabs } from "@/shared/components/layout/DetailTabs";
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="executive-dashboard space-y-6">
       <Skeleton className="h-12 w-80 rounded-[var(--radius-lg)]" />
       <Skeleton className="h-48 rounded-[var(--radius-lg)]" />
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">

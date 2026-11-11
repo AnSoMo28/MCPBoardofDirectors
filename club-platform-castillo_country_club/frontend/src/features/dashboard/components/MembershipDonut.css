@@ -1,0 +1,77 @@
+/**
+ * @component MembershipDonut
+ * @namespace .membership-donut
+ * @archetype chart · domain gold
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados membership-donut-*.
+ */
+.membership-donut {
+  position: relative;
+}
+
+/* Draw-in: las barras/series crecen desde la base al montar */
+.membership-donut__bar, .membership-donut__series {
+  animation: membership-donut-grow 0.7s var(--ease-apple) 1 backwards;
+}
+
+.membership-donut__bar:nth-child(2n), .membership-donut__series:nth-child(2n) { animation-delay: 0.07s; }
+.membership-donut__bar:nth-child(3n), .membership-donut__series:nth-child(3n) { animation-delay: 0.13s; }
+.membership-donut__bar:nth-child(5n), .membership-donut__series:nth-child(5n) { animation-delay: 0.19s; }
+
+@keyframes membership-donut-grow {
+  from { transform: scaleY(0.02); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.membership-donut__bar, .membership-donut__series {
+  transform-origin: bottom;
+}
+
+/* Hover de dato: la barra respira y levita */
+.membership-donut__bar:hover, .membership-donut__series:hover {
+  animation: membership-donut-hover-float 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--color-gold-400) 18.8%, transparent));
+}
+
+@keyframes membership-donut-hover-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Grid de fondo: cruces tenues que aparecen al hover del chart */
+.membership-donut::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-gold-400) 3.9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-gold-400) 3.9%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-apple);
+  pointer-events: none;
+}
+
+.membership-donut:hover::before {
+  opacity: 1;
+}
+
+/* Tooltip-ancla: aro del dominio */
+.membership-donut__datum:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.light .membership-donut::before {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-gold-700) 4.7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-gold-700) 4.7%, transparent) 1px, transparent 1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .membership-donut__bar, .membership-donut__series, .membership-donut__bar:hover, .membership-donut__series:hover { animation: none; filter: none; }
+  .membership-donut::before { transition: none; }
+}

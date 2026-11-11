@@ -20,6 +20,7 @@ import { Input } from "@/shared/components/ui/Input";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { FilterDropdown } from "@/shared/components/ui/FilterDropdown";
+import './SchedulingConflicts.css';
 
 import {
   ConflictSeverity,
@@ -78,7 +79,7 @@ export function SchedulingConflicts() {
   // ── Render ──
   return (
     <div
-      className="space-y-5"
+      className="scheduling-conflicts space-y-5"
       role="region"
       aria-label="Detección de conflictos de programación"
     >

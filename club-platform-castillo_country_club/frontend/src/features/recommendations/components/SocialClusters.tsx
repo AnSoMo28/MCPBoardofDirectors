@@ -18,6 +18,7 @@ import { Badge } from "@/shared/components/ui/Badge";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { FilterDropdown } from "@/shared/components/ui/FilterDropdown";
+import './SocialClusters.css';
 
 import {
   ClusterType,
@@ -76,7 +77,7 @@ export function SocialClusters() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="social-clusters space-y-4">
         <div className="flex flex-wrap gap-3">
           <Skeleton className="h-10 w-40 rounded-[var(--radius-md)]" />
           <Skeleton className="h-10 w-28 rounded-[var(--radius-md)]" />

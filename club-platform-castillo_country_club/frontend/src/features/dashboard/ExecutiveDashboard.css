@@ -1,0 +1,53 @@
+/**
+ * @component ExecutiveDashboard
+ * @namespace .executive-dashboard
+ * @archetype page · domain gold
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados executive-dashboard-*.
+ */
+.executive-dashboard {
+  position: relative;
+  animation: executive-dashboard-page-in 0.6s var(--ease-apple) 1;
+}
+
+/* Entrada de página: desenrolla desde abajo con leve desenfoque de apertura */
+@keyframes executive-dashboard-page-in {
+  from { opacity: 0; transform: translateY(12px); filter: blur(3px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* Auroora ambiental de dominio: velo superior muy tenue, estático */
+.executive-dashboard::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  left: 10%;
+  right: 10%;
+  height: 200px;
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-gold-400) 5.9%, transparent) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Secciones directas: oleada de llegada */
+.executive-dashboard__section {
+  animation: executive-dashboard-section-rise 0.55s var(--ease-apple) 1 backwards;
+}
+
+.executive-dashboard__section:nth-child(2) { animation-delay: 0.08s; }
+.executive-dashboard__section:nth-child(3) { animation-delay: 0.16s; }
+.executive-dashboard__section:nth-child(n+4) { animation-delay: 0.24s; }
+
+@keyframes executive-dashboard-section-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+.light .executive-dashboard::before {
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-gold-700) 3.9%, transparent) 0%, transparent 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .executive-dashboard, .executive-dashboard__section { animation: none; }
+}

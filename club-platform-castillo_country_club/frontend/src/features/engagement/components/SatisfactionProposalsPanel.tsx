@@ -11,6 +11,7 @@ import { Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 
 import type { SatisfactionEngagementProposalList } from "@/shared/mocks/contracts";
+import './SatisfactionProposalsPanel.css';
 
 // ═══ CONFIG ═════════════════════════════════════════════════════════════════
 
@@ -64,7 +65,7 @@ export function SatisfactionProposalsPanel({ proposals, className }: Props) {
         className
       )}
     >
-      <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.04)]">
+      <div className="satisfaction-proposals-panel px-4 py-3 border-b border-[rgba(255,255,255,0.04)]">
         <div className="flex items-center gap-2">
           <Zap className="w-4 h-4 text-[var(--color-gold-400)]" />
           <h3 className="text-sm font-semibold text-[var(--color-silver-100)]">

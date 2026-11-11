@@ -1,0 +1,93 @@
+/**
+ * @component FinancialAdvisorBanner
+ * @namespace .financial-advisor-banner
+ * @archetype banner · domain gold
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados financial-advisor-banner-*.
+ */
+.financial-advisor-banner {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 20%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.35s var(--ease-apple), box-shadow 0.35s var(--ease-apple), transform 0.35s var(--ease-apple);
+}
+
+/* Aurora lateral — la firma del banner: un barrido de luz que cruza al entrar */
+.financial-advisor-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--color-gold-400) 7.8%, transparent) 46%, color-mix(in srgb, var(--color-gold-200) 14.9%, transparent) 50%, color-mix(in srgb, var(--color-gold-400) 7.8%, transparent) 54%, transparent 70%);
+  transform: translateX(-120%);
+  animation: financial-advisor-banner-aurora-sweep 2.8s var(--ease-apple) 0.2s 1 forwards;
+  pointer-events: none;
+}
+
+.financial-advisor-banner:hover {
+  border-color: color-mix(in srgb, var(--color-gold-400) 33.3%, transparent);
+  box-shadow: var(--shadow-float);
+  transform: translateY(-1px);
+}
+
+@keyframes financial-advisor-banner-aurora-sweep {
+  to { transform: translateX(120%); }
+}
+
+/* Acento vertical — respira como una vela */
+.financial-advisor-banner__accent {
+  position: relative;
+  flex-shrink: 0;
+  width: 3px;
+  align-self: stretch;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--color-gold-200), var(--color-gold-400), var(--color-gold-700));
+  animation: financial-advisor-banner-accent-breathe 3.6s ease-in-out infinite;
+}
+
+@keyframes financial-advisor-banner-accent-breathe {
+  0%, 100% { opacity: 0.65; box-shadow: 0 0 6px color-mix(in srgb, var(--color-gold-400) 25.1%, transparent); }
+  50% { opacity: 1; box-shadow: 0 0 14px color-mix(in srgb, var(--color-gold-400) 43.9%, transparent); }
+}
+
+/* Título con brillo de tinta metálica al hover */
+.financial-advisor-banner:hover .financial-advisor-banner__title {
+  background-position: 200% center;
+}
+
+.financial-advisor-banner__title {
+  background: linear-gradient(90deg, var(--color-gold-200) 0%, var(--color-silver-100) 40%, var(--color-gold-200) 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: background-position 0.9s var(--ease-apple);
+}
+
+.light .financial-advisor-banner {
+  background: color-mix(in srgb, var(--color-silver-100) 72%, transparent);
+  border-color: color-mix(in srgb, var(--color-abyss) 10%, transparent);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--color-abyss) 8%, transparent);
+}
+
+.light .financial-advisor-banner__title {
+  background: linear-gradient(90deg, var(--color-gold-700) 0%, var(--color-abyss) 40%, var(--color-gold-700) 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .financial-advisor-banner::before, .financial-advisor-banner__accent, .financial-advisor-banner__title { animation: none; transition: none; }
+  .financial-advisor-banner { transition: none; }
+}

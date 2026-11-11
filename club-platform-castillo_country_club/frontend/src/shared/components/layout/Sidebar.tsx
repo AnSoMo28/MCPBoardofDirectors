@@ -31,6 +31,7 @@ import {
 import type { ReactNode } from "react";
 import MarbleCanvas from "./MarbleCanvas";
 import AvatarAura from "./AvatarAura";
+import './Sidebar.css';
 
 interface NavItem {
   label: string;
@@ -122,7 +123,7 @@ export function Sidebar() {
       {/* ── Mobile backdrop ── */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          className="sidebar fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={closeMobile}
         />
       )}

@@ -1,0 +1,77 @@
+/**
+ * @component SatisfactionImpactMatrix
+ * @namespace .satisfaction-impact-matrix
+ * @archetype chart · domain emerald
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados satisfaction-impact-matrix-*.
+ */
+.satisfaction-impact-matrix {
+  position: relative;
+}
+
+/* Draw-in: las barras/series crecen desde la base al montar */
+.satisfaction-impact-matrix__bar, .satisfaction-impact-matrix__series {
+  animation: satisfaction-impact-matrix-grow 0.7s var(--ease-apple) 1 backwards;
+}
+
+.satisfaction-impact-matrix__bar:nth-child(2n), .satisfaction-impact-matrix__series:nth-child(2n) { animation-delay: 0.07s; }
+.satisfaction-impact-matrix__bar:nth-child(3n), .satisfaction-impact-matrix__series:nth-child(3n) { animation-delay: 0.13s; }
+.satisfaction-impact-matrix__bar:nth-child(5n), .satisfaction-impact-matrix__series:nth-child(5n) { animation-delay: 0.19s; }
+
+@keyframes satisfaction-impact-matrix-grow {
+  from { transform: scaleY(0.02); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.satisfaction-impact-matrix__bar, .satisfaction-impact-matrix__series {
+  transform-origin: bottom;
+}
+
+/* Hover de dato: la barra respira y levita */
+.satisfaction-impact-matrix__bar:hover, .satisfaction-impact-matrix__series:hover {
+  animation: satisfaction-impact-matrix-hover-float 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--color-emerald-400) 18.8%, transparent));
+}
+
+@keyframes satisfaction-impact-matrix-hover-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Grid de fondo: cruces tenues que aparecen al hover del chart */
+.satisfaction-impact-matrix::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-emerald-400) 3.9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-emerald-400) 3.9%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-apple);
+  pointer-events: none;
+}
+
+.satisfaction-impact-matrix:hover::before {
+  opacity: 1;
+}
+
+/* Tooltip-ancla: aro del dominio */
+.satisfaction-impact-matrix__datum:focus-visible {
+  outline: 2px solid var(--color-emerald-400);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.light .satisfaction-impact-matrix::before {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-emerald-500) 4.7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-emerald-500) 4.7%, transparent) 1px, transparent 1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .satisfaction-impact-matrix__bar, .satisfaction-impact-matrix__series, .satisfaction-impact-matrix__bar:hover, .satisfaction-impact-matrix__series:hover { animation: none; filter: none; }
+  .satisfaction-impact-matrix::before { transition: none; }
+}

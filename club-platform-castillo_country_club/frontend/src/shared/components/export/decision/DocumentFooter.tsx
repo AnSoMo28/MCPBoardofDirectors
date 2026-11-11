@@ -4,6 +4,8 @@
  * @depends DecisionDocument.css
  */
 
+
+import './DocumentFooter.css';
 export function DocumentFooter() {
   return (
     <div className="glass-decision__footer">

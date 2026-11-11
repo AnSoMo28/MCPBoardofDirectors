@@ -37,6 +37,7 @@ import {
   EXHIBITION_STATUS_CONFIG
 } from '../types';
 import ExhibitionFormModal from './ExhibitionFormModal';
+import './ExhibitionsPanel.css';
 
 // ══════════════════════════════════════════════════════════
 //  TYPES
@@ -149,7 +150,7 @@ export default function ExhibitionsPanel() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="exhibitions-panel flex items-center justify-center py-24">
         <Loader2 className="h-8 w-8 animate-spin text-[var(--color-sage-400)]" />
       </div>
     );

@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.1 · Generación G10 (Ola 0 blindaje) · Date: 2026-11-11
+### Version: 9.2 · Generación G10.1 (migración CSS T1) · Date: 2026-11-11
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -77,6 +77,35 @@ CONTENIDO:
 - §10: masters G7 añadidos a fuentes deprecadas (misma mecánica que G7
   hizo con los pre-G7).
 - §0.3: ejemplo de generación actualizado a G8.
+```
+
+---
+
+## CHANGELOG G10.1 (v9.1 → v9.2)
+
+```
+MIGRACIÓN CSS TRAMO 1 — PAREJA tsx↔css COMPLETA (78/144):
+- 78 css NUEVOS de alta calidad (12 arquetipos × 7 dominios semánticos,
+  122 keyframes con nombre único — 0 duplicados): banner aurora-sweep,
+  gauge ring-draw, modal settle físico, panel stagger-oleada, calendar
+  today-breathe, control select-pop, chart grow-in, cards aura-hover,
+  chrome ember, state float+skeleton, page rise, print-doc b/n.
+  Todos: tokens var() de globals.css · .light overrides ·
+  prefers-reduced-motion · focus-visible. CERO rgba/hex/concat crudos
+  (color-mix con var(--token) — X-13 en css nuevos: 0).
+- tsx wiring quirúrgico: import './X.css' + clase raíz (2 cambios por
+  archivo). Casos especiales resueltos: banners delegantes (clase via
+  layerConfig), DashboardCanvas (canvas), App (shell body::before),
+  print-docs sin imports (import añadido).
+- Guardian: 15198 → 15124 (BAJA 74 — ratchet-down, no up).
+- 5 archivos NO llevan css por diseño: providers/router/RoleRedirect/
+  usePermissionContext/highlight (no visuales) — documentado.
+- TRAMO 2 en cola §15: 61 tsx que importan css de OTRO archivo
+  (acoplamiento) — desacoplar en G11.
+- Gates: build 18.7s ✓ · verify-build-css ✓ (bundle 206903→219587B
+  +12.7kB real animado) · VI ALL CLEAR ✓ · tsc -b ✓ ·
+  consistency 13/13 ✓ · vitest 6 (=baseline, ratchet intacto).
+- END: masters v9.2; protocolo intacto.
 ```
 
 ---
@@ -1056,7 +1085,10 @@ frontend/tools/                   ← Automation (estado real G9)
 │                                   token-boundary −109 FP)
 ├── validate-shared-imports.ts    ← v4.0.0 — registry-driven (audit del
 │                                   tool pendiente — #63 documentado)
-├── (scripts/verify-master-consistency.py v1.0.0 — MC-01..09
+├── PAREJAS CSS T1: 78 css nuevos (12 arquetipos × 7 dominios · 122
+│   keyframes únicos · X-13=0 · guardian -74) · 417/483 tsx con
+│   pareja propia · tramo 2 (61 acoplados) → cola §15
+(scripts/verify-master-consistency.py v1.0.0 — MC-01..09
 │   IG-01..04 · en CI + pre-commit · Q-GOV-04 cerrado)
 ├── verify-build-css.ts           ← v1.0.0 — GATE POST-BUILD (B6-QA;
 │                                   P0 0002/0003 — ver Pilar 10)
@@ -1351,7 +1383,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.1 · Generación G10 (sincronizada con
+END OF MASTER_BASE.md v9.2 · Generación G10.1 (sincronizada con
 MASTER_CHECKPOINT.md v9.1 y MASTER_CHECKLIST.md v9.1)
 
 

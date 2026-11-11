@@ -34,6 +34,7 @@ import { useMCPQuery } from '@/shared/hooks/useMCPQuery';
 
 import CulturalHealthScore from './CulturalHealthScore';
 import type { CulturalAdvisorInsight } from '../lib/advisor/types';
+import './CulturalAdvisorBanner.css';
 
 // ══════════════════════════════════════════════════════════
 //  TYPES
@@ -111,7 +112,7 @@ function InsightCard({
       )}
     >
       {/* ── Row: badge + content + action ── */}
-      <div className="flex items-start gap-3">
+      <div className="cultural-advisor-banner flex items-start gap-3">
         {/* Severity icon */}
         <div
           className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"

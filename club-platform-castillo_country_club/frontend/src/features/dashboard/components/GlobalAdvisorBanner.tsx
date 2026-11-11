@@ -41,6 +41,7 @@ import { IMPACT_CONFIG } from "@/shared/lib/ui/advisorConfig";
 import type { CausalChain } from "@/shared/lib/advisor-engine/types";
 import { CausalChainViz } from "@/shared/components/ai/CausalChainViz";
 import { toAdvisorReaction } from "@/shared/lib/reactionTemplate";
+import './GlobalAdvisorBanner.css';
 /* ══════════════════════════════════════════════════════════
    Layer config
    ══════════════════════════════════════════════════════════ */
@@ -77,7 +78,7 @@ function RiskGauge({
 
   return (
     <div
-      className="relative w-12 h-12 flex-shrink-0"
+      className="global-advisor-banner relative w-12 h-12 flex-shrink-0"
       title={`Riesgo ${grade}: ${Math.round(score)}/100`}
     >
       <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">

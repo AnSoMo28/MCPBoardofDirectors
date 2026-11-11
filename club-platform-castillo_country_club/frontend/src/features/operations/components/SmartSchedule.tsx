@@ -49,6 +49,7 @@ import type {
 } from "@/shared/mocks/contracts";
 import ExportButton from "@/shared/components/export/ExportButton";
 import { ConflictSeverity } from "@/features/recommendations/types";
+import './SmartSchedule.css';
 
 /* ══════════════════════════════════════════════════════════
    Helpers & Configs
@@ -151,7 +152,7 @@ function UtilizationTooltip({ active, payload }: { active?: boolean; payload?: U
   const name = isStaff ? (d as ScheduleStaffUtilization).staff_name : (d as ScheduleFacilityUtilization).facility;
 
   return (
-    <div style={TOOLTIP_STYLE} className="rounded-lg p-3 border border-white/[0.08] shadow-lg min-w-[160px]">
+    <div style={TOOLTIP_STYLE} className="smart-schedule rounded-lg p-3 border border-white/[0.08] shadow-lg min-w-[160px]">
       <p className="text-xs font-bold text-[var(--color-silver-200)] font-[family-name:var(--font-ui)] mb-1.5">
         {name}
       </p>

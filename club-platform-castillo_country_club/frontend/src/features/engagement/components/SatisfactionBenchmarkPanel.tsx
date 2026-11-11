@@ -9,6 +9,7 @@ import { cn } from "@/shared/lib/utils";
 import { BarChart3, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
 
 import type { SatisfactionBenchmarkReport } from "@/shared/mocks/contracts";
+import './SatisfactionBenchmarkPanel.css';
 
 // ═══ CONFIG ═════════════════════════════════════════════════════════════════
 
@@ -66,7 +67,7 @@ export function SatisfactionBenchmarkPanel({ benchmark, className }: Props) {
       )}
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.04)]">
+      <div className="satisfaction-benchmark-panel px-4 py-3 border-b border-[rgba(255,255,255,0.04)]">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4" style={{ color: "var(--color-teal-400)" }} />
           <h3 className="text-sm font-semibold text-[var(--color-silver-100)]">

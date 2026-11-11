@@ -1,0 +1,63 @@
+/**
+ * @component StatCard
+ * @namespace .stat-card
+ * @archetype cards · domain gold
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados stat-card-*.
+ */
+.stat-card {
+  /* contenedor de tarjetas — la grilla no anima, las tarjetas sí */
+  display: grid;
+  gap: 12px;
+}
+
+/* Tarjetas hijas: llegada escalonada + aura al hover */
+.stat-card > * {
+  position: relative;
+  animation: stat-card-card-in 0.5s var(--ease-apple) 1 backwards;
+  transition: transform 0.28s var(--ease-spring), box-shadow 0.28s var(--ease-apple);
+}
+
+.stat-card > *:nth-child(2n) { animation-delay: 0.07s; }
+.stat-card > *:nth-child(3n) { animation-delay: 0.12s; }
+.stat-card > *:nth-child(5n) { animation-delay: 0.18s; }
+
+@keyframes stat-card-card-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* El aura: luz radial que sigue al hover desde el borde superior */
+.stat-card > *::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% -20%, color-mix(in srgb, var(--color-gold-400) 14.9%, transparent) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease-apple);
+  pointer-events: none;
+}
+
+.stat-card > *:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-float);
+}
+
+.stat-card > *:hover::after {
+  opacity: 1;
+}
+
+.light .stat-card > *:hover {
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--color-abyss) 12%, transparent);
+}
+
+.light .stat-card > *::after {
+  background: radial-gradient(ellipse at 50% -20%, color-mix(in srgb, var(--color-gold-700) 11%, transparent) 0%, transparent 60%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-card > *, .stat-card > *::after, .stat-card > *:hover { animation: none; transition: none; transform: none; }
+}

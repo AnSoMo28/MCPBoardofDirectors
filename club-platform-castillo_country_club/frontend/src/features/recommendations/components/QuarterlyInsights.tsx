@@ -37,6 +37,7 @@ import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { showToast } from "@/shared/components/ui/Toast";
 import { formatCurrency } from "@/shared/lib/utils";
+import './QuarterlyInsights.css';
 
 import {
   CHART_COLORS,
@@ -118,7 +119,7 @@ export function QuarterlyInsights() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="quarterly-insights space-y-4">
         <Skeleton className="h-10 w-48 rounded-[var(--radius-md)]" />
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton

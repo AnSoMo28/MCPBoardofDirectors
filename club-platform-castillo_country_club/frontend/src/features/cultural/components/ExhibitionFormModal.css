@@ -1,0 +1,57 @@
+/**
+ * @component ExhibitionFormModal
+ * @namespace .exhibition-form-modal
+ * @archetype modal · domain terracotta
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados exhibition-form-modal-*.
+ */
+.exhibition-form-modal {
+  animation: exhibition-form-modal-enter 0.42s var(--ease-spring) 1;
+}
+
+/* Entrada con settle físico: cae, rebota una vez, se asienta */
+@keyframes exhibition-form-modal-enter {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  60% { opacity: 1; transform: translateY(-3px) scale(1.012); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Borde reactivo — se enciende cuando el modal tiene foco dentro */
+.exhibition-form-modal:focus-within {
+  border-color: color-mix(in srgb, var(--color-terracotta-400) 40%, transparent);
+  box-shadow: var(--shadow-overlay), 0 0 0 1px color-mix(in srgb, var(--color-terracotta-400) 13.3%, transparent);
+}
+
+/* El header del modal lleva una línea de luz que se enciende al entrar */
+.exhibition-form-modal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-terracotta-400) 53.3%, transparent), transparent);
+  animation: exhibition-form-modal-header-glow 1.1s var(--ease-apple) 0.25s 1 both;
+}
+
+@keyframes exhibition-form-modal-header-glow {
+  from { opacity: 0; transform: scaleX(0.3); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
+/* Campos: elevación al focus con aro del dominio */
+.exhibition-form-modal :focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-terracotta-400) 53.3%, transparent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.light .exhibition-form-modal {
+  box-shadow: 0 24px 70px color-mix(in srgb, var(--color-abyss) 18%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exhibition-form-modal, .exhibition-form-modal::before { animation: none; }
+}

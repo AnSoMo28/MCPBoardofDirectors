@@ -8,6 +8,7 @@ import { Lightbulb } from "lucide-react";
 import { formatCurrency } from "@/shared/lib/utils";
 import { NARRATIVE_INSIGHT_TYPE_CONFIG } from "@/features/finance/types";
 import type { NarrativeInsight } from "@/features/finance/types";
+import './InsightsSection.css';
 
 interface InsightsSectionProps {
   id: string;
@@ -16,7 +17,7 @@ interface InsightsSectionProps {
 
 export function InsightsSection({ id, insights }: InsightsSectionProps) {
   return (
-    <div id={id} className="glass-decision__section">
+    <div id={id} className="insights-section glass-decision__section">
       <div className="glass-decision__section-header">
         <Lightbulb size={16} className="glass-decision__section-icon glass-decision__section-icon--teal" />
         <h2 className="glass-decision__section-title">5. Insights Clave</h2>

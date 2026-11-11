@@ -12,6 +12,7 @@ import { useMemo } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { useReducedMotion } from '@/shared/hooks/useReducedMotion';
 import { getHealthColor } from '../types';
+import './CulturalHealthScore.css';
 
 // ══════════════════════════════════════════════════════════
 //  TYPES
@@ -75,7 +76,7 @@ export default function CulturalHealthScore({
     <div className={cn('flex flex-col items-center gap-1', config.container)}>
       <svg
         viewBox={`0 0 ${config.viewBox} ${config.viewBox}`}
-        className="h-full w-full"
+        className="cultural-health-score h-full w-full"
         role="img"
         aria-label={`Health Score: ${score} de 100 — ${LEVEL_LABELS[level] ?? level}`}
       >

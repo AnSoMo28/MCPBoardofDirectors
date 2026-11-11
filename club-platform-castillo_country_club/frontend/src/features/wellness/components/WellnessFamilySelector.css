@@ -1,0 +1,64 @@
+/**
+ * @component WellnessFamilySelector
+ * @namespace .wellness-family-selector
+ * @archetype control · domain sage
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados wellness-family-selector-*.
+ */
+.wellness-family-selector {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-md);
+  transition: background 0.2s var(--ease-apple), border-color 0.2s var(--ease-apple), transform 0.16s var(--ease-spring);
+}
+
+/* Prensado físico: se hunde 1px y suelta */
+.wellness-family-selector:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+/* Selección: pastilla llena del dominio con check elástico */
+.wellness-family-selector--selected {
+  background: color-mix(in srgb, var(--color-sage-400) 11.8%, transparent);
+  border-color: color-mix(in srgb, var(--color-sage-400) 40%, transparent);
+  animation: wellness-family-selector-select-pop 0.32s var(--ease-spring) 1;
+}
+
+@keyframes wellness-family-selector-select-pop {
+  0% { transform: scale(0.94); }
+  55% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* Anillo de teclado — accesibilidad con carácter */
+.wellness-family-selector:focus-visible {
+  outline: 2px solid var(--color-sage-400);
+  outline-offset: 2px;
+}
+
+/* Punto indicador con latido */
+.wellness-family-selector__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-sage-400);
+  animation: wellness-family-selector-dot-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes wellness-family-selector-dot-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.light .wellness-family-selector--selected {
+  background: color-mix(in srgb, var(--color-sage-400) 7.8%, transparent);
+  border-color: color-mix(in srgb, var(--color-sage-400) 33.3%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wellness-family-selector, .wellness-family-selector--selected, .wellness-family-selector__dot, .wellness-family-selector:active { animation: none; transition: none; transform: none; }
+}

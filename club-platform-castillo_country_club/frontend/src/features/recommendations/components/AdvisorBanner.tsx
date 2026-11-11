@@ -11,6 +11,7 @@
  */
 
 import { Lightbulb } from "lucide-react";
+import './AdvisorBanner.css';
 import {
   AdvisorBanner,
   type BaseInsight,
@@ -53,7 +54,7 @@ export function RecommendationAdvisorBanner({
       icon={Lightbulb}
       emptyMessage="Sin acciones recomendadas — todo bajo control."
       onExecute={onExecute}
-      className={className}
+      className={`advisor-banner ${className}`}
     />
   );
 }

@@ -1,0 +1,53 @@
+/**
+ * @component RecommendationsOverview
+ * @namespace .recommendations-overview
+ * @archetype page · domain teal
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados recommendations-overview-*.
+ */
+.recommendations-overview {
+  position: relative;
+  animation: recommendations-overview-page-in 0.6s var(--ease-apple) 1;
+}
+
+/* Entrada de página: desenrolla desde abajo con leve desenfoque de apertura */
+@keyframes recommendations-overview-page-in {
+  from { opacity: 0; transform: translateY(12px); filter: blur(3px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* Auroora ambiental de dominio: velo superior muy tenue, estático */
+.recommendations-overview::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  left: 10%;
+  right: 10%;
+  height: 200px;
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-teal-400) 5.9%, transparent) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Secciones directas: oleada de llegada */
+.recommendations-overview__section {
+  animation: recommendations-overview-section-rise 0.55s var(--ease-apple) 1 backwards;
+}
+
+.recommendations-overview__section:nth-child(2) { animation-delay: 0.08s; }
+.recommendations-overview__section:nth-child(3) { animation-delay: 0.16s; }
+.recommendations-overview__section:nth-child(n+4) { animation-delay: 0.24s; }
+
+@keyframes recommendations-overview-section-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+.light .recommendations-overview::before {
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-teal-500) 3.9%, transparent) 0%, transparent 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recommendations-overview, .recommendations-overview__section { animation: none; }
+}

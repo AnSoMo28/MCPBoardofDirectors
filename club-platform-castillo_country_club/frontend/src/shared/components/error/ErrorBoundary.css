@@ -1,0 +1,69 @@
+/**
+ * @component ErrorBoundary
+ * @namespace .error-boundary
+ * @archetype state · domain rose
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados error-boundary-*.
+ */
+.error-boundary {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 24px;
+  border-radius: var(--radius-lg);
+  animation: error-boundary-fade-up 0.5s var(--ease-apple) 1;
+}
+
+@keyframes error-boundary-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* El vacío tiene gravedad: icono flotando lento */
+.error-boundary__icon {
+  animation: error-boundary-float 4.5s ease-in-out infinite;
+  filter: drop-shadow(0 8px 16px color-mix(in srgb, var(--color-abyss) 25%, transparent));
+}
+
+@keyframes error-boundary-float {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-5px) rotate(1.5deg); }
+}
+
+/* Skeleton: shimmer diagonal en los placeholders del interior */
+.error-boundary__skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-silver-100) 4%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.error-boundary__skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--color-silver-100) 7%, transparent) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: error-boundary-shimmer 1.8s var(--ease-apple) infinite;
+}
+
+@keyframes error-boundary-shimmer {
+  to { transform: translateX(100%); }
+}
+
+.light .error-boundary__skeleton {
+  background: color-mix(in srgb, var(--color-abyss) 5%, transparent);
+}
+
+.light .error-boundary__skeleton::after {
+  background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--color-silver-100) 50%, transparent) 50%, transparent 80%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .error-boundary, .error-boundary__icon, .error-boundary__skeleton::after { animation: none; }
+}

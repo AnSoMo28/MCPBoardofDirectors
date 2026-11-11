@@ -9,6 +9,7 @@ import { AdvisorBanner } from "@/shared/components/AdvisorBanner";
 import { Brain } from "lucide-react";
 
 import type { BaseInsight } from "@/shared/components/AdvisorBanner";
+import './MLAdvisorBanner.css';
 
 // ═══ DOMAIN CONFIG ═════════════════════════════════════════════════════════
 

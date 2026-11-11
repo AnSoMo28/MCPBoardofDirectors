@@ -53,6 +53,7 @@ import type {
 } from "@/shared/mocks/contracts";
 import ExportButton from "@/shared/components/export/ExportButton";
 import { getScoreColor, SCORE_PRESETS } from "@/shared/lib/score-utils";
+import './ComplianceCheck.css';
 /* ══════════════════════════════════════════════════════════
    Helpers
    ══════════════════════════════════════════════════════════ */
@@ -564,7 +565,7 @@ function AreaComplianceTooltip({ active, payload }: { active?: boolean; payload?
   if (!active || !payload || !payload.length) return null;
   const d = payload[0].payload;
   return (
-    <div style={TOOLTIP_STYLE} className="rounded-lg p-3 border border-white/[0.08] shadow-lg min-w-[160px]">
+    <div style={TOOLTIP_STYLE} className="compliance-check rounded-lg p-3 border border-white/[0.08] shadow-lg min-w-[160px]">
       <p className="text-xs font-bold text-[var(--color-silver-200)] font-[family-name:var(--font-ui)] mb-1.5">
         {d.area}
       </p>

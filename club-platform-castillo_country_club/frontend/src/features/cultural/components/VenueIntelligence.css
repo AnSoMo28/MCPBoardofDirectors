@@ -1,0 +1,77 @@
+/**
+ * @component VenueIntelligence
+ * @namespace .venue-intelligence
+ * @archetype chart · domain teal
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados venue-intelligence-*.
+ */
+.venue-intelligence {
+  position: relative;
+}
+
+/* Draw-in: las barras/series crecen desde la base al montar */
+.venue-intelligence__bar, .venue-intelligence__series {
+  animation: venue-intelligence-grow 0.7s var(--ease-apple) 1 backwards;
+}
+
+.venue-intelligence__bar:nth-child(2n), .venue-intelligence__series:nth-child(2n) { animation-delay: 0.07s; }
+.venue-intelligence__bar:nth-child(3n), .venue-intelligence__series:nth-child(3n) { animation-delay: 0.13s; }
+.venue-intelligence__bar:nth-child(5n), .venue-intelligence__series:nth-child(5n) { animation-delay: 0.19s; }
+
+@keyframes venue-intelligence-grow {
+  from { transform: scaleY(0.02); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.venue-intelligence__bar, .venue-intelligence__series {
+  transform-origin: bottom;
+}
+
+/* Hover de dato: la barra respira y levita */
+.venue-intelligence__bar:hover, .venue-intelligence__series:hover {
+  animation: venue-intelligence-hover-float 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--color-teal-400) 18.8%, transparent));
+}
+
+@keyframes venue-intelligence-hover-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Grid de fondo: cruces tenues que aparecen al hover del chart */
+.venue-intelligence::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-teal-400) 3.9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-teal-400) 3.9%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-apple);
+  pointer-events: none;
+}
+
+.venue-intelligence:hover::before {
+  opacity: 1;
+}
+
+/* Tooltip-ancla: aro del dominio */
+.venue-intelligence__datum:focus-visible {
+  outline: 2px solid var(--color-teal-400);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.light .venue-intelligence::before {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-teal-500) 4.7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-teal-500) 4.7%, transparent) 1px, transparent 1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .venue-intelligence__bar, .venue-intelligence__series, .venue-intelligence__bar:hover, .venue-intelligence__series:hover { animation: none; filter: none; }
+  .venue-intelligence::before { transition: none; }
+}

@@ -19,6 +19,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { Activity } from "lucide-react";
+import './SportsAdvisorBanner.css';
 import {
   AdvisorBanner,
   type BaseInsight,

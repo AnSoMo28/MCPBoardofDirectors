@@ -10,6 +10,7 @@ import { useSidebarStore } from "@/stores/sidebar.store";
 import { getGreeting } from "@/shared/lib/utils";
 import { NotificationCenter } from "./NotificationCenter";
 import { Menu, Search } from "lucide-react";
+import './Header.css';
 
 export function Header() {
   const location = useLocation();
@@ -22,7 +23,7 @@ export function Header() {
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1));
 
   return (
-    <header className="glass-header h-16 flex items-center justify-between px-4 sm:px-6">
+    <header className="header glass-header h-16 flex items-center justify-between px-4 sm:px-6">
       {/* Left: mobile menu + breadcrumbs */}
       <div className="flex items-center gap-3 sm:gap-4 min-w-0">
         <button

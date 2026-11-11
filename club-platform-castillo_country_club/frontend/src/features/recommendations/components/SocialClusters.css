@@ -1,0 +1,77 @@
+/**
+ * @component SocialClusters
+ * @namespace .social-clusters
+ * @archetype chart · domain terracotta
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados social-clusters-*.
+ */
+.social-clusters {
+  position: relative;
+}
+
+/* Draw-in: las barras/series crecen desde la base al montar */
+.social-clusters__bar, .social-clusters__series {
+  animation: social-clusters-grow 0.7s var(--ease-apple) 1 backwards;
+}
+
+.social-clusters__bar:nth-child(2n), .social-clusters__series:nth-child(2n) { animation-delay: 0.07s; }
+.social-clusters__bar:nth-child(3n), .social-clusters__series:nth-child(3n) { animation-delay: 0.13s; }
+.social-clusters__bar:nth-child(5n), .social-clusters__series:nth-child(5n) { animation-delay: 0.19s; }
+
+@keyframes social-clusters-grow {
+  from { transform: scaleY(0.02); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.social-clusters__bar, .social-clusters__series {
+  transform-origin: bottom;
+}
+
+/* Hover de dato: la barra respira y levita */
+.social-clusters__bar:hover, .social-clusters__series:hover {
+  animation: social-clusters-hover-float 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--color-terracotta-400) 18.8%, transparent));
+}
+
+@keyframes social-clusters-hover-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Grid de fondo: cruces tenues que aparecen al hover del chart */
+.social-clusters::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-terracotta-400) 3.9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-terracotta-400) 3.9%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-apple);
+  pointer-events: none;
+}
+
+.social-clusters:hover::before {
+  opacity: 1;
+}
+
+/* Tooltip-ancla: aro del dominio */
+.social-clusters__datum:focus-visible {
+  outline: 2px solid var(--color-terracotta-400);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.light .social-clusters::before {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-terracotta-400) 4.7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-terracotta-400) 4.7%, transparent) 1px, transparent 1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-clusters__bar, .social-clusters__series, .social-clusters__bar:hover, .social-clusters__series:hover { animation: none; filter: none; }
+  .social-clusters::before { transition: none; }
+}

@@ -1,0 +1,75 @@
+/**
+ * @component CulturalHealthScore
+ * @namespace .cultural-health-score
+ * @archetype gauge · domain sage
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados cultural-health-score-*.
+ */
+.cultural-health-score {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.4s var(--ease-spring);
+}
+
+/* Halo del gauge — late al ritmo del valor: verde calmado, crítico rápido */
+.cultural-health-score::after {
+  content: "";
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-sage-400) 7.1%, transparent) 0%, transparent 65%);
+  animation: cultural-health-score-halo-breathe 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes cultural-health-score-halo-breathe {
+  0%, 100% { transform: scale(0.94); opacity: 0.55; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+/* El anillo se dibuja al montar (draw-once) */
+.cultural-health-score__ring {
+  animation: cultural-health-score-ring-draw 1.2s var(--ease-apple) 1;
+  transform-origin: center;
+}
+
+@keyframes cultural-health-score-ring-draw {
+  from { stroke-dashoffset: var(--cultural-health-score-circ, 300); filter: blur(2px); }
+  to { filter: blur(0); }
+}
+
+.cultural-health-score__value {
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.cultural-health-score:hover .cultural-health-score__value {
+  transform: scale(1.06);
+}
+
+/* Punto de nivel bajo el número — pulso discreto */
+.cultural-health-score__level-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-sage-400);
+  animation: cultural-health-score-level-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes cultural-health-score-level-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-sage-400) 25.1%, transparent); }
+  60% { box-shadow: 0 0 0 5px transparent; }
+}
+
+.light .cultural-health-score::after {
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-sage-400) 5.9%, transparent) 0%, transparent 65%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cultural-health-score::after, .cultural-health-score__ring, .cultural-health-score__level-dot, .cultural-health-score__value { animation: none; transition: none; }
+}

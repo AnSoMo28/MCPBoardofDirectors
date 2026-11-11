@@ -1,0 +1,64 @@
+/**
+ * @component YearOverYearToggle
+ * @namespace .year-over-year-toggle
+ * @archetype control · domain gold
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados year-over-year-toggle-*.
+ */
+.year-over-year-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-md);
+  transition: background 0.2s var(--ease-apple), border-color 0.2s var(--ease-apple), transform 0.16s var(--ease-spring);
+}
+
+/* Prensado físico: se hunde 1px y suelta */
+.year-over-year-toggle:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+/* Selección: pastilla llena del dominio con check elástico */
+.year-over-year-toggle--selected {
+  background: color-mix(in srgb, var(--color-gold-400) 11.8%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+  animation: year-over-year-toggle-select-pop 0.32s var(--ease-spring) 1;
+}
+
+@keyframes year-over-year-toggle-select-pop {
+  0% { transform: scale(0.94); }
+  55% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* Anillo de teclado — accesibilidad con carácter */
+.year-over-year-toggle:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+/* Punto indicador con latido */
+.year-over-year-toggle__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-gold-400);
+  animation: year-over-year-toggle-dot-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes year-over-year-toggle-dot-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.light .year-over-year-toggle--selected {
+  background: color-mix(in srgb, var(--color-gold-700) 7.8%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-700) 33.3%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .year-over-year-toggle, .year-over-year-toggle--selected, .year-over-year-toggle__dot, .year-over-year-toggle:active { animation: none; transition: none; transform: none; }
+}

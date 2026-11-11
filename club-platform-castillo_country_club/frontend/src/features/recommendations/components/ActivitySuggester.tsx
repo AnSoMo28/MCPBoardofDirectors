@@ -24,6 +24,7 @@ import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { showToast } from "@/shared/components/ui/Toast";
 import { formatCurrency } from "@/shared/lib/utils";
+import './ActivitySuggester.css';
 
 import {
   SUGGESTION_STATUS_CONFIG,
@@ -132,7 +133,7 @@ export function ActivitySuggester() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="activity-suggester space-y-4">
         <Skeleton className="h-10 w-48 rounded-[var(--radius-md)]" />
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} className="h-16 rounded-[var(--radius-md)]" />

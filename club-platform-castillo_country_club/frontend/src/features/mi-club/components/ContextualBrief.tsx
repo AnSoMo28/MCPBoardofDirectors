@@ -1,5 +1,6 @@
 import { cn } from "@/shared/lib/utils";
 import type { BriefSegment } from "../types";
+import './ContextualBrief.css';
 
 type AvatarRingLevel = "healthy" | "good" | "warning" | "critical";
 
@@ -41,7 +42,7 @@ function AvatarRing({ score }: { score: number | null }) {
   const offset = circumference * (1 - pct / 100);
 
   return (
-    <div className="glass-landing__brief-avatar-ring">
+    <div className="contextual-brief glass-landing__brief-avatar-ring">
       <svg viewBox="0 0 66 66">
         <circle
           cx="33"

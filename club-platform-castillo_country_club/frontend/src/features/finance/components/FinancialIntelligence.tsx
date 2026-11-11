@@ -49,6 +49,7 @@ import {
   BRIEFING_SECTION_SEVERITY_CONFIG, METRIC_ASSESSMENT_CONFIG,
 } from "../types";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
+import './FinancialIntelligence.css';
 /* ══════════════════════════════════════════════════════════
    Lazy-loaded sub-features
    ══════════════════════════════════════════════════════════ */
@@ -252,7 +253,7 @@ function ConfidenceRing({
   const offset = circumference - (value / 100) * circumference;
 
   return (
-    <svg width={size} height={size} className="flex-shrink-0 -rotate-90">
+    <svg width={size} height={size} className="financial-intelligence flex-shrink-0 -rotate-90">
       <circle
         cx={size / 2} cy={size / 2} r={radius}
         fill="none" stroke="var(--color-surface-3)" strokeWidth={stroke}

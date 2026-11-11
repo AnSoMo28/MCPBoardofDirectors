@@ -32,6 +32,7 @@ import AIInsightNarrative from "@/shared/components/ai/AIInsightNarrative";
 import type { AiFinancialReport } from "../types";
 import { usePrefetchTopNarratives } from "@/shared/hooks/useAdvisorNarrative";
 import { toAdvisorReaction } from "@/shared/lib/reactionTemplate";
+import './FinancialAdvisorBanner.css';
 // ── Layer config ──
 
 const LAYER_CONFIG: Record<
@@ -149,7 +150,7 @@ export default function FinancialAdvisorBanner({
       variants={containerVariants}
       initial={false}
       animate="visible"
-      className="rounded-xl border border-[var(--color-gold-400)]/20 bg-[var(--color-surface-1)] overflow-hidden mb-6"
+      className="financial-advisor-banner rounded-xl border border-[var(--color-gold-400)]/20 bg-[var(--color-surface-1)] overflow-hidden mb-6"
     >
       {/* ── Header ── */}
       <Button

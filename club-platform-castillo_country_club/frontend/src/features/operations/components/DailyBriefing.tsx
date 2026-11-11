@@ -68,6 +68,7 @@ import type {
   QuarterlyInsightGetResponse as QuarterlyInsightsResponse,
 } from "@/shared/mocks/contracts";
 import type { AnomalyData } from "@/features/dashboard/types";
+import './DailyBriefing.css';
 /* ══════════════════════════════════════════════════════════
    Health Score — Composite metric (0–100)
    ══════════════════════════════════════════════════════════ */
@@ -735,7 +736,7 @@ function HealthScoreRing({
 
   return (
     <div
-      className="relative w-[108px] h-[108px] flex-shrink-0"
+      className="daily-briefing relative w-[108px] h-[108px] flex-shrink-0"
       role="meter"
       aria-valuenow={score}
       aria-valuemin={0}

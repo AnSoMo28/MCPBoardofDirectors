@@ -36,6 +36,7 @@ import {
   PERFORMANCE_STATUS_CONFIG,
 } from '../types';
 import EntertainmentFormModal from './EntertainmentFormModal';
+import './EntertainmentPanel.css';
 
 // ══════════════════════════════════════════════════════════
 //  TYPES
@@ -157,7 +158,7 @@ export default function EntertainmentPanel() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="entertainment-panel flex items-center justify-center py-24">
         <Loader2 className="h-8 w-8 animate-spin text-[var(--color-emerald-400)]" />
       </div>
     );

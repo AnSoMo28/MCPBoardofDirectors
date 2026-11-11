@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.1 · Generación G10 (Ola 0 blindaje) · Date: 2026-11-11
+### Version: 9.2 · Generación G10.1 (migración CSS T1) · Date: 2026-11-11
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos
@@ -109,6 +109,35 @@ CONTENIDO:
   deuda production-grade: secrets, persistencia, CI, LLM ops, gobernanza
   backend, HITL, observabilidad.
 - End marker v8.0 G8.
+```
+
+---
+
+## CHANGELOG G10.1 (v9.1 → v9.2)
+
+```
+MIGRACIÓN CSS TRAMO 1 — PAREJA tsx↔css COMPLETA (78/144):
+- 78 css NUEVOS de alta calidad (12 arquetipos × 7 dominios semánticos,
+  122 keyframes con nombre único — 0 duplicados): banner aurora-sweep,
+  gauge ring-draw, modal settle físico, panel stagger-oleada, calendar
+  today-breathe, control select-pop, chart grow-in, cards aura-hover,
+  chrome ember, state float+skeleton, page rise, print-doc b/n.
+  Todos: tokens var() de globals.css · .light overrides ·
+  prefers-reduced-motion · focus-visible. CERO rgba/hex/concat crudos
+  (color-mix con var(--token) — X-13 en css nuevos: 0).
+- tsx wiring quirúrgico: import './X.css' + clase raíz (2 cambios por
+  archivo). Casos especiales resueltos: banners delegantes (clase via
+  layerConfig), DashboardCanvas (canvas), App (shell body::before),
+  print-docs sin imports (import añadido).
+- Guardian: 15198 → 15124 (BAJA 74 — ratchet-down, no up).
+- 5 archivos NO llevan css por diseño: providers/router/RoleRedirect/
+  usePermissionContext/highlight (no visuales) — documentado.
+- TRAMO 2 en cola §15: 61 tsx que importan css de OTRO archivo
+  (acoplamiento) — desacoplar en G11.
+- Gates: build 18.7s ✓ · verify-build-css ✓ (bundle 206903→219587B
+  +12.7kB real animado) · VI ALL CLEAR ✓ · tsc -b ✓ ·
+  consistency 13/13 ✓ · vitest 6 (=baseline, ratchet intacto).
+- END: masters v9.2; protocolo intacto.
 ```
 
 ---
@@ -1382,6 +1411,12 @@ EXTENDED AUDIT REGISTRY (config, wiring, stores — para esquema):
 ║  └── B2: 15 cross-agent restantes (write-path HITL; board_report      ║
 ║      read ya registrado B2) — ¿go/no-go?                            ║
 ║                                                                          ║
+║  REQUEST 2b (tramo 2 CSS — post-Ola 1, no bloqueante):          ║
+║  ├── 61 tsx importan css de OTRO archivo (acoplamiento):      ║
+║  │   desacoplar → pareja propia por archivo (idioma T1)       ║
+║  └── 65 keyframes duplicados preexistentes (deuda CSS vieja   ║
+║      X-13 9068 en css legacy — ratchet CI ya congela)         ║
+║                                                                  ║
 ║  REQUEST 2 (P0 de la cola §15 — bloqueante para desplegar):            ║
 ║  ├── Q-SEC-01 secreto JWT hardcodeado (jwt_service.py:12) →             ║
 ║  │   get_settings() + env (pydantic-settings ya está, NADIE lo consume) ║
@@ -1516,6 +1551,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.1 · Generación G10 (sincronizada con
+END OF MASTER_CHECKPOINT.md v9.2 · Generación G10.1 (sincronizada con
 MASTER_BASE.md v8.0 y MASTER_CHECKLIST.md v8.0)
 

@@ -12,6 +12,7 @@ import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
 import { Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/shared/components/ui/Button";
+import './PeriodSelector.css';
 
 export type DashboardPeriod = "current_quarter" | "last_quarter" | "ytd" | "custom";
 
@@ -49,7 +50,7 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="period-selector flex flex-col gap-3">
       <div
         className="inline-flex items-center gap-0.5 p-1 glass-card"
         role="tablist"

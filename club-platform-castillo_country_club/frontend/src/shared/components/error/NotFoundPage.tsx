@@ -5,12 +5,13 @@
 
 import { useNavigate } from "react-router";
 import { MapPin, Home, ArrowLeft } from "lucide-react";
+import './NotFoundPage.css';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-center bg-[var(--color-abyss)] px-6">
+    <div className="not-found-page min-h-screen flex flex-col items-center justify-center text-center bg-[var(--color-abyss)] px-6">
       {/* Decorative number */}
       <div className="relative mb-8">
         <span className="font-[family-name:var(--font-display)] text-[120px] md:text-[160px] font-bold leading-none text-[var(--color-surface-3)] select-none">

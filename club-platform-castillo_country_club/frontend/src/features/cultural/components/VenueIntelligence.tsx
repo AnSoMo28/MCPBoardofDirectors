@@ -25,6 +25,7 @@ import { cn, formatCurrency } from '@/shared/lib/utils';
 
 import type { CulturalAnalytics, VenueType } from '../types';
 import { VENUE_CONFIG } from '../types';
+import './VenueIntelligence.css';
 
 // ══════════════════════════════════════════════════════════
 //  TYPES
@@ -122,7 +123,7 @@ export default function VenueIntelligence({ analytics }: VenueIntelligenceProps)
 
   if (venues.length === 0) {
     return (
-      <div className="rounded-lg border border-[var(--color-surface-3)] bg-[var(--color-surface-1)] p-6 text-center">
+      <div className="venue-intelligence rounded-lg border border-[var(--color-surface-3)] bg-[var(--color-surface-1)] p-6 text-center">
         <Building className="mx-auto mb-2 h-8 w-8 text-[var(--color-silver-500)]" />
         <p className="text-xs text-[var(--color-silver-400)]">
           Sin datos de venues. Creá eventos para generar datos de utilización.

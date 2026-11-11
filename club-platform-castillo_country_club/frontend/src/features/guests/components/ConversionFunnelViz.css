@@ -1,0 +1,77 @@
+/**
+ * @component ConversionFunnelViz
+ * @namespace .conversion-funnel-viz
+ * @archetype chart · domain teal
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados conversion-funnel-viz-*.
+ */
+.conversion-funnel-viz {
+  position: relative;
+}
+
+/* Draw-in: las barras/series crecen desde la base al montar */
+.conversion-funnel-viz__bar, .conversion-funnel-viz__series {
+  animation: conversion-funnel-viz-grow 0.7s var(--ease-apple) 1 backwards;
+}
+
+.conversion-funnel-viz__bar:nth-child(2n), .conversion-funnel-viz__series:nth-child(2n) { animation-delay: 0.07s; }
+.conversion-funnel-viz__bar:nth-child(3n), .conversion-funnel-viz__series:nth-child(3n) { animation-delay: 0.13s; }
+.conversion-funnel-viz__bar:nth-child(5n), .conversion-funnel-viz__series:nth-child(5n) { animation-delay: 0.19s; }
+
+@keyframes conversion-funnel-viz-grow {
+  from { transform: scaleY(0.02); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.conversion-funnel-viz__bar, .conversion-funnel-viz__series {
+  transform-origin: bottom;
+}
+
+/* Hover de dato: la barra respira y levita */
+.conversion-funnel-viz__bar:hover, .conversion-funnel-viz__series:hover {
+  animation: conversion-funnel-viz-hover-float 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--color-teal-400) 18.8%, transparent));
+}
+
+@keyframes conversion-funnel-viz-hover-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Grid de fondo: cruces tenues que aparecen al hover del chart */
+.conversion-funnel-viz::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-teal-400) 3.9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-teal-400) 3.9%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-apple);
+  pointer-events: none;
+}
+
+.conversion-funnel-viz:hover::before {
+  opacity: 1;
+}
+
+/* Tooltip-ancla: aro del dominio */
+.conversion-funnel-viz__datum:focus-visible {
+  outline: 2px solid var(--color-teal-400);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.light .conversion-funnel-viz::before {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-teal-500) 4.7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-teal-500) 4.7%, transparent) 1px, transparent 1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conversion-funnel-viz__bar, .conversion-funnel-viz__series, .conversion-funnel-viz__bar:hover, .conversion-funnel-viz__series:hover { animation: none; filter: none; }
+  .conversion-funnel-viz::before { transition: none; }
+}

@@ -1,0 +1,63 @@
+/**
+ * @component SchedulingConflicts
+ * @namespace .scheduling-conflicts
+ * @archetype cards · domain rose
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados scheduling-conflicts-*.
+ */
+.scheduling-conflicts {
+  /* contenedor de tarjetas — la grilla no anima, las tarjetas sí */
+  display: grid;
+  gap: 12px;
+}
+
+/* Tarjetas hijas: llegada escalonada + aura al hover */
+.scheduling-conflicts > * {
+  position: relative;
+  animation: scheduling-conflicts-card-in 0.5s var(--ease-apple) 1 backwards;
+  transition: transform 0.28s var(--ease-spring), box-shadow 0.28s var(--ease-apple);
+}
+
+.scheduling-conflicts > *:nth-child(2n) { animation-delay: 0.07s; }
+.scheduling-conflicts > *:nth-child(3n) { animation-delay: 0.12s; }
+.scheduling-conflicts > *:nth-child(5n) { animation-delay: 0.18s; }
+
+@keyframes scheduling-conflicts-card-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* El aura: luz radial que sigue al hover desde el borde superior */
+.scheduling-conflicts > *::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% -20%, color-mix(in srgb, var(--color-rose-400) 14.9%, transparent) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease-apple);
+  pointer-events: none;
+}
+
+.scheduling-conflicts > *:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-float);
+}
+
+.scheduling-conflicts > *:hover::after {
+  opacity: 1;
+}
+
+.light .scheduling-conflicts > *:hover {
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--color-abyss) 12%, transparent);
+}
+
+.light .scheduling-conflicts > *::after {
+  background: radial-gradient(ellipse at 50% -20%, color-mix(in srgb, var(--color-rose-500) 11%, transparent) 0%, transparent 60%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scheduling-conflicts > *, .scheduling-conflicts > *::after, .scheduling-conflicts > *:hover { animation: none; transition: none; transform: none; }
+}

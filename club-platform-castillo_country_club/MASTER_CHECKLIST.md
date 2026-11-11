@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.1 · Generación G10 (Ola 0 blindaje) · 180 checks · ZERO tolerance
+### Version: 9.2 · Generación G10.1 (migración CSS T1) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian 4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -67,6 +67,35 @@ CONTENIDO:
   backend tiene su propio gate EJECUTABLE (smoke_b0 + pytest +
   ruff/mypy) — no se mezclan los números (principio §12 CHECKPOINT G7
   de colisiones terminológicas).
+```
+
+---
+
+## CHANGELOG G10.1 (v9.1 → v9.2)
+
+```
+MIGRACIÓN CSS TRAMO 1 — PAREJA tsx↔css COMPLETA (78/144):
+- 78 css NUEVOS de alta calidad (12 arquetipos × 7 dominios semánticos,
+  122 keyframes con nombre único — 0 duplicados): banner aurora-sweep,
+  gauge ring-draw, modal settle físico, panel stagger-oleada, calendar
+  today-breathe, control select-pop, chart grow-in, cards aura-hover,
+  chrome ember, state float+skeleton, page rise, print-doc b/n.
+  Todos: tokens var() de globals.css · .light overrides ·
+  prefers-reduced-motion · focus-visible. CERO rgba/hex/concat crudos
+  (color-mix con var(--token) — X-13 en css nuevos: 0).
+- tsx wiring quirúrgico: import './X.css' + clase raíz (2 cambios por
+  archivo). Casos especiales resueltos: banners delegantes (clase via
+  layerConfig), DashboardCanvas (canvas), App (shell body::before),
+  print-docs sin imports (import añadido).
+- Guardian: 15198 → 15124 (BAJA 74 — ratchet-down, no up).
+- 5 archivos NO llevan css por diseño: providers/router/RoleRedirect/
+  usePermissionContext/highlight (no visuales) — documentado.
+- TRAMO 2 en cola §15: 61 tsx que importan css de OTRO archivo
+  (acoplamiento) — desacoplar en G11.
+- Gates: build 18.7s ✓ · verify-build-css ✓ (bundle 206903→219587B
+  +12.7kB real animado) · VI ALL CLEAR ✓ · tsc -b ✓ ·
+  consistency 13/13 ✓ · vitest 6 (=baseline, ratchet intacto).
+- END: masters v9.2; protocolo intacto.
 ```
 
 ---
@@ -910,6 +939,12 @@ verify-integration.ts           F (integración)         ✅ v3.3.0 · 8 checks
                                                         · VI-16 comment masker
                                                         · VI-17 definition
                                                         sites (B6)
+MIGRACIÓN CSS T1 · 78 parejas     css (feature)          ✅ 12 arquetipos × 7
+                                                        dominios · 122 keyframes
+                                                        únicos · X-13=0 · guardian
+                                                        15198→15124 (-74) · 417/483
+                                                        tsx con pareja · tramo 2:
+                                                        61 acoplados → §15
 scripts/verify-master-consistency.py  M (docs↔tree)      ✅ v1.0.0 — 13 checks
                                                         (MC-01..09 IG-01..04)
                                                         · 13/13 VERDE exit 0
@@ -1076,6 +1111,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.1 · Generación G10 (sincronizada con
+END OF MASTER_CHECKLIST.md v9.2 · Generación G10.1 (sincronizada con
 MASTER_BASE.md v9.1 y MASTER_CHECKPOINT.md v9.1)
 

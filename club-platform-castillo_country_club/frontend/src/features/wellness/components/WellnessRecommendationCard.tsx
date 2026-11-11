@@ -8,6 +8,7 @@ import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { cn } from "@/shared/lib/utils";
 import type { WellnessRecommendation } from "../types";
+import './WellnessRecommendationCard.css';
 
 const PRIORITY_MAP: Record<
   string,
@@ -46,7 +47,7 @@ export function WellnessRecommendationCard({ recommendation }: Props) {
       )}
       style={{ borderLeftWidth: "3px", borderLeftColor: cfg.borderColor }}
     >
-      <div className="flex-1 min-w-0">
+      <div className="wellness-recommendation-card flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1 flex-wrap">
           <Badge variant={cfg.variant} size="sm">
             {cfg.label}

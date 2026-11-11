@@ -7,6 +7,7 @@ import { ToastContainer } from "@/shared/components/ui";
 import { useEffect } from "react";
 import { useWebVitals } from "@/shared/hooks/useWebVitals";
 import { AIChatWidget } from "@/shared/components/chat/AIChatWidget";
+import './App.css';
 
 export function App() {
   const theme = useThemeStore((s) => s.theme);

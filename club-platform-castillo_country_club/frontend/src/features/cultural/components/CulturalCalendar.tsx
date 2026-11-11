@@ -43,6 +43,7 @@ import {
   groupCalendarByDate,
 } from '../types';
 import { Button } from "@/shared/components/ui/Button";
+import './CulturalCalendar.css';
 
 // ══════════════════════════════════════════════════════════
 //  CONFIG
@@ -142,7 +143,7 @@ export default function CulturalCalendar() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="cultural-calendar flex items-center justify-center py-24">
         <CalendarIcon className="h-8 w-8 animate-pulse text-[var(--color-gold-400)]" />
       </div>
     );

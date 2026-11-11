@@ -29,6 +29,7 @@ import {
   type Recommendation,
 } from "../types";
 import { getScoreColor, SCORE_PRESETS } from "@/shared/lib/score-utils";
+import './FamilyRecommendations.css';
 // ── Recommendation type filter options ─────────────────────
 
 const REC_TYPE_OPTIONS = [
@@ -90,7 +91,7 @@ export function FamilyRecommendations() {
   // ── Render ──
   return (
     <div
-      className="space-y-5"
+      className="family-recommendations space-y-5"
       role="region"
       aria-label="Recomendaciones por familia"
     >

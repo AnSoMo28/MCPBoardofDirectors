@@ -13,6 +13,7 @@
 
 import { cn } from "@/shared/lib/utils";
 import { ArrowDown, Target, DollarSign } from "lucide-react";
+import './ConversionFunnelViz.css';
 
 import type {
   ConversionFunnel
@@ -93,7 +94,7 @@ export function ConversionFunnelViz({ funnel, className }: Props) {
       )}
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.04)]">
+      <div className="conversion-funnel-viz px-4 py-3 border-b border-[rgba(255,255,255,0.04)]">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4" style={{ color: "var(--color-terracotta-400)" }} />

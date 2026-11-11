@@ -13,6 +13,7 @@ import { Input } from "@/shared/components/ui/Input";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/Button";
+import './WellnessFamilySelector.css';
 
 /**
  * P2-C3g C16 — items de family_search: FamilyBrief
@@ -56,7 +57,7 @@ export function WellnessFamilySelector({ selectedId, onSelect }: Props) {
     : families;
 
   return (
-    <Card className="p-6">
+    <Card className="wellness-family-selector p-6">
       <div className="flex items-center gap-3 mb-4">
         <div
           className="flex items-center justify-center w-10 h-10 rounded-xl"
