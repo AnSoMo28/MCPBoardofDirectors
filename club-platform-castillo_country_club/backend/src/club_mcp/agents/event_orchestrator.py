@@ -15,6 +15,7 @@ from club_mcp.hitl.approval_types import ApprovalLevel
 from club_mcp.models.event import (
     EventCategory,
     EventCreate,
+    EventSearchParams,
     EventStatus,
     RSVPStatus,
     VendorContractStatus,
@@ -587,6 +588,78 @@ class EventOrchestratorAgent(BaseAgent):
                 f"Recuerda revisar y publicar cuando esté listo. ✨"
             ),
             "data": cloned.model_dump(mode="json"),
+        }
+
+
+    # ─────────────────────────────────────────────────────────
+    # B4 TOOLS: EVENT READS (AUTO × 2)
+    # VI §6 flagged events.get_event / list_events as capability-
+    # without-tool: event_repo already had get_event (L84) and
+    # search_events (L108). These wrappers expose them with the
+    # search params the mi-club pages send (query/category/status/
+    # dates + pagination).
+    # ─────────────────────────────────────────────────────────
+
+    @MCPTool(
+        "get_event",
+        "Obtener el detalle completo de un evento.",
+        approval=ApprovalLevel.AUTO,
+    )
+    async def get_event(self, event_id: str = "") -> dict[str, Any]:
+        if not event_id:
+            return {"status": "error", "message": "Se requiere event_id 📅"}
+        event = self.event_repo.get_event(event_id)
+        if event is None:
+            return {
+                "status": "not_found",
+                "message": f"No encontramos el evento '{event_id}'.",
+            }
+        return {
+            "status": "success",
+            "message": f"📅 {event.title} — {event.status.value}",
+            "event": event.model_dump(mode="json"),
+        }
+
+    @MCPTool(
+        "list_events",
+        "Listar y filtrar eventos con paginación.",
+        approval=ApprovalLevel.AUTO,
+    )
+    async def list_events(
+        self,
+        query: str | None = None,
+        category: str | None = None,
+        status: str | None = None,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> dict[str, Any]:
+        if page < 1 or not 1 <= page_size <= 100:
+            return {
+                "status": "error",
+                "message": "page >= 1 y page_size entre 1 y 100.",
+            }
+        try:
+            params = EventSearchParams(
+                query=query,
+                category=EventCategory(category) if category else None,
+                status=EventStatus(status) if status else None,
+                date_from=datetime.fromisoformat(date_from) if date_from else None,
+                date_to=datetime.fromisoformat(date_to) if date_to else None,
+                page=page,
+                page_size=page_size,
+            )
+        except ValueError as exc:
+            return {"status": "error", "message": f"Filtro inválido: {exc}"}
+        events = self.event_repo.search_events(params)
+        return {
+            "status": "success",
+            "message": f"📅 {len(events)} evento(s) encontrado(s).",
+            "events": [e.model_dump(mode="json") for e in events],
+            "total": len(events),
+            "page": page,
+            "page_size": page_size,
         }
 
     # ─────────────────────────────────────────────────────────

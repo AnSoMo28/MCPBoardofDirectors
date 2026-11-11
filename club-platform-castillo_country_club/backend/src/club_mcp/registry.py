@@ -42,6 +42,9 @@ AGENT_ALIASES: dict[str, str] = {
     "hitl": "executive_dashboard",
     "engagement": "member_engagement",
     "reports": "executive_dashboard",
+    # B4: frontend server name for the event agent (matches the
+    # mock-registry block, which already used "events").
+    "events": "event_orchestrator",
 }
 
 # Key: canonical agent. Value: {legacy_tool: target | (agent, tool) | Adapter}
@@ -142,6 +145,19 @@ TOOL_ALIASES: dict[str, dict[str, Any]] = {
         # serves the canonical names for all four).
         "narrative_generate": ("advisor_intelligence", "generate_insight_narrative"),
         "scenario_simulate": ("advisor_intelligence", "simulate_scenario"),
+        # B4: useDecisionDocument's third simulation read — same advisor
+        # scenario engine, params are dicts passed as-is.
+        "decision_simulate": ("advisor_intelligence", "simulate_scenario"),
+    },
+    "age_group": {
+        # B4: the age-group dashboard reads the health score under an
+        # activity-flavored name; the canonical tool is the same read.
+        "get_activity_health_score": "get_age_group_health_score",
+    },
+    "guest_management": {
+        # B4: GuestAnalytics calls the "insights" name; the enhanced
+        # analytics tool is the same read with a richer payload.
+        "guest_management_insights": "get_guest_analytics_enhanced",
     },
     "member_engagement": {
         # B3: engagement.* survey reads are cross-agent — the tools live
