@@ -14,6 +14,7 @@
  *          → v3.3.0 PAQUETE 1 AUDITED (REQUEST 1 §13 · EventCalendar unlock)
  *          → v3.4.0 G8 BACKEND REGISTRY (absorción P2-C3 · gate B0 VERDE)
  *          → v3.5.0 M-01-T1 REGISTRY (G10 · 7 módulos alto uso · J-09 507→180)
+ *          → v3.8.0 G9 BACKEND RE-SYNC (207 tools @ 504b53d · verifyBuildCss)
  *          (see §14-§15 AUDIT LEDGERS).
  *
  * v3.1.0 reconciles this file against the tool that enforces it:
@@ -1383,10 +1384,11 @@ export const ROLLOUT = {
 /* ═══════════════════ §12  VERSION SYNC ═══════════════════ */
 
 export const VERSION_SYNC = {
-  manifest: "3.7.0", // G14/M-01-T3: 25 promociones con evidencia sandbox (21 T2 + FASE1) — J-07 490→187
+  manifest: "3.8.0", // G9-0004: §16 BACKEND_REGISTRY re-sincronizado (207 tools @ 504b53d) + verifyBuildCss
   guardian: "4.1.3",   // 4.1.2 = AG-29 (X-16 α/β/γ); 4.1.3 = AG-30 (X-28 token-boundary, 109 FP eliminados)
   validator: "4.0.0",  // FILE version (TOOL_VERSION) — its own AUDIT is still pending (M-04a G8: a factual version is not an audit claim)
-  verifyIntegration: "3.2.0", // G8 restore: VI-12 (f11d8e7) re-applied over VI-14 v2 — regression 290afa4 = VI-15
+  verifyIntegration: "3.3.0", // B6: VI-16 (comment masker) + VI-17 (definition sites) — check 3 phantom tokens; check 8 no-hook refs
+  verifyBuildCss: "1.0.0", // B6-QA post-build bundle probe (0002→0003 P0: utilities layer 118k→207k) — wired: pnpm run verify:build-css + precommit
   mcpRouter: "2.1.0",
   advisorEngine: "2.1.0",
 } as const;
@@ -1745,7 +1747,7 @@ export function getMigrationProgress(): {
 
 /* ═══════════════════ §16  BACKEND REGISTRY (G8 — v3.4.0) ═══════════════════
  *
- * Estado REAL del backend MCP (club_mcp) en el commit e15068e — la misma
+ * Estado REAL del backend MCP (club_mcp) en el commit 504b53d (G9 re-sincroniza: B2 +1, B4 +2, ML +8 → 207 tools; AST per-módulo) — la misma
  * clase de SSOT que §8 AUDITED_REGISTRY, para el lado backend. Generado
  * desde el árbol real (bootstrap._AGENT_MODULES + AST de decoradores
  * @MCPTool — NUNCA hand-counted, fix clase RM-3). Verificado contra
@@ -1771,38 +1773,38 @@ export interface BackendAgentEntry {
 
 export const BACKEND_REGISTRY = {
   /** Commit auditado (rama audit/p2c3). */
-  commit: "e15068e",
-  date: "2026-11-07",
+  commit: "504b53d",
+  date: "2026-11-11",
   /** Gates ejecutables del backend (los que CI debería correr — Q-CI-01). */
   smokeGate: "backend/scripts/smoke_b0.py",
   unitGate: "uv run python -m pytest tests/unit -q",
   python: ">=>=3.12 (dev verificado: 3.12 sandbox · 3.14.4 Windows)",
   agents: [
     { module: "family_profile", tools: 16 },
-    { module: "event_orchestrator", tools: 11 },
+    { module: "event_orchestrator", tools: 13 },
     { module: "age_group", tools: 11 },
-    { module: "finance", tools: 14 },
+    { module: "finance", tools: 16 },
     { module: "wellness", tools: 12 },
     { module: "compliance", tools: 7 },
     { module: "sports_recreation_agent", tools: 11 },
     { module: "cultural_social_agent", tools: 9 },
     { module: "communication_agent", tools: 14 },
-    { module: "facility_management_agent", tools: 13 },
+    { module: "facility_management_agent", tools: 14 },
     { module: "member_engagement_agent", tools: 6 },
-    { module: "guest_management_agent", tools: 10 },
+    { module: "guest_management_agent", tools: 12 },
     { module: "proactive_recommendation_agent", tools: 8 },
     { module: "document_intelligence_agent", tools: 8 },
-    { module: "executive_dashboard_agent", tools: 11 },
-    { module: "satisfaction_agent", tools: 10 },
+    { module: "executive_dashboard_agent", tools: 13 },
+    { module: "satisfaction_agent", tools: 12 },
     { module: "advisor_intelligence", tools: 5 },
     { module: "member_360_agent", tools: 10 },
     { module: "ml_intelligence", tools: 10 },
   ] as const,
-  totalTools: 196,
+  totalTools: 207,
   /** Invariantes verificadas por smoke_b0 (registry introspection runtime). */
-  rbacCoverage: "196/196 (permission_for nunca None — smoke §4)",
+  rbacCoverage: "207/207 (permission_for nunca None — smoke §4)",
   hitlExecutorsRegistered: 2, // de ~38 execute_* — bootstrap._EXECUTOR_BINDINGS (cola Q-HITL-03)
-  gateB0: "VERDE 2026-11-07 (smoke 23/23 · pytest 785/785 · FastAPI self-wired)",
+  gateB0: "VERDE 2026-11-11 @ 504b53d (smoke 39/39 runtime · pytest 818/818 · FastAPI self-wired · HTTP 200/401 — re-ejecutado en sandbox post-B6)",
   /** Cola de deuda arquitectónica backend — SSOT: CHECKPOINT §15. */
   queueRef: "MASTER_CHECKPOINT.md §15",
 } as const;

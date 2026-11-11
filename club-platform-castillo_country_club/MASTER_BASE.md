@@ -1,9 +1,9 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 8.0 · Generación G8 (sincronizada) · Date: 2026-11-08
-### Source: G7 + Absorción P2-C3 completa (C1..C3h · gate B0 VERDE ·
-###          backend MCP 19 agentes/196 tools) + Self-Audit G8 (#61-#73 → CHECKPOINT §0.3)
+### Version: 9.0 · Generación G9 (sincronizada) · Date: 2026-11-11
+### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
+###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
 ---
 
@@ -77,6 +77,29 @@ CONTENIDO:
 - §10: masters G7 añadidos a fuentes deprecadas (misma mecánica que G7
   hizo con los pre-G7).
 - §0.3: ejemplo de generación actualizado a G8.
+```
+
+---
+
+## CHANGELOG G9 (v8.0 → v9.0)
+
+```
+CONTEXTO: G8 quedó en 2026-11-08 (e15068e); el repo avanzó 14 commits
+hasta 2026-11-11 (504b53d): B1-B4 (migración MCP real + adapters/aliases),
+B5-B6 (frontend: raw buttons→primitives 635→0, VI v3.3.0, gate CSS P0).
+G9 absorbe esa historia y re-sincroniza masters + manifest (0004).
+
+ESTRUCTURA:
+- Sin cambios de protocolo (§4/§5/§9 intactos — regla G8: lo que
+  cambia es ESTADO y DATOS). Versionado sincronizado G9 = v9.0.
+
+CONTENIDO:
+- §6.1 tools/: manifest v3.8.0 (BACKEND_REGISTRY re-AST 207 tools),
+  guardian v4.1.3 (AG-29/30), VI v3.3.0 (VI-16/17), NEW gate
+  verify-build-css.ts v1.0.0 (post-build bundle probe — P0 0002/0003).
+- §2.2 Pilar 10: gate CSS registrado; precommit lo consume.
+- §9 paso 7: gates frontend actualizados (+verify:build-css tras build).
+- §10: masters G8 añadidos a fuentes deprecadas.
 ```
 
 ---
@@ -522,8 +545,13 @@ Implementado en (versiones reales G7):
   - tools/architecture-guardian.ts v4.1.1 (26 checks X-series)
   - tools/validate-shared-imports.ts v4.0.0 (AUDITED_REGISTRY
     via manifest — ya no lista hardcodeada: el manifest es SSOT)
-  - scripts/verify-integration.ts v3.0.0 (8 checks, --json CI)
-  - architecture.manifest.ts v3.3.0 (SSOT del registro; BC-02 APPLIED — Lote 4 · REQUEST 1 AUDITED — Lote 5)
+  - scripts/verify-integration.ts v3.3.0 (8 checks · VI-16/VI-17)
+  - architecture.manifest.ts v3.8.0 (SSOT del registro · §16 BACKEND_REGISTRY re-AST 207 tools @ 504b53d)
+  - tools/verify-build-css.ts v1.0.0 (GATE POST-BUILD — sonda del
+    bundle dist/: utilities · familia font · piso · fugas — nació
+    del P0 0002/0003: source('.') perdió la capa de utilities
+    207k→118k sin que NINGÚN gate lo viera; hoy en pnpm
+    verify:build-css + precommit)
 Pendiente:
   - Expandir guardian 26 → 45+ checks (CHECKLIST §16)
   - Pre-commit hook installation (package.json)
@@ -780,7 +808,8 @@ I DON'T:
   ✗ Invent values without provenance
   ✗ Change backend API contracts SIN gate — el backend está bajo
     auditoría P2-C3 desde 2026-10: todo cambio en src/club_mcp REQUIERE
-    backend/scripts/smoke_b0.py VERDE (23/23) + pytest tests/unit 785/785
+    backend/scripts/smoke_b0.py VERDE (39/39 runtime · 207 tools) +
+    pytest tests/unit 818/818
     (protocolo P2-C3: CHECKPOINT §3.6; SSOT backend: manifest §16)
 ```
 
@@ -961,7 +990,7 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   e15068e · G8 absorbe el estado real;
 │                                   v7.0 decía "~123 files NO SE TOCA" = #65)
 ├── src/club_mcp/                 ← 104 módulos .py (verificado G8)
-│   ├── agents/                   ← 19 agentes MCP · 196 tools @MCPTool
+│   ├── agents/                   ← 19 agentes MCP · 207 tools @MCPTool
 │   │                               (age_group_activity.py muerto → cola
 │   │                               Q-MSC-01; v7.0 decía "22" = #69)
 │   ├── ai/                       ← claude_service + prompts (sin retry/
@@ -975,19 +1004,23 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
 │   └── server.py                 ← entry point MCP (adaptador delgado)
-├── tests/unit/                   ← 27 archivos · 785 tests PASSED
-└── scripts/smoke_b0.py           ← gate ejecutable B0 (23/23)
+├── tests/unit/                   ← 26+3 archivos · 818 tests PASSED
+│                                   (808 def + 10 parametrizados —
+│                                   B2/B3/B4 agregaron 33)
+└── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
-frontend/tools/                   ← Automation (estado real G8)
-├── architecture.manifest.ts      ← v3.4.0 — SSOT (27 entradas registro +
-│                                   §16 BACKEND_REGISTRY: 19 agentes ·
-│                                   196 tools · gate B0 · VERSION_SYNC con
-│                                   validator 4.0.0 factual — M-04a #63)
-├── architecture-guardian.ts      ← v4.1.1 — 26 checks X-series
-│                                   (backend-aware checks → cola Q-GOV-01;
-│                                   absorción de tool-data → Q-GOV-02)
+frontend/tools/                   ← Automation (estado real G9)
+├── architecture.manifest.ts      ← v3.8.0 — SSOT (§16 BACKEND_REGISTRY
+│                                   re-AST: 19 agentes · 207 tools @
+│                                   504b53d · VERSION_SYNC con guardian
+│                                   4.1.3 / VI 3.3.0 / verifyBuildCss 1.0.0)
+├── architecture-guardian.ts      ← v4.1.3 — 26 checks X-series
+│                                   (AG-29 X-16 α/β/γ · AG-30 X-28
+│                                   token-boundary −109 FP)
 ├── validate-shared-imports.ts    ← v4.0.0 — registry-driven (audit del
 │                                   tool pendiente — #63 documentado)
+├── verify-build-css.ts           ← v1.0.0 — GATE POST-BUILD (B6-QA;
+│                                   P0 0002/0003 — ver Pilar 10)
 └── (pendientes: css-audit, component-audit,
     feature-integration-audit, pre-commit-pipeline)
 
@@ -1135,9 +1168,14 @@ EN CADA NUEVA SESIÓN:
 
 6. REPETIR para cada archivo hasta completar la FASE
 
-7. SI LA SESIÓN TOCA BACKEND (src/club_mcp o tests/unit):
+7. GATES FRONTEND POR SESIÓN CON BUILD: build (tsc -b && vite build)
+   → verify:build-css (sonda del bundle) → VI → vitest → guardian.
+   El precommit corre guardian + lint + type-check + verify:build-css.
+
+7b. SI LA SESIÓN TOCA BACKEND (src/club_mcp o tests/unit):
    a) El gate es EJECUTABLE, no documental:
-      backend/scripts/smoke_b0.py (23/23) · pytest tests/unit (785/785)
+      backend/scripts/smoke_b0.py (39/39 runtime · 207 tools) ·
+      pytest tests/unit (818/818)
    b) La SSOT del estado backend es manifest §16 BACKEND_REGISTRY (v3.4.0)
       + CHECKPOINT §15 (cola) — NO reportes .txt sueltos (#71)
    c) El protocolo de auditoría §4 (checklists A-J) es FRONTEND; el
@@ -1229,6 +1267,12 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 ║  DEPRECATED SOURCES — Do NOT use these as reference                  ║
 ╠══════════════════════════════════════════════════════════════════════╣
 ║                                                                      ║
+║  ❌ Masters G8 (v8.0 · 2026-11-08):
+║     REASON (G9): congelados 3 días — no conocen la serie B1-B6
+║     (migración MCP real, 196→207 tools, VI v3.3.0, guardian v4.1.3,
+║     gate verify-build-css v1.0.0 ni el P0 0002/0003). VALID
+║     CONCEPTS: TODOS preservados en G9 (protocolos §4/§5/§9 intactos).
+║
 ║  ❌ Masters G7 (v7.0 · 2026-08-12):                                  ║
 ║     REASON (G8): congelados 3 meses — no conocen P2-C1..C3h, el      ║
 ║     backend MCP (19 agentes · 196 tools), el gate B0 VERDE ni los    ║
@@ -1268,7 +1312,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v8.0 · Generación G8 (sincronizada con
-MASTER_CHECKPOINT.md v8.0 y MASTER_CHECKLIST.md v8.0)
+END OF MASTER_BASE.md v9.0 · Generación G9 (sincronizada con
+MASTER_CHECKPOINT.md v9.0 y MASTER_CHECKLIST.md v9.0)
 
 

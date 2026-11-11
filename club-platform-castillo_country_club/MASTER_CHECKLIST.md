@@ -1,11 +1,12 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 8.0 · Generación G8 (sincronizada) · 180 checks · ZERO tolerance
-### Updates: G8 — §16.1/§16.3 regenerados al estado real del repo
-###          (manifest v3.4.0 · VI v3.2.0 restaurado · gates backend
-###          agregados); checks A-J intactos (180 — el estándar no
-###          cambia, cambia la evidencia)
+### Version: 9.0 · Generación G9 (sincronizada) · 180 checks · ZERO tolerance
+### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
+###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian 4.1.3 ·
+###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
+###          checks A-J intactos (180 — el estándar no cambia,
+###          cambia la evidencia)
 
 ---
 
@@ -66,6 +67,21 @@ CONTENIDO:
   backend tiene su propio gate EJECUTABLE (smoke_b0 + pytest +
   ruff/mypy) — no se mezclan los números (principio §12 CHECKPOINT G7
   de colisiones terminológicas).
+```
+
+---
+
+## CHANGELOG G9 (v8.0 → v9.0)
+
+```
+- Los 180 checks A-J NO cambian (estándar estable). §16 cambia:
+  manifest v3.8.0 (0004) · VI v3.3.0 · guardian v4.1.3 · NEW
+  verify-build-css.ts v1.0.0 (gate post-build — B6-QA; P0 0002→0003:
+  utilities 118k→207k; cableado a pnpm run verify:build-css +
+  precommit) · smoke 39/39 runtime (19 agentes · 207 tools · B2/B3/B4
+  compat) · pytest 818/818.
+- §16.1: fila nueva verify-build-css.ts; smoke actualizado; §16.3
+  regenerada (matemática verificada).
 ```
 
 ---
@@ -838,7 +854,7 @@ Action Timeline            AdvisorReactionCard             ✅ Exists
 ```
 SCRIPT                          COBERTURA               ESTADO REAL
 ──────────────────────────────  ──────────────────────  ──────────────────
-architecture-guardian.ts        A,B,C,F,H,I subsets     ✅ v4.1.1 · 26 checks
+architecture-guardian.ts        A,B,C,F,H,I subsets     ✅ v4.1.3 · 26 checks
                                 (X-01..X-28,            (expandir → 45+;
                                  sin X-11/X-24)          digest producción:
                                                         1.151 files,
@@ -850,13 +866,24 @@ validate-shared-imports.ts      J + I (registry)        ✅ v4.0.0 (versión
                                                         audit del tool
                                                         pendiente, #63; no
                                                         es claim de audit)
-verify-integration.ts           F (integración)         ✅ v3.2.0 · 8 checks
+verify-integration.ts           F (integración)         ✅ v3.3.0 · 8 checks
                                                         (router/mcp/tokens/
                                                         buttons/gates/tools/
                                                         routes/mocks) + --json
-                                                        · VI-12 restaurado
-                                                        G8 (#62: 290afa4
-                                                        borró f11d8e7)
+                                                        · VI-16 comment masker
+                                                        · VI-17 definition
+                                                        sites (B6)
+verify-build-css.ts             B (output)              ✅ v1.0.0 — GATE
+                                                        POST-BUILD (B6-QA):
+                                                        sonda del bundle dist/
+                                                        (utilities · familia
+                                                        font · piso · fugas);
+                                                        nació del P0 0002/0003
+                                                        (utilities 207k→118k
+                                                        invisible a gates de
+                                                        INPUT); cableado:
+                                                        pnpm verify:build-css
+                                                        + precommit
 css-audit.ts                    B (35)                  ⬜ TO CREATE — harness
                                                         Python probado en
                                                         scripts/css-audit/
@@ -866,11 +893,14 @@ feature-integration-audit.ts    D (4) + E (5) + G (3)   ⬜ TO CREATE
 pre-commit-pipeline.ts          orchestrator            ⬜ TO CREATE
 
 ═══ GATES BACKEND (P2-C3 · track separada del estándar A-J) ═══
-backend/scripts/smoke_b0.py     composición+registro+   ✅ 23/23 VERDE
-                                resolve+RBAC+HITL+      (e15068e; gate
-                                FastAPI+HTTP            ejecutable B0)
-backend pytest tests/unit       unit backend            ✅ 785/785
-                                                        (py3.12 + 3.14.4)
+backend/scripts/smoke_b0.py     composición+registro+   ✅ 39/39 runtime VERDE
+                                resolve+RBAC+HITL+      (504b53d; re-ejecutado
+                                FastAPI+HTTP            G9 sandbox: 19 agentes
+                                                        · 207 tools · RBAC
+                                                        207/207)
+backend pytest tests/unit       unit backend            ✅ 818/818
+                                                        (py3.12 + 3.14.4;
+                                                        808 def + 10 param)
 backend ruff + mypy strict      estilo/tipos backend    ✅ config en
                                                         pyproject (manual —
                                                         sin CI → Q-CI-01)
@@ -944,12 +974,13 @@ OVERALL completados            9.33           (1×9.7+23×9.3+7×9.31+11×9.37)/
 Archivos feature/shared compl. 65             1+46+7+11 = 65 ✓
 Pending review                 14 físicos     2 (EventCalendar) + 12 (7 shared/) ✓
 AUDITED_REGISTRY               27 entradas    15+4+7+1 = 27 ✓ (manifest §8)
-Checks guardian                26             X-01..X-28 sin X-11/X-24 ✓
-Checks verify-integration      8              8 ids verificados ✓ (VI v3.2.0 G8)
-Manifest version               3.4.0          §16 BACKEND_REGISTRY G8 (BACKEND_REGISTRY.agents.length = 19) ✓
+Checks guardian                26             X-01..X-28 sin X-11/X-24 ✓ (v4.1.3)
+Checks verify-integration      8              8 ids verificados ✓ (VI v3.3.0 G9 · VI-16/17)
+Manifest version               3.8.0          §16 re-AST 207 tools @ 504b53d (G9-0004) ✓
 Backend agentes                19              bootstrap._AGENT_MODULES por AST (G8) = smoke_b0 ✓
-Backend tools                  196              @MCPTool AST por archivo (G8) = registry.total_tools ✓
-Backend tests unit             785            pytest tests/unit PASSED (py3.12+3.14.4) ✓
+Backend tools                  207              @MCPTool AST per-módulo (G9) = registry.total_tools = smoke ✓
+Backend tests unit             818            pytest tests/unit PASSED (py3.12+3.14.4) ✓ (+12 B4)
+Gate post-build CSS            1              verify-build-css v1.0.0 (B6-QA · P0) — en precommit ✓
 Frontend files                 1163          find G8 (digest G7 = 1.151 — delta post-C3g) ✓
 ```
 
@@ -994,6 +1025,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v8.0 · Generación G8 (sincronizada con
-MASTER_BASE.md v8.0 y MASTER_CHECKPOINT.md v8.0)
+END OF MASTER_CHECKLIST.md v9.0 · Generación G9 (sincronizada con
+MASTER_BASE.md v9.0 y MASTER_CHECKPOINT.md v9.0)
 

@@ -1,11 +1,10 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 8.0 · Generación G8 (sincronizada) · Date: 2026-11-08
-### Updates: G8 — absorción completa de P2-C1..C3h (gate B0 VERDE @
-###          e15068e · backend 19 agentes/196 tools/785 tests), Self-Audit
-###          G8 (#61-#73), cola de arquitectura §15 (NUEVO), §13/§14
-###          regenerados al estado real, restauración VI (#62)
+### Version: 9.0 · Generación G9 (sincronizada) · Date: 2026-11-11
+### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
+###          tests), P0 utilities + gate verify-build-css v1.0.0,
+###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos
 
 ---
 
@@ -110,6 +109,26 @@ CONTENIDO:
   deuda production-grade: secrets, persistencia, CI, LLM ops, gobernanza
   backend, HITL, observabilidad.
 - End marker v8.0 G8.
+```
+
+---
+
+## CHANGELOG G9 (v8.0 → v9.0)
+
+```
+- §0.3: Self-Audit REGENERADO (hallazgos #74-#82: la serie B1-B6
+  corrió 3 días SIN capa documental — el gate más nuevo del sistema
+  (verify-build-css) era invisible a los masters; BACKEND_REGISTRY
+  stale en 196; 196→207 re-AST).
+- §3.7 NUEVO: SERIE B1-B6 (14 commits) — migración MCP real completa,
+  adapters/aliases B3/B4, raw buttons 635→0, VI v3.3.0, P0 utilities.
+- §5: plan re-escrito: cola §15 P0 (secrets) primero; CI (Q-CI-01)
+  ahora PRÓXIMO PASO inmediato (0 workflows sigue).
+- §14: REESCRITO — estado 2026-11-11 @ 504b53d; smoke re-ejecutado
+  VERDE en sandbox (19 agentes · 207 tools · 39/39 runtime checks);
+  pytest 818/818 (808 def + 10 param).
+- §15: cola P0-P3 con estado actualizado (Q-GOV-04 sigue abierto).
+- End marker v9.0 G9.
 ```
 
 ---
@@ -271,9 +290,73 @@ BOOKKEEPING G7 (verificable):
 
 ---
 
-## §0.3 — MASTER SELF-AUDIT G8 (regenerado — regla de cada generación)
+## §0.3 — MASTER SELF-AUDIT G9 (regenerado — regla de cada generación)
 
 ```
+METODOLOGÍA: idéntica a G7/G8 (escala BASE §0.2, umbral ≥ 9.3). La
+auditoría G9 verificó los masters contra el ÁRBOL REAL en 504b53d
+(AST, grep, git log, smoke EJECUTADO) — no contra claims internos.
+
+SCORES G8 → G9:
+  MASTER_BASE.md        v8.0: 9.5 → v9.0: 9.5 ✅ (protocolo intacto,
+                          sólo estado/datos actualizados)
+  MASTER_CHECKPOINT.md  v8.0: 9.4 → v9.0: 9.4 ✅ (absorbe §3.7;
+                          §15 cola actualizada; §14 re-escrito)
+  MASTER_CHECKLIST.md   v8.0: 9.5 → v9.0: 9.5 ✅ (§16.3 regenerada)
+
+HALLAZGOS G9 (#74-#82 — la deriva que G8 no podía ver):
+  🔴 #74  masters congelados: G8 = 2026-11-08; repo = 2026-11-11
+          (14 commits: B1-B4 migración MCP + adapters/aliases,
+          B5-B6 frontend QA/P0)
+  🔴 #75  BACKEND_REGISTRY stale: manifest decía 196 tools @ e15068e;
+          el árbol tiene 207 (B2 +1 · B4 +2 · ML +8) — AST re-contado
+          por módulo en 0004 → manifest v3.8.0
+  🟠 #76  GATE INVISIBLE: verify-build-css.ts v1.0.0 (el gate más
+          nuevo del sistema, el que cazó el P0) NO existía para la
+          capa documental: ni BASE §2.2 Pilar 10, ni CHECKLIST §16.1,
+          ni manifest VERSION_SYNC lo registraban → G9 lo registra
+          en los tres + precommit
+  🟠 #77  VERSION_SYNC sin consumidores: 7 campos declarados, 0 tools
+          los leen — ley sin enforcement (patrón BACKEND_REGISTRY pre
+          Q-GOV-01) → cola Q-GOV-05 (nuevo: CI debe fallar si los
+          TOOL_VERSION divergen del manifest)
+  🟠 #78  smoke_b0 '23/23' citado en docs vs 39/39 runtime real
+          (16 statements estáticos + loops: 2 F-8 + 9 B3 + 4 B4 +
+          1 B2/B4 estático… = 39 checks ejecutados)
+  🟠 #79  VI v3.3.0 (VI-16 comment masker + VI-17 definition sites)
+          y guardian v4.1.3 (AG-29/30) sin reflejo en masters
+  🟠 #80  pytest 785→818 sin reflejo (B4: +12 def + param)
+  🟡 #81  VI info 31 (6F/470-class residual + 12 orphan mocks) —
+          pre-existente, no bloqueante, registrado
+  ✅ #82  P0 utilities CERRADO: 0002 detectó (118k) · 0003 fix
+          (source('..')) · E2E sandbox + usuario cross-check
+          (index-V9UQbTlo.css 206.90kB idéntico Windows/Linux);
+          build 17.49s → 9.97s en el usuario
+
+QUÉ SE VERIFICÓ CONTRA ARTEFACTOS REALES (método G9):
+  - smoke_b0.py EJECUTADO en sandbox: VERDE 19 agentes · 207 tools
+    · RBAC 207/207 · HITL · 401 sin token (exit 0) ✓
+  - @MCPTool AST per-módulo: 207 total (16+13+11+16+12+7+11+9+14+14
+    +6+12+8+8+13+12+5+10+10 = 207) = smoke registry.total_tools ✓
+  - pytest collect ≈ 818 (808 def test_ + 10 param) = commit B4 ✓
+  - VI --quiet exit 0 · validator PASS 9.89 (consumió manifest
+    v3.8.0 post-0004) · tsc --noEmit exit 0 post-0004 ✓
+  - git log e15068e..504b53d = 14 commits serie B ✓
+
+MECANISMO ANTI-REGRESIÓN (heredado G8):
+  1. Tabla de consistencia CHECKLIST §16.3 — regenerada G9
+  2. Q-GOV-04: crear verify-master-consistency.py — SIGUE ABIERTO
+     (la regla existe desde G7 #73; G9 lo re-confirma abierto)
+  3. Versionado sincronizado G9 (BASE §0.3) ✓
+  4. SSOT: audit → manifest §8; backend → manifest §16; deuda →
+     CHECKPOINT §15 ✓
+  5. LECCIÓN P0 (nueva, estructural): un gate de INPUT no protege
+     el OUTPUT — todo gate debe mirar el ARTEFACTO (dist/), no
+     sólo las fuentes. verify-build-css es el primer gate de
+     OUTPUT del sistema.
+
+(Bloque G8 histórico preservado abajo para trazabilidad.)
+
 METODOLOGÍA: idéntica a G7 (escala BASE §0.2, umbral ≥ 9.3). La auditoría
 G8 verificó los masters contra el ÁRBOL REAL en e15068e (AST, grep, git
 log) — no contra claims internos.
@@ -803,6 +886,46 @@ toda la cola P0-P3 de §15.
 
 ---
 
+### §3.7 SERIE B1-B6 · MIGRACIÓN MCP REAL + QA/P0 (✅ CERRADA 2026-11-11)
+
+```
+LÍNEA DE TIEMPO (e15068e → 504b53d, 14 commits — evidencia: git log
++ worklog sandbox + outputs de gates re-ejecutados):
+
+  B1   4 llamadas restantes migrables (backlog p2c3h §A)
+  B2   reports.get_board_report registrado (tool AUTO + create-on-demand,
+       lectura sin HITL) + mock dev del server en el registry frontend
+  B3   ADAPTER LAYER: 8 tools reales + compat aliases — resolve por
+       agente legacy (reports/families/engagement/finance/facilities/
+       guests) · VI parsea registry.py (§6: 0 warnings)
+  B4   event reads (get_event + list_events AUTO) + aliases
+       audit-driven (events→event_orchestrator, finance.decision_simulate
+       → advisor simulate_scenario, renames ×3) · VI alias-aware
+       (§6 40→19) · dev-mocks legacy · ERR_PNPN_IGNORED_BUILDS (core-js)
+  B5   raw <button> 635→0 vía codemod (<Button variant=unstyled>) ·
+       D11 dark media query · pnpm field muerto
+  B6   VI v3.3.0 (VI-16 comment masker + VI-17 definition sites — check 3
+       phantom tokens honesto; check 8 refs no-hook) · QA defects (0001) ·
+       P0 UTILITIES: @import "tailwindcss" source(".") relativo al
+       STYLESHEET → scan colapsado a .css → capa utilities PERDIDA
+       207k→118k (build verde, tsc verde, 0 gates miraban OUTPUT) →
+       fix source('..') (0003) → E2E: bundle 206.90kB · utilities ✓ ·
+       familia font ✓ · piso ✓ · sin fugas ✓ · hash idéntico
+       Windows/Linux (determinístico cross-OS)
+
+GATES AL CIERRE (re-ejecutados G9 en sandbox):
+  smoke_b0 VERDE (19 · 207 · RBAC 207/207 · HITL · 401) exit 0
+  VI ALL CLEAR (0 err · 0 warn · 31 info) exit 0
+  validator PASS 9.89 (422 files scored) exit 0
+  vitest 9/9 (verify-integration.check3) exit 0
+  tsc --noEmit exit 0 · build 9.97s (usuario) 0 warnings
+
+QUEDÓ FUERA (by design): B2-full cross-agent (15 llamadas) · cola §15
+P0-P3 completa · FASE 2 frontend congelada (sigue) · CI inexistente.
+```
+
+---
+
 ## §4 — QUALITY SCORECARD (fórmula explícita — hallazgo #45)
 
 ```
@@ -908,7 +1031,7 @@ CHECKS PER FILE: 140-180 según combinación aplicable (CHECKLIST §16)
 BACKEND (P2-C3 · absorbido G8 — fuente: gates ejecutables):
   Tests unit: 775 funciones test_ · 785 PASSED / 0 FAILED
     (py3.12 sandbox · 3.14.4 Windows usuario · 32.7s)
-  Smoke B0: 23/23 · agentes 19 · tools 196 ·
+  Smoke B0: 39/39 runtime · agentes 19 · tools 207 ·
     RBAC 196/196 · HITL cierra (2 executores)
   Fixes producción b0v: 7 src + 4 tests (commit e15068e)
   Tooling declarado: ruff · mypy strict · coverage branch fail_under 70
@@ -1198,28 +1321,29 @@ EXTENDED AUDIT REGISTRY (config, wiring, stores — para esquema):
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════╗
-║  WHERE WE ARE EXACTLY — 2026-11-08 (G8)                                 ║
+║  WHERE WE ARE EXACTLY — 2026-11-11 (G9 @ 504b53d)                                 ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║                                                                          ║
-║  TRACK ACTIVA: P2-C3h — AUDITORÍA DE INTEGRACIÓN MCP                    ║
-║  GATE B0: ✅ CERRADO (2026-11-07 · commit e15068e · origin/audit/p2c3)  ║
-║    · smoke_b0.py 23/23 · pytest 785/785 (3.12 + 3.14.4)                ║
-║    · backend: 19 agentes · 196 tools · RBAC 196/196 · HITL     ║
+║  TRACK ACTIVA: post-B6 — mantenimiento de integridad continua          ║
+║  GATE B0: ✅ CERRADO y RE-VERIFICADO G9 (504b53d · sandbox)        ║
+║    · smoke_b0.py 39/39 runtime · pytest 818/818 (3.12+3.14.4)         ║
+║    · backend: 19 agentes · 207 tools · RBAC 207/207 · HITL              ║
 ║      ejecuta (2 executores) · FastAPI self-wired · 401 sin token        ║
-║    · masters G8 absorben todo el estado (esta generación)               ║
+║    · masters G9 absorben todo el estado (esta generación)              ║
 ║                                                                          ║
-║  TRACK FRENTE (frontend): FASE 2 Events — congelada desde G7; la       ║
-║    migración a tools MCP reales (C3g) SÍ avanzó multi-dominio sin      ║
-║    pasar por las FASEs de rewrite — dual-track documentado (§3.6).      ║
+║  TRACK FRENTE (frontend): FASE 2 Events sigue congelada; PERO la      ║
+║    integridad frontend dio un salto: B5 (635 raw buttons → 0 vía      ║
+║    codemod) · B6 (VI v3.3.0 honesto) · P0 utilities cazado y fixeado   ║
+║    (gate NUEVO verify-build-css v1.0.0 en precommit) — ver §3.7.     ║
 ║                                                                          ║
 ║  BLOCKED: nada activo. reports.get_board_report se rechaza POR DISEÑO  ║
 ║    hasta B2 (no es defecto).                                            ║
 ║                                                                          ║
 ║  WHAT I NEED TO CONTINUE (in order):                                    ║
 ║                                                                          ║
-║  REQUEST 1 (decisión de producto — B1/B2):                              ║
-║  ├── B1: 4 llamadas migrables (backlog §A) — ¿go/no-go?                ║
-║  └── B2: 15 cross-agent + board_report (write-path con HITL)            ║
+║  REQUEST 1 (decisión de producto — B2-full):                          ║
+║  └── B2: 15 cross-agent restantes (write-path HITL; board_report      ║
+║      read ya registrado B2) — ¿go/no-go?                            ║
 ║                                                                          ║
 ║  REQUEST 2 (P0 de la cola §15 — bloqueante para desplegar):            ║
 ║  ├── Q-SEC-01 secreto JWT hardcodeado (jwt_service.py:12) →             ║
@@ -1233,6 +1357,9 @@ EXTENDED AUDIT REGISTRY (config, wiring, stores — para esquema):
 ║  │   smoke_b0/pytest — sólo falta el workflow)                          ║
 ║  └── Q-GOV-04 crear verify-master-consistency.py (citado, inexistente)  ║
 ║                                                                          ║
+║  NEXT (orden §15): Q-CI-01 GitHub Actions (gates TODOS existen ya:    ║
+║      frontend guardian/vitest/tsc/verify-build-css · backend          ║
+║      ruff/mypy/pytest/smoke — sólo falta el workflow YAML)            ║
 ║  AFTER: FASE 2 frontend (EventCalendar → 13 comp) · P1 persistencia     ║
 ║  (SQLAlchemy+Alembic ya en deps, fantasma) · P2 LLM ops (retry/fallback ║
 ║  Ollama) · ver §15 para el mapa completo                                ║
@@ -1335,6 +1462,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v8.0 · Generación G8 (sincronizada con
+END OF MASTER_CHECKPOINT.md v9.0 · Generación G9 (sincronizada con
 MASTER_BASE.md v8.0 y MASTER_CHECKLIST.md v8.0)
 
