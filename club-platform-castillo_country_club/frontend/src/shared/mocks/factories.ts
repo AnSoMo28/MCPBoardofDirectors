@@ -14948,3 +14948,268 @@ export function createMockGetTodaySummary(
     ],
   } as unknown as import("@/features/guests/types").GuestTodaySummary;
 }
+
+// ══════════════════════════════════════════════════════════════
+// B4 — dev mocks for legacy-keyed reads whose backend tools landed
+// in B3/B4 (finance.get_transactions/get_invoices, guests.* block,
+// facilities.get_facility, engagement survey reads, stress_test).
+// Mirrors the real tools' contracts so dev-without-backend renders
+// the same shapes as production.
+// ══════════════════════════════════════════════════════════════
+
+export function createMockFinanceTransactionsList(
+  params?: Record<string, unknown>,
+): import("@/features/finance/types").TransactionListResponse {
+  const page = (params?.page as number) || 1;
+  const pageSize = (params?.page_size as number) || 15;
+  const all: import("@/features/finance/types").Transaction[] = [
+    {
+      id: "inv-2026-081",
+      date: "2026-11-01",
+      description: "Cuota mensual noviembre — Familia Chen",
+      category: "membership",
+      category_label: "Membresía",
+      amount: 150_000,
+      type: "charge",
+      reference: "INV-2026-081",
+      status: "completed",
+    },
+    {
+      id: "pay-2026-112",
+      date: "2026-11-05",
+      description: "Pago transferencia — INV-2026-081",
+      category: "payment",
+      category_label: "Pago",
+      amount: 150_000,
+      type: "payment",
+      reference: "PAY-2026-112",
+      status: "completed",
+    },
+    {
+      id: "inv-2026-082",
+      date: "2026-11-08",
+      description: "Alquiler cancha tenis — 2 horas",
+      category: "facilities",
+      category_label: "Instalaciones",
+      amount: 24_000,
+      type: "charge",
+      reference: "INV-2026-082",
+      facility_name: "Canchas de Tenis",
+      status: "pending",
+    },
+    {
+      id: "pay-2026-118",
+      date: "2026-10-28",
+      description: "Pago SINPE — factura octubre",
+      category: "payment",
+      category_label: "Pago",
+      amount: 148_500,
+      type: "payment",
+      reference: "PAY-2026-118",
+      status: "completed",
+    },
+  ];
+  const total = all.length;
+  const start = (page - 1) * pageSize;
+  return {
+    transactions: all.slice(start, start + pageSize),
+    total,
+    page,
+    page_size: pageSize,
+    total_pages: Math.max(1, Math.ceil(total / pageSize)),
+  };
+}
+
+export function createMockFinanceInvoicesList(
+  _params?: Record<string, unknown>,
+): { invoices: import("@/features/finance/types").Invoice[]; total: number } {
+  const invoices: import("@/features/finance/types").Invoice[] = [
+    {
+      id: "inv-2026-081",
+      invoice_number: "INV-2026-081",
+      date: "2026-11-01",
+      due_date: "2026-11-15",
+      amount: 150_000,
+      paid_amount: 150_000,
+      balance: 0,
+      status: "paid",
+      items: [{ description: "Cuota mensual noviembre", quantity: 1, unit_price: 150_000, total: 150_000 }],
+    },
+    {
+      id: "inv-2026-082",
+      invoice_number: "INV-2026-082",
+      date: "2026-11-08",
+      due_date: "2026-11-22",
+      amount: 24_000,
+      paid_amount: 0,
+      balance: 24_000,
+      status: "pending",
+      items: [{ description: "Alquiler cancha tenis", quantity: 2, unit_price: 12_000, total: 24_000 }],
+    },
+    {
+      id: "inv-2026-079",
+      invoice_number: "INV-2026-079",
+      date: "2026-10-01",
+      due_date: "2026-10-15",
+      amount: 148_500,
+      paid_amount: 100_000,
+      balance: 48_500,
+      status: "partial",
+      items: [{ description: "Cuota mensual octubre", quantity: 1, unit_price: 148_500, total: 148_500 }],
+    },
+  ];
+  return { invoices, total: invoices.length };
+}
+
+export function createMockGetSurveyResults(
+  _params?: Record<string, unknown>,
+): Record<string, unknown> {
+  // SurveyResultsResponse-compatible payload (features/engagement/types).
+  return {
+    survey_id: "srv-2026-gala",
+    survey_name: "Encuesta Gala Anual 2026",
+    total_responses: 48,
+    completion_rate: 0.86,
+    avg_overall_score: 4.3,
+    avg_nps: 42,
+    nps_distribution: { promoters: 31, passives: 9, detractors: 8 },
+    question_summaries: [
+      { question_id: "q-1", question: "Calidad general del evento", type: "rating", avg_score: 4.5 },
+      { question_id: "q-2", question: "Organización y horarios", type: "rating", avg_score: 4.1 },
+      { question_id: "q-3", question: "Comida y bebida", type: "rating", avg_score: 3.9 },
+      { question_id: "q-4", question: "Recomendaría el evento", type: "nps", avg_score: 4.6 },
+    ],
+    sentiment_breakdown: {
+      positive: 36, positive_pct: 75,
+      neutral: 7, neutral_pct: 14.6,
+      negative: 5, negative_pct: 10.4,
+    },
+    ai_insights: [
+      {
+        type: "trend",
+        title: "Satisfacción en alza",
+        description: "La Gala Anual superó el promedio histórico de eventos sociales (4.3 vs 4.1).",
+        confidence: 0.88,
+      },
+    ],
+    recent_comments: [
+      { member: "Familia Chen", comment: "Excelente organización, la cena fue memorable.", submitted_at: "2026-10-28T21:40:00Z" },
+      { member: "Familia Mora", comment: "Los horarios fueron ajustados pero valió la pena.", submitted_at: "2026-10-28T20:05:00Z" },
+    ],
+  };
+}
+
+export function createMockGetActiveSurvey(
+  _params?: Record<string, unknown>,
+): Record<string, unknown> {
+  // SurveyTemplate-compatible payload.
+  return {
+    id: "standard-v1",
+    name: "Encuesta Estándar de Satisfacción",
+    description: "Cuestionario de 10 dimensiones aplicado tras cada evento.",
+    event_type: "general",
+    questions: Array.from({ length: 10 }, (_, i) => ({
+      id: `q-${i + 1}`,
+      order: i + 1,
+      type: "rating",
+      question: `Pregunta estándar ${i + 1} (instalaciones, comida, atención, ...)`,
+      options: ["1", "2", "3", "4", "5"],
+      required: true,
+      ai_suggested: i >= 8,
+    })),
+    is_active: true,
+    usage_count: 48,
+    avg_completion_rate: 0.92,
+  };
+}
+
+export function createMockGetFacility(
+  params?: Record<string, unknown>,
+): Record<string, unknown> {
+  // FacilityDetailData-compatible payload composed from repo reads (B3
+  // tool: facility_management.get_facility).
+  const facilityId = (params?.facilityId as string) || (params?.facility_id as string) || "fac-001";
+  return {
+    status: "success",
+    message: "🏟️ Piscina Principal",
+    facility: {
+      id: facilityId,
+      name: "Piscina Principal",
+      facility_type: "pool",
+      status: "operational",
+      location: "Zona norte",
+      capacity: 120,
+      description: "Piscina semiolímpica con área infantil.",
+      amenities: ["vestidores", "bar", "sombrillas"],
+      opening_time: "06:00",
+      closing_time: "22:00",
+    },
+    upcoming_reservations: [
+      { id: "res-301", family_name: "Familia Chen", date: "2026-11-12", time: "10:00", status: "confirmed" },
+      { id: "res-305", family_name: "Familia Solano", date: "2026-11-13", time: "16:00", status: "pending" },
+    ],
+    utilization_history: Array.from({ length: 7 }, (_, i) => ({
+      date: `2026-11-${String(i + 3).padStart(2, "0")}`,
+      utilization: 48 + ((i * 7) % 30),
+    })),
+    maintenance_log: [
+      { id: "mnt-101", maintenance_type: "cleaning", status: "completed", priority: "low", scheduled_date: "2026-11-02" },
+      { id: "mnt-104", maintenance_type: "repair", status: "in_progress", priority: "medium", scheduled_date: "2026-11-09" },
+    ],
+  };
+}
+
+export function createMockDesignReactivationCampaign(
+  params?: Record<string, unknown>,
+): import("@/features/engagement/types").CampaignListResponse {
+  // member_engagement.design_reactivation_campaign (HITL write in the
+  // backend) — the dev mock returns the list/action shape the page reads.
+  const action = (params?.action as string) || "list";
+  const campaigns: import("@/features/engagement/types").ReactivationCampaign[] = [
+    {
+      id: "rc-2026-01",
+      name: "Reactivación Otoño 2026",
+      description: "Contacto dirigido a familias con 90+ días sin asistencia.",
+      status: "active",
+      target_level: "dormant",
+      target_level_label: "Inactivas (90+ días)",
+      target_count: 42,
+      reached_count: 38,
+      responded_count: 12,
+      reactivated_count: 9,
+      response_rate: 0.32,
+      reactivation_rate: 0.24,
+      channel: "email",
+      channel_label: "Correo",
+      message_template: "¡Te extrañamos en el club! Esta semana, clase gratis.",
+      start_date: "2026-09-15",
+      end_date: "2026-11-15",
+      created_at: "2026-09-10T09:00:00Z",
+    },
+    {
+      id: "rc-2026-02",
+      name: "Winback Fiesta de Fin de Año",
+      description: "Invitación personal + beneficio por referido.",
+      status: "draft",
+      target_level: "at_risk",
+      target_level_label: "En riesgo (60-90 días)",
+      target_count: 25,
+      reached_count: 0,
+      responded_count: 0,
+      reactivated_count: 0,
+      response_rate: 0,
+      reactivation_rate: 0,
+      channel: "sms",
+      channel_label: "SMS",
+      message_template: "Reserva tu mesa: la fiesta del año te espera.",
+      start_date: "2026-12-01",
+      end_date: "2026-12-20",
+      created_at: "2026-11-05T15:30:00Z",
+    },
+  ];
+  if (action === "get" && params?.campaign_id) {
+    const found = campaigns.find((c) => c.id === params.campaign_id);
+    return { campaigns: found ? [found] : [], total: found ? 1 : 0 } as import("@/features/engagement/types").CampaignListResponse;
+  }
+  return { campaigns, total: campaigns.length } as import("@/features/engagement/types").CampaignListResponse;
+}

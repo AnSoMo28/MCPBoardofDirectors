@@ -261,6 +261,14 @@ import {
   createMockGetRiskMatrix,
   createMockGetTodayGuests,
   createMockGetTodaySummary,
+
+  // ── B4 (legacy-keyed dev mocks) ─────────────────────
+  createMockFinanceTransactionsList,
+  createMockFinanceInvoicesList,
+  createMockGetSurveyResults,
+  createMockGetActiveSurvey,
+  createMockGetFacility,
+  createMockDesignReactivationCampaign,
 } from "./factories";
 
 
@@ -332,10 +340,20 @@ export const MOCK_REGISTRY: Record<string, Record<string, MockFactory>> = {
       createMockNarrativeGenerate(params),
     finance_decision_simulate: (params) =>
       createMockFinanceDecisionSimulate(params),
+
+    // ── B4: legacy reads (backend tools landed in B3 — the
+    //    useFamilyAccount callsite still uses these keys).
+    get_transactions: (params) => createMockFinanceTransactionsList(params),
+    get_invoices: (params) => createMockFinanceInvoicesList(params),
+    stress_test: (params) => createMockStressTest(params),
   },
 
   // ── Member Engagement ──
   member_engagement: {
+    // B4: the real HITL tool exists (member_engagement_agent.py:171) —
+    // dev mock serves the page while no backend session is active.
+    design_reactivation_campaign: (params) =>
+      createMockDesignReactivationCampaign(params),
     get_engagement_dashboard: () => createEngagementDashboard(),
     get_engagement_insights: (params) => createMockGetEngagementInsights(params),
     submit_feedback: (params) => createMockSubmitFeedback(params),
@@ -540,6 +558,36 @@ export const MOCK_REGISTRY: Record<string, Record<string, MockFactory>> = {
     get_pending_approvals: () => createPendingApprovals(),
     approve_request: () => createApproveRequest(),
     reject_request: () => createRejectRequest(),
+  },
+
+  // ── Engagement (B4) — legacy satisfaction reads; the real tools live
+  //    in the backend (satisfaction.survey_results / active_survey, B3).
+  engagement: {
+    get_survey_results: (params) => createMockGetSurveyResults(params),
+    get_active_survey: (params) => createMockGetActiveSurvey(params),
+  },
+
+  // ── Guests (B4) — legacy server name; canonical mocks live in
+  //    guest_management (the registry alias guests → guest_management
+  //    resolves at runtime; this block serves dev-without-backend).
+  guests: {
+    get_today_guests: (params) => createMockGetTodayGuests(params),
+    get_today_summary: (params) => createMockGetTodaySummary(params),
+    manage_trial_memberships: (params) =>
+      createMockTrialMembershipsResponse(params),
+  },
+
+  // ── Facilities (B4) — legacy reads; canonical mock entries live in
+  //    facility_management.
+  facilities: {
+    get_facility: (params) => createMockGetFacility(params),
+  },
+
+  // ── Families (B4) — mi-club landing reads; canonical entry is
+  //    family_profile.family_get_profile (the B3 adapter handles the
+  //    camelCase shape on the backend side).
+  families: {
+    get_family: (params) => createMockFamilyDetail(params),
   },
   
   // ── Families — F29 Complete (16 tools) ──

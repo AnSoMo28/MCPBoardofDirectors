@@ -524,6 +524,10 @@ const VI14_EQUIVALENCES: Record<string, string[]> = {
 function vi14Snake(name: string): string {
   return name
     .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    // acronym boundaries: MLIntelligence -> ML_Intelligence (the v1 regex
+    // left "mlintelligence" — no separator between consecutive capitals,
+    // so the MLIntelligenceAgent server never matched ml_intelligence.*).
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2")
     .replace(/([A-Za-z])([0-9])/g, "$1_$2")
     .toLowerCase();
 }
@@ -557,6 +561,7 @@ function extractBackendToolNames(pyFiles: string[]): Vi14BackendIndex {
     /\bname[ \t]*:[ \t]*[A-Za-z_]\w*[ \t]*=[ \t]*["']([a-z][a-z0-9_]{3,50})["']/g,
     /\b(?:ToolSpec|Tool)[ \t]*\([ \t]*["']([a-z][a-z0-9_]{3,50})["']/g,
   ];
+
   const DICT_KEY_RE = /^[ \t]*["']?([a-z][a-z0-9_]{5,60})["']?[ \t]*:/;
   const LIST_ITEM_RE = /^[ \t]*["']?([a-z][a-z0-9_]{5,60})["']?[ \t]*,?[ \t]*$/;
 
@@ -606,6 +611,15 @@ function extractBackendToolNames(pyFiles: string[]): Vi14BackendIndex {
         const m = re.exec(lines[i]!);
         if (m) record(m[1]!, "spec name=", i + 1);
       }
+    }
+
+    // 1b) B4: positional @MCPTool("name", ...) declarations.
+    for (let i = 0; i < lines.length; i++) {
+      if (!/@MCPTool\(/.test(lines[i]!)) continue;
+      // inspect the declaration window for the first bare string argument
+      const window = lines.slice(i, i + 6).join("\n");
+      const sm = /@MCPTool\(\s*\n\s*["']([a-z][a-z0-9_]{3,50})["']/.exec(window);
+      if (sm) record(sm[1]!, "spec positional", i + 1);
     }
 
     // 2) docstring TOOLS: blocks
@@ -756,7 +770,7 @@ function vi14ClassifyRef(
   return { status: "deuda-real", real: null, evidence: ["no trace in specs, docstrings, methods, defs or mock"] };
 }
 
-export { extractBackendToolNames, vi14ClassifyRef, vi14RefCandidates };
+export { extractBackendToolNames, extractBackendCompatAliases, vi14ClassifyRef, vi14RefCandidates };
 
 /** Custom properties defined at declaration position (line start). */
 function extractDefinedTokens(cssFiles: string[]): Set<string> {
@@ -783,7 +797,9 @@ function buildContext(root: string): ScanContext {
   const pyFiles = backendScanned
     ? walk(backendSrc, [".py"]).filter((f) => isBackendSource(f, backendSrc))
     : [];
-  const compatAliases = extractBackendCompatAliases(backendSrc);
+  const backendTools = extractBackendToolNames(pyFiles);
+  // B4: the compat map needs the backend index for the agent-rename pass.
+  const compatAliases = extractBackendCompatAliases(backendSrc, backendTools);
 
   const routerContent = read(path.join(frontendSrc, "app", "router.tsx"));
 
@@ -793,7 +809,6 @@ function buildContext(root: string): ScanContext {
 
   const mcpQueries = collectMcpQueries(frontendSrc, tsFiles);
   const extraToolRefs = collectExtraToolRefs(frontendSrc, tsFiles); // VI-12
-  const backendTools = extractBackendToolNames(pyFiles);
 
   const definedTokens = extractDefinedTokens(cssFiles);
   const tokenSource: "css" | "legacy" = definedTokens.size > 0 ? "css" : "legacy";
@@ -824,7 +839,10 @@ function buildContext(root: string): ScanContext {
  * Sunset headers). This keeps the verifier in sync with the single source
  * of truth instead of a hand-maintained equivalence table.
  */
-function extractBackendCompatAliases(backendSrc: string): Map<string, string> {
+function extractBackendCompatAliases(
+  backendSrc: string,
+  backend: Vi14BackendIndex,
+): Map<string, string> {
   const out = new Map<string, string>();
   const registryPath = path.join(backendSrc, "registry.py");
   const content = read(registryPath);
@@ -837,6 +855,28 @@ function extractBackendCompatAliases(backendSrc: string): Map<string, string> {
     for (const m of agentBlock.matchAll(/["']([a-z_]+)["']\s*:\s*["']([a-z_]+)["']/g)) {
       agentRenames[m[1]!] = m[2]!;
     }
+  }
+
+  // B4: agent-level renames with NO tool rename (B2 pattern: the tool
+  // keeps its name under the canonical server). The parser only saw
+  // TOOL_ALIASES entries, so hitl.get_pending_approvals (tool exists in
+  // executive_dashboard under the SAME name) never got a compat key and
+  // the mock fallback fired first. Emit legacy→canonical keys for every
+  // agent rename; the classifier still requires the target tool to exist
+  // in the backend or the mocks, so dead renames stay dead.
+  for (const [legacyName, canonical] of Object.entries(agentRenames)) {
+    // The backend index keys servers by the agent CLASS snake name
+    // (EventOrchestratorAgent → "events"), while AGENT_ALIASES targets
+    // the agent_name ("event_orchestrator"). VI14_AGENT_SERVER_ALIASES
+    // maps agent_name → class-snake server; use it to find the index
+    // key that actually holds the canonical agent's tools.
+    const indexServer =
+      backend.byServer.has(canonical)
+        ? canonical
+        : VI14_AGENT_SERVER_ALIASES[canonical] ?? canonical;
+    const targetSet = backend.byServer.get(indexServer);
+    if (!targetSet) continue;
+    for (const t of targetSet) out.set(legacyName + "." + t, canonical + "." + t);
   }
 
   // TOOL_ALIASES: nested { canonical_agent: { legacy: target } } where
@@ -988,8 +1028,20 @@ function checkMcpCoverage(ctx: ScanContext): CheckOutcome {
   const notes: string[] = [];
   const invalid = new Map<string, { tool: string; occurrences: Array<[string, number]> }>();
 
+  // B4: a ref is ALSO covered when the backend registry alias resolves it
+  // to a canonical key that HAS a dev-mock (e.g. guests.get_today_guests →
+  // guest_management.get_today_guests, the B3 dev-mock block). Mirrors what
+  // the runtime dispatch does: mock layer keyed by canonical names.
+  const aliasCovered = (server: string, tool: string): string | null => {
+    const canonical = ctx.compatAliases.get(server + "." + tool);
+    if (!canonical) return null;
+    const [cs, ct] = canonical.split(".");
+    return ctx.registryKeys.has(cs + "::" + ct) ? canonical : null;
+  };
+
   for (const q of ctx.mcpQueries) {
     if (ctx.registryKeys.has(`${q.server}::${q.tool}`)) continue;
+    if (aliasCovered(q.server, q.tool)) continue;
     const key = `${q.server}::${q.tool}`;
     const entry = invalid.get(key) ?? { tool: q.tool, occurrences: [] };
     entry.occurrences.push([q.file, q.line]);
@@ -1008,6 +1060,9 @@ function checkMcpCoverage(ctx: ScanContext): CheckOutcome {
 
   if (!ctx.registryFound) notes.push("mock-registry.ts was not found — every query counts as uncovered.");
   notes.push("Tools outside the mock registry may still resolve via the backend fallback (see check 6).");
+  notes.push(
+    "B4: alias-aware — a ref also counts as covered when the backend registry alias (registry.py) maps it to a canonical key with a dev-mock (mock layer is canonical-keyed, like the runtime dispatch).",
+  );
 
   const uncoveredRefs = [...invalid.values()].reduce((n, e) => n + e.occurrences.length, 0);
   return outcome(
@@ -1389,6 +1444,16 @@ function checkOrphanMocks(ctx: ScanContext): CheckOutcome {
       .concat(ctx.extraToolRefs)
       .map((q) => `${q.server}::${q.tool}`),
   );
+  // B4: a legacy ref that the registry alias maps to this canonical mock
+  // key means the mock IS used (guests.get_today_guests consumes the
+  // guest_management.get_today_guests dev-mock).
+  for (const [legacyDotted, canonical] of ctx.compatAliases) {
+    const [ls, lt] = legacyDotted.split(".");
+    if (usedKeys.has(ls + "::" + lt)) {
+      const [cs, ct] = canonical.split(".");
+      usedKeys.add(cs + "::" + ct);
+    }
+  }
   const orphansByServer = new Map<string, string[]>();
   let orphanCount = 0;
   for (const key of ctx.registryKeys) {
@@ -1663,17 +1728,21 @@ function main(): void {
   process.exitCode = exitCode;
 }
 
-try {
-  main();
-} catch (err) {
-  if (err instanceof UsageError) {
-    console.error(`verify-integration: ${err.message}`);
-    console.error("Run with --help for usage.");
-    process.exitCode = 3;
-  } else {
-    console.error(
-      `verify-integration: internal error — ${err instanceof Error ? err.stack ?? err.message : String(err)}`,
-    );
-    process.exitCode = 3;
+// B4: guard behind VI14_NO_MAIN so the verifier is importable as a
+// library (extract* functions) without triggering the CLI run.
+if (process.env.VI14_NO_MAIN !== "1") {
+  try {
+    main();
+  } catch (err) {
+    if (err instanceof UsageError) {
+      console.error(`verify-integration: ${err.message}`);
+      console.error("Run with --help for usage.");
+      process.exitCode = 3;
+    } else {
+      console.error(
+        `verify-integration: internal error — ${err instanceof Error ? err.stack ?? err.message : String(err)}`,
+      );
+      process.exitCode = 3;
+    }
   }
 }
