@@ -16,10 +16,12 @@ from club_mcp.models.executive_dashboard import (
     AnomalySeverity,
     BoardReport,
     CreateBoardReport,
+    CreateRiskMatrix,
     ExportFormat,
     ExportRequest,
     ExecutiveSummary,
     ReportAudience,
+    RiskMatrix,
 )
 
 logger = logging.getLogger(__name__)
@@ -30,6 +32,7 @@ class ExecutiveDashboardRepository:
         self._summaries: dict[str, dict] = {}
         self._anomalies: dict[str, dict] = {}
         self._board_reports: dict[str, dict] = {}
+        self._risk_matrices: dict[str, dict] = {}
         self._exports: dict[str, dict] = {}
 
     @staticmethod
@@ -142,6 +145,60 @@ class ExecutiveDashboardRepository:
         record.update(updates)
         record["updated_at"] = datetime.now(tz=timezone.utc).isoformat()
         return BoardReport(**record)
+
+
+    # ── Risk Matrix (B3) ───────────────────────────────────
+
+    async def create_risk_matrix(
+        self, data: CreateRiskMatrix
+    ) -> RiskMatrix:
+        record = {
+            "period": data.period,
+            **{"items": [i.model_dump() for i in data.items]},
+            "created_at": datetime.now(tz=timezone.utc).isoformat(),
+        }
+        # derived counts never stored stale: recompute on read
+        self._risk_matrices[data.period] = record
+        logger.info(
+            "[dashboard_repo] Risk matrix created: %s (%d items)",
+            data.period, len(data.items),
+        )
+        return self._risk_matrix_model(record)
+
+    def _risk_matrix_model(self, record: dict) -> RiskMatrix:
+        items = record["items"]
+        levels = {"critical": 0, "high": 0, "medium": 0, "low": 0}
+        for item in items:
+            levels[item["level"]] = levels.get(item["level"], 0) + 1
+        return RiskMatrix(
+            period=record["period"],
+            items=items,
+            total_risks=len(items),
+            critical=levels["critical"],
+            high=levels["high"],
+            medium=levels["medium"],
+            low=levels["low"],
+            created_at=record["created_at"],
+            updated_at=record.get("updated_at", record["created_at"]),
+        )
+
+    async def get_risk_matrix(
+        self, period: str
+    ) -> Optional[RiskMatrix]:
+        record = self._risk_matrices.get(period)
+        if not record:
+            return None
+        return self._risk_matrix_model(record)
+
+    async def update_risk_matrix(
+        self, period: str, items: list
+    ) -> Optional[RiskMatrix]:
+        record = self._risk_matrices.get(period)
+        if not record:
+            return None
+        record["items"] = [i if isinstance(i, dict) else i.model_dump() for i in items]
+        record["updated_at"] = datetime.now(tz=timezone.utc).isoformat()
+        return self._risk_matrix_model(record)
 
     # ── Exports ────────────────────────────────────────────
 

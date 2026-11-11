@@ -34,7 +34,7 @@ def main() -> None:
     check("agent_name duplicados = 0", len(names) == len(set(names)))
 
     # ── Registro ──
-    check("197 tools en registro", rt.registry.total_tools == 197, f"got {rt.registry.total_tools}")
+    check("205 tools en registro", rt.registry.total_tools == 205, f"got {rt.registry.total_tools}")
     print(
         "  · tools/agent:",
         ", ".join(f"{a}={len(t)}" for a, t in sorted(rt.registry.tools_by_agent.items())),
@@ -63,6 +63,33 @@ def main() -> None:
         r.spec.agent == "executive_dashboard" and r.spec.name == "get_board_report" and r.via_compat,
     )
 
+    # B3: adapter layer + 8 new tools resolvibles desde las keys legacy.
+    r = rt.registry.resolve("reports", "get_risk_matrix")
+    check(
+        "compat reports.get_risk_matrix → executive_dashboard (B3)",
+        r.spec.agent == "executive_dashboard" and r.spec.name == "get_risk_matrix" and r.via_compat,
+    )
+    r = rt.registry.resolve("families", "get_family")
+    check(
+        "B3 adapter families.get_family (param_map + response)",
+        r.adapter is not None and "familyId" in r.adapter.param_map,
+    )
+    for legacy_agent, legacy_tool, target in (
+        ("engagement", "get_survey_results", "survey_results"),
+        ("engagement", "get_active_survey", "active_survey"),
+        ("finance", "get_transactions", "finance_transactions_list"),
+        ("finance", "get_invoices", "finance_invoices_list"),
+        ("facilities", "get_facility", "get_facility"),
+        ("guests", "get_today_guests", "get_today_guests"),
+        ("guests", "get_today_summary", "get_today_summary"),
+    ):
+        r = rt.registry.resolve(legacy_agent, legacy_tool)
+        check(
+            f"compat {legacy_agent}.{legacy_tool} (B3)",
+            r.spec.name == target and r.via_compat,
+            f"→ {r.spec.agent}.{r.spec.name}",
+        )
+
     # ── RBAC ──
     from club_mcp.auth.rbac import Permission, check_permission, permission_for
 
@@ -80,7 +107,7 @@ def main() -> None:
         for s in tools.values()
         if permission_for(a, s.name, s.approval) is None
     ]
-    check("RBAC cubre 197/197", not missing, f"faltan: {missing[:5]}")
+    check("RBAC cubre 205/205", not missing, f"faltan: {missing[:5]}")
 
     # ── HITL closure (B0.5) ──
     async def hitl_flow():
@@ -108,7 +135,7 @@ def main() -> None:
     from club_mcp.api.app import app
 
     check("app.state.agents == 19", app.state.agents_count == 19, str(app.state.agents_count))
-    check("app.state.tools == 197", app.state.tools_count == 197, str(app.state.tools_count))
+    check("app.state.tools == 205", app.state.tools_count == 205, str(app.state.tools_count))
 
     # ── HTTP (si httpx está disponible) ──
     try:
@@ -123,8 +150,8 @@ def main() -> None:
         check("GET /api/health 200", resp.status_code == 200, str(resp.status_code))
         resp = client.get("/api/agents")
         check(
-            "GET /api/agents catalog 200 + 197 tools",
-            resp.status_code == 200 and resp.json().get("total_tools") == 197,
+            "GET /api/agents catalog 200 + 205 tools",
+            resp.status_code == 200 and resp.json().get("total_tools") == 205,
             f"{resp.status_code} {str(resp.json())[:200]}",
         )
         resp = client.post(
@@ -137,7 +164,7 @@ def main() -> None:
     if FAILURES:
         print(f"✗ B0 SMOKE: {len(FAILURES)} fallo(s): {FAILURES}")
         sys.exit(1)
-    print("✓ B0 SMOKE VERDE: 19 agentes · 197 tools · compat · RBAC 197/197 · HITL cierra")
+    print("✓ B0 SMOKE VERDE: 19 agentes · 205 tools · compat · RBAC 205/205 · HITL cierra")
 
 
 if __name__ == "__main__":

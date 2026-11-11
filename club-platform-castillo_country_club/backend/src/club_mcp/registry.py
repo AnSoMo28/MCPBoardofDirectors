@@ -21,8 +21,8 @@ from __future__ import annotations
 import difflib
 import inspect
 from collections import Counter
-from dataclasses import dataclass
-from typing import Any, Iterable, Optional
+from dataclasses import dataclass, field
+from typing import Any, Callable, Iterable, Optional
 
 from club_mcp.agents.base import BaseAgent
 
@@ -44,10 +44,83 @@ AGENT_ALIASES: dict[str, str] = {
     "reports": "executive_dashboard",
 }
 
-# Key: canonical agent. Value: {legacy_tool: canonical_tool | (agent, tool)}
+# Key: canonical agent. Value: {legacy_tool: target | (agent, tool) | Adapter}
+#
+# B3 — Adapter layer. A bare str/tuple remains a rename-only alias (B2
+# semantics: params pass through verbatim). An Adapter entry additionally
+# transforms params before dispatch and the response after it, so a
+# legacy callsite keeps working while the canonical tool evolves its
+# contract. Adapters are DATA: each declares
+#   param_map:  {legacy_param: canonical_param | None}  (None drops it)
+#   adapt_response: callable(raw: dict, params: dict) -> dict
+# and the routes layer applies them generically after resolve().
+
+@dataclass(frozen=True)
+class AliasAdapter:
+    """Param + response transformation for a legacy key (B3)."""
+
+    target: tuple[str, str]  # (canonical_agent, canonical_tool)
+    param_map: dict[str, str | None] = field(default_factory=dict)
+    adapt_response: Optional[Callable[[dict, dict], dict]] = None
+
+
+def adapt_family_profile(raw: dict, params: dict) -> dict:
+    """family_get_profile payload → the mi-club landing shape.
+
+    The callsite (useMiClubLanding:435 → families/types.ts Family, camelCase:
+    familyName/totalBalance/engagementScore/memberCount) predates the canonical
+    snake_case FamilyResponse. This adapter reuses the profile data (no
+    invented numbers: totalBalance = engagement placeholder 0 — financial
+    totals are finance.get_family_account's domain, cross-linked below).
+    """
+    family = dict(raw.get("family") or {})
+    camel = {
+        "id": family.get("id", ""),
+        "familyName": family.get("name", ""),
+        "tier": family.get("tier", ""),
+        "status": family.get("status", ""),
+        "email": family.get("email", ""),
+        "phone": family.get("phone", ""),
+        "memberCount": family.get("member_count", len(family.get("members", []))),
+        "engagementScore": family.get("engagement_score", 0),
+        "joinDate": family.get("join_date", ""),
+        "totalBalance": 0,
+        "accountStatus": "active" if family.get("status") == "active" else str(family.get("status", "")),
+    }
+    out = dict(raw)
+    out["family"] = camel
+    out["members"] = [
+        {
+            "id": m.get("id", ""),
+            "name": m.get("name", ""),
+            "roleInFamily": m.get("role", ""),
+            "birthDate": m.get("date_of_birth", ""),
+            "membershipType": m.get("membership_type", ""),
+        }
+        for m in family.get("members", [])
+    ]
+    out["recentActivity"] = []
+    out["financialSummary"] = {
+        "monthlyDues": 0,
+        "totalBalance": 0,
+        "paymentStatus": "unknown",
+    }
+    out["socialConnections"] = []
+    out["message"] = raw.get("message", "")
+    out["adapter_note"] = "families.get_family → family_profile.family_get_profile (B3 adapter)"
+    return out
+
+
 TOOL_ALIASES: dict[str, dict[str, Any]] = {
     "family_profile": {
-        "get_family": "family_get_profile",
+        "get_family": AliasAdapter(
+            target=("family_profile", "family_get_profile"),
+            # mi-club callsite sends camelCase `familyId` (useMiClubLanding:435)
+            param_map={"familyId": "family_id"},
+            # FamilyResponse (snake) -> Family (camelCase) that the callsite reads:
+            # familyName/totalBalance/engagementScore/memberCount (families/types:196)
+            adapt_response=adapt_family_profile,
+        ),
         "create_family": "family_create_profile",
         "update_family": "family_update_members",
         "list_families": "family_search",
@@ -63,6 +136,19 @@ TOOL_ALIASES: dict[str, dict[str, Any]] = {
     },
     "finance": {
         "get_family_account": "finance_account_status",
+        "get_transactions": "finance_transactions_list",
+        "get_invoices": "finance_invoices_list",
+        # B3: useDecisionDocument legacy keys (mock-registry already
+        # serves the canonical names for all four).
+        "narrative_generate": ("advisor_intelligence", "generate_insight_narrative"),
+        "scenario_simulate": ("advisor_intelligence", "simulate_scenario"),
+    },
+    "member_engagement": {
+        # B3: engagement.* survey reads are cross-agent — the tools live
+        # in satisfaction. Params already match (survey_id); survey_id →
+        # event_id is the documented contract of the tools themselves.
+        "get_survey_results": ("satisfaction", "survey_results"),
+        "get_active_survey": ("satisfaction", "active_survey"),
     },
     "communication": {
         "get_communication_history": "get_notification_history",
@@ -73,9 +159,25 @@ TOOL_ALIASES: dict[str, dict[str, Any]] = {
     },
     # reports.* → B2: get_board_report is now a real tool under
     # executive_dashboard (same name, so no TOOL_ALIASES entry needed —
-    # AGENT_ALIASES.reports handles the server rename). Remaining
-    # reports.* refs (get_risk_matrix) wait for their adapter batches.
+    # AGENT_ALIASES.reports handles the server rename). B3 registers
+    # get_risk_matrix as a real tool too (same name under the alias
+    # server), so no entry is needed for it either.
 }
+
+
+def _alias_target(entry: Any, canonical_agent: str, tool_key: str) -> tuple[str, str]:
+    if isinstance(entry, AliasAdapter):
+        return entry.target
+    if isinstance(entry, tuple):
+        return entry[0], entry[1]
+    if isinstance(entry, str):
+        return canonical_agent, entry
+    return canonical_agent, tool_key
+
+
+def _alias_adapter(entry: Any) -> Optional[AliasAdapter]:
+    return entry if isinstance(entry, AliasAdapter) else None
+
 
 
 class ResolutionError(KeyError):
@@ -119,10 +221,33 @@ class Resolved:
     canonical: tuple[str, str]
     via_alias_agent: bool
     via_alias_tool: bool
+    adapter: Optional[AliasAdapter] = None
 
     @property
     def via_compat(self) -> bool:
         return self.via_alias_agent or self.via_alias_tool
+
+    def map_params(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Apply the alias param_map (B3 adapters): rename or drop keys."""
+        if self.adapter is None or not self.adapter.param_map:
+            return dict(params)
+        out = {}
+        for key, value in params.items():
+            mapped = self.adapter.param_map.get(key, key)
+            if mapped is not None:
+                out[mapped] = value
+        return out
+
+    def adapt_result(self, result: Any) -> Any:
+        """Apply the alias response adapter (B3), if any."""
+        if (
+            self.adapter is None
+            or self.adapter.adapt_response is None
+            or not isinstance(result, dict)
+        ):
+            return result
+        params = {}  # params are not needed by current adapters
+        return self.adapter.adapt_response(result, params)
 
 
 def _type_name(annotation: Any) -> str:
@@ -195,12 +320,8 @@ class AgentRegistry:
             raise ResolutionError(agent_key, tool_key, self._suggest(agent_key, tool_key))
 
         alias_entry = TOOL_ALIASES.get(canonical_agent, {}).get(tool_key)
-        if isinstance(alias_entry, tuple):
-            target_agent, target_tool = alias_entry
-        elif isinstance(alias_entry, str):
-            target_agent, target_tool = canonical_agent, alias_entry
-        else:
-            target_agent, target_tool = canonical_agent, tool_key
+        target_agent, target_tool = _alias_target(alias_entry, canonical_agent, tool_key)
+        adapter = _alias_adapter(alias_entry)
         via_tool = (target_tool != tool_key) or (target_agent != canonical_agent)
 
         spec = self._tools.get(target_agent, {}).get(target_tool)
@@ -216,6 +337,7 @@ class AgentRegistry:
             canonical=(target_agent, target_tool),
             via_alias_agent=via_agent,
             via_alias_tool=via_tool,
+            adapter=adapter,
         )
 
     # ── Catalog ────────────────────────────────────────────

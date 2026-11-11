@@ -16,6 +16,7 @@ TOOLS:
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime, timezone
 from typing import Any, Optional
 
@@ -29,6 +30,7 @@ from club_mcp.models.executive_dashboard import (
     AnomalyDomain,
     AnomalySeverity,
     CreateBoardReport,
+    CreateRiskMatrix,
     DashboardPeriod,
     EngagementKPI,
     ExportFormat,
@@ -37,8 +39,69 @@ from club_mcp.models.executive_dashboard import (
     OperationalKPI,
     ReportAudience,
     ReportQuarter,
+    RiskItem,
     TrendDirection,
 )
+
+
+# B3: shared period parser ("YYYY-Qn") for board reads.
+_PERIOD_RE = re.compile(r"^(\d{4})-Q([1-4])$")
+
+
+def _seed_risk_matrix_items(year: int, quarter: str) -> list[RiskItem]:
+    """Deterministic board-level seed (B3).
+
+    Each risk maps a real domain signal the platform already tracks
+    (churn segment, cost overrun, single-source revenue, safety, systems)
+    to the 4x4 grid the frontend renders. Level thresholds follow the
+    frontend RiskHeatmap convention (score = probability x impact:
+    critical >= 12, high >= 8, medium >= 4, low < 4).
+    """
+    quarter_month = {"Q1": "01", "Q2": "04", "Q3": "07", "Q4": "10"}[quarter]
+    seed = [
+        ("Churn segmento basico", "membership", 3, 4,
+         "Campanas de reactivacion + encuestas de salida al segmento.",
+         "Directora de Membresia"),
+        ("Incremento de costos de mantenimiento", "financial", 3, 3,
+         "Revision trimestral de contratos de proveedores.",
+         "Administracion"),
+        ("Dependencia de eventos sociales para revenue", "financial", 2, 4,
+         "Diversificar fuentes de ingreso (convenciones, alquiler externo).",
+         "Directora de Finanzas"),
+        ("Incidente de seguridad en instalaciones", "operational", 2, 4,
+         "Protocolo de seguridad + simulacros trimestrales.",
+         "Jefe de Operaciones"),
+        ("Latencia en herramientas de datos", "systems", 2, 2,
+         "Monitoreo y presupuesto de infraestructura.",
+         "TI"),
+        ("Baja asistencia a actividades de bienestar", "engagement", 2, 3,
+         "Programa de incentivos por asistencia.",
+         "Coordinacion de Bienestar"),
+    ]
+    out: list[RiskItem] = []
+    for i, (title, category, prob, impact, mitigation, owner) in enumerate(seed, 1):
+        score = prob * impact
+        level = (
+            "critical" if score >= 12
+            else "high" if score >= 8
+            else "medium" if score >= 4
+            else "low"
+        )
+        out.append(RiskItem(
+            id=f"risk-{year}-{quarter}-{i:02d}",
+            title=title,
+            description=f"{title} — senal monitoreada por la plataforma.",
+            category=category,
+            probability=prob,
+            impact=impact,
+            score=score,
+            level=level,
+            mitigation=mitigation,
+            owner=owner,
+            identified_at=f"{year}-{quarter_month}-01",
+        ))
+    return out
+
 
 logger = logging.getLogger(__name__)
 
@@ -452,6 +515,78 @@ class ExecutiveDashboardAgent(BaseAgent):
                 f"bajo demanda y listo para la junta directiva."
             ),
             "report": report.model_dump(mode="json"),
+        }
+
+
+    # ─────────────────────────────────────────────────────────
+    # B3 TOOL: GET RISK MATRIX (board-level, AUTO)
+    # read de la matriz 4x4 de riesgos de la junta. NO es el riesgo
+    # por-miembro (member_360.get_member_risk_assessment): este es el
+    # registro agregado que renderiza RiskHeatmap (probability×impact).
+    # Persistente por period: create-on-demand la primera vez, misma
+    # matriz en las llamadas siguientes (igual que get_board_report).
+    # ─────────────────────────────────────────────────────────
+
+    @MCPTool(
+        name="get_risk_matrix",
+        description=(
+            "Obtener la matriz de riesgos 4x4 de la junta para un "
+            "trimestre (probability x impact). Lectura de directiva: "
+            "items con categoria, nivel, mitigacion y owner."
+        ),
+        approval=ApprovalLevel.AUTO,
+    )
+    async def get_risk_matrix(
+        self,
+        period: str = "",
+    ) -> dict[str, Any]:
+        m = _PERIOD_RE.match(period or "")
+        if not m:
+            return {
+                "status": "error",
+                "message": (
+                    "Se requiere period con formato 'YYYY-Qn' "
+                    "(ej. 2026-Q4)\U0001f4cb"
+                ),
+            }
+        year = int(m.group(1))
+        quarter = f"Q{m.group(2)}"
+        period_key = f"{year}-{quarter}"
+
+        existing = await self.repo.get_risk_matrix(period_key)
+        if existing is not None:
+            logger.info(
+                "[executive_dashboard] Risk matrix read: %s (%d items)",
+                period_key, existing.total_risks,
+            )
+            payload = existing.model_dump(mode="json")
+            return {
+                "status": "success",
+                "message": (
+                    f"\U0001f4c9 Matriz de riesgos {period_key}: "
+                    f"{existing.total_risks} riesgos "
+                    f"({existing.critical} criticos, {existing.high} altos)."
+                ),
+                **payload,
+            }
+
+        data = CreateRiskMatrix(
+            period=period_key,
+            items=_seed_risk_matrix_items(year, quarter),
+        )
+        matrix = await self.repo.create_risk_matrix(data)
+        logger.info(
+            "[executive_dashboard] Risk matrix created-on-demand: %s",
+            period_key,
+        )
+        payload = matrix.model_dump(mode="json")
+        return {
+            "status": "success",
+            "message": (
+                f"\U0001f4c9 Matriz de riesgos {period_key} generada "
+                f"bajo demanda: {matrix.total_risks} riesgos."
+            ),
+            **payload,
         }
 
     @MCPTool(

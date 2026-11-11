@@ -111,7 +111,10 @@ async def call_agent_tool(
 
     method = getattr(resolved.agent, spec.method_name)
 
-    params = {k: v for k, v in body.params.items() if k not in IDENTITY_FIELDS}
+    # B3 adapters: legacy param names → canonical before binding.
+    params = resolved.map_params(
+        {k: v for k, v in body.params.items() if k not in IDENTITY_FIELDS}
+    )
     sig = inspect.signature(method)
     for identity in IDENTITY_FIELDS:
         if identity in sig.parameters:
@@ -130,6 +133,9 @@ async def call_agent_tool(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error ejecutando '{spec.name}': {exc}",
         )
+
+    # B3 adapters: canonical response → legacy callsite shape.
+    result = resolved.adapt_result(result)
 
     if isinstance(result, dict):
         result.setdefault("_approval_level", spec.approval)
