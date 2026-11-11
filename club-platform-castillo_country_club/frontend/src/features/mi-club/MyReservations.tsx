@@ -52,7 +52,8 @@ function FilterTabs({
       aria-label="Filtrar reservas"
     >
       {tabs.map((tab) => (
-        <button
+        <Button
+          variant="unstyled"
           key={tab.key}
           type="button"
           aria-pressed={active === tab.key}
@@ -82,7 +83,7 @@ function FilterTabs({
           >
             {tab.count}
           </span>
-        </button>
+        </Button>
       ))}
     </div>
   );

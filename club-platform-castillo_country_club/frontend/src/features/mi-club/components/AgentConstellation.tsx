@@ -9,6 +9,7 @@
 
 import { useNavigate } from "react-router";
 import type { AgentActivityItem } from "../types";
+import { Button } from "@/shared/components/ui/Button";
 
 interface AgentConstellationProps {
   agents: AgentActivityItem[];
@@ -26,7 +27,8 @@ export function AgentConstellation({
       aria-label="Agentes de inteligencia activos"
     >
       {agents.map((agent) => (
-        <button
+        <Button
+          variant="unstyled"
           key={agent.id}
           type="button"
           className={`glass-landing__agent glass-landing__agent--${agent.isActive ? "active" : "inactive"}`}
@@ -48,7 +50,7 @@ export function AgentConstellation({
           <span className="glass-landing__agent-status">
             {agent.statusText}
           </span>
-        </button>
+        </Button>
       ))}
     </div>
   );

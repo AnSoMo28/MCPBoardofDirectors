@@ -9,6 +9,7 @@
 import { Filter } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { OutcomeFilter, TimeRange } from "../hooks/useDecisionTimeline";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Constants
@@ -61,7 +62,8 @@ export function TimelineFilters({
       <div className="glass-timeline__filter-group">
         <Filter className="glass-timeline__filter-icon" />
         {OUTCOME_OPTIONS.map((opt) => (
-          <button
+          <Button
+            variant="unstyled"
             key={opt.value}
             type="button"
             className={cn(
@@ -72,7 +74,7 @@ export function TimelineFilters({
             onClick={() => setOutcomeFilter(opt.value)}
           >
             {opt.label}
-          </button>
+          </Button>
         ))}
       </div>
 

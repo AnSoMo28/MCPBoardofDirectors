@@ -121,7 +121,8 @@ function SystemPulse({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className={`glass-ai__pulse glass-ai__pulse--${level}`}
       onClick={onClick}
@@ -132,7 +133,7 @@ function SystemPulse({
       <span className="glass-ai__pulse-text">
         {SYSTEM_HEALTH_THRESHOLDS[level].label}
       </span>
-    </button>
+    </Button>
   );
 }
 
@@ -345,7 +346,8 @@ export function AISystemPage() {
               {contextActions.map((action, i) => {
                 const Icon = action.icon;
                 return (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={i}
                     type="button"
                     className="glass-ai__context-bar-item"
@@ -356,7 +358,7 @@ export function AISystemPage() {
                       style={{ color: action.color }}
                     />
                     <span>{action.message}</span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>

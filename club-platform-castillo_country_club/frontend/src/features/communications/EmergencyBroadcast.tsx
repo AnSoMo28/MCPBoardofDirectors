@@ -27,6 +27,7 @@ import { useMCPMutation, useMCPQuery } from "@/shared/hooks/useMCPQuery";
 import { showToast } from "@/shared/components/ui";
 import type { HITLResponse } from "./types";
 import "./EmergencyBroadcast.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ══════════════════════════════════════════════════════════
    Backend Types (for analytics query)
@@ -368,12 +369,13 @@ export function EmergencyBroadcast() {
               </p>
             </div>
 
-            <button
+            <Button
+              variant="unstyled"
               className="glass-comm-emergency__btn glass-comm-emergency__btn--primary"
               onClick={resetAll}
             >
               <AlertTriangle size={16} /> Nueva Transmisión
-            </button>
+            </Button>
           </div>
         ) : step === 1 ? (
           /* ══════════════════════════════════════════════════
@@ -385,7 +387,8 @@ export function EmergencyBroadcast() {
               {EMERGENCY_TEMPLATES.map((tmpl) => {
                 const TmplIcon = tmpl.icon;
                 return (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={tmpl.id}
                     type="button"
                     className="glass-comm-emergency__template-btn"
@@ -393,7 +396,7 @@ export function EmergencyBroadcast() {
                   >
                     <TmplIcon size={14} />
                     {tmpl.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -410,7 +413,8 @@ export function EmergencyBroadcast() {
                     const Icon = cfg.icon;
                     const selected = emergencyType === key;
                     return (
-                      <button
+                      <Button
+                        variant="unstyled"
                         key={key}
                         type="button"
                         className="glass-comm-emergency__type-card"
@@ -426,7 +430,7 @@ export function EmergencyBroadcast() {
                             <p className="glass-comm-emergency__type-desc">{cfg.description}</p>
                           </div>
                         </div>
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -516,14 +520,15 @@ export function EmergencyBroadcast() {
               <div className="glass-comm-emergency__form-group">
                 <div className="glass-comm-emergency__form-label-row">
                   <label className="glass-comm-emergency__label">Canales de Distribución</label>
-                  <button
+                  <Button
+                    variant="unstyled"
                     type="button"
                     className="glass-comm-emergency__btn glass-comm-emergency__btn--ghost"
                     style={{ minHeight: "32px", padding: "0.25rem 0.625rem", fontSize: "0.75rem" }}
                     onClick={() => setChannels(["push", "sms", "whatsapp"])}
                   >
                     Recomendados
-                  </button>
+                  </Button>
                 </div>
                 <div className="glass-comm-emergency__channel-grid">
                   {CHANNEL_OPTS.map((opt) => {
@@ -531,7 +536,8 @@ export function EmergencyBroadcast() {
                     const Icon = opt.icon;
                     const eff = channelEff[opt.value] ?? 0;
                     return (
-                      <button
+                      <Button
+                        variant="unstyled"
                         key={opt.value}
                         type="button"
                         className="glass-comm-emergency__channel-card"
@@ -551,7 +557,7 @@ export function EmergencyBroadcast() {
                             <div className="glass-comm-emergency__ch-eff-fill" style={{ width: `${eff}%` }} />
                           </div>
                         )}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -595,12 +601,13 @@ export function EmergencyBroadcast() {
 
             {/* Submit */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-              <button
+              <Button
+                variant="unstyled"
                 className="glass-comm-emergency__btn glass-comm-emergency__btn--rose glass-comm-emergency__btn--wide"
                 onClick={handleReview}
               >
                 <AlertTriangle size={16} /> Revisar y Enviar
-              </button>
+              </Button>
               <p className="glass-comm-emergency__submit-hint">
                 Requiere doble confirmación de administradores
               </p>
@@ -694,19 +701,21 @@ export function EmergencyBroadcast() {
 
             {/* Actions */}
             <div className="glass-comm-emergency__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="glass-comm-emergency__btn glass-comm-emergency__btn--ghost"
                 onClick={() => setStep(1)}
               >
                 Volver y Editar
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="unstyled"
                 className="glass-comm-emergency__btn glass-comm-emergency__btn--rose"
                 onClick={handleSend}
                 disabled={sendMut.isPending}
               >
                 <Send size={16} /> {sendMut.isPending ? "Enviando…" : "Enviar a Doble Confirmación"}
-              </button>
+              </Button>
             </div>
           </div>
         )}

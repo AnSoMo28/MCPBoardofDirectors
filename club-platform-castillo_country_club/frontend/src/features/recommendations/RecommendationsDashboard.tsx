@@ -256,7 +256,8 @@ export function RecommendationsDashboard() {
           {FOCUS_PANELS.map((panel) => {
             const Icon = panel.icon;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={panel.id}
                 type="button"
                 className="rec-focus-pill"
@@ -270,7 +271,7 @@ export function RecommendationsDashboard() {
               >
                 <Icon size={14} aria-hidden="true" />
                 <span>{panel.label}</span>
-              </button>
+              </Button>
             );
           })}
         </nav>

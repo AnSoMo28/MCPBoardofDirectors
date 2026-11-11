@@ -612,7 +612,8 @@ export default function FacilityMap({
           {/* View toggle */}
           <div className="fac-map__toggle" role="group" aria-label="Vista">
             {(["grid", "spatial"] as const).map((mode) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={mode}
                 type="button"
                 className="fac-map__toggle-btn"
@@ -621,7 +622,7 @@ export default function FacilityMap({
                 aria-pressed={viewMode === mode}
               >
                 {mode === "grid" ? "Cat\u00e1logo" : "Mapa"}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

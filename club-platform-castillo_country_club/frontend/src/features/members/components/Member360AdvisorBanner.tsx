@@ -28,6 +28,7 @@ import type {
 } from "../types";
 
 import "./Member360AdvisorBanner.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -209,7 +210,8 @@ export function Member360AdvisorBanner({
 
                 {/* Content */}
                 <div className="glass-m360-advisor__insight-content">
-                  <button
+                  <Button
+                    variant="unstyled"
                     onClick={() => toggle(insight.id)}
                     className="glass-m360-advisor__insight-toggle"
                   >
@@ -225,7 +227,7 @@ export function Member360AdvisorBanner({
                         {LAYER_LABELS[insight.layer] ?? insight.layer}
                       </span>
                     </div>
-                  </button>
+                  </Button>
 
                   {/* Expanded reasoning */}
                   {isExpanded && (
@@ -274,14 +276,15 @@ export function Member360AdvisorBanner({
                   </div>
 
                   {insight.action && onExecute && (
-                    <button
+                    <Button
+                      variant="unstyled"
                       onClick={() => onExecute(insight.id)}
                       className="glass-m360-advisor__action-btn"
                       style={{ color: style.color }}
                     >
                       {insight.action.label}
                       <ArrowRight className="w-3 h-3" />
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -292,7 +295,8 @@ export function Member360AdvisorBanner({
 
       {/* Show more/less */}
       {insights.length > 4 && (
-        <button
+        <Button
+          variant="unstyled"
           onClick={() => setShowAll(!showAll)}
           className="glass-m360-advisor__toggle-all"
         >
@@ -305,7 +309,7 @@ export function Member360AdvisorBanner({
               <ChevronDown className="w-3 h-3" /> Ver {insights.length - 4} más
             </>
           )}
-        </button>
+        </Button>
       )}
     </div>
   );

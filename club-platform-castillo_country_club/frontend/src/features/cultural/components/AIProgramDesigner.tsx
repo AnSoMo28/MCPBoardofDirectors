@@ -37,6 +37,7 @@ import type {
 } from '../lib/eventDesigner';
 import { useEventDesigner } from '../hooks/useEventDesigner';
 import './AIProgramDesigner.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -160,13 +161,14 @@ export function AIProgramDesigner({
               {phaseLabel(designer.phase)}
             </span>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             className="ai-program-designer__close"
             onClick={onClose}
             aria-label="Cerrar"
           >
             ×
-          </button>
+          </Button>
         </header>
 
         {/* ═══════════════════════════════════════ */}
@@ -190,7 +192,8 @@ export function AIProgramDesigner({
               </span>
               <div className="ai-program-designer__concepts-grid">
                 {PROGRAM_CONCEPTS.map((concept) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={concept}
                     className={`ai-program-designer__concept-chip ${
                       selectedConcept === concept
@@ -207,7 +210,7 @@ export function AIProgramDesigner({
                     }}
                   >
                     {concept}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -229,7 +232,8 @@ export function AIProgramDesigner({
                 </span>
                 <div className="ai-program-designer__config-options">
                   {SESSION_OPTIONS.map((opt) => (
-                    <button
+                    <Button
+                      variant="unstyled"
                       key={opt.value}
                       className={`ai-program-designer__config-chip ${
                         selectedSessions === opt.value
@@ -239,7 +243,7 @@ export function AIProgramDesigner({
                       onClick={() => setSelectedSessions(opt.value)}
                     >
                       {opt.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -250,7 +254,8 @@ export function AIProgramDesigner({
                 </span>
                 <div className="ai-program-designer__config-options">
                   {FREQUENCY_OPTIONS.map((opt) => (
-                    <button
+                    <Button
+                      variant="unstyled"
                       key={opt.value}
                       className={`ai-program-designer__config-chip ${
                         selectedFrequency === opt.value
@@ -260,7 +265,7 @@ export function AIProgramDesigner({
                       onClick={() => setSelectedFrequency(opt.value)}
                     >
                       {opt.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -286,20 +291,22 @@ export function AIProgramDesigner({
 
             {/* Actions */}
             <div className="ai-program-designer__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-program-designer__btn ai-program-designer__btn--secondary"
                 onClick={handleSetIntention}
                 disabled={!intentionText.trim()}
               >
                 Capturar intención
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="unstyled"
                 className="ai-program-designer__btn ai-program-designer__btn--primary"
                 onClick={handleGenerate}
                 disabled={!designer.intent}
               >
                 Diseñar programa con AI →
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -346,12 +353,13 @@ export function AIProgramDesigner({
               </div>
             </div>
             <div className="ai-program-designer__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-program-designer__btn ai-program-designer__btn--primary"
                 onClick={onClose}
               >
                 Cerrar
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -578,7 +586,8 @@ function ProgramRefinementView({
           Refinar programa
         </span>
         <div className="ai-program-designer__refine-actions">
-          <button
+          <Button
+            variant="unstyled"
             className="ai-program-designer__btn ai-program-designer__btn--ghost"
             onClick={() =>
               onRefine({
@@ -592,8 +601,9 @@ function ProgramRefinementView({
             }
           >
             Grupo pequeño (-40%)
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             className="ai-program-designer__btn ai-program-designer__btn--ghost"
             onClick={() =>
               onRefine({
@@ -607,8 +617,9 @@ function ProgramRefinementView({
             }
           >
             Grupo grande (+50%)
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             className="ai-program-designer__btn ai-program-designer__btn--ghost"
             onClick={() =>
               onRefine({
@@ -622,7 +633,7 @@ function ProgramRefinementView({
             }
           >
             Aumentar budget 50%
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -734,19 +745,22 @@ function ProgramRefinementView({
 
       {/* Actions */}
       <div className="ai-program-designer__actions">
-        <button
+        <Button
+          variant="unstyled"
           className="ai-program-designer__btn ai-program-designer__btn--ghost"
           onClick={onReset}
         >
           Empezar de nuevo
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="unstyled"
           className="ai-program-designer__btn ai-program-designer__btn--secondary"
           onClick={onRegenerate}
         >
           Regenerar
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="unstyled"
           className="ai-program-designer__btn ai-program-designer__btn--primary"
           onClick={onConfirm}
           disabled={!readyToExecute}
@@ -754,7 +768,7 @@ function ProgramRefinementView({
           {readyToExecute
             ? '📚 Lanzar programa'
             : `Bloqueado: ${blockers[0] ?? 'riesgos pendientes'}`}
-        </button>
+        </Button>
       </div>
     </section>
   );

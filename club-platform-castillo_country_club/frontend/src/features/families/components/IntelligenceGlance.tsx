@@ -65,6 +65,7 @@ import type { Family } from "../types";
 import type { GlanceInsight, Trend } from "../lib/familySignals";
 
 import "./IntelligenceGlance.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Sub-components
@@ -193,14 +194,15 @@ export function IntelligenceGlance({
             <span className="fm-glance__ai-badge-count">{criticalCount}</span>
           )}
         </span>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fm-glance__close"
           onClick={handleClose}
           aria-label="Cerrar"
         >
           <X size={14} aria-hidden="true" />
-        </button>
+        </Button>
       </div>
 
       {/* ══════ Headline — P1 Narrative First ══════ */}
@@ -267,21 +269,23 @@ export function IntelligenceGlance({
       {/* ══════ Actions — CTAs (P3) ══════ */}
       <div className="fm-glance__actions">
         {onSendMessage && (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="fm-glance__action"
             onClick={handleSendMessage}
           >
             Enviar mensaje
-          </button>
+          </Button>
         )}
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fm-glance__action fm-glance__action--primary"
           onClick={handleViewProfile}
         >
           Ver perfil →
-        </button>
+        </Button>
       </div>
     </div>
   );

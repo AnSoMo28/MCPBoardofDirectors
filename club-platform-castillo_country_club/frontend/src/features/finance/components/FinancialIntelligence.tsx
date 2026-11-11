@@ -387,7 +387,8 @@ function IntelTabBar({
         const Icon = tab.icon;
         const isActive = active === tab.id;
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={tab.id}
             type="button"
             role="tab"
@@ -416,7 +417,7 @@ function IntelTabBar({
             )}
             <Icon size={15} className="relative z-10 flex-shrink-0" />
             <span className="relative z-10 hidden sm:inline">{tab.label}</span>
-          </button>
+          </Button>
         );
       })}
     </nav>
@@ -950,7 +951,8 @@ function OpportunityScanner() {
               const cfg = OPPORTUNITY_CATEGORY_CONFIG[cat];
               const isActive = categoryFilter === cat;
               return (
-                <button
+                <Button
+                  variant="unstyled"
                   key={cat}
                   type="button"
                   onClick={() => setCategoryFilter(isActive ? "" : cat)}
@@ -972,7 +974,7 @@ function OpportunityScanner() {
                   <span className="font-[family-name:var(--font-mono)] text-[11px]" style={{ color: cfg?.color }}>
                     {formatCurrency(data.revenue)}
                   </span>
-                </button>
+                </Button>
               );
             })}
           </div>

@@ -1651,7 +1651,8 @@ export default function ComplianceCheck() {
                     className="p-4 rounded-xl border-l-4 bg-[var(--color-surface-2)]"
                     style={{ borderLeftColor: rCfg.color }}
                   >
-                    <button
+                    <Button
+                      variant="unstyled"
                       type="button"
                       onClick={() => setExpandedRisk(expanded ? null : risk.id)}
                       className="w-full flex items-start justify-between gap-3 min-h-[44px]
@@ -1694,7 +1695,7 @@ export default function ComplianceCheck() {
                         </div>
                         {expanded ? <ChevronUp size={14} className="text-[var(--color-silver-500)]" /> : <ChevronDown size={14} className="text-[var(--color-silver-500)]" />}
                       </div>
-                    </button>
+                    </Button>
 
                     {/* Expanded: Remediation steps */}
                     {expanded && (
@@ -1797,7 +1798,8 @@ export default function ComplianceCheck() {
 
               return (
                 <div key={item.id} className="p-3 rounded-lg bg-[var(--color-surface-2)] border border-white/[0.04]">
-                  <button
+                  <Button
+                    variant="unstyled"
                     type="button"
                     onClick={() => setExpandedItem(expanded ? null : item.id)}
                     className={cn(
@@ -1818,7 +1820,7 @@ export default function ComplianceCheck() {
                       </p>
                     </div>
                     {expanded ? <ChevronUp size={14} className="text-[var(--color-silver-500)] flex-shrink-0" /> : <ChevronDown size={14} className="text-[var(--color-silver-500)] flex-shrink-0" />}
-                  </button>
+                  </Button>
 
                   {expanded && (
                     <div className="mt-2 pt-2 border-t border-white/[0.04] space-y-1.5">

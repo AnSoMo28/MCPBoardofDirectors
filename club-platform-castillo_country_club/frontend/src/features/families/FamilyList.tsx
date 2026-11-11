@@ -105,7 +105,8 @@ function SortHeader({
       role="columnheader"
       aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
     >
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="fm-familyList__sortBtn"
         data-active={active || undefined}
@@ -117,7 +118,7 @@ function SortHeader({
         ) : (
           <ArrowUpDown size={11} />
         )}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -296,7 +297,8 @@ export default function FamilyList() {
               const isActive = activeCohort === cohort.id;
               const count = cohortCounts[cohort.id] ?? 0;
               return (
-                <button
+                <Button
+                  variant="unstyled"
                   key={cohort.id}
                   type="button"
                   role="tab"
@@ -314,7 +316,7 @@ export default function FamilyList() {
                   {count > 0 && (
                     <span className="fm-familyList__cohortCount">{count}</span>
                   )}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -416,7 +418,8 @@ export default function FamilyList() {
               {/* Header */}
               <div className="fm-familyList__header" role="row">
                 <div className="fm-familyList__headerCell" role="columnheader">
-                  <button
+                  <Button
+                    variant="unstyled"
                     type="button"
                     className="fm-familyList__selectAll"
                     onClick={toggleSelectAll}
@@ -431,7 +434,7 @@ export default function FamilyList() {
                     ) : (
                       <Square size={16} />
                     )}
-                  </button>
+                  </Button>
                 </div>
                 <SortHeader
                   label="Familia"
@@ -504,7 +507,8 @@ export default function FamilyList() {
                     >
                       {/* Checkbox */}
                       <div className="fm-familyList__cell" role="gridcell">
-                        <button
+                        <Button
+                          variant="unstyled"
                           type="button"
                           className="fm-familyList__checkbox"
                           data-selected={isSelected || undefined}
@@ -516,12 +520,13 @@ export default function FamilyList() {
                           ) : (
                             <Square size={16} />
                           )}
-                        </button>
+                        </Button>
                       </div>
 
                       {/* Family name */}
                       <div className="fm-familyList__cell" role="gridcell">
-                        <button
+                        <Button
+                          variant="unstyled"
                           type="button"
                           className="fm-familyList__familyBtn"
                           onClick={() =>
@@ -537,7 +542,7 @@ export default function FamilyList() {
                             {family.primaryContact.firstName}{" "}
                             {family.primaryContact.lastName}
                           </p>
-                        </button>
+                        </Button>
                       </div>
 
                       {/* Tier */}
@@ -634,7 +639,8 @@ export default function FamilyList() {
                       <div className="fm-familyList__cell" role="gridcell">
                         <div className="fm-familyList__actions">
                           <div className="fm-familyList__quickActions">
-                            <button
+                            <Button
+                              variant="unstyled"
                               type="button"
                               className="fm-familyList__quickAction"
                               onClick={(e) => {
@@ -645,8 +651,9 @@ export default function FamilyList() {
                               title="Vistazo AI"
                             >
                               <Eye size={14} />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="unstyled"
                               type="button"
                               className="fm-familyList__quickAction"
                               onClick={() => toggleSelect(family.id)}
@@ -658,7 +665,7 @@ export default function FamilyList() {
                               title="Seleccionar"
                             >
                               <MousePointerClick size={14} />
-                            </button>
+                            </Button>
                           </div>
                           <Button
                             variant="ghost"

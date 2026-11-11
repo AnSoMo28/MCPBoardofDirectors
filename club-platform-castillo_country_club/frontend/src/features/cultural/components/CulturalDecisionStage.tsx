@@ -23,6 +23,7 @@ import type {
 } from '../lib/advisor/types';
 import { SEVERITY_ORDER } from '../lib/advisor/types';
 import './CulturalDecisionStage.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -160,13 +161,14 @@ export function CulturalDecisionStage({
                     {insight.layer}
                   </span>
                   {onDismiss && (
-                    <button
+                    <Button
+                      variant="unstyled"
                       className="cultural-decision-stage__dismiss"
                       onClick={() => onDismiss(insight.id)}
                       aria-label="Descartar"
                     >
                       ×
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -193,12 +195,13 @@ export function CulturalDecisionStage({
 
                 {/* Action button */}
                 {insight.action && (
-                  <button
+                  <Button
+                    variant="unstyled"
                     className="cultural-decision-stage__action"
                     onClick={() => onInsightAction?.(insight)}
                   >
                     {insight.action.label}
-                  </button>
+                  </Button>
                 )}
               </article>
             );

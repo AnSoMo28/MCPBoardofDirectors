@@ -48,6 +48,7 @@ import {
 import type { SportType } from "../types";
 import type { SportsAnalytics_Contract } from "@/shared/mocks/contracts";
 import "./SportsIntelligencePanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -116,7 +117,8 @@ function DimensionCard({
       data-dimension={dimensionNum}
       data-mode={ambientMode}
     >
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="spt-intel__dim-header"
         onClick={() => setExpanded(!expanded)}
@@ -132,7 +134,7 @@ function DimensionCard({
         ) : (
           <ChevronDown className="spt-intel__dim-chevron" />
         )}
-      </button>
+      </Button>
       {expanded && (
         <div className="spt-intel__dim-content">
           {children}

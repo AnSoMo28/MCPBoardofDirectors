@@ -14,6 +14,7 @@ import { useHitlQueue } from "../hooks/useHitlQueue";
 import { HitlCard } from "./HitlCard";
 import type { HitlItem } from "../config/hitl";
 import "../HitlQueue.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Types
@@ -69,29 +70,32 @@ export function HitlQueue({
       {/* ═══ Batch Toolbar ═══ */}
       {showBatch && (
         <div className="glass-hitl__batch-toolbar">
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             onClick={h.selectAll}
             className="glass-hitl__batch-btn"
           >
             Seleccionar todo
-          </button>
+          </Button>
           {h.selectedIds.size > 0 && (
             <>
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 onClick={h.clearSelection}
                 className="glass-hitl__batch-btn"
               >
                 Limpiar
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="unstyled"
                 type="button"
                 onClick={h.batchApprove}
                 className="glass-hitl__batch-btn glass-hitl__batch-btn--primary"
               >
                 Aprobar seleccionados ({h.selectedIds.size})
-              </button>
+              </Button>
             </>
           )}
         </div>

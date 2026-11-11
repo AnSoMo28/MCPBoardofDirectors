@@ -37,6 +37,7 @@ import type {
   JourneyMilestone,
 } from "../types";
 import "./MemberTimeline.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -328,16 +329,18 @@ export function MemberTimeline({ journey, predictions, temperature }: MemberTime
       {/* ── Domain filter ── */}
       {domains.length > 1 && (
         <div className="glass-m360-timeline__filters">
-          <button
+          <Button
+            variant="unstyled"
             className={`glass-m360-timeline__filter ${!activeDomain ? "glass-m360-timeline__filter--active" : ""}`}
             onClick={() => setActiveDomain(null)}
           >
             Todos
-          </button>
+          </Button>
           {domains.map((domain) => {
             const display = ACTIVITY_DOMAIN_DISPLAY[domain as ActivityDomain];
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={domain}
                 className={`glass-m360-timeline__filter ${activeDomain === domain ? "glass-m360-timeline__filter--active" : ""}`}
                 style={
@@ -354,7 +357,7 @@ export function MemberTimeline({ journey, predictions, temperature }: MemberTime
                 }
               >
                 {display?.icon ?? "•"} {display?.label ?? domain}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -433,7 +436,8 @@ function TimelineNode({ event, index, isGhost }: {
       </div>
 
       {/* Event content */}
-      <button
+      <Button
+        variant="unstyled"
         className="glass-m360-timeline__event"
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
@@ -478,7 +482,7 @@ function TimelineNode({ event, index, isGhost }: {
             {event.description}
           </p>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

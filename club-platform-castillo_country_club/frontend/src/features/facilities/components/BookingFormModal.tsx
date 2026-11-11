@@ -50,6 +50,7 @@ import { matchVenues, classifyPurpose } from "../lib/venueMatching";
 import { findOptimalSlots, detectMaintenanceConflict } from "../lib/optimalScheduling";
 
 import "./BookingFormModal.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -160,7 +161,8 @@ function VenueSuggestionCard({
   onSelect: () => void;
 }) {
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className="fac-book-modal__suggestion"
       onClick={onSelect}
@@ -198,7 +200,7 @@ function VenueSuggestionCard({
           Recomendado
         </span>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -219,7 +221,8 @@ function OptimalSlotCard({
         : "var(--color-rose-400)";
 
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className={cn(
         "fac-book-modal__slot",
@@ -250,7 +253,7 @@ function OptimalSlotCard({
           Mejor horario
         </span>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -293,14 +296,15 @@ function MaintenanceConflictBanner({
           <p key={i} className="fac-book-modal__maintenance-desc">{desc}</p>
         ))}
         {onUseAlternative && (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="fac-book-modal__maintenance-alt"
             onClick={() => onUseAlternative(conflict.earliest_available_date)}
           >
             Usar {conflict.earliest_available_date}
             <ChevronRight className="fac-book-modal__maintenance-alt-icon" />
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -578,14 +582,15 @@ export function BookingFormModal({
                   : "Selecciona una instalación"}
             </p>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="fac-book-modal__close"
             onClick={handleClose}
             aria-label="Cerrar"
           >
             <X className="fac-book-modal__close-icon" />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}
@@ -781,14 +786,16 @@ export function BookingFormModal({
 
           {/* Actions */}
           <div className="fac-book-modal__actions">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fac-book-modal__btn fac-book-modal__btn--cancel"
               onClick={handleClose}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="submit"
               className="fac-book-modal__btn fac-book-modal__btn--submit"
               disabled={loading}
@@ -797,7 +804,7 @@ export function BookingFormModal({
                 <Loader2 className="fac-book-modal__btn-spinner" />
               )}
               Crear Reserva
-            </button>
+            </Button>
           </div>
         </form>
       </div>

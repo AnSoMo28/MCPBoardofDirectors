@@ -31,6 +31,7 @@ import type {
 } from "./types";
 import { formatCommunicationDate } from "./types";
 import "./CommunicationCenter.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ══════════════════════════════════════════════════════════
    Config Maps
@@ -160,9 +161,9 @@ function GlassModal({
       >
         <div className="glass-comm-center__modal-header">
           <h3 className="glass-comm-center__modal-title">{title}</h3>
-          <button className="glass-comm-center__modal-close" onClick={onClose} aria-label="Cerrar">
+          <Button variant="unstyled" className="glass-comm-center__modal-close" onClick={onClose} aria-label="Cerrar">
             <X size={20} />
-          </button>
+          </Button>
         </div>
         {children}
       </div>
@@ -320,14 +321,14 @@ function ComunicarPanel({
           { label: "Personalizada", sub: "Destinatarios específicos", icon: Send, action: "personalized" as const, onClick: onOpenPersonalized },
           { label: "Board Package", sub: "Paquete para junta", icon: Package, action: "board" as const, onClick: onOpenBoardPackage },
         ].map((a) => (
-          <button key={a.label} className="glass-comm-center__quick-action" onClick={a.onClick}>
+          <Button variant="unstyled" key={a.label} className="glass-comm-center__quick-action" onClick={a.onClick}>
             <div className="glass-comm-center__quick-action-icon" data-action={a.action}><a.icon size={20} /></div>
             <div className="glass-comm-center__quick-action-info">
               <p className="glass-comm-center__quick-action-label">{a.label}</p>
               <p className="glass-comm-center__quick-action-sub">{a.sub}</p>
             </div>
             <ChevronRight size={16} className="glass-comm-center__quick-action-arrow" />
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -362,12 +363,12 @@ function ComunicarPanel({
             <p className="glass-comm-center__compose-subtitle">Requiere aprobación del administrador antes de enviarse</p>
           </div>
           <div className="glass-comm-center__compose-actions">
-            <button className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={onOpenAICompose} style={{ color: "var(--gcn-gold)" }}>
+            <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={onOpenAICompose} style={{ color: "var(--gcn-gold)" }}>
               <Sparkles size={16} /> Generar con AI
-            </button>
-            <button className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={onOpenTemplatePicker}>
+            </Button>
+            <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={onOpenTemplatePicker}>
               <FileText size={16} /> Plantillas
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -391,9 +392,9 @@ function ComunicarPanel({
               <label className="glass-comm-center__label">Prioridad</label>
               <div className="glass-comm-center__priority-row">
                 {PRIORITY_OPTS.map((p) => (
-                  <button key={p.value} type="button" className="glass-comm-center__priority-btn" data-selected={priority === p.value} data-priority={p.value} onClick={() => setPriority(p.value)}>
+                  <Button variant="unstyled" key={p.value} type="button" className="glass-comm-center__priority-btn" data-selected={priority === p.value} data-priority={p.value} onClick={() => setPriority(p.value)}>
                     {p.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -408,7 +409,7 @@ function ComunicarPanel({
                 const Icon = cfg.icon;
                 const eff = channelEffectiveness[key] ?? 0;
                 return (
-                  <button key={key} type="button" className="glass-comm-center__channel-btn" data-channel={key} data-selected={selected} onClick={() => toggleChannel(key)}>
+                  <Button variant="unstyled" key={key} type="button" className="glass-comm-center__channel-btn" data-channel={key} data-selected={selected} onClick={() => toggleChannel(key)}>
                     <Icon size={16} />
                     <span>{cfg.label}</span>
                     {eff > 0 && (
@@ -416,7 +417,7 @@ function ComunicarPanel({
                         <div className="glass-comm-center__ch-bar-fill" style={{ width: `${eff}%` }} />
                       </div>
                     )}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -474,12 +475,12 @@ function ComunicarPanel({
 
           {/* Footer */}
           <div className="glass-comm-center__compose-footer">
-            <button className="glass-comm-center__btn" onClick={handleSubmit} disabled={broadcastMut.isPending}>
+            <Button variant="unstyled" className="glass-comm-center__btn" onClick={handleSubmit} disabled={broadcastMut.isPending}>
               <FileText size={16} /> Guardar Borrador
-            </button>
-            <button className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={handleSubmit} disabled={broadcastMut.isPending}>
+            </Button>
+            <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={handleSubmit} disabled={broadcastMut.isPending}>
               <Send size={16} /> {broadcastMut.isPending ? "Enviando…" : "Enviar a Aprobación"}
-            </button>
+            </Button>
           </div>
 
           <div className="glass-comm-center__hitl-notice">
@@ -543,7 +544,7 @@ function HistorialPanel({ intel }: { intel: ReturnType<typeof useCommunicationIn
         <div className="glass-comm-center__stale-banner">
           <RefreshCw size={14} />
           <span>Datos desactualizados ({dataFreshness.label})</span>
-          <button className="glass-comm-center__btn glass-comm-center__btn--ghost" style={{ marginLeft: "auto", fontSize: "0.75rem", minHeight: "32px" }} onClick={refetchAll}>Actualizar</button>
+          <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--ghost" style={{ marginLeft: "auto", fontSize: "0.75rem", minHeight: "32px" }} onClick={refetchAll}>Actualizar</Button>
         </div>
       )}
 
@@ -638,7 +639,7 @@ function PlantillasPanel({ intel }: { intel: ReturnType<typeof useCommunicationI
     <div className="glass-comm-center__section" style={{ marginTop: "1rem" }}>
       <div className="glass-comm-center__section-header">
         <p className="glass-comm-center__stat-label">{templates.length} plantillas disponibles</p>
-        <button className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={() => setShowCreate(true)}><Plus size={16} /> Nueva Plantilla</button>
+        <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={() => setShowCreate(true)}><Plus size={16} /> Nueva Plantilla</Button>
       </div>
 
       {templates.length === 0 ? (
@@ -692,10 +693,10 @@ function PlantillasPanel({ intel }: { intel: ReturnType<typeof useCommunicationI
             <input className="glass-comm-center__input" value={form.variables} onChange={(e) => setForm((p) => ({ ...p, variables: e.target.value }))} placeholder="nombre, fecha, evento" />
           </div>
           <div className="glass-comm-center__compose-footer">
-            <button className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={() => setShowCreate(false)}>Cancelar</button>
-            <button className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={handleCreate} disabled={createMut.isPending}>
+            <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={() => setShowCreate(false)}>Cancelar</Button>
+            <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={handleCreate} disabled={createMut.isPending}>
               <FileText size={16} /> {createMut.isPending ? "Creando…" : "Crear Plantilla"}
-            </button>
+            </Button>
           </div>
         </div>
       </GlassModal>
@@ -749,9 +750,9 @@ function ProgramadosPanel({ intel }: { intel: ReturnType<typeof useCommunication
                 <p className="glass-comm-center__scheduled-time-value">{formatCommunicationDate(item.scheduled_at)}</p>
               </div>
               {item.status === "queued" && (
-                <button className="glass-comm-center__btn glass-comm-center__btn--ghost glass-comm-center__btn--danger" onClick={() => cancelMut.mutate({ action: "cancel", schedule_id: item.id })} disabled={cancelMut.isPending}>
+                <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--ghost glass-comm-center__btn--danger" onClick={() => cancelMut.mutate({ action: "cancel", schedule_id: item.id })} disabled={cancelMut.isPending}>
                   <Trash2 size={14} />
-                </button>
+                </Button>
               )}
             </div>
           );
@@ -807,20 +808,20 @@ function AIComposeModal({
         <div className="glass-comm-center__form-group">
           <label className="glass-comm-center__label">Tipo de comunicación</label>
           <div className="glass-comm-center__ai-selector-grid">
-            {AI_TOPICS.map((t) => <button key={t.value} type="button" className="glass-comm-center__ai-option" data-selected={topic === t.value} data-selector="topic" onClick={() => setTopic(t.value)}>{t.label}</button>)}
+            {AI_TOPICS.map((t) => <Button variant="unstyled" key={t.value} type="button" className="glass-comm-center__ai-option" data-selected={topic === t.value} data-selector="topic" onClick={() => setTopic(t.value)}>{t.label}</Button>)}
           </div>
         </div>
 
         <div className="glass-comm-center__form-group">
           <label className="glass-comm-center__label">Tono</label>
           <div className="glass-comm-center__ai-selector-row">
-            {AI_TONES.map((t) => <button key={t.value} type="button" className="glass-comm-center__ai-option glass-comm-center__ai-option--flex" data-selected={tone === t.value} data-selector="tone" onClick={() => setTone(t.value)}>{t.label}</button>)}
+            {AI_TONES.map((t) => <Button variant="unstyled" key={t.value} type="button" className="glass-comm-center__ai-option glass-comm-center__ai-option--flex" data-selected={tone === t.value} data-selector="tone" onClick={() => setTone(t.value)}>{t.label}</Button>)}
           </div>
         </div>
 
-        <button className="glass-comm-center__btn glass-comm-center__btn--primary" style={{ width: "100%", background: "var(--gcn-gold)", color: "#000" }} onClick={handleGenerate} disabled={personalizeQ.isLoading}>
+        <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--primary" style={{ width: "100%", background: "var(--gcn-gold)", color: "#000" }} onClick={handleGenerate} disabled={personalizeQ.isLoading}>
           <Sparkles size={16} /> {personalizeQ.isLoading ? "Generando…" : "Generar borrador con AI"}
-        </button>
+        </Button>
 
         {personalizeQ.isLoading && (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -869,8 +870,8 @@ function AIComposeModal({
             </div>
 
             <div className="glass-comm-center__compose-footer">
-              <button className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={handleClose}>Cancelar</button>
-              <button className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={handleApply}><CheckCircle2 size={16} /> Usar borrador</button>
+              <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={handleClose}>Cancelar</Button>
+              <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={handleApply}><CheckCircle2 size={16} /> Usar borrador</Button>
             </div>
           </div>
         )}
@@ -932,8 +933,8 @@ function EmergencyModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               <span className="glass-comm-center__reach-value">100%</span>
             </div>
             <div className="glass-comm-center__compose-footer">
-              <button className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={onClose}>Cancelar</button>
-              <button className="glass-comm-center__btn" onClick={() => { if (!title.trim() || !body.trim()) { showToast({ type: "error", message: "Completá título y mensaje" }); return; } setStep(2); }}><ShieldAlert size={16} /> Revisar</button>
+              <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={onClose}>Cancelar</Button>
+              <Button variant="unstyled" className="glass-comm-center__btn" onClick={() => { if (!title.trim() || !body.trim()) { showToast({ type: "error", message: "Completá título y mensaje" }); return; } setStep(2); }}><ShieldAlert size={16} /> Revisar</Button>
             </div>
           </>
         ) : (
@@ -944,8 +945,8 @@ function EmergencyModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               <p className="glass-comm-center__emergency-review-row" style={{ marginTop: "0.75rem", color: "var(--gcn-muted)" }}>{body}</p>
             </div>
             <div className="glass-comm-center__compose-footer">
-              <button className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={() => setStep(1)}>Volver</button>
-              <button className="glass-comm-center__btn glass-comm-center__btn--rose" onClick={handleSend} disabled={emergMut.isPending}><ShieldAlert size={16} /> {emergMut.isPending ? "Enviando…" : "Confirmar Emergencia"}</button>
+              <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={() => setStep(1)}>Volver</Button>
+              <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--rose" onClick={handleSend} disabled={emergMut.isPending}><ShieldAlert size={16} /> {emergMut.isPending ? "Enviando…" : "Confirmar Emergencia"}</Button>
             </div>
           </>
         )}
@@ -1000,8 +1001,8 @@ function PersonalizedModal({ isOpen, onClose, intel }: { isOpen: boolean; onClos
           <textarea className="glass-comm-center__textarea" value={body} onChange={(e) => setBody(e.target.value)} rows={4} placeholder="Contenido…" />
         </div>
         <div className="glass-comm-center__compose-footer">
-          <button className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={onClose}>Cancelar</button>
-          <button className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={handleSend} disabled={sendMut.isPending}><Send size={16} /> {sendMut.isPending ? "Enviando…" : "Enviar"}</button>
+          <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={onClose}>Cancelar</Button>
+          <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={handleSend} disabled={sendMut.isPending}><Send size={16} /> {sendMut.isPending ? "Enviando…" : "Enviar"}</Button>
         </div>
       </div>
     </GlassModal>
@@ -1053,10 +1054,10 @@ function BoardPackageModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =
           </select>
         </div>
         <div className="glass-comm-center__compose-footer">
-          <button className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={onClose}>Cancelar</button>
-          <button className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={handleSend} disabled={boardMut.isPending}>
+          <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--ghost" onClick={onClose}>Cancelar</Button>
+          <Button variant="unstyled" className="glass-comm-center__btn glass-comm-center__btn--primary" onClick={handleSend} disabled={boardMut.isPending}>
             <Package size={16} /> {boardMut.isPending ? "Enviando…" : "Enviar Board Package"}
-          </button>
+          </Button>
         </div>
       </div>
     </GlassModal>
@@ -1091,7 +1092,8 @@ function TemplatePickerModal({
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {active.map((tmpl) => (
-            <button
+            <Button
+              variant="unstyled"
               key={tmpl.id}
               onClick={() => { onSelect(tmpl); onClose(); }}
               style={{
@@ -1126,7 +1128,7 @@ function TemplatePickerModal({
                   ))}
                 </div>
               )}
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -1215,7 +1217,7 @@ export function CommunicationCenter() {
             <AlertTriangle size={32} className="glass-comm-center__error-icon" />
             <h3 className="glass-comm-center__error-title">Error al cargar datos</h3>
             <p className="glass-comm-center__error-desc">No pudimos obtener los datos del centro de comunicaciones.</p>
-            <button className="glass-comm-center__btn" onClick={refetchAll}><RefreshCw size={16} /> Reintentar</button>
+            <Button variant="unstyled" className="glass-comm-center__btn" onClick={refetchAll}><RefreshCw size={16} /> Reintentar</Button>
           </div>
         </div>
       </div>
@@ -1246,7 +1248,8 @@ export function CommunicationCenter() {
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={tab.id}
                 role="tab"
                 aria-selected={activeTab === tab.id}
@@ -1256,7 +1259,7 @@ export function CommunicationCenter() {
               >
                 <Icon size={16} />
                 {tab.label}
-              </button>
+              </Button>
             );
           })}
         </nav>

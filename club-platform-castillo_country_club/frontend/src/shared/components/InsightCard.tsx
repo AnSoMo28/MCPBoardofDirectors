@@ -26,6 +26,7 @@ import {
   ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
+import { Button } from "@/shared/components/ui/Button";
 
 const SEVERITY_MAP: Record<
   string,
@@ -117,14 +118,15 @@ export function InsightCard<T extends BaseInsight>({
           </div>
 
           {/* Title toggle */}
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-insight__toggle"
             onClick={onToggle}
             aria-expanded={isExpanded}
           >
             {insight.title}
-          </button>
+          </Button>
 
           {/* Expanded body */}
           {isExpanded && (
@@ -222,24 +224,26 @@ export function InsightCard<T extends BaseInsight>({
                 <span className="glass-insight__action-error-text">
                   Error
                 </span>
-                <button
+                <Button
+                  variant="unstyled"
                   type="button"
                   className="glass-insight__action-retry"
                   onClick={onRetry}
                 >
                   <RotateCw className="glass-insight__action-retry-icon" />
                   Reintentar
-                </button>
+                </Button>
               </div>
             ) : (
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="glass-insight__action-btn"
                 onClick={onExecute}
               >
                 <Zap className="glass-insight__action-icon" />
                 {insight.action.label}
-              </button>
+              </Button>
             )}
           </div>
         )}

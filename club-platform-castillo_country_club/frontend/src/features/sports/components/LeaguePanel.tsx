@@ -61,6 +61,7 @@ import {
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { LeagueFormModal } from "./LeagueFormModal";
 import "./LeaguePanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -275,7 +276,8 @@ function LeagueCard({
 
       {/* ── Standings Toggle ── */}
       {hasStandings && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="spt-league__standings-toggle"
           onClick={() => setShowStandings(!showStandings)}
@@ -292,7 +294,7 @@ function LeagueCard({
               Ver tabla de posiciones
             </>
           )}
-        </button>
+        </Button>
       )}
 
       {showStandings && hasStandings && (
@@ -313,7 +315,8 @@ function LeagueCard({
               LEAGUE_STATUS_CONFIG[newStatus as LeagueStatus];
             if (!targetCfg) return null;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={newStatus}
                 type="button"
                 className="spt-league__transition-btn"
@@ -321,7 +324,7 @@ function LeagueCard({
                 onClick={() => onStatusChange?.(league.id, newStatus)}
               >
                 {targetCfg.label}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -428,14 +431,15 @@ export function LeaguePanel({
       {/* ── Header ── */}
       <div className="spt-league__header">
         <h3 className="spt-league__title">⚽ Ligas Deportivas</h3>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="spt-league__new-btn"
           onClick={() => setShowForm(true)}
         >
           <Plus className="spt-league__new-btn-icon" />
           Nueva Liga
-        </button>
+        </Button>
       </div>
 
       {/* ── League Cards ── */}

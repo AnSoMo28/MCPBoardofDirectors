@@ -665,13 +665,14 @@ function EventCard({
         {/* Cancel action */}
         {event.status !== 'cancelled' && event.status !== 'completed' && onCancel && (
           <div className="gc__card-actions">
-            <button
+            <Button
+              variant="unstyled"
               className="gc__cancel-btn"
               onClick={() => onCancel(event.id, event.name)}
             >
               <XCircle size={12} />
               Cancelar
-            </button>
+            </Button>
           </div>
         )}
       </div>

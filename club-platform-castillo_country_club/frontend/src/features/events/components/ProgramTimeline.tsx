@@ -55,6 +55,7 @@ import type { ProgramItem } from "../types";
 
 // Styles
 import "./ProgramTimeline.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 TYPES
@@ -282,7 +283,8 @@ export function ProgramTimeline({ items }: ProgramTimelineProps) {
                 <div className="ptl-item__dot" aria-hidden="true" />
 
                 {/* Node (clickable) */}
-                <button
+                <Button
+                  variant="unstyled"
                   type="button"
                   className="ptl-item__node"
                   onClick={() => toggleExpand(item.id)}
@@ -336,7 +338,7 @@ export function ProgramTimeline({ items }: ProgramTimelineProps) {
                   <span className="ptl-item__chevron" aria-hidden="true">
                     <ChevronDown size={12} />
                   </span>
-                </button>
+                </Button>
               </div>
             </div>
           );

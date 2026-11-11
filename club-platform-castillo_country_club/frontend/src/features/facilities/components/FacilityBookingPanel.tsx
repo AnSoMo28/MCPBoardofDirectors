@@ -39,6 +39,7 @@ import type {
 } from "../types";
 
 import "./FacilityBookingPanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // TYPES
@@ -162,7 +163,8 @@ function FilterBar({
         const isActive = activeFilter === f;
 
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={f}
             type="button"
             className="fac-booking-pan__pill"
@@ -173,7 +175,7 @@ function FilterBar({
           >
             {label}
             <span className="fac-booking-pan__pill-count">{count}</span>
-          </button>
+          </Button>
         );
       })}
     </nav>
@@ -371,10 +373,10 @@ export function FacilityBookingPanel({
         </div>
 
         {onNewBooking && (
-          <button type="button" className="fac-booking-pan__new-btn" onClick={onNewBooking}>
+          <Button variant="unstyled" type="button" className="fac-booking-pan__new-btn" onClick={onNewBooking}>
             <Plus className="fac-booking-pan__new-icon" />
             Nueva Reserva
-          </button>
+          </Button>
         )}
       </header>
 

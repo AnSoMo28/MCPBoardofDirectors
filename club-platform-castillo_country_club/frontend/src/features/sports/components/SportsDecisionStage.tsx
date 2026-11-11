@@ -46,6 +46,7 @@ import { SportsIntelligencePanel } from "./SportsIntelligencePanel";
 import { SkillProgression } from "./SkillProgression";
 
 import "./SportsDecisionStage.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -124,7 +125,8 @@ function StageNav({
       {STAGE_ITEMS.map((item) => {
         const count = byMode[item.id];
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={item.id}
             type="button"
             role="tab"
@@ -140,7 +142,7 @@ function StageNav({
             {count > 0 && (
               <span className="spt-stage__tab-count">{count}</span>
             )}
-          </button>
+          </Button>
         );
       })}
     </nav>

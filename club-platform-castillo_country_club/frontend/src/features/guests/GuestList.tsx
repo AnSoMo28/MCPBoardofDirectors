@@ -277,7 +277,8 @@ export default function GuestList() {
             { key: "today" as Tab, label: "Invitados de Hoy", Icon: Clock, panelId: "panel-today" },
             { key: "trials" as Tab, label: "Membresías de Prueba", Icon: Sparkles, panelId: "panel-trials" },
           ]).map((tab) => (
-            <button
+            <Button
+              variant="unstyled"
               key={tab.key}
               id={`tab-${tab.key}`}
               className="gst-list__tab"
@@ -293,7 +294,7 @@ export default function GuestList() {
               {tab.key === "today" && stats && stats.currently_present > 0 && (
                 <span className="gst-list__tab-badge">{stats.currently_present}</span>
               )}
-            </button>
+            </Button>
           ))}
         </div>
 

@@ -463,7 +463,8 @@ export function EngagementResonanceField({
             const intensity = deriveIntensity(rp);
 
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={key}
                 type="button"
                 className="eng-resonance__list-item"
@@ -489,7 +490,7 @@ export function EngagementResonanceField({
                 <span className="eng-resonance__list-intensity">
                   {intensity}%
                 </span>
-              </button>
+              </Button>
             );
           })}
       </div>

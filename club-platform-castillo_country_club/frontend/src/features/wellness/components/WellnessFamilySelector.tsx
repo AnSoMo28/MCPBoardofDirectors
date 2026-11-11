@@ -12,6 +12,7 @@ import { Badge } from "@/shared/components/ui/Badge";
 import { Input } from "@/shared/components/ui/Input";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/components/ui/Button";
 
 /**
  * P2-C3g C16 — items de family_search: FamilyBrief
@@ -106,7 +107,8 @@ export function WellnessFamilySelector({ selectedId, onSelect }: Props) {
           {filtered.map((family) => {
             const isSelected = selectedId === family.id;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={family.id}
                 onClick={() => onSelect(family)}
                 className={cn(
@@ -150,7 +152,7 @@ export function WellnessFamilySelector({ selectedId, onSelect }: Props) {
                 >
                   {family.status === "active" ? "Activa" : family.status}
                 </Badge>
-              </button>
+              </Button>
             );
           })}
         </div>

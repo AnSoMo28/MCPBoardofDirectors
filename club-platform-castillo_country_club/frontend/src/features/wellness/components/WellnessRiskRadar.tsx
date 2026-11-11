@@ -118,14 +118,15 @@ function AlertBanner({
         <Icon className="w-5 h-5" aria-hidden="true" />
       </span>
       <p className="wrr__alert-msg">{alert.message}</p>
-      <button
+      <Button
+        variant="unstyled"
         className="wrr__alert-dismiss"
         onClick={onDismiss}
         type="button"
         aria-label="Descartar alerta"
       >
         <X size={14} />
-      </button>
+      </Button>
     </div>
   );
 }
@@ -171,7 +172,8 @@ function AnomalyCard({
 
       <div className="wrr__anomaly-content">
         {/* Header (always visible, clickable) */}
-        <button
+        <Button
+          variant="unstyled"
           className="wrr__anomaly-header"
           onClick={onToggle}
           type="button"
@@ -187,7 +189,7 @@ function AnomalyCard({
             </Badge>
           </div>
           <ChevronDown className="wrr__expand-icon w-4 h-4" aria-hidden="true" />
-        </button>
+        </Button>
 
         {/* Metric row (always visible) */}
         <div className="wrr__metric-row">

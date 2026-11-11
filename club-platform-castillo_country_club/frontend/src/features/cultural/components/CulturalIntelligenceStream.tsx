@@ -22,6 +22,7 @@ import type {
   AdvisorSeverity,
 } from '../lib/advisor/types';
 import './CulturalIntelligenceStream.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -209,7 +210,8 @@ export function CulturalIntelligenceStream({
                 </p>
 
                 {item.action && (
-                  <button
+                  <Button
+                    variant="unstyled"
                     className="cultural-intelligence-stream__action"
                     onClick={() => {
                       if (item.type === 'signal' && onSignalAction) {
@@ -220,7 +222,7 @@ export function CulturalIntelligenceStream({
                     }}
                   >
                     {item.action.label}
-                  </button>
+                  </Button>
                 )}
               </div>
             </article>
@@ -230,20 +232,22 @@ export function CulturalIntelligenceStream({
 
       {/* Expand/collapse */}
       {hiddenCount > 0 && !expanded && (
-        <button
+        <Button
+          variant="unstyled"
           className="cultural-intelligence-stream__expand"
           onClick={() => setExpanded(true)}
         >
           +{hiddenCount} más
-        </button>
+        </Button>
       )}
       {expanded && totalItems > maxItems && (
-        <button
+        <Button
+          variant="unstyled"
           className="cultural-intelligence-stream__expand"
           onClick={() => setExpanded(false)}
         >
           Colapsar
-        </button>
+        </Button>
       )}
 
       {/* Empty state */}

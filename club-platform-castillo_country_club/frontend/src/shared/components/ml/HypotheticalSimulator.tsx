@@ -222,7 +222,8 @@ function ScenarioCard({
       animate={reduced ? undefined : { opacity: 1, y: 0 }}
       transition={reduced ? undefined : { duration: 0.25, delay: staggerDelay(delay, index) }}
     >
-      <button
+      <Button
+        variant="unstyled"
         onClick={onToggle}
         className={cn(
           "glass-sim__scenario",
@@ -320,7 +321,7 @@ function ScenarioCard({
             </motion.div>
           )}
         </AnimatePresence>
-      </button>
+      </Button>
     </motion.div>
   );
 }
@@ -434,25 +435,27 @@ export function HypotheticalSimulator() {
             <div className="glass-sim__recent">
               <span className="glass-sim__recent-label">Recientes:</span>
               {recentQuestions.map((q) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={q}
                   onClick={() => handleSuggestion(q)}
                   className="glass-sim__chip glass-sim__chip--recent"
                 >
                   {q.length > 40 ? q.slice(0, 40) + "…" : q}
-                </button>
+                </Button>
               ))}
             </div>
           )}
           <div className="glass-sim__prompts">
             {SUGGESTIONS.map((q) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={q}
                 onClick={() => handleSuggestion(q)}
                 className="glass-sim__chip"
               >
                 {q}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

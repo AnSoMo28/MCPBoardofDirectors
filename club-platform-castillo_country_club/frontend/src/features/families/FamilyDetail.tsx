@@ -298,7 +298,8 @@ function SocialTabContent({
                     <span className="fm-familyDetail__strength-pct">
                       {pct}%
                     </span>
-                    <button
+                    <Button
+                      variant="unstyled"
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -309,7 +310,7 @@ function SocialTabContent({
                       aria-expanded={isOpen}
                     >
                       {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -498,7 +499,8 @@ function PreferencesTabContent({
         <h4 className="fm-familyDetail__section-title">Intereses</h4>
         <div className="fm-familyDetail__pref-toggles">
           {INTEREST_PRESETS.map((interest) => (
-            <button
+            <Button
+              variant="unstyled"
               key={interest}
               type="button"
               className="fm-familyDetail__pref-toggle"
@@ -506,7 +508,7 @@ function PreferencesTabContent({
               onClick={() => toggleInterest(interest)}
             >
               {interest}
-            </button>
+            </Button>
           ))}
         </div>
       </Card>

@@ -115,14 +115,15 @@ export function KnowledgeQuery() {
               </div>
               <div className="glass-knowledge__prompts-grid">
                 {SUGGESTED_PROMPTS.map((prompt) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={prompt.id}
                     type="button"
                     className="glass-knowledge__prompt-btn"
                     onClick={() => handlePrompt(prompt.query)}
                   >
                     {prompt.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -173,7 +174,8 @@ export function KnowledgeQuery() {
 
         {/* "New messages below" button */}
         {showScrollBtn && (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-knowledge__scroll-btn"
             onClick={() => {
@@ -183,7 +185,7 @@ export function KnowledgeQuery() {
           >
             <ChevronDown size={14} />
             Nuevos mensajes
-          </button>
+          </Button>
         )}
 
         {/* Input */}

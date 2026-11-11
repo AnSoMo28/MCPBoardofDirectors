@@ -45,6 +45,7 @@ import {
   groupCalendarByDate,
 } from '../types';
 import './CulturalLivingCalendar.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -295,7 +296,8 @@ export function CulturalLivingCalendar({
       {/* ── Filter Pills ── */}
       <div className="cultural-calendar__filters">
         {FILTERS.map((f, i) => (
-          <button
+          <Button
+            variant="unstyled"
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={cn(
@@ -306,7 +308,7 @@ export function CulturalLivingCalendar({
           >
             <f.icon size={14} className="cultural-calendar__filter-icon" />
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 

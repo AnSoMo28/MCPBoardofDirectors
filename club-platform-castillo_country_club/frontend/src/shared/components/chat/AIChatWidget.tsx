@@ -17,6 +17,7 @@ import { useAIChat } from "./hooks/useAIChat";
 import { useChatStore } from "@/stores/chat.store";
 import type { ChatMessage } from "./hooks/useAIChat";
 import './AIChatWidget.css';
+import { Button } from "@/shared/components/ui/Button";
 
 /* ──────────────────────────────────────
    Helpers
@@ -232,7 +233,8 @@ export function AIChatWidget() {
     <>
       {/* ═══ Toggle FAB ═══ */}
       <div className="glass-chat-fab-wrap">
-        <button
+        <Button
+          variant="unstyled"
           onClick={() => setIsOpen(!isOpen)}
           className={cn("glass-chat-fab", isOpen && "glass-chat-fab--open")}
           aria-label={isOpen ? "Cerrar asistente" : "Abrir asistente AI"}
@@ -251,7 +253,7 @@ export function AIChatWidget() {
           </AnimatePresence>
           {/* Pulse ring (only when closed) */}
           {!isOpen && <span className="glass-chat-fab__pulse" />}
-        </button>
+        </Button>
       </div>
 
       {/* ═══ Chat Panel ═══ */}
@@ -287,13 +289,14 @@ export function AIChatWidget() {
                   </p>
                 )}
               </div>
-              <button
+              <Button
+                variant="unstyled"
                 onClick={() => setIsOpen(false)}
                 className="glass-chat-header__close"
                 aria-label="Cerrar chat"
               >
                 <X size={18} />
-              </button>
+              </Button>
             </div>
 
             {/* ── Messages ── */}
@@ -371,14 +374,15 @@ export function AIChatWidget() {
                   aria-label="Mensaje para el asistente"
                   className="glass-chat-input"
                 />
-                <button
+                <Button
+                  variant="unstyled"
                   onClick={() => handleSend()}
                   disabled={!input.trim() || isTyping}
                   className="glass-chat-send"
                   aria-label="Enviar mensaje"
                 >
                   <Send className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
               <p className="glass-chat-input-hint">
                 Enter para enviar · Shift+Enter nueva línea

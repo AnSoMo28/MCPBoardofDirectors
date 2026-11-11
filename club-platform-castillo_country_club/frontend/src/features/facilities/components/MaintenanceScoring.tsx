@@ -37,6 +37,7 @@ import type {
 } from "../types";
 
 import "./MaintenanceScoring.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // CONSTANTS
@@ -305,7 +306,8 @@ function MaintenanceCard({
         <div className="fac-maint__transitions">
           <span className="fac-maint__transitions-label">Transición:</span>
           {transitions.map((newStatus) => (
-            <button
+            <Button
+              variant="unstyled"
               key={newStatus}
               type="button"
               className="fac-maint__transition-btn"
@@ -316,7 +318,7 @@ function MaintenanceCard({
               }}
             >
               {TRANSITION_LABELS[newStatus] ?? newStatus}
-            </button>
+            </Button>
           ))}
         </div>
       )}

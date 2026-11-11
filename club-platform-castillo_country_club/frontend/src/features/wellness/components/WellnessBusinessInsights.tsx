@@ -594,7 +594,8 @@ export function WellnessBusinessInsights({
                   data-expanded={isExpanded ? "" : undefined}
                   style={{ "--seg-color": scoreColor } as React.CSSProperties}
                 >
-                  <button
+                  <Button
+                    variant="unstyled"
                     className="wbi__segment-header"
                     onClick={() => toggleSegment(seg.segment)}
                     type="button"
@@ -607,7 +608,7 @@ export function WellnessBusinessInsights({
                       </span>
                     </div>
                     <ChevronDown className="wbi__segment-chevron w-4 h-4" />
-                  </button>
+                  </Button>
                   <div className="wbi__segment-expand">
                     <div className="wbi__segment-expand-content">
                       <MiniRadar segment={seg} />
@@ -651,7 +652,7 @@ export function WellnessBusinessInsights({
                 Correlación wellness-retención del {formatPercent(data.correlations.wellness_to_retention.coefficient * 100, 0)}.
                 Invertir en bienestar tiene ROI directo.
               </p>
-              <button className="wbi__action-btn" onClick={() => showToast({ type: "success", message: "Recomendación priorizada" })} type="button">Priorizar</button>
+              <Button variant="unstyled" className="wbi__action-btn" onClick={() => showToast({ type: "success", message: "Recomendación priorizada" })} type="button">Priorizar</Button>
             </div>
           )}
           {data.segment_insights.some((s) => s.wellness_score_range[1] < 40 && s.retention_rate < 0.7) && (
@@ -660,7 +661,7 @@ export function WellnessBusinessInsights({
               <p className="wbi__action-text">
                 Segmento de wellness bajo con retención &lt;70%. Programa de reactivación puede recuperar hasta 25% de socios.
               </p>
-              <button className="wbi__action-btn" onClick={() => showToast({ type: "success", message: "Campaña de reactivación iniciada" })} type="button">Ejecutar</button>
+              <Button variant="unstyled" className="wbi__action-btn" onClick={() => showToast({ type: "success", message: "Campaña de reactivación iniciada" })} type="button">Ejecutar</Button>
             </div>
           )}
           {data.activity_value_ranking.length > 0 && (() => {
@@ -672,7 +673,7 @@ export function WellnessBusinessInsights({
                   {ACTIVITY_TYPE_CONFIG[topAct.activity]?.label ?? "Actividad líder"} lidera en revenue.
                   Ampliar oferta y horarios.
                 </p>
-                <button className="wbi__action-btn" onClick={() => showToast({ type: "success", message: "Solicitud de ampliación enviada" })} type="button">Ejecutar</button>
+                <Button variant="unstyled" className="wbi__action-btn" onClick={() => showToast({ type: "success", message: "Solicitud de ampliación enviada" })} type="button">Ejecutar</Button>
               </div>
             );
           })()}
@@ -682,7 +683,7 @@ export function WellnessBusinessInsights({
               <p className="wbi__action-text">
                 Socios con wellness alto: NPS &gt;70. Candidatos ideales para programa de referidos.
               </p>
-              <button className="wbi__action-btn" onClick={() => showToast({ type: "success", message: "Programa de referidos activado" })} type="button">Activar</button>
+              <Button variant="unstyled" className="wbi__action-btn" onClick={() => showToast({ type: "success", message: "Programa de referidos activado" })} type="button">Activar</Button>
             </div>
           )}
         </div>

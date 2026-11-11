@@ -76,6 +76,7 @@ import type { EventFormData } from "../hooks/useEventForm";
 
 // Styles
 import "./EventFormSteps.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 TYPES
@@ -126,7 +127,8 @@ export function StepInfo({ form, errors, onChange }: StepProps) {
       <FormField label="Categoría del evento" required>
         <div className="efs-categories" role="group" aria-label="Categorías disponibles">
           {categories.map(([key, config]) => (
-            <button
+            <Button
+              variant="unstyled"
               key={key}
               type="button"
               onClick={() => onChange("category", key)}
@@ -139,7 +141,7 @@ export function StepInfo({ form, errors, onChange }: StepProps) {
               {form.category === key && (
                 <CheckCircle2 size={16} className="efs-category__check" aria-hidden="true" />
               )}
-            </button>
+            </Button>
           ))}
         </div>
       </FormField>
@@ -148,7 +150,8 @@ export function StepInfo({ form, errors, onChange }: StepProps) {
       <FormField label="Tipo de acceso">
         <div className="efs-access-grid" role="group" aria-label="Tipo de acceso">
           {ACCESS_TYPES.map((at) => (
-            <button
+            <Button
+              variant="unstyled"
               key={at.value}
               type="button"
               onClick={() => onChange("event_type", at.value)}
@@ -158,7 +161,7 @@ export function StepInfo({ form, errors, onChange }: StepProps) {
             >
               <span className="efs-access__label">{at.label}</span>
               <span className="efs-access__desc">{at.description}</span>
-            </button>
+            </Button>
           ))}
         </div>
       </FormField>
@@ -308,7 +311,8 @@ export function StepCapacity({ form, errors, onChange }: StepProps) {
         <FormField label="Modelo de precio">
           <div className="efs-pricing-grid" role="group" aria-label="Modelo de precio">
             {pricingEntries.map(([key, config]) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={key}
                 type="button"
                 onClick={() => onChange("pricing_model", key)}
@@ -318,7 +322,7 @@ export function StepCapacity({ form, errors, onChange }: StepProps) {
               >
                 <span className="efs-pricing__icon" aria-hidden="true">{config.icon}</span>
                 <span className="efs-pricing__label">{config.label}</span>
-              </button>
+              </Button>
             ))}
           </div>
         </FormField>

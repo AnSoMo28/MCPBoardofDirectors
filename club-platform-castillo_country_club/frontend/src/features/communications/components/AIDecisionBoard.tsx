@@ -43,6 +43,7 @@ import {
 import type { CommStreamItem } from "../hooks/useCommunicationDashboard";
 
 import "./AIDecisionBoard.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // EXPORTED TYPES
@@ -511,38 +512,42 @@ export function AIDecisionBoard({
 
                 {/* Action buttons */}
                 <div className="proposal-actions">
-                  <button
+                  <Button
+                    variant="unstyled"
                     className="proposal-action-btn"
                     data-action="approve"
                     onClick={() => handleAction("approve")}
                   >
                     <Check size={14} />
                     <span>Aprobar</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="unstyled"
                     className="proposal-action-btn"
                     data-action="postpone"
                     onClick={() => handleAction("postpone")}
                   >
                     <Clock size={14} />
                     <span>Posponer</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="unstyled"
                     className="proposal-action-btn"
                     data-action="delegate"
                     onClick={() => handleAction("delegate")}
                   >
                     <SkipForward size={14} />
                     <span>Delegar</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="unstyled"
                     className="proposal-action-btn"
                     data-action="discard"
                     onClick={() => handleAction("discard")}
                   >
                     <Trash2 size={14} />
                     <span>Descartar</span>
-                  </button>
+                  </Button>
                 </div>
               </>
             ) : (

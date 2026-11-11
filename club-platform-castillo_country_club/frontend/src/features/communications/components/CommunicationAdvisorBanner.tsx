@@ -50,6 +50,7 @@ import {
   STORY_HEALTH_CONFIG,
 } from "../types";
 import "./CommunicationAdvisorBanner.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // CONSTANTS
@@ -400,55 +401,61 @@ export function CommunicationAdvisorBanner({
                 {/* Actions */}
                 <div className="insight-card__actions">
                   {insight.target_view && (
-                    <button
+                    <Button
+                      variant="unstyled"
                       className="insight-action-btn"
                       data-action="navigate"
                       onClick={() => onNavigate?.(insight.target_view!)}
                     >
                       <Zap size={12} />
                       <span>{NAV_LABELS[insight.target_view] ?? "Ver detalle"}</span>
-                    </button>
+                    </Button>
                   )}
 
-                  <button
+                  <Button
+                    variant="unstyled"
                     className="insight-action-btn"
                     data-action="analysis"
                     onClick={() => toggleExpand(insight.id)}
                   >
                     {isExpanded ? <ChevronUp size={12} /> : <Brain size={12} />}
                     <span>{isExpanded ? "Cerrar" : "Análisis"}</span>
-                  </button>
+                  </Button>
 
                   {onAction && (
                     <>
-                      <button
+                      <Button
+                        variant="unstyled"
                         className="insight-action-btn"
                         data-action="approve"
                         onClick={() => onAction("approve", insight.id)}
                       >
                         <Check size={12} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="unstyled"
                         className="insight-action-btn"
                         data-action="postpone"
                         onClick={() => onAction("postpone", insight.id)}
                       >
                         <Clock size={12} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="unstyled"
                         className="insight-action-btn"
                         data-action="delegate"
                         onClick={() => onAction("delegate", insight.id)}
                       >
                         <SkipForward size={12} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="unstyled"
                         className="insight-action-btn"
                         data-action="discard"
                         onClick={() => onAction("discard", insight.id)}
                       >
                         <Trash2 size={12} />
-                      </button>
+                      </Button>
                     </>
                   )}
                 </div>
@@ -484,13 +491,14 @@ export function CommunicationAdvisorBanner({
 
       {/* ── Show more ──────────────────────────────── */}
       {hasMore && !showAll && (
-        <button
+        <Button
+          variant="unstyled"
           className="banner__show-more"
           onClick={() => setShowAll(true)}
         >
           <ChevronDown size={14} />
           <span>Ver {insights.length - 4} hallazgo(s) más</span>
-        </button>
+        </Button>
       )}
 
       {/* ── Escape countdown ───────────────────────── */}

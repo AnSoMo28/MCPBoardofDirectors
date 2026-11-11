@@ -37,6 +37,7 @@ import { X, CalendarDays, Clock, MapPin, Target, Users } from "lucide-react";
 import type { SportType, SportsDashboardMode } from "../types";
 import { SPORT_CONFIG, SKILL_LEVEL_CONFIG } from "../types";
 import "./CoachingFormModal.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -182,7 +183,8 @@ function CoachPicker({
         const isSelected = selectedCoach === coach.name;
         const primarySport = coach.sports[0] as SportType;
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={coach.name}
             type="button"
             className="spt-coach-f__coach-card"
@@ -204,7 +206,7 @@ function CoachPicker({
                   .join(" ")}
               </p>
             </div>
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -223,7 +225,8 @@ function SkillLevelPills({
   return (
     <div className="spt-coach-f__skill-pills">
       {Object.entries(SKILL_LEVEL_CONFIG).map(([key, cfg]) => (
-        <button
+        <Button
+          variant="unstyled"
           key={key}
           type="button"
           className="spt-coach-f__skill-pill"
@@ -232,7 +235,7 @@ function SkillLevelPills({
           onClick={() => onSelect(key)}
         >
           {cfg.icon} {cfg.label}
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -255,14 +258,15 @@ function FocusTags({
         <span key={tag} className="spt-coach-f__tag">
           <Target className="spt-coach-f__tag-icon" />
           {tag}
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-coach-f__tag-remove"
             onClick={() => onRemove(tag)}
             aria-label={`Quitar ${tag}`}
           >
             ×
-          </button>
+          </Button>
         </span>
       ))}
     </div>
@@ -399,14 +403,15 @@ export function CoachingFormModal({
             <h2 className="spt-coach-f__title">🎾 Programar Sesión de Coaching</h2>
             <p className="spt-coach-f__subtitle">Ejecución directa (AUTO)</p>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-coach-f__close-btn"
             onClick={onClose}
             aria-label="Cerrar"
           >
             <X className="spt-coach-f__close-icon" />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}
@@ -557,27 +562,30 @@ export function CoachingFormModal({
                 }}
                 className="spt-coach-f__input spt-coach-f__input--compact"
               />
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="spt-coach-f__add-btn"
                 onClick={addFocusArea}
               >
                 +
-              </button>
+              </Button>
             </div>
             <FocusTags tags={focusAreas} onRemove={removeFocusArea} />
           </FormField>
 
           {/* Actions */}
           <div className="spt-coach-f__actions">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="spt-coach-f__cancel-btn"
               onClick={onClose}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="submit"
               className="spt-coach-f__submit-btn"
               disabled={isSubmitting}
@@ -591,7 +599,7 @@ export function CoachingFormModal({
               ) : (
                 "Programar Sesión"
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

@@ -43,6 +43,7 @@ import {
 } from '../types';
 import { CulturalHealthGauge, type HealthDimension } from './CulturalHealthGauge';
 import './CulturalIntelligencePanel.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -576,7 +577,8 @@ export function CulturalIntelligencePanel({
               style={{ '--stagger-i': i } as React.CSSProperties}
             >
               {/* Header — always visible */}
-              <button
+              <Button
+                variant="unstyled"
                 className="cip__dimension-header"
                 onClick={() => toggleDimension(dim.id)}
                 aria-expanded={isExpanded}
@@ -595,7 +597,7 @@ export function CulturalIntelligencePanel({
                     )}
                   />
                 </div>
-              </button>
+              </Button>
 
               {/* Body — expandable */}
               <div className="cip__dimension-body">

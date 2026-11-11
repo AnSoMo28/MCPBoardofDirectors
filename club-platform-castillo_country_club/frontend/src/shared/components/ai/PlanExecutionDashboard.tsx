@@ -342,25 +342,28 @@ function PipelineNode({
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <button
+                <Button
+                  variant="unstyled"
                   onClick={() => onReview(step)}
                   className="px-2 py-1 rounded text-[10px] font-medium font-[family-name:var(--font-ui)] text-[var(--color-silver-400)] hover:text-[var(--color-silver-200)] transition-colors"
                 >
                   <Eye className="w-3 h-3 inline mr-0.5 -mt-px" />
                   Revisar
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="unstyled"
                   onClick={() => onApprove(step.id)}
                   className="px-2.5 py-1 rounded text-[10px] font-semibold font-[family-name:var(--font-ui)] bg-[color-mix(in srgb,var(--color-amber-400)18%,transparent)] text-[var(--color-amber-400)] hover:bg-[color-mix(in srgb,var(--color-amber-400)28%,transparent)] transition-colors"
                 >
                   Aprobar
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="unstyled"
                   onClick={() => onSkip(step.id)}
                   className="px-2 py-1 rounded text-[10px] font-medium font-[family-name:var(--font-ui)] text-[var(--color-silver-500)] hover:text-[var(--color-rose-400)] transition-colors"
                 >
                   Omitir
-                </button>
+                </Button>
               </div>
             </div>
           </div>

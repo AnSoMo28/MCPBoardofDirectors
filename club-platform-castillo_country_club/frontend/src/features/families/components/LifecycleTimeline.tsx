@@ -74,6 +74,7 @@ import type { LifecycleProjection } from "../ai-types";
 import { LIFECYCLE_STAGES } from "../config";
 
 import "./LifecycleTimeline.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Icon Registry
@@ -420,7 +421,8 @@ export function LifecycleTimeline({ projection }: LifecycleTimelineProps) {
           <span className="fm-lc__triggers-label">Eventos detectados</span>
           <div className="fm-lc__triggers-list">
             {projection.triggerEvents.map((event, i) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={i}
                 type="button"
                 className="fm-lc__trigger"
@@ -432,7 +434,7 @@ export function LifecycleTimeline({ projection }: LifecycleTimelineProps) {
                   <Zap size={9} aria-hidden="true" />
                   <span className="fm-lc__trigger-text">{event}</span>
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         </div>

@@ -38,6 +38,7 @@ import {
 } from "../types";
 
 import "./RecReasoningCanvas.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -320,7 +321,8 @@ export function RecReasoningCanvas({
 
         {/* ── Expand/collapse ──────────────────────────────────────────── */}
         {withChains.length > 3 && (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="rrc-expand-btn"
             onClick={handleToggle}
@@ -336,7 +338,7 @@ export function RecReasoningCanvas({
                 <span>Ver {withChains.length - 3} cadenas más</span>
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
     </div>

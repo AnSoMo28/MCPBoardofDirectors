@@ -1321,7 +1321,8 @@ function AnomalyCard({ anomaly }: { anomaly: AnomalyItem }) {
       style={{ borderLeftColor: sevCfg.borderColor }}
     >
       {/* Header — always visible */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         onClick={() => setExpanded(!expanded)}
         className={cn(
@@ -1362,7 +1363,7 @@ function AnomalyCard({ anomaly }: { anomaly: AnomalyItem }) {
         ) : (
           <ChevronDown size={14} className="text-[var(--color-silver-500)] flex-shrink-0 mt-1" />
         )}
-      </button>
+      </Button>
 
       {/* Expanded content */}
       {expanded && (
@@ -1468,7 +1469,8 @@ function AnomalyIntelligence({
               {showDomainPicker && (
                 <div className="absolute right-0 top-full mt-1 z-10 bg-[var(--color-surface-1)] border border-white/[0.08] rounded-xl shadow-[var(--shadow-elevated)] py-1 min-w-[160px]">
                   {ANOMALY_DOMAINS.map((d) => (
-                    <button
+                    <Button
+                      variant="unstyled"
                       key={d.value}
                       type="button"
                       onClick={() => {
@@ -1485,7 +1487,7 @@ function AnomalyIntelligence({
                       )}
                     >
                       {d.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
@@ -1565,7 +1567,8 @@ function AnomalyIntelligence({
               {showDomainPicker && (
                 <div className="absolute right-0 top-full mt-1 z-10 bg-[var(--color-surface-1)] border border-white/[0.08] rounded-xl shadow-[var(--shadow-elevated)] py-1 min-w-[160px]">
                   {ANOMALY_DOMAINS.map((d) => (
-                    <button
+                    <Button
+                      variant="unstyled"
                       key={d.value}
                       type="button"
                       onClick={() => {
@@ -1583,7 +1586,7 @@ function AnomalyIntelligence({
                       )}
                     >
                       {d.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
@@ -1649,7 +1652,8 @@ function AnomalyIntelligence({
             {showDomainPicker && (
               <div className="absolute right-0 top-full mt-1 z-10 bg-[var(--color-surface-1)] border border-white/[0.08] rounded-xl shadow-[var(--shadow-elevated)] py-1 min-w-[160px]">
                 {ANOMALY_DOMAINS.map((d) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={d.value}
                     type="button"
                     onClick={() => {
@@ -1667,7 +1671,7 @@ function AnomalyIntelligence({
                     )}
                   >
                     {d.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
@@ -2097,7 +2101,8 @@ function AIOperationsAdvisor({
               const cfg = RECO_PRIORITY_CONFIG[rec.priority];
               const RecIcon = rec.icon;
               return (
-                <button
+                <Button
+                  variant="unstyled"
                   key={rec.id}
                   type="button"
                   onClick={() => rec.action && handleAction(rec)}
@@ -2122,7 +2127,7 @@ function AIOperationsAdvisor({
                       {rec.metric} — {rec.category}
                     </p>
                   </div>
-                </button>
+                </Button>
               );
             })}
           </div>

@@ -20,6 +20,7 @@ import { DecisionTimelineEntry } from "./DecisionTimelineEntry";
 import { TimelineStats } from "./timeline/TimelineStats";
 import { TimelineFilters } from "./timeline/TimelineFilters";
 import "./DecisionTimeline.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    EASE constant (avoids TS inference issue)
@@ -120,28 +121,30 @@ export function DecisionTimeline() {
       {/* ── Load more ── */}
       {tl.hasMore && !tl.showAll && (
         <motion.div variants={fadeUp} className="glass-timeline__load-more">
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-timeline__load-more-btn"
             onClick={tl.toggleShowAll}
           >
             <ChevronDown size={14} />
             Ver {tl.filtered.length - 10} más
-          </button>
+          </Button>
         </motion.div>
       )}
 
       {/* ── Collapse ── */}
       {tl.showAll && tl.filtered.length > 10 && (
         <motion.div variants={fadeUp} className="glass-timeline__load-more">
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-timeline__load-more-btn"
             onClick={tl.toggleShowAll}
           >
             <ChevronUp size={14} />
             Ver menos
-          </button>
+          </Button>
         </motion.div>
       )}
 

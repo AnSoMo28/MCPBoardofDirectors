@@ -8,6 +8,7 @@
 
 import { Sun, Moon, Check } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/components/ui/Button";
 
 interface ThemeSelectorProps {
   theme: string;
@@ -29,7 +30,8 @@ export function ThemeSelector({
         const active = theme === opt.key;
         const Icon = opt.icon;
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={opt.key}
             type="button"
             onClick={() => !active && onToggle()}
@@ -42,7 +44,7 @@ export function ThemeSelector({
             <Icon size={20} />
             <span>{opt.label}</span>
             {active && <Check size={14} />}
-          </button>
+          </Button>
         );
       })}
     </div>

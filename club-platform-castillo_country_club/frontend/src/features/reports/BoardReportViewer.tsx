@@ -156,7 +156,8 @@ export function BoardReportViewer() {
               aria-label="Secciones del reporte"
             >
               {navItems.map((item) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={item.id}
                   type="button"
                   className={`glass-board__outline-btn ${
@@ -167,7 +168,7 @@ export function BoardReportViewer() {
                   onClick={() => board.scrollToSection(item.id)}
                 >
                   {item.label}
-                </button>
+                </Button>
               ))}
             </nav>
 
@@ -176,7 +177,8 @@ export function BoardReportViewer() {
               {/* Mobile section nav chips */}
               <div className="glass-board__nav">
                 {navItems.map((item) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={item.id}
                     type="button"
                     className={`glass-board__nav-chip ${
@@ -187,13 +189,14 @@ export function BoardReportViewer() {
                     onClick={() => board.scrollToSection(item.id)}
                   >
                     {item.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
 
               {/* Section expand controls */}
               <div className="glass-board__controls no-print">
-                <button
+                <Button
+                  variant="unstyled"
                   type="button"
                   className="glass-board__controls-btn"
                   onClick={
@@ -213,7 +216,7 @@ export function BoardReportViewer() {
                       Expandir todo
                     </>
                   )}
-                </button>
+                </Button>
               </div>
 
               {/* Staggered content */}

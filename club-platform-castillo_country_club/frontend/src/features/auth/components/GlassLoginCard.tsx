@@ -9,6 +9,7 @@
 
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Types
@@ -111,7 +112,8 @@ export function GlassLoginCard({
                 autoComplete="current-password"
                 className="glass-login__input glass-login__input-password"
               />
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="glass-login__toggle-pwd"
@@ -126,7 +128,7 @@ export function GlassLoginCard({
                 ) : (
                   <Eye size={16} strokeWidth={1.5} />
                 )}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -144,13 +146,14 @@ export function GlassLoginCard({
                 </p>
                 {(errorType === "network" ||
                   errorType === "timeout") && (
-                  <button
+                  <Button
+                    variant="unstyled"
                     type="button"
                     onClick={retryLogin}
                     className="glass-login__error-retry"
                   >
                     Reintentar
-                  </button>
+                  </Button>
                 )}
                 {consecutiveFailures >= 3 && (
                   <p className="glass-login__error-help">
@@ -162,7 +165,8 @@ export function GlassLoginCard({
           )}
 
           {/* Submit */}
-          <button
+          <Button
+            variant="unstyled"
             type="submit"
             disabled={isLoading}
             className="glass-login__submit"
@@ -195,12 +199,13 @@ export function GlassLoginCard({
                 Ingresar al Club
               </span>
             )}
-          </button>
+          </Button>
         </form>
 
         {/* Forgot password */}
         <div className="glass-login__forgot-container">
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className={cn(
               "glass-login__forgot",
@@ -210,7 +215,7 @@ export function GlassLoginCard({
             onClick={onForgotClick}
           >
             ¿Olvidó su contraseña?
-          </button>
+          </Button>
           {showForgotHelp && (
             <p className="glass-login__forgot-help">
               Contacte a recepción del club para recuperar su

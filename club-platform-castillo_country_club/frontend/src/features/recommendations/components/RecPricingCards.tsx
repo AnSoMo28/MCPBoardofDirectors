@@ -178,7 +178,8 @@ function PricingCard({
       data-trend={trend}
     >
       {/* Header */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="rpo-card-header"
         onClick={onToggle}
@@ -205,7 +206,7 @@ function PricingCard({
             <ChevronDown size={16} aria-hidden="true" />
           )}
         </div>
-      </button>
+      </Button>
 
       {/* Price row */}
       <div className="rpo-card-prices">

@@ -37,6 +37,7 @@ import {
 } from "../types";
 
 import "./RecRevenueSimulator.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -367,7 +368,8 @@ export function RecRevenueSimulator({ pricings, className }: RecRevenueSimulator
       {/* ── Service selector ──────────────────────────────────────────── */}
       <div className="rrs-selector">
         {pricings.slice(0, 5).map((p, idx) => (
-          <button
+          <Button
+            variant="unstyled"
             key={p.id}
             type="button"
             className="rrs-selector-pill"
@@ -381,7 +383,7 @@ export function RecRevenueSimulator({ pricings, className }: RecRevenueSimulator
             <span className="rrs-selector-price">
               ${p.current_price.toFixed(0)}
             </span>
-          </button>
+          </Button>
         ))}
       </div>
 

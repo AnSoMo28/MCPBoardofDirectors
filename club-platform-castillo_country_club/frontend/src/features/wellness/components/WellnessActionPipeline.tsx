@@ -8,6 +8,7 @@ import { cn } from "@/shared/lib/utils";
 import type { WellnessAdvisorInsight, WellnessMode } from "../types";
 import type { AdvisorReactionInsight } from "@/features/dashboard/types";
 import "./WellnessActionPipeline.css";
+import { Button } from "@/shared/components/ui/Button";
 
 interface Props {
   insights: WellnessAdvisorInsight[];
@@ -51,7 +52,8 @@ export function WellnessActionPipeline({
           const fill = URGENCY_FILL[action.approvalLevel] ?? 0.5;
 
           return (
-            <button
+            <Button
+              variant="unstyled"
               key={insight.id}
               className="wap__chip"
               data-stagger-i={i}
@@ -72,7 +74,7 @@ export function WellnessActionPipeline({
                 )}
                 <span className="wap__chip-label">{action.label}</span>
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>

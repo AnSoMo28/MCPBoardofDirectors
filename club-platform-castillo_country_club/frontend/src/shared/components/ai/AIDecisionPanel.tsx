@@ -17,6 +17,7 @@ import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
 import { cn } from "@/shared/lib/utils";
 import type { AiExecutiveReport } from "@/shared/mocks/contracts";
 import './AIDecisionPanel.css';
+import { Button } from "@/shared/components/ui/Button";
 
 /* ──────────────────────────────────────
    Types
@@ -743,7 +744,8 @@ export default function AIDecisionPanel({
 
           <div className="glass-decision__header-actions">
             {data && (
-              <button
+              <Button
+                variant="unstyled"
                 onClick={() => setExpanded((v) => !v)}
                 className="glass-decision__header-toggle"
                 aria-expanded={expanded}
@@ -754,9 +756,10 @@ export default function AIDecisionPanel({
                 >
                   <ChevronDown size={14} />
                 </motion.div>
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="unstyled"
               onClick={handleGenerate}
               disabled={isLoading}
               className={cn("glass-decision__header-generate", data && "glass-decision__header-generate--secondary")}
@@ -767,7 +770,7 @@ export default function AIDecisionPanel({
                 <Sparkles className="w-4 h-4" />
               )}
               <span>{isLoading ? "Analizando…" : data ? "Regenerar" : "Generar Análisis"}</span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -784,9 +787,9 @@ export default function AIDecisionPanel({
         >
           <AlertTriangle className="w-4 h-4 text-[var(--color-silver-400)]" />
           <p>No se pudo generar el análisis.</p>
-          <button onClick={handleGenerate} className="glass-decision__error-retry">
+          <Button variant="unstyled" onClick={handleGenerate} className="glass-decision__error-retry">
             Reintentar
-          </button>
+          </Button>
         </motion.div>
       )}
 

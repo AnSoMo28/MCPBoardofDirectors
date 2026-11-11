@@ -220,7 +220,8 @@ function FilterPill({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
+      variant="unstyled"
       onClick={onClick}
       className={cn("glass-m360__pill", active && "glass-m360__pill--active")}
       style={
@@ -234,7 +235,7 @@ function FilterPill({
       }
     >
       {label}
-    </button>
+    </Button>
   );
 }
 
@@ -267,7 +268,8 @@ function TemperatureCard({
   const stateDisplay = MEMBER_STATE_DISPLAY[tempZone];
 
   return (
-    <button
+    <Button
+      variant="unstyled"
       onClick={onClick}
       className={cn(
         "glass-m360__temp-card",
@@ -332,7 +334,7 @@ function TemperatureCard({
           </span>
         )}
       </div>
-    </button>
+    </Button>
   );
 }
 
@@ -938,7 +940,8 @@ function StreamSection({
       data-priority={priority}
       style={{ "--section-color": color, "--stagger-i": priority } as React.CSSProperties}
     >
-      <button
+      <Button
+        variant="unstyled"
         className="glass-m360__stream-header"
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
@@ -949,7 +952,7 @@ function StreamSection({
         <span className="glass-m360__stream-chevron" data-expanded={expanded || undefined}>
           ›
         </span>
-      </button>
+      </Button>
       {expanded && (
         <div className="glass-m360__stream-content">
           {children}

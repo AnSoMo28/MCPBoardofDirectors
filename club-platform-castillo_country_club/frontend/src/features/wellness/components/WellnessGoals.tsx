@@ -117,7 +117,8 @@ function GoalCard({ goal }: { goal: WellnessGoal }) {
         {/* Main content */}
         <div className="wag__card-body">
           {/* Header */}
-          <button
+          <Button
+            variant="unstyled"
             className="wag__card-header"
             onClick={() => setExpanded(!expanded)}
             type="button"
@@ -131,7 +132,7 @@ function GoalCard({ goal }: { goal: WellnessGoal }) {
               </Badge>
             </div>
             <ChevronDown className="wag__card-chevron w-4 h-4" aria-hidden="true" />
-          </button>
+          </Button>
 
           {/* Description (expandable) */}
           {goal.description && (
@@ -228,7 +229,8 @@ export function WellnessGoals({ familyId }: WellnessGoalsProps) {
           const isActive = filter === f;
 
           return (
-            <button
+            <Button
+              variant="unstyled"
               key={f}
               className={cn("wag__tab", isActive && "wag__tab--active")}
               onClick={() => setFilter(f)}
@@ -238,7 +240,7 @@ export function WellnessGoals({ familyId }: WellnessGoalsProps) {
                 {f === "all" ? "Todos" : STATUS_CONFIG[f]?.label ?? f}
               </span>
               <span className="wag__tab-count">{count}</span>
-            </button>
+            </Button>
           );
         })}
       </div>

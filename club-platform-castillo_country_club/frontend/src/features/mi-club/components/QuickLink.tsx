@@ -9,6 +9,7 @@
 import { ArrowRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router";
+import { Button } from "@/shared/components/ui/Button";
 
 interface QuickLinkProps {
   icon: LucideIcon;
@@ -28,7 +29,8 @@ export function QuickLink({
   const navigate = useNavigate();
 
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className="glass-landing__link"
       onClick={() => navigate(route)}
@@ -50,6 +52,6 @@ export function QuickLink({
       </div>
       <p className="glass-landing__link-label">{label}</p>
       <p className="glass-landing__link-desc">{description}</p>
-    </button>
+    </Button>
   );
 }

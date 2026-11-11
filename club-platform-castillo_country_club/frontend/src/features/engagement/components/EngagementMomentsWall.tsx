@@ -297,7 +297,8 @@ export function EngagementMomentsWall({
               </div>
 
               {/* Moment card */}
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="eng-moments__card"
                 onClick={() => onMomentClick?.(moment)}
@@ -406,7 +407,7 @@ export function EngagementMomentsWall({
                     </div>
                   </div>
                 )}
-              </button>
+              </Button>
             </div>
           );
         })}
@@ -475,24 +476,26 @@ export function EngagementMomentsWall({
 
       {/* ── Expand/Collapse ──────────────────────────────────── */}
       {hiddenCount > 0 && !expanded && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="eng-moments__expand"
           onClick={() => setExpanded(true)}
         >
           <ChevronDown size={14} />
           <span>Ver {hiddenCount} momentos más</span>
-        </button>
+        </Button>
       )}
       {expanded && actualMoments.length > maxVisible && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="eng-moments__expand"
           onClick={() => setExpanded(false)}
         >
           <ChevronUp size={14} />
           <span>Contraer</span>
-        </button>
+        </Button>
       )}
 
       {/* ── Summary footer ───────────────────────────────────── */}

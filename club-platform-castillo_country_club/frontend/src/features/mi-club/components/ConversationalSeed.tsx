@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { MessageSquare, ArrowRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { Button } from "@/shared/components/ui/Button";
 
 interface ConversationalSeedProps {
   seeds: Array<{ prompt: string; route: string; icon: LucideIcon }>;
@@ -27,7 +28,8 @@ export function ConversationalSeed({
 
   return (
     <div className="glass-landing__seed">
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="glass-landing__seed-trigger"
         onClick={() => setExpanded((v) => !v)}
@@ -41,14 +43,15 @@ export function ConversationalSeed({
           Preguntale al club...
         </span>
         <ArrowRight size={14} style={{ color: "var(--color-silver-500)", flexShrink: 0 }} />
-      </button>
+      </Button>
 
       {expanded && (
         <div className="glass-landing__seed-suggestions">
           {seeds.map((seed, i) => {
             const Icon = seed.icon;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={i}
                 type="button"
                 className="glass-landing__seed-suggestion"
@@ -56,7 +59,7 @@ export function ConversationalSeed({
               >
                 <Icon size={14} />
                 {seed.prompt}
-              </button>
+              </Button>
             );
           })}
         </div>

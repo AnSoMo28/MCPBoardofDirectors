@@ -27,6 +27,7 @@ import {
   ClipboardList,
   type LucideIcon,
 } from "lucide-react";
+import { Button } from "@/shared/components/ui/Button";
 
 const TYPE_ICONS: Record<DocumentType, LucideIcon> = {
   bylaw: Scale,
@@ -70,14 +71,15 @@ export function TypeChip({ type, onRemove, reducedMotion }: TypeChipProps) {
     >
       <Icon size={12} />
       {config.label}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         onClick={onRemove}
         className="glass-docs__chip-remove"
         aria-label={`Quitar filtro ${config.label}`}
       >
         <X size={12} />
-      </button>
+      </Button>
     </motion.span>
   );
 }

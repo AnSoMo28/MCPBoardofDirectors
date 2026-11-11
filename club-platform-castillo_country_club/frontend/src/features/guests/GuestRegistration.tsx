@@ -332,7 +332,8 @@ export default function GuestRegistration() {
                   )}
 
                   {hostQ.data?.families.map((fam) => (
-                    <button
+                    <Button
+                      variant="unstyled"
                       key={fam.id}
                       type="button"
                       className="gst-register__host-option"
@@ -356,7 +357,7 @@ export default function GuestRegistration() {
                       {selectedHost?.id === fam.id && (
                         <CheckCircle2 className="gst-register__host-check" />
                       )}
-                    </button>
+                    </Button>
                   ))}
 
                   {hostQ.data && hostQ.data.families.length === 0 && hostSearch.length >= 2 && (
@@ -504,7 +505,8 @@ export default function GuestRegistration() {
                   </label>
                   <div className="gst-register__chips" role="radiogroup" aria-label="Motivo de visita">
                     {GUEST_PURPOSE_OPTIONS.map((p) => (
-                      <button
+                      <Button
+                        variant="unstyled"
                         key={p.value}
                         type="button"
                         className="gst-register__chip"
@@ -514,7 +516,7 @@ export default function GuestRegistration() {
                         aria-checked={form.purpose === p.value}
                       >
                         {p.label}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                   {errors.purpose && (
@@ -537,7 +539,8 @@ export default function GuestRegistration() {
                   ) : (
                     <div className="gst-register__facility-grid" role="radiogroup" aria-label="Instalación">
                       {availableFacilities.map((f) => (
-                        <button
+                        <Button
+                          variant="unstyled"
                           key={f.id}
                           type="button"
                           className="gst-register__facility-option"
@@ -549,7 +552,7 @@ export default function GuestRegistration() {
                         >
                           <p className="gst-register__facility-name">{f.name}</p>
                           <p className="gst-register__facility-type">{f.type}</p>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   )}
@@ -633,14 +636,15 @@ export default function GuestRegistration() {
                         ? checkinMut.error.message
                         : "Error al registrar"}
                     </p>
-                    <button
+                    <Button
+                      variant="unstyled"
                       type="button"
                       onClick={() => checkinMut.reset()}
                       className="gst-register__mutation-error-close"
                       aria-label="Cerrar error"
                     >
                       <X className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 )}
 

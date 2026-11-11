@@ -46,6 +46,7 @@ import {
 import { generateConflictResolutions } from "../lib/recommendationSynthesis";
 
 import "./RecConflictResolver.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -203,14 +204,15 @@ function BranchCard({ resolution, index, isRecommended, reducedMotion, onSelect 
 
         {/* ── Select button (if recommended) ──────────────────────────── */}
         {isRecommended && onSelect && (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="rcr-branch-select-btn"
             onClick={() => onSelect(resolution.id)}
           >
             <CheckCircle2 size={13} aria-hidden="true" />
             <span>Seleccionar opción</span>
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -310,7 +312,8 @@ function ConflictCard({
       </div>
 
       {/* ── Expand toggle ─────────────────────────────────────────────── */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="rcr-expand-btn"
         onClick={() => setIsExpanded((prev) => !prev)}
@@ -325,7 +328,7 @@ function ConflictCard({
             ? "Colapsar opciones"
             : `${resolutions.length} opciones de resolución`}
         </span>
-      </button>
+      </Button>
 
       {/* ── Resolution branches ───────────────────────────────────────── */}
       {isExpanded && (

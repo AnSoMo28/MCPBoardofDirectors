@@ -171,7 +171,8 @@ function StepBasicInfo({
         <div className="fm-familyForm__tier-grid">
           {(Object.entries(TIER_CONFIG) as [MemberTier, (typeof TIER_CONFIG)[MemberTier]][]).map(
             ([key, config]) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={key}
                 type="button"
                 onClick={() => onChange("tier", key)}
@@ -186,7 +187,7 @@ function StepBasicInfo({
                 {form.tier === key && (
                   <CheckCircle2 size={16} className="fm-familyForm__tier-check" />
                 )}
-              </button>
+              </Button>
             ),
           )}
         </div>
@@ -340,14 +341,15 @@ function StepMembers({
         </div>
       ))}
 
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="fm-familyForm__add-member"
         onClick={onAdd}
       >
         <UserPlus size={20} />
         Agregar miembro
-      </button>
+      </Button>
     </div>
   );
 }
@@ -505,14 +507,15 @@ export default function FamilyForm() {
                   Familia similar encontrada: <strong>{potentialDuplicate.familyName}</strong>.
                   ¿Es la misma familia?
                 </p>
-                <button
+                <Button
+                  variant="unstyled"
                   type="button"
                   className="fm-familyForm__duplicate-dismiss"
                   onClick={dismissDuplicate}
                   aria-label="Descartar advertencia"
                 >
                   <X size={14} />
-                </button>
+                </Button>
               </div>
             )}
 

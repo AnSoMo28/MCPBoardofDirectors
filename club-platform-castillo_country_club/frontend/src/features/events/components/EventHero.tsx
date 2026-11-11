@@ -79,6 +79,7 @@ import { extractTime } from "../lib/calendarSignals";
 
 // Styles
 import "./EventHero.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 CONSTANTS
@@ -358,7 +359,8 @@ export function EventHero({
       {hasActions && (
         <div className="evh__actions" data-testid="evh-actions">
           {onEdit && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="evh-action evh-action--primary"
               onClick={onEdit}
@@ -366,10 +368,11 @@ export function EventHero({
             >
               <Edit3 className="evh-action__icon" aria-hidden="true" />
               <span>Editar</span>
-            </button>
+            </Button>
           )}
           {onShare && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="evh-action evh-action--ghost"
               onClick={onShare}
@@ -377,10 +380,11 @@ export function EventHero({
             >
               <Share2 className="evh-action__icon" aria-hidden="true" />
               <span>Compartir</span>
-            </button>
+            </Button>
           )}
           {onDuplicate && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="evh-action evh-action--ghost"
               onClick={onDuplicate}
@@ -388,7 +392,7 @@ export function EventHero({
             >
               <Copy className="evh-action__icon" aria-hidden="true" />
               <span>Duplicar</span>
-            </button>
+            </Button>
           )}
         </div>
       )}

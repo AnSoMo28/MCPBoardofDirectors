@@ -10,6 +10,7 @@
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import type { PredictiveAction } from "../types";
+import { Button } from "@/shared/components/ui/Button";
 
 interface PredictiveActionsProps {
   actions: PredictiveAction[];
@@ -27,7 +28,8 @@ export function PredictiveActions({
       {actions.map((action) => {
         const Icon = action.icon;
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={action.id}
             type="button"
             className="glass-landing__predictive-card"
@@ -55,7 +57,7 @@ export function PredictiveActions({
             <p className="glass-landing__predictive-card-desc">
               {action.description}
             </p>
-          </button>
+          </Button>
         );
       })}
     </div>

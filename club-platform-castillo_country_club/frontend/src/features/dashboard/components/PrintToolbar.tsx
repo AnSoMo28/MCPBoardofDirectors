@@ -45,14 +45,15 @@ export function PrintToolbar({
         >
           Imprimir ahora
         </Button>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           onClick={onClose}
           className="glass-print__toolbar-close"
           aria-label="Cerrar vista previa"
         >
           <X size={20} />
-        </button>
+        </Button>
       </div>
     </div>
   );

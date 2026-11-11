@@ -39,6 +39,7 @@ import type {
 } from "../types";
 
 import "./ConversionPipeline.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -239,7 +240,8 @@ export function ConversionPipeline({
               )}
 
               {/* ── Stage Row ── */}
-              <button
+              <Button
+                variant="unstyled"
                 className="gst-pipeline__stage"
                 data-trend={stage.trend}
                 data-bottleneck={bottleneck !== null}
@@ -295,7 +297,7 @@ export function ConversionPipeline({
                     </span>
                   )}
                 </div>
-              </button>
+              </Button>
 
               {/* ── Expanded Detail ── */}
               {isExpanded && (
@@ -331,7 +333,8 @@ export function ConversionPipeline({
                   {quickWins.length > 0 && (
                     <div className="gst-pipeline__detail-quickwins">
                       {quickWins.map((qw) => (
-                        <button
+                        <Button
+                          variant="unstyled"
                           key={qw.guestId as string}
                           className="gst-pipeline__quickwin"
                           onClick={(e) => {
@@ -345,7 +348,7 @@ export function ConversionPipeline({
                           <span className="gst-pipeline__quickwin-impact">
                             +{qw.estimatedImpact}% impacto
                           </span>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   )}

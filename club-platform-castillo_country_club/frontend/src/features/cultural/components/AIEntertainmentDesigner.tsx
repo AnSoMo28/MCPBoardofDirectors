@@ -26,6 +26,7 @@ import type {
 } from '../lib/eventDesigner';
 import { useEventDesigner } from '../hooks/useEventDesigner';
 import './AIEntertainmentDesigner.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -151,13 +152,14 @@ export function AIEntertainmentDesigner({
               {designer.phase === 'confirmed' && 'Confirmado'}
             </span>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             className="ai-entertainment-designer__close"
             onClick={onClose}
             aria-label="Cerrar"
           >
             ×
-          </button>
+          </Button>
         </header>
 
         {/* ═══════════════════════════════════════ */}
@@ -206,7 +208,8 @@ export function AIEntertainmentDesigner({
               </span>
               <div className="ai-entertainment-designer__vibes-grid">
                 {VIBE_OPTIONS.map((vibe) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={vibe.value}
                     className={`ai-entertainment-designer__vibe-chip ${
                       selectedVibes.includes(vibe.value)
@@ -216,27 +219,29 @@ export function AIEntertainmentDesigner({
                     onClick={() => toggleVibe(vibe.value)}
                   >
                     {vibe.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
 
             {/* Action buttons */}
             <div className="ai-entertainment-designer__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-entertainment-designer__btn ai-entertainment-designer__btn--secondary"
                 onClick={handleSetIntention}
                 disabled={!intentionText.trim()}
               >
                 Capturar intención
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="unstyled"
                 className="ai-entertainment-designer__btn ai-entertainment-designer__btn--primary"
                 onClick={handleGenerate}
                 disabled={!designer.intent}
               >
                 Diseñar con AI →
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -342,7 +347,8 @@ export function AIEntertainmentDesigner({
                 Refinar propuesta
               </span>
               <div className="ai-entertainment-designer__refine-actions">
-                <button
+                <Button
+                  variant="unstyled"
                   className="ai-entertainment-designer__btn ai-entertainment-designer__btn--ghost"
                   onClick={() =>
                     handleRefine({
@@ -355,8 +361,9 @@ export function AIEntertainmentDesigner({
                   }
                 >
                   Reducir capacidad 20%
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="unstyled"
                   className="ai-entertainment-designer__btn ai-entertainment-designer__btn--ghost"
                   onClick={() =>
                     handleRefine({
@@ -369,7 +376,7 @@ export function AIEntertainmentDesigner({
                   }
                 >
                   Ampliar capacidad 30%
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -473,19 +480,22 @@ export function AIEntertainmentDesigner({
 
             {/* Action buttons */}
             <div className="ai-entertainment-designer__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-entertainment-designer__btn ai-entertainment-designer__btn--ghost"
                 onClick={handleReset}
               >
                 Empezar de nuevo
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="unstyled"
                 className="ai-entertainment-designer__btn ai-entertainment-designer__btn--secondary"
                 onClick={handleGenerate}
               >
                 Regenerar
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="unstyled"
                 className="ai-entertainment-designer__btn ai-entertainment-designer__btn--primary"
                 onClick={handleConfirm}
                 disabled={!designer.readyToExecute}
@@ -493,7 +503,7 @@ export function AIEntertainmentDesigner({
                 {designer.readyToExecute
                   ? '✅ Diseñar así'
                   : `Bloqueado: ${designer.blockers[0] ?? 'riesgos pendientes'}`}
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -517,12 +527,13 @@ export function AIEntertainmentDesigner({
             </div>
 
             <div className="ai-entertainment-designer__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-entertainment-designer__btn ai-entertainment-designer__btn--primary"
                 onClick={onClose}
               >
                 Cerrar
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -602,12 +613,13 @@ function VariantCard({
         <span>Revenue: {variant.predicted.revenue.toLocaleString()}</span>
       </div>
 
-      <button
+      <Button
+        variant="unstyled"
         className="ai-entertainment-designer__btn ai-entertainment-designer__btn--ghost ai-entertainment-designer__btn--sm"
         onClick={onSelect}
       >
         Seleccionar variante
-      </button>
+      </Button>
     </div>
   );
 }

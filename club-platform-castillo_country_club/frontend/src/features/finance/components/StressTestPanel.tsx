@@ -597,7 +597,8 @@ export default function StressTestPanel() {
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-[var(--color-silver-500)] font-[family-name:var(--font-ui)]">Iteraciones:</span>
                   {[100, 500, 1000].map((n) => (
-                    <button key={n} type="button" onClick={() => setIterations(n)}
+                    <Button key={n} type="button" onClick={() => setIterations(n)}
+                      variant="unstyled"
                       className={cn(
                         "px-2.5 py-1.5 rounded-lg text-xs font-medium font-[family-name:var(--font-mono)] transition-colors min-h-[36px]",
                         iterations === n
@@ -605,7 +606,7 @@ export default function StressTestPanel() {
                           : "bg-[var(--color-surface-2)] text-[var(--color-silver-400)] hover:text-[var(--color-silver-200)]",
                       )}>
                       {n.toLocaleString()}
-                    </button>
+                    </Button>
                   ))}
                 </div>
                 <Button variant="secondary" onClick={() => { testQ.refetch(); showToast({ type: "info", message: "Test actualizado" }); }}
@@ -618,13 +619,14 @@ export default function StressTestPanel() {
             {/* Scenario chips */}
             <div className="flex flex-wrap gap-2">
               {STRESS_SCENARIO_CONFIGS.map((s) => (
-                <button key={s.id} type="button"
+                <Button key={s.id} type="button"
+                  variant="unstyled"
                   onClick={() => setActiveScenario(s.id)}
                   className={cn("glass-stress-chip", activeScenario === s.id && "glass-stress-chip--active")}
                   aria-pressed={activeScenario === s.id}
                   title={s.description}>
                   {s.name}
-                </button>
+                </Button>
               ))}
             </div>
             {currentScenario && (
@@ -659,19 +661,21 @@ export default function StressTestPanel() {
                   <span className="text-[10px] font-[family-name:var(--font-mono)]" style={{ color: probabilityColor(s.pPositive) }}>
                     {(s.pPositive * 100).toFixed(0)}%
                   </span>
-                  <button type="button" onClick={() => handleRemoveSaved(s.id)}
+                  <Button type="button" onClick={() => handleRemoveSaved(s.id)}
+                    variant="unstyled"
                     className="text-[var(--color-silver-500)] hover:text-[var(--color-rose-400)] transition-colors min-w-[24px] min-h-[24px] flex items-center justify-center"
                     aria-label={`Quitar ${s.name}`}>
                     <Trash2 size={10} />
-                  </button>
+                  </Button>
                 </div>
               ))}
               {result && savedScenarios.length < 3 && (
-                <button type="button" onClick={handleSaveScenario}
+                <Button type="button" onClick={handleSaveScenario}
+                  variant="unstyled"
                   className="glass-stress-memory-chip flex-shrink-0 text-[var(--color-teal-400)]">
                   <Save size={10} />
                   <span className="text-xs font-[family-name:var(--font-ui)]">Guardar actual</span>
-                </button>
+                </Button>
               )}
             </div>
           </div>

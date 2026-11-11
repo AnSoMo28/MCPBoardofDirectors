@@ -12,6 +12,7 @@ import {
   DOCUMENT_TYPE_CONFIG,
   type KnowledgeSource,
 } from "@/features/documents/types";
+import { Button } from "@/shared/components/ui/Button";
 
 interface SourceChipsProps {
   sources: KnowledgeSource[];
@@ -33,7 +34,8 @@ export function SourceChips({ sources }: SourceChipsProps) {
 
           return (
             <div key={source.document_id}>
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="glass-knowledge__source-chip"
                 onClick={() =>
@@ -48,7 +50,7 @@ export function SourceChips({ sources }: SourceChipsProps) {
                 <span className="glass-knowledge__source-chip-relevance">
                   {Math.round(source.relevance * 100)}%
                 </span>
-              </button>
+              </Button>
 
               {isExpanded && (
                 <div className="glass-knowledge__source-expand">

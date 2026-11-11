@@ -15,6 +15,7 @@ import { useLoginPage } from "./hooks/useLoginPage";
 import { LoginBranding } from "./components/LoginBranding";
 import { GlassLoginCard } from "./components/GlassLoginCard";
 import "./LoginPage.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Keyboard
@@ -110,7 +111,8 @@ export function LoginPage() {
         />
 
         {/* Theme toggle */}
-        <button
+        <Button
+          variant="unstyled"
           onClick={h.toggleTheme}
           className="glass-login__theme"
           aria-label={
@@ -124,7 +126,7 @@ export function LoginPage() {
           ) : (
             <Sun size={18} strokeWidth={1.5} />
           )}
-        </button>
+        </Button>
 
         {/* Mobile logo */}
         <div className="glass-login__mobile-logo">

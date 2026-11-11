@@ -62,6 +62,7 @@ import type { FamilyBrief as BriefData, FamilyMilestone } from "../ai-types";
 import { getDimensionConfig } from "../config";
 
 import "./FamilyBrief.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Tone Config — maps aiTone → chromatic atmosphere
@@ -331,13 +332,14 @@ export function FamilyBrief({ brief, activeAgents, onMilestoneAction }: FamilyBr
             {brief.upcomingMilestone.suggestedAction}
           </p>
           {onMilestoneAction && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fm-brief__milestone-btn"
               onClick={handleMilestoneAction}
             >
               Ejecutar acción
-            </button>
+            </Button>
           )}
         </div>
       )}

@@ -13,6 +13,7 @@ import {
   RISK_CATEGORY_CONFIG,
 } from "@/shared/lib/riskTheme";
 import type { RiskItem } from "@/features/reports/types";
+import { Button } from "@/shared/components/ui/Button";
 
 interface RiskPopoverContentProps {
   risks: RiskItem[];
@@ -44,7 +45,8 @@ export function RiskPopoverContent({
           />
           <h4 className="glass-risk__pop-title">{primary.title}</h4>
         </div>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="glass-risk__pop-close"
           onClick={(e) => {
@@ -54,7 +56,7 @@ export function RiskPopoverContent({
           aria-label="Cerrar detalle de riesgo"
         >
           <X />
-        </button>
+        </Button>
       </div>
 
       {/* Badges */}

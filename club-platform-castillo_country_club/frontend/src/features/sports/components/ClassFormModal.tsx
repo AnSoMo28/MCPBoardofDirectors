@@ -42,6 +42,7 @@ import type { SportType } from "../types";
 import { SPORT_CONFIG, CLASS_TYPE_CONFIG, SKILL_LEVEL_CONFIG } from "../types";
 import type { SportsDashboardMode } from "../types";
 import "./ClassFormModal.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -171,14 +172,15 @@ function EquipmentTags({
       {tags.map((tag) => (
         <span key={tag} className="spt-cls-form__tag">
           {tag}
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-cls-form__tag-remove"
             onClick={() => onRemove(tag)}
             aria-label={`Quitar ${tag}`}
           >
             ×
-          </button>
+          </Button>
         </span>
       ))}
     </div>
@@ -295,14 +297,15 @@ export function ClassFormModal({
             <h2 className="spt-cls-form__title">🧘 Crear Clase de Fitness</h2>
             <p className="spt-cls-form__subtitle">Ejecución directa (AUTO)</p>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-cls-form__close-btn"
             onClick={onClose}
             aria-label="Cerrar"
           >
             <X className="spt-cls-form__close-icon" />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}
@@ -443,27 +446,30 @@ export function ClassFormModal({
                 }}
                 className="spt-cls-form__input spt-cls-form__input--compact"
               />
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="spt-cls-form__add-btn"
                 onClick={addEquipment}
               >
                 +
-              </button>
+              </Button>
             </div>
             <EquipmentTags tags={equipmentTags} onRemove={removeEquipment} />
           </FormField>
 
           {/* Actions */}
           <div className="spt-cls-form__actions">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="spt-cls-form__cancel-btn"
               onClick={onClose}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="submit"
               className="spt-cls-form__submit-btn"
               disabled={isSubmitting}
@@ -477,7 +483,7 @@ export function ClassFormModal({
               ) : (
                 "Crear Clase"
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

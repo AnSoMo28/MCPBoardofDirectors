@@ -225,7 +225,8 @@ export default function ProgramsPanel() {
       {/* ── Category Filters ── */}
       <div className="flex flex-wrap gap-2">
         {CATEGORY_FILTERS.map((f) => (
-          <button
+          <Button
+            variant="unstyled"
             key={f.key}
             onClick={() => setCategoryFilter(f.key)}
             className={cn(
@@ -236,7 +237,7 @@ export default function ProgramsPanel() {
             )}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 

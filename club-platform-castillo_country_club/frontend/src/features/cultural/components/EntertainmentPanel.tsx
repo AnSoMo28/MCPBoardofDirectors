@@ -196,7 +196,8 @@ export default function EntertainmentPanel() {
       {/* ── Type Filters ── */}
       <div className="flex flex-wrap gap-2">
         {TYPE_FILTERS.map((f) => (
-          <button
+          <Button
+            variant="unstyled"
             key={f.key}
             onClick={() => setTypeFilter(f.key)}
             className={cn(
@@ -207,7 +208,7 @@ export default function EntertainmentPanel() {
             )}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 

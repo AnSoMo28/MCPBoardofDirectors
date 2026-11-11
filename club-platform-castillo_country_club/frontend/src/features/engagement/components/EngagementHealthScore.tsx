@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import type { HealthScoreFactor, EngagementVelocity } from "../types";
 import "./EngagementHealthScore.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ── Score level classification (inlined) ───────────────────
 
@@ -351,14 +352,15 @@ export function EngagementHealthScore({
                 " El descenso se está acelerando."}
             </p>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             onClick={handleDismissAlert}
             className="eng-vitals__alert-dismiss"
             aria-label="Cerrar alerta"
           >
             <span>✕</span>
-          </button>
+          </Button>
         </div>
       )}
     </div>

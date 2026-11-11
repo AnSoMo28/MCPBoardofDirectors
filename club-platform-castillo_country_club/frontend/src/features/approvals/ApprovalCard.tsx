@@ -133,7 +133,8 @@ export function ApprovalCard({
       )}
 
       {/* ── Header ── */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="glass-approval__card-header"
         onClick={() => setExpanded((e) => !e)}
@@ -227,7 +228,7 @@ export function ApprovalCard({
         <span className="glass-approval__card-expand-btn">
           {expanded ? <ChevronUp /> : <ChevronDown />}
         </span>
-      </button>
+      </Button>
 
       {/* ── Expanded body ── */}
       <AnimatePresence>

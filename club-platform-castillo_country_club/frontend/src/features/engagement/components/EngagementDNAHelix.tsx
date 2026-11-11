@@ -450,7 +450,8 @@ export function EngagementDNAHelix({
             const severity = classifyMutationSeverity(m);
             const color = getMutationSeverityColor(severity);
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={m.id}
                 type="button"
                 className="eng-dna__mutation-item"
@@ -473,7 +474,7 @@ export function EngagementDNAHelix({
                 <span className="eng-dna__mutation-confidence">
                   {(m.confidence * 100).toFixed(0)}%
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>

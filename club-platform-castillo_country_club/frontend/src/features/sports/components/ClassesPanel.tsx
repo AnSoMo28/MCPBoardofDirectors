@@ -51,6 +51,7 @@ import type { ClassEnrollment_Contract } from "@/shared/mocks/contracts";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { ClassFormModal } from "./ClassFormModal";
 import "./ClassesPanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -418,14 +419,15 @@ export function ClassesPanel({
       {/* ── Header ── */}
       <div className="spt-classes__header">
         <h3 className="spt-classes__title">🧘 Clases de Fitness</h3>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="spt-classes__new-btn"
           onClick={() => setShowForm(true)}
         >
           <Plus className="spt-classes__new-btn-icon" />
           Nueva Clase
-        </button>
+        </Button>
       </div>
 
       {/* ── KPI Strip ── */}

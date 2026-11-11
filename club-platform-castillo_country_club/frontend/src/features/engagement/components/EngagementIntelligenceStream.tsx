@@ -141,7 +141,8 @@ export function EngagementIntelligenceStream({
           const band = getPriorityBand(signal.priority);
 
           return (
-            <button
+            <Button
+              variant="unstyled"
               key={signal.id}
               type="button"
               className="eng-stream__item"
@@ -190,13 +191,14 @@ export function EngagementIntelligenceStream({
               <div className="eng-stream__item-arrow" aria-hidden="true">
                 <ChevronDown size={14} />
               </div>
-            </button>
+            </Button>
           );
         })}
       </div>
 
       {hiddenCount > 0 && !expanded && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="eng-stream__expand"
           onClick={() => setExpanded(true)}
@@ -204,11 +206,12 @@ export function EngagementIntelligenceStream({
         >
           <ChevronDown size={14} />
           <span>Ver {hiddenCount} señales más</span>
-        </button>
+        </Button>
       )}
 
       {expanded && signals.length > maxVisible && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="eng-stream__expand"
           onClick={() => setExpanded(false)}
@@ -216,7 +219,7 @@ export function EngagementIntelligenceStream({
         >
           <ChevronUp size={14} />
           <span>Contraer</span>
-        </button>
+        </Button>
       )}
     </div>
   );

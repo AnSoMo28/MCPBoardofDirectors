@@ -46,6 +46,7 @@ import { useConstellation } from "../hooks/useConstellation";
 
 import "../family-atoms.css";
 import "./FamilyConstellation.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Props
@@ -130,30 +131,33 @@ export function FamilyConstellation({
 
         {/* ══════ Controls overlay ══════ */}
         <div className="fm-galaxy__controls" aria-label="Controles de navegación">
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="fm-galaxy__control-btn"
             aria-label="Acercar"
             onClick={() => {/* zoom in handled by wheel */}}
           >
             <ZoomIn size={14} aria-hidden="true" />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             type="button"
             className="fm-galaxy__control-btn"
             aria-label="Alejar"
           >
             <ZoomOut size={14} aria-hidden="true" />
-          </button>
+          </Button>
           {galaxy.selectedNode && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fm-galaxy__control-btn fm-galaxy__control-btn--close"
               aria-label="Deseleccionar"
               onClick={() => galaxy.selectFamily(null)}
             >
               <X size={14} aria-hidden="true" />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -230,13 +234,14 @@ export function FamilyConstellation({
               {galaxy.selectedNode.connections.length} conexiones · {galaxy.selectedNode.memberCount} miembros
             </span>
             {onFamilyClick && (
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="fm-galaxy__detail-btn"
                 onClick={() => onFamilyClick(galaxy.selectedNode!.familyId)}
               >
                 Ver familia
-              </button>
+              </Button>
             )}
           </div>
         )}

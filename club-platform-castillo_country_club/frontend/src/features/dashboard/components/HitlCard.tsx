@@ -15,6 +15,7 @@ import {
   AGENT_TARGETS,
   type HitlItem,
 } from "../config/hitl";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Types
@@ -168,7 +169,8 @@ export function HitlCard({
 
       {/* ── Actions ── */}
       <div className="glass-hitl__card-actions">
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           onClick={onApprove}
           disabled={isDisabled}
@@ -187,9 +189,10 @@ export function HitlCard({
             <Check size={16} />
           )}
           Aprobar
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           onClick={onReject}
           disabled={isDisabled}
@@ -213,7 +216,7 @@ export function HitlCard({
           {isConfirmingReject && (
             <span className="glass-hitl__btn-reject-bar" />
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -25,6 +25,7 @@ import type {
 } from "@/features/documents/types";
 import type { FeedbackValue } from "../hooks/useKnowledgeChat";
 import { SourceChips } from "./SourceChips";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Simple Markdown Parser
@@ -279,7 +280,8 @@ export function MessageBubble({
         {/* Actions (assistant only) */}
         {!isUser && (
           <div className="glass-knowledge__actions">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className={cn(
                 "glass-knowledge__action-btn",
@@ -290,8 +292,9 @@ export function MessageBubble({
             >
               {copied ? <Check size={14} /> : <Copy size={14} />}
               {copied ? "Copiado" : "Copiar"}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="button"
               className="glass-knowledge__action-btn"
               onClick={onRegenerate}
@@ -299,8 +302,9 @@ export function MessageBubble({
             >
               <RefreshCw size={14} />
               Regenerar
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="button"
               className={cn(
                 "glass-knowledge__action-btn",
@@ -311,8 +315,9 @@ export function MessageBubble({
               aria-label="Feedback positivo"
             >
               <ThumbsUp size={14} />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="button"
               className={cn(
                 "glass-knowledge__action-btn",
@@ -323,7 +328,7 @@ export function MessageBubble({
               aria-label="Feedback negativo"
             >
               <ThumbsDown size={14} />
-            </button>
+            </Button>
           </div>
         )}
 

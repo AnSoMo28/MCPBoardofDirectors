@@ -353,7 +353,8 @@ export function EntertainmentRadar({
       {/* ═══════════════════════════════════════ */}
       {availableTypes.length > 1 && (
         <div className="er__filters">
-          <button
+          <Button
+            variant="unstyled"
             className={cn(
               'er__filter-pill',
               typeFilter === 'all' && 'er__filter-pill--active',
@@ -362,14 +363,15 @@ export function EntertainmentRadar({
             style={{ '--stagger-i': 0 } as React.CSSProperties}
           >
             Todos ({acts.length})
-          </button>
+          </Button>
           {availableTypes.map((type, i) => {
             const cfg = ENTERTAINMENT_TYPE_CONFIG[
               type as keyof typeof ENTERTAINMENT_TYPE_CONFIG
             ];
             const count = acts.filter((a) => a.entertainment_type === type).length;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={type}
                 className={cn(
                   'er__filter-pill',
@@ -379,7 +381,7 @@ export function EntertainmentRadar({
                 style={{ '--stagger-i': i + 1 } as React.CSSProperties}
               >
                 {cfg?.emoji ?? '🎵'} {cfg?.label ?? type} ({count})
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -507,7 +509,8 @@ export function EntertainmentRadar({
                   {transitions.length > 0 && onStatusChange && (
                     <div className="er__card-actions">
                       {transitions.map((nextStatus) => (
-                        <button
+                        <Button
+                          variant="unstyled"
                           key={nextStatus}
                           className={cn(
                             'er__status-btn',
@@ -522,7 +525,7 @@ export function EntertainmentRadar({
                           }
                         >
                           → {STATUS_LABELS[nextStatus]}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   )}

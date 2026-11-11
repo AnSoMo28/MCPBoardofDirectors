@@ -55,6 +55,7 @@ import type {
 import { AGE_BRACKETS } from "../config";
 
 import "./AgeGroupIntelligencePanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ── §0  Constants ────────────────────────────────────────── */
 
@@ -731,7 +732,8 @@ export function AgeGroupIntelligencePanel({
           </div>
 
           {recommendations.length > 5 && (
-            <button
+            <Button
+              variant="unstyled"
               className="ag-intel__toggle"
               onClick={() => setShowAllRecs(!showAllRecs)}
               type="button"
@@ -753,7 +755,7 @@ export function AgeGroupIntelligencePanel({
                   Ver {recommendations.length - 5} más
                 </>
               )}
-            </button>
+            </Button>
           )}
         </section>
       )}
@@ -819,7 +821,8 @@ export function AgeGroupIntelligencePanel({
           </div>
 
           {sortedProposals.length > 5 && (
-            <button
+            <Button
+              variant="unstyled"
               className="ag-intel__toggle"
               onClick={() => setShowAllProps(!showAllProps)}
               type="button"
@@ -841,7 +844,7 @@ export function AgeGroupIntelligencePanel({
                   Ver {sortedProposals.length - 5} más
                 </>
               )}
-            </button>
+            </Button>
           )}
         </section>
       )}

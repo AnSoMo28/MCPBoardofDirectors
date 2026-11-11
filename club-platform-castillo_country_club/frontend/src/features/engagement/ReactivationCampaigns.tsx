@@ -433,7 +433,8 @@ export function ReactivationCampaigns() {
             <div className="eng-rc__steps">
               {STEPS.map((s, i: number) => (
                 <div key={s.key} className="eng-rc__step-group">
-                  <button
+                  <Button
+                    variant="unstyled"
                     type="button"
                     onClick={() => i < step && setStep(i)}
                     disabled={i > step}
@@ -443,7 +444,7 @@ export function ReactivationCampaigns() {
                   >
                     <s.Icon size={14} className="eng-rc__step-icon" />
                     <span className="eng-rc__step-label">{s.label}</span>
-                  </button>
+                  </Button>
                   {i < STEPS.length - 1 && (
                     <ChevronRight size={14} className="eng-rc__step-separator" />
                   )}
@@ -501,7 +502,8 @@ export function ReactivationCampaigns() {
                         <div className="eng-rc__option-grid eng-rc__option-grid--3">
                           {CAMPAIGN_TARGET_OPTIONS.map(
                             (opt: { value: string; label: string }) => (
-                              <button
+                              <Button
+                                variant="unstyled"
                                 key={opt.value}
                                 type="button"
                                 onClick={() =>
@@ -514,7 +516,7 @@ export function ReactivationCampaigns() {
                                 className="eng-rc__target-btn"
                               >
                                 {opt.label}
-                              </button>
+                              </Button>
                             ),
                           )}
                         </div>
@@ -543,7 +545,8 @@ export function ReactivationCampaigns() {
                         <div className="eng-rc__option-grid eng-rc__option-grid--2">
                           {CAMPAIGN_CHANNEL_OPTIONS.map(
                             (opt: { value: string; label: string }) => (
-                              <button
+                              <Button
+                                variant="unstyled"
                                 key={opt.value}
                                 type="button"
                                 onClick={() =>
@@ -556,7 +559,7 @@ export function ReactivationCampaigns() {
                                 className="eng-rc__channel-btn"
                               >
                                 {opt.label}
-                              </button>
+                              </Button>
                             ),
                           )}
                         </div>
@@ -567,7 +570,8 @@ export function ReactivationCampaigns() {
                         <div className="eng-rc__option-grid eng-rc__option-grid--2">
                           {OFFER_OPTIONS.map(
                             (opt: { value: string; label: string }) => (
-                              <button
+                              <Button
+                                variant="unstyled"
                                 key={opt.value}
                                 type="button"
                                 onClick={() =>
@@ -584,7 +588,7 @@ export function ReactivationCampaigns() {
                                   className="eng-rc__offer-icon"
                                 />
                                 {opt.label}
-                              </button>
+                              </Button>
                             ),
                           )}
                         </div>
@@ -599,7 +603,8 @@ export function ReactivationCampaigns() {
                             La IA recomienda actividades según el perfil
                           </p>
                         </div>
-                        <button
+                        <Button
+                          variant="unstyled"
                           type="button"
                           role="switch"
                           aria-checked={form.include_activity_suggestions}
@@ -613,7 +618,7 @@ export function ReactivationCampaigns() {
                           className="eng-rc__toggle"
                         >
                           <span className="eng-rc__toggle-knob" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
 

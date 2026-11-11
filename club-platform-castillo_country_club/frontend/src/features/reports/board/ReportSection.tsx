@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/shared/components/ui";
 import { cn } from "@/shared/lib/utils";
 import type { BoardReport } from "@/features/reports/types";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Type Icon
@@ -115,7 +116,8 @@ export function ReportSection({
         )}
       >
         {/* ── Header (clickable) ── */}
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="glass-board__section-header"
           onClick={onToggle}
@@ -146,7 +148,7 @@ export function ReportSection({
               )}
             />
           </div>
-        </button>
+        </Button>
 
         {/* ── Content (collapsible) ── */}
         <div

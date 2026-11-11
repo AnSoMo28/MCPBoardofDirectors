@@ -39,6 +39,7 @@ import type {
 } from "../types";
 
 import "./ReservationCalendar.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // TYPES
@@ -562,14 +563,15 @@ export default function ReservationCalendar({
       ]}
       actions={
         <PermissionGate roles={["ADMIN", "STAFF", "SOCIO"]}>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="fac-cal__new-btn"
             onClick={() => navigate(`/admin/facilities/${facilityId}/reservations/new`)}
           >
             <Plus className="fac-cal__new-icon" />
             Nueva reserva
-          </button>
+          </Button>
         </PermissionGate>
       }
     >
@@ -582,21 +584,22 @@ export default function ReservationCalendar({
         {/* Toolbar */}
         <nav className="fac-cal__toolbar" aria-label="Navegación del calendario">
           <div className="fac-cal__toolbar-left">
-            <button type="button" className="fac-cal__nav-btn" onClick={handlePrev} aria-label={viewMode === "week" ? "Semana anterior" : "Día anterior"}>
+            <Button variant="unstyled" type="button" className="fac-cal__nav-btn" onClick={handlePrev} aria-label={viewMode === "week" ? "Semana anterior" : "Día anterior"}>
               <ChevronLeft className="fac-cal__nav-icon" />
-            </button>
-            <button type="button" className="fac-cal__today-btn" onClick={handleToday}>
+            </Button>
+            <Button variant="unstyled" type="button" className="fac-cal__today-btn" onClick={handleToday}>
               Hoy
-            </button>
-            <button type="button" className="fac-cal__nav-btn" onClick={handleNext} aria-label={viewMode === "week" ? "Semana siguiente" : "Día siguiente"}>
+            </Button>
+            <Button variant="unstyled" type="button" className="fac-cal__nav-btn" onClick={handleNext} aria-label={viewMode === "week" ? "Semana siguiente" : "Día siguiente"}>
               <ChevronRight className="fac-cal__nav-icon" />
-            </button>
+            </Button>
             <h3 className="fac-cal__toolbar-title">{dateLabel}</h3>
           </div>
 
           <div className="fac-cal__toggle" role="group" aria-label="Vista">
             {(["week", "day"] as const).map((mode) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={mode}
                 type="button"
                 className="fac-cal__toggle-btn"
@@ -605,7 +608,7 @@ export default function ReservationCalendar({
                 aria-pressed={viewMode === mode}
               >
                 {mode === "week" ? "Semana" : "Día"}
-              </button>
+              </Button>
             ))}
           </div>
         </nav>

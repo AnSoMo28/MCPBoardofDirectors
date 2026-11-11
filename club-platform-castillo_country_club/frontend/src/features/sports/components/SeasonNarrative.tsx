@@ -36,6 +36,7 @@ import type {
 import { SEASON_ACT_CONFIG } from "../types";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import "./SeasonNarrative.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -181,7 +182,8 @@ function TurningPointMarker({
   ambientMode: SportsDashboardMode;
 }) {
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className="spt-season__turning"
       data-mode={ambientMode}
@@ -198,7 +200,7 @@ function TurningPointMarker({
           <span className="spt-season__turning-after">{tp.afterState}</span>
         </p>
       </div>
-    </button>
+    </Button>
   );
 }
 
@@ -236,7 +238,8 @@ function ChapterCard({
       {/* ── Content ── */}
       <div className="spt-season__chapter-body">
         {/* ── Header ── */}
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="spt-season__chapter-header"
           onClick={() => {
@@ -263,7 +266,7 @@ function ChapterCard({
           ) : (
             <ChevronDown className="spt-season__chevron" />
           )}
-        </button>
+        </Button>
 
         {/* ── Expanded content ── */}
         {expanded && (

@@ -26,6 +26,7 @@ import {
   saveCustomRule, getCustomRules, deleteCustomRule, toggleCustomRule,
 } from "@/shared/lib/advisor-engine/nl-rule-store";
 import './NLRuleAuthor.css';
+import { Button } from "@/shared/components/ui/Button";
 
 /* ──────────────────────────────────────
    Constants
@@ -272,12 +273,12 @@ function RuleCard({
 
       {/* Actions */}
       <div className="glass-rule__card-actions">
-        <button onClick={onToggle} className="glass-rule__card-toggle" aria-label={isActive ? "Pausar" : "Activar"}>
+        <Button variant="unstyled" onClick={onToggle} className="glass-rule__card-toggle" aria-label={isActive ? "Pausar" : "Activar"}>
           {isActive ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-        </button>
-        <button onClick={onDelete} className="glass-rule__card-delete" aria-label="Eliminar">
+        </Button>
+        <Button variant="unstyled" onClick={onDelete} className="glass-rule__card-delete" aria-label="Eliminar">
           <Trash2 className="w-3 h-3" />
-        </button>
+        </Button>
       </div>
     </motion.div>
   );
@@ -460,10 +461,10 @@ export function NLRuleAuthor() {
             <p className="glass-rule__header-sub">Escribí en español — el sistema interpreta tu regla</p>
           </div>
         </div>
-        <button onClick={() => setShowHelp(!showHelp)} className="glass-rule__help-btn">
+        <Button variant="unstyled" onClick={() => setShowHelp(!showHelp)} className="glass-rule__help-btn">
           <HelpCircle className="w-4 h-4" />
           <span>Ayuda</span>
-        </button>
+        </Button>
       </div>
 
       {/* ═══ Help Panel ═══ */}
@@ -499,9 +500,9 @@ export function NLRuleAuthor() {
 
           {/* Clear button */}
           {hasContent && (
-            <button onClick={() => { setInputText(""); setParsePhase("idle"); }} className="glass-rule__clear">
+            <Button variant="unstyled" onClick={() => { setInputText(""); setParsePhase("idle"); }} className="glass-rule__clear">
               <X className="w-3 h-3" /> Limpiar
-            </button>
+            </Button>
           )}
 
           {/* Parse Ceremony */}
@@ -571,14 +572,15 @@ export function NLRuleAuthor() {
 
               {/* Save */}
               <div className="glass-rule__save-row">
-                <button
+                <Button
+                  variant="unstyled"
                   onClick={handleSave}
                   disabled={!validation.valid || isSaving}
                   className="glass-rule__save-btn"
                 >
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                   <span>{isSaving ? "Guardando..." : "Guardar regla"}</span>
-                </button>
+                </Button>
 
                 <AnimatePresence>
                   {saveSuccess && (
@@ -658,7 +660,7 @@ export function NLRuleAuthor() {
       {/* ═══ Rule Library ═══ */}
       {savedRules.length > 0 && (
         <div className="glass-rule__library">
-          <button onClick={() => setShowLibrary(!showLibrary)} className="glass-rule__library-toggle">
+          <Button variant="unstyled" onClick={() => setShowLibrary(!showLibrary)} className="glass-rule__library-toggle">
             <div className="glass-rule__library-toggle-left">
               <MessageSquare className="w-4 h-4 text-[var(--color-teal-400)]" />
               <span>Mis Reglas</span>
@@ -671,7 +673,7 @@ export function NLRuleAuthor() {
             <motion.div animate={{ rotate: showLibrary ? 180 : 0 }} transition={{ duration: 0.2 }}>
               <ChevronDown className="w-4 h-4 text-[var(--color-silver-400)]" />
             </motion.div>
-          </button>
+          </Button>
 
           <AnimatePresence>
             {showLibrary && (

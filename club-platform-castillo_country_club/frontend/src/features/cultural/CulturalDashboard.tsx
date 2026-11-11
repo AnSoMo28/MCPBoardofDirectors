@@ -44,6 +44,7 @@ import { AIProgramDesigner } from './components/AIProgramDesigner';
 import { AISocialArchitect } from './components/AISocialArchitect';
 
 import './CulturalDashboard.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  CONSTANTS
@@ -172,12 +173,13 @@ export function CulturalDashboard({ memberId }: CulturalDashboardProps) {
           <p className="cultural-dashboard__error-message">
             {dashboard.error.message}
           </p>
-          <button
+          <Button
+            variant="unstyled"
             className="cultural-dashboard__error-retry"
             onClick={dashboard.refetchAll}
           >
             Reintentar
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -251,7 +253,8 @@ export function CulturalDashboard({ memberId }: CulturalDashboardProps) {
             {criticalCount === 1 ? 'alerta crítica' : 'alertas críticas'}{' '}
             requieren atención inmediata
           </span>
-          <button
+          <Button
+            variant="unstyled"
             className="critical-banner__action"
             onClick={() => {
               const el = document.querySelector('.cultural-dashboard__decision');
@@ -259,7 +262,7 @@ export function CulturalDashboard({ memberId }: CulturalDashboardProps) {
             }}
           >
             Ver detalles
-          </button>
+          </Button>
         </div>
       )}
 
@@ -316,7 +319,8 @@ export function CulturalDashboard({ memberId }: CulturalDashboardProps) {
       {/* ── Layer 5: Action Buttons (floating) ── */}
       <div className="cultural-dashboard__actions" aria-label="Crear evento">
         {ACTION_CONFIGS.map((config) => (
-          <button
+          <Button
+            variant="unstyled"
             key={config.type}
             className="cultural-dashboard__action-btn"
             style={{ '--action-color': config.color } as React.CSSProperties}
@@ -329,7 +333,7 @@ export function CulturalDashboard({ memberId }: CulturalDashboardProps) {
             <span className="cultural-dashboard__action-label">
               {config.label}
             </span>
-          </button>
+          </Button>
         ))}
       </div>
 

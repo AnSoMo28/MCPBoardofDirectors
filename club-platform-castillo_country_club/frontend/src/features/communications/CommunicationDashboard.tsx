@@ -48,6 +48,7 @@ import { CommunicationCortex } from "./components/CommunicationCortex";
 import type { ThinkingEntry } from "./components/CommunicationCortex";
 
 import "./CommunicationDashboard.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // SVG SUB: Composite Score Ring (hero gauge)
@@ -445,13 +446,14 @@ export function CommunicationDashboard({ memberId }: CommunicationDashboardProps
           <AlertTriangle size={32} className="comm-error-state__icon" />
           <h3>No se pudo cargar la inteligencia</h3>
           <p>Intentá nuevamente o verificá la conexión.</p>
-          <button
+          <Button
+            variant="unstyled"
             className="comm-error-state__retry"
             onClick={() => window.location.reload()}
           >
             <RefreshCw size={14} />
             <span>Reintentar</span>
-          </button>
+          </Button>
         </div>
       </PageShell>
     );
@@ -589,27 +591,30 @@ export function CommunicationDashboard({ memberId }: CommunicationDashboardProps
                 </div>
 
                 <div className="comm-decision__actions">
-                  <button
+                  <Button
+                    variant="unstyled"
                     className="comm-decision__cta comm-decision__cta--primary"
                     onClick={() => showToast({ type: "success", message: "Envío iniciado" })}
                   >
                     <Send size={14} />
                     <span>Enviar ahora</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="unstyled"
                     className="comm-decision__cta comm-decision__cta--secondary"
                     onClick={() => showToast({ type: "success", message: "Programado" })}
                   >
                     <CalendarClock size={14} />
                     <span>Programar</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="unstyled"
                     className="comm-decision__cta comm-decision__cta--tertiary"
                     onClick={() => showToast({ type: "info", message: "Abriendo compositor..." })}
                   >
                     <PenLine size={14} />
                     <span>Personalizar</span>
-                  </button>
+                  </Button>
                 </div>
 
                 <div

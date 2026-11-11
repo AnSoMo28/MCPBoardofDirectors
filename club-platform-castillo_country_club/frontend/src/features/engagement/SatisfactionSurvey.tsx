@@ -57,7 +57,8 @@ function NPSInput({
     <div className="eng-survey__nps">
       <div className="eng-survey__nps-grid">
         {Array.from({ length: 11 }).map((_, i) => (
-          <button
+          <Button
+            variant="unstyled"
             key={i}
             type="button"
             data-selected={value === i}
@@ -65,7 +66,7 @@ function NPSInput({
             className="eng-survey__nps-btn"
           >
             {i}
-          </button>
+          </Button>
         ))}
       </div>
       <div className="eng-survey__nps-labels">
@@ -94,7 +95,8 @@ function RatingInput({
         const active = value !== undefined && starVal <= value;
 
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={i}
             type="button"
             data-active={active}
@@ -106,7 +108,7 @@ function RatingInput({
               fill={active ? "var(--color-gold-400)" : "transparent"}
               stroke={active ? "var(--color-gold-400)" : "rgba(255,255,255,0.12)"}
             />
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -149,7 +151,8 @@ function ChoiceInput({
   return (
     <div className="eng-survey__choices">
       {options.map((opt) => (
-        <button
+        <Button
+          variant="unstyled"
           key={opt}
           type="button"
           data-selected={isSelected(opt)}
@@ -157,7 +160,7 @@ function ChoiceInput({
           className="eng-survey__choice-btn"
         >
           {opt}
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -498,7 +501,8 @@ export function SatisfactionSurvey() {
           {/* ── Dot navigation ─────────────────────────────── */}
           <div className="eng-survey__dots">
             {questions.map((question, i) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={question.id}
                 type="button"
                 data-current={i === currentQ}

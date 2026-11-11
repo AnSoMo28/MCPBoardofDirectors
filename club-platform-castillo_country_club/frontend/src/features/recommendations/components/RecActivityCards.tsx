@@ -331,7 +331,8 @@ function SuggestionCard({
   return (
     <div className="ras-card" data-status={s.status}>
       {/* Header */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="ras-card-header"
         onClick={onToggle}
@@ -356,7 +357,7 @@ function SuggestionCard({
             <ChevronDown size={16} aria-hidden="true" />
           )}
         </div>
-      </button>
+      </Button>
 
       {/* Description preview */}
       <p className="ras-card-desc">{s.description}</p>
@@ -807,7 +808,8 @@ export function ActivitySuggester() {
             </FormField>
 
             <FormField label="Otros clubes lo ofrecen">
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="ras-toggle"
                 role="switch"
@@ -823,7 +825,7 @@ export function ActivitySuggester() {
                 }
               >
                 <span className="ras-toggle-thumb" />
-              </button>
+              </Button>
             </FormField>
           </div>
 

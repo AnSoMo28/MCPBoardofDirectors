@@ -169,7 +169,8 @@ export function EngagementDecisionStage({
       {scenario.suggestedActions.length > 0 && (
         <div className="eng-decision__actions">
           {scenario.suggestedActions.map((action, idx) => (
-            <button
+            <Button
+              variant="unstyled"
               key={`${action.tool}-${idx}`}
               type="button"
               className="eng-decision__action"
@@ -194,7 +195,7 @@ export function EngagementDecisionStage({
                 </span>
                 <ChevronRight size={14} />
               </div>
-            </button>
+            </Button>
           ))}
         </div>
       )}

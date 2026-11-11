@@ -20,6 +20,7 @@ import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
 import { cn } from "@/shared/lib/utils";
 import { RESERVATION_STATUS } from "./config";
 import type { Reservation } from "./types";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Helpers
@@ -152,14 +153,15 @@ export function ReservationCard({
 
           {/* Quick rebook for completed */}
           {isCompleted && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="glass-reservations__rebook-btn"
               onClick={handleRebook}
             >
               <RefreshCw size={12} />
               Reservar de nuevo
-            </button>
+            </Button>
           )}
         </div>
 

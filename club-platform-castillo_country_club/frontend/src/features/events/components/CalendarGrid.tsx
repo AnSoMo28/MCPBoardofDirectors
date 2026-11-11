@@ -76,6 +76,7 @@ import type { CalendarGridDay } from "../hooks/useEventCalendar";
 
 // Styles
 import "./CalendarGrid.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 CONSTANTS
@@ -118,7 +119,8 @@ function EventChip({
 }) {
   const cat = EVENT_CATEGORY_CONFIG[event.category];
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className="ecal-chip"
       style={{
@@ -134,7 +136,7 @@ function EventChip({
     >
       <span className="ecal-chip__icon" aria-hidden="true">{cat.icon}</span>
       <span className="ecal-chip__title">{event.title}</span>
-    </button>
+    </Button>
   );
 }
 

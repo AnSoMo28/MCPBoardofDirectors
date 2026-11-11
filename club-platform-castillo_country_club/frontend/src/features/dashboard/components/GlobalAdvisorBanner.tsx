@@ -475,7 +475,8 @@ export default function GlobalAdvisorBanner({
                 return (
                   <motion.div key={layer} variants={itemVariants} className="advisor-layer-section">
                     {/* Layer header — clickable toggle */}
-                    <button
+                    <Button
+                      variant="unstyled"
                       type="button"
                       onClick={() => toggleLayer(layer)}
                       className="advisor-layer-header"
@@ -497,7 +498,7 @@ export default function GlobalAdvisorBanner({
                           isLayerOpen && "rotate-180",
                         )}
                       />
-                    </button>
+                    </Button>
 
                     {/* Layer content — collapsible with staggered cards */}
                     <AnimatePresence initial={false}>

@@ -208,7 +208,8 @@ export default function ExhibitionsPanel() {
       {/* ── Status Filters ── */}
       <div className="flex flex-wrap gap-2">
         {STATUS_FILTERS.map((f) => (
-          <button
+          <Button
+            variant="unstyled"
             key={f.key}
             onClick={() => setStatusFilter(f.key)}
             className={cn(
@@ -219,7 +220,7 @@ export default function ExhibitionsPanel() {
             )}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 

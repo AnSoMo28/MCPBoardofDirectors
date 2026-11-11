@@ -106,7 +106,8 @@ function RecCard({
       </div>
 
       {/* Reasoning expand */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="glass-landing__rec-card-reasoning-btn"
         onClick={() => setExpanded((v) => !v)}
@@ -117,7 +118,7 @@ function RecCard({
           <ChevronDown size={12} />
         )}
         {expanded ? "Menos detalle" : "¿Por qué esta recomendación?"}
-      </button>
+      </Button>
 
       <AnimatePresence>
         {expanded && (
@@ -179,7 +180,8 @@ export function RecommendationPreview({
 
       {showTrigger ? (
         /* Trigger — no AI call yet */
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="glass-landing__recs-trigger"
           onClick={onLoad}
@@ -202,7 +204,7 @@ export function RecommendationPreview({
               className="glass-landing__recs-trigger-arrow"
             />
           </div>
-        </button>
+        </Button>
       ) : isLoading ? (
         /* Loading */
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

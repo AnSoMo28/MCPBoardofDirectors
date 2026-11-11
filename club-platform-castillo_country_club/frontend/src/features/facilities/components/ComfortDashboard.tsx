@@ -48,6 +48,7 @@ import type {
 } from "../types";
 
 import "./ComfortDashboard.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -581,10 +582,10 @@ function InterventionPanel({ urgency, recommendation, onAdjust }: {
       </div>
       <p className="fac-comfort__intervention-text">{recommendation}</p>
       {onAdjust && (
-        <button className="fac-comfort__intervention-btn" onClick={onAdjust}>
+        <Button variant="unstyled" className="fac-comfort__intervention-btn" onClick={onAdjust}>
           <Wrench className="fac-comfort__intervention-btn-icon" />
           Ajustar condiciones
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -607,7 +608,8 @@ function FacilityStrip({
       role="tablist"
       aria-label="Seleccionar espacio"
     >
-      <button
+      <Button
+        variant="unstyled"
         className={cn(
           "fac-comfort__pill",
           "fac-comfort__pill--all",
@@ -618,7 +620,7 @@ function FacilityStrip({
         aria-selected={selectedId === null}
       >
         <span className="fac-comfort__pill-name">General</span>
-      </button>
+      </Button>
 
       {facilities.map((f) => {
         const cs = scores[f.id];
@@ -627,7 +629,8 @@ function FacilityStrip({
         const tone = scoreTone(cs.overall);
 
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={f.id}
             className={cn(
               "fac-comfort__pill",
@@ -646,7 +649,7 @@ function FacilityStrip({
                 aria-label="Intervención necesaria"
               />
             )}
-          </button>
+          </Button>
         );
       })}
     </div>

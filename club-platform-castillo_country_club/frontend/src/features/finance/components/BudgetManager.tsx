@@ -543,7 +543,8 @@ export default function BudgetManager() {
                                     autoFocus
                                     aria-label={`Nuevo presupuesto para ${catCfg?.label ?? line.category}`}
                                   />
-                                  <button
+                                  <Button
+                                    variant="unstyled"
                                     type="button"
                                     onClick={saveEdit}
                                     disabled={updateMut.isPending}
@@ -551,29 +552,31 @@ export default function BudgetManager() {
                                     aria-label="Guardar"
                                   >
                                     <Save size={14} />
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
+                                    variant="unstyled"
                                     type="button"
                                     onClick={cancelEdit}
                                     className="p-1.5 rounded text-[var(--color-silver-500)] hover:text-[var(--color-silver-300)] hover:bg-[var(--color-surface-3)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                                     aria-label="Cancelar"
                                   >
                                     <X size={14} />
-                                  </button>
+                                  </Button>
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-1 justify-end">
                                   <p className="text-sm font-[family-name:var(--font-mono)] text-[var(--color-silver-300)]">
                                     {formatCurrency(line.budgeted)}
                                   </p>
-                                  <button
+                                  <Button
+                                    variant="unstyled"
                                     type="button"
                                     onClick={() => startEdit(line.category, line.budgeted)}
                                     className="p-1 text-[var(--color-silver-500)] hover:text-[var(--color-gold-400)] transition-colors"
                                     aria-label={`Editar presupuesto de ${catCfg?.label ?? line.category}`}
                                   >
                                     <Edit3 size={12} />
-                                  </button>
+                                  </Button>
                                 </div>
                               )}
                             </div>
@@ -654,7 +657,8 @@ export default function BudgetManager() {
                                     autoFocus
                                     aria-label={`Nuevo presupuesto para ${catCfg?.label ?? line.category}`}
                                   />
-                                  <button
+                                  <Button
+                                    variant="unstyled"
                                     type="button"
                                     onClick={saveEdit}
                                     disabled={updateMut.isPending}
@@ -662,29 +666,31 @@ export default function BudgetManager() {
                                     aria-label="Guardar"
                                   >
                                     <Save size={14} />
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
+                                    variant="unstyled"
                                     type="button"
                                     onClick={cancelEdit}
                                     className="p-1.5 rounded text-[var(--color-silver-500)] hover:text-[var(--color-silver-300)] hover:bg-[var(--color-surface-3)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                                     aria-label="Cancelar"
                                   >
                                     <X size={14} />
-                                  </button>
+                                  </Button>
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-1 justify-end">
                                   <span className="font-[family-name:var(--font-mono)] text-[var(--color-silver-300)]">
                                     {formatCurrency(line.budgeted)}
                                   </span>
-                                  <button
+                                  <Button
+                                    variant="unstyled"
                                     type="button"
                                     onClick={() => startEdit(line.category, line.budgeted)}
                                     className="p-1 text-[var(--color-silver-500)] hover:text-[var(--color-gold-400)] transition-colors"
                                     aria-label={`Editar presupuesto de ${catCfg?.label ?? line.category}`}
                                   >
                                     <Edit3 size={12} />
-                                  </button>
+                                  </Button>
                                 </div>
                               )}
                             </td>

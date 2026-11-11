@@ -33,6 +33,7 @@ import {
 } from "../types";
 
 import "./MemberEngagementMotor.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -116,7 +117,8 @@ function FilterPill({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
+      variant="unstyled"
       onClick={onClick}
       className={cn(
         "glass-m360-motor__pill",
@@ -134,7 +136,7 @@ function FilterPill({
     >
       {icon ? `${icon} ` : ""}
       {label}
-    </button>
+    </Button>
   );
 }
 
@@ -244,7 +246,8 @@ export function MemberEngagementMotor({ memberId, className }: MemberEngagementM
             </div>
           )}
 
-          <button
+          <Button
+            variant="unstyled"
             onClick={() => refetch()}
             disabled={isFetching}
             className="glass-m360-motor__regenerate-btn"
@@ -256,7 +259,7 @@ export function MemberEngagementMotor({ memberId, className }: MemberEngagementM
               )}
             />
             Regenerar
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -356,7 +359,8 @@ export function MemberEngagementMotor({ memberId, className }: MemberEngagementM
                 }
               >
                 {/* Header */}
-                <button
+                <Button
+                  variant="unstyled"
                   onClick={() =>
                     setExpandedProposal(
                       isExpanded
@@ -424,7 +428,7 @@ export function MemberEngagementMotor({ memberId, className }: MemberEngagementM
                       <ChevronDown className="w-4 h-4" />
                     )}
                   </div>
-                </button>
+                </Button>
 
                 {/* Expanded detail */}
                 {isExpanded && (

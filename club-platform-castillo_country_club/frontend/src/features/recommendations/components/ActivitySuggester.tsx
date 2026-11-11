@@ -232,7 +232,8 @@ export function ActivitySuggester() {
 
             {/* Toggle: similar clubs offer */}
             <FormField label="Otros clubes lo ofrecen">
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 role="switch"
                 aria-checked={form.similar_clubs_offer}
@@ -256,7 +257,7 @@ export function ActivitySuggester() {
                              bg-white shadow transition-transform
                              ${form.similar_clubs_offer ? "translate-x-10" : "translate-x-1.5"}`}
                 />
-              </button>
+              </Button>
             </FormField>
           </div>
 

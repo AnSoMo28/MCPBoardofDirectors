@@ -46,6 +46,7 @@ import {
 import type { SportType, TournamentFormat, SportsDashboardMode } from "../types";
 import { SPORT_CONFIG, TOURNAMENT_FORMAT_CONFIG } from "../types";
 import "./TournamentFormModal.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -182,14 +183,15 @@ function PrizeTags({
       {prizes.map((prize, idx) => (
         <span key={`${prize}-${idx}`} className="spt-trnf__prize-tag">
           🏆 {prize}
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-trnf__prize-remove"
             onClick={() => onRemove(idx)}
             aria-label={`Quitar premio ${prize}`}
           >
             ×
-          </button>
+          </Button>
         </span>
       ))}
     </div>
@@ -363,14 +365,15 @@ export function TournamentFormModal({
               Requiere aprobación del administrador (HITL)
             </p>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-trnf__close-btn"
             onClick={onClose}
             aria-label="Cerrar"
           >
             <X className="spt-trnf__close-icon" />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}
@@ -539,13 +542,14 @@ export function TournamentFormModal({
                 }}
                 className="spt-trnf__input spt-trnf__input--compact"
               />
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="spt-trnf__add-btn"
                 onClick={addPrize}
               >
                 Agregar
-              </button>
+              </Button>
             </div>
             <PrizeTags prizes={prizes} onRemove={removePrize} />
           </FormField>
@@ -573,14 +577,16 @@ export function TournamentFormModal({
 
           {/* Actions */}
           <div className="spt-trnf__actions">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="spt-trnf__cancel-btn"
               onClick={onClose}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="submit"
               className="spt-trnf__submit-btn"
               disabled={isSubmitting}
@@ -594,7 +600,7 @@ export function TournamentFormModal({
               ) : (
                 "Enviar para Aprobación"
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

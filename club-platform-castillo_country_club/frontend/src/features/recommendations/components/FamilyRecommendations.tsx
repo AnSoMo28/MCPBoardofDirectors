@@ -264,7 +264,8 @@ function RecommendationCard({
       }
     >
       {/* Header row — clickable */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         onClick={onToggle}
         className="w-full flex items-start justify-between gap-3 text-left
@@ -322,7 +323,7 @@ function RecommendationCard({
             <ChevronDown className="w-4 h-4 text-[var(--color-silver-500)]" />
           )}
         </div>
-      </button>
+      </Button>
 
       {/* Score bar */}
       <div className="mt-3">

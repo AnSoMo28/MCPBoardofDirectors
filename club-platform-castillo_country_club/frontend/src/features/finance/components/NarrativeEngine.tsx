@@ -482,14 +482,15 @@ function PresentationOverlay({
           <span className="text-[10px] text-[var(--color-silver-500)] font-[family-name:var(--font-mono)]">
             {currentSlide + 1}/{slides.length}
           </span>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             onClick={onClose}
             className="text-[var(--color-silver-500)] hover:text-[var(--color-silver-200)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Cerrar presentación"
           >
             <X size={18} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -511,7 +512,8 @@ function PresentationOverlay({
 
       {/* Footer */}
       <div className="glass-narrative-presentation__footer">
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           onClick={prevSlide}
           disabled={currentSlide === 0}
@@ -519,10 +521,11 @@ function PresentationOverlay({
           aria-label="Slide anterior"
         >
           <ChevronLeft size={20} />
-        </button>
+        </Button>
         <div className="flex items-center gap-1.5">
           {slides.map((_, i) => (
-            <button
+            <Button
+              variant="unstyled"
               key={i}
               type="button"
               onClick={() => setCurrentSlide(i)}
@@ -534,7 +537,8 @@ function PresentationOverlay({
             />
           ))}
         </div>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           onClick={nextSlide}
           disabled={currentSlide === slides.length - 1}
@@ -542,7 +546,7 @@ function PresentationOverlay({
           aria-label="Siguiente slide"
         >
           <ChevronRight size={20} />
-        </button>
+        </Button>
       </div>
     </motion.div>
   );
@@ -640,7 +644,8 @@ export default function NarrativeEngine() {
             </p>
             <div className="flex flex-wrap gap-1.5">
               {NARRATIVE_PERIOD_CONFIG.map((p) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={p.id}
                   type="button"
                   onClick={() => setPeriod(p.id)}
@@ -652,7 +657,7 @@ export default function NarrativeEngine() {
                   )}
                 >
                   {p.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -664,7 +669,8 @@ export default function NarrativeEngine() {
             </p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(NARRATIVE_AUDIENCE_CONFIG).map(([key, cfg]) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={key}
                   type="button"
                   onClick={() => setAudience(key)}
@@ -676,7 +682,7 @@ export default function NarrativeEngine() {
                   )}
                 >
                   {cfg.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -688,7 +694,8 @@ export default function NarrativeEngine() {
             </p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(NARRATIVE_DETAIL_CONFIG).map(([key, cfg]) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={key}
                   type="button"
                   onClick={() => setDetailLevel(key)}
@@ -701,7 +708,7 @@ export default function NarrativeEngine() {
                 >
                   {cfg.label}
                   <span className="ml-1 text-[10px] opacity-60">{cfg.wordCount}</span>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -1071,14 +1078,15 @@ export default function NarrativeEngine() {
                       </div>
 
                       {/* Impact Explorer Toggle (Propuesta 3) */}
-                      <button
+                      <Button
+                        variant="unstyled"
                         type="button"
                         onClick={() => toggleImpact(rec.id)}
                         className="flex items-center gap-1 text-[10px] text-[var(--color-teal-400)] font-[family-name:var(--font-ui)] hover:text-[var(--color-teal-300)] transition-colors min-h-[32px]"
                       >
                         {isImpactOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                         {isImpactOpen ? "Ocultar impacto" : "Ver impacto comparativo"}
-                      </button>
+                      </Button>
 
                       <AnimatePresence>
                         {isImpactOpen && (
@@ -1211,7 +1219,8 @@ export default function NarrativeEngine() {
           {data.sections.map((section: NarrativeSection) => (
             <div key={section.id} className="glass-narrative-section">
               <div className="relative z-[1]">
-                <button
+                <Button
+                  variant="unstyled"
                   type="button"
                   onClick={() => toggleSection(section.id)}
                   className={cn(
@@ -1227,7 +1236,7 @@ export default function NarrativeEngine() {
                   {expandedSections.has(section.id)
                     ? <ChevronUp size={16} className="text-[var(--color-silver-400)] flex-shrink-0" />
                     : <ChevronDown size={16} className="text-[var(--color-silver-400)] flex-shrink-0" />}
-                </button>
+                </Button>
                 <AnimatePresence>
                   {expandedSections.has(section.id) && (
                     <motion.div

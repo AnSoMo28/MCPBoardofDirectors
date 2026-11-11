@@ -59,6 +59,7 @@ import type {
 import { ADVISOR_IMPACT_LEVELS, ADVISOR_LAYERS } from "../config";
 
 import "./FamilyAdvisorBanner.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Types
@@ -153,13 +154,14 @@ function Headline({
         {headline}
       </span>
       {experience.headlineCta && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fm-cta fm-cta--ghost fm-advisorBanner__headline-cta"
           onClick={() => onTabChange(experience.headlineCta!.targetTab)}
         >
           {experience.headlineCta.label}
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -223,23 +225,25 @@ function InsightCard({
       {/* Actions — CTAs (P3) */}
       <div className="fm-insight__actions">
         {slot.ctas.map((cta) => (
-          <button
+          <Button
+            variant="unstyled"
             key={`${cta.label}-${cta.targetTab}`}
             type="button"
             className={`fm-cta fm-cta--${cta.variant}`}
             onClick={() => handleCta(cta)}
           >
             {cta.label}
-          </button>
+          </Button>
         ))}
         {onQuickAction && slot.base.severity === "critical" && (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="fm-cta fm-cta--primary"
             onClick={() => onQuickAction("urgent", slot.base)}
           >
             Acción inmediata
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -326,7 +330,8 @@ export function FamilyAdvisorBanner({
             {highCount} urgente{highCount !== 1 ? "s" : ""}
           </span>
         )}
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fm-expandable__trigger fm-advisorBanner__toggle"
           onClick={toggleShowAll}
@@ -334,7 +339,7 @@ export function FamilyAdvisorBanner({
         >
           <ChevronDown className="fm-expandable__trigger-icon" />
           {showAll ? "Colapsar" : "Expandir"}
-        </button>
+        </Button>
       </div>
 
       {/* ══════ Expanded body ══════ */}
@@ -376,13 +381,14 @@ export function FamilyAdvisorBanner({
                 />
               ))}
               {!showAll && experience.inlines.length > maxVisible && (
-                <button
+                <Button
+                  variant="unstyled"
                   type="button"
                   className="fm-expandable__trigger"
                   onClick={toggleShowAll}
                 >
                   Ver {experience.inlines.length - maxVisible} más
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -390,7 +396,8 @@ export function FamilyAdvisorBanner({
           {/* Archive (low) — expandable */}
           {experience.archived.length > 0 && (
             <div className="fm-expandable" data-open={archiveOpen || undefined}>
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="fm-expandable__trigger"
                 onClick={toggleArchive}
@@ -398,7 +405,7 @@ export function FamilyAdvisorBanner({
               >
                 <ChevronDown className="fm-expandable__trigger-icon" />
                 Otras observaciones ({experience.archived.length})
-              </button>
+              </Button>
               <div className="fm-expandable__content">
                 <div className="fm-expandable__content-inner">
                   <div className="fm-advisorBanner__group">
@@ -417,14 +424,15 @@ export function FamilyAdvisorBanner({
 
           {/* Gateway to Intelligence Panel (P6) */}
           {onOpenPanel && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fm-advisorBanner__gateway"
               onClick={onOpenPanel}
             >
               <BarChart3 size={13} />
               Ver análisis completo del Intelligence Engine
-            </button>
+            </Button>
           )}
         </div>
       )}

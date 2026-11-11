@@ -58,6 +58,7 @@ import {
 import type { UseGuestDashboardReturn } from "../hooks/useGuestDashboard";
 
 import "./GuestAskBar.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -398,7 +399,7 @@ export function GuestAskBar({
                 {isComplete && exchange.response.actions.length > 0 && (
                   <div className="gst-askbar__actions" role="group" aria-label="Acciones disponibles">
                     {exchange.response.actions.map((action, ai) => (
-                      <button
+                      <Button
                         key={`${action.tool}-${ai}`}
                         className="gst-askbar__action"
                         data-variant={action.variant}
@@ -409,7 +410,7 @@ export function GuestAskBar({
                         aria-label={action.label}
                       >
                         {action.label}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 )}
@@ -423,7 +424,8 @@ export function GuestAskBar({
       {!hasMessages && (
         <div className="gst-askbar__suggestions" role="list" aria-label="Consultas sugeridas">
           {SUGGESTED_QUERIES.map((sq) => (
-            <button
+            <Button
+              variant="unstyled"
               key={sq.labelKey}
               className="gst-askbar__suggestion"
               onClick={() => handleSuggestion(sq.query)}
@@ -432,7 +434,7 @@ export function GuestAskBar({
               data-testid={`askbar-suggest-${sq.labelKey.split(".").pop()}`}
             >
               {sq.label}
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -456,7 +458,8 @@ export function GuestAskBar({
           data-testid="askbar-input"
           autoComplete="off"
         />
-        <button
+        <Button
+          variant="unstyled"
           className="gst-askbar__send"
           type="submit"
           disabled={!inputValue.trim() || !conciergeInput}
@@ -464,7 +467,7 @@ export function GuestAskBar({
           data-testid="askbar-send"
         >
           Enviar
-        </button>
+        </Button>
       </form>
 
       {/* ── Error state ── */}

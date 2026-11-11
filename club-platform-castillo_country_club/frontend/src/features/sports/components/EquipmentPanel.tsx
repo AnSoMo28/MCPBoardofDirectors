@@ -54,6 +54,7 @@ import {
 import type { EquipmentLifecycle_Contract } from "@/shared/mocks/contracts";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import "./EquipmentPanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -261,7 +262,8 @@ function Filters({
         ))}
       </select>
 
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="spt-equip__sort-btn"
         data-sort={sortBy}
@@ -269,7 +271,7 @@ function Filters({
       >
         <ArrowDown className="spt-equip__sort-icon" />
         {sortBy === "urgency" ? "Por urgencia" : "Por nombre"}
-      </button>
+      </Button>
 
       <span className="spt-equip__filter-count">
         {resultCount} item{resultCount !== 1 ? "s" : ""}

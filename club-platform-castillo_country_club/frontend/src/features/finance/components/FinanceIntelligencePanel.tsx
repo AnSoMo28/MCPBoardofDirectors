@@ -1083,7 +1083,8 @@ export default function FinanceIntelligencePanel() {
 
           {/* Advanced tools toggle */}
           <div className="mt-3 pt-3 border-t border-white/[0.06]">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               onClick={() => setAdvancedOpen((v) => !v)}
               className="glass-intelligence-advanced-toggle focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)]"
@@ -1091,7 +1092,7 @@ export default function FinanceIntelligencePanel() {
             >
               Avanzado
               {advancedOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            </button>
+            </Button>
 
             <AnimatePresence>
               {advancedOpen && (

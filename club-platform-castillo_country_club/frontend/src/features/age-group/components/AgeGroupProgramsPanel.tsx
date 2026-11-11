@@ -42,6 +42,7 @@ import {
 import type { AgeBracketId } from "../types";
 
 import "./AgeGroupProgramsPanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ── §0  Local Types ──────────────────────────────────────── */
 
@@ -474,7 +475,8 @@ function ProgramCard({
       <CohortHeatmap affinities={intel.affinities} />
 
       {/* § Expand Toggle (P5) */}
-      <button
+      <Button
+        variant="unstyled"
         className="ag-programs__card-expand-btn"
         onClick={() => setExpanded(!expanded)}
         type="button"
@@ -491,7 +493,7 @@ function ProgramCard({
           data-open={expanded || undefined}
           aria-hidden="true"
         />
-      </button>
+      </Button>
 
       {/* § Expanded Content (P5) */}
       {expanded && (

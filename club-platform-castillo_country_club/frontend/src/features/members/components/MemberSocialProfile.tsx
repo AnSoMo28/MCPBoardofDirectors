@@ -36,6 +36,7 @@ import {
 } from "../types";
 
 import "./MemberSocialProfile.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -435,7 +436,8 @@ export function MemberSocialProfile({ memberId, className }: MemberSocialProfile
             </div>
 
             {data.connections.length > maxConnections && (
-              <button
+              <Button
+                variant="unstyled"
                 onClick={() =>
                   setShowAllConnections(!showAllConnections)
                 }
@@ -451,7 +453,7 @@ export function MemberSocialProfile({ memberId, className }: MemberSocialProfile
                     {data.connections.length - maxConnections} más
                   </>
                 )}
-              </button>
+              </Button>
             )}
           </>
         )}

@@ -1201,7 +1201,12 @@ function checkRawButtons(ctx: ScanContext): CheckOutcome {
     if (!content) continue;
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
-      if (/<button(?=[\s>]|$)/.test(lines[i]!.replace(/\r$/, ""))) {
+      // B5: líneas de comentario (// o dentro de bloques /* */) no cuentan —
+      // eran 2 FPs (LiveArenaGrid L19, EventAdvisorBanner L35: anotaciones
+      // de header que mencionan <button> en prosa).
+      const code = lines[i]!.replace(/\r$/, "");
+      const isComment = /^\s*(\/\/|\*|\/\*)/.test(code);
+      if (!isComment && /<button(?=[\s>]|$)/.test(code)) {
         findings.push({
           file: relPath,
           line: i + 1,

@@ -400,7 +400,8 @@ function MetricSlider({
     >
       {/* Top row */}
       <div className="flex items-center gap-3 mb-1.5">
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           onClick={onToggle}
           className={cn(
@@ -420,7 +421,7 @@ function MetricSlider({
               active ? "translate-x-[15px]" : "translate-x-[3px]",
             )}
           />
-        </button>
+        </Button>
 
         <span className="flex-1 min-w-0 text-xs font-medium text-[var(--color-silver-200)] font-[family-name:var(--font-ui)] truncate capitalize">
           {metricName}
@@ -619,7 +620,8 @@ export function ScenarioBuilder({
         {/* ── Templates ── */}
         <motion.div {...(stagger(0) ?? {})}>
           <div className="rounded-[var(--radius-lg)] bg-[var(--color-surface-0)]/30 border border-white/[0.04] overflow-hidden">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               onClick={() => setShowTemplates(!showTemplates)}
               className={cn(
@@ -643,7 +645,7 @@ export function ScenarioBuilder({
               ) : (
                 <ChevronDown className="w-4 h-4 text-[var(--color-silver-400)]" />
               )}
-            </button>
+            </Button>
 
             <AnimatePresence>
               {showTemplates && (
@@ -660,7 +662,8 @@ export function ScenarioBuilder({
                       const isSelected = selectedTemplateId === tpl.id;
 
                       return (
-                        <button
+                        <Button
+                          variant="unstyled"
                           key={tpl.id}
                           type="button"
                           onClick={() => handleTemplateSelect(tpl)}
@@ -695,7 +698,7 @@ export function ScenarioBuilder({
                               <TemplatePreview deltas={tpl.deltas} />
                             </div>
                           </div>
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>

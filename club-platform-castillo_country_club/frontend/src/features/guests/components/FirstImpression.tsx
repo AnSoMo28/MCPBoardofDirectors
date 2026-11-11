@@ -27,6 +27,7 @@ import type {
 } from "../types";
 
 import "./FirstImpression.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -196,14 +197,15 @@ export function FirstImpression({
               {analysis.alertMessage ?? "Primera impresión crítica. Recuperación de servicio requerida."}
             </p>
             {onAlertAcknowledge && (
-              <button
+              <Button
+                variant="unstyled"
                 className="gst-impression__alert-action"
                 onClick={() => onAlertAcknowledge(analysis)}
                 aria-label="Iniciar recuperación de servicio"
                 data-testid="impression-alert-acknowledge"
               >
                 Iniciar recuperación
-              </button>
+              </Button>
             )}
           </div>
         </div>

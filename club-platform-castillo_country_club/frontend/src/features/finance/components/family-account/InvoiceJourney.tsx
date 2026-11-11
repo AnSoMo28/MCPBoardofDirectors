@@ -9,6 +9,7 @@ import { INVOICE_STATUS_CONFIG } from "../../types";
 import type { Invoice } from "../../types";
 import type { UseQueryResult } from "@tanstack/react-query";
 import './FamilyAccountGlass.css';
+import { Button } from "@/shared/components/ui/Button";
 interface Props {
   invQ: UseQueryResult<Invoice[]>;
 }
@@ -43,7 +44,8 @@ function InvoiceCard({ inv, reduced }: { inv: Invoice; reduced: boolean }) {
       className={cn("glass-invoice-journey", isOverdue && "glass-invoice-journey--overdue")}
     >
       {/* Header */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         onClick={() => setExpanded(!expanded)}
         className="w-full text-left focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)]
@@ -112,7 +114,7 @@ function InvoiceCard({ inv, reduced }: { inv: Invoice; reduced: boolean }) {
             <span>{expanded ? "Menos" : "Detalle"}</span>
           </div>
         </div>
-      </button>
+      </Button>
 
       {/* Expanded detail */}
       <AnimatePresence>

@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRightLeft, CalendarDays } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ── Types ── */
 
@@ -96,7 +97,8 @@ export default function YearOverYearToggle({
             </span>
           </div>
 
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             onClick={() => setEnabled((v) => !v)}
             disabled={!yoyData}
@@ -144,7 +146,7 @@ export default function YearOverYearToggle({
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
               />
             </div>
-          </button>
+          </Button>
         </div>
 
         {/* YoY info bar (shown when enabled) */}

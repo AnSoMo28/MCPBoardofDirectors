@@ -33,6 +33,7 @@ import type {
 } from "../types";
 
 import "./SpatialStoryView.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -173,7 +174,8 @@ export function SpatialStoryView({
     >
       {/* ── Controls ── */}
       <div className="glass-fac-story__controls">
-        <button
+        <Button
+          variant="unstyled"
           className="glass-fac-story__btn"
           data-active={isPlaying ? "true" : undefined}
           onClick={handlePlayPause}
@@ -189,15 +191,16 @@ export function SpatialStoryView({
               <polygon points="6,4 20,12 6,20" />
             </svg>
           )}
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="unstyled"
           className="glass-fac-story__speed"
           onClick={handleSpeedToggle}
           aria-label={`Velocidad: ${speed}x`}
         >
           {speed}x
-        </button>
+        </Button>
 
         <div className="glass-fac-story__frame-info">
           <span className="glass-fac-story__frame-time">

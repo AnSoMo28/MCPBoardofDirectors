@@ -56,6 +56,7 @@ import { useCommunicationAdvisor } from "../hooks/useCommunicationAdvisor";
 import { CommunicationAdvisorBanner } from "./CommunicationAdvisorBanner";
 
 import "./CommunicationOverview.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // CONSTANTS
@@ -485,13 +486,14 @@ function SatisfactionCorrelation({
             Correlacioná tus comunicaciones con la satisfacción del socio.
           </p>
         </div>
-        <button
+        <Button
+          variant="unstyled"
           className="overview__cta-btn"
           onClick={() => setShouldFetch(true)}
         >
           <Heart size={16} />
           <span>Analizar correlación</span>
-        </button>
+        </Button>
       </div>
     );
   }
@@ -506,9 +508,9 @@ function SatisfactionCorrelation({
         <div className="overview__error">
           <AlertTriangle size={20} />
           <span>No se pudieron cargar las tendencias de satisfacción.</span>
-          <button className="overview__retry-btn" onClick={() => satQ.refetch()}>
+          <Button variant="unstyled" className="overview__retry-btn" onClick={() => satQ.refetch()}>
             Reintentar
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -631,7 +633,8 @@ function QuickActions({
           (action: typeof actions[number], idx: number) => {
             const ActionIcon = action.icon;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={action.label}
                 className="overview__quick-btn"
                 data-token={action.token}
@@ -646,7 +649,7 @@ function QuickActions({
                   <span className="overview__quick-sub">{action.sub}</span>
                 </div>
                 <ArrowRight size={16} className="overview__quick-arrow" />
-              </button>
+              </Button>
             );
           },
         )}
@@ -763,12 +766,13 @@ export function CommunicationOverview({
               Aún no hay datos de comunicaciones. Enviá tu primer comunicado para comenzar.
             </span>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             className="overview__empty-btn"
             onClick={() => onNavigate?.("centro")}
           >
             Ir al Centro de Comunicaciones
-          </button>
+          </Button>
         </div>
         <QuickActions onNavigate={onNavigate} />
       </div>
@@ -823,18 +827,19 @@ export function CommunicationOverview({
             </p>
           </div>
           {aiInsightsEnabled && aiInsights.length > 0 ? (
-            <button className="overview__refresh-btn" onClick={() => aiInsightsQ.refetch()}>
+            <Button variant="unstyled" className="overview__refresh-btn" onClick={() => aiInsightsQ.refetch()}>
               <RefreshCw size={14} />
               <span>Actualizar</span>
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
+              variant="unstyled"
               className="overview__generate-btn"
               onClick={() => setAiInsightsEnabled(true)}
             >
               <Lightbulb size={14} />
               <span>Generar Insights AI</span>
-            </button>
+            </Button>
           )}
         </div>
 
@@ -897,13 +902,14 @@ export function CommunicationOverview({
                           {ins.recommendation}
                         </div>
                         {ins.action_label && ins.action_route && (
-                          <button
+                          <Button
+                            variant="unstyled"
                             className="overview__ai-action-link"
                             onClick={() => onNavigate?.("herramientas")}
                           >
                             {ins.action_label}
                             <ArrowRight size={12} />
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>

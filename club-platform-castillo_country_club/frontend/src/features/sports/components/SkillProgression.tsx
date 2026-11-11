@@ -53,6 +53,7 @@ import {
 } from "../types";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import "./SkillProgression.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -400,7 +401,8 @@ function SportBreakdownCard({
         : "stable";
 
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className="spt-prog__sport-card"
       data-trend={trendDir}
@@ -441,7 +443,7 @@ function SportBreakdownCard({
           Fuerte: {data.bestDiscipline}
         </p>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -572,7 +574,8 @@ export function SkillProgression({
 
         {/* Sport filter */}
         <div className="spt-prog__filter" role="tablist" aria-label="Filtro deporte">
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             role="tab"
             aria-selected={selectedSport === "all"}
@@ -581,11 +584,12 @@ export function SkillProgression({
             onClick={() => setSelectedSport("all")}
           >
             Todos
-          </button>
+          </Button>
           {availableSports.map((sport) => {
             const cfg = SPORT_CONFIG[sport];
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={sport}
                 type="button"
                 role="tab"
@@ -595,7 +599,7 @@ export function SkillProgression({
                 onClick={() => setSelectedSport(sport)}
               >
                 {cfg?.icon} {cfg?.label}
-              </button>
+              </Button>
             );
           })}
         </div>

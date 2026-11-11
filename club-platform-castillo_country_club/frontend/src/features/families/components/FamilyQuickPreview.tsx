@@ -57,6 +57,7 @@ import {
 } from "../lib/familySignals";
 
 import "./FamilyQuickPreview.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Local Types
@@ -555,14 +556,15 @@ export function FamilyQuickPreview({
                 </span>
               </div>
             </div>
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fm-quickPreview__close-btn"
               onClick={handleClose}
               aria-label="Cerrar vista previa"
             >
               <X size={16} aria-hidden="true" />
-            </button>
+            </Button>
           </div>
 
           {/* ─── Intelligence Timeline (P1) ─── */}
@@ -765,7 +767,7 @@ export function FamilyQuickPreview({
             {actions.map((action) => {
               const ActionIcon = action.icon;
               return (
-                <button
+                <Button
                   key={action.id}
                   type="button"
                   className="fm-quickPreview__action"
@@ -776,7 +778,7 @@ export function FamilyQuickPreview({
                     <p className="fm-quickPreview__action-label">{action.label}</p>
                     <p className="fm-quickPreview__action-reason">{action.reason}</p>
                   </div>
-                </button>
+                </Button>
               );
             })}
             <Link

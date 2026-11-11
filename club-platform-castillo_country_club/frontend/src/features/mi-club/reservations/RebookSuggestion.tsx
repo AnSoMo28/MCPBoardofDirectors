@@ -10,6 +10,7 @@
 import { useNavigate } from "react-router";
 import { Lightbulb, ArrowRight } from "lucide-react";
 import type { RebookSuggestion as RebookSuggestionType } from "./types";
+import { Button } from "@/shared/components/ui/Button";
 
 interface RebookSuggestionProps {
   suggestion: RebookSuggestionType;
@@ -26,7 +27,8 @@ export function RebookSuggestion({
   });
 
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className="glass-reservations__suggestion"
       onClick={() =>
@@ -55,6 +57,6 @@ export function RebookSuggestion({
           className="glass-reservations__suggestion-arrow"
         />
       </div>
-    </button>
+    </Button>
   );
 }

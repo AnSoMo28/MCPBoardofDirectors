@@ -42,6 +42,7 @@ import {
   type AdvisorActionState,
 } from "@/shared/types/ai-intelligence";
 import "./FacilitiesAdvisorBanner.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // CONSTANTS
@@ -170,7 +171,8 @@ function InsightCard({
                 Listo
               </span>
             ) : (
-              <button
+              <Button
+                variant="unstyled"
                 className="fac-advisor__action-btn"
                 data-loading={actionState === "loading" ? "true" : undefined}
                 disabled={actionState === "loading"}
@@ -178,7 +180,7 @@ function InsightCard({
               >
                 <Zap className="fac-advisor__action-btn-icon" />
                 {actionState === "loading" ? "Ejecutando…" : "Ejecutar"}
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -294,7 +296,8 @@ export function FacilitiesAdvisorBanner({
 
       {/* Expand/collapse */}
       {hasMore && (
-        <button
+        <Button
+          variant="unstyled"
           className="fac-advisor__toggle"
           onClick={handleToggle}
         >
@@ -309,7 +312,7 @@ export function FacilitiesAdvisorBanner({
               Ver {insights.length - INITIAL_VISIBLE} más
             </>
           )}
-        </button>
+        </Button>
       )}
     </div>
   );
