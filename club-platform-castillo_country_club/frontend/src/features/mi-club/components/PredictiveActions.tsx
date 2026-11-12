@@ -1,11 +1,12 @@
 /**
  * @component PredictiveActions (Fase 25)
  * @namespace .glass-landing__predictive
- * @depends MiClubLanding.css
+ * @depends PredictiveActions.css
  * @note Context-aware action cards that change based on urgency,
  *       time, engagement, and AI recommendations.
- * @import import '../MiClubLanding.css';
+ * @import import './PredictiveActions.css';
  */
+import "./PredictiveActions.css";
 
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";

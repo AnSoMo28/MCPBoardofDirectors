@@ -1,11 +1,12 @@
 /**
  * @component ReportSection (Fase 25)
  * @namespace .glass-board__section*
- * @depends BoardReportViewer.css
+ * @depends ReportSection.css
  * @note Collapsible report section with type icon, AI confidence bar,
  *       recommendation highlight, low-confidence warning.
- * @import import '../BoardReportViewer.css';
+ * @import import './ReportSection.css';
  */
+import "./ReportSection.css";
 
 import { motion, type Variants } from "framer-motion";
 import {

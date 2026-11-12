@@ -1,10 +1,11 @@
 /**
  * @component PeriodSelector (Fase 25)
  * @namespace .glass-board__period-*
- * @depends BoardReportViewer.css
+ * @depends PeriodSelector.css
  * @note URL-synced period selector with keyboard navigation.
- * @import import '../BoardReportViewer.css';
+ * @import import './PeriodSelector.css';
  */
+import "./PeriodSelector.css";
 
 import { useCallback } from "react";
 import { cn } from "@/shared/lib/utils";

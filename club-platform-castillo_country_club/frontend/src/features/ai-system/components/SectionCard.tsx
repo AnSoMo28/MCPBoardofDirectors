@@ -1,12 +1,13 @@
 /**
  * @component SectionCard (Fase 25)
  * @namespace .glass-ai__section
- * @depends AISystemPage.css
+ * @depends SectionCard.css
  * @note Collapsible section wrapper with per-section ErrorBoundary.
  *       Collapse state controlled externally (persisted in localStorage).
  *       Error boundary resets on retry via key change.
- * @import import './AISystemPage.css';
+ * @import import './SectionCard.css';
  */
+import "./SectionCard.css";
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";

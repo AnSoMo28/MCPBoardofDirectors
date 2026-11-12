@@ -1,10 +1,11 @@
 /**
  * @component ToggleRow (Fase 25)
  * @namespace .glass-settings__toggle-row
- * @depends SettingsPage.css
+ * @depends ToggleRow.css
  * @note Accessible toggle switch with label and description.
- * @import import '../SettingsPage.css';
+ * @import import './ToggleRow.css';
  */
+import "./ToggleRow.css";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/Button";

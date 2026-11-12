@@ -1,10 +1,11 @@
 /**
  * @component RiskSummaryBar (Fase 25)
  * @namespace .glass-risk__summary
- * @depends RiskHeatmap.css
+ * @depends RiskSummaryBar.css
  * @note Summary stats grid showing risk counts by level.
- * @import import '../RiskHeatmap.css';
+ * @import import './RiskSummaryBar.css';
  */
+import "./RiskSummaryBar.css";
 
 import { RISK_LEVEL_CONFIG } from "@/shared/lib/riskTheme";
 import type { RiskSummary } from "@/features/reports/types";

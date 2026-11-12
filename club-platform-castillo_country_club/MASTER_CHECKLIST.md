@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.3 · Generación G10.2 (migración CSS T2 — cierre P0) · 180 checks · ZERO tolerance
+### Version: 9.4 · Generación G11 (desacoplamiento page-css — §15 cerrada) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian 4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -67,6 +67,51 @@ CONTENIDO:
   backend tiene su propio gate EJECUTABLE (smoke_b0 + pytest +
   ruff/mypy) — no se mezclan los números (principio §12 CHECKPOINT G7
   de colisiones terminológicas).
+```
+
+---
+
+## CHANGELOG G11 (v9.3 → v9.4)
+
+```
+DESACOPLAMIENTO PAGE-CSS — COLA §15 CERRADA (TRAMO 3 FINAL):
+- ENGINE de extracción atómica (scripts/g11_engine.py): parser css con
+  stash de comentarios (bug P0 corregido: los comentarios de sección
+  '/* ═ X ═ */' contaminaban preludes y 122 reglas se perdían silencio-
+  samente — detectado por validación de paridad antes==después),
+  atribución de regla→dueño en 3 niveles (censo exacto de clases del
+  tsx → prefijo de sub-familia → bloque raíz), split de grupos
+  multiselector (.light de 7 miembros → 1 regla por hijo, paridad visual
+  garantizada), keyframes compartidos quedan en host, exclusivos viajan
+  con su dueño.
+- 36 PAREJAS 1:1 NUEVAS (mi-club 10 · settings 6 · board 5 · knowledge
+  4 · risk 3 · approvals 2 · ai-system 2 · auth 2 · timeline 2 · hitl
+  1) — 684 reglas atómicas movidas byte-exactas.
+- 10 HOSTS PODADOS con banner documental (qué se extrajo, a dónde,
+  qué conserva: root/grids/headers/skeletons/Shared ≥2 hijos).
+- Cirugía tsx: import JS real "./X.css" (antes dependían del import
+  del host — acoplamiento invisible) + javadoc @depends/@import propio.
+- CAPA A11Y ADITIVA en los 36 css nuevos: :focus-visible (WCAG 2.2 AA
+  2.4.7) donde faltaba + prefers-reduced-motion (anti-demanda §
+  inclusividad) — sin tocar las reglas movidas (paridad intacta).
+- FEATURE-SHEETS documentadas por diseño (no acoplamiento): PrintView
+  (suite print), MyReservations (G10.2), FamilyAccountGlass (6 widgets),
+  LivingCommandCenter, ml-glass, PermissionGate, DocumentRepository,
+  PulseRadar, NeonBorder.
+- VALIDACIÓN: 0 reglas perdidas (paridad canónica núcleo) · 0 huérfanos
+  reales (321 clases OK · 15 dinámicas · 1 pre-existente Tailwind) ·
+  X-13: 0 colores NUEVOS (delta contador = split de grupos .light
+  pre-existentes, mismos valores distribuidos) · keyframes íntegros
+  (2 muertos PRE-EXISTENTES descartados: board-section-expand sin uso,
+  documentado) · EOL lf · imports 36/36 resuelven.
+- ESTADO FINAL CSS: 453/483 tsx con pareja css directa · 7 no-UI
+  documentados · 23 feature-sheets legítimas · cola §15 CERRADA.
+- MIGRACIÓN CSS 3 TRAMOS: G10.1 T1 (78 parejas) + G10.2 T2 (P0
+  MyReservations) + G11 T3 (desacoplamiento) = COMPLETA.
+- Gates estáticos sandbox: todos ✓. CI a re-correr en merge (build,
+  verify:build-css bundle +~30kB esperado por 36 css nuevos, vitest
+  baseline 6, guardian ratchet ≤15198: X-13 delta 0 real).
+- END: masters v9.4; protocolo intacto.
 ```
 
 ---
@@ -1145,6 +1190,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.3 · Generación G10.2 (sincronizada con
-MASTER_BASE.md v9.2 y MASTER_CHECKPOINT.md v9.2)
+END OF MASTER_CHECKLIST.md v9.4 · Generación G11 (sincronizada con
+MASTER_BASE.md v9.3 y MASTER_CHECKPOINT.md v9.3)
 

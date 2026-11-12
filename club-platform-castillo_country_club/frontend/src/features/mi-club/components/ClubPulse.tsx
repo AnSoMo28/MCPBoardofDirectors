@@ -1,11 +1,12 @@
 /**
  * @component ClubPulse (Fase 25)
  * @namespace .glass-landing__pulse
- * @depends MiClubLanding.css
+ * @depends ClubPulse.css
  * @note Ambient club status bar. Non-interactive, purely informational.
  *       Shows next event, family engagement. Barely visible — ambient.
- * @import import '../MiClubLanding.css';
+ * @import import './ClubPulse.css';
  */
+import "./ClubPulse.css";
 
 import { CalendarDays, TrendingUp } from "lucide-react";
 import type { ClubPulseData } from "../types";

@@ -1,10 +1,11 @@
 /**
  * @component ChatInput (Fase 25)
  * @namespace .glass-knowledge__input-*
- * @depends KnowledgeQuery.css
+ * @depends ChatInput.css
  * @note Chat input with auto-resize textarea, Enter/Shift+Enter, Ctrl+K focus.
- * @import import '../KnowledgeQuery.css';
+ * @import import './ChatInput.css';
  */
+import "./ChatInput.css";
 
 import {
   useEffect,

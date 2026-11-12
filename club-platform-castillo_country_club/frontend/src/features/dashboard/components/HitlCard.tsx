@@ -1,12 +1,13 @@
 /**
  * @component HitlCard (Fase 25)
  * @namespace .glass-hitl__card
- * @depends HitlQueue.css, config/hitl
+ * @depends HitlCard.css, config/hitl
  * @note Per-item approval card with AI decision context,
  *       smart reject confirmation (countdown bar),
  *       decision feedback overlay, batch checkbox.
- * @import import '../HitlQueue.css';
+ * @import import './HitlCard.css';
  */
+import "./HitlCard.css";
 
 import { Check, X, Clock, Loader2 } from "lucide-react";
 import { cn, timeAgo } from "@/shared/lib/utils";

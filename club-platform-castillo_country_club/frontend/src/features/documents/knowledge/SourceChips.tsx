@@ -1,10 +1,11 @@
 /**
  * @component SourceChips (Fase 25)
  * @namespace .glass-knowledge__source*
- * @depends KnowledgeQuery.css
+ * @depends SourceChips.css
  * @note Source citation chips with inline expand for snippet.
- * @import import '../KnowledgeQuery.css';
+ * @import import './SourceChips.css';
  */
+import "./SourceChips.css";
 
 import { useState } from "react";
 import { FileText, BookOpen } from "lucide-react";

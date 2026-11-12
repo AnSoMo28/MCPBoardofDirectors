@@ -1,10 +1,11 @@
 /**
  * @component ReportHeader (Fase 25)
  * @namespace .glass-board__header
- * @depends BoardReportViewer.css
+ * @depends ReportHeader.css
  * @note Report header with title, metadata, AI badge, approval status.
- * @import import '../BoardReportViewer.css';
+ * @import import './ReportHeader.css';
  */
+import "./ReportHeader.css";
 
 import { motion, type Variants } from "framer-motion";
 import {

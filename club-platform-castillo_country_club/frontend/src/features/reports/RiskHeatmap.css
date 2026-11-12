@@ -6,18 +6,51 @@
  *       keyboard grid navigation, popover (desktop absolute / mobile bottom sheet).
  * @import import './RiskHeatmap.css';
  */
+/*
+ * ═══════════════════════════════════════════════════════════════════
+ * G11 — DESACOPLAMIENTO PAGE-CSS · este host fue podado (features/reports/RiskHeatmap.css)
+ * Reglas de componentes extraídas a parejas 1:1 (paridad atómica
+ * verificada antes==después): MatrixCell.css (23), RiskPopoverContent.css (35), RiskSummaryBar.css (7)
+ * Este archivo conserva SOLO lo estructural de página (root, grids,
+ * headers, skeletons, y shared que cruzan ≥2 hijos).
+ * ═══════════════════════════════════════════════════════════════════
+ */
 
-/* ═══════════════════════════════════════
-   Root & Body
-   ═══════════════════════════════════════ */
+@keyframes risk-cell-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes risk-cell-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.06);
+  }
+}
+
+@keyframes risk-pop-slide-up {
+  from {
+    transform: translateY(40%);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 
 .glass-risk__body {
   padding: 24px;
 }
-
-/* ═══════════════════════════════════════
-   Header
-   ═══════════════════════════════════════ */
 
 .glass-risk__header {
   display: flex;
@@ -49,61 +82,11 @@
   color: var(--color-silver-500, #7a7570);
 }
 
-/* ═══════════════════════════════════════
-   Summary Bar
-   ═══════════════════════════════════════ */
-
-.glass-risk__summary {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
 @media (min-width: 640px) {
   .glass-risk__summary {
     grid-template-columns: repeat(4, 1fr);
   }
 }
-
-.glass-risk__summary-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background: var(--glass-bg);
-}
-
-.glass-risk__summary-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.glass-risk__summary-count {
-  margin: 0;
-  font-family: var(--font-mono, "DM Mono", monospace);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-silver-200, #d4cfc7);
-  line-height: 1;
-}
-
-.glass-risk__summary-label {
-  margin: 1px 0 0;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 11px;
-  color: var(--color-silver-500, #7a7570);
-}
-
-/* ═══════════════════════════════════════
-   Matrix Layout
-   ═══════════════════════════════════════ */
 
 .glass-risk__matrix-wrap {
   position: relative;
@@ -114,7 +97,6 @@
   gap: 0;
 }
 
-/* ── Y-axis ── */
 .glass-risk__axis-y {
   display: flex;
   flex-direction: column;
@@ -144,13 +126,11 @@
   transform: rotate(180deg);
 }
 
-/* ── Grid area ── */
 .glass-risk__grid-area {
   flex: 1;
   min-width: 0;
 }
 
-/* ── Column headers ── */
 .glass-risk__col-headers {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -183,9 +163,8 @@
   color: rgba(122, 117, 112, 0.5);
 }
 
-/* ── Grid & Rows ── */
 .glass-risk__grid {
-  /* ARIA grid container */
+  /*@c8@*/
 }
 
 .glass-risk__row {
@@ -229,64 +208,9 @@
   gap: 8px;
 }
 
-/* ── X-axis ── */
 .glass-risk__axis-x {
   text-align: center;
   margin-top: 8px;
-}
-
-/* ═══════════════════════════════════════
-   Cell — Base
-   ═══════════════════════════════════════ */
-
-.glass-risk__cell {
-  position: relative;
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  border: 2px solid transparent;
-  cursor: pointer;
-  user-select: none;
-  min-height: 44px;
-  min-width: 44px;
-  outline: none;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.15s ease;
-}
-
-.glass-risk__cell:focus-visible {
-  border-color: var(--color-gold-400, #c9a96e);
-  box-shadow: 0 0 0 2px rgba(201, 169, 110, 0.2);
-}
-
-.glass-risk__cell:hover:not(.glass-risk__cell--active) {
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-/* ── Circle ── */
-.glass-risk__cell-circle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.glass-risk__cell-count {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono, "DM Mono", monospace);
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 @media (min-width: 640px) {
@@ -297,171 +221,43 @@
   }
 }
 
-.glass-risk__cell-score {
-  display: none;
-  font-family: var(--font-mono, "DM Mono", monospace);
-  font-size: 10px;
-  font-weight: 600;
-}
-
 @media (min-width: 640px) {
   .glass-risk__cell-score {
     display: block;
   }
 }
 
-.glass-risk__cell-empty-score {
-  font-family: var(--font-mono, "DM Mono", monospace);
-  font-size: 12px;
-  color: rgba(122, 117, 112, 0.3);
-}
-
-/* ═══════════════════════════════════════
-   Cell — Heat Levels (background gradient)
-   ═══════════════════════════════════════ */
-
-.glass-risk__cell--heat-low {
-  background: rgba(52, 211, 153, 0.05);
-}
-
-.glass-risk__cell--heat-medium {
-  background: rgba(251, 191, 36, 0.07);
-}
-
-.glass-risk__cell--heat-high {
-  background: rgba(251, 113, 133, 0.09);
-}
-
-.glass-risk__cell--heat-critical {
-  background: rgba(244, 63, 94, 0.12);
-}
-
-/* ═══════════════════════════════════════
-   Cell — States
-   ═══════════════════════════════════════ */
-
-.glass-risk__cell--active {
-  border-color: var(--color-gold-400, #c9a96e);
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 2px rgba(201, 169, 110, 0.15);
-  transform: scale(1.05);
-  z-index: 2;
-}
-
-.glass-risk__cell--empty {
-  opacity: 0.4;
-}
-
-/* ═══════════════════════════════════════
-   Cell — Animations
-   ═══════════════════════════════════════ */
-
-.glass-risk__cell--stagger {
-  opacity: 0;
-  animation: risk-cell-appear 0.25s ease forwards;
-}
-
-.glass-risk__cell--stagger.glass-risk__cell--has-risks {
-  animation:
-    risk-cell-appear 0.25s ease forwards,
-    risk-cell-glow 1.5s ease-in-out 0.4s 2;
-}
-
-@keyframes risk-cell-appear {
-  from {
-    opacity: 0;
-    transform: scale(0.88);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes risk-cell-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
-  50% {
-    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.06);
-  }
-}
-
-/* ═══════════════════════════════════════
-   Popover — Container
-   ═══════════════════════════════════════ */
-
-.glass-risk__popover {
-  position: absolute;
-  width: 320px;
-  z-index: 50;
-  outline: none;
-}
-
-/* ── Mobile: bottom sheet ── */
 .glass-risk__backdrop {
   display: none;
 }
 
 @media (max-width: 640px) {
   .glass-risk__backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-    z-index: 90;
-  }
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      z-index: 90;
+    }
 
-  .glass-risk__popover {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    top: auto !important;
-    width: 100% !important;
-    max-height: 60vh;
-    border-radius: 16px 16px 0 0;
-    z-index: 100;
-  }
+    .glass-risk__popover {
+      position: fixed !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      top: auto !important;
+      width: 100% !important;
+      max-height: 60vh;
+      border-radius: 16px 16px 0 0;
+      z-index: 100;
+    }
 
-  /* Override framer-motion transform for mobile */
-  .glass-risk__popover > * {
-    animation: risk-pop-slide-up 0.25s ease;
-  }
-}
 
-@keyframes risk-pop-slide-up {
-  from {
-    transform: translateY(40%);
-    opacity: 0.6;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
+  /*@c17@*/
 
-/* ═══════════════════════════════════════
-   Popover — Content
-   ═══════════════════════════════════════ */
-
-.glass-risk__pop {
-  backdrop-filter: blur(12px) saturate(1.05);
-  -webkit-backdrop-filter: blur(12px) saturate(1.05);
-  background: var(--color-surface-1, rgba(18, 22, 30, 0.95));
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.25),
-    0 2px 8px rgba(0, 0, 0, 0.15);
-  padding: 16px;
-  max-height: 400px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+    .glass-risk__popover > * {
+      animation: risk-pop-slide-up 0.25s ease;
+    }
 }
 
 @media (max-width: 640px) {
@@ -469,11 +265,6 @@
     border-radius: 16px 16px 0 0;
     max-height: 60vh;
   }
-}
-
-/* ── Mobile drag handle ── */
-.glass-risk__pop-handle {
-  display: none;
 }
 
 @media (max-width: 640px) {
@@ -486,163 +277,6 @@
     margin: 0 auto 4px;
   }
 }
-
-/* ── Header ── */
-.glass-risk__pop-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.glass-risk__pop-header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.glass-risk__pop-header-icon {
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-}
-
-.glass-risk__pop-title {
-  margin: 0;
-  font-family: var(--font-display, "Italiana", serif);
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--color-silver-200, #d4cfc7);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.glass-risk__pop-close {
-  flex-shrink: 0;
-  padding: 4px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--color-silver-500, #7a7570);
-  cursor: pointer;
-  transition: color 0.12s ease, background 0.12s ease;
-}
-
-.glass-risk__pop-close:hover {
-  color: var(--color-silver-200, #d4cfc7);
-  background: var(--glass-bg-hover);
-}
-
-.glass-risk__pop-close svg {
-  width: 14px;
-  height: 14px;
-}
-
-/* ── Badges ── */
-.glass-risk__pop-badges {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.glass-risk__pop-badge-cat {
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 999px;
-}
-
-/* ── Description ── */
-.glass-risk__pop-desc {
-  margin: 0;
-  font-family: var(--font-body, "Source Serif 4", serif);
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--color-silver-400, #a09a92);
-}
-
-/* ── Scores ── */
-.glass-risk__pop-scores {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.glass-risk__pop-score-item {
-  text-align: center;
-  padding: 8px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.glass-risk__pop-score-label {
-  display: block;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 10px;
-  color: var(--color-silver-500, #7a7570);
-  margin-bottom: 2px;
-}
-
-.glass-risk__pop-score-value {
-  display: block;
-  font-family: var(--font-mono, "DM Mono", monospace);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-silver-200, #d4cfc7);
-}
-
-/* ── Mitigation ── */
-.glass-risk__pop-mitigation {
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.glass-risk__pop-mitigation-label {
-  display: block;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 10px;
-  color: var(--color-silver-500, #7a7570);
-  margin-bottom: 4px;
-}
-
-.glass-risk__pop-mitigation-text {
-  margin: 0;
-  font-family: var(--font-body, "Source Serif 4", serif);
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--color-silver-200, #d4cfc7);
-}
-
-/* ── Owner ── */
-.glass-risk__pop-owner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 11px;
-  color: var(--color-silver-500, #7a7570);
-}
-
-.glass-risk__pop-owner-value {
-  font-weight: 500;
-  color: var(--color-silver-200, #d4cfc7);
-}
-
-/* ── Additional risks ── */
-.glass-risk__pop-additional {
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 11px;
-  color: var(--color-silver-500, #7a7570);
-}
-
-/* ═══════════════════════════════════════
-   Legend
-   ═══════════════════════════════════════ */
 
 .glass-risk__legend {
   display: flex;
@@ -672,10 +306,6 @@
   font-size: 11px;
   color: var(--color-silver-500, #7a7570);
 }
-
-/* ═══════════════════════════════════════
-   Categories
-   ═══════════════════════════════════════ */
 
 .glass-risk__categories {
   padding-top: 16px;
@@ -727,10 +357,6 @@
   font-weight: 700;
 }
 
-/* ═══════════════════════════════════════
-   Print overrides
-   ═══════════════════════════════════════ */
-
 @media print {
   .glass-risk__backdrop,
   .glass-risk__popover,
@@ -750,10 +376,6 @@
   }
 }
 
-/* ═══════════════════════════════════════
-   Reduced motion
-   ═══════════════════════════════════════ */
-
 @media (prefers-reduced-motion: reduce) {
   .glass-risk__cell--stagger {
     animation: none !important;
@@ -769,118 +391,12 @@
   }
 }
 
-/* ═══════════════════════════════════════
-   Light mode overrides
-   ═══════════════════════════════════════ */
-
-.light .glass-risk__summary-card {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(0, 0, 0, 0.06);
-}
-
-.light .glass-risk__summary-count {
-  color: var(--color-silver-800, #2c2a27);
-}
-
 .light .glass-risk__header-icon {
   color: var(--color-silver-500, #7a7570);
 }
 
 .light .glass-risk__header-title {
   color: var(--color-silver-800, #2c2a27);
-}
-
-.light .glass-risk__cell--heat-low {
-  background: rgba(5, 150, 105, 0.04);
-}
-
-.light .glass-risk__cell--heat-medium {
-  background: rgba(217, 119, 6, 0.05);
-}
-
-.light .glass-risk__cell--heat-high {
-  background: rgba(225, 29, 72, 0.06);
-}
-
-.light .glass-risk__cell--heat-critical {
-  background: rgba(225, 29, 72, 0.09);
-}
-
-.light .glass-risk__cell:focus-visible {
-  border-color: #8b7340;
-  box-shadow: 0 0 0 2px rgba(139, 115, 64, 0.2);
-}
-
-.light .glass-risk__cell:hover:not(.glass-risk__cell--active) {
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-.light .glass-risk__cell--active {
-  border-color: #8b7340;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.1),
-    0 0 0 2px rgba(139, 115, 64, 0.15);
-}
-
-.light .glass-risk__cell-empty-score {
-  color: rgba(0, 0, 0, 0.15);
-}
-
-.light .glass-risk__pop {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.light .glass-risk__pop-title {
-  color: var(--color-silver-800, #2c2a27);
-}
-
-.light .glass-risk__pop-close {
-  color: var(--color-silver-500, #7a7570);
-}
-
-.light .glass-risk__pop-close:hover {
-  color: var(--color-silver-700, #4a4742);
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.light .glass-risk__pop-desc {
-  color: var(--color-silver-600, #5c5853);
-}
-
-.light .glass-risk__pop-score-item {
-  background: rgba(0, 0, 0, 0.02);
-}
-
-.light .glass-risk__pop-score-value {
-  color: var(--color-silver-800, #2c2a27);
-}
-
-.light .glass-risk__pop-mitigation {
-  border-top-color: rgba(0, 0, 0, 0.06);
-}
-
-.light .glass-risk__pop-mitigation-text {
-  color: var(--color-silver-700, #4a4742);
-}
-
-.light .glass-risk__pop-owner {
-  color: var(--color-silver-500, #7a7570);
-}
-
-.light .glass-risk__pop-owner-value {
-  color: var(--color-silver-800, #2c2a27);
-}
-
-.light .glass-risk__pop-additional {
-  border-top-color: rgba(0, 0, 0, 0.06);
 }
 
 .light .glass-risk__legend {
@@ -902,3 +418,65 @@
 .light .glass-risk__backdrop {
   background: rgba(0, 0, 0, 0.25);
 }
+/* ═══════════════════════════════════════
+   Root & Body
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Header
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Summary Bar
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Matrix Layout
+   ═══════════════════════════════════════ */
+/* ── Y-axis ── */
+/* ── Grid area ── */
+/* ── Column headers ── */
+/* ── Grid & Rows ── */
+/* ARIA grid container */
+/* ── X-axis ── */
+/* ═══════════════════════════════════════
+   Cell — Base
+   ═══════════════════════════════════════ */
+/* ── Circle ── */
+/* ═══════════════════════════════════════
+   Cell — Heat Levels (background gradient)
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Cell — States
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Cell — Animations
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Popover — Container
+   ═══════════════════════════════════════ */
+/* ── Mobile: bottom sheet ── */
+/* Override framer-motion transform for mobile */
+/* ═══════════════════════════════════════
+   Popover — Content
+   ═══════════════════════════════════════ */
+/* ── Mobile drag handle ── */
+/* ── Header ── */
+/* ── Badges ── */
+/* ── Description ── */
+/* ── Scores ── */
+/* ── Mitigation ── */
+/* ── Owner ── */
+/* ── Additional risks ── */
+/* ═══════════════════════════════════════
+   Legend
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Categories
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Print overrides
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Reduced motion
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */

@@ -6,94 +6,31 @@
  *       staggered entry animation, load-more.
  * @import import './DecisionTimeline.css';
  */
+/*
+ * ═══════════════════════════════════════════════════════════════════
+ * G11 — DESACOPLAMIENTO PAGE-CSS · este host fue podado (features/reports/DecisionTimeline.css)
+ * Reglas de componentes extraídas a parejas 1:1 (paridad atómica
+ * verificada antes==después): TimelineFilters.css (15), TimelineStats.css (18)
+ * Este archivo conserva SOLO lo estructural de página (root, grids,
+ * headers, skeletons, y shared que cruzan ≥2 hijos).
+ * ═══════════════════════════════════════════════════════════════════
+ */
 
-/* ═══════════════════════════════════════
-   Stats Grid
-   ═══════════════════════════════════════ */
-
-.glass-timeline__stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+@keyframes timeline-entry-slide {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @media (min-width: 640px) {
   .glass-timeline__stats {
     grid-template-columns: repeat(4, 1fr);
   }
-}
-
-.glass-timeline__stat {
-  position: relative;
-  padding: 12px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px) saturate(1.05);
-  -webkit-backdrop-filter: blur(10px) saturate(1.05);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  overflow: hidden;
-}
-
-.glass-timeline__stat-icon {
-  opacity: 0.6;
-  margin-bottom: 4px;
-}
-
-.glass-timeline__stat-icon svg {
-  width: 14px;
-  height: 14px;
-}
-
-.glass-timeline__stat-label {
-  margin: 0 0 2px;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-silver-500, #7a7570);
-}
-
-.glass-timeline__stat-value {
-  margin: 0;
-  font-family: var(--font-mono, "DM Mono", monospace);
-  font-size: 20px;
-  font-weight: 700;
-}
-
-/* ═══════════════════════════════════════
-   Accuracy Ring
-   ═══════════════════════════════════════ */
-
-.glass-timeline__accuracy-ring {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px) saturate(1.05);
-  -webkit-backdrop-filter: blur(10px) saturate(1.05);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-}
-
-.glass-timeline__accuracy-svg {
-  width: 56px;
-  height: 56px;
-  transform: rotate(-90deg);
-}
-
-.glass-timeline__accuracy-track {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.06);
-  stroke-width: 4;
-}
-
-.glass-timeline__accuracy-fill {
-  fill: none;
-  stroke-width: 4;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 1s ease;
 }
 
 .glass-timeline__accuracy-fill--high {
@@ -108,123 +45,12 @@
   stroke: var(--color-rose-400, #fb7185);
 }
 
-.glass-timeline__accuracy-text {
-  position: absolute;
-  font-family: var(--font-mono, "DM Mono", monospace);
-  font-size: 14px;
-  font-weight: 700;
-  text-align: center;
-  line-height: 1;
-}
-
-.glass-timeline__accuracy-label {
-  display: block;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 9px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-silver-500, #7a7570);
-  margin-top: 2px;
-}
-
-/* ═══════════════════════════════════════
-   Filter Bar
-   ═══════════════════════════════════════ */
-
-.glass-timeline__filters {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.glass-timeline__filter-group {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.glass-timeline__filter-icon {
-  width: 14px;
-  height: 14px;
-  color: var(--color-silver-500, #7a7570);
-  flex-shrink: 0;
-}
-
-.glass-timeline__filter-btn {
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 11px;
-  font-weight: 500;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--color-silver-400, #a09a92);
-  cursor: pointer;
-  transition:
-    background 0.12s ease,
-    color 0.12s ease,
-    border-color 0.12s ease;
-  min-height: 28px;
-}
-
-.glass-timeline__filter-btn:hover {
-  background: var(--glass-bg-hover);
-  color: var(--color-silver-200, #d4cfc7);
-}
-
-.glass-timeline__filter-btn:focus-visible {
-  outline: 2px solid var(--color-gold-400, #c9a96e);
-  outline-offset: 1px;
-}
-
-.glass-timeline__filter-btn--active {
-  background: rgba(201, 169, 110, 0.1);
-  color: var(--color-gold-400, #c9a96e);
-  border-color: rgba(201, 169, 110, 0.2);
-}
-
-/* ── Select dropdowns ── */
-
-.glass-timeline__filter-select {
-  padding: 4px 24px 4px 8px;
-  border-radius: 6px;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 11px;
-  background: transparent;
-  color: var(--color-silver-400, #a09a92);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%237a7570' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  min-height: 28px;
-  transition: border-color 0.12s ease, color 0.12s ease;
-}
-
-.glass-timeline__filter-select:hover {
-  border-color: var(--glass-border-hover);
-  color: var(--color-silver-200, #d4cfc7);
-}
-
-.glass-timeline__filter-select:focus-visible {
-  outline: 2px solid var(--color-gold-400, #c9a96e);
-  outline-offset: 1px;
-}
-
-/* ═══════════════════════════════════════
-   Timeline List
-   ═══════════════════════════════════════ */
-
-
 .glass-timeline__list {
   position: relative;
-  padding-left: 0;    /* ← era 24px, ya no necesitamos offset */
+    padding-left: 0;    
+  /*@c5@*/
 }
 
-/* ── Vertical connector line ── */
 .glass-timeline__list {
   content: "";
   position: absolute;
@@ -236,21 +62,9 @@
   border-radius: 1px;
 }
 
-/* ── Entry animation ── */
 .glass-timeline__entry-enter {
   opacity: 0;
   animation: timeline-entry-slide 0.3s ease forwards;
-}
-
-@keyframes timeline-entry-slide {
-  from {
-    opacity: 0;
-    transform: translateX(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -259,10 +73,6 @@
     opacity: 1;
   }
 }
-
-/* ═══════════════════════════════════════
-   Load More
-   ═══════════════════════════════════════ */
 
 .glass-timeline__load-more {
   text-align: center;
@@ -294,36 +104,8 @@
   outline-offset: 2px;
 }
 
-/* ═══════════════════════════════════════
-   Empty Wrapper
-   ═══════════════════════════════════════ */
-
 .glass-timeline__empty {
-  /* reuses EmptyState component styling */
-}
-
-/* ═══════════════════════════════════════
-   Light mode overrides
-   ═══════════════════════════════════════ */
-
-.light .glass-timeline__stat,
-.light .glass-timeline__accuracy-ring {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(0, 0, 0, 0.06);
-}
-
-.light .glass-timeline__stat-label {
-  color: var(--color-silver-500, #7a7570);
-}
-
-.light .glass-timeline__stat-value {
-  color: var(--color-silver-800, #2c2a27);
-}
-
-.light .glass-timeline__accuracy-track {
-  stroke: rgba(0, 0, 0, 0.06);
+  /*@c10@*/
 }
 
 .light .glass-timeline__accuracy-fill--high {
@@ -338,36 +120,6 @@
   stroke: #e11d48;
 }
 
-.light .glass-timeline__accuracy-text {
-  color: var(--color-silver-800, #2c2a27);
-}
-
-.light .glass-timeline__filter-btn {
-  color: var(--color-silver-500, #7a7570);
-}
-
-.light .glass-timeline__filter-btn:hover {
-  background: rgba(0, 0, 0, 0.03);
-  color: var(--color-silver-700, #4a4742);
-}
-
-.light .glass-timeline__filter-btn--active {
-  background: rgba(201, 169, 110, 0.1);
-  color: #8b7340;
-  border-color: rgba(201, 169, 110, 0.2);
-}
-
-.light .glass-timeline__filter-select {
-  color: var(--color-silver-600, #5c5853);
-  border-color: rgba(0, 0, 0, 0.08);
-  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%235c5853' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-}
-
-.light .glass-timeline__filter-select:hover {
-  border-color: rgba(0, 0, 0, 0.15);
-  color: var(--color-silver-800, #2c2a27);
-}
-
 .light .glass-timeline__list::before {
   background: rgba(0, 0, 0, 0.08);
 }
@@ -380,3 +132,29 @@
   color: var(--color-silver-700, #4a4742);
   background: rgba(0, 0, 0, 0.03);
 }
+/* ═══════════════════════════════════════
+   Stats Grid
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Accuracy Ring
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Filter Bar
+   ═══════════════════════════════════════ */
+/* ── Select dropdowns ── */
+/* ═══════════════════════════════════════
+   Timeline List
+   ═══════════════════════════════════════ */
+/* ← era 24px, ya no necesitamos offset */
+/* ── Vertical connector line ── */
+/* ── Entry animation ── */
+/* ═══════════════════════════════════════
+   Load More
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Empty Wrapper
+   ═══════════════════════════════════════ */
+/* reuses EmptyState component styling */
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */

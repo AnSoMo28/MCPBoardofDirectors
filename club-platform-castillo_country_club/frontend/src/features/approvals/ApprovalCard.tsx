@@ -1,11 +1,12 @@
 /**
  * @component ApprovalCard (Fase 25)
  * @namespace .glass-approval__card
- * @depends ApprovalQueue.css, ParamsPreview
+ * @depends ApprovalCard.css, ParamsPreview
  * @note Approval card with expand/collapse, dual approval, expiration countdown,
  *       approve/reject flow, batch checkbox.
- * @import import './ApprovalQueue.css';
+ * @import import './ApprovalCard.css';
  */
+import "./ApprovalCard.css";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";

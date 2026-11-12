@@ -1,11 +1,12 @@
 /**
  * @component GlassLoginCard (Fase 25)
  * @namespace .glass-login__card
- * @depends LoginPage.css
+ * @depends GlassLoginCard.css
  * @note Glass login card with form, smart error recovery, forgot help.
  *       Focus handled via CSS :focus-visible, no JS handlers.
- * @import import '../LoginPage.css';
+ * @import import './GlassLoginCard.css';
  */
+import "./GlassLoginCard.css";
 
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { cn } from "@/shared/lib/utils";

@@ -1,11 +1,12 @@
 /**
  * @component KPICards (Fase 25)
  * @namespace .glass-board__kpi*
- * @depends BoardReportViewer.css
+ * @depends KPICards.css
  * @note 4 KPI cards with counter animation (Apple Fitness style).
  *       Each KPI has its own duration + easing for staggered count-up.
- * @import import '../BoardReportViewer.css';
+ * @import import './KPICards.css';
  */
+import "./KPICards.css";
 
 import { useEffect, useRef, useState } from "react";
 import { motion, type Variants } from "framer-motion";

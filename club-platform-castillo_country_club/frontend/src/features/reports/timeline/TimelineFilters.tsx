@@ -1,10 +1,11 @@
 /**
  * @component TimelineFilters (Fase 25)
  * @namespace .glass-timeline__filter*
- * @depends DecisionTimeline.css
+ * @depends TimelineFilters.css
  * @note Filter bar with outcome buttons, domain dropdown, time range dropdown.
- * @import import '../DecisionTimeline.css';
+ * @import import './TimelineFilters.css';
  */
+import "./TimelineFilters.css";
 
 import { Filter } from "lucide-react";
 import { cn } from "@/shared/lib/utils";

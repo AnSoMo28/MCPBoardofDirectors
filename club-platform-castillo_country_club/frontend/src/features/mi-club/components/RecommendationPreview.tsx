@@ -1,12 +1,13 @@
 /**
  * @component RecommendationPreview (Fase 25)
  * @namespace .glass-landing__recs
- * @depends MiClubLanding.css, RecommendationCard styles
+ * @depends RecommendationPreview.css, RecommendationCard styles
  * @note Recommendation trigger with inline preview of top rec.
  *       Doesn't call AI endpoint until user clicks.
  *       Once loaded, shows expandable recommendation cards.
- * @import import '../MiClubLanding.css';
+ * @import import './RecommendationPreview.css';
  */
+import "./RecommendationPreview.css";
 
 import { useState } from "react";
 import { useNavigate } from "react-router";

@@ -1,11 +1,12 @@
 /**
  * @component MessageBubble (Fase 25)
  * @namespace .glass-knowledge__bubble
- * @depends KnowledgeQuery.css
+ * @depends MessageBubble.css
  * @note Chat message bubble with markdown rendering, source chips,
  *       confidence badge, copy/regenerate/feedback actions.
- * @import import '../KnowledgeQuery.css';
+ * @import import './MessageBubble.css';
  */
+import "./MessageBubble.css";
 
 import { useState, useMemo, type ReactNode } from "react";
 import {

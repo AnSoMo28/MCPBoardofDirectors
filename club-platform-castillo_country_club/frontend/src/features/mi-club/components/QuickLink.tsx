@@ -1,10 +1,11 @@
 /**
  * @component QuickLink (Fase 25)
  * @namespace .glass-landing__link
- * @depends MiClubLanding.css
+ * @depends QuickLink.css
  * @note Navigation card with icon, label, description, and arrow.
- * @import import '../MiClubLanding.css';
+ * @import import './QuickLink.css';
  */
+import "./QuickLink.css";
 
 import { ArrowRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";

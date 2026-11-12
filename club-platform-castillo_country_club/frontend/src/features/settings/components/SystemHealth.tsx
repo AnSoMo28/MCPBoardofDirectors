@@ -1,11 +1,12 @@
 /**
  * @component SystemHealth (Fase 25)
  * @namespace .glass-settings__agents
- * @depends SettingsPage.css
+ * @depends SystemHealth.css
  * @note Backend status + 8-agent awareness + app info footer.
  *       Shows the system is alive with pulsing agent dots.
- * @import import '../SettingsPage.css';
+ * @import import './SystemHealth.css';
  */
+import "./SystemHealth.css";
 
 import { Server, Database, Clock } from "lucide-react";
 import type { BackendStatus } from "@/shared/hooks/useBackendHealth";

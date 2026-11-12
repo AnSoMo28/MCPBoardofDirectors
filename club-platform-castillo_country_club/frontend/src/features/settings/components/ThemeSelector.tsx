@@ -1,10 +1,11 @@
 /**
  * @component ThemeSelector (Fase 25)
  * @namespace .glass-settings__theme
- * @depends SettingsPage.css
+ * @depends ThemeSelector.css
  * @note Dark/Light theme toggle with visual feedback.
- * @import import '../SettingsPage.css';
+ * @import import './ThemeSelector.css';
  */
+import "./ThemeSelector.css";
 
 import { Sun, Moon, Check } from "lucide-react";
 import { cn } from "@/shared/lib/utils";

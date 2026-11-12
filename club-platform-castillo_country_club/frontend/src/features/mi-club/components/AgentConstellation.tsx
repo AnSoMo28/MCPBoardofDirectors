@@ -1,11 +1,12 @@
 /**
  * @component AgentConstellation (Fase 25)
  * @namespace .glass-landing__constellation
- * @depends MiClubLanding.css
+ * @depends AgentConstellation.css
  * @note 8-agent awareness visualization. Each dot pulses if the agent
  *       has active data for this socio. Click navigates to relevant section.
- * @import import '../MiClubLanding.css';
+ * @import import './AgentConstellation.css';
  */
+import "./AgentConstellation.css";
 
 import { useNavigate } from "react-router";
 import type { AgentActivityItem } from "../types";

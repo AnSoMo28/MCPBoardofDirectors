@@ -1,10 +1,11 @@
 /**
  * @component TypingIndicator (Fase 25)
  * @namespace .glass-knowledge__typing
- * @depends KnowledgeQuery.css
+ * @depends TypingIndicator.css
  * @note Animated dots indicating AI is generating a response.
- * @import import '../KnowledgeQuery.css';
+ * @import import './TypingIndicator.css';
  */
+import "./TypingIndicator.css";
 
 export function TypingIndicator() {
   return (

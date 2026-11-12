@@ -1,11 +1,12 @@
 /**
  * @component EventCard (Fase 25)
  * @namespace .glass-landing__event-card
- * @depends MiClubLanding.css
+ * @depends EventCard.css
  * @note Event card with emoji icon, title, time, location.
  *       Click navigates to event detail.
- * @import import '../MiClubLanding.css';
+ * @import import './EventCard.css';
  */
+import "./EventCard.css";
 
 import { Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router";

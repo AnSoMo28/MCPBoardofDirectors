@@ -1,10 +1,11 @@
 /**
  * @component RiskPopoverContent (Fase 25)
  * @namespace .glass-risk__pop
- * @depends RiskHeatmap.css, riskTheme
+ * @depends RiskPopoverContent.css, riskTheme
  * @note Popover detail panel for a risk cell. Desktop absolute, mobile bottom sheet.
- * @import import '../RiskHeatmap.css';
+ * @import import './RiskPopoverContent.css';
  */
+import "./RiskPopoverContent.css";
 
 import { X } from "lucide-react";
 import { Badge } from "@/shared/components/ui";

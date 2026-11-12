@@ -1,10 +1,11 @@
 /**
  * @component ApprovalStats (Fase 25)
  * @namespace .glass-approval__stat
- * @depends ApprovalQueue.css
+ * @depends ApprovalStats.css
  * @note Stats grid with counts by status.
- * @import import './ApprovalQueue.css';
+ * @import import './ApprovalStats.css';
  */
+import "./ApprovalStats.css";
 
 import { useMemo } from "react";
 import {

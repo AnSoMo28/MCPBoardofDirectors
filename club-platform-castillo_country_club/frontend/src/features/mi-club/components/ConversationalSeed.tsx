@@ -1,12 +1,13 @@
 /**
  * @component ConversationalSeed (Fase 25)
  * @namespace .glass-landing__seed
- * @depends MiClubLanding.css
+ * @depends ConversationalSeed.css
  * @note Minimal chat-like entry point with contextual prompt suggestions.
  *       Clicking a suggestion navigates to the relevant section.
  *       Feels like talking to the club.
- * @import import '../MiClubLanding.css';
+ * @import import './ConversationalSeed.css';
  */
+import "./ConversationalSeed.css";
 
 import { useState } from "react";
 import { useNavigate } from "react-router";
