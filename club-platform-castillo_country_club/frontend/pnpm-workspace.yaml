@@ -2,6 +2,16 @@
 # postinstall is the known no-op funding banner — declare it so CI
 # `pnpm install` exits 0 instead of ERR_PNPM_IGNORED_BUILDS.
 # (The legacy `allowBuilds` spelling stays for older pnpm tooling.)
+#
+# Q-CI-02 (run #1 f1e7cfc, rojo): pnpm 9 — la versión que pinnea el CI —
+# adopta ESTE yaml como workspace-root y exige el campo `packages:`;
+# sin él, `pnpm install --frozen-lockfile` muere con
+# "packages field missing or empty" en el primer paso del job frontend.
+# `packages: ['.']` = workspace de un solo paquete (este frontend);
+# el lock 9.0 ya es formato importers, así que frozen queda válido.
+packages:
+  - .
+
 allowBuilds:
   esbuild: true
   core-js: true
