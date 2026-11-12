@@ -13,6 +13,20 @@
 # El baseline 1288/735 fue medido con latest-del-día; el lock da
 # 1292/737 → re-baseline honesto (delta G12 = 0 en ambos).
 #
+# Q-CI-03 (run #3 · 741e0a4 — 2 rojos, 2 verdes): frontend y
+# consistency VERDES; las anotaciones de deuda (vitest/eslint) son
+# informativas — el ratchet aguantó. Los rojos eran del PROPIO
+# workflow, no del código:
+#   (a) ci-summary heredaba defaults.run.working-directory del nivel
+#       workflow pero NO hace checkout → bash ni siquiera arranca
+#       ("No such file or directory"). Defaults bajados a nivel job,
+#       solo donde se usan; ci-summary corre en la raíz del workspace.
+#   (b) `uv pip install -e .` nunca fue validado en sandbox y es
+#       redundante con `uv sync` (que ya instala el proyecto editable
+#       cuando está empaquetado) — paso eliminado. uv sync ahora
+#       --frozen: si el lock falta o desincroniza, CI lo dice en el
+#       paso exacto en vez de fallar difuso más adelante.
+#
 # Estrategia HONESTA (lección del P0 0002: un gate verde no prueba nada
 # del artefacto; un CI rojo por deuda vieja prueba que nadie lo mira):
 #
@@ -23,11 +37,11 @@
 #   2. RATCHET DE DEUDA (bloquean si SUBEN; ideally bajan):
 #      La deuda pre-G10 está medida y congelada en backend/docs/evidence/
 #      ci-baseline.json: vitest 6 fails · guardian 15198 err · eslint
-#      1583 err · ruff 1288 · mypy 735. Un PR que sube cualquiera de
+#      1583 err · ruff 1292 · mypy 737. Un PR que sube cualquiera de
 #      esas cifras NO pasa. Bajarlas es siempre bienvenido (y actualiza
 #      el baseline con --fix-baseline en el mismo PR).
 #
-#   3. TODO corre en PR + push a audit/*; el master del repo de
+#   3. TODO corre en PR + push a audit/**; el master del repo de
 #      trabajo es audit/p2c3 (dual-track documentado en CHECKPOINT §3.6).
 #
 # Corrida de referencia (sandbox G10, 2026-11-11): frontend ~4 min
@@ -46,10 +60,6 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-defaults:
-  run:
-    working-directory: club-platform-castillo_country_club
-
 jobs:
   # ════════════════════════════════════════════════════════════════
   # JOB 1 — CONSISTENCY (el slice del AI Guardian, DECISION-0006 §5)
@@ -58,6 +68,9 @@ jobs:
   consistency:
     name: masters ↔ manifest ↔ árbol (MC-01..09 · IG-01..04)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: club-platform-castillo_country_club
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -164,11 +177,13 @@ jobs:
       - name: Setup Python 3.12
         run: uv python install 3.12
 
-      # GATE DURO 4 — la suite completa (818 base + 9 G12 = 827)
-      - name: uv sync (lock exacto, extra dev)
-        run: uv sync --extra dev
-      - name: uv pip install -e . (editable local)
-        run: uv pip install -e .
+      # GATE DURO 4 — la suite completa (818 base + 9 G12 = 827).
+      # uv sync YA instala el proyecto (editable): `uv pip install -e .`
+      # era redundante, nunca se validó en sandbox y muere en proyectos
+      # virtuales (Q-CI-03 (b)). --frozen = lock commiteado tal cual; si
+      # falta o desincronizó, CI lo dice EN ESTE PASO, no difuso después.
+      - name: uv sync --frozen (lock exacto, extra dev)
+        run: uv sync --frozen --extra dev
       - name: pytest 827 (suite completa)
         run: uv run pytest tests/unit -q
 
@@ -190,7 +205,8 @@ jobs:
             exit 1
           fi
 
-      # RATCHET — mypy strict: 735 err congelados
+      # RATCHET — mypy strict: 737 err congelados bajo lock (735 era
+      # deriva de uvx-latest; delta G12 = 0).
       - name: mypy strict ratchet (errors <= baseline)
         run: |
           set +e
@@ -212,6 +228,9 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     timeout-minutes: 30
+    # SIN defaults y SIN checkout a propósito: solo lee needs.*.result.
+    # (Q-CI-03 (a): heredar el working-directory del nivel workflow sin
+    # checkout hacía que bash no pudiera ni arrancar.)
     steps:
       - name: verdict
         run: |
