@@ -1,4 +1,17 @@
-# CI — Castillo AI Platform · G10 · Ola 0.1 (Q-CI-01 → CERRADO)
+# CI — Castillo AI Platform · G12.1 (Q-CI-01 → CERRADO DE VERDAD)
+#
+# CORRECCIÓN RAÍZ (0004): este workflow vivió ANIDADO en
+# club-platform-castillo_country_club/.github/workflows/ desde G10 —
+# GitHub Actions SOLO descubre workflows en .github/workflows/ de la
+# RAÍZ del repo → 0 corridas en toda la historia (push a165339 nunca
+# disparó nada). Movido a raíz; los masters ya documentaban
+# `.github/workflows/ci.yml` (BASE:236/CP:268/CL:228) — el árbol es
+# el que estaba desincronizado, no la documentación.
+#
+# DETERMINISMO (0004): ratchets corren las versiones del uv.lock
+# (mypy 2.1.0 · ruff 0.15.12 vía `uv run`) — nunca `uvx`/pip-latest.
+# El baseline 1288/735 fue medido con latest-del-día; el lock da
+# 1292/737 → re-baseline honesto (delta G12 = 0 en ambos).
 #
 # Estrategia HONESTA (lección del P0 0002: un gate verde no prueba nada
 # del artefacto; un CI rojo por deuda vieja prueba que nadie lo mira):
@@ -139,7 +152,7 @@ jobs:
   # JOB 3 — BACKEND (gates duros + ratchet)
   # ════════════════════════════════════════════════════════════════
   backend:
-    name: backend (pytest 818 · smoke B0 · ruff · mypy)
+    name: backend (pytest 827 · smoke B0 · ruff · mypy)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -151,7 +164,7 @@ jobs:
       - name: Setup Python 3.12
         run: uv python install 3.12
 
-      # GATE DURO 4 — la suite completa (818/818)
+      # GATE DURO 4 — la suite completa (818 base + 9 G12 = 827)
       - name: uv sync + pytest 818
         run: |
           uv sync --extra dev
@@ -162,11 +175,12 @@ jobs:
       - name: smoke_b0 (composicion+registro+RBAC+HITL+HTTP)
         run: uv run python scripts/smoke_b0.py
 
-      # RATCHET — ruff: 1288 err congelados (892 autofixables: UP045/UP017/F401)
+      # RATCHET — ruff: 1292 err congelados bajo lock 0.15.12 (892 autofixables:
+      # UP045/UP017/F401). 1288 era deriva de uvx-latest 0.17.4 (C401/SIM105).
       - name: ruff ratchet (errors <= baseline)
         run: |
           set +e
-          uvx ruff check src tests 2>&1 | tee /tmp/ruff.log
+          uv run ruff check src tests 2>&1 | tee /tmp/ruff.log
           ERRS=$(grep -oE "Found [0-9]+ errors" /tmp/ruff.log | grep -oE "[0-9]+" || echo 0)
           BASE=$(python3 -c "import json;print(json.load(open('docs/evidence/ci-baseline.json'))['ruff_errors'])")
           echo "ruff errors=$ERRS baseline=$BASE"
@@ -179,7 +193,6 @@ jobs:
       - name: mypy strict ratchet (errors <= baseline)
         run: |
           set +e
-          uv pip install mypy || true
           uv run mypy src/club_mcp 2>&1 | tee /tmp/mypy.log
           ERRS=$(grep -oE "Found [0-9]+ errors" /tmp/mypy.log | grep -oE "[0-9]+" || echo 0)
           BASE=$(python3 -c "import json;print(json.load(open('docs/evidence/ci-baseline.json'))['mypy_errors'])")
