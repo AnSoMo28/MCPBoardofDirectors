@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.4 · Generación G11 (desacoplamiento page-css — §15 cerrada) · Date: 2026-11-12
+### Version: 9.5 · Generación G12 (resiliencia LLM — Q-LLM-01) · Date: 2026-11-12
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -77,6 +77,46 @@ CONTENIDO:
 - §10: masters G7 añadidos a fuentes deprecadas (misma mecánica que G7
   hizo con los pre-G7).
 - §0.3: ejemplo de generación actualizado a G8.
+```
+
+---
+
+## CHANGELOG G12 (v9.4 → v9.5)
+
+```
+RESILIENCIA LLM PRODUCTION-GRADE — Q-LLM-01/02 (cola §15 P2):
+- NUEVO src/club_mcp/ai/resilience.py (467L):
+  · ResilientClaudeService — proxy de ClaudeService (misma interfaz,
+    6 consumidores sin cambio de firma): retry exponencial 2^n con jitter
+    completo, timeout por intento (asyncio.wait_for), circuit breaker
+    CLOSED/OPEN/HALF_OPEN con ventana deslizante (asyncio.Lock, sin deps
+    nuevas), fallback a Ollama.
+  · Q-LLM-01 cerrado de verdad: el setting ollama_host/ollama_fast_model
+    (fantasma desde el inicio) SE CONSUME al degradar — respuesta marcada
+    degraded + provider_error (degradación honesta, nunca silenciosa).
+  · TokenUsageLedger (Q-LLM-02 contorno): accounting por día de proceso,
+    budget diario configurable, WARNING 80% / CRITICAL 95%, señal
+    budget_alert en la respuesta + log. Persistencia real llega con
+    Q-PER-01 (PostgreSQL) — no se duplica infra a medias.
+- WIRING (sin scope creep): bootstrap.build_runtime (envuelve la instancia
+  central) · get_claude_service singleton · cultural_social_agent default.
+  RAGService ya recibía la inyectada — cero cambios de consumidor.
+- TESTS: tests/unit/ai/test_resilience.py — 9/9 (retry con recuperación
+  transitoria, no-retryable corta en 1 intento, breaker OPEN no toca red,
+  HALF_OPEN→CLOSED, fallback Ollama con MockTransport, ledger 80/95%,
+  invarianza de contrato generate_json/chat) · suite nueva = 30º archivo
+  de tests (unit/ai/) — sandbox: 779 passed + 48 errors por deps pesadas
+  (chromadb) IDÉNTICOS con y sin el diff (0 regresión) · CI con deps
+  completas corre 827 (818 + 9 nuevas).
+- LINT: ruff+mypy — 0 errores NUEVOS; baseline pre-existente documentado
+  (claude_service 74 mypy / bootstrap 4 ruff / cultural 8 ruff — iguales
+  en 3fe481c, fuera de scope de este commit).
+- Decisiones de diseño: resiliencia en la CAPA DE TRANSPORTE (no try/except
+  regados por método) · composition sobre herencia (proxy) · anthropic SDK
+  ya reintenta 429/5xx internamente — esta capa cubre timeout de red,
+  degradación y presupuesto.
+- END: masters v9.5; Q-LLM-01 CERRADO · Q-LLM-02 contorno (persistencia
+  → Q-PER-01) · protocolo intacto.
 ```
 
 ---
@@ -1462,7 +1502,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.4 · Generación G11 (sincronizada con
-MASTER_CHECKPOINT.md v9.3 y MASTER_CHECKLIST.md v9.3)
+END OF MASTER_BASE.md v9.5 · Generación G12 (sincronizada con
+MASTER_CHECKPOINT.md v9.5 y MASTER_CHECKLIST.md v9.5)
 
 
