@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any
+from typing import Any, Protocol
 
 from anthropic import AsyncAnthropic
 
@@ -26,6 +26,37 @@ from club_mcp.ai.prompts import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class ClaudeServiceLike(Protocol):
+    """Contrato estructural de ClaudeService (G12, Q-LLM-01).
+
+    `get_claude_service` puede devolver ClaudeService O su wrapper
+    ResilientClaudeService (proxy con la misma interfaz). Tipar contra
+    este Protocol — y no contra la clase concreta — es lo que permite
+    sustituir la implementación sin tocar consumidores NI mypy.
+    """
+
+    async def chat(
+        self,
+        user_message: str,
+        user_role: str = "socio",
+        user_name: str = "",
+        history: list[dict[str, str]] | None = None,
+    ) -> dict[str, Any]: ...
+
+    async def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        max_tokens: int = 2048,
+    ) -> dict[str, Any]: ...
+
+    async def analyze_satisfaction(
+        self,
+        event_data: dict[str, Any],
+        surveys: list[dict[str, Any]],
+    ) -> dict[str, Any]: ...
 
 
 class ClaudeService:
@@ -318,19 +349,24 @@ class ClaudeService:
         return fallback if fallback is not None else {"raw_content": content}
 
 
-_claude_service_instance: ClaudeService | None = None
+_claude_service_instance: ClaudeServiceLike | None = None
 
 
-def get_claude_service() -> ClaudeService:
+def get_claude_service() -> ClaudeServiceLike:
     """Singleton factory for the shared ClaudeService instance.
 
     ml_intelligence (y cualquier agente que no reciba la inyección del
     bootstrap) resuelve su cliente Claude por acá, igual que el patrón
     document_intelligence. Thread-safe por GIL; la primera llamada paga
     la construcción, el resto reutiliza la instancia (y su cliente HTTP).
+
+    G12 (Q-LLM-01): devuelve el wrapper resilient (misma interfaz —
+    retry/timeout/breaker/fallback-Ollama transparentes para el llamador).
     """
     global _claude_service_instance
     if _claude_service_instance is None:
-        _claude_service_instance = ClaudeService()
+        from club_mcp.ai.resilience import build_resilient_claude_service
+
+        _claude_service_instance = build_resilient_claude_service(ClaudeService())
     return _claude_service_instance
 

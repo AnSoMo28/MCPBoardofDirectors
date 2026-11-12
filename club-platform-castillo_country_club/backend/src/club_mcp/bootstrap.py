@@ -195,12 +195,16 @@ def build_runtime() -> Runtime:
     from fastmcp import FastMCP
 
     from club_mcp.ai.claude_service import ClaudeService
+    from club_mcp.ai.resilience import build_resilient_claude_service
     from club_mcp.config.club_registry import get_club_config
     from club_mcp.hitl.approval_engine import ApprovalEngine
     from club_mcp.hitl.notifier import HITLNotifier
 
     # F-1: claude_service FIRST — it feeds DocumentIntelligenceRepository.
-    claude_service = ClaudeService()
+    # G12 (Q-LLM-01): envuelto en ResilientClaudeService — retry exponencial
+    # + jitter, timeout por intento, circuit breaker y fallback Ollama.
+    # Misma interfaz: los consumidores no cambian.
+    claude_service = build_resilient_claude_service(ClaudeService())
     approval_engine = ApprovalEngine()
     notifier = HITLNotifier()
     club_config = get_club_config("castillo_country_club")

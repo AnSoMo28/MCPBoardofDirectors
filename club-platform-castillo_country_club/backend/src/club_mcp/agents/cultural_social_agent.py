@@ -21,7 +21,6 @@ import json
 from collections import defaultdict
 
 from club_mcp.agents.base import BaseAgent, MCPTool
-from club_mcp.ai.claude_service import ClaudeService
 from club_mcp.db.repositories.cultural_social_repo import CulturalSocialRepository
 from club_mcp.hitl.approval_types import ApprovalLevel
 from club_mcp.models.cultural_social import (
@@ -74,8 +73,14 @@ class CulturalSocialAgent(BaseAgent):
         if approval_engine is not None:
             self.approval_engine = approval_engine
         self.notifier = notifier
-        self.claude_service = claude_service or ClaudeService()
+        # G12 (Q-LLM-01): default resilient — mismo contrato, gana
+        # retry/timeout/breaker/fallback-Ollama.
+        if claude_service is not None:
+            self.claude_service = claude_service
+        else:
+            from club_mcp.ai.claude_service import get_claude_service
 
+            self.claude_service = get_claude_service()
     def _register_tools(self) -> None:
         pass
 
