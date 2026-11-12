@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.5 · Generación G12 (resiliencia LLM — Q-LLM-01) · 180 checks · ZERO tolerance
+### Version: 9.6 · Generación G12.1 (corrección de entrega — CI real) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian 4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -71,7 +71,39 @@ CONTENIDO:
 
 ---
 
-## CHANGELOG G12 (v9.4 → v9.5)
+## CHANGELOG G12.1 (v9.5 → v9.6)
+
+```
+CORRECCIÓN DE ENTREGA G12 — CI REAL + DETERMINISMO (Q-CI-01 raíz):
+- HALLAZGO P0 (Q-CI-01 bis): el workflow vivía ANIDADO en
+  club-platform-castillo_country_club/.github/workflows/ — GitHub
+  Actions SOLO descubre workflows en .github/workflows/ de la RAÍZ.
+  Consecuencia medida: 0 corridas de Actions en TODA la historia del
+  repo (el push a165339 de G12 nunca disparó nada; la "corrida CI
+  verde" de G10-G12 era sandbox). Los masters ya documentaban
+  `.github/workflows/ci.yml` — el árbol estaba desincronizado con su
+  propia documentación. FIX: workflow movido a raíz (rename tracked).
+- HALLAZGO P1 (determinismo): ratchets corrían ruff/mypy por
+  `uvx`/pip-LATEST (baseline 1288/735 medido así) mientras el uv.lock
+  pinea ruff 0.15.12/mypy 2.1.0 → conteos del día: 1292/737 → ROJO
+  por deriva de versión, no por deuda. FIX: `uv run ruff`/`uv run
+  mypy` (lock) + re-baseline honesto ruff 1288→1292 (delta G12 = 0
+  verificado en ambos árboles con ambos pares de versiones).
+- HALLAZGO P2 (corregido): la serie G12.1 midió +2 mypy NETOS contra
+  una reconstrucción sandbox desactualizada (sin Protocol) — FALSO
+  POSITIVO: el árbol real a165339 YA traía ClaudeServiceLike (v3, 3
+  métodos) y mide 735 = baseline exacto. FIX real de G12.1: Protocol
+  completado 3→7 métodos públicos (unión de los 4 delegados vía
+  __getattr__, hoy visibles para mypy) + builder tipado contra el
+  Protocol (TYPE_CHECKING, sin ciclo).
+- SANIDAD: de-dup del changelog G12 en CHECKLIST (encabezado
+  duplicado defecto del 0002) · 'pytest 818'→'827' en job backend.
+- VERIFICACIÓN (sandbox, árbol exacto del parche): 13/13 consistency
+  · 827 passed · smoke B0 VERDE · ruff 1292 = baseline · mypy 735 =
+  baseline — los 4 gates duros + 2 ratchets del job backend verdes.
+- END: masters v9.6; Q-CI-01 CERRADO DE VERDAD (visible a Actions);
+  protocolo intacto (regla G8/G9).
+```
 
 ## CHANGELOG G12 (v9.4 → v9.5)
 
@@ -225,9 +257,11 @@ MIGRACIÓN CSS TRAMO 1 — PAREJA tsx↔css COMPLETA (78/144):
 
 ```
 OLA 0 — BLINDAJE (PATH NEXT-STEPS-2027) CERRADA:
-- .github/workflows/ci.yml (Q-CI-01 ✗→✓): 4 jobs — consistency ·
+- .github/workflows/ci.yml (Q-CI-01 ✓ tras G12.1 — RAÍZ: anidado era
+  invisible a Actions, 0 corridas históricas): 4 jobs — consistency ·
   frontend (build+verify-build-css+VI+vitest/guardian/eslint ratchet) ·
-  backend (uv sync+pytest 818+smoke+ruff/mypy ratchet) · ci-summary.
+  backend (uv sync+pytest 827+smoke+ruff/mypy ratchet por uv.lock) ·
+  ci-summary.
   Estrategia: GATES DUROS bloquean (hoy verdes) · DEUDA CONGELADA en
   backend/docs/evidence/ci-baseline.json (ratchet: subir = ROJO,
   bajar = bienvenida). Greps del ratchet VALIDADOS contra logs reales.
@@ -251,7 +285,8 @@ OLA 0 — BLINDAJE (PATH NEXT-STEPS-2027) CERRADA:
   Guardian (AG-01/03 aplicado a la capa documental). Doc: docs/
   decisions/DECISION-0006-IAC.md.
 - DEUDA QUANTIFICADA (baseline congelado, §15): vitest 6 · guardian
-  15198 · eslint 1583 · ruff 1288 (892 autofixables) · mypy strict 735.
+  15198 · eslint 1583 · ruff 1292 (892 autofixables — re-baseline
+  G12.1: 1288 era deriva de uvx-latest; delta G12 = 0) · mypy strict 735.
   Existía ANTES de e15068e; la CI la vuelve visible y ratcheteable.
 - END: masters v9.1; protocolo intacto (regla G8/G9).
 ```
@@ -1232,6 +1267,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.5 · Generación G12 (sincronizada con
+END OF MASTER_CHECKLIST.md v9.6 · Generación G12.1 (sincronizada con
 MASTER_BASE.md v9.5 y MASTER_CHECKPOINT.md v9.5)
 
