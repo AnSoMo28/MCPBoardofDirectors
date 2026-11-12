@@ -35,6 +35,13 @@ class ClaudeServiceLike(Protocol):
     ResilientClaudeService (proxy con la misma interfaz). Tipar contra
     este Protocol — y no contra la clase concreta — es lo que permite
     sustituir la implementación sin tocar consumidores NI mypy.
+
+    G12.1: los 7 métodos públicos de ClaudeService — 3 con resiliencia
+    implementada en el proxy (chat/generate/analyze_satisfaction
+    según la v3) + generate_json (resiliente desde G12) + los 3
+    específicos que el proxy delega vía __getattr__. El Protocol
+    documenta la UNIÓN: el contrato que todo consumidor puede usar
+    sin saber si hay resiliencia debajo.
     """
 
     async def chat(
@@ -56,6 +63,30 @@ class ClaudeServiceLike(Protocol):
         self,
         event_data: dict[str, Any],
         surveys: list[dict[str, Any]],
+    ) -> dict[str, Any]: ...
+
+    async def generate_json(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        max_tokens: int = 2048,
+        fallback: Any = None,
+    ) -> dict[str, Any]: ...
+
+    async def generate_narrative_report(
+        self,
+        kpis: dict[str, Any],
+        audience: str = "board",
+    ) -> str: ...
+
+    async def assist_comment(
+        self,
+        survey_ratings: dict[str, int],
+    ) -> str: ...
+
+    async def analyze_age_balance(
+        self,
+        distribution_data: dict[str, Any],
     ) -> dict[str, Any]: ...
 
 

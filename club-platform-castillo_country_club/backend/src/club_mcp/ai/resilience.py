@@ -35,11 +35,15 @@ import json
 import logging
 import random
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 
 from club_mcp.config.settings import get_settings
+
+
+if TYPE_CHECKING:
+    from club_mcp.ai.claude_service import ClaudeServiceLike
 
 
 logger = logging.getLogger(__name__)
@@ -456,8 +460,14 @@ class ResilientClaudeService:
 
 def build_resilient_claude_service(
     inner: Any, *, use_fallback: bool = True
-) -> ResilientClaudeService:
-    """Factory usada por bootstrap.py (y tests)."""
+) -> ClaudeServiceLike:
+    """Factory usada por bootstrap.py (y tests).
+
+    G12.1: tipada contra el Protocol (unión de los 7 métodos) — el
+    consumidor declara la dependencia contra el contrato, no contra
+    la clase proxy. El proxy sigue delegando los 3 específicos vía
+    __getattr__ (visible para mypy a través del Protocol).
+    """
     return ResilientClaudeService(
         inner=inner,
         breaker=CircuitBreaker(name="claude"),
