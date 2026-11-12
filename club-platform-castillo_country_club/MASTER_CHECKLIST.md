@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.2 · Generación G10.1 (migración CSS T1) · 180 checks · ZERO tolerance
+### Version: 9.3 · Generación G10.2 (migración CSS T2 — cierre P0) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian 4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -67,6 +67,40 @@ CONTENIDO:
   backend tiene su propio gate EJECUTABLE (smoke_b0 + pytest +
   ruff/mypy) — no se mezclan los números (principio §12 CHECKPOINT G7
   de colisiones terminológicas).
+```
+
+---
+
+## CHANGELOG G10.2 (v9.2 → v9.3)
+
+```
+MIGRACIÓN CSS TRAMO 2 — CIERRE P0 (auditoría post-T1):
+- P0 RESUELTO: MyReservations.css estaba VACÍO desde Fase 25 — 5 tsx
+  (MyReservations, TodayHero, DayTimeline, ReservationCard,
+  RebookSuggestion) referenciaban 36 selectores .glass-reservations__*
+  inexistentes (página renderizada sin estilos). Hoja completada:
+  607 líneas · 36+8 selectores · countdown normal/warning/urgent ·
+  day-timeline proporcional con "now" indicator · cards con date block ·
+  rebook suggestion dashed · 2 keyframes únicos prefijados
+  (glass-reservations-hero-in, glass-reservations-countdown-pulse) ·
+  tokens var() silver/surface/gold/teal/rose · .light overrides ·
+  prefers-reduced-motion · focus-visible · X-13 en css nuevo: 0.
+- AUDITORÍA T2 (66 tsx sin pareja 1:1 restantes): 7 no-UI documentados
+  (providers/router/RoleRedirect/ProtectedRoute/usePermissionContext/
+  highlight/main) · 28 cubiertos por page-css compartido (acoplamiento
+  documentado — cola G11 §15) · glass-ai__awareness/section 100%
+  cubiertos en AISystemPage.css (31 selectores verificados) ·
+  ApprovalCard countdown--normal/warning/urgent cubiertos ·
+  FamilyAccountGlass status-overdue/delinquent/past_due cubiertos.
+- Fix quirúrgico: .glass-hitl__btn-reject-text (HitlCard) faltante en
+  HitlQueue.css — 1 selector + 7 líneas, cero colores crudos nuevos.
+- Guardian: ratchet intacto (css nuevo X-13=0; los 77 pre-existentes de
+  HitlQueue.css cuentan en baseline 15198 — no se tocan).
+- Totales parejas tras G10.1+G10.2: 417/423 tsx visuales con css
+  (99%) · gap residual = acoplamiento page-css, plan G11.
+- Gates estáticos sandbox: selectores 36/36 cubiertos · tokens 25/25
+  existentes en globals.css · keyframes únicos · EOL lf.
+- END: masters v9.3; protocolo intacto.
 ```
 
 ---
@@ -1111,6 +1145,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.2 · Generación G10.1 (sincronizada con
-MASTER_BASE.md v9.1 y MASTER_CHECKPOINT.md v9.1)
+END OF MASTER_CHECKLIST.md v9.3 · Generación G10.2 (sincronizada con
+MASTER_BASE.md v9.2 y MASTER_CHECKPOINT.md v9.2)
 
