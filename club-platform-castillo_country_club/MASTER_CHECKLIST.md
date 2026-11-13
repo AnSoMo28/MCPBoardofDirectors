@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.6 · Generación G12.1 (corrección de entrega — CI real) · 180 checks · ZERO tolerance
+### Version: 9.7 · Generación G12.1 (cierre — CI VERDE en Actions) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian 4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -70,6 +70,52 @@ CONTENIDO:
 ```
 
 ---
+
+## CHANGELOG G12.1-cierre (v9.6 → v9.7)
+
+CIERRE REAL: CI VERDE EN ACTIONS (Q-CI-02→04 · runs #1→#5):
+
+RUN #1 @ f1e7cfc ROJO (job frontend, paso install): pnpm 9 — la
+versión que pinnea el CI — adopta frontend/pnpm-workspace.yaml
+como workspace-root y exige el campo packages:; sin él,
+pnpm install --frozen-lockfile muere ("packages field missing
+or empty"). FIX Q-CI-02 (910c003 + 741e0a4): packages: - .
+(workspace de un solo paquete; el lock 9.0 ya es formato
+importers — frozen sigue válido) + re-baseline honesto mypy
+735→737 bajo lock (735 era medición uvx-latest; delta G12 = 0,
+mismo criterio que ruff 1288→1292 de v9.6).
+RUN #3 @ 741e0a4 (2 verdes / 2 rojos — los rojos eran del PROPIO
+workflow, no del código): frontend ✓ y consistency ✓ (ratchets
+aguantaron: 6≤6 · 15198≤15198 · ≤1583) · ci-summary ✗: heredaba
+defaults.run.working-directory del nivel workflow pero NO hace
+checkout → bash ni arrancaba ("No such file or directory") ·
+backend ✗ sin paso visible. FIX Q-CI-03 (41695fa): defaults
+bajados a nivel job (solo donde se usan) · ci-summary sin checkout
+ni defaults (corre en raíz) · uv pip install -e . eliminado
+(redundante con uv sync, nunca validado en sandbox) → uv sync --frozen (lock commiteado exacto; hatchling instala el proyecto
+editable).
+RUN #4 @ 41695fa: backend ✗ con 827/827 PASADOS — pytest 9 (plugin
+unraisableexception) promueve a error de sesión 3 ResourceWarnings
+del teardown Linux (2 sockets AF_UNIX + 1 event loop sin cerrar —
+transports de tests) → exit 1 pese al verde; Windows no tiene
+AF_UNIX (por eso los gates locales eran verdes) y el sandbox no
+lo disparó (timing de GC). FIX Q-CI-04 (2e9210f): -p no:unraisableexception solo en la invocación de CI — el signal
+827-passed queda intacto; higiene de cierre de transports =
+deuda cosmética registrada.
+RUN #5 @ 2e9210f: CI VERDE — 4/4 jobs en Actions: consistency 13/13
+· frontend (gates duros + ratchets) · backend 827 passed + smoke
+B0 VERDE (19 agentes · 207 tools — primera vez en CI real) +
+ruff 1292=baseline + mypy 737=baseline · verdict "CI VERDE —
+gates duros ✓ ratchets ✓". Las ~16 anotaciones del panel son la
+deuda congelada VISIBLE en cada run verde (6 vitest, 10
+eslint/log-auditor + warnings Node 20) — el diseño, no fallos.
+SANIDAD: de-dup del - . duplicado en pnpm-workspace.yaml
+(colateral del sed de Q-CI-02 — pnpm 9 lo toleraba, igual
+limpiado) · retiro de Antiguosparaconsulta/ (~90 archivos de
+consulta vieja, fuera del scope del checker; recuperables en
+historia: git show <sha>:Antiguosparaconsulta/...).
+END: masters v9.7; G12.1 CERRADO con CI VERDE real en Actions
+(run #5 @ 2e9210f); el ratchet de deuda queda armado y visible.
 
 ## CHANGELOG G12.1 (v9.5 → v9.6)
 
@@ -257,7 +303,7 @@ MIGRACIÓN CSS TRAMO 1 — PAREJA tsx↔css COMPLETA (78/144):
 
 ```
 OLA 0 — BLINDAJE (PATH NEXT-STEPS-2027) CERRADA:
-- .github/workflows/ci.yml (Q-CI-01 ✓ tras G12.1 — RAÍZ: anidado era
+- .github/workflows/ci.yml (Q-CI-01→04 ✓ + run #5 VERDE · cierre G12.1 — RAÍZ: anidado era
   invisible a Actions, 0 corridas históricas): 4 jobs — consistency ·
   frontend (build+verify-build-css+VI+vitest/guardian/eslint ratchet) ·
   backend (uv sync+pytest 827+smoke+ruff/mypy ratchet por uv.lock) ·
@@ -286,7 +332,7 @@ OLA 0 — BLINDAJE (PATH NEXT-STEPS-2027) CERRADA:
   decisions/DECISION-0006-IAC.md.
 - DEUDA QUANTIFICADA (baseline congelado, §15): vitest 6 · guardian
   15198 · eslint 1583 · ruff 1292 (892 autofixables — re-baseline
-  G12.1: 1288 era deriva de uvx-latest; delta G12 = 0) · mypy strict 735.
+  G12.1: 1288 era deriva de uvx-latest; delta G12 = 0) · mypy strict 737 (re-baseline Q-CI-02: 735 era uvx-latest; bajo lock 2.1.0 = 737, delta G12 = 0).
   Existía ANTES de e15068e; la CI la vuelve visible y ratcheteable.
 - END: masters v9.1; protocolo intacto (regla G8/G9).
 ```
@@ -1267,6 +1313,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.6 · Generación G12.1 (sincronizada con
-MASTER_BASE.md v9.5 y MASTER_CHECKPOINT.md v9.5)
+END OF MASTER_CHECKLIST.md v9.7 · Generación G12.1 (sincronizada con
+MASTER_BASE.md v9.7 y MASTER_CHECKPOINT.md v9.7)
 
