@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.7 · Generación G12.1 (cierre — CI VERDE en Actions) · Date: 2026-11-13
+### Version: 9.8 · Generación G12.1 (absorción G13/G14 retrospectiva) · Date: 2026-11-13
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -80,6 +80,38 @@ CONTENIDO:
 ```
 
 ---
+
+## CHANGELOG G13-G14 (v9.7 → v9.8)
+
+```
+ABSORCIÓN RETROSPECTIVA G13/G14 (deuda §0.3 "sin reflejo en masters"):
+- HALLAZGO FORENSE: los 4 commits ya son ancestros de la rama —
+  G13-A 4c21125 (guardian 4.1.2 · AG-29 X-16 α/β/γ) · G13-B eda7b3d
+  (158 mirrors X-16 escritos + revert de las 4 duplicadas de G11 ·
+  err 15740→15303) · G14-A 47e9d9c (guardian 4.1.3 · AG-30 X-28
+  token-boundary · 109/111 FP · err 15303→15194) · G14-B 4df8a9c
+  (M-01-T3: 25 promociones con evidencia sandbox · J-07 490→187 ·
+  verified 580→883 · manifest 3.6.1→3.7.0). Aplicados sobre
+  ca2454b (G12-registry) y seguidos por 17 generaciones de la saga
+  B2→B6→G9→G12.1 — por eso X-16 = 0 y TOOL_VERSION 4.1.3 hoy.
+  Los parches sandbox de download/g13/ quedan OBSOLETOS (0 aplican
+  al árbol — mapeado dry-run: drift manifest 3.6.0/3.7.0).
+- CIFRAS VIVAS (medidas 2026-11-13 en el árbol exacto 94d965d,
+  sandbox Linux, byte-reproducible — mismo número que el CI run #6):
+  guardian 4.1.3: 15146 err · 14553 warn · auto-fixable 0 · score 8.2
+  (X-16 = 0 · X-13 8927 · X-26 5249 dominan la deuda restante) ·
+  validator 4.0.0: 9.89 · 0 err · J-07 187 · verified 883 · below 15
+  (worst: ExecutiveDashboard 7.5 · router 8.75 · AISystemPage 8.75) ·
+  VI 3.3.0: ALL CLEAR (exit 0 · 806 ts/tsx · 464 css · 105 py).
+- X-16 = 0 CONFIRMADO por medición directa del detector corregido
+  (α: fixer prev OR next · β: ventana bidireccional value-aware ·
+  γ: autoFixable veraz vía X16_BARE_DECL compartida).
+- BASELINE CI (guardian_errors 15198 → 15146): re-baseline honesto
+  mismo-PR — 15198 era pre-G13/G14; 15146 es el número del CI verde
+  run #6 y de esta medición. El ratchet baja el piso de nuevo.
+- END: masters v9.8; G13/G14 ABSORBIDOS (código ya estaba; la deuda
+  era documental); estado vivo = código ↔ masters ↔ CI alineados.
+```
 
 ## CHANGELOG G12.1-cierre (v9.6 → v9.7)
 
@@ -1585,7 +1617,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.7 · Generación G12.1 (sincronizada con
-MASTER_CHECKPOINT.md v9.7 y MASTER_CHECKLIST.md v9.7)
+END OF MASTER_BASE.md v9.8 · Generación G12.1 (sincronizada con
+MASTER_CHECKPOINT.md v9.8 y MASTER_CHECKLIST.md v9.8)
 
 
