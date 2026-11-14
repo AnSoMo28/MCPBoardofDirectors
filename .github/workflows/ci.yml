@@ -36,10 +36,23 @@
 #
 #   2. RATCHET DE DEUDA (bloquean si SUBEN; ideally bajan):
 #      La deuda pre-G10 está medida y congelada en backend/docs/evidence/
-#      ci-baseline.json: vitest 6 fails · guardian 15198 err · eslint
+#      ci-baseline.json: vitest 6 fails · guardian 15146 err · eslint
 #      1583 err · ruff 1292 · mypy 737. Un PR que sube cualquiera de
 #      esas cifras NO pasa. Bajarlas es siempre bienvenido (y actualiza
 #      el baseline con --fix-baseline en el mismo PR).
+#
+#      Q-CI-05 (run #7 · forense del log): DOS ratchets estaban
+#      CIEGOS y uno era no-op — el verde del run #7 los enmascaró:
+#      (a) guardian: el patrón matcheaba 2 líneas (header + summary)
+#          → ERRS multilinea → "[ integer expected" (exit 2) → el if
+#          lo trató como falso → NUNCA bloqueó (no-op desde G10).
+#      (b) vitest: ANSI + \r intra-línea en el runner → grep binario
+#          → "|| echo 0" → fails=0 SIEMPRE (run #7 reportó 0 con 6).
+#      (c) diseño: "|| echo 0" convierte CUALQUIER extracción fallida
+#          en verde garantizado. Fix: strip ANSI/\r + patrón anclado
+#          al summary + head -1 + extracción OBLIGATORIA (sin número
+#          no hay verde). Mordida probada en sandbox (baseline fingido
+#          < real → exit 1).
 #
 #   3. TODO corre en PR + push a audit/**; el master del repo de
 #      trabajo es audit/p2c3 (dual-track documentado en CHECKPOINT §3.6).
@@ -114,42 +127,56 @@ jobs:
 
       # RATCHET - vitest: deuda congelada (6 fails pre-G10, features
       # guests/lib desincronizadas ANTES de e15068e - deuda #G10-1)
+      # Q-CI-05: vitest escribe ANSI + \r intra-línea en el runner →
+      # grep binario → "|| echo 0" → fails=0 SIEMPRE (run #7: 6 reales
+      # reportados como 0). Strip ANSI/\r + fails OBLIGATORIO (un log
+      # sin resumen parseable = rojo, no verde por ceguera).
       - name: vitest ratchet (fails <= baseline)
         run: |
           set +e
           pnpm run test 2>&1 | tee /tmp/vitest.log
-          FAILS=$(grep -oE "Tests  [0-9]+ failed" /tmp/vitest.log | grep -oE "[0-9]+" || echo 0)
+          R=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/vitest.log | tr -d '\r' | grep -aoE 'Tests +[0-9]+ failed' | grep -oE '[0-9]+' | head -1)
+          if [ -z "$R" ]; then echo "::error::vitest: no pude extraer fails del log — ratchet CIEGO prohibido"; exit 1; fi
           BASE=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['vitest_fails'])")
-          echo "fails=$FAILS baseline=$BASE"
-          if [ "$FAILS" -gt "$BASE" ]; then
-            echo "::error::vitest debt subió ($FAILS > $BASE) - fix los tests nuevos o actualiza baseline con justificación"
+          echo "fails=$R baseline=$BASE"
+          if [ "$R" -gt "$BASE" ]; then
+            echo "::error::vitest debt subió ($R > $BASE) - fix los tests nuevos o actualiza baseline con justificación"
             exit 1
           fi
 
-      # RATCHET - guardian: 15198 err congelados (muro M-01, FASE 2 sin
-      # migrar; score 8.2 vs threshold 9.3 = deuda conocida §15)
+      # RATCHET - guardian: 15146 err congelados (muro M-01, FASE 2 sin
+      # migrar; score 8.2 vs threshold 9.3 = deuda conocida §15).
+      # Q-CI-05: extracción robusta — el patrón viejo matcheaba DOS
+      # líneas (header "files: N · errors: N" + summary) → ERRS
+      # multilinea → "[ integer expected" (exit 2) → if falso →
+      # NUNCA bloqueó (ratchet no-op desde G10). Anclamos ^errors: del
+      # summary, strip ANSI/\r, head -1 y extracción obligatoria.
       - name: guardian ratchet (errors <= baseline)
         run: |
           set +e
           pnpm run guardian 2>&1 | tee /tmp/guardian.log
-          ERRS=$(grep -oE "errors: +[0-9]+" /tmp/guardian.log | grep -oE "[0-9]+" || echo 0)
+          R=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/guardian.log | tr -d '\r' | grep -aoE '^[[:space:]]+errors: +[0-9]+' | grep -oE '[0-9]+' | head -1)
+          if [ -z "$R" ]; then echo "::error::guardian: no pude extraer errors del log — ratchet CIEGO prohibido"; exit 1; fi
           BASE=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['guardian_errors'])")
-          echo "guardian errors=$ERRS baseline=$BASE"
-          if [ "$ERRS" -gt "$BASE" ]; then
-            echo "::error::guardian debt subió ($ERRS > $BASE) - las X-series no pueden empeorar"
+          echo "guardian errors=$R baseline=$BASE"
+          if [ "$R" -gt "$BASE" ]; then
+            echo "::error::guardian debt subió ($R > $BASE) - las X-series no pueden empeorar"
             exit 1
           fi
 
-      # RATCHET - eslint: 1583 err congelados
+      # RATCHET - eslint: 1583 err congelados. Q-CI-05: mismo helper —
+      # el patrón viejo extraía el número de PROBLEMS si el de errors
+      # se movía de lugar; anclamos "\(N errors" del resumen final.
       - name: lint ratchet (errors <= baseline)
         run: |
           set +e
           pnpm run lint 2>&1 | tee /tmp/eslint.log
-          ERRS=$(grep -oE "[0-9]+ problems \([0-9]+ errors" /tmp/eslint.log | grep -oE "\([0-9]+" | tr -d "(" || echo 0)
+          R=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/eslint.log | tr -d '\r' | grep -aoE '\([0-9]+ errors' | grep -oE '[0-9]+' | head -1)
+          if [ -z "$R" ]; then echo "::error::eslint: no pude extraer errors del log — ratchet CIEGO prohibido"; exit 1; fi
           BASE=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['eslint_errors'])")
-          echo "eslint errors=$ERRS baseline=$BASE"
-          if [ "$ERRS" -gt "$BASE" ]; then
-            echo "::error::eslint debt subió ($ERRS > $BASE)"
+          echo "eslint errors=$R baseline=$BASE"
+          if [ "$R" -gt "$BASE" ]; then
+            echo "::error::eslint debt subió ($R > $BASE)"
             exit 1
           fi
 
@@ -200,29 +227,36 @@ jobs:
 
       # RATCHET — ruff: 1292 err congelados bajo lock 0.15.12 (892 autofixables:
       # UP045/UP017/F401). 1288 era deriva de uvx-latest 0.17.4 (C401/SIM105).
+      # Q-CI-05: mismo helper para TODOS los ratchets — extracción
+      # obligatoria (sin "|| echo 0": una cifra que no se puede leer
+      # es un ratchet CIEGO, no un ratchet verde).
       - name: ruff ratchet (errors <= baseline)
         run: |
           set +e
           uv run ruff check src tests 2>&1 | tee /tmp/ruff.log
-          ERRS=$(grep -oE "Found [0-9]+ errors" /tmp/ruff.log | grep -oE "[0-9]+" || echo 0)
+          R=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/ruff.log | tr -d '\r' | grep -aoE 'Found [0-9]+ errors' | grep -oE '[0-9]+' | head -1)
+          if [ -z "$R" ]; then echo "::error::ruff: no pude extraer errors del log — ratchet CIEGO prohibido"; exit 1; fi
           BASE=$(python3 -c "import json;print(json.load(open('docs/evidence/ci-baseline.json'))['ruff_errors'])")
-          echo "ruff errors=$ERRS baseline=$BASE"
-          if [ "$ERRS" -gt "$BASE" ]; then
-            echo "::error::ruff debt subió ($ERRS > $BASE) — 892 son autofixables: ruff check --fix baja el piso"
+          echo "ruff errors=$R baseline=$BASE"
+          if [ "$R" -gt "$BASE" ]; then
+            echo "::error::ruff debt subió ($R > $BASE) — 892 son autofixables: ruff check --fix baja el piso"
             exit 1
           fi
 
       # RATCHET — mypy strict: 737 err congelados bajo lock (735 era
       # deriva de uvx-latest; delta G12 = 0).
+      # Q-CI-05: mismo helper (ver arriba) — mypy sano pero mismo
+      # contrato: extracción obligatoria o rojo.
       - name: mypy strict ratchet (errors <= baseline)
         run: |
           set +e
           uv run mypy src/club_mcp 2>&1 | tee /tmp/mypy.log
-          ERRS=$(grep -oE "Found [0-9]+ errors" /tmp/mypy.log | grep -oE "[0-9]+" || echo 0)
+          R=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/mypy.log | tr -d '\r' | grep -aoE 'Found [0-9]+ errors' | grep -oE '[0-9]+' | head -1)
+          if [ -z "$R" ]; then echo "::error::mypy: no pude extraer errors del log — ratchet CIEGO prohibido"; exit 1; fi
           BASE=$(python3 -c "import json;print(json.load(open('docs/evidence/ci-baseline.json'))['mypy_errors'])")
-          echo "mypy errors=$ERRS baseline=$BASE"
-          if [ "$ERRS" -gt "$BASE" ]; then
-            echo "::error::mypy debt subió ($ERRS > $BASE)"
+          echo "mypy errors=$R baseline=$BASE"
+          if [ "$R" -gt "$BASE" ]; then
+            echo "::error::mypy debt subió ($R > $BASE)"
             exit 1
           fi
 

@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.8 · Generación G12.1 (absorción G13/G14 retrospectiva) · Date: 2026-11-13
+### Version: 9.9 · Generación Q-CI-05 (ratchets que muerden) · Date: 2026-11-14
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos
@@ -112,6 +112,35 @@ CONTENIDO:
 ```
 
 ---
+
+## CHANGELOG Q-CI-05 (v9.8 → v9.9)
+
+```
+RATCHETS QUE MUERDEN (forense del run #7 — el verde enmascaraba):
+- BUG (a) guardian no-op: el grep matcheaba DOS líneas (header
+  "files: 1270 · errors: 15146" + summary "  errors: 15146") → ERRS
+  multilinea → "[ integer expected" (exit 2) → if falso → nunca
+  bloqueó. Prueba en el propio log del run #7 (línea del runner).
+- BUG (b) vitest ciego: en el runner el resumen llega con ANSI +
+  \r intra-línea → grep lo trata binario → "|| echo 0" → fails=0
+  SIEMPRE (6 reales reportados como 0). Reproducido sandbox (E1).
+- BUG (c) de diseño: "|| echo 0" = extracción fallida → 0 ≤
+  baseline → verde garantizado. Un ratchet que no puede fallar la
+  lectura no es un ratchet. ELIMINADO en los 5.
+- FIX: strip ANSI (sed) + strip \r (tr) + patrón anclado a la línea
+  del summary + head -1 (ERRS escalar SIEMPRE) + extracción
+  OBLIGATORIA ("ratchet CIEGO prohibido" → exit 1 rojo).
+  Validado con logs reales sandbox: 6/6 extracciones exactas
+  (vitest 6 · guardian 15146 · eslint 1583 · ruff 1292 · mypy 735
+  — este último vivo-bajo-lock) + mordida negativa probada
+  (baseline fingido 15140 < 15146 real → exit 1) + no-op
+  pre-fix reproducido (exit 2 del "[").
+- eslint/ruff/mypy extraían bien pero heredaban el (c): mismo
+  contrato para los 5. El de ruff además extraía "problems" si el
+  resumen movía cifras — anclado "\(N errors".
+- END: masters v9.9; Q-CI-05 CERRADO — los 5 ratchets del CI ya
+  comparan números reales; estado vivo = verde que muerde.
+```
 
 ## CHANGELOG G13-G14 (v9.7 → v9.8)
 
@@ -1785,6 +1814,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.8 · Generación G12.1 (sincronizada con
+END OF MASTER_CHECKPOINT.md v9.9 · Generación Q-CI-05 (sincronizada con
 MASTER_BASE.md v9.8 y MASTER_CHECKLIST.md v9.8)
 
