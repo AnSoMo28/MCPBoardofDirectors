@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.10 · Generación G15 (cierre deuda #G10-1 vitest) · Date: 2026-11-14
+### Version: 9.11 · Generación G15.1 (ratchet inmune al éxito) · Date: 2026-11-14
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -80,6 +80,41 @@ CONTENIDO:
 ```
 
 ---
+
+## CHANGELOG G15.1 (v9.10 → v9.11)
+
+```
+FIX DEL PROPIO GUARDIA (run #9 · 1137dce): 470/470 PASÓ y el ratchet
+lo mató igual — con 0 fails vitest OMITE la palabra "failed" del
+summary ("Tests 470 passed (470)") → el regex viejo 'Tests +N failed'
+no matcheaba → "no pude extraer" → rojo por ÉXITO. El guardia no
+distinguía "log sin resumen" (ceguera real) de "resumen sin fails"
+(el estado perfecto).
+- EXTRACTOR DE 3 ESTADOS: fails N (rojo con "N failed | M passed") ·
+  fails 0 (verde: summary presente sin la palabra) · SIN summary
+  (ciego real → "::error:: ratchet CIEGO prohibido" → rojo).
+- NUEVO RATCHET DE TOTAL (fails ≤ 0 AND total ≥ floor=470): sin él,
+  borrar tests bajaba fails a 0 y el ratchet de deuda aplaudiría — el
+  CI perdió 464 tests así en la era pre-Q-CI-05 (818→27→470). Crecer
+  la suite = subir el floor mismo-PR; encogerla = justificación
+  escrita en ci-baseline.json.
+- DRY-RUNES REALES ×4 FORMAS (verde real · rojo viejo 7 fails ·
+  ciego · encogido 12) — la 1ª iteración del regex del total NO
+  matcheaba '7 failed | 463 passed (470)' (separador '|'): cazado por
+  el dry-run, no por mi lectura. El dry-run teatral de G15 (R=0 a
+  mano) es la razón de que run #9 muriera: esta vez los 4 fixtures
+  corren contra el paso textual del ci.yml.
+- CIFRAS POST-G15 (run #10 no depende de ellas): guardian 15146 =
+  baseline · eslint 1583 = baseline — los 6 tests editados viven en
+  src/ y no movieron ninguna aguja.
+- LANDMINES ANÁLOGOS DOCUMENTADOS (no urgentes — hoy imposibles con
+  deuda > 0): ruff limpio imprime 'All checks passed!' (sin 'Found N
+  errors') · mypy limpio imprime 'Success: ...' · eslint limpio no
+  imprime línea de resumen. Cuando esa deuda llegue a 0, el mismo
+  patrón de 3 estados aplica.
+- END: masters v9.11; la saga CI queda: ratchets honestos (Q-CI-05)
+  → deuda suite en 0 (G15) → extractor inmune al éxito (G15.1).
+```
 
 ## CHANGELOG G15 (v9.9 → v9.10)
 
@@ -1683,7 +1718,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.10 · Generación G15 (sincronizada con
-MASTER_CHECKPOINT.md v9.10 y MASTER_CHECKLIST.md v9.10)
+END OF MASTER_BASE.md v9.11 · Generación G15.1 (sincronizada con
+MASTER_CHECKPOINT.md v9.11 y MASTER_CHECKLIST.md v9.11)
 
 

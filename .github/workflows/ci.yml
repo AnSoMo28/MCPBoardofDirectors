@@ -132,18 +132,35 @@ jobs:
       # con timeout 30000 (npx tsx en frío bajo 8 workers).
       # Q-CI-05: vitest escribe ANSI + \r intra-línea en el runner →
       # grep binario → "|| echo 0" → fails=0 SIEMPRE (run #7: 6 reales
-      # reportados como 0). Strip ANSI/\r + fails OBLIGATORIO (un log
-      # sin resumen parseable = rojo, no verde por ceguera).
-      - name: vitest ratchet (fails <= baseline)
+      # reportados como 0). Strip ANSI/\r + extracción OBLIGATORIA.
+      # G15.1 (run #9 · 1137dce): 470/470 PASÓ y aún así exit 1 — con 0
+      # fails vitest omite la palabra "failed" del summary ("Tests 470
+      # passed (470)") → el regex viejo 'Tests +N failed' no matcheaba →
+      # "no pude extraer" → rojo por ÉXITO. Fix: parsear el summary como
+      # par fails/total (3 estados: número, 0 si solo "passed", rojo si
+      # no hay summary). NUEVO ratchet de total (≥ 470): sin él, borrar
+      # tests bajaría fails a 0 y el ratchet de deuda aplaudiría — el
+      # CI perdió 464 tests así en la era pre-Q-CI-05 (818→27→470).
+      - name: vitest ratchet (fails <= baseline AND total >= floor)
         run: |
           set +e
           pnpm run test 2>&1 | tee /tmp/vitest.log
-          R=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/vitest.log | tr -d '\r' | grep -aoE 'Tests +[0-9]+ failed' | grep -oE '[0-9]+' | head -1)
-          if [ -z "$R" ]; then echo "::error::vitest: no pude extraer fails del log — ratchet CIEGO prohibido"; exit 1; fi
+          CLEAN=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/vitest.log | tr -d '\r')
+          # fails: "7 failed | 463 passed" → 7 · "470 passed" (sin failed) → 0
+          R=$(echo "$CLEAN" | grep -aoE 'Tests +[0-9]+ failed' | grep -oE '[0-9]+' | head -1)
+          [ -z "$R" ] && R=0
+          # total: siempre presente entre paréntesis del summary "Tests … (470)"
+          T=$(echo "$CLEAN" | grep -aoE 'Tests +([0-9]+ )?(failed \| )?[0-9]+ passed +\([0-9]+\)' | grep -oE '\([0-9]+\)' | tr -d '()' | head -1)
+          if [ -z "$T" ]; then echo "::error::vitest: no pude extraer el total del summary — ratchet CIEGO prohibido"; exit 1; fi
           BASE=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['vitest_fails'])")
-          echo "fails=$R baseline=$BASE"
+          FLOOR=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['vitest_total_floor'])")
+          echo "fails=$R baseline=$BASE · total=$T floor=$FLOOR"
           if [ "$R" -gt "$BASE" ]; then
             echo "::error::vitest debt subió ($R > $BASE) - fix los tests nuevos o actualiza baseline con justificación"
+            exit 1
+          fi
+          if [ "$T" -lt "$FLOOR" ]; then
+            echo "::error::suite ENCOCIÓ en silencio: total=$T < floor=$FLOOR (borrar tests baja fails sin bajar deuda — prohíbelo o re-baselinea con justificación)"
             exit 1
           fi
 
