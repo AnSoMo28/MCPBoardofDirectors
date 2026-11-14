@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.11 · Generación G15.1 (ratchet inmune al éxito) · 180 checks · ZERO tolerance
+### Version: 9.12 · Generación G16 (anomalía mypy 737→735 cerrada) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian 4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -70,6 +70,31 @@ CONTENIDO:
 ```
 
 ---
+
+## CHANGELOG G16 (v9.11 → v9.12)
+
+```
+CIERRE DE LA ÚLTIMA ANOMALÍA DEL RUN #10: mypy reportó 735 contra
+baseline 737 — nadie tocó Python en G15/G15.1, y una deuda que baja
+sola no es regalo, es pregunta. Medición forense (uv sync --frozen
+--extra dev, lock mypy 2.1.0, 4 commits):
+  · 9dd4270 → 735 · 62a5f40 → 735 · 03dc0bd → 735 · 741e0a4 → 735
+  · diff Python 741e0a4→9dd4270 (src/pyproject/lock) = VACÍO
+  · uvx mypy 2.4.1 (latest sin lock) → 828 en 81 files
+CONCLUSIÓN: 737 nunca fue reproducible bajo el lock. La atribución
+del comentario G12.1 ("735 era deriva de uvx-latest") estaba
+INVERTIDA: 735 es la cifra estable del lock; 828 es la deriva
+real de uvx-latest. El 737 original salió de un venv de máquina
+local (mypy pre-instalado ≠ lock) en la medición G12.1.
+IMPACTO: el ratchet era VÁLIDO (prohibir subir) pero con 2 unidades
+de ventana muerta — 735/736 pasaban sin ser jamás el valor real.
+Re-baseline 737→735 (bajar el piso SIEMPRE es bienvenido):
+run #11 en adelante la cifra CI = la cifra del lock, sin colchón.
+Estado de deuda post-G16: vitest 0/470 · guardian 15146 · eslint
+1583 · ruff 1292 · mypy 735 — 5/5 medidas bajo sus locks exactos,
+0 ventanas muertas.
+END: masters v9.12.
+```
 
 ## CHANGELOG G15.1 (v9.10 → v9.11)
 
@@ -1446,6 +1471,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.11 · Generación G15.1 (sincronizada con
-MASTER_BASE.md v9.11 y MASTER_CHECKPOINT.md v9.11)
+END OF MASTER_CHECKLIST.md v9.12 · Generación G16 (sincronizada con
+MASTER_BASE.md v9.12 y MASTER_CHECKPOINT.md v9.12)
 
