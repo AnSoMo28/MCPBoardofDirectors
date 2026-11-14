@@ -271,7 +271,9 @@ describe("designTrialExperience", () => {
     const final = plan.chapters.find((ch) => ch.day === 6);
     expect(final).toBeDefined();
     expect(final!.title).toBe("La conversación");
-    expect(final!.purpose).toContain("conversión");
+    // G15: purpose real del src: "Evaluar disposición a convertirse
+    // en miembro" — el contains "conversión" nunca matcheó.
+    expect(final!.purpose).toContain("convertirse en miembro");
   });
 
   it("should include social integration chapter", () => {
@@ -1268,10 +1270,14 @@ describe("enrichProposals", () => {
   });
 
   it("should add +15 for callbacks present", () => {
+    // G15: el makeMemory default trae topicPatterns (sports/dining con
+    // avgSentiment > 0) → topicAlignment también suma +15 → delta total
+    // 30, no 15. Aislamos el efecto callbacks vaciando topicPatterns.
     const memory = makeMemory({
       callbacks: [
         { id: "cb-1", description: "Test", promisedDate: daysAgo(-3), status: "pending", priority: 80, createdAt: daysAgo(5) } as unknown as Callback,
       ],
+      topicPatterns: [],
     });
 
     const withCb = assertOk(enrichProposals({

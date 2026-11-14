@@ -1,12 +1,12 @@
 {
   "_doc": "Baseline del ratchet de deuda CI — G10 · Ola 0.1. Cifras medidas el 2026-11-11 @ 03dc0bd (sandbox, misma corrida que Masters §15). REGLA: ningún PR puede SUBIR estas cifras; bajarlas siempre es bienvenido y baja el piso (actualizar este archivo en el mismo PR). La deuda existe desde antes de e15068e (features guests/lib desincronizadas; eslint/ruff/mypy nunca corrieron en CI).",
-  "vitest_fails": 6,
+  "vitest_fails": 0,
   "guardian_errors": 15146,
   "eslint_errors": 1583,
   "ruff_errors": 1292,
   "mypy_errors": 737,
   "detail": {
-    "vitest_fails": "6 tests en src/features/guests/lib/__tests__ (conversionChemistry 1, guestIntelligence 1, guestMemory 1, pipelineEcosystem 1, +2) — tests stale vs lib refactorizada pre-e15068e (01f8d0d). Verificados idénticos en e15068e y 03dc0bd.",
+    "vitest_fails": "0 desde G15 (2026-11-14): los 6 stale tests de features guests/lib reparados — no eran bugs de src, eran tests desincronizados con el refactor pre-e15068e: C1 conversionChemistry 88→86 (aritmética del comentario: min(100,6*15)=90, no 100) · C2 guestIntelligence hot→warm (69 < threshold 70; el propio comentario del test lo decía) · C3 guestMemory mock dejaba totalVisits=12 → loyalty bonus +15 legítimo (ahora mock con totalVisits:0) · C4 pipelineEcosystem mock tocaba stage 'converted_member' inexistente en vez de 'ready' (quickWins provienen de ready) · C5 trialNarrative purpose real='convertirse en miembro' · C6 trialNarrative callbacks+topicPatterns del mock sumaban +30 junto (ahora topicPatterns:[] aísla el +15 de callbacks). 470/470 × 2 corridas sandbox. El 7º (check3 e2e) era flake de timeout: npx tsx en frío bajo 8 workers — timeout 30000.",
     "guardian_errors": "15146 bajo guardian 4.1.3 (G13/G14 absorbidos: X-16 = 0 y AG-30 X-28 quitó 109 FP). 15198 era pre-G13/G14. Deuda restante dominada por X-13 (8927) y X-26 (5249) — baja con FASE 2/M-01, no con parches. Re-baseline mismo-PR (medición sandbox 2026-11-13 @ 94d965d = CI run #6).",
     "eslint_errors": "1583 err + 138 warn — nunca fue gate de CI; mayor parte unused-vars/any en features legacy.",
     "ruff_errors": "1292 bajo lock 0.15.12 (892 autofixables: UP045 482, UP017 162, F401 118, I001 70). F821 53 = deuda real de imports rotos en models/repos legacy. 1288 era deriva de versión (uvx latest 0.17.4); re-baseline G12.1 con delta G12 = 0 verificado. PR de ratchet-down fácil: ruff check --fix.",

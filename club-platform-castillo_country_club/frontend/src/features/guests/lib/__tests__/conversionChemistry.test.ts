@@ -895,9 +895,12 @@ describe("predictConversion", () => {
     // visitCount = 6, daysSinceFirstVisit = 10
     //
     // probability = 80*0.35 + 85*0.25 + min(100,6*15)*0.20 + max(0,100-10*0.5)*0.20
-    //             = 28 + 21.25 + 100*0.20 + 95*0.20
-    //             = 28 + 21.25 + 20 + 19
-    //             = 88.25 → 88
+    //             = 28 + 21.25 + 90*0.20 + 95*0.20
+    //             = 28 + 21.25 + 18 + 19
+    //             = 86.25 → 86
+    // (G15: el comentario viejo decía min(100,6*15)=100 — pero 6*15=90
+    //  < 100, el cap NO aplica; 88 era aritmética del comentario,
+    //  no del src. Verificado con cálculo en sandbox.)
     const chemistry: ChemistryScore = {
       guestId: gid("gst-001"),
       overall: 80,
@@ -917,7 +920,7 @@ describe("predictConversion", () => {
     };
 
     const result = assertOk(predictConversion(chemistry, impression, 6, 10));
-    expect(result.probability).toBe(88);
+    expect(result.probability).toBe(86);
   });
 
   it("should use 50 as default when firstImpression is null", () => {

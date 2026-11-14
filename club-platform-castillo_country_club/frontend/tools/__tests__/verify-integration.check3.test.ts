@@ -120,7 +120,11 @@ describe("collectJsWrittenTokens (VI-17 definition sites)", () => {
 });
 
 describe("detector contract (full run over a synthetic project)", () => {
-  it("reports CSS-side never-defined no-fallback tokens and stays silent for wired ones", () => {
+  it("reports CSS-side never-defined no-fallback tokens and stays silent for wired ones", { timeout: 30000 }, () => {
+    // G15: timeout holgado — este e2e spawnea `npx tsx` (compila TS en
+    // frío) y bajo la carga de 8 workers paralelos puede pasarse del
+    // default 5000ms (medido: 673ms aislado, ~1886ms en el runner;
+    // flakeado local con la suite completa en sandbox).
     // Build a minimal frontend/src with every shape the detector must
     // distinguish, run the CLI with --json, assert the exact findings.
     const fs = require("node:fs");

@@ -36,7 +36,8 @@
 #
 #   2. RATCHET DE DEUDA (bloquean si SUBEN; ideally bajan):
 #      La deuda pre-G10 está medida y congelada en backend/docs/evidence/
-#      ci-baseline.json: vitest 6 fails · guardian 15146 err · eslint
+#      ci-baseline.json: vitest 0 fails (G15: 6→0, deuda #G10-1 cerrada)
+#      · guardian 15146 err · eslint
 #      1583 err · ruff 1292 · mypy 737. Un PR que sube cualquiera de
 #      esas cifras NO pasa. Bajarlas es siempre bienvenido (y actualiza
 #      el baseline con --fix-baseline en el mismo PR).
@@ -125,8 +126,10 @@ jobs:
       - name: verify-integration
         run: pnpm run verify:integration
 
-      # RATCHET - vitest: deuda congelada (6 fails pre-G10, features
-      # guests/lib desincronizadas ANTES de e15068e - deuda #G10-1)
+      # RATCHET - vitest: G15 cerró la deuda #G10-1 — los 6 tests stale
+      # (features guests/lib desincronizadas pre-e15068e) actualizados a
+      # la realidad del src: 470/470. Baseline 6→0 mismo-PR. check3 e2e
+      # con timeout 30000 (npx tsx en frío bajo 8 workers).
       # Q-CI-05: vitest escribe ANSI + \r intra-línea en el runner →
       # grep binario → "|| echo 0" → fails=0 SIEMPRE (run #7: 6 reales
       # reportados como 0). Strip ANSI/\r + fails OBLIGATORIO (un log

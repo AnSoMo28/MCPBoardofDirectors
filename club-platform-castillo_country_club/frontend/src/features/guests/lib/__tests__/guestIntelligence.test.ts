@@ -215,10 +215,12 @@ describe("computeTemperature", () => {
     expect(t.label).toBe("blazing"); // 90 >= 90
   });
 
-  it("should round 69.4 to 69 (hot)", () => {
+  it("should round 69.4 to 69 (warm)", () => {
+    // G15: 69 redondeado < threshold hot (70) → warm. El label viejo
+    // ("hot") se contradecía con el propio comentario del test.
     const t = computeTemperature(69.4);
     expect(t.value).toBe(69);
-    expect(t.label).toBe("hot"); // 69 >= 70? No → hot
+    expect(t.label).toBe("warm"); // 69 >= 70? No → warm (50 ≤ 69 < 70)
   });
 
   // ── Structure ──

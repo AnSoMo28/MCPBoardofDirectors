@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.9 · Generación Q-CI-05 (ratchets que muerden) · Date: 2026-11-14
+### Version: 9.10 · Generación G15 (cierre deuda #G10-1 vitest) · Date: 2026-11-14
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -80,6 +80,43 @@ CONTENIDO:
 ```
 
 ---
+
+## CHANGELOG G15 (v9.9 → v9.10)
+
+```
+CIERRE DE LA DEUDA #G10-1 (vitest 6 fails — visible por primera vez
+gracias a Q-CI-05: el gate ciego reportaba fails=0 desde G10):
+- FORENSE: los 6 fails NO eran bugs de src — eran tests stale vs el
+  refactor de features guests/lib PRE-e15068e (nunca re-sincronizados).
+  El src es correcto en los 6 casos; corregido el lado tests con
+  evidencia por caso (comentarios G15 en cada test):
+  C1 conversionChemistry 88→86: el COMENTARIO del test calculaba mal
+     (min(100,6·15)=90 no 100 → 86.25→86; verificado con código).
+  C2 guestIntelligence 69.4→69: label 'hot' se contradecía con el
+     propio comentario (69 < threshold 70) → warm.
+  C3 guestMemory strength 15: mock con interactions:[] pero
+     totalVisits:12 → loyalty bonus (+15) legítimo del src → mock
+     ahora totalVisits:0.
+  C4 pipelineEcosystem quickWins 5: mock tocaba stage
+     'converted_member' (inexistente — es 'converted') en vez de
+     'ready', de donde nacen los quickWins (pipelineEcosystem.ts:143).
+  C5 trialNarrative 'conversión': purpose real del src es
+     'Evaluar disposición a convertirse en miembro'.
+  C6 trialNarrative +15 callbacks: el makeMemory default trae
+     topicPatterns con avgSentiment>0 → +15+15=+30; aislado con
+     topicPatterns:[].
+- BONUS G15 (el 7º, solo visible en sandbox): check3 e2e flakeaba por
+  timeout — spawn de npx tsx (compila TS en frío) bajo 8 workers
+  paralelos excede el default 5000ms (673ms aislado, ~1886ms runner)
+  → timeout 30000 explícito.
+- RE-BASELINE HONESTO mismo-PR: ci-baseline.json vitest_fails 6→0.
+  El ratchet ahora exige 0: cualquier fail nuevo = ROJO directo.
+- VERIFICACIÓN: 470/470 × 2 corridas sandbox (flake descartado) ·
+  ratchet vitest con fails=0 vs baseline=0 en el próximo run.
+- END: masters v9.10; deuda #G10-1 CERRADA — la suite frontend pasa
+  completa por primera vez desde e15068e; Q-CI-05 ya no tiene deuda
+  que desenmascarar (guardian/eslint/ruff/mypy son las colas vivas).
+```
 
 ## CHANGELOG Q-CI-05 (v9.8 → v9.9)
 
@@ -1646,7 +1683,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.9 · Generación Q-CI-05 (sincronizada con
-MASTER_CHECKPOINT.md v9.8 y MASTER_CHECKLIST.md v9.8)
+END OF MASTER_BASE.md v9.10 · Generación G15 (sincronizada con
+MASTER_CHECKPOINT.md v9.10 y MASTER_CHECKLIST.md v9.10)
 
 
