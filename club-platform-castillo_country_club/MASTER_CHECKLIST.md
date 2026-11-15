@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.12 · Generación G16 (anomalía mypy 737→735 cerrada) · 180 checks · ZERO tolerance
+### Version: 9.13 · Generación G18 (Ola 1 — Seguridad P0 cerrada) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian 4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -1471,6 +1471,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.12 · Generación G16 (sincronizada con
+END OF MASTER_CHECKLIST.md v9.13 · Generación G18 (sincronizada con
 MASTER_BASE.md v9.12 y MASTER_CHECKPOINT.md v9.12)
 

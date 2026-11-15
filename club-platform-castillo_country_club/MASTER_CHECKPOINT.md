@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.12 · Generación G16 (anomalía mypy 737→735 cerrada) · Date: 2026-11-14
+### Version: 9.13 · Generación G18 (Ola 1 — Seguridad P0 cerrada) · Date: 2026-11-14
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos
@@ -112,6 +112,45 @@ CONTENIDO:
 ```
 
 ---
+
+## CHANGELOG G18 (v9.12 → v9.13)
+
+```
+OLA 1 — SEGURIDAD P0 (PATH NEXT-STEPS-2027 §1) CERRADA:
+- Q-SEC-01 CERRADO: settings fail-fast — club_env=production con
+  jwt_secret_key placeholder/vacío RECHAZA arrancar (model_validator
+  + denylist _INSECURE_JWT_SECRETS con los 2 literales históricos).
+  jwt_service firma desde get_settings() (antes: SU literal propio
+  de 57B, distinto del de settings — nadie consumía el declarado).
+  Default dev 48B (pyjwt>=2.10 lanza InsecureKeyLengthWarning <32B
+  y filterwarnings=error lo promovía: 21 tests morían).
+- Q-SEC-02 CERRADO: cloud_ai_enabled sin API key en production
+  también rechaza (misma validator).
+- Q-SEC-03 CERRADO: create_admin.py password="" hardcodeado a
+  postgres eliminado (CLUB_DB_PASSWORD env / getpass; era residuo
+  de diagnóstico — el script sondea tablas, no crea admin).
+- Q-SEC-04 CERRADO: los 4 sitios user_role="admin" hardcodeados
+  del document_intelligence pasan el rol REAL del caller (JWT del
+  router vía firma del tool); default socio = least privilege.
+  Hallazgo b0v CERRADO (era su TODO).
+- Q-SEC-05 NUEVO (hallazgo de esta ola) y CERRADO: la rama BM25
+  de la búsqueda híbrida corría SIN access control — vector
+  filtraba por rol, BM25 devolvía TODO y la fusión RRF los
+  mezclaba. Filtro ROLE_ACCESS antes de la fusión. Gradiente
+  verificado por ejecución: socio=public · staff≤internal ·
+  junta≤confidential · admin=todo.
+- Ola 1.3: secret-audit v1.0.0 GATE DURO de CI (105 archivos,
+  allowlist por EXTRACTO — por línea quedaba desincronizada con
+  ruff --fix; mordida probada: secreto plantado cazado en 1s).
+  ci.yml: job `security` nuevo + fail-fast gate POR EJECUCIÓN en
+  job backend + security en ci-summary. CI 4→5 jobs.
+- Tests: +19 (fail-fast · denylist · single-source · defaults
+  socio · gradiente BM25) y 4 stale b0v sincronizados. pytest
+  827→846. ruff 1292→1282 (ratchet baja mismo-PR: --fix sobre
+  los archivos tocados). mypy 735 estable. smoke B0 VERDE.
+  consistency 13/13 (masters↔manifest↔árbol).
+- END: masters v9.13 · Ola 2 (Persistencia real) es la siguiente.
+```
 
 ## CHANGELOG G16 (v9.11 → v9.12)
 
@@ -303,7 +342,7 @@ lo disparó (timing de GC). FIX Q-CI-04 (2e9210f): -p no:unraisableexception sol
 827-passed queda intacto; higiene de cierre de transports =
 deuda cosmética registrada.
 RUN #5 @ 2e9210f: CI VERDE — 4/4 jobs en Actions: consistency 13/13
-· frontend (gates duros + ratchets) · backend 827 passed + smoke
+· frontend (gates duros + ratchets) · backend 846 passed + smoke
 B0 VERDE (19 agentes · 207 tools — primera vez en CI real) +
 ruff 1292=baseline + mypy 737=baseline · verdict "CI VERDE —
 gates duros ✓ ratchets ✓". Las ~16 anotaciones del panel son la
@@ -345,7 +384,7 @@ CORRECCIÓN DE ENTREGA G12 — CI REAL + DETERMINISMO (Q-CI-01 raíz):
 - SANIDAD: de-dup del changelog G12 en CHECKLIST (encabezado
   duplicado defecto del 0002) · 'pytest 818'→'827' en job backend.
 - VERIFICACIÓN (sandbox, árbol exacto del parche): 13/13 consistency
-  · 827 passed · smoke B0 VERDE · ruff 1292 = baseline · mypy 735 =
+  · 846 passed · smoke B0 VERDE · ruff 1292 = baseline · mypy 735 =
   baseline — los 4 gates duros + 2 ratchets del job backend verdes.
 - END: masters v9.6; Q-CI-01 CERRADO DE VERDAD (visible a Actions);
   protocolo intacto (regla G8/G9).
@@ -506,7 +545,7 @@ OLA 0 — BLINDAJE (PATH NEXT-STEPS-2027) CERRADA:
 - .github/workflows/ci.yml (Q-CI-01→04 ✓ + run #5 VERDE · cierre G12.1 — RAÍZ: anidado era
   invisible a Actions, 0 corridas históricas): 4 jobs — consistency ·
   frontend (build+verify-build-css+VI+vitest/guardian/eslint ratchet) ·
-  backend (uv sync+pytest 827+smoke+ruff/mypy ratchet por uv.lock) ·
+  backend (uv sync+pytest 846+smoke+ruff/mypy ratchet por uv.lock) ·
   ci-summary.
   Estrategia: GATES DUROS bloquean (hoy verdes) · DEUDA CONGELADA en
   backend/docs/evidence/ci-baseline.json (ratchet: subir = ROJO,
@@ -1911,6 +1950,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.12 · Generación G16 (sincronizada con
+END OF MASTER_CHECKPOINT.md v9.13 · Generación G18 (sincronizada con
 MASTER_BASE.md v9.12 y MASTER_CHECKLIST.md v9.12)
 

@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.12 · Generación G16 (anomalía mypy 737→735 cerrada) · Date: 2026-11-14
+### Version: 9.13 · Generación G18 (Ola 1 — Seguridad P0 cerrada) · Date: 2026-11-14
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -1743,7 +1743,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.12 · Generación G16 (sincronizada con
+END OF MASTER_BASE.md v9.13 · Generación G18 (sincronizada con
 MASTER_CHECKPOINT.md v9.12 y MASTER_CHECKLIST.md v9.12)
 
 
