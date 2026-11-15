@@ -209,6 +209,27 @@ jobs:
           retention-days: 7
 
   # ════════════════════════════════════════════════════════════════
+  # JOB 2.5 — SECURITY (Ola 1.3 · GATE DURO)
+  # secret-audit: 0 literales de secreto en src/ fuera de allowlist.
+  # El gate es de ARTEFACTO: recorre el árbol compilado-que-va-a-prod
+  # y busca los patrones; una línea nueva con password="..." sin
+  # allowlist = ROJO. Mordida probada (secreto plantado → cazado).
+  # ════════════════════════════════════════════════════════════════
+  security:
+    name: secret-audit (0 literales en src/)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: club-platform-castillo_country_club/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: secret-audit (allowlist viva)
+        run: python scripts/secret_audit.py
+
+  # ════════════════════════════════════════════════════════════════
   # JOB 3 — BACKEND (gates duros + ratchet)
   # ════════════════════════════════════════════════════════════════
   backend:
@@ -244,6 +265,28 @@ jobs:
       # GATE DURO 5 — el gate ejecutable B0 (19 agentes · 207 tools · RBAC)
       - name: smoke_b0 (composicion+registro+RBAC+HITL+HTTP)
         run: uv run python scripts/smoke_b0.py
+
+      # GATE DURO 6 — Ola 1.1 (Q-SEC-01/02): production sin secretos
+      # RECHAZA arrancar. Este paso es el gate de ARTEFACTO del
+      # fail-fast: existe el validator Y el CI lo demuestra por
+      # ejecución — sin env, Settings(production) debe tronar.
+      - name: fail-fast gate (prod sin secretos rechaza)
+        run: |
+          uv run python - <<'EOF'
+          from club_mcp.config.settings import Settings
+          try:
+              Settings(club_env="production")
+          except ValueError as exc:
+              print(f"FAIL-FAST OK: {exc}")
+          else:
+              raise SystemExit(
+                  "::error::production arrancó sin JWT_SECRET_KEY — "
+                  "el validator Q-SEC-01 dejó de morder"
+              )
+          # y con secreto real arranca:
+          ok = Settings(club_env="production", jwt_secret_key="ci-" + "k"*40)
+          print(f"prod con secreto real: OK ({ok.club_env})")
+          EOF
 
       # RATCHET — ruff: 1292 err congelados bajo lock 0.15.12 (892 autofixables:
       # UP045/UP017/F401). 1288 era deriva de uvx-latest 0.17.4 (C401/SIM105).
@@ -287,7 +330,7 @@ jobs:
   # ════════════════════════════════════════════════════════════════
   ci-summary:
     name: CI verdict (gates duros + ratchets)
-    needs: [consistency, frontend, backend]
+    needs: [consistency, frontend, security, backend]
     runs-on: ubuntu-latest
     if: always()
     timeout-minutes: 30
@@ -299,9 +342,11 @@ jobs:
         run: |
           echo "consistency: ${{ needs.consistency.result }}"
           echo "frontend:    ${{ needs.frontend.result }}"
+          echo "security:    ${{ needs.security.result }}"
           echo "backend:     ${{ needs.backend.result }}"
           if [ "${{ needs.consistency.result }}" != "success" ] || \
              [ "${{ needs.frontend.result }}" != "success" ] || \
+             [ "${{ needs.security.result }}" != "success" ] || \
              [ "${{ needs.backend.result }}" != "success" ]; then
             echo "::error::CI ROJO — ver jobs arriba (gates duros o ratchet de deuda)"
             exit 1
