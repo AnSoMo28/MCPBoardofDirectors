@@ -401,7 +401,10 @@ class TestQueryDocuments:
     async def test_query_found(self, dia_agent, doc_repo):
         await _seed_financial_report(doc_repo)
         result = await dia_agent.query_documents(
-            query="revenue increased"
+            query="revenue increased",
+            user_role="admin",  # docs seed internal (nivel 1): el ACL
+            # filtra para socio; este test es de RELEVANCIA, el gradiente
+            # lo prueban los tests Ola 1.2 de test_settings_failfast.py
         )
         assert result["status"] == "success"
         assert result["total_results"] > 0
@@ -439,6 +442,7 @@ class TestQueryDocuments:
         result = await dia_agent.query_documents(
             query="revenue budget",
             category_filter="financial",
+            user_role="admin",
         )
         assert result["status"] == "success"
         for r in result["results"]:
@@ -449,27 +453,28 @@ class TestQueryDocuments:
         self, dia_agent, doc_repo
     ):
         await _seed_contract_a(doc_repo)
-        # HALLAZGO (b0v): query_documents hardcodea user_role="admin" —
-        # el access_level del caller NO filtra resultados en la búsqueda
-        # (todo autenticado ve confidenciales vía query). Pendiente B1/B2;
-        # mientras tanto verificamos el comportamiento real: el doc
-        # confidencial SÍ aparece en los resultados de la query.
+        # b0v → CERRADO por Ola 1.2 (Q-SEC-04/05): el ACL ya filtra.
+        # Sin user_role del caller el default es socio → los
+        # confidenciales NO salen. Este test ES el gate de salida del
+        # hallazgo: socio pidiendo confidenciales NO los recibe.
         result = await dia_agent.query_documents(
             query="catering services",
             access_level="internal",
         )
         assert result["status"] == "success"
-        assert result["total_results"] >= 1
+        assert result["total_results"] == 0
 
     @pytest.mark.asyncio
     async def test_query_confidential_docs_visible(
         self, dia_agent, doc_repo
     ):
         await _seed_contract_a(doc_repo)
-        # Admin with confidential access can see them
+        # Admin with confidential access can see them — el gradiente
+        # del ACL (ROLE_ACCESS) debe dejarlo ver TODO.
         result = await dia_agent.query_documents(
             query="catering services",
             access_level="confidential",
+            user_role="admin",
         )
         assert result["status"] == "success"
         assert result["total_results"] > 0
@@ -657,6 +662,7 @@ class TestGenerateKnowledgeReport:
 
         exec_result = await dia_agent.execute_knowledge_report(
             topic="Facility and Budget",
+            user_role="admin",  # los docs seed internal: socio los filtra
         )
         assert exec_result["status"] == "success"
         report = exec_result["report"]

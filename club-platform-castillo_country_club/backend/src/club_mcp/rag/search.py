@@ -25,6 +25,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
+
 logger = logging.getLogger(__name__)
 
 # RRF constant — k=60 is the standard from the original RRF paper
@@ -106,7 +107,13 @@ class HybridSearchEngine:
         start = time.time()
 
         # Step 1: BM25 search (keyword)
-        bm25_results = self._bm25_search(query, top_k=top_k * 2)
+        # Q-SEC-05 (Ola 1.2): la rama BM25 corría SIN access control —
+        # el vector filtraba por rol pero BM25 devolvía TODO con su
+        # metadata (access_level incluido) y la fusión RRF los mezclaba
+        # con los filtrados. El filtro ahora vive ANTES de la fusión.
+        bm25_results = self._bm25_search(
+            query, top_k=top_k * 2, user_role=user_role
+        )
 
         # Step 2: Vector search (semantic)
         vector_results = self._vector_search(
@@ -184,12 +191,24 @@ class HybridSearchEngine:
         self,
         query: str,
         top_k: int = 40,
+        user_role: str = "admin",
     ) -> list[dict[str, Any]]:
-        """Keyword search using BM25."""
+        """Keyword search using BM25, filtered by the caller's role.
+
+        Q-SEC-05: BM25 antes devolvía cualquier chunk con su metadata
+        completa sin mirar access_level — la mitad híbrida del "RAG con
+        ACL por rol" era la mitad sin ACL. Filtrar aquí (antes de la
+        fusión RRF) es la única forma de que la fusión reciba material
+        ya clasificado.
+        """
+        from club_mcp.rag.vectorstore import ROLE_ACCESS
+
         self._ensure_bm25()
 
         if self._bm25 is None or not self._bm25_corpus:
             return []
+
+        max_level = ROLE_ACCESS.get(user_role, 0)
 
         query_tokens = self._tokenize(query)
         scores = self._bm25.get_scores(query_tokens)
@@ -202,14 +221,20 @@ class HybridSearchEngine:
         scored.sort(key=lambda x: x[1], reverse=True)
 
         results = []
-        for rank, (idx, score) in enumerate(scored[:top_k], 1):
+        for rank, (idx, score) in enumerate(scored, 1):
             entry = self._bm25_corpus[idx]
+            # Q-SEC-05: la rama keyword respeta el mismo techo de
+            # access_level que la rama vectorial (ROLE_ACCESS).
+            if entry["metadata"].get("access_level", 0) > max_level:
+                continue
             results.append({
                 "id": entry["id"],
                 "metadata": entry["metadata"],
                 "bm25_rank": rank,
                 "bm25_score": round(float(score), 4),
             })
+            if len(results) >= top_k:
+                break
 
         return results
 

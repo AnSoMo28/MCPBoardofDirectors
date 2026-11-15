@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import inspect
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -28,6 +28,7 @@ from club_mcp.auth.jwt_service import TokenPayload
 from club_mcp.auth.middleware import get_current_user
 from club_mcp.auth.rbac import check_permission, permission_for
 from club_mcp.registry import AgentRegistry, ResolutionError
+
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +120,12 @@ async def call_agent_tool(
     for identity in IDENTITY_FIELDS:
         if identity in sig.parameters:
             params[identity] = current_user.sub
+    # Ola 1.2 (Q-SEC-04): el rol del JWT verificado llega al tool que
+    # lo pida — el RAG con ACL por rol por fin recibe al caller real
+    # en vez del "admin" hardcodeado. Fuera del token firmado no hay
+    # forma de escalar: el default del tool sigue siendo "socio".
+    if "user_role" in sig.parameters:
+        params["user_role"] = current_user.role
 
     try:
         result = await method(**params)
@@ -143,7 +150,7 @@ async def call_agent_tool(
 
     if resolved.via_compat:
         sunset = (
-            datetime.now(tz=timezone.utc) + timedelta(days=COMPAT_SUNSET_DAYS)
+            datetime.now(tz=UTC) + timedelta(days=COMPAT_SUNSET_DAYS)
         ).strftime("%a, %d %b %Y %H:%M:%S GMT")
         response.headers["Deprecation"] = "true"
         response.headers["Sunset"] = sunset
