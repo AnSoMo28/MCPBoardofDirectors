@@ -2,15 +2,24 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from pydantic import BaseModel, ConfigDict
 
 # ── Configuration ──
-_SECRET_KEY = "castillo-country-club-dev-secret-key-change-in-production"
-_ALGORITHM = "HS256"
+# Q-SEC-01 (Ola 1.1): una sola fuente de verdad — el secreto ya estaba
+# declarado en config/settings.py desde G9 y NADIE lo consumía: este
+# módulo firmaba con SU propio literal (distinto al de settings). Ahora
+# ambos se resuelven desde get_settings(); los nombres de módulo se
+# conservan solo como alias para los tests legacy de la suite de 827
+# (test_jwt_service importa _SECRET_KEY/_ALGORITHM).
+from club_mcp.config.settings import get_settings
+
+
+_SETTINGS = get_settings()
+_SECRET_KEY = _SETTINGS.jwt_secret_key
+_ALGORITHM = _SETTINGS.jwt_algorithm
 _ACCESS_TTL = timedelta(minutes=15)
 _REFRESH_TTL = timedelta(days=7)
 
@@ -21,7 +30,7 @@ class TokenPayload(BaseModel):
     sub: str
     role: str
     name: str
-    family_id: Optional[str] = None
+    family_id: str | None = None
     exp: int = 0
 
 
@@ -36,10 +45,10 @@ def create_token_pair(
     user_id: str,
     role: str,
     name: str,
-    family_id: Optional[str] = None,
+    family_id: str | None = None,
 ) -> TokenPair:
     """Create an access + refresh token pair for a user."""
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     iat = int(now.timestamp())
 
     access_payload = {
