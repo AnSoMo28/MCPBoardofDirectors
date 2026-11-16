@@ -7,8 +7,7 @@ Swappable to PostgreSQL via SQLAlchemy.
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, timezone
-from typing import Optional
+from datetime import UTC, date, datetime
 from uuid import UUID, uuid4
 
 from club_mcp.models.family import (
@@ -21,11 +20,11 @@ from club_mcp.models.family import (
     MembershipTier,
 )
 from club_mcp.models.member import (
-    AgeGroup,
     MemberCreate,
     MemberResponse,
     compute_age_group,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -259,7 +258,7 @@ class FamilyRepository:
         if data.email in self._email_index:
             raise DuplicateFamilyError("email", data.email)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         family_id = uuid4()
 
         family_record = {
@@ -300,14 +299,14 @@ class FamilyRepository:
 
         return FamilyResponse(**family_record, members=members)
 
-    async def get_family(self, family_id: UUID) -> Optional[FamilyResponse]:
+    async def get_family(self, family_id: UUID) -> FamilyResponse | None:
         record = self._families.get(family_id)
         if not record:
             return None
         members = await self.get_members(family_id)
         return FamilyResponse(**record, members=members)
 
-    async def get_family_by_email(self, email: str) -> Optional[FamilyResponse]:
+    async def get_family_by_email(self, email: str) -> FamilyResponse | None:
         family_id = self._email_index.get(email)
         if not family_id:
             return None
@@ -319,12 +318,12 @@ class FamilyRepository:
     async def update_family(
         self,
         family_id: UUID,
-        name: Optional[str] = None,
-        tier: Optional[MembershipTier] = None,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        address: Optional[str] = None,
-        notes: Optional[str] = None,
+        name: str | None = None,
+        tier: MembershipTier | None = None,
+        email: str | None = None,
+        phone: str | None = None,
+        address: str | None = None,
+        notes: str | None = None,
     ) -> FamilyResponse:
         record = self._families.get(family_id)
         if not record:
@@ -345,7 +344,7 @@ class FamilyRepository:
             record["address"] = address
         if notes is not None:
             record["notes"] = notes
-        record["updated_at"] = datetime.now(timezone.utc)
+        record["updated_at"] = datetime.now(UTC)
 
         return await self.get_family(family_id)
 
@@ -379,7 +378,7 @@ class FamilyRepository:
     async def _create_member(
         self, family_id: UUID, data: MemberCreate,
     ) -> MemberResponse:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         member_id = uuid4()
         record = {
             "id": member_id,
@@ -409,7 +408,7 @@ class FamilyRepository:
     ) -> MemberResponse:
         if family_id not in self._families:
             raise FamilyNotFoundError(str(family_id))
-        self._families[family_id]["updated_at"] = datetime.now(timezone.utc)
+        self._families[family_id]["updated_at"] = datetime.now(UTC)
         return await self._create_member(family_id, data)
 
     async def remove_member(self, member_id: UUID) -> bool:
@@ -418,7 +417,7 @@ class FamilyRepository:
             return False
         family_id = record["family_id"]
         if family_id in self._families:
-            self._families[family_id]["updated_at"] = datetime.now(timezone.utc)
+            self._families[family_id]["updated_at"] = datetime.now(UTC)
         return True
 
     # ──────────────────────────────────────────────
@@ -480,8 +479,8 @@ class FamilyRepository:
     async def get_activity_history(
         self,
         family_id: UUID,
-        date_from: Optional[date] = None,
-        date_to: Optional[date] = None,
+        date_from: date | None = None,
+        date_to: date | None = None,
     ) -> list[dict]:
         if family_id not in self._families:
             raise FamilyNotFoundError(str(family_id))
@@ -549,7 +548,7 @@ class FamilyRepository:
         record = self._families.get(family_id)
         if record:
             record["engagement_score"] = max(0, min(100, score))
-            record["updated_at"] = datetime.now(timezone.utc)
+            record["updated_at"] = datetime.now(UTC)
 
     # ──────────────────────────────────────────────
     # DEMO DATA SEEDING

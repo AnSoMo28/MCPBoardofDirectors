@@ -24,7 +24,7 @@ from uuid import uuid4
 import pytest
 
 from club_mcp.db.orm.base import Base
-from club_mcp.db.orm.family_orm import FamilyORM, MemberORM
+from club_mcp.db.orm.family_orm import MemberORM
 from club_mcp.db.orm.repositories.family_repo import FamilyRepository
 from club_mcp.db.orm.session import make_engine
 from club_mcp.db.repositories.family_repo import (
@@ -35,10 +35,9 @@ from club_mcp.db.repositories.family_repo import (
 from club_mcp.models.family import (
     FamilyCreate,
     FamilySearchParams,
-    FamilyStatus,
     MembershipTier,
 )
-from club_mcp.models.member import MemberCreate, MemberRole
+from club_mcp.models.member import MemberCreate
 
 
 PG_URL = os.environ.get("CLUB_PERSISTENCE_URL", "")
@@ -79,7 +78,6 @@ async def test_family_write_restart_read() -> None:
     async with engine1.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     repo1 = FamilyRepository(engine1)
-    from club_mcp.models.member import MemberCreate as MC
     created = await repo1.create_family(
         FamilyCreate(
             name="Familia Prueba Restart",
@@ -87,7 +85,7 @@ async def test_family_write_restart_read() -> None:
             email="restart@castillo.cr",
             phone="+50699990000",
             members=[
-                MC(name="Miembro Uno", date_of_birth=date(1990, 1, 1), role="primary"),
+                MemberCreate(name="Miembro Uno", date_of_birth=date(1990, 1, 1), role="primary"),
             ],
         )
     )

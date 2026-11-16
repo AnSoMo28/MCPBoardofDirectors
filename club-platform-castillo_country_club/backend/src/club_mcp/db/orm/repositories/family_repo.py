@@ -27,12 +27,13 @@ users (igual que el in-memory no lo hacía: consistencia mínima).
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, timezone
-from typing import TYPE_CHECKING, Any, Optional
+from datetime import date
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import delete as sa_delete
-from sqlalchemy import func, select, update as sa_update
+from sqlalchemy import func, select
+from sqlalchemy import update as sa_update
 
 from club_mcp.db.orm.family_orm import (
     FamilyORM,
@@ -59,6 +60,7 @@ from club_mcp.models.member import (
     MemberResponse,
     compute_age_group,
 )
+
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncEngine
@@ -190,7 +192,7 @@ class FamilyRepository:
             )
             return _to_family_response(f, members)
 
-    async def get_family(self, family_id: UUID) -> Optional[FamilyResponse]:
+    async def get_family(self, family_id: UUID) -> FamilyResponse | None:
         async with session_scope(self._engine) as s:
             f = (
                 await s.execute(
@@ -202,7 +204,7 @@ class FamilyRepository:
             members = await _members_of(s, f.id)
             return _to_family_response(f, members)
 
-    async def get_family_by_email(self, email: str) -> Optional[FamilyResponse]:
+    async def get_family_by_email(self, email: str) -> FamilyResponse | None:
         async with session_scope(self._engine) as s:
             f = (
                 await s.execute(
@@ -228,12 +230,12 @@ class FamilyRepository:
     async def update_family(
         self,
         family_id: UUID,
-        name: Optional[str] = None,
-        tier: Optional[MembershipTier] = None,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
-        address: Optional[str] = None,
-        notes: Optional[str] = None,
+        name: str | None = None,
+        tier: MembershipTier | None = None,
+        email: str | None = None,
+        phone: str | None = None,
+        address: str | None = None,
+        notes: str | None = None,
     ) -> FamilyResponse:
         async with session_scope(self._engine) as s:
             f = (
@@ -422,9 +424,9 @@ class FamilyRepository:
     async def get_activity_history(
         self,
         family_id: UUID,
-        date_from: Optional[date] = None,
-        date_to: Optional[date] = None,
-    ) -> list[dict]:
+        date_from: date | None = None,
+        date_to: date | None = None,
+    ) -> list[dict[str, Any]]:
         async with session_scope(self._engine) as s:
             f = (
                 await s.execute(
@@ -433,19 +435,19 @@ class FamilyRepository:
             ).scalar_one_or_none()
             if not f:
                 raise FamilyNotFoundError(str(family_id))
-            out = []
+            out: list[dict[str, Any]] = []
             for a in f.activities or []:
                 a_date = a.get("event_date")
                 if isinstance(a_date, str):
                     a_date = date.fromisoformat(a_date)
-                if date_from and a_date < date_from:
+                if date_from is not None and a_date is not None and a_date < date_from:
                     continue
-                if date_to and a_date > date_to:
+                if date_to is not None and a_date is not None and a_date > date_to:
                     continue
                 out.append(a)
             return out
 
-    async def add_activity(self, family_id: UUID, activity: dict) -> None:
+    async def add_activity(self, family_id: UUID, activity: dict[str, Any]) -> None:
         async with session_scope(self._engine) as s:
             f = (
                 await s.execute(
@@ -464,7 +466,7 @@ class FamilyRepository:
     # SOCIAL CONNECTIONS (JSONB)
     # ──────────────────────────────────────────────
 
-    async def get_social_connections(self, family_id: UUID) -> list[dict]:
+    async def get_social_connections(self, family_id: UUID) -> list[dict[str, Any]]:
         async with session_scope(self._engine) as s:
             f = (
                 await s.execute(
@@ -475,7 +477,7 @@ class FamilyRepository:
                 raise FamilyNotFoundError(str(family_id))
             return list(f.social_connections or [])
 
-    async def add_social_connection(self, family_id: UUID, connection: dict) -> None:
+    async def add_social_connection(self, family_id: UUID, connection: dict[str, Any]) -> None:
         async with session_scope(self._engine) as s:
             f = (
                 await s.execute(
@@ -493,7 +495,7 @@ class FamilyRepository:
     # PREFERENCES (JSONB)
     # ──────────────────────────────────────────────
 
-    async def get_preferences(self, family_id: UUID) -> dict:
+    async def get_preferences(self, family_id: UUID) -> dict[str, Any]:
         async with session_scope(self._engine) as s:
             f = (
                 await s.execute(
@@ -506,7 +508,7 @@ class FamilyRepository:
                 return dict(_DEFAULT_PREFERENCES)
             return dict(f.preferences)
 
-    async def set_preferences(self, family_id: UUID, preferences: dict) -> dict:
+    async def set_preferences(self, family_id: UUID, preferences: dict[str, Any]) -> dict[str, Any]:
         async with session_scope(self._engine) as s:
             f = (
                 await s.execute(

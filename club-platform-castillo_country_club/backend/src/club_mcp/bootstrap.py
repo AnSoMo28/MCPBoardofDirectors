@@ -27,10 +27,15 @@ import inspect
 import logging
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from typing import TYPE_CHECKING, Any
 
 from club_mcp.agents.base import BaseAgent
 from club_mcp.registry import AgentRegistry
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 
 logger = logging.getLogger(__name__)
 
@@ -266,7 +271,7 @@ def build_runtime() -> Runtime:
         for pname, p in sig.parameters.items():
             if pname == "self":
                 continue
-            repo_key: Optional[str] = None
+            repo_key: str | None = None
             if pname == "repo":
                 repo_key = _REPO_BY_MODULE.get(module_name)
             elif pname.endswith("_repo"):
@@ -338,7 +343,7 @@ def build_runtime() -> Runtime:
     )
 
 
-_RUNTIME: Optional[Runtime] = None
+_RUNTIME: Runtime | None = None
 
 
 def get_runtime() -> Runtime:

@@ -21,8 +21,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import sqlalchemy as sa
-from alembic import op
 from sqlalchemy.dialects.postgresql import JSONB
+
+from alembic import op
+
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

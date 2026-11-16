@@ -24,15 +24,12 @@ guía: radio de explosión mínimo).
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
-from typing import Any
-from uuid import UUID
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import (
     JSON,
-    Boolean,
     Date,
     DateTime,
-    Float,
     ForeignKey,
     Integer,
     String,
@@ -43,6 +40,10 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from club_mcp.db.orm.base import Base
+
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 def utcnow() -> datetime:
