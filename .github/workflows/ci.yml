@@ -233,11 +233,30 @@ jobs:
   # JOB 3 — BACKEND (gates duros + ratchet)
   # ════════════════════════════════════════════════════════════════
   backend:
-    name: backend (pytest 827 · smoke B0 · ruff · mypy)
+    name: backend (pytest 846 · persistence · smoke B0 · ruff · mypy)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: club-platform-castillo_country_club/backend
+    # Ola 2.1 — el gate del PATH (write → restart → read) corre contra
+    # Postgres REAL (pgvector/pg16, el mismo del docker-compose) — no
+    # TestClient: la lección verify-build-css aplicada a persistencia.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: club_db
+          POSTGRES_USER: club_user
+          POSTGRES_PASSWORD: club_pass
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U club_user -d club_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      CLUB_PERSISTENCE_URL: postgresql+asyncpg://club_user:club_pass@localhost:5432/club_db
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
@@ -259,8 +278,14 @@ jobs:
       # Windows no tiene AF_UNIX → por eso gates locales verdes y CI
       # rojo. 827-passed sigue siendo el signal; la higiene de cierre
       # queda registrada como deuda cosmética (no afecta el artefacto).
-      - name: pytest 827 (suite completa)
+      - name: pytest 846 (suite completa + persistencia)
         run: uv run pytest tests/unit -q -p no:unraisableexception
+
+      # GATE DURO 4b (Ola 2.1) — PATH 2.1: write → restart → read OK
+      # contra el postgres REAL del service container (el sandbox ya
+      # lo probó en verde sobre aiosqlite; acá es contra pgvector).
+      - name: persistence (write → restart → read OK)
+        run: uv run pytest tests/unit/persistence -q -p no:unraisableexception
 
       # GATE DURO 5 — el gate ejecutable B0 (19 agentes · 207 tools · RBAC)
       - name: smoke_b0 (composicion+registro+RBAC+HITL+HTTP)
