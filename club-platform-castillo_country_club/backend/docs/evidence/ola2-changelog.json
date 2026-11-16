@@ -9,7 +9,16 @@
     "alembic init + migración 0001_users (pk_users · ix_users_email UNIQUE · ix_users_role)",
     "api/routes/auth.py reescrito: login desde UserRepository con fallback seed in-memory",
     "scripts/seed_users.py CLI idempotente (2 corridas = 4 users)",
-    "CI: service pgvector/pg16 + paso persistence en job backend"
+    "CI: service pgvector/pg16 + paso persistence en job backend",
+    {
+      "id": "Ola2.1e",
+      "fecha": "2026-11-16",
+      "tipo": "fix(CI)",
+      "titulo": "aiosqlite en dev extra + suite contra CLUB_PERSISTENCE_URL",
+      "problema": "run #14 (5912c1a) ROJO en 'pytest 846': aiosqlite no estaba en pyproject/uv.lock del 6540804 y 2/3 tests de la suite hardcodeaban sqlite+aiosqlite:// → ModuleNotFoundError en CI (el espejo del sandbox lo tenía preinstalado — mi error de armado).",
+      "solucion": "aiosqlite>=0.20 en dev extra (lock editado a mano, revision 3) + _backend_url() respeta CLUB_PERSISTENCE_URL en los 3 tests (PG real del service container; sqlite solo como fallback local sin PG).",
+      "evidencia": "reproducido y verificado en sandbox con árbol exacto del run"
+    }
   ],
   "pendientes": [
     "masters v9.13→v9.14 (bump G19) — requiere acceso byte-fiel a los 3 masters; queda para el ciclo de la próxima sesión o recon dedicado",

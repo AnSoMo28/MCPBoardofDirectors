@@ -16,15 +16,20 @@ constraint real).
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from club_mcp.auth.models import User, UserCreate, UserRole
 from club_mcp.auth.password_service import hash_password
 from club_mcp.auth.seed_users import seed_demo_users
 from club_mcp.db.orm.session import session_scope
 from club_mcp.db.orm.users_orm import UserORM
+
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncEngine
 
 _ORM_COLS = (
     UserORM.id,
@@ -117,6 +122,7 @@ class UserRepository:
                             zip(
                                 ("id", "name", "email", "hashed_password", "role", "family_id"),
                                 row,
+                                strict=True,
                             )
                         )
                         for row in seeds

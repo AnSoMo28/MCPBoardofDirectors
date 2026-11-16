@@ -16,16 +16,18 @@ import os
 from pathlib import Path
 
 import pytest
-import pytest_asyncio
 
 from club_mcp.db.orm.base import Base
-from club_mcp.db.orm.session import make_engine
 from club_mcp.db.orm.repositories.user_repo import UserRepository
+from club_mcp.db.orm.session import make_engine
+
+
 PG_URL = os.environ.get("CLUB_PERSISTENCE_URL", "")
 SQLITE_URL = "sqlite+aiosqlite:///_persist_restart.db"
 
 
 def _backend_url() -> str:
+    """PG del service container SIEMPRE que exista; sqlite solo sin PG."""
     if PG_URL:
         return PG_URL
     return SQLITE_URL
@@ -36,7 +38,6 @@ pytestmark = pytest.mark.asyncio
 
 async def test_write_restart_read() -> None:
     """PATH 2.1 gate: write → dispose (restart) → NEW engine → read OK."""
-    import sqlalchemy as sa
 
     url = _backend_url()
     # write (engine 1)
@@ -72,9 +73,7 @@ async def test_login_route_uses_db_when_alive() -> None:
     from club_mcp.api.app import create_api_app
     from club_mcp.auth.models import UserCreate, UserRole
 
-    url = _backend_url()
-    Path("_persist_route.db").unlink(missing_ok=True)
-    url = "sqlite+aiosqlite:///_persist_route.db"
+    url = _backend_url()  # Ola 2.1e: PG del CI (antes: hardcode sqlite)
     engine = make_engine(url)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -118,19 +117,15 @@ async def test_login_route_uses_db_when_alive() -> None:
     assert data["user"]["role"] == "staff"
     assert data["user"]["email"] == "solo-db@castillo.cr"
     assert total == 5
-    Path("_persist_route.db").unlink(missing_ok=True)
 
 
 async def test_create_user_unique_email() -> None:
     """email duplicado → trona el UNIQUE real (IntegrityError)."""
-    import sqlalchemy as sa
     from sqlalchemy.exc import IntegrityError
 
     from club_mcp.auth.models import UserCreate, UserRole
 
-    url = _backend_url()
-    Path("_persist_uq.db").unlink(missing_ok=True)
-    engine = make_engine("sqlite+aiosqlite:///_persist_uq.db")
+    engine = make_engine(_backend_url())  # Ola 2.1e: PG del CI (antes: hardcode)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     repo = UserRepository(engine)
@@ -144,4 +139,14 @@ async def test_create_user_unique_email() -> None:
     with pytest.raises(IntegrityError):
         await repo.create(dup)
     await engine.dispose()
-    Path("_persist_uq.db").unlink(missing_ok=True)
+
+
+def _cleanup_sqlite_files() -> None:
+    """Borra los archivos sqlite del fallback (solo camino local)."""
+    if not PG_URL:
+        for name in ("_persist_restart.db", "_persist_route.db", "_persist_uq.db"):
+            Path(name).unlink(missing_ok=True)
+
+
+def teardown_module() -> None:
+    _cleanup_sqlite_files()

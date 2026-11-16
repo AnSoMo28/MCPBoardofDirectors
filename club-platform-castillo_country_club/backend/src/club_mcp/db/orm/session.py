@@ -8,8 +8,8 @@ abre).
 """
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -19,6 +19,10 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from club_mcp.db.orm.base import Base  # noqa: F401 — alembic target_metadata
+
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 
 def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
