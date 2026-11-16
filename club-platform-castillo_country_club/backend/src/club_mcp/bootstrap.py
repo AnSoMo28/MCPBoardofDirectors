@@ -211,13 +211,47 @@ def build_runtime() -> Runtime:
 
     repo_cache: dict[str, Any] = {}
 
+    # Ola 2.1-bis — swap OPT-IN por repos migrados: si el runtime ve
+    # CLUB_PERSISTENCE_URL (deploy real / CI persistence), el repo del
+    # vertical migrado se cablea a la TABLA (engine async sobre ese URL);
+    # sin esa env, TODO sigue in-memory — los 849 tests TestClient sin
+    # Postgres no cambian por existir la migración (regla §3.2-1: radio
+    # de explosión mínimo). Cada vertical nuevo suma una línea acá.
+    import os as _os
+
+    _persist_url = _os.environ.get("CLUB_PERSISTENCE_URL", "")
+    _persist_engine: Any = None
+    if _persist_url:
+        from club_mcp.db.orm.session import make_engine as _make_engine
+
+        _persist_engine = _make_engine(_persist_url)
+        logger.info(
+            "[bootstrap] CLUB_PERSISTENCE_URL presente — repos migrados a PG (Ola 2.1-bis: family)"
+        )
+
+    def _orm_repo(key: str) -> Any | None:
+        """Repo persistente del vertical migrado, o None si no aplica."""
+        if _persist_engine is None:
+            return None
+        if key == "family_repo":
+            from club_mcp.db.orm.repositories.family_repo import (
+                FamilyRepository as _FamilyRepoORM,
+            )
+
+            return _FamilyRepoORM(_persist_engine)
+        return None
+
     def repo_for(key: str) -> Any:
         if key not in repo_cache:
-            cls = _load_repo_class(key)
-            if key == "document_intelligence_repo":
-                repo_cache[key] = cls(claude_service=claude_service)
+            orm_repo = _orm_repo(key)
+            if orm_repo is not None:
+                repo_cache[key] = orm_repo
             else:
-                repo_cache[key] = cls()
+                cls = _load_repo_class(key)
+                if key == "document_intelligence_repo":
+                    repo_cache[key] = cls(claude_service=claude_service)
+                else:
+                    repo_cache[key] = cls()
         return repo_cache[key]
 
     # rag_service comes from the document repo (single CommunicationAgent, W-2b)

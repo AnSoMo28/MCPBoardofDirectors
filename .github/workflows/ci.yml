@@ -284,7 +284,10 @@ jobs:
       # GATE DURO 4b (Ola 2.1) — PATH 2.1: write → restart → read OK
       # contra el postgres REAL del service container (el sandbox ya
       # lo probó en verde sobre aiosqlite; acá es contra pgvector).
-      - name: persistence (write → restart → read OK)
+      # Ola 2.1-bis: la suite incluye el vertical family (6 tests:
+      # write-restart-read · FK members · contrato de errores · seed
+      # idempotente compartido · JSONB roundtrip) junto a la auth.
+      - name: persistence (write → restart → read OK · auth + family)
         run: uv run pytest tests/unit/persistence -q -p no:unraisableexception
 
       # GATE DURO 5 — el gate ejecutable B0 (19 agentes · 207 tools · RBAC)
