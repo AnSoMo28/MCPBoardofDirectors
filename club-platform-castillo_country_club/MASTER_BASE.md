@@ -1441,8 +1441,9 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               lazy · session_scope · tabla
 │   │                               users · UserRepository (alembic
 │   │                               0001 · Q-PER-02 CERRADO)
-│   ├── db/repositories/          ← 17 repos in-memory restantes →
-│   │                               Q-PER-01 (Ola 2.1-bis)
+│   ├── db/repositories/          ← 18 repos in-memory (familia de
+│   │                               Q-PER-01 → Ola 2.1-bis; el dict
+│   │                               users de Q-PER-04 ya no vive acá)
 │   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)

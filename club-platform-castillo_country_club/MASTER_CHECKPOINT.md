@@ -52,9 +52,11 @@ OLA 2.1 — PRIMER VERTICAL DE PERSISTENCIA REAL (PATH 2.1) CERRADO
 CIFRAS: pytest 846→849 (+3 persistencia) · smoke B0 VERDE · ruff
 1282 = baseline (0 deuda nueva) · mypy 732 (≤735 — baja) · CI 5
 jobs + persistence VERDE (run #16 @ e015bd4) · consistency 13/13.
-DEUDA VIVA: 17 repos in-memory restantes (Q-PER-01 bis) ·
+DEUDA VIVA: 18 repos in-memory en db/repositories/ (Q-PER-01
+intacto — errata G19.1/0008: "17 = 18 - users" era aritmética
+equivocada; users nunca fue uno de los 18) ·
 ApprovalEngine dict (Q-PER-03) · alembic upgrade head en deploy.
-END: masters v9.14 · Ola 2.1-bis (family/event primero → 17 repos)
+END: masters v9.14 · Ola 2.1-bis (family/event primero → 18 repos)
 es la siguiente.
 ```
 
@@ -1483,7 +1485,7 @@ la MISMA de Q-CI-04/Q-CI-05: el espejo sandbox no es el env de CI):
   sucia tronó (mi diseño del 2.1c: tests NO re-runnables). FIX
   2.1f (e015bd4): _reset_backend() (drop_all) por test.
 
-QUEDÓ FUERA (by design): 17 repos in-memory restantes → Ola 2.1-bis
+QUEDÓ FUERA (by design): 18 repos in-memory en db/repositories/ → Ola 2.1-bis
 (family/event primero — misma mecánica: ORM + alembic + repo +
 gate) · ApprovalEngine → Q-PER-03 (2.3) · alembic upgrade head en
 el deploy (la tabla users la crea create_all idempotente mientras).
@@ -1980,8 +1982,9 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             real del JWT.
 
 ═══ P1 · PERSISTENCIA (vertical auth CERRADO en Ola 2.1 — §3.8) ═══
-  Q-PER-01  17 repositorios in-memory restantes (18 - users migrado
-            en Ola 2.1) → SQLAlchemy async via db/orm/ (mecánica
+  Q-PER-01  18 repositorios 100% in-memory (la resta "18 - users"
+            era ERRATA G19.1: users era el dict de Q-PER-04, no
+            uno de los 18) → SQLAlchemy async via db/orm/ (mecánica
             §3.8 probada: ORM + alembic + repo + gate). Ola 2.1-bis:
             family/event primero.
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users

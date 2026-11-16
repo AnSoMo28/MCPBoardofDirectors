@@ -25,10 +25,15 @@ OLA 2.1 CERRADA EN AUTH — NUEVOS GATES DE BACKEND (Ola 2.1):
   mypy 732 (≤735 — baja) · consistency 13/13.
 - Q-PER-02 CERRADO (alembic init + 0001_users · constraints
   deterministas) · Q-PER-04 CERRADO (tabla users + seed CLI
-  idempotente) · Q-PER-01 PRIMER SLICE (auth; 17 repos → 2.1-bis).
+  idempotente) · Q-PER-01 INTACTO (18 repos in-memory de
+  db/repositories/ → 2.1-bis: family/event primero).
 - Gates sandbox de la ola: py_compile 12 · alembic --sql render ·
   mypy módulos nuevos 0 · ruff 0 deuda nueva · seed ×2 = 4.
-- END: masters v9.14 · Ola 2.1-bis (17 repos in-memory → ORM)
+- ERRATA G19.1 (0008): este changelog dijo "17 repos" — la
+  aritmética era equivocada (18 - users). users NO era uno de
+  los 18 (era el seed dict de Q-PER-04 en routes/auth.py):
+  los 18 de db/repositories/ siguen intactos.
+- END: masters v9.14 · Ola 2.1-bis (18 repos in-memory → ORM)
   es la siguiente.
 ```
 
