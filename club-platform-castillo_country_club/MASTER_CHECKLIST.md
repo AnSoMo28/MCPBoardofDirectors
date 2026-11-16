@@ -1,14 +1,36 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.13 · Generación G18 (Ola 1 — Seguridad P0 cerrada) · 180 checks · ZERO tolerance
+### Version: 9.14 · Generación G19 (Ola 2.1 — persistencia real: vertical auth) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
-###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian 4.1.3 ·
+###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
 ###          checks A-J intactos (180 — el estándar no cambia,
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G19 (v9.13 → v9.14)
+
+```
+OLA 2.1 CERRADA EN AUTH — NUEVOS GATES DE BACKEND (Ola 2.1):
+- PASO persistence NUEVO en job backend (CI): write → restart
+  (dispose + engine NUEVO) → read OK contra el service container
+  pgvector/pgvector:pg16 REAL — el gate del PATH 2.1 corre en cada
+  push, no solo en TestClient (lección verify-build-css aplicada a
+  persistencia). Suite RE-RUNNABLE (Ola 2.1f: _reset_backend() por
+  test — 2 corridas sobre el mismo PG, ambas limpias).
+- Evidencia del cierre (CI run #16 VERDE @ e015bd4): 849 passed
+  (846 + 3 persistencia) · smoke B0 VERDE · ruff 1282 = baseline ·
+  mypy 732 (≤735 — baja) · consistency 13/13.
+- Q-PER-02 CERRADO (alembic init + 0001_users · constraints
+  deterministas) · Q-PER-04 CERRADO (tabla users + seed CLI
+  idempotente) · Q-PER-01 PRIMER SLICE (auth; 17 repos → 2.1-bis).
+- Gates sandbox de la ola: py_compile 12 · alembic --sql render ·
+  mypy módulos nuevos 0 · ruff 0 deuda nueva · seed ×2 = 4.
+- END: masters v9.14 · Ola 2.1-bis (17 repos in-memory → ORM)
+  es la siguiente.
+```
 
 ## CHANGELOG G7 (v6.1 → v7.0)
 
@@ -1344,9 +1366,13 @@ backend/scripts/smoke_b0.py     composición+registro+   ✅ 39/39 runtime VERDE
                                 FastAPI+HTTP            G9 sandbox: 19 agentes
                                                         · 207 tools · RBAC
                                                         207/207)
-backend pytest tests/unit       unit backend            ✅ 818/818
+backend pytest tests/unit       unit backend            ✅ 849/849
                                                         (py3.12 + 3.14.4;
-                                                        808 def + 10 param)
+                                                        808 def + 10 param
+                                                        +19 Q-SEC +3 Ola 2.1)
+backend persistence suite       write → restart →       ✅ 3/3 en CI (G19:
+(write-restart-read)           read OK contra PG       pgvector/pg16 service;
+(Ola 2.1 — G19 NUEVO)          REAL del service        re-runnable 2.1f)
 backend ruff + mypy strict      estilo/tipos backend    ✅ config en
                                                         pyproject (manual —
                                                         sin CI → Q-CI-01)
@@ -1471,6 +1497,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.13 · Generación G18 (sincronizada con
-MASTER_BASE.md v9.12 y MASTER_CHECKPOINT.md v9.12)
+END OF MASTER_CHECKLIST.md v9.14 · Generación G19 (sincronizada con
+MASTER_BASE.md v9.14 y MASTER_CHECKPOINT.md v9.14)
 

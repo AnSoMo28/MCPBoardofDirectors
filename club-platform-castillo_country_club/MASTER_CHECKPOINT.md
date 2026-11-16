@@ -1,12 +1,62 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.13 · Generación G18 (Ola 1 — Seguridad P0 cerrada) · Date: 2026-11-14
+### Version: 9.14 · Generación G19 (Ola 2.1 — persistencia real: vertical auth) · Date: 2026-11-16
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
-###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos
+###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
+###          G19 — Ola 2.1 absorbida (§3.8 NUEVO · Q-PER-01/02/04)
 
 ---
+
+## CHANGELOG G19 (v9.13 → v9.14)
+
+```
+OLA 2.1 — PRIMER VERTICAL DE PERSISTENCIA REAL (PATH 2.1) CERRADO
+(5912c1a → 33befd9 → e015bd4, 6 commits — evidencia: ola2-changelog.json
++ OUT-APLICAR-OLA2.txt + CI runs #14-#16):
+
+  2.1a  db/orm/ esqueleto ORM: Base + naming_convention (pk/ix/uq
+        deterministas — diffs de migraciones futuras sin ruido de
+        nombres autogenerados) · engine async LAZY (primer
+        consumidor REAL de DATABASE_URL — antes 0) · session_scope
+        transaccional (commit/rollback/close garantizados, lección
+        Q-CI-04).
+  2.1b  Tabla users (UserORM espejo 1:1 del auth.models.User) +
+        UserRepository async (get_by_email/create/count/
+        seed_idempotent — idempotencia pg INSERT ON CONFLICT DO
+        NOTHING + fallback sqlite) · api/routes/auth.py reescrito:
+        login lee la TABLA cuando la DB viva, usuario ausente o DB
+        caída → fallback al seed in-memory (los 846 TestClient
+        siguen verdes sin postgres — radio de explosión mínimo) ·
+        scripts/seed_users.py CLI idempotente (2 corridas = 4).
+  2.1c  CI: service container pgvector/pgvector:pg16 en job backend
+        + paso 'persistence (write → restart → read OK)' — el gate
+        del PATH 2.1 corre contra Postgres REAL en cada push (la
+        lección verify-build-css aplicada a persistencia).
+  2.1d  ola2-changelog.json (evidencia machine-readable de la ola).
+  2.1e  FIX run #14 ROJO (5912c1a): aiosqlite NO estaba en el
+        pyproject/uv.lock del base y 2/3 tests hardcodeaban
+        sqlite+aiosqlite:// → ModuleNotFoundError en CI. FIX:
+        aiosqlite>=0.20 en dev extra + _backend_url() respeta
+        CLUB_PERSISTENCE_URL en los 3 tests (PG real; sqlite solo
+        como fallback local). Deuda ruff de la ola: 14→0.
+  2.1f  FIX run #15 ROJO (33befd9): el paso 'persistence' corría
+        contra el pg16 YA SUCIO del paso 'pytest 846' — el env
+        CLUB_PERSISTENCE_URL vive a nivel JOB, ambos pasos comparten
+        el MISMO service (fragilidad de diseño del 2.1c, mía):
+        'assert 5 == 4' + UNIQUE users.email. FIX: _reset_backend()
+        (metadata.drop_all) antes de CADA test — suite RE-RUNNABLE
+        (3 corridas back-to-back sobre la misma DB: 3/3 verde).
+
+CIFRAS: pytest 846→849 (+3 persistencia) · smoke B0 VERDE · ruff
+1282 = baseline (0 deuda nueva) · mypy 732 (≤735 — baja) · CI 5
+jobs + persistence VERDE (run #16 @ e015bd4) · consistency 13/13.
+DEUDA VIVA: 17 repos in-memory restantes (Q-PER-01 bis) ·
+ApprovalEngine dict (Q-PER-03) · alembic upgrade head en deploy.
+END: masters v9.14 · Ola 2.1-bis (family/event primero → 17 repos)
+es la siguiente.
+```
 
 ## CHANGELOG G7 (v6.1 → v7.0)
 
@@ -1391,6 +1441,56 @@ P0-P3 completa · FASE 2 frontend congelada (sigue) · CI inexistente.
 
 ---
 
+### §3.8 OLA 2.1 · PERSISTENCIA REAL — VERTICAL AUTH (✅ CERRADA 2026-11-16)
+
+```
+PRIMER VERTICAL DE PERSISTENCIA (PATH 2.1 — NEXT-STEPS-2027 §2):
+el login deja de vivir en un dict en memoria y pasa por una tabla
+PostgreSQL, con el gate EJECUTABLE en CI (write → restart → read).
+
+ARTEFACTOS (5912c1a → e015bd4, 6 commits — changelog G19 arriba):
+  · db/orm/            Base + naming determinista · engine async
+                       lazy (DATABASE_URL consumido de verdad) ·
+                       session_scope · UserORM · UserRepository
+                       (seed_idempotent: ON CONFLICT DO NOTHING)
+  · alembic/           env.py async (URL por settings, nunca en el
+                       ini) · 0001_users (pk_users · ix_users_email
+                       UNIQUE · ix_users_role — DDL determinista,
+                       render --sql verificado)
+  · api/routes/auth.py login desde la TABLA con fallback dev al
+                       seed in-memory (DB caída ≠ outage de login)
+  · scripts/seed_users.py   CLI idempotente (2 corridas = 4 users)
+  · CI backend         service pgvector/pg16 + paso persistence +
+                       env CLUB_PERSISTENCE_URL a nivel job
+  · ola2-changelog.json     evidencia machine-readable (a→f)
+
+GATES AL CIERRE (CI run #16 VERDE @ e015bd4 — 5 jobs):
+  pytest 849/849 (846 + 3 persistencia) exit 0
+  persistence write→restart→read OK contra pgvector REAL exit 0
+  smoke B0 VERDE (19 · 207 · RBAC 207/207 · HITL) exit 0
+  ruff 1282 = baseline (0 deuda nueva — baja 14→0 misma ola) ·
+  mypy 732 (≤735 ratchet — baja) · consistency 13/13
+
+LA SAGA DE LOS 2 RUNS ROJOS (cada uno reproducido determinista en
+sandbox ANTES del fix — regla §8 en las dos rondas; la lección es
+la MISMA de Q-CI-04/Q-CI-05: el espejo sandbox no es el env de CI):
+  run #14 (5912c1a): aiosqlite ausente del pyproject del base —
+  el espejo lo tenía preinstalado y yo nunca verifiqué la lista
+  dev REAL. FIX 2.1e (33befd9): extra dev + suite SIEMPRE contra
+  CLUB_PERSISTENCE_URL.
+  run #15 (33befd9): env a nivel job comparte el pg16 entre los
+  pasos 'pytest 846' y 'persistence' — la 2ª corrida contra la DB
+  sucia tronó (mi diseño del 2.1c: tests NO re-runnables). FIX
+  2.1f (e015bd4): _reset_backend() (drop_all) por test.
+
+QUEDÓ FUERA (by design): 17 repos in-memory restantes → Ola 2.1-bis
+(family/event primero — misma mecánica: ORM + alembic + repo +
+gate) · ApprovalEngine → Q-PER-03 (2.3) · alembic upgrade head en
+el deploy (la tabla users la crea create_all idempotente mientras).
+```
+
+---
+
 ## §4 — QUALITY SCORECARD (fórmula explícita — hallazgo #45)
 
 ```
@@ -1879,16 +1979,17 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (restart = pérdida total de estado) ═══
-  Q-PER-01  18 repositorios 100% in-memory con seeds hardcodeados →
-            SQLAlchemy async + PostgreSQL (deps DECLARADAS y fantasma:
-            sqlalchemy[asyncio], asyncpg, pgvector).
-  Q-PER-02  Alembic: dep declarada, CERO alembic.ini/migraciones →
-            init + primera migración.
+═══ P1 · PERSISTENCIA (vertical auth CERRADO en Ola 2.1 — §3.8) ═══
+  Q-PER-01  17 repositorios in-memory restantes (18 - users migrado
+            en Ola 2.1) → SQLAlchemy async via db/orm/ (mecánica
+            §3.8 probada: ORM + alembic + repo + gate). Ola 2.1-bis:
+            family/event primero.
+  Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
+            (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
             admite) → tabla approvals + expiración persistente.
-  Q-PER-04  Usuarios seed en memoria (routes/auth.py:17) → tabla +
-            seed script (los 4 roles con bcrypt ya correcto).
+  Q-PER-04  CERRADO (Ola 2.1): tabla users + seed CLI idempotente
+            (los 4 roles con bcrypt ya correcto · login lee la DB).
 
 ═══ P1 · CI / AUTOMATIZACIÓN (todo manual hoy) ═══
   Q-CI-01   .github/workflows — NO EXISTE .github/ en el repo. Gates
@@ -1950,6 +2051,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.13 · Generación G18 (sincronizada con
-MASTER_BASE.md v9.12 y MASTER_CHECKLIST.md v9.12)
+END OF MASTER_CHECKPOINT.md v9.14 · Generación G19 (sincronizada con
+MASTER_BASE.md v9.14 y MASTER_CHECKLIST.md v9.14)
 

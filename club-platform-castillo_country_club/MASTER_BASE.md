@@ -1,11 +1,22 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.13 · Generación G18 (Ola 1 — Seguridad P0 cerrada) · Date: 2026-11-14
+### Version: 9.14 · Generación G19 (Ola 2.1 — persistencia real: vertical auth) · Date: 2026-11-16
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
 ---
+
+## CHANGELOG G19 (v9.13 → v9.14)
+
+```
+OLA 2.1 — PRIMER VERTICAL DE PERSISTENCIA REAL (PATH 2.1) CERRADO
+en auth (detalle completo en CHECKPOINT changelog G19): db/orm/
+esqueleto · tabla users + alembic 0001 · UserRepository · login
+persistente con fallback dev · seed CLI idempotente · CI con
+pgvector real + paso persistence · 2 fixes de CI (2.1e aiosqlite
+dev · 2.1f suite re-runnable) · pytest 846→849 · masters v9.14.
+```
 
 ## CHANGELOG G7 (v2.0 → v7.0)
 
@@ -1425,14 +1436,23 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   ├── auth/                     ← JWT, RBAC 196/196, middleware
 │   │                               (secreto JWT hardcodeado → Q-SEC-01)
 │   ├── config/                   ← pydantic-settings SIN consumidores
-│   ├── db/repositories/          ← 18 repos in-memory → Q-PER-01
+│   ├── db/orm/                  ← NUEVO G19 — Ola 2.1: Base+
+│   │                               naming_convention · engine async
+│   │                               lazy · session_scope · tabla
+│   │                               users · UserRepository (alembic
+│   │                               0001 · Q-PER-02 CERRADO)
+│   ├── db/repositories/          ← 17 repos in-memory restantes →
+│   │                               Q-PER-01 (Ola 2.1-bis)
 │   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
 │   └── server.py                 ← entry point MCP (adaptador delgado)
-├── tests/unit/                   ← 26+3 archivos · 818 tests PASSED
-│                                   (808 def + 10 parametrizados —
-│                                   B2/B3/B4 agregaron 33)
+├── alembic/                      ← NUEVO G19: env.py async + versions/
+│                                   0001_users (constraints deterministas)
+├── tests/unit/                   ← 29+3+1 archivos · 849 tests PASSED
+│                                   (808 def + 10 parametrizados + 3
+│                                   persistencia write-restart-read —
+│                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1743,7 +1763,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.13 · Generación G18 (sincronizada con
-MASTER_CHECKPOINT.md v9.12 y MASTER_CHECKLIST.md v9.12)
+END OF MASTER_BASE.md v9.14 · Generación G19 (sincronizada con
+MASTER_CHECKPOINT.md v9.14 y MASTER_CHECKLIST.md v9.14)
 
 
