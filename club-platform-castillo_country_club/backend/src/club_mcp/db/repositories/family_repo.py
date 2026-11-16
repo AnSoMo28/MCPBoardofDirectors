@@ -47,6 +47,196 @@ class DuplicateFamilyError(Exception):
         super().__init__(f"Family already exists with {field}={value}")
 
 
+def demo_families() -> list[FamilyCreate]:
+    """Dataset demo (Ola 2.1-bis): las 4 familias — UNA sola fuente.
+
+    La consume el seed in-memory Y el repo ORM (db/orm/): mismo
+    dataset en ambas implementaciones, cero deriva.
+    """
+    return [
+        FamilyCreate(
+            name="Familia Garcia",
+            tier=MembershipTier.VIP,
+            email="garcia@castillo.cr",
+            phone="+50688881111",
+            address="Castillo Country Club, Casa 12",
+            members=[
+                MemberCreate(name="Carlos Garcia", date_of_birth=date(1978, 3, 15), role="primary"),
+                MemberCreate(name="Maria Rodriguez", date_of_birth=date(1980, 7, 22), role="spouse"),
+                MemberCreate(name="Sofia Garcia", date_of_birth=date(2018, 1, 10), role="child"),
+                MemberCreate(name="Diego Garcia", date_of_birth=date(2015, 5, 3), role="child"),
+            ],
+        ),
+        FamilyCreate(
+            name="Familia Rodriguez",
+            tier=MembershipTier.PREMIUM,
+            email="rodriguez@castillo.cr",
+            phone="+50688882222",
+            members=[
+                MemberCreate(name="Luis Rodriguez", date_of_birth=date(1975, 11, 8), role="primary"),
+                MemberCreate(name="Ana Vargas", date_of_birth=date(1977, 2, 14), role="spouse"),
+                MemberCreate(name="Pedro Rodriguez", date_of_birth=date(2010, 9, 25), role="child"),
+            ],
+        ),
+        FamilyCreate(
+            name="Familia Chen",
+            tier=MembershipTier.BASIC,
+            email="chen@castillo.cr",
+            phone="+50688883333",
+            members=[
+                MemberCreate(name="Wei Chen", date_of_birth=date(1985, 6, 30), role="primary"),
+                MemberCreate(name="Li Wang", date_of_birth=date(1987, 12, 5), role="spouse"),
+            ],
+        ),
+        FamilyCreate(
+            name="Familia Morales",
+            tier=MembershipTier.PREMIUM,
+            email="morales@castillo.cr",
+            phone="+50688884444",
+            members=[
+                MemberCreate(name="Roberto Morales", date_of_birth=date(1982, 4, 18), role="primary"),
+                MemberCreate(name="Carmen Solano", date_of_birth=date(1984, 8, 9), role="spouse"),
+                MemberCreate(name="Lucia Morales", date_of_birth=date(2020, 3, 22), role="child"),
+            ],
+        ),
+    ]
+
+
+def demo_extras() -> dict:
+    """Extras del dataset demo (Ola 2.1-bis) — datos puros.
+
+    Nota de diseño: `social` referencia familias por EMAIL (la
+    identidad de negocio estable). Cada repositorio resuelve
+    email→UUID al aplicar — el original in-memory resolvía los
+    UUIDs en runtime dentro de seed_demo_data; el ORM hace lo
+    propio contra su tabla. Misma forma final, cero acoplamiento.
+    """
+    today = date.today()
+    return {
+        "engagement": [
+            ("garcia@castillo.cr", 85),
+            ("rodriguez@castillo.cr", 58),
+            ("chen@castillo.cr", 25),
+            ("morales@castillo.cr", 45),
+        ],
+        "join_dates": [
+            ("garcia@castillo.cr", date(today.year - 4, 1, 15)),
+            ("rodriguez@castillo.cr", date(today.year - 2, 6, 1)),
+            ("chen@castillo.cr", date(today.year - 1, 3, 10)),
+            (
+                "morales@castillo.cr",
+                date(today.year, today.month - 1 if today.month > 1 else 12, 1),
+            ),
+        ],
+        "preferences": [
+            ("garcia@castillo.cr", {
+                "preferred_language": "es",
+                "notification_channels": ["email", "push", "whatsapp"],
+                "interests": ["Pádel", "Gastronomía", "Natación", "Eventos sociales"],
+                "privacy_level": "open",
+            }),
+            ("rodriguez@castillo.cr", {
+                "preferred_language": "es",
+                "notification_channels": ["email"],
+                "interests": ["Tenis", "Golf", "Lectura"],
+                "privacy_level": "normal",
+            }),
+            ("chen@castillo.cr", {
+                "preferred_language": "en",
+                "notification_channels": ["email", "push"],
+                "interests": ["Yoga", "Spa & Wellness"],
+                "privacy_level": "private",
+            }),
+            ("morales@castillo.cr", {
+                "preferred_language": "es",
+                "notification_channels": ["email", "push", "whatsapp"],
+                "interests": ["Actividades infantiles", "Natación", "Senderismo"],
+                "privacy_level": "normal",
+            }),
+        ],
+        "activities": [
+            ("garcia@castillo.cr", [
+                {
+                    "event_name": f"Actividad Club {i+1}",
+                    "event_date": date(today.year, max(1, today.month - i), 15).isoformat(),
+                    "event_type": ["event", "reservation", "wellness", "sport"][i % 4],
+                    "members_attended": ["Carlos Garcia", "Maria Rodriguez"],
+                    "satisfaction_rating": 4.0 + (i % 3) * 0.3,
+                    "amount_spent": 15000 + i * 2000,
+                }
+                for i in range(8)
+            ]),
+            ("rodriguez@castillo.cr", [
+                {
+                    "event_name": f"Evento Club {i+1}",
+                    "event_date": date(today.year, max(1, today.month - i * 2), 10).isoformat(),
+                    "event_type": ["event", "sport"][i % 2],
+                    "members_attended": ["Luis Rodriguez"],
+                    "satisfaction_rating": 3.5 + (i % 2) * 0.5,
+                    "amount_spent": 8000 + i * 1500,
+                }
+                for i in range(4)
+            ]),
+            ("chen@castillo.cr", [
+                {
+                    "event_name": "Evento Bienvenida",
+                    "event_date": date(today.year - 1, 4, 20).isoformat(),
+                    "event_type": "event",
+                    "members_attended": ["Wei Chen"],
+                    "satisfaction_rating": 3.0,
+                    "amount_spent": 5000,
+                },
+            ]),
+            ("morales@castillo.cr", [
+                {
+                    "event_name": "Tour de Bienvenida",
+                    "event_date": date(today.year, max(1, today.month - 1), 5).isoformat(),
+                    "event_type": "event",
+                    "members_attended": ["Roberto Morales", "Carmen Solano"],
+                    "satisfaction_rating": 4.5,
+                    "amount_spent": 0,
+                },
+            ]),
+        ],
+        # 4 conexiones (bidireccionales garcia↔rodriguez · garcia↔morales),
+        # referenciadas por EMAIL: el repositorio resuelve a UUID al aplicar.
+        "social": [
+            ("garcia@castillo.cr", "rodriguez@castillo.cr", {
+                "connected_family_name": "Familia Rodriguez",
+                "connection_strength": 0.8,
+                "shared_events_count": 6,
+                "last_shared_event": date(today.year, today.month, 1).isoformat(),
+                "relationship": "Familias amigas — se conocen del pádel",
+                "shared_activities": ["Pádel", "Cenas de club"],
+            }),
+            ("garcia@castillo.cr", "morales@castillo.cr", {
+                "connected_family_name": "Familia Morales",
+                "connection_strength": 0.4,
+                "shared_events_count": 2,
+                "last_shared_event": date(today.year, max(1, today.month - 1), 5).isoformat(),
+                "relationship": "Se conocieron en evento de bienvenida",
+                "shared_activities": ["Natación"],
+            }),
+            ("rodriguez@castillo.cr", "garcia@castillo.cr", {
+                "connected_family_name": "Familia Garcia",
+                "connection_strength": 0.8,
+                "shared_events_count": 6,
+                "last_shared_event": date(today.year, today.month, 1).isoformat(),
+                "relationship": "Familias amigas — se conocen del pádel",
+                "shared_activities": ["Pádel", "Cenas de club"],
+            }),
+            ("morales@castillo.cr", "garcia@castillo.cr", {
+                "connected_family_name": "Familia Garcia",
+                "connection_strength": 0.4,
+                "shared_events_count": 2,
+                "last_shared_event": date(today.year, max(1, today.month - 1), 5).isoformat(),
+                "relationship": "Familia referente durante onboarding",
+                "shared_activities": ["Natación"],
+            }),
+        ],
+    }
+
+
 class FamilyRepository:
     """
     In-memory family repository.
@@ -367,185 +557,28 @@ class FamilyRepository:
 
     async def seed_demo_data(self) -> None:
         """Seed repository with realistic demo data for development."""
-        today = date.today()
+        from club_mcp.db.repositories.family_repo import demo_extras, demo_families
 
-        # Family 1: Garcia — high engagement, VIP, active
-        garcia_data = FamilyCreate(
-            name="Familia Garcia",
-            tier=MembershipTier.VIP,
-            email="garcia@castillo.cr",
-            phone="+50688881111",
-            address="Castillo Country Club, Casa 12",
-            members=[
-                MemberCreate(name="Carlos Garcia", date_of_birth=date(1978, 3, 15), role="primary"),
-                MemberCreate(name="Maria Rodriguez", date_of_birth=date(1980, 7, 22), role="spouse"),
-                MemberCreate(name="Sofia Garcia", date_of_birth=date(2018, 1, 10), role="child"),
-                MemberCreate(name="Diego Garcia", date_of_birth=date(2015, 5, 3), role="child"),
-            ],
-        )
-        garcia = await self.create_family(garcia_data)
-        garcia_id = garcia.id
+        by_email: dict[str, UUID] = {}
+        for data in demo_families():
+            fam = await self.create_family(data)
+            by_email[data.email] = fam.id
 
-        # Family 2: Rodriguez — medium engagement, premium
-        rodriguez_data = FamilyCreate(
-            name="Familia Rodriguez",
-            tier=MembershipTier.PREMIUM,
-            email="rodriguez@castillo.cr",
-            phone="+50688882222",
-            members=[
-                MemberCreate(name="Luis Rodriguez", date_of_birth=date(1975, 11, 8), role="primary"),
-                MemberCreate(name="Ana Vargas", date_of_birth=date(1977, 2, 14), role="spouse"),
-                MemberCreate(name="Pedro Rodriguez", date_of_birth=date(2010, 9, 25), role="child"),
-            ],
-        )
-        rodriguez = await self.create_family(rodriguez_data)
-        rodriguez_id = rodriguez.id
-
-        # Family 3: Chen — low engagement, basic, at-risk
-        chen_data = FamilyCreate(
-            name="Familia Chen",
-            tier=MembershipTier.BASIC,
-            email="chen@castillo.cr",
-            phone="+50688883333",
-            members=[
-                MemberCreate(name="Wei Chen", date_of_birth=date(1985, 6, 30), role="primary"),
-                MemberCreate(name="Li Wang", date_of_birth=date(1987, 12, 5), role="spouse"),
-            ],
-        )
-        chen = await self.create_family(chen_data)
-        chen_id = chen.id
-
-        # Family 4: Morales — new family, onboarding
-        morales_data = FamilyCreate(
-            name="Familia Morales",
-            tier=MembershipTier.PREMIUM,
-            email="morales@castillo.cr",
-            phone="+50688884444",
-            members=[
-                MemberCreate(name="Roberto Morales", date_of_birth=date(1982, 4, 18), role="primary"),
-                MemberCreate(name="Carmen Solano", date_of_birth=date(1984, 8, 9), role="spouse"),
-                MemberCreate(name="Lucia Morales", date_of_birth=date(2020, 3, 22), role="child"),
-            ],
-        )
-        morales = await self.create_family(morales_data)
-        morales_id = morales.id
-
-        # Set engagement scores
-        await self.update_engagement_score(garcia_id, 85)
-        await self.update_engagement_score(rodriguez_id, 58)
-        await self.update_engagement_score(chen_id, 25)
-        await self.update_engagement_score(morales_id, 45)
-
-        # Override join_dates for demo scenarios
-        self._families[garcia_id]["join_date"] = date(today.year - 4, 1, 15)
-        self._families[rodriguez_id]["join_date"] = date(today.year - 2, 6, 1)
-        self._families[chen_id]["join_date"] = date(today.year - 1, 3, 10)
-        self._families[morales_id]["join_date"] = date(today.year, today.month - 1 if today.month > 1 else 12, 1)
-
-        # Preferences
-        await self.set_preferences(garcia_id, {
-            "preferred_language": "es",
-            "notification_channels": ["email", "push", "whatsapp"],
-            "interests": ["Pádel", "Gastronomía", "Natación", "Eventos sociales"],
-            "privacy_level": "open",
-        })
-        await self.set_preferences(rodriguez_id, {
-            "preferred_language": "es",
-            "notification_channels": ["email"],
-            "interests": ["Tenis", "Golf", "Lectura"],
-            "privacy_level": "normal",
-        })
-        await self.set_preferences(chen_id, {
-            "preferred_language": "en",
-            "notification_channels": ["email", "push"],
-            "interests": ["Yoga", "Spa & Wellness"],
-            "privacy_level": "private",
-        })
-        await self.set_preferences(morales_id, {
-            "preferred_language": "es",
-            "notification_channels": ["email", "push", "whatsapp"],
-            "interests": ["Actividades infantiles", "Natación", "Senderismo"],
-            "privacy_level": "normal",
-        })
-
-        # Activities — Garcia family (rich history)
-        for i in range(8):
-            await self.add_activity(garcia_id, {
-                "event_name": f"Actividad Club {i+1}",
-                "event_date": date(today.year, max(1, today.month - i), 15).isoformat(),
-                "event_type": ["event", "reservation", "wellness", "sport"][i % 4],
-                "members_attended": ["Carlos Garcia", "Maria Rodriguez"],
-                "satisfaction_rating": 4.0 + (i % 3) * 0.3,
-                "amount_spent": 15000 + i * 2000,
-            })
-
-        # Activities — Rodriguez (moderate)
-        for i in range(4):
-            await self.add_activity(rodriguez_id, {
-                "event_name": f"Evento Club {i+1}",
-                "event_date": date(today.year, max(1, today.month - i * 2), 10).isoformat(),
-                "event_type": ["event", "sport"][i % 2],
-                "members_attended": ["Luis Rodriguez"],
-                "satisfaction_rating": 3.5 + (i % 2) * 0.5,
-                "amount_spent": 8000 + i * 1500,
-            })
-
-        # Activities — Chen (sparse, old)
-        await self.add_activity(chen_id, {
-            "event_name": "Evento Bienvenida",
-            "event_date": date(today.year - 1, 4, 20).isoformat(),
-            "event_type": "event",
-            "members_attended": ["Wei Chen"],
-            "satisfaction_rating": 3.0,
-            "amount_spent": 5000,
-        })
-
-        # Activities — Morales (onboarding)
-        await self.add_activity(morales_id, {
-            "event_name": "Tour de Bienvenida",
-            "event_date": date(today.year, max(1, today.month - 1), 5).isoformat(),
-            "event_type": "event",
-            "members_attended": ["Roberto Morales", "Carmen Solano"],
-            "satisfaction_rating": 4.5,
-            "amount_spent": 0,
-        })
-
-        # Social connections
-        await self.add_social_connection(garcia_id, {
-            "connected_family_id": str(rodriguez_id),
-            "connected_family_name": "Familia Rodriguez",
-            "connection_strength": 0.8,
-            "shared_events_count": 6,
-            "last_shared_event": date(today.year, today.month, 1).isoformat(),
-            "relationship": "Familias amigas — se conocen del pádel",
-            "shared_activities": ["Pádel", "Cenas de club"],
-        })
-        await self.add_social_connection(garcia_id, {
-            "connected_family_id": str(morales_id),
-            "connected_family_name": "Familia Morales",
-            "connection_strength": 0.4,
-            "shared_events_count": 2,
-            "last_shared_event": date(today.year, max(1, today.month - 1), 5).isoformat(),
-            "relationship": "Se conocieron en evento de bienvenida",
-            "shared_activities": ["Natación"],
-        })
-        await self.add_social_connection(rodriguez_id, {
-            "connected_family_id": str(garcia_id),
-            "connected_family_name": "Familia Garcia",
-            "connection_strength": 0.8,
-            "shared_events_count": 6,
-            "last_shared_event": date(today.year, today.month, 1).isoformat(),
-            "relationship": "Familias amigas — se conocen del pádel",
-            "shared_activities": ["Pádel", "Cenas de club"],
-        })
-        await self.add_social_connection(morales_id, {
-            "connected_family_id": str(garcia_id),
-            "connected_family_name": "Familia Garcia",
-            "connection_strength": 0.4,
-            "shared_events_count": 2,
-            "last_shared_event": date(today.year, max(1, today.month - 1), 5).isoformat(),
-            "relationship": "Familia referente durante onboarding",
-            "shared_activities": ["Natación"],
-        })
+        extras = demo_extras()
+        for email, score in extras["engagement"]:
+            await self.update_engagement_score(by_email[email], score)
+        for email, jd in extras["join_dates"]:
+            self._families[by_email[email]]["join_date"] = jd
+        for email, prefs in extras["preferences"]:
+            await self.set_preferences(by_email[email], prefs)
+        for email, activities in extras["activities"]:
+            for activity in activities:
+                await self.add_activity(by_email[email], activity)
+        for from_email, to_email, connection in extras["social"]:
+            payload = {
+                "connected_family_id": str(by_email[to_email]),  # UUID resuelto
+                **connection,
+            }
+            await self.add_social_connection(by_email[from_email], payload)
 
         logger.info("Demo data seeded: 4 families with activities, connections, preferences")
