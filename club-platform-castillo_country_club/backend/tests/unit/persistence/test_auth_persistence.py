@@ -3,12 +3,13 @@
     pytest: write → restart runtime → read OK
 
 El "restart" es REAL: engine.dispose() + engine NUEVO + sesión nueva
-(un dict in-memory NO sobrevive esto; una tabla sí). Corre contra
-aiosqlite en archivo local (mismo contrato async que asyncpg) y, si
-hay Postgres en CLUB_PERSISTENCE_URL (CI: service container
-pgvector/pgvector:pg16), corre TAMBIÉN contra él. Sin ninguna de las
-dos → skip honesto con count (no verde silencioso: 3 estados como
-el ratchet G15.1).
+(un dict in-memory NO sobrevive esto; una tabla sí). RE-RUNNABLE
+(Ola 2.1f): cada test RESETea el backend antes de sembrar — el env
+CLUB_PERSISTENCE_URL vive a nivel JOB en el CI, así que 'pytest 846'
+y el paso 'persistence' comparten el MISMO pg16 (run #15: la 2ª
+corrida contra la DB sucia tronó UNIQUE users.email + seed 5≠4).
+Sin CLUB_PERSISTENCE_URL (dev local) cae a aiosqlite en archivo
+(mismo contrato async — aiosqlite en dev desde Ola 2.1e).
 """
 from __future__ import annotations
 
@@ -33,12 +34,25 @@ def _backend_url() -> str:
     return SQLITE_URL
 
 
+async def _reset_backend() -> None:
+    """Re-runnable: DROP del backend antes de cada test.
+
+    El CI comparte el pg16 del service entre 'pytest 846' y el paso
+    'persistence' (env a nivel job) — sin esto, la 2ª corrida contra
+    la DB sucia trona UNIQUE users.email (run #15, Ola 2.1f).
+    """
+    engine = make_engine(_backend_url())
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
+
+
 pytestmark = pytest.mark.asyncio
 
 
 async def test_write_restart_read() -> None:
     """PATH 2.1 gate: write → dispose (restart) → NEW engine → read OK."""
-
+    await _reset_backend()  # re-runnable: DB limpia antes de escribir
     url = _backend_url()
     # write (engine 1)
     engine1 = make_engine(url)
@@ -73,6 +87,7 @@ async def test_login_route_uses_db_when_alive() -> None:
     from club_mcp.api.app import create_api_app
     from club_mcp.auth.models import UserCreate, UserRole
 
+    await _reset_backend()  # re-runnable: solo-db del run previo fuera
     url = _backend_url()  # Ola 2.1e: PG del CI (antes: hardcode sqlite)
     engine = make_engine(url)
     async with engine.begin() as conn:
@@ -125,6 +140,7 @@ async def test_create_user_unique_email() -> None:
 
     from club_mcp.auth.models import UserCreate, UserRole
 
+    await _reset_backend()  # re-runnable: seed fresco para el duplicado
     engine = make_engine(_backend_url())  # Ola 2.1e: PG del CI (antes: hardcode)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -149,4 +165,7 @@ def _cleanup_sqlite_files() -> None:
 
 
 def teardown_module() -> None:
+    # sqlite local: archivos fuera (PG no necesita teardown — el
+    # _reset_backend() del PRÓXIMO arranque limpia su estado; y abrir
+    # un loop nuevo acá riska ResourceWarnings bajo filterwarnings=error)
     _cleanup_sqlite_files()

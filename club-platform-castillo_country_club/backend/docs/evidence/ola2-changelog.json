@@ -18,6 +18,15 @@
       "problema": "run #14 (5912c1a) ROJO en 'pytest 846': aiosqlite no estaba en pyproject/uv.lock del 6540804 y 2/3 tests de la suite hardcodeaban sqlite+aiosqlite:// → ModuleNotFoundError en CI (el espejo del sandbox lo tenía preinstalado — mi error de armado).",
       "solucion": "aiosqlite>=0.20 en dev extra (lock editado a mano, revision 3) + _backend_url() respeta CLUB_PERSISTENCE_URL en los 3 tests (PG real del service container; sqlite solo como fallback local sin PG).",
       "evidencia": "reproducido y verificado en sandbox con árbol exacto del run"
+    },
+    {
+      "id": "Ola2.1f",
+      "fecha": "2026-11-16",
+      "tipo": "fix(CI)",
+      "titulo": "suite de persistencia RE-RUNNABLE — reset del backend por test",
+      "problema": "run #15 (33befd9): aiosqlite OK pero el paso 'persistence' trono contra el pg16 ya sucio del paso 'pytest 846' (env a nivel job: mismo service para ambos) — 'assert 5 == 4' + UNIQUE users.email.",
+      "solucion": "_reset_backend() (metadata.drop_all) antes de cada test: cada corrida empieza de cero, re-runnable en CI y en dev.",
+      "evidencia": "3 corridas back-to-back sobre la MISMA DB: 3/3 verde cada una"
     }
   ],
   "pendientes": [
