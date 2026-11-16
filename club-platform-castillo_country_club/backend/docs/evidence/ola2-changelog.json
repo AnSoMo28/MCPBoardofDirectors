@@ -1,0 +1,24 @@
+{
+  "ola": "2.1",
+  "date": "2026-11-16",
+  "path": "NEXT-STEPS-2027 PATH 2.1 (primer vertical de persistencia)",
+  "gate": "pytest write → restart runtime → read OK (aiosqlite local; pgvector real en CI)",
+  "changes": [
+    "db/orm/ esqueleto ORM (Base+naming determinista · engine lazy · session_scope)",
+    "tabla users + UserRepository async (get_by_email/create/count/seed_idempotent)",
+    "alembic init + migración 0001_users (pk_users · ix_users_email UNIQUE · ix_users_role)",
+    "api/routes/auth.py reescrito: login desde UserRepository con fallback seed in-memory",
+    "scripts/seed_users.py CLI idempotente (2 corridas = 4 users)",
+    "CI: service pgvector/pg16 + paso persistence en job backend"
+  ],
+  "pendientes": [
+    "masters v9.13→v9.14 (bump G19) — requiere acceso byte-fiel a los 3 masters; queda para el ciclo de la próxima sesión o recon dedicado",
+    "migración de los 18 repos in-memory (Ola 2.1-bis, family/event primero)",
+    "alembic upgrade head en el deploy (la tabla users la crea el CI por create_all idempotente de la suite)"
+  ],
+  "baselines": {
+    "mypy": 735,
+    "ruff": 1282,
+    "nota": "sin cambio — módulos nuevos = 0 deuda (verificado en sandbox)"
+  }
+}
