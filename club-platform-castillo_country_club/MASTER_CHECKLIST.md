@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.14 · Generación G19 (Ola 2.1 — persistencia real: vertical auth) · 180 checks · ZERO tolerance
+### Version: 9.15 · Generación G20 (Ola 2.1-bis — persistencia real: vertical family) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,24 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G20 (v9.14 → v9.15)
+
+```
+OLA 2.1-BIS CERRADA EN FAMILY — NUEVOS GATES DE BACKEND:
+- PASO persistence extiende family (CI): write → restart → read
+  OK contra pgvector REAL — ahora auth+family; dataset demo
+  UNA fuente (in-memory y ORM siembran el MISMO plan).
+- Evidencia del cierre (CI run #20 VERDE @ 97db180): 855 passed
+  (849 + 6 family) · smoke B0 VERDE · ruff 1260 (1282→1260 —
+  baja, deuda de la ola pagada por el 0012) · mypy 733 (≤735 —
+  baja) · consistency 13/13.
+- LA SAGA DEL RUN #19 ROJO (regla §8): la ola validó tests pero
+  NO los ratchets bajo lock — ruff 1302 > 1282. FIX 0012: deuda
+  de lint 0 en módulos nuevos (43 ruff + 10 mypy) en 97db180.
+- END: masters v9.15 · Q-PER-01 → 17 repos restantes (2.1-tris:
+  event/membership primero).
+```
 
 ## CHANGELOG G19 (v9.13 → v9.14)
 
@@ -1371,13 +1389,14 @@ backend/scripts/smoke_b0.py     composición+registro+   ✅ 39/39 runtime VERDE
                                 FastAPI+HTTP            G9 sandbox: 19 agentes
                                                         · 207 tools · RBAC
                                                         207/207)
-backend pytest tests/unit       unit backend            ✅ 849/849
+backend pytest tests/unit       unit backend            ✅ 855/855
                                                         (py3.12 + 3.14.4;
                                                         808 def + 10 param
-                                                        +19 Q-SEC +3 Ola 2.1)
-backend persistence suite       write → restart →       ✅ 3/3 en CI (G19:
-(write-restart-read)           read OK contra PG       pgvector/pg16 service;
-(Ola 2.1 — G19 NUEVO)          REAL del service        re-runnable 2.1f)
+                                                        +19 Q-SEC +3 Ola 2.1
+                                                        +6 Ola 2.1-bis)
+backend persistence suite       write → restart →       ✅ 9/9 en CI (G20:
+(write-restart-read)           read OK contra PG       pgvector/pg16 · auth
+(Ola 2.1/2.1-bis — G19/G20)    REAL del service        +family · re-runnable)
 backend ruff + mypy strict      estilo/tipos backend    ✅ config en
                                                         pyproject (manual —
                                                         sin CI → Q-CI-01)
@@ -1502,6 +1521,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.14 · Generación G19 (sincronizada con
-MASTER_BASE.md v9.14 y MASTER_CHECKPOINT.md v9.14)
+END OF MASTER_CHECKLIST.md v9.15 · Generación G20 (sincronizada con
+MASTER_BASE.md v9.15 y MASTER_CHECKPOINT.md v9.15)
 

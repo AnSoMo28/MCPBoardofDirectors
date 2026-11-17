@@ -1,13 +1,48 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.14 · Generación G19 (Ola 2.1 — persistencia real: vertical auth) · Date: 2026-11-16
+### Version: 9.15 · Generación G20 (Ola 2.1-bis — persistencia real: vertical family) · Date: 2026-11-17
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
-###          G19 — Ola 2.1 absorbida (§3.8 NUEVO · Q-PER-01/02/04)
+###          G19 — Ola 2.1 absorbida (§3.8 NUEVO · Q-PER-01/02/04);
+###          G20 — Ola 2.1-bis absorbida (§3.8-bis NUEVO · errata
+###          G19.1 · Q-PER-01 → 17 repos)
 
 ---
+
+## CHANGELOG G20 (v9.14 → v9.15)
+
+```
+OLA 2.1-BIS — SEGUNDO VERTICAL DE PERSISTENCIA REAL (PATH 2.1)
+CERRADO en family (2ada620 → 97db180, 5 commits — evidencia:
+ola2bis-changelog.json + OUT-APLICAR-21BIS.txt + CI runs #19-#20):
+
+  G19.1 errata (2ada620): "17 repos restantes" era aritmética
+        equivocada — son 18 - users(dict, no repo) → users era
+        uno de los 18. Masters v9.14 corregidos (7 sitios + json).
+  2.1bis-a (b956772): FamilyORM/MemberORM (JSONB activities/
+        social_connections/preferences) + FamilyRepository async
+        con contrato EXACTO del in-memory (50 tests del agente
+        unchanged) + alembic 0002_families_members + suite 6.
+  2.1bis-b (bd562f1): swap OPT-IN por CLUB_PERSISTENCE_URL —
+        el in-memory sigue siendo default dev; bootstrap envuelve
+        el repo central. CI: paso persistence cubre family.
+  2.1bis-c (370c567): dataset demo UNA SOLA fuente —
+        demo_families.py alimenta in-memory Y ORM (misma semilla,
+        cero drift de fixtures).
+  2.1bis-d (97db180): FIX run #19 ROJO — deuda de lint de la
+        propia ola bajo lock (ruff 1302 > 1282). 43 ruff + 10
+        mypy = 0 deuda en módulos nuevos; totales BAJAN.
+
+CIFRAS: pytest 849→855 (+6 family) · smoke B0 VERDE · ruff
+1282→1260 · mypy 735→733 · CI 5 jobs + persistence VERDE (run
+#20 @ 97db180) · consistency 13/13.
+DEUDA VIVA: 17 repos in-memory restantes (Q-PER-01) ·
+ApprovalEngine dict (Q-PER-03) · alembic upgrade head en deploy.
+END: masters v9.15 · Ola 2.1-tris (17 repos → ORM; event/
+membership primero) es la siguiente.
+```
 
 ## CHANGELOG G19 (v9.13 → v9.14)
 
@@ -1493,6 +1528,63 @@ el deploy (la tabla users la crea create_all idempotente mientras).
 
 ---
 
+### §3.8-BIS OLA 2.1-BIS · PERSISTENCIA REAL — VERTICAL FAMILY (✅ CERRADA 2026-11-17)
+
+```
+SEGUNDO VERTICAL DE PERSISTENCIA (PATH 2.1 — NEXT-STEPS-2027 §2):
+la familia del club deja de vivir en un dict en memoria y pasa
+por tablas PostgreSQL (families+members, JSONB para las listas
+flexibles), con el gate EJECUTABLE en CI (write → restart → read).
+
+ARTEFACTOS (2ada620 → 97db180, 5 commits — changelog G20 arriba):
+  · db/orm/family_orm.py     FamilyORM + MemberORM espejo 1:1 de
+                            models.family (JSONB activities/
+                            social_connections/preferences —
+                            JSONB().with_variant(JSON) para la
+                            suite sqlite local)
+  · db/orm/repositories/family_repo.py  FamilyRepository async:
+                            contrato EXACTO del in-memory (mismos
+                            raises, mismos defaults — los 16 tools
+                            del agente family y sus 50 tests sin
+                            tocar; regla §3.2-1 radio mínimo)
+  · alembic 0002_families_members  constraints deterministas
+                            (ix/uq del naming_convention)
+  · bootstrap swap OPT-IN   CLUB_PERSISTENCE_URL prende el repo
+                            ORM; sin ella el in-memory default
+                            (dev sin fricción, cero flag day)
+  · demo_families.py         UNA fuente de datos demo para in-
+                            memory Y ORM (misma semilla — sin
+                            drift de fixtures entre backends)
+  · CI persistence           paso extiende a family (9 tests)
+  · ola2bis-changelog.json   evidencia machine-readable
+
+GATES AL CIERRE (CI run #20 VERDE @ 97db180 — 5 jobs):
+  pytest 855/855 (849 + 6 family) exit 0
+  persistence write→restart→read OK contra pgvector REAL exit 0
+  smoke B0 VERDE (19 · 207 · RBAC 207/207 · HITL) exit 0
+  ruff 1260 (1282→1260 — baja · 0 deuda en módulos nuevos) ·
+  mypy 733 (≤735 ratchet — baja) · consistency 13/13
+
+LA SAGA DEL RUN #19 ROJO (regla §8 — reproducido determinista
+en sandbox con las tools del lock ANTES del fix):
+  run #19 (370c567): la ola validó comportamiento (59 tests ×2)
+  pero el sandbox nunca corrió los ratchets bajo lock — ruff
+  1302 > baseline 1282, job backend ROJO. La lección es la MISMA
+  de Q-CI-04/05: el espejo sandbox no es el env de CI; ahora el
+  arnés de la ola mide ruff/mypy con las versiones del lock.
+  FIX 0012 (97db180): 43 ruff (47 autofix + 3 mano — TC003/
+  N817) + 10 mypy (dict[str,Any] + guards None) = 0 deuda en
+  módulos nuevos; totales BAJAN (ruff 1260 · mypy 733).
+
+QUEDÓ FUERA (by design): 17 repos in-memory restantes → Ola
+2.1-tris (event/membership primero — mecánica §3.8/§3.8-bis) ·
+event_repo es sync (35 llamadas sin await — su propia ola) ·
+ApprovalEngine → Q-PER-03 (2.3) · alembic upgrade head en deploy
+(las tablas las crea create_all idempotente mientras).
+```
+
+---
+
 ## §4 — QUALITY SCORECARD (fórmula explícita — hallazgo #45)
 
 ```
@@ -1982,11 +2074,11 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             real del JWT.
 
 ═══ P1 · PERSISTENCIA (vertical auth CERRADO en Ola 2.1 — §3.8) ═══
-  Q-PER-01  18 repositorios 100% in-memory (la resta "18 - users"
-            era ERRATA G19.1: users era el dict de Q-PER-04, no
-            uno de los 18) → SQLAlchemy async via db/orm/ (mecánica
-            §3.8 probada: ORM + alembic + repo + gate). Ola 2.1-bis:
-            family/event primero.
+  Q-PER-01  17 repositorios in-memory restantes (family migrado
+            en Ola 2.1-bis §3.8-bis; 18 - family) → SQLAlchemy async
+            via db/orm/ (mecánica §3.8/§3.8-bis probada: ORM +
+            alembic + repo + gate). Ola 2.1-tris: event/membership
+            primero (event_repo es sync — su propia ola).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
@@ -2054,6 +2146,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.14 · Generación G19 (sincronizada con
-MASTER_BASE.md v9.14 y MASTER_CHECKLIST.md v9.14)
+END OF MASTER_CHECKPOINT.md v9.15 · Generación G20 (sincronizada con
+MASTER_BASE.md v9.15 y MASTER_CHECKLIST.md v9.15)
 

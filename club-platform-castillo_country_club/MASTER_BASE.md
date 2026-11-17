@@ -1,11 +1,23 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.14 · Generación G19 (Ola 2.1 — persistencia real: vertical auth) · Date: 2026-11-16
+### Version: 9.15 · Generación G20 (Ola 2.1-bis — persistencia real: vertical family) · Date: 2026-11-17
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
 ---
+
+## CHANGELOG G20 (v9.14 → v9.15)
+
+```
+OLA 2.1-BIS — SEGUNDO VERTICAL DE PERSISTENCIA REAL CERRADO en
+family (detalle completo en CHECKPOINT changelog G20): errata
+G19.1 ("17→18 repos") · tablas families+members (JSONB) + repo
+async contrato exacto + alembic 0002 · swap opt-in por
+CLUB_PERSISTENCE_URL · dataset demo UNA fuente · suite 6 tests ·
+run #19 ROJO cerrado por 0012 (ruff 1260 · mypy 733 — ambos
+BAJAN) · pytest 849→855 · masters v9.15.
+```
 
 ## CHANGELOG G19 (v9.13 → v9.14)
 
@@ -1436,24 +1448,29 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   ├── auth/                     ← JWT, RBAC 196/196, middleware
 │   │                               (secreto JWT hardcodeado → Q-SEC-01)
 │   ├── config/                   ← pydantic-settings SIN consumidores
-│   ├── db/orm/                  ← NUEVO G19 — Ola 2.1: Base+
-│   │                               naming_convention · engine async
-│   │                               lazy · session_scope · tabla
-│   │                               users · UserRepository (alembic
-│   │                               0001 · Q-PER-02 CERRADO)
-│   ├── db/repositories/          ← 18 repos in-memory (familia de
-│   │                               Q-PER-01 → Ola 2.1-bis; el dict
-│   │                               users de Q-PER-04 ya no vive acá)
+│   ├── db/orm/                  ← G19/G20 — Ola 2.1 y 2.1-bis:
+│   │                               Base+naming_convention · engine
+│   │                               async lazy · session_scope ·
+│   │                               tabla users+UserRepository (G19)
+│   │                               · tablas families+members +
+│   │                               FamilyRepository async JSONB
+│   │                               (G20 · alembic 0001+0002)
+│   ├── db/repositories/          ← 17 repos in-memory restantes
+│   │                               → Q-PER-01 (Ola 2.1-tris; family
+│   │                               migrado · el dict users de
+│   │                               Q-PER-04 ya no vive acá)
 │   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
 │   └── server.py                 ← entry point MCP (adaptador delgado)
-├── alembic/                      ← NUEVO G19: env.py async + versions/
-│                                   0001_users (constraints deterministas)
-├── tests/unit/                   ← 29+3+1 archivos · 849 tests PASSED
-│                                   (808 def + 10 parametrizados + 3
+├── alembic/                      ← G19/G20: env.py async + versions/
+│                                   0001_users · 0002_families_members
+│                                   (constraints deterministas)
+├── tests/unit/                   ← 29+3+1+1 archivos · 855 tests PASSED
+│                                   (808 def + 10 parametrizados + 9
 │                                   persistencia write-restart-read —
-│                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3)
+│                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
+│                                   + Ola 2.1-bis 6)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1764,7 +1781,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.14 · Generación G19 (sincronizada con
-MASTER_CHECKPOINT.md v9.14 y MASTER_CHECKLIST.md v9.14)
+END OF MASTER_BASE.md v9.15 · Generación G20 (sincronizada con
+MASTER_CHECKPOINT.md v9.15 y MASTER_CHECKLIST.md v9.15)
 
 
