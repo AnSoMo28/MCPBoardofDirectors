@@ -1,0 +1,36 @@
+{
+  "ola": "2.1-quinqua",
+  "date": "2026-11-18",
+  "path": "NEXT-STEPS-2027 PATH 2.2 (quinto vertical: compliance — CRUD puro de 3 entidades independientes: compliance_audits · compliance_documents · compliance_alerts). De los 15 repos in-memory restantes (Q-PER-01), compliance es el mejor pattern-fit de esta ronda: 14 métodos sync de CRUD puro, 233 líneas, 8 call sites en el agente, 0 compute (generate_report es pura lectura + aritmética simple) — la mecánica §3.8 exacta, con la única cirugía de async que ya homologamos en el 0017.",
+  "gate": "pytest write → restart runtime → read OK (aiosqlite local; pgvector real en CI) + contrato None/[] sin excepciones custom",
+  "changes": [
+    "db/orm/compliance_orm.py: 3 tablas (compliance_audits · compliance_documents · compliance_alerts) — espejo 1:1 de models/compliance; la lista de checks del audit a JSONB (criterio families §3.8-bis, igual que engagement.favorite_activities §3.8-tris)",
+    "db/orm/repositories/compliance_repo.py: ComplianceRepository async — contrato EXACTO del in-memory (14 métodos · None/[] sin excepciones custom · ids f\"{prefix}_{uuid4().hex[:8]}\": aud_/doc_/alrt_/chk_)",
+    "MIGRACIÓN ASYNC DEL DOMINIO (misma cirugía homologada del 0017 event, escala menor): el repo in-memory compliance era sync (14/14) y el agente lo llamaba SIN await (8 call sites) — 8 call sites del agente → await · 14 métodos del in-memory → async (mismas firmas, mismos cuerpos) · tests del agente: _seed_compliance → async + 8 call sites de test → await",
+    "alembic 0005_compliance (3 tablas · pk deterministas · ix created_at/area/status por tabla; enums String(24) sin CHECK)",
+    "bootstrap.py: swap OPT-IN extiende a compliance_repo (junto a family + engagement + event) — verificado POR EJECUCIÓN en ambos modos",
+    "CI: el paso persistence corre la suite compliance (junto a auth + family + engagement + event)",
+    "tests/unit/persistence/test_compliance_persistence.py: 6 tests (write-restart-read audit + document · update None-filter + list filters DESC · add_check recalcula score_pct · alert lifecycle resolve · generate_report lee las 3 tablas)"
+  ],
+  "decision_arquitectura": {
+    "por_que_compliance": "de los 15 restantes, el mejor pattern-fit de esta ronda: CRUD puro de 3 entidades INDEPENDIENTES (audits/documents/alerts — sin FKs entre ellas, sin joins), 0 métodos compute, y el reporte es pura lectura con aritmética trivial. wellness (26 defs) y member_360 (24 defs) son read-heavy compute — mecánica distinta (ola aparte) · finance tiene integración de calculator · document_intelligence tiene RAG embebido. compliance además ES el dominio de la novena categoría del club y su agente tiene 28 tests de contrato ya maduros.",
+    "checks_como_jsonb": "el in-memory guarda el audit CON su lista de checks en el mismo dict — la tabla hace lo mismo en una columna JSONB: anexos del agregado sin identity propia (mismo criterio families.activities). add_check_to_audit preserva la semántica EXACTA: append + id chk_ + created_at del repo + recuento total/passed/failed + score_pct round(...,1) (0.0 si total 0) dentro de la MISMA transacción.",
+    "update_audit_none": "el in-memory solo aplicaba claves con valor no-None (dict.update filtrado) — el ORM preserva ese contrato observable literal: updates con None NO se aplican, updated_at SIEMPRE se toca.",
+    "alerts_sin_updated_at": "el modelo ComplianceAlert no tiene updated_at y el in-memory no lo tocaba al resolver — el ORM tampoco: resolve_alert solo fija status='resolved' + resolution.",
+    "generate_report": "pura lectura de las 3 listas ya ordenadas/filtradas; la aritmética (overall_score, avg por área, umbral conforme >=80, expiring in (EXPIRING_SOON, EXPIRED)) es la del in-memory byte a byte"
+  },
+  "bugs_cazados": [],
+  "quedo_fuera": [
+    "los otros 14 repos in-memory (Q-PER-01 → 14 tras este vertical; siguientes verticales: misma mecánica §3.8/§3.8-bis/§3.8-tris)",
+    "wellness y member_360: sync read-heavy compute — mecánica distinta, ola aparte",
+    "ApprovalEngine → Q-PER-03 (Ola 2.3 del PATH)",
+    "bump G23 de masters (v9.17 → v9.18) para absorber esta ola — su propio parche chore, como G19/G20/G21/G22"
+  ],
+  "cifras": {
+    "tests_persistencia": "27 (3 auth + 6 family + 6 engagement + 6 event + 6 compliance)",
+    "tests_contrato_agente_compliance": "28/28 verde contra el in-memory MIGRADO async — mismos asserts, cero cambios de lógica de test (solo await en seed/call sites)",
+    "suite_total_estimada": "867 → 873 (+6 persistencia compliance)",
+    "migracion_async": "agente: 8 awaits · in-memory: 14 async públicos · seed tests: 1 (async) · call sites de test: 8"
+  },
+  "validacion_sandbox": "sqlite real (aiosqlite · sqlalchemy): persistencia 27/27 + back-to-back 27/27 (re-runnable) + agente compliance 28/28 + swap por ejecución en ambos modos (con CLUB_PERSISTENCE_URL → repo ORM async responde; sin env → in-memory async mismo contrato)"
+}

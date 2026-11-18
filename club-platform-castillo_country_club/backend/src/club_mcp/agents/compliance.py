@@ -108,7 +108,7 @@ class ComplianceAgent(BaseAgent):
     ) -> dict[str, Any]:
         """Execute audit creation post-approval."""
         audit_data["status"] = AuditStatus.DRAFT.value
-        audit = self.repo.create_audit(audit_data)
+        audit = await self.repo.create_audit(audit_data)
 
         return {
             "status": "success",
@@ -142,7 +142,7 @@ class ComplianceAgent(BaseAgent):
         deadline: str = "",
     ) -> dict[str, Any]:
         """Run a compliance check and add it to an audit."""
-        audit = self.repo.get_audit(audit_id)
+        audit = await self.repo.get_audit(audit_id)
         if not audit:
             return {
                 "status": "error",
@@ -188,7 +188,7 @@ class ComplianceAgent(BaseAgent):
             deadline=deadline,
         )
 
-        updated_audit = self.repo.add_check_to_audit(audit_id, check)
+        updated_audit = await self.repo.add_check_to_audit(audit_id, check)
         if updated_audit is None:
             return {
                 "status": "error",
@@ -223,7 +223,7 @@ class ComplianceAgent(BaseAgent):
         audit_id: str,
     ) -> dict[str, Any]:
         """Get audit details."""
-        audit = self.repo.get_audit(audit_id)
+        audit = await self.repo.get_audit(audit_id)
         if not audit:
             return {
                 "status": "error",
@@ -323,7 +323,7 @@ class ComplianceAgent(BaseAgent):
         else:
             doc_data["status"] = "current"
 
-        doc = self.repo.add_document(doc_data)
+        doc = await self.repo.add_document(doc_data)
 
         return {
             "status": "success",
@@ -371,7 +371,7 @@ class ComplianceAgent(BaseAgent):
                 "message": f"Nivel de riesgo '{risk_level}' no válido. Opciones: {valid}",
             }
 
-        alert = self.repo.create_alert({
+        alert = await self.repo.create_alert({
             "title": title,
             "description": description,
             "area": area_enum.value,
@@ -419,7 +419,7 @@ class ComplianceAgent(BaseAgent):
                     "message": f"Área '{area}' no válida. Opciones: {valid}",
                 }
 
-        alerts = self.repo.list_alerts(area=area, status=status)
+        alerts = await self.repo.list_alerts(area=area, status=status)
         open_count = sum(1 for a in alerts if a.status == "open")
         critical = sum(
             1 for a in alerts
@@ -465,7 +465,7 @@ class ComplianceAgent(BaseAgent):
                 "message": "La fecha de inicio debe ser anterior a la fecha de fin.",
             }
 
-        report = self.repo.generate_report(date_from, date_to)
+        report = await self.repo.generate_report(date_from, date_to)
         emoji = "✅" if report.overall_score >= 80 else "⚠️"
 
         return {

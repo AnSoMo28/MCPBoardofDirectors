@@ -232,7 +232,7 @@ def build_runtime() -> Runtime:
         _persist_engine = _make_engine(_persist_url)
         logger.info(
             "[bootstrap] CLUB_PERSISTENCE_URL presente — repos migrados a PG "
-            "(Ola 2.1-bis: family · Ola 2.1-tris: engagement · Ola 2.2: event)"
+            "(2.1-bis: family · 2.1-tris: engagement · 2.2: event · 2.1-quinqua: compliance)"
         )
 
     def _orm_repo(key: str) -> Any | None:
@@ -257,6 +257,12 @@ def build_runtime() -> Runtime:
             )
 
             return _EventRepoORM(_persist_engine)
+        if key == "compliance_repo":
+            from club_mcp.db.orm.repositories.compliance_repo import (
+                ComplianceRepository as _ComplianceRepoORM,
+            )
+
+            return _ComplianceRepoORM(_persist_engine)
         return None
 
     def repo_for(key: str) -> Any:
