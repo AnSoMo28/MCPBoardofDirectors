@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.16 · Generación G21 (Ola 2.1-tris — persistencia real: vertical member_engagement) · 180 checks · ZERO tolerance
+### Version: 9.17 · Generación G22 (Ola 2.2 — persistencia real: vertical event) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,29 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G22 (v9.16 → v9.17)
+
+```
+OLA 2.2 CERRADA EN EVENT — GATES:
+- PASO persistence extiende event (CI): write → restart →
+  read OK contra pgvector REAL — ahora auth+family+engagement+
+  event (21 tests · 3+6+6+6). Contrato agente event 50/50 sin
+  tocar la lógica del dominio (radio 0 — regla §3.2-1); la
+  MIGRACIÓN ASYNC fue la ola aparte que §3.8-bis anticipó.
+- Evidencia del cierre (CI run #29 VERDE @ d532355 — 5/5 jobs,
+  verificado vía API): 867 passed (861 + 6 event) · smoke B0
+  VERDE · ruff 1277 (+17 deuda vertical bajo ratchet 1282) ·
+  mypy 733 · consistency 13/13. Sandbox: cifras re-medidas
+  bajo lock (867/867 · 21/21 · 50/50 — reproducible).
+- RE-BASELINE mypy 735→733 same-PR (doctrina G16): el 0019
+  pagó los +9 del vertical + 2 de deuda vieja — el piso baja
+  a la cifra real; 733/734 ya no pasan sin ser el valor.
+- LECCIÓN run #28 (estructural): el APLICAR corre el ratchet
+  mypy LOCAL bajo lock antes del push — CI-rojo por ratchet
+  ya no puede llegar a GitHub (mismo parser que el ci.yml).
+- END: masters v9.17 · Q-PER-01 → 15 repos restantes.
+```
 
 ## CHANGELOG G21 (v9.15 → v9.16)
 
@@ -1546,6 +1569,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.16 · Generación G21 (sincronizada con
-MASTER_BASE.md v9.16 y MASTER_CHECKPOINT.md v9.16)
+END OF MASTER_CHECKLIST.md v9.17 · Generación G22 (sincronizada con
+MASTER_BASE.md v9.17 y MASTER_CHECKPOINT.md v9.17)
 

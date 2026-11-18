@@ -1,9 +1,25 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.16 · Generación G21 (Ola 2.1-tris — persistencia real: vertical member_engagement) · Date: 2026-11-17
+### Version: 9.17 · Generación G22 (Ola 2.2 — persistencia real: vertical event) · Date: 2026-11-18
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
+
+## CHANGELOG G22 (v9.16 → v9.17)
+
+```
+OLA 2.2 — CUARTO VERTICAL DE PERSISTENCIA REAL CERRADO en
+event (detalle completo en CHECKPOINT changelog G22):
+4 tablas (events · event_rsvps · event_vendors ·
+event_program_items) + EventRepository async contrato exacto
+(25 métodos · read-path re-construye enums — lección run #28) +
+MIGRACIÓN ASYNC del dominio (25 async in-memory · 35 awaits
+agente) + alembic 0004 · swap opt-in 4º repo · suite
+persistencia 21 (3+6+6+6) · CI run #29 VERDE @ d532355 (5/5
+jobs, verificado vía API) · pytest 861→867 · ruff 1277 (bajo
+ratchet) · mypy 733 (re-baseline 735→733 same-PR) · masters
+v9.17.
+```
 
 ## CHANGELOG G21 (v9.15 → v9.16)
 
@@ -1470,9 +1486,9 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               (G20) · 5 tablas engagement +
 │   │                               MemberEngagementRepository async
 │   │                               (G21 · alembic 0001+0002+0003)
-│   ├── db/repositories/          ← 16 repos in-memory restantes
-│   │                               → Q-PER-01 (family y engagement
-│   │                               migrados · el dict users de
+│   ├── db/repositories/          ← 15 repos in-memory restantes
+│   │                               → Q-PER-01 (family, engagement
+│   │                               y event migrados · users de
 │   │                               Q-PER-04 ya no vive acá)
 │   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
@@ -1481,11 +1497,13 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 ├── alembic/                      ← G19-G21: env.py async + versions/
 │                                   0001_users · 0002_families_members
 │                                   · 0003_engagement (5 tablas)
-├── tests/unit/                   ← 29+3+1+1 archivos · 861 tests PASSED
+│                                   · 0004_event (4 tablas)
+├── tests/unit/                   ← 29+3+1+1+1 archivos · 867 tests PASSED
 │                                   (808 def + 16 parametrizados + 9
 │                                   persistencia write-restart-read —
 │                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
-│                                   + Ola 2.1-bis 6 + Ola 2.1-tris 6)
+│                                   + Ola 2.1-bis 6 + Ola 2.1-tris 6
+│                                   + Ola 2.2 event 6)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1796,7 +1814,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.16 · Generación G21 (sincronizada con
-MASTER_CHECKPOINT.md v9.16 y MASTER_CHECKLIST.md v9.16)
+END OF MASTER_BASE.md v9.17 · Generación G22 (sincronizada con
+MASTER_CHECKPOINT.md v9.17 y MASTER_CHECKLIST.md v9.17)
 
 

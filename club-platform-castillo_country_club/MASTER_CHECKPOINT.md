@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.16 · Generación G21 (Ola 2.1-tris — persistencia real: vertical member_engagement) · Date: 2026-11-17
+### Version: 9.17 · Generación G22 (Ola 2.2 — persistencia real: vertical event) · Date: 2026-11-18
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -9,10 +9,69 @@
 ###          G20 — Ola 2.1-bis absorbida (§3.8-bis NUEVO · errata
 ###          G19.1 · Q-PER-01 → 17 repos);
 ###          G21 — Ola 2.1-tris absorbida (§3.8-tris NUEVO ·
-###          errata G21 cifras estáticas · Q-PER-01 → 16 repos)
+###          errata G21 cifras estáticas · Q-PER-01 → 16 repos);
+###          G22 — Ola 2.2 absorbida (§3.8-CUATRO NUEVO ·
+###          re-baseline mypy 735→733 same-PR · Q-PER-01 → 15 repos)
 
 ---
 
+
+## CHANGELOG G22 (v9.16 → v9.17)
+
+```
+OLA 2.2 — CUARTO VERTICAL DE PERSISTENCIA REAL (PATH 2.2 —
+la que la guía §5.3 registró como "su propia ola": el dominio
+event era SYNC total) CERRADO en event (58279a1 → 605c855 →
+d532355, 3 commits — evidencia: ola22evento-changelog.json +
+OUT-APLICAR-22EVENTO.txt + CI runs #28→#29):
+
+  0017 (58279a1): EventORM 4 tablas (events · event_rsvps ·
+        event_vendors · event_program_items, FK ON DELETE
+        CASCADE reemplazando el rebuild manual del in-memory) +
+        EventRepository async con contrato EXACTO (25 métodos ·
+        None/[]/False · ids evt_/rsvp_/vnd_/prog_ idénticos) +
+        MIGRACIÓN ASYNC del dominio completo — el in-memory
+        era sync TOTAL (36 defs sin await) y el agente lo
+        llamaba SIN await (35 awaits sembrados) · 25 async
+        públicos in-memory + tests async + b4_tools _seed +
+        alembic 0004_event + suite 6 + swap OPT-IN (4º repo).
+
+  0018 (605c855): FIX WinError 32 (corrida Windows 1): el
+        teardown del suite auth unlink-aba _persist_restart.db
+        con la conexión aiosqlite VIVA — Linux unlink OK con FD
+        vivo (por eso CI jamás lo vio), Win32 trona. Dispose
+        del engine en el finally del route test + unlink
+        resiliente (retry GC).
+
+  0019 (d532355): FIX CI run #28 ROJO (mypy strict ratchet:
+        debt subió 744 > 735): repro EXACTA bajo lock en
+        sandbox (mypy 2.1.0 — 744 == CI byte a byte; +12
+        líneas nuevas del vertical, −3 resueltas → +9 neto:
+        10 × arg-type del read-path que pasaba str a Pydantic
+        enums — reconstrucción EnumClass(col) del idioma
+        engagement_repo que el vertical omitió · 1 × pair_key
+        tuple suelto · 1 = bootstrap.py:276 MOVIDA a 282,
+        deuda pre-existente). Fix: reconstrucción explícita de
+        los 7 enums en los 4 _from_orm + par canónico tipado →
+        733 (2 de deuda vieja pagadas de regalo · 0 type:ignore
+        nuevos · 0 cambios de lógica). LECCIÓN estructural G22:
+        el APLICAR v2.3 corre el ratchet mypy LOCAL antes del
+        push (mismo parser del ci.yml, baseline del json) — un
+        CI-rojo por ratchet ya no puede llegar a GitHub.
+
+CIFRAS (re-medidas bajo lock en sandbox @ d532355; CI run #29
+VERDE 5/5 jobs — verificado vía API): pytest 861→867 (+6 event)
+· persistencia 21/21 (3 auth + 6 family + 6 engagement + 6
+event) · contrato agente event 50/50 · smoke B0 VERDE · ruff
+1260→1277 (+17 deuda lint del vertical: I001/TC003/SIM110 —
+BAJO el ratchet 1282) · mypy 733 (re-baseline 735→733 same-PR,
+doctrina G16: pagar deuda baja el piso) · consistency 13/13.
+DEUDA VIVA: 15 repos in-memory restantes (Q-PER-01) ·
+ApprovalEngine dict (Q-PER-03) · alembic upgrade head en deploy.
+END: masters v9.17 · Q-PER-01: 15 repos — siguiente vertical:
+prioridad del Chief Architect (member_360: read-heavy compute,
+ola aparte por mecánica) o la 5ª simple de las 15.
+```
 
 ## CHANGELOG G21 (v9.15 → v9.16)
 
@@ -1679,6 +1738,68 @@ deploy (las tablas las crea create_all idempotente mientras).
 
 ---
 
+### §3.8-CUATRO OLA 2.2 · PERSISTENCIA REAL — VERTICAL EVENT (✅ CERRADA 2026-11-18)
+
+```
+CUARTO VERTICAL DE PERSISTENCIA (PATH 2.2 — el dominio event que
+§3.8-bis registró como "su propia ola": 36 defs sync, agente sin
+await): la programación de eventos del club deja de vivir en dicts
+en memoria y pasa por 4 tablas PostgreSQL, con el gate EJECUTABLE
+en CI (write → restart → read).
+
+ARTEFACTOS (58279a1 → 605c855 → d532355, 3 commits — changelog G22):
+  · db/orm/event_orm.py     4 tablas espejo 1:1 de models/event
+                            (FK event_id ON DELETE CASCADE — el
+                            constraint físico reemplaza el rebuild
+                            manual del in-memory; listas del
+                            agregado a JSONB; enums String(24))
+  · db/orm/repositories/    EventRepository async: contrato EXACTO
+    event_repo.py           del in-memory (25 métodos · read-path
+                            RE-CONSTRUYE los enums — idioma
+                            engagement, lección run #28)
+  · MIGRACIÓN ASYNC         del dominio completo: 25 async in-
+                            memory + 35 awaits del agente + tests
+                            async + b4_tools _seed — el swap del
+                            repo es drop-in pero el dominio tuvo
+                            que migrar JUNTO (por eso era ola aparte)
+  · alembic 0004_event       4 tablas · pk deterministas del
+                            naming_convention
+  · bootstrap swap OPT-IN   CLUB_PERSISTENCE_URL prende el 4º repo
+                            (auth + family + engagement + event)
+  · CI persistence          paso extiende a event (21 tests:
+                            3+6+6+6)
+  · ola22evento-changelog.json evidencia machine-readable
+
+GATES AL CIERRE (CI run #29 VERDE @ d532355 — 5/5 jobs,
+verificado vía API desde afuera; sandbox espejo bajo uv.lock:
+867/867 · 21/21 · 50/50):
+  pytest 867/867 (861 + 6 event) exit 0
+  persistence write→restart→read OK contra pgvector REAL exit 0
+  smoke B0 VERDE (19 · 207 · RBAC 207/207 · HITL) exit 0
+  ruff 1277 (+17 deuda vertical: I001/TC003/SIM110 — bajo
+  ratchet 1282) · mypy 733 (re-baseline 735→733 same-PR) ·
+  consistency 13/13
+
+LA SAGA DE LOS 2 FRENOS (regla §8 en las dos rondas — el gate
+siempre frenó bien, en el punto exacto):
+  corrida 1 (WinError 32): teardown auth unlink con conexión
+        viva (Linux perdonaba, Win32 no). FIX 0018: dispose +
+        unlink resiliente.
+  corrida 2 (CI run #28): gates locales VERDES pero CI ROJO en
+        mypy ratchet — 744 > 735: la reconstrucción de enums del
+        read-path faltaba. FIX 0019 + lección estructural: ratchet
+        mypy LOCAL en el APLICAR v2.3 (corre antes del push).
+
+QUEDÓ FUERA (by design): 15 repos in-memory restantes → Ola
+2.2-bis y siguientes (mecánica §3.8 probada: ORM + alembic +
+repo + gate) · member_360 sync read-heavy (19 de 22 métodos
+computan — mecánica compute, ola aparte) · ApprovalEngine →
+Q-PER-03 (2.3) · alembic upgrade head en deploy (las tablas las
+crea create_all idempotente mientras).
+```
+
+---
+
 ## §4 — QUALITY SCORECARD (fórmula explícita — hallazgo #45)
 
 ```
@@ -2167,13 +2288,15 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris CERRADOS) ═══
-  Q-PER-01  16 repositorios in-memory restantes (family en
-            Ola 2.1-bis §3.8-bis · engagement en Ola 2.1-tris
-            §3.8-tris; 18 - 2) → SQLAlchemy async via db/orm/
-            (mecánica §3.8/-bis/-tris probada: ORM + alembic +
-            repo + gate). Siguiente: event (SYNC — su propia
-            ola) o prioridad del Chief Architect de los 16.
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO CERRADOS) ═══
+  Q-PER-01  15 repositorios in-memory restantes (family en
+            Ola 2.1-bis · engagement en Ola 2.1-tris · event
+            en Ola 2.2 §3.8-CUATRO; 18 - 3) → SQLAlchemy async
+            via db/orm/ (mecánica §3.8 probada: ORM + alembic +
+            repo + gate — ya con lección run #28: read-path
+            re-construye enums). Siguiente: prioridad del Chief
+            Architect de los 15 (member_360: compute, ola
+            aparte; las simples siguen la mecánica).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
@@ -2241,6 +2364,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.16 · Generación G21 (sincronizada con
-MASTER_BASE.md v9.16 y MASTER_CHECKLIST.md v9.16)
+END OF MASTER_CHECKPOINT.md v9.17 · Generación G22 (sincronizada con
+MASTER_BASE.md v9.17 y MASTER_CHECKLIST.md v9.17)
 
