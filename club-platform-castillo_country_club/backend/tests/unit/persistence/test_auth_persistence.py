@@ -126,6 +126,11 @@ async def test_login_route_uses_db_when_alive() -> None:
     finally:
         engine_mod.get_engine = orig  # type: ignore[assignment]
         settings_mod.get_settings = orig_url  # type: ignore[assignment]
+        # Ola 2.2 (WinError 32): el route login consumió la engine vía
+        # session_scope — su conexión queda viva en el pool tras el
+        # TestClient y Win32 no unlink un archivo con FD abierto.
+        # dispose() SIEMPRE antes del teardown que borra los .db.
+        await engine.dispose()
     assert resp.status_code == 200, f"login no leyó la DB: {resp.status_code} {resp.text}"
     data = resp.json()
     assert data["status"] == "success"
@@ -158,10 +163,31 @@ async def test_create_user_unique_email() -> None:
 
 
 def _cleanup_sqlite_files() -> None:
-    """Borra los archivos sqlite del fallback (solo camino local)."""
+    """Borra los archivos sqlite del fallback (solo camino local).
+
+    Win32 no puede unlink un archivo con handle abierto (Linux sí) y
+    el worker-thread de aiosqlite puede tardar un tick en soltarlo
+    aunque la engine se dispuso (Ola 2.2 — WinError 32): retry corto
+    con GC intercalado; si tras eso sigue vivo, NO tronar — el archivo
+    es un artefacto dev del fallback sqlite, la próxima corrida hace
+    DROP-all primero (_reset_backend) y el .gitignore ya lo ignora
+    (G20.1). CI corre Linux/PG: este camino no existe ahí.
+    """
+    import gc
+    import time
+
     if not PG_URL:
         for name in ("_persist_restart.db", "_persist_route.db", "_persist_uq.db"):
-            Path(name).unlink(missing_ok=True)
+            for attempt in range(3):
+                try:
+                    Path(name).unlink(missing_ok=True)
+                    break
+                except PermissionError:
+                    if attempt == 2:
+                        pass  # handle Win32 retenido: artifacto dev, no gate
+                    else:
+                        gc.collect()
+                        time.sleep(0.05)
 
 
 def teardown_module() -> None:
