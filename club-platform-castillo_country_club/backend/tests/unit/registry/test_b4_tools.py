@@ -40,21 +40,23 @@ def _seed(repo: EventRepository) -> str:
         "tags": ["fin-de-año", "familia"],
         "created_by": "admin_001",
     }
-    ev = repo.create_event(EventCreate(**data))
-    repo.create_event(
-        EventCreate(
-            **{
-                **data,
-                "title": "Torneo de Tenis Familiar",
-                "category": "sports",
-                "date_start": "2025-12-28T09:00:00",
-                "date_end": "2025-12-28T17:00:00",
-                "location": "Canchas de Tenis",
-                "max_capacity": 100,
-                "pricing_model": "free",
-                "price_per_person": 0.0,
-                "tags": ["tenis"],
-            }
+    ev = _run(repo.create_event(EventCreate(**data)))
+    _run(
+        repo.create_event(
+            EventCreate(
+                **{
+                    **data,
+                    "title": "Torneo de Tenis Familiar",
+                    "category": "sports",
+                    "date_start": "2025-12-28T09:00:00",
+                    "date_end": "2025-12-28T17:00:00",
+                    "location": "Canchas de Tenis",
+                    "max_capacity": 100,
+                    "pricing_model": "free",
+                    "price_per_person": 0.0,
+                    "tags": ["tenis"],
+                }
+            )
         )
     )
     return ev.id

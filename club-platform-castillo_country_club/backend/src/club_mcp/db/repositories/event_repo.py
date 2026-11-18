@@ -47,7 +47,7 @@ class EventRepository:
 
     # ── Events CRUD ────────────────────────────────────────
 
-    def create_event(self, data: EventCreate) -> EventResponse:
+    async def create_event(self, data: EventCreate) -> EventResponse:
         eid = _gen_id("evt")
         now = datetime.now(timezone.utc)
         self._events[eid] = {
@@ -81,12 +81,12 @@ class EventRepository:
         }
         return self._to_event_response(eid)
 
-    def get_event(self, event_id: str) -> EventResponse | None:
+    async def get_event(self, event_id: str) -> EventResponse | None:
         if event_id not in self._events:
             return None
         return self._to_event_response(event_id)
 
-    def update_event(self, event_id: str, data: dict[str, Any]) -> EventResponse | None:
+    async def update_event(self, event_id: str, data: dict[str, Any]) -> EventResponse | None:
         if event_id not in self._events:
             return None
         rec = self._events[event_id]
@@ -96,7 +96,7 @@ class EventRepository:
         rec["updated_at"] = datetime.now(timezone.utc).isoformat()
         return self._to_event_response(event_id)
 
-    def delete_event(self, event_id: str) -> bool:
+    async def delete_event(self, event_id: str) -> bool:
         if event_id not in self._events:
             return False
         del self._events[event_id]
@@ -105,7 +105,7 @@ class EventRepository:
         self._program_items = {k: v for k, v in self._program_items.items() if v["event_id"] != event_id}
         return True
 
-    def search_events(self, params: EventSearchParams) -> list[EventBrief]:
+    async def search_events(self, params: EventSearchParams) -> list[EventBrief]:
         results: list[EventBrief] = []
         for eid in self._events:
             rec = self._events[eid]
@@ -118,7 +118,7 @@ class EventRepository:
 
     # ── RSVP Management ────────────────────────────────────
 
-    def add_rsvp(
+    async def add_rsvp(
         self,
         event_id: str,
         family_id: str,
@@ -162,7 +162,7 @@ class EventRepository:
         self._refresh_attendance(event_id)
         return self._to_rsvp_record(rsvp_id)
 
-    def update_rsvp(self, rsvp_id: str, data: dict[str, Any]) -> RSVPRecord | None:
+    async def update_rsvp(self, rsvp_id: str, data: dict[str, Any]) -> RSVPRecord | None:
         if rsvp_id not in self._rsvps:
             return None
         rec = self._rsvps[rsvp_id]
@@ -173,7 +173,7 @@ class EventRepository:
         self._refresh_attendance(rec["event_id"])
         return self._to_rsvp_record(rsvp_id)
 
-    def remove_rsvp(self, rsvp_id: str) -> bool:
+    async def remove_rsvp(self, rsvp_id: str) -> bool:
         if rsvp_id not in self._rsvps:
             return False
         event_id = self._rsvps[rsvp_id]["event_id"]
@@ -181,12 +181,12 @@ class EventRepository:
         self._refresh_attendance(event_id)
         return True
 
-    def get_rsvp(self, rsvp_id: str) -> RSVPRecord | None:
+    async def get_rsvp(self, rsvp_id: str) -> RSVPRecord | None:
         if rsvp_id not in self._rsvps:
             return None
         return self._to_rsvp_record(rsvp_id)
 
-    def list_rsvps(self, event_id: str, status: RSVPStatus | None = None) -> list[RSVPRecord]:
+    async def list_rsvps(self, event_id: str, status: RSVPStatus | None = None) -> list[RSVPRecord]:
         out: list[RSVPRecord] = []
         for rid, rec in self._rsvps.items():
             if rec["event_id"] != event_id:
@@ -196,7 +196,7 @@ class EventRepository:
             out.append(self._to_rsvp_record(rid))
         return out
 
-    def get_family_rsvp(self, event_id: str, family_id: str) -> RSVPRecord | None:
+    async def get_family_rsvp(self, event_id: str, family_id: str) -> RSVPRecord | None:
         for rid, rec in self._rsvps.items():
             if rec["event_id"] == event_id and rec["family_id"] == family_id:
                 return self._to_rsvp_record(rid)
@@ -204,7 +204,7 @@ class EventRepository:
 
     # ── Vendor Management ──────────────────────────────────
 
-    def add_vendor(
+    async def add_vendor(
         self,
         event_id: str,
         name: str,
@@ -236,7 +236,7 @@ class EventRepository:
         }
         return self._to_vendor_record(vid)
 
-    def update_vendor(self, vendor_id: str, data: dict[str, Any]) -> VendorRecord | None:
+    async def update_vendor(self, vendor_id: str, data: dict[str, Any]) -> VendorRecord | None:
         if vendor_id not in self._vendors:
             return None
         rec = self._vendors[vendor_id]
@@ -246,13 +246,13 @@ class EventRepository:
         rec["updated_at"] = datetime.now(timezone.utc).isoformat()
         return self._to_vendor_record(vendor_id)
 
-    def remove_vendor(self, vendor_id: str) -> bool:
+    async def remove_vendor(self, vendor_id: str) -> bool:
         if vendor_id not in self._vendors:
             return False
         del self._vendors[vendor_id]
         return True
 
-    def list_vendors(self, event_id: str) -> list[VendorRecord]:
+    async def list_vendors(self, event_id: str) -> list[VendorRecord]:
         return [
             self._to_vendor_record(vid)
             for vid, rec in self._vendors.items()
@@ -261,7 +261,7 @@ class EventRepository:
 
     # ── Program / Itinerary ────────────────────────────────
 
-    def add_program_item(
+    async def add_program_item(
         self,
         event_id: str,
         title: str,
@@ -290,7 +290,7 @@ class EventRepository:
         }
         return self._to_program_item(pid)
 
-    def update_program_item(self, item_id: str, data: dict[str, Any]) -> ProgramItem | None:
+    async def update_program_item(self, item_id: str, data: dict[str, Any]) -> ProgramItem | None:
         if item_id not in self._program_items:
             return None
         rec = self._program_items[item_id]
@@ -299,13 +299,13 @@ class EventRepository:
                 rec[key] = val
         return self._to_program_item(item_id)
 
-    def remove_program_item(self, item_id: str) -> bool:
+    async def remove_program_item(self, item_id: str) -> bool:
         if item_id not in self._program_items:
             return False
         del self._program_items[item_id]
         return True
 
-    def list_program(self, event_id: str) -> list[ProgramItem]:
+    async def list_program(self, event_id: str) -> list[ProgramItem]:
         items = [
             self._to_program_item(pid)
             for pid, rec in self._program_items.items()
@@ -316,7 +316,7 @@ class EventRepository:
 
     # ── Calendar ───────────────────────────────────────────
 
-    def get_calendar(
+    async def get_calendar(
         self,
         date_from: datetime,
         date_to: datetime,
@@ -355,7 +355,7 @@ class EventRepository:
 
     # ── Capacity ───────────────────────────────────────────
 
-    def get_capacity_info(self, event_id: str) -> CapacityInfo | None:
+    async def get_capacity_info(self, event_id: str) -> CapacityInfo | None:
         if event_id not in self._events:
             return None
         ev = self._events[event_id]
@@ -377,11 +377,11 @@ class EventRepository:
 
     # ── Analytics ──────────────────────────────────────────
 
-    def compute_analytics(self, event_id: str) -> EventAnalytics | None:
+    async def compute_analytics(self, event_id: str) -> EventAnalytics | None:
         if event_id not in self._events:
             return None
         ev = self._events[event_id]
-        rsvps = self.list_rsvps(event_id)
+        rsvps = await self.list_rsvps(event_id)
         total = len(rsvps)
         confirmed = sum(1 for r in rsvps if r.status == RSVPStatus.CONFIRMED)
         declined = sum(1 for r in rsvps if r.status == RSVPStatus.DECLINED)
@@ -411,7 +411,7 @@ class EventRepository:
 
     # ── Clone / Template ───────────────────────────────────
 
-    def clone_event(
+    async def clone_event(
         self,
         source_id: str,
         new_start: datetime,
@@ -450,7 +450,7 @@ class EventRepository:
 
     # ── Report ─────────────────────────────────────────────
 
-    def generate_report(
+    async def generate_report(
         self,
         date_from: datetime,
         date_to: datetime,
@@ -477,7 +477,7 @@ class EventRepository:
         for eid, rec in in_range:
             attendance += self._count_attendance(eid)
             cats[rec["category"]] += 1
-            for rsvp in self.list_rsvps(eid):
+            for rsvp in await self.list_rsvps(eid):
                 if rsvp.status == RSVPStatus.CONFIRMED:
                     revenue += rsvp.total_cost
 
@@ -521,7 +521,7 @@ class EventRepository:
             self._events[event_id]["current_attendance"] = self._count_attendance(event_id)
             self._events[event_id]["waitlist_count"] = self._count_waitlist(event_id)
 
-    def get_conflict_details(
+    async def get_conflict_details(
         self,
         date_from: datetime,
         date_to: datetime,
