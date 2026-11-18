@@ -1,9 +1,22 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.15 · Generación G20 (Ola 2.1-bis — persistencia real: vertical family) · Date: 2026-11-17
+### Version: 9.16 · Generación G21 (Ola 2.1-tris — persistencia real: vertical member_engagement) · Date: 2026-11-17
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
+
+## CHANGELOG G21 (v9.15 → v9.16)
+
+```
+OLA 2.1-TRIS — TERCER VERTICAL DE PERSISTENCIA REAL CERRADO en
+member_engagement (detalle completo en CHECKPOINT changelog G21):
+5 tablas (engagement_profiles · reactivation_campaigns ·
+loyalty_rewards · member_feedback · referrals) + MemberEngagement-
+Repository async contrato exacto (21 métodos) + alembic 0003 ·
+swap opt-in junto a family · suite persistencia 15 (3+6+6) ·
+CI runs #24/#25 VERDES @ 4b16c4b (verificado desde afuera) ·
+pytest 855→861 · ruff 1260 · mypy 733 (estables) · masters v9.16.
+```
 
 ---
 
@@ -1454,23 +1467,25 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               tabla users+UserRepository (G19)
 │   │                               · tablas families+members +
 │   │                               FamilyRepository async JSONB
-│   │                               (G20 · alembic 0001+0002)
-│   ├── db/repositories/          ← 17 repos in-memory restantes
-│   │                               → Q-PER-01 (Ola 2.1-tris; family
-│   │                               migrado · el dict users de
+│   │                               (G20) · 5 tablas engagement +
+│   │                               MemberEngagementRepository async
+│   │                               (G21 · alembic 0001+0002+0003)
+│   ├── db/repositories/          ← 16 repos in-memory restantes
+│   │                               → Q-PER-01 (family y engagement
+│   │                               migrados · el dict users de
 │   │                               Q-PER-04 ya no vive acá)
 │   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
 │   └── server.py                 ← entry point MCP (adaptador delgado)
-├── alembic/                      ← G19/G20: env.py async + versions/
+├── alembic/                      ← G19-G21: env.py async + versions/
 │                                   0001_users · 0002_families_members
-│                                   (constraints deterministas)
-├── tests/unit/                   ← 29+3+1+1 archivos · 855 tests PASSED
-│                                   (808 def + 10 parametrizados + 9
+│                                   · 0003_engagement (5 tablas)
+├── tests/unit/                   ← 29+3+1+1 archivos · 861 tests PASSED
+│                                   (808 def + 16 parametrizados + 9
 │                                   persistencia write-restart-read —
 │                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
-│                                   + Ola 2.1-bis 6)
+│                                   + Ola 2.1-bis 6 + Ola 2.1-tris 6)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1781,7 +1796,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.15 · Generación G20 (sincronizada con
-MASTER_CHECKPOINT.md v9.15 y MASTER_CHECKLIST.md v9.15)
+END OF MASTER_BASE.md v9.16 · Generación G21 (sincronizada con
+MASTER_CHECKPOINT.md v9.16 y MASTER_CHECKLIST.md v9.16)
 
 

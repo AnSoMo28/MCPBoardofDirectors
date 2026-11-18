@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.15 · Generación G20 (Ola 2.1-bis — persistencia real: vertical family) · 180 checks · ZERO tolerance
+### Version: 9.16 · Generación G21 (Ola 2.1-tris — persistencia real: vertical member_engagement) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,29 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G21 (v9.15 → v9.16)
+
+```
+OLA 2.1-TRIS CERRADA EN MEMBER_ENGAGEMENT — GATES:
+- PASO persistence extiende engagement (CI): write → restart →
+  read OK contra pgvector REAL — ahora auth+family+engagement
+  (15 tests · 3+6+6). Suite agente 42/42 sin tocar un byte del
+  in-memory (radio 0 — regla §3.2-1).
+- Evidencia del cierre (CI runs #24 VERDE @ 4b16c4b tris + #25
+  VERDE tras ff a p2c3 — verificados desde afuera): 861 passed
+  (855 + 6 engagement) · smoke B0 VERDE · ruff 1260 (=) ·
+  mypy 733 (=) · consistency 13/13. Sandbox: cifras re-medidas
+  bajo lock (861/861 · 15/15 · 42/42 — reproducible).
+- ERRATA G21 (cifras estáticas): el nombre del job backend dice
+  "pytest 846" y el paso del README decía "persistence pasa a 15
+  tests: auth + family + engagement" — el 846 del ci.yml es TEXTO
+  ESTÁTICO del job name (no imprime la suite real); la cifra viva
+  es 861 y la suite persistence YA corría 15 en #24/#25. Los
+  masters registran la cifra real, no la estática (regla §3.2-2).
+- END: masters v9.16 · Q-PER-01 → 16 repos restantes (siguiente:
+  event es sync — su propia ola; membership ya tiene su ciclo).
+```
 
 ## CHANGELOG G20 (v9.14 → v9.15)
 
@@ -1389,14 +1412,16 @@ backend/scripts/smoke_b0.py     composición+registro+   ✅ 39/39 runtime VERDE
                                 FastAPI+HTTP            G9 sandbox: 19 agentes
                                                         · 207 tools · RBAC
                                                         207/207)
-backend pytest tests/unit       unit backend            ✅ 855/855
+backend pytest tests/unit       unit backend            ✅ 861/861
                                                         (py3.12 + 3.14.4;
-                                                        808 def + 10 param
+                                                        808 def + 16 param
                                                         +19 Q-SEC +3 Ola 2.1
-                                                        +6 Ola 2.1-bis)
-backend persistence suite       write → restart →       ✅ 9/9 en CI (G20:
+                                                        +6 Ola 2.1-bis
+                                                        +6 Ola 2.1-tris)
+backend persistence suite       write → restart →       ✅ 15/15 en CI (G21:
 (write-restart-read)           read OK contra PG       pgvector/pg16 · auth
-(Ola 2.1/2.1-bis — G19/G20)    REAL del service        +family · re-runnable)
+(Ola 2.1/-bis/-tris G19-G21)   REAL del service        +family+engagement ·
+                                                       re-runnable)
 backend ruff + mypy strict      estilo/tipos backend    ✅ config en
                                                         pyproject (manual —
                                                         sin CI → Q-CI-01)
@@ -1521,6 +1546,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.15 · Generación G20 (sincronizada con
-MASTER_BASE.md v9.15 y MASTER_CHECKPOINT.md v9.15)
+END OF MASTER_CHECKLIST.md v9.16 · Generación G21 (sincronizada con
+MASTER_BASE.md v9.16 y MASTER_CHECKPOINT.md v9.16)
 

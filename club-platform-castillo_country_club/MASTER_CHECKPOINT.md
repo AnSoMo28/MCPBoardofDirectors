@@ -1,16 +1,52 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.15 · Generación G20 (Ola 2.1-bis — persistencia real: vertical family) · Date: 2026-11-17
+### Version: 9.16 · Generación G21 (Ola 2.1-tris — persistencia real: vertical member_engagement) · Date: 2026-11-17
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
 ###          G19 — Ola 2.1 absorbida (§3.8 NUEVO · Q-PER-01/02/04);
 ###          G20 — Ola 2.1-bis absorbida (§3.8-bis NUEVO · errata
-###          G19.1 · Q-PER-01 → 17 repos)
+###          G19.1 · Q-PER-01 → 17 repos);
+###          G21 — Ola 2.1-tris absorbida (§3.8-tris NUEVO ·
+###          errata G21 cifras estáticas · Q-PER-01 → 16 repos)
 
 ---
 
+
+## CHANGELOG G21 (v9.15 → v9.16)
+
+```
+OLA 2.1-TRIS — TERCER VERTICAL DE PERSISTENCIA REAL (PATH 2.1)
+CERRADO en member_engagement (4b16c4b, 1 commit — evidencia:
+ola21tris-changelog.json + OUT-APLICAR-21TRIS.txt + OUT-CIERRE-
+21TRIS.txt + CI runs #24/#25):
+
+  0015 (4b16c4b): EngagementORM 5 tablas (profiles · campaigns ·
+        rewards · feedback · referrals) + MemberEngagementRepository
+        async con contrato EXACTO del in-memory (21 métodos · ids
+        uuid4().hex[:8] idénticos · enums como String(24)) +
+        alembic 0003_engagement + suite 6 + swap OPT-IN junto a
+        family (CLUB_PERSISTENCE_URL prende el ORM; sin ella el
+        in-memory default) + CI persistence extiende engagement.
+
+  RETRY v2.1 (Windows/MINGW64): la 1ª aplicación local quedó sin
+        push; el arnés v2.1 detecta por ÁRBOL (4/4 archivos del
+        vertical, a prueba de encoding) → gates locales 6/6 +
+        42/42 → push → CI #24 VERDE → ff a p2c3 → CI #25 VERDE.
+        El árbol remoto 4b16c4b es byte a byte el validado en
+        sandbox (diff vacío contra el commit espejo 375f36b).
+
+CIFRAS: pytest 855→861 (+6 engagement) · smoke B0 VERDE · ruff
+1260 (=) · mypy 733 (=) · CI 5 jobs + persistence VERDE (runs
+#24/#25 @ 4b16c4b) · consistency 13/13 · suite persistencia 15
+(3 auth + 6 family + 6 engagement) · contrato agente 42/42.
+DEUDA VIVA: 16 repos in-memory restantes (Q-PER-01) ·
+ApprovalEngine dict (Q-PER-03) · alembic upgrade head en deploy.
+END: masters v9.16 · la siguiente vertical es event (SYNC — su
+propia ola: 36 defs sin await) o la que priorice el Chief
+Architect de los 16 restantes (member_360: compute, ola aparte).
+```
 ## CHANGELOG G20 (v9.14 → v9.15)
 
 ```
@@ -1585,6 +1621,64 @@ ApprovalEngine → Q-PER-03 (2.3) · alembic upgrade head en deploy
 
 ---
 
+### §3.8-TRIS OLA 2.1-TRIS · PERSISTENCIA REAL — VERTICAL MEMBER_ENGAGEMENT (✅ CERRADA 2026-11-17)
+
+```
+TERCER VERTICAL DE PERSISTENCIA (PATH 2.1 — NEXT-STEPS-2027 §2):
+el ciclo del socio (perfil · campañas de reactivación · premios
+de lealtad · feedback · referidos) deja de vivir en un dict en
+memoria y pasa por 5 tablas PostgreSQL, con el gate EJECUTABLE
+en CI (write → restart → read). El dominio membership que el
+master v9.15 fijó primero — event es sync, su propia ola.
+
+ARTEFACTOS (4b16c4b, 1 commit — changelog G21 arriba):
+  · db/orm/engagement_orm.py  5 tablas espejo 1:1 de
+        models/member_engagement; listas flexibles a JSONB
+        (mismo criterio que families §3.8-bis); enums como
+        String(24) — la validación vive en Pydantic del borde
+  · db/orm/repositories/engagement_repo.py  MemberEngagement-
+        Repository async: contrato EXACTO del in-memory (21
+        métodos · None/[] sin excepciones custom · los 42 tests
+        del agente sin tocar; regla §3.2-1 radio mínimo)
+  · alembic 0003_engagement  5 tablas · pk deterministas del
+        naming_convention (diffs futuros sin ruido)
+  · bootstrap swap OPT-IN    CLUB_PERSISTENCE_URL prende el
+        repo ORM (junto a family); sin ella el in-memory
+        default (dev sin fricción, cero flag day)
+  · CI persistence           paso extiende a engagement (15
+        tests: 3 auth + 6 family + 6 engagement)
+  · ola21tris-changelog.json evidencia machine-readable
+
+GATES AL CIERRE (CI run #24 VERDE @ 4b16c4b tris · #25 VERDE
+tras el ff a p2c3 — verificados desde afuera; sandbox espejo
+bajo uv.lock: 861/861 · 15/15 · 42/42):
+  pytest 861/861 (855 + 6 engagement) exit 0
+  persistence write→restart→read OK contra pgvector REAL exit 0
+  smoke B0 VERDE (19 · 207 · RBAC 207/207 · HITL) exit 0
+  ruff 1260 (0 deuda en módulos nuevos — = baseline v9.15) ·
+  mypy 733 (= ratchet — deuda 0 en módulos nuevos) ·
+  consistency 13/13
+
+LA SAGA DEL RETRY (regla §8 en la práctica): la 1ª aplicación
+Windows quedó aplicada SIN push (4b16c4b local); el arnés v1 la
+detectaba grepeando el SUBJECT del commit y el encoding MINGW64
+lo rompía. v2.1: sonda por ÁRBOL (4/4 archivos del vertical
+existen o no — objetivo, a prueba de encodings) + uv sync
+--frozen --extra dev en ambos modos (sin el extra, uv poda
+aiosqlite y la suite muere en el fixture — lección run #14).
+Cierre verificado desde afuera: refs remotas + árbol byte a
+byte (diff vacío vs espejo sandbox 375f36b) + runs #24/#25.
+
+QUEDÓ FUERA (by design): 16 repos in-memory restantes → Ola
+2.1-cuarta y siguientes (event es SYNC — 36 defs sin await,
+su propia ola con su parche) · member_360 sync read-heavy
+(19 de 22 métodos computan — mecánica compute, ola aparte) ·
+ApprovalEngine → Q-PER-03 (2.3) · alembic upgrade head en
+deploy (las tablas las crea create_all idempotente mientras).
+```
+
+---
+
 ## §4 — QUALITY SCORECARD (fórmula explícita — hallazgo #45)
 
 ```
@@ -2073,12 +2167,13 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (vertical auth CERRADO en Ola 2.1 — §3.8) ═══
-  Q-PER-01  17 repositorios in-memory restantes (family migrado
-            en Ola 2.1-bis §3.8-bis; 18 - family) → SQLAlchemy async
-            via db/orm/ (mecánica §3.8/§3.8-bis probada: ORM +
-            alembic + repo + gate). Ola 2.1-tris: event/membership
-            primero (event_repo es sync — su propia ola).
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris CERRADOS) ═══
+  Q-PER-01  16 repositorios in-memory restantes (family en
+            Ola 2.1-bis §3.8-bis · engagement en Ola 2.1-tris
+            §3.8-tris; 18 - 2) → SQLAlchemy async via db/orm/
+            (mecánica §3.8/-bis/-tris probada: ORM + alembic +
+            repo + gate). Siguiente: event (SYNC — su propia
+            ola) o prioridad del Chief Architect de los 16.
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
@@ -2146,6 +2241,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.15 · Generación G20 (sincronizada con
-MASTER_BASE.md v9.15 y MASTER_CHECKLIST.md v9.15)
+END OF MASTER_CHECKPOINT.md v9.16 · Generación G21 (sincronizada con
+MASTER_BASE.md v9.16 y MASTER_CHECKLIST.md v9.16)
 
