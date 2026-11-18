@@ -50,20 +50,24 @@ from club_mcp.db.orm.event_orm import (
     EventProgramItemORM,
     EventRSVPORM,
     EventVendorORM,
+    utcnow,
 )
-from club_mcp.db.orm.event_orm import utcnow
 from club_mcp.db.orm.session import session_scope
 from club_mcp.models.event import (
     CalendarDay,
     CapacityInfo,
     EventAnalytics,
     EventBrief,
+    EventCategory,
     EventCreate,
+    EventPricingModel,
     EventReport,
     EventResponse,
     EventSearchParams,
     EventStatus,
+    EventType,
     ProgramItem,
+    RecurrencePattern,
     RSVPRecord,
     RSVPStatus,
     VendorContractStatus,
@@ -86,13 +90,15 @@ def _gen_id(prefix: str) -> str:
 
 
 def _event_from_orm(r: EventORM) -> EventResponse:
+    # read-path: reconstruye los enums que el write-path persistió como
+    # .value/str (mismo idioma que engagement_repo — roundtrip idéntico).
     return EventResponse(
         id=r.id,
         title=r.title,
         description=r.description,
-        category=r.category,
-        event_type=r.event_type,
-        status=r.status,
+        category=EventCategory(r.category),
+        event_type=EventType(r.event_type),
+        status=EventStatus(r.status),
         date_start=r.date_start,
         date_end=r.date_end,
         location=r.location,
@@ -101,12 +107,12 @@ def _event_from_orm(r: EventORM) -> EventResponse:
         max_capacity=r.max_capacity,
         current_attendance=r.current_attendance,
         waitlist_count=r.waitlist_count,
-        pricing_model=r.pricing_model,
+        pricing_model=EventPricingModel(r.pricing_model),
         price_per_person=r.price_per_person,
         is_members_only=r.is_members_only,
         allow_guests=r.allow_guests,
         max_guests_per_family=r.max_guests_per_family,
-        recurrence=r.recurrence,
+        recurrence=RecurrencePattern(r.recurrence),
         requires_rsvp=r.requires_rsvp,
         dress_code=r.dress_code,
         notes=r.notes,
@@ -124,14 +130,14 @@ def _brief_from_orm(r: EventORM) -> EventBrief:
     return EventBrief(
         id=r.id,
         title=r.title,
-        category=r.category,
-        status=r.status,
+        category=EventCategory(r.category),
+        status=EventStatus(r.status),
         date_start=r.date_start,
         date_end=r.date_end,
         location=r.location,
         current_attendance=r.current_attendance,
         max_capacity=r.max_capacity,
-        pricing_model=r.pricing_model,
+        pricing_model=EventPricingModel(r.pricing_model),
     )
 
 
@@ -142,7 +148,7 @@ def _rsvp_from_orm(r: EventRSVPORM) -> RSVPRecord:
         family_id=r.family_id,
         family_name=r.family_name,
         member_ids=r.member_ids,
-        status=r.status,
+        status=RSVPStatus(r.status),
         guests_count=r.guests_count,
         dietary_restrictions=r.dietary_restrictions,
         notes=r.notes,
@@ -163,7 +169,7 @@ def _vendor_from_orm(r: EventVendorORM) -> VendorRecord:
         contact_email=r.contact_email,
         quoted_cost=r.quoted_cost,
         final_cost=r.final_cost,
-        contract_status=r.contract_status,
+        contract_status=VendorContractStatus(r.contract_status),
         notes=r.notes,
         created_at=r.created_at,
         updated_at=r.updated_at,
@@ -843,7 +849,11 @@ class EventRepository:
                     if overlap_start >= overlap_end:
                         continue
 
-                    pair_key = tuple(sorted([rec_a.id, rec_b.id]))
+                    pair_key: tuple[str, str] = (
+                        (rec_a.id, rec_b.id)
+                        if rec_a.id <= rec_b.id
+                        else (rec_b.id, rec_a.id)
+                    )
                     if pair_key in seen:
                         continue
                     seen.add(pair_key)
