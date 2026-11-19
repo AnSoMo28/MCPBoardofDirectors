@@ -1,9 +1,23 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.17 · Generación G22 (Ola 2.2 — persistencia real: vertical event) · Date: 2026-11-18
+### Version: 9.18 · Generación G23 (Ola 2.1-quinqua + Ola 2.1-sexta — persistencia real: vertical compliance + guest_management) · Date: 2026-11-20
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
+
+## CHANGELOG G23 (v9.17 → v9.18)
+OLA 2.1-QUINQUA + OLA 2.1-SEXTA — QUINTO Y SEXTO VERTICAL DE
+PERSISTENCIA REAL CERRADOS (compliance + guest_management —
+detalle completo en CHECKPOINT §3.8-QUINQUE y §3.8-SEXTA):
+compliance: 3 tablas + ComplianceRepository async contrato
+exacto + MIGRACIÓN ASYNC del dominio (8 awaits agente · 14
+async in-memory) + alembic 0005 · CI run #32 VERDE @ e9a77dd
+(5/5 jobs · persistencia 27/27). guest_management: 4 tablas +
+GuestManagementRepository async 18 métodos contrato exacto
+(async-FIRST drop-in — 0 cirugía) + alembic 0006 · CI run #33
+ROJO (única falla: perf test PRE-EXISTENTE de frontend — regla
+§8 → fix 0023) → run #34 VERDE @ fdb2054 · persistencia 33/33
+(3+6+6+6+6+6) · pytest 867→879 · masters v9.18.
 
 ## CHANGELOG G22 (v9.16 → v9.17)
 
@@ -1486,24 +1500,26 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               (G20) · 5 tablas engagement +
 │   │                               MemberEngagementRepository async
 │   │                               (G21 · alembic 0001+0002+0003)
-│   ├── db/repositories/          ← 15 repos in-memory restantes
-│   │                               → Q-PER-01 (family, engagement
-│   │                               y event migrados · users de
-│   │                               Q-PER-04 ya no vive acá)
-│   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
+│   ├── db/repositories/          ← 13 repos in-memory restantes
+│   │                               → Q-PER-01 (family, engagement,
+│   │                               event, compliance y guest migrados
+│   │                               · users de Q-PER-04 ya no vive acá)│   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
 │   └── server.py                 ← entry point MCP (adaptador delgado)
-├── alembic/                      ← G19-G21: env.py async + versions/
+├── alembic/                      ← G19-G23: env.py async + versions/
 │                                   0001_users · 0002_families_members
 │                                   · 0003_engagement (5 tablas)
 │                                   · 0004_event (4 tablas)
-├── tests/unit/                   ← 29+3+1+1+1 archivos · 867 tests PASSED
+│                                   · 0005_compliance (3 tablas)
+│                                   · 0006_guest_management (4 tablas)
+├── tests/unit/                   ← 29+3+1+1+1+1+1 archivos · 879 tests PASSED
 │                                   (808 def + 16 parametrizados + 9
 │                                   persistencia write-restart-read —
 │                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
 │                                   + Ola 2.1-bis 6 + Ola 2.1-tris 6
-│                                   + Ola 2.2 event 6)
+│                                   + Ola 2.2 event 6 + Ola 2.1-quinqua 6
+│                                   + Ola 2.1-sexta guest 6)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1814,7 +1830,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.17 · Generación G22 (sincronizada con
-MASTER_CHECKPOINT.md v9.17 y MASTER_CHECKLIST.md v9.17)
+END OF MASTER_BASE.md v9.18 · Generación G23 (sincronizada con
+MASTER_CHECKPOINT.md v9.18 y MASTER_CHECKLIST.md v9.18)
 
 

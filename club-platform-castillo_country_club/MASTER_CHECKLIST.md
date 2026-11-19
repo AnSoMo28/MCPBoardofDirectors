@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.17 · Generación G22 (Ola 2.2 — persistencia real: vertical event) · 180 checks · ZERO tolerance
+### Version: 9.18 · Generación G23 (Ola 2.1-quinqua + Ola 2.1-sexta — persistencia real: vertical compliance + guest_management) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,31 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G23 (v9.17 → v9.18)
+OLA 2.1-QUINQUA + OLA 2.1-SEXTA CERRADAS — GATES:
+
+PASO persistence extiende compliance (run #32) y guest (runs
+#33/#34): write → restart → read OK — ahora auth+family+
+engagement+event+compliance+guest (33 tests · 3+6+6+6+6+6).
+Evidencia quinqua: CI run #32 VERDE @ e9a77dd (5/5 jobs,
+verificado vía API) · persistencia 27/27 · contrato agente
+compliance 28/28 (in-memory migrado async).
+Evidencia sexta: CI run #33 ROJO — regla §8 (link del run +
+diagnóstico read-only): ÚNICA falla el perf test PRE-EXISTENTE
+de frontend computeVIPScore 'should complete within 1ms'
+(1000 iter · presupuesto 5ms midió 5.002872ms — 0.057% —
+ruido del runner compartido; el 0022 NO tocó frontend; el
+mismo estado dio VERDE en run #32) → fix 0023 @ fdb2054
+(presupuesto 5ms→50ms ~10× margen · hermano computeTemperature
+INTACTO · baseline vitest SIN tocar — se arregla el flake, no
+se sube el piso) → CI run #34 VERDE 5/5 (vitest debt 0 ·
+guardian+lint reanudan VERDE).
+Cifras: pytest 867→879 · persistencia 21→33 · repos 15→13 ·
+ruff/mypy sin re-baseline (≤ baseline en #32/#34) ·
+consistency 13/13.
+END: masters v9.18 · Q-PER-01 → 13 repos restantes ·
+siguiente vertical: satisfaction (candidato limpio).
 
 ## CHANGELOG G22 (v9.16 → v9.17)
 
@@ -1569,6 +1594,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.17 · Generación G22 (sincronizada con
-MASTER_BASE.md v9.17 y MASTER_CHECKPOINT.md v9.17)
+END OF MASTER_CHECKLIST.md v9.18 · Generación G23 (sincronizada con
+MASTER_BASE.md v9.18 y MASTER_CHECKPOINT.md v9.18)
 

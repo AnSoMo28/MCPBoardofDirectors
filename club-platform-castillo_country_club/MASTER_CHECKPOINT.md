@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.17 · Generación G22 (Ola 2.2 — persistencia real: vertical event) · Date: 2026-11-18
+### Version: 9.18 · Generación G23 (Ola 2.1-quinqua + Ola 2.1-sexta — persistencia real: vertical compliance + guest_management) · Date: 2026-11-20
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -12,9 +12,67 @@
 ###          errata G21 cifras estáticas · Q-PER-01 → 16 repos);
 ###          G22 — Ola 2.2 absorbida (§3.8-CUATRO NUEVO ·
 ###          re-baseline mypy 735→733 same-PR · Q-PER-01 → 15 repos)
+###          G23 — Ola 2.1-quinqua + Ola 2.1-sexta absorbidas
+###          (§3.8-QUINQUE + §3.8-SEXTA NUEVOS · Q-PER-01 → 13
+###          repos · fix 0023 runs #33→#34)
 
 ---
 
+
+## CHANGELOG G23 (v9.17 → v9.18)
+OLA 2.1-QUINQUA + OLA 2.1-SEXTA — QUINTO Y SEXTO VERTICAL DE
+PERSISTENCIA REAL (PATH 2.2 · quinto y sexto repo de los 15
+restantes) CERRADOS (e9a77dd → 67c8f74 → fdb2054 — evidencia:
+ola21quinqua-changelog.json + ola21sexta-changelog.json + OUTs
+de los APLICAR + CI runs #32/#33/#34):
+
+0021 (e9a77dd) QUINQUA — vertical compliance: 3 tablas
+(compliance_audits · compliance_documents ·
+compliance_alerts) + ComplianceRepository async
+contrato EXACTO (14 métodos · None/[] sin excepciones ·
+ids aud_/doc_/alrt_/chk_) + MIGRACIÓN ASYNC del dominio
+(el in-memory era sync 14/14 y el agente lo llamaba sin
+await — 8 awaits agente · 14 async in-memory, cirugía
+homologada 0017 en escala menor) + alembic 0005 + suite
+6. CI run #32 VERDE 5/5 (persistencia 27/27 = 3+6+6+6+6
+· contrato agente 28/28 · suite 873 · ruff 1277≤1282 ·
+mypy 731≤733).
+
+0022 (67c8f74) SEXTA — vertical guest_management: 4 tablas
+(guests · private_events · trial_memberships ·
+guest_monthly_snapshots) + GuestManagementRepository
+async contrato EXACTO (18 métodos · None/[] sin
+excepciones · ids uuid4().hex[:8] SIN prefijo) —
+async-FIRST: el agente YA awaited en 34 call sites,
+drop-in como engagement §3.8-tris (0 cirugía async, la
+primera vertical drop-in total) + visit_count REAL +
+snapshots a tabla (criterio 0011: dataset UNA fuente) +
+alembic 0006 + suite 6 + swap OPT-IN 6º repo. age_group
+perfilado y CAYÓ: su agente toca privados del repo en
+~6 sitios — refactor de contrato ANTES de migrar (su
+propia ola).
+
+0023 (fdb2054) FIX CI run #33: el run arrancó ROJO solo en el
+vitest ratchet por el perf test PRE-EXISTENTE de
+frontend guestIntelligence.test.ts computeVIPScore
+'should complete within 1ms' (1000 iter · presupuesto
+5ms midió 5.002872ms — 0.057% sobre el corte — ruido
+del runner compartido; el 0022 NO tocó frontend; el
+mismo estado dio VERDE en run #32). Fix: presupuesto
+5ms→50ms (~10× margen · guard anti-blowup conservado) ·
+hermano computeTemperature INTACTO · baseline vitest
+SIN tocar. CI run #34 VERDE 5/5.
+
+CIFRAS (CI runs #32 y #34 VERDES — verificados vía API): pytest
+867→879 (+6 compliance +6 guest) · persistencia 21→33 (3+6+6+6
++6+6) · contrato agente guest 44/44 drop-in SIN TOCAR UN BYTE ·
+contrato agente compliance 28/28 · smoke B0 VERDE · ruff/mypy ≤
+baseline (sin re-baseline) · consistency 13/13. DEUDA VIVA: 13
+repos in-memory restantes (Q-PER-01) · ApprovalEngine dict
+(Q-PER-03) · alembic upgrade head en deploy. END: masters v9.18
+· Q-PER-01: 13 repos — siguiente vertical: satisfaction (10
+async · 13 calls — candidato limpio) o prioridad del Chief
+Architect de los 13.
 
 ## CHANGELOG G22 (v9.16 → v9.17)
 
@@ -1800,6 +1858,136 @@ crea create_all idempotente mientras).
 
 ---
 
+### §3.8-QUINQUE OLA 2.1-QUINQUA · PERSISTENCIA REAL — VERTICAL COMPLIANCE (✅ CERRADA 2026-11-18)
+QUINTO VERTICAL DE PERSISTENCIA (PATH 2.2 · quinto repo de los
+15 restantes): la capa de compliance del club (audits ·
+documents · alerts) deja de vivir en dicts en memoria y pasa
+por 3 tablas PostgreSQL, con el gate EJECUTABLE en CI (write →
+restart → read).
+
+ARTEFACTOS (0021 @ e9a77dd — changelog quinqua):
+· db/orm/compliance_orm.py 3 tablas espejo 1:1 de
+models/compliance (checks del
+audit a JSONB — criterio
+families §3.8-bis)
+· db/orm/repositories/
+compliance_repo.py ComplianceRepository async —
+contrato EXACTO del in-memory
+(14 métodos · None/[] sin
+excepciones · ids aud_/doc_/
+alrt_/chk_) · semántica literal:
+update_audit ignora None ·
+add_check recalcula score_pct
+round(...,1) · list_audits DESC
+· resolve_alert sin updated_at
+· MIGRACIÓN ASYNC del dominio: el in-memory compliance era
+sync (14/14) y el agente lo llamaba SIN await (8 call
+sites) — 8 awaits agente · 14 async in-memory (cirugía
+homologada 0017, escala menor) · tests seed async +
+pytest_asyncio fixtures
+· alembic 0005_compliance 3 tablas · pk deterministas ·
+ix created_at/area/status
+· bootstrap swap OPT-IN CLUB_PERSISTENCE_URL prende el
+5º repo (auth + family +
+engagement + event + compliance)
+· CI persistence paso extiende a compliance (27
+tests: 3+6+6+6+6)
+· ola21quinqua-changelog.json evidencia machine-readable
+
+GATES AL CIERRE (CI run #32 VERDE @ e9a77dd — 5/5 jobs,
+verificado vía API desde afuera; sandbox espejo bajo uv.lock):
+pytest 873/873 · persistencia 27/27 + back-to-back · contrato
+agente compliance 28/28 · ruff 1277 ≤ 1282 · mypy 731 ≤ 733
+· swap por ejecución ambos modos · consistency 13/13.
+
+---
+
+### §3.8-SEXTA OLA 2.1-SEXTA · PERSISTENCIA REAL — VERTICAL GUEST_MANAGEMENT (✅ CERRADA 2026-11-19)
+
+SEXTO VERTICAL DE PERSISTENCIA (PATH 2.2 · sexto repo — el
+mejor pattern-fit de la ronda: async-FIRST 18/18 métodos ya
+async, el agente YA awaited en 34 call sites — drop-in como
+engagement §3.8-tris, 0 cirugía async; y contrato limpio: el
+agente NO toca privados del repo, verificado por grep en los 34
+call sites): guests, eventos privados, membresías trial y
+snapshots mensuales dejan de vivir en dicts y pasan por 4
+tablas PostgreSQL con el gate EJECUTABLE en CI.
+
+ARTEFACTOS (0022 @ 67c8f74 — changelog sexta):
+· db/orm/guest_orm.py 4 tablas espejo 1:1 de
+models/guest_management (guests
+· private_events · trial_
+memberships · guest_monthly_
+snapshots; privileges a JSONB —
+criterio families §3.8-bis)
+· db/orm/repositories/
+guest_repo.py GuestManagementRepository async
+— contrato EXACTO del in-memory
+(18 métodos · None/[] sin
+excepciones · ids uuid4().hex[:8]
+SIN prefijo, igual que el
+in-memory)
+· visit_count REAL el in-memory lo guardaba como
+anexo privado visit_count que
+SOLO el seed demo producía (el
+Guest de Pydantic lo descartaba);
+la métrica de recurrencia
+(funnel/health/proposals)
+sobrevive al restart (default 1
+= mismo comportamiento observable)
+· guest_monthly_snapshots tabla para el dataset demo de
+tendencias (criterio 0011:
+dataset UNA fuente) — el
+in-memory lo tenía como constante
+de seed; analytics/forecast/
+health leen de la TABLA
+· alembic 0006_guest 4 tablas · pk deterministas ·
+management ix family_id/status/visit_date/
+referred_by
+· bootstrap swap OPT-IN CLUB_PERSISTENCE_URL prende el
+6º repo (auth + family +
+engagement + event + compliance
++ guest)
+· CI persistence paso extiende a guest (33 tests:
+3+6+6+6+6+6)
+· ola21sexta-changelog.json evidencia machine-readable
+
+GATES AL CIERRE (CI run #34 VERDE @ fdb2054 — 5/5 jobs,
+verificado vía API desde afuera; sandbox espejo bajo uv.lock):
+pytest 879/879 (873 + 6 guest) · persistencia 33/33 +
+back-to-back · contrato agente guest 44/44 drop-in SIN TOCAR
+UN BYTE (la primera vertical drop-in total desde engagement) ·
+smoke B0 VERDE · ruff/mypy ≤ baseline · consistency 13/13.
+
+LA SAGA DEL FRENO (regla §8 — el gate frenó en el punto exacto):
+corrida 1 (CI run #33 ROJO): backend VERDE (incl. persistence
+guest) pero el job frontend cayó en el vitest ratchet
+por el perf test PRE-EXISTENTE guestIntelligence.test.ts
+computeVIPScore 'should complete within 1ms' (1000 iter
+· presupuesto 5ms midió 5.002872ms — 0.057% sobre el
+corte — ruido del runner compartido; el 0022 NO tocó
+frontend; el mismo estado dio VERDE en run #32). FIX
+0023 @ fdb2054: presupuesto 5ms→50ms (~10× margen ·
+guard anti-blowup conservado: O(n²) n=50 ⇒ ≥125ms ⇒
+ROJO) · hermano computeTemperature INTACTO · baseline
+vitest SIN tocar (se arregla el flake, no se sube el
+piso). Run #34 VERDE 5/5.
+LECCIÓN estructural: perf budgets en runners compartidos
+necesitan margen (~10×) — presupuestos al filo flakesean
+por ruido del host. (Nota: el label 'pytest 846' del job
+backend quedó stale — cosmético; el gate cuenta el real.)
+
+QUEDÓ FUERA (by design): 13 repos in-memory restantes →
+siguientes verticales (mecánica §3.8 probada: ORM + alembic +
+repo + gate) · age_group CAYÓ (agente acoplado a privados del
+repo en ~6 sitios — refactor de contrato ANTES de migrar, ola
+aparte) · wellness y member_360 sync read-heavy compute (ola
+aparte) · satisfaction siguiente candidato limpio (10 async ·
+13 calls) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
+upgrade head en deploy.
+
+---
+
 ## §4 — QUALITY SCORECARD (fórmula explícita — hallazgo #45)
 
 ```
@@ -2288,15 +2476,20 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO CERRADOS) ═══
-  Q-PER-01  15 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA CERRADOS) ═══
+  Q-PER-01  13 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
-            en Ola 2.2 §3.8-CUATRO; 18 - 3) → SQLAlchemy async
-            via db/orm/ (mecánica §3.8 probada: ORM + alembic +
-            repo + gate — ya con lección run #28: read-path
-            re-construye enums). Siguiente: prioridad del Chief
-            Architect de los 15 (member_360: compute, ola
-            aparte; las simples siguen la mecánica).
+            en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
+            quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
+            §3.8-SEXTA; 18 - 5) → SQLAlchemy async via db/orm/
+            (mecánica §3.8 probada: ORM + alembic + repo + gate
+            — ya con lección run #28: read-path re-construye
+            enums). Siguiente: satisfaction (perfilado: 10
+            async · 13 calls — candidato limpio) o prioridad
+            del Chief Architect de los 13 (age_group CAYÓ:
+            agente acoplado a privados — refactor antes;
+            member_360: compute, ola aparte; las simples
+            siguen la mecánica).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
@@ -2364,6 +2557,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.17 · Generación G22 (sincronizada con
-MASTER_BASE.md v9.17 y MASTER_CHECKLIST.md v9.17)
+END OF MASTER_CHECKPOINT.md v9.18 · Generación G23 (sincronizada con
+MASTER_BASE.md v9.18 y MASTER_CHECKLIST.md v9.18)
 
