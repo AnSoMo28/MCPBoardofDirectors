@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.22 · Generación G27 (Ola 2.1-décima — persistencia real: vertical executive_dashboard) · 180 checks · ZERO tolerance
+### Version: 9.23 · Generación G28 (Ola 2.1-undécima — persistencia real: vertical proactive_recommendation) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,35 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G28 (v9.22 → v9.23)
+OLA 2.1-UNDECIMA CERRADA — GATES:
+
+PASO persistence extiende proactive_recommendation (run
+#46): write → restart → read OK — ahora auth+family+
+engagement+event+compliance+guest+satisfaction+
+communication+cultural_social+executive_dashboard+
+proactive_recommendation (58 tests ·
+3+6+6+6+6+6+6+7+4+4+4). Evidencia: CI run #46 VERDE @
+e09698b (5/5 jobs · a la PRIMERA, sin saga §8) ·
+persistencia 58/58 · AST contrato 23/23 idéntico (sexta
+vertical drop-in total — 0 cirugía, 0 tests del agente
+ajustados · 17 call sites ya awaited · 0 privados · 0
+dependencias). Lección run #39 INSTITUCIONALIZADA:
+ruff/mypy del vertical verificados en sandbox bajo el
+lock del CI (uv sync --frozen) ANTES del push — ruff
+vertical 0 (1 isort autofixed) · mypy vertical 0 (38
+errores → 0 en raíz) · ruff global 1256 ≤ 1282 sin
+re-baseline · mypy global 704 ≤ 733 BAJA 29 (el repo ORM
+tipado reemplaza deuda del in-memory en el mismo
+dominio — primera vertical que BAJA el global). Cifras:
+pytest 900→904 · persistencia 54→58 · repos 9→8 ·
+consistency 13/13.
+END: masters v9.23 · Q-PER-01 → 8 repos restantes ·
+siguiente vertical: facility_management (repos 8 —
+perfilarlo contra el árbol; si arrastra índices/seed,
+documentación aparte) o el refactor age_group antes de
+su vertical (§5.3).
 
 ## CHANGELOG G27 (v9.21 → v9.22)
 OLA 2.1-DÉCIMA CERRADA — GATES:
@@ -1675,6 +1704,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.22 · Generación G27 (sincronizada con
-MASTER_BASE.md v9.22 y MASTER_CHECKPOINT.md v9.22)
-
+END OF MASTER_CHECKLIST.md v9.23 · Generación G28 (sincronizada con
+MASTER_BASE.md v9.23 y MASTER_CHECKPOINT.md v9.23)

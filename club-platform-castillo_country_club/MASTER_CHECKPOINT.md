@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.22 · Generación G27 (Ola 2.1-décima — persistencia real: vertical executive_dashboard) · Date: 2026-11-20
+### Version: 9.23 · Generación G28 (Ola 2.1-undécima — persistencia real: vertical proactive_recommendation) · Date: 2026-11-20
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -31,12 +31,48 @@
 ###          (§3.8-DÉCIMA NUEVO · Q-PER-01 → 9
 ###          repos · run #44 @ e0c6960 VERDE a
 ###          la primera — tercera generación
+###          consecutiva sin saga §8);
+###          G28 — Ola 2.1-undécima absorbida
+###          (§3.8-UNDECIMA NUEVO · Q-PER-01 → 8
+###          repos · run #46 @ e09698b VERDE a
+###          la primera — cuarta generación
 ###          consecutiva sin saga §8)
 
 ---
 
 
 
+
+## CHANGELOG G28 (v9.22 → v9.23)
+OLA 2.1-UNDECIMA — UNDÉCIMO VERTICAL DE PERSISTENCIA REAL (PATH
+2.2 · undécimo repo de los 11 restantes) CERRADO (e09698b —
+evidencia: OUT del APLICAR-VERTICAL-UNDECIMA + CI run #46 VERDE a
+la PRIMERA, sin saga §8): 8 tablas +
+ProactiveRecommendationRepository async contrato EXACTO (23
+métodos · None/[] sin excepciones custom · async-FIRST drop-in,
+sexta vertical drop-in total — el agente YA awaited en 17 call
+sites · 0 privados · 0 dependencias de módulo) + alembic 0011 +
+suite 4 + swap OPT-IN 11º repo · persistencia 58/58
+(3+6+6+6+6+6+6+7+4+4+4) · AST contrato 23/23 idéntico · pytest
+900→904 · masters v9.23. SEMÁNTICAS LITERALES DEL IN-MEMORY
+preservadas: sort por score DESC tras filtros · status
+"proposed" LITERAL del create_* · size=len(family_ids) DERIVADO
+al crear · update_* = record.update con whitelist. MYPY GLOBAL
+704 ≤ 733 BAJA 29 — el repo ORM tipado reemplaza deuda del
+in-memory en el mismo dominio (primera vertical que BAJA el
+global en vez de sumar).
+
+QUEDÓ FUERA (by design): 8 repos in-memory restantes →
+siguientes verticales (mecánica §3.8 probada) · age_group
+CAYÓ (agente acoplado a privados ~6 sitios — refactor de
+contrato ANTES, ola aparte) · document_intelligence (RAG
+lazy — ola aparte por dependencia) · sports_recreation
+(~16 privados — refactor primero) · finance (17m sync —
+cirugía async como compliance) · wellness/member_360/
+ml_intelligence (compute read-heavy — olas aparte) ·
+facility_management (perfilado en la undécima: candidato
+siguiente) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
+upgrade head en deploy.
 
 ## CHANGELOG G27 (v9.21 → v9.22)
 OLA 2.1-DÉCIMA — DÉCIMO VERTICAL DE PERSISTENCIA REAL (PATH
@@ -2221,6 +2257,88 @@ wellness y member_360 sync read-heavy compute (ola
 aparte) · ApprovalEngine → Q-PER-03 (Ola 2.3) ·
 alembic upgrade head en deploy.
 
+### §3.8-UNDECIMA OLA 2.1-UNDECIMA · PERSISTENCIA REAL — VERTICAL PROACTIVE_RECOMMENDATION (✅ CERRADA 2026-11-20)
+
+PERFIL PREVIO (candidato limpio perfilado contra el árbol
+REAL en la sesión de la undécima — de los 9 candidatos,
+proactive_recommendation era el único async-FIRST total:
+23/23 métodos async · 0 privados tocados por el agente ·
+0 dependencias de módulo: ni RAG lazy, ni numpy/sklearn,
+ni seed): sexta vertical drop-in total — 17 call sites YA
+awaited, 48 tests del agente intactos. Contrato limpio:
+el agente NO toca privados del repo (grep: 0 self.repo._*).
+
+0035 (e09698b) — vertical proactive_recommendation: 8 tablas
+(proactive_recommendations · predictions · conflicts ·
+suggestions · drafts · pricing · clusters · insights) espejo
+1:1 de models/proactive_recommendation +
+ProactiveRecommendationRepository async contrato EXACTO del
+in-memory (23 métodos · None/[] sin excepciones custom · AST
+contrato 23/23 idéntico: nombres + kind + args + defaults) +
+tags/factors/shared_resources/family_ids/shared_interests/
+key_achievements/areas_for_improvement/recommendations/
+personalization_data/top_activities a JSONB (criterio
+families §3.8-bis · enums como .value String(32),
+reconstrucción al leer — lección run #28) + MIGRACIÓN NONE
+(sexta vertical drop-in total) + alembic
+0011_proactive_recommendation (8 tablas · SIN índices:
+criterio communication §3.8-OCTAVA · SIN seed: los 8 dicts
+nacen vacíos) + swap OPT-IN 11º repo (bootstrap + db/orm/
+__init__ + CI persistence job) + suite 4 (write-restart-
+read recommendation/prediction con tags/factors JSONB ·
+suggestion/conflict/draft/cluster/pricing/insight con
+enums roundtrip + personalization_data/top_activities JSONB ·
+update dict parcial + clave desconocida ignorada · sort por
+score · filtros por igualdad · size derivado · status
+"proposed" literal · contrato vacío None/[]).
+
+SEMÁNTICAS LITERALES DEL IN-MEMORY PRESERVADAS: sort por
+score DESC tras filtros (list_recommendations) · status
+"proposed" LITERAL del create_* en suggestions/pricing/
+insights (el Create schema NO trae status — bug del ORM
+detectado por la suite y corregido en raíz) · size=len
+(family_ids) DERIVADO al crear + avg_engagement 0.0 ·
+update_* = record.update con whitelist _UPDATABLE +
+updated_at=now · clave desconocida ignorada (Pydantic la
+descartaba igual).
+
+LECCIÓN RUN #39 INSTITUCIONALIZADA (aplicada ANTES del
+push — cuarta generación consecutiva VERDE a la primera):
+ruff vertical 0 deuda (1 isort autofixed en sandbox) ·
+mypy vertical 0 (38 errores → 0 en raíz: 9 reconstructores
+de enum en _from_orm + records dict[str, Any] + 3 firmas
+updates parametrizadas) · ruff global 1256 ≤ 1282 · mypy
+global 704 ≤ 733 — BAJA 29: el repo ORM tipado reemplaza
+deuda del in-memory en el mismo dominio (primera vertical
+que BAJA el global) · todo bajo el lock del CI (uv sync
+--frozen --extra dev) · suite 4/4 re-ejecutada · AST
+contrato verificado dos veces (antes y después de los fixes
+mypy).
+
+GATES AL CIERRE (CI run #46 VERDE @ e09698b — 5/5 jobs,
+sin saga §8; sandbox espejo bajo lock): persistencia
+58/58 (3 auth + 6 family + 6 engagement + 6 event + 6
+compliance + 6 guest + 6 satisfaction + 7 communication
++ 4 cultural_social + 4 executive_dashboard + 4
+proactive_recommendation) + contrato agente
+proactive_recommendation drop-in SIN TOCAR UN BYTE (sexta
+vertical drop-in total — 48 tests del agente intactos) ·
+suite 900→904 · smoke B0 VERDE (19 agentes · 207 tools ·
+RBAC 207/207) · ruff 1256 ≤ 1282 · mypy global 704 ≤ 733
+BAJA 29 · consistency 13/13.
+
+QUEDÓ FUERA (by design): 8 repos in-memory restantes →
+siguientes verticales (mecánica §3.8 probada) · age_group
+CAYÓ (agente acoplado a privados ~6 sitios — refactor de
+contrato ANTES, ola aparte) · document_intelligence (RAG
+lazy — ola aparte por dependencia) · sports_recreation
+(~16 privados — refactor primero) · finance (17m sync —
+cirugía async como compliance) · wellness/member_360/
+ml_intelligence (compute read-heavy — olas aparte) ·
+facility_management (perfilado en la undécima: candidato
+siguiente) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
+upgrade head en deploy.
+
 ### §3.8-DÉCIMA OLA 2.1-DÉCIMA · PERSISTENCIA REAL — VERTICAL EXECUTIVE_DASHBOARD (✅ CERRADA 2026-11-20)
 
 PERFIL PREVIO (candidato limpio perfilado contra el árbol
@@ -2307,7 +2425,7 @@ intactos) · suite 896→900 · smoke B0 VERDE (19 agentes ·
 módulos nuevos 0 (≤ 733, sin re-baseline) · consistency
 13/13.
 
-QUEDÓ FUERA (by design): 9 repos in-memory restantes →
+QUEDÓ FUERA (by design): 8 repos in-memory restantes →
 siguientes verticales (mecánica §3.8 probada) · age_group
 CAYÓ (agente acoplado a privados ~6 sitios — refactor de
 contrato ANTES, ola aparte) · document_intelligence (RAG
@@ -2315,8 +2433,12 @@ lazy — ola aparte por dependencia) · sports_recreation
 (~16 privados — refactor primero) · finance (17m sync —
 cirugía async como compliance) · wellness/member_360/
 ml_intelligence (compute read-heavy — olas aparte) ·
-ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic upgrade head
-en deploy.
+facility_management (perfilado en la undécima: candidato
+siguiente) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
+upgrade head en deploy.
+(proactive_recommendation 23m/8 dicts — el candidato async-FIRST
+  total que la undécima eligió — YA MIGRADO en Ola 2.1-undécima
+§3.8-UNDECIMA: run #46 @ e09698b VERDE.)
 
 ### §3.8-NONA OLA 2.1-NONA · PERSISTENCIA REAL — VERTICAL CULTURAL_SOCIAL (✅ CERRADA 2026-11-20)
 
@@ -2887,8 +3009,8 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA CERRADOS) ═══
-  Q-PER-01  9 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA CERRADOS) ═══
+  Q-PER-01  8 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
@@ -2896,7 +3018,9 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             §3.8-SEPTIMA · communication en Ola 2.1-octava
             §3.8-OCTAVA · cultural_social en Ola 2.1-nona
             §3.8-NONA · executive_dashboard en Ola 2.1-décima
-            §3.8-DÉCIMA; 11 - 2) → SQLAlchemy async via db/orm/
+            §3.8-DÉCIMA · proactive_recommendation en Ola
+            2.1-undécima §3.8-UNDECIMA; 11 - 3) → SQLAlchemy
+            async via db/orm/
             (mecánica §3.8 probada: ORM + alembic + repo + gate
             — ya con lección run #28: read-path re-construye
             enums · lección run #39: los ratchets ruff/mypy
@@ -2973,6 +3097,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.22 · Generación G27 (sincronizada con
-MASTER_BASE.md v9.22 y MASTER_CHECKLIST.md v9.22)
+END OF MASTER_CHECKPOINT.md v9.23 · Generación G28 (sincronizada con
+MASTER_BASE.md v9.23 y MASTER_CHECKLIST.md v9.23)
 
