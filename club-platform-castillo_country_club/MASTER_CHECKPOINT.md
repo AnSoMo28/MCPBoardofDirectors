@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.20 · Generación G25 (Ola 2.1-octava — persistencia real: vertical communication) · Date: 2026-11-20
+### Version: 9.21 · Generación G26 (Ola 2.1-nona — persistencia real: vertical cultural_social) · Date: 2026-11-20
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -21,12 +21,36 @@
 ###          G25 — Ola 2.1-octava absorbida
 ###          (§3.8-OCTAVA NUEVO · Q-PER-01 → 11
 ###          repos · saga §8 runs #39 ROJO →
-###          fix 0029 → #40 @ ed35109 VERDE)
+###          fix 0029 → #40 @ ed35109 VERDE);
+###          G26 — Ola 2.1-nona absorbida
+###          (§3.8-NONA NUEVO · Q-PER-01 → 10
+###          repos · run #42 @ 1d649fe VERDE a
+###          la primera — lección run #39
+###          institucionalizada ANTES del push)
 
 ---
 
 
 
+
+## CHANGELOG G26 (v9.20 → v9.21)
+OLA 2.1-NONA — NOVENO VERTICAL DE PERSISTENCIA REAL (PATH
+2.2 · noveno repo de los 11 restantes) CERRADO (1d649fe —
+evidencia: OUT del APLICAR-VERTICAL-NONA + CI run #42
+VERDE a la PRIMERA, sin saga §8): 4 tablas +
+CulturalSocialRepository async contrato EXACTO (23 métodos
+· None/[]/dict sin excepciones custom salvo la ValueError
+literal de get_status_counts, reproducida · async-FIRST
+drop-in — 0 cirugía, el agente YA awaited en 48 call
+sites) + alembic 0009 + suite 4 + swap OPT-IN 9º repo ·
+persistencia 50/50 (3+6+6+6+6+6+6+7+4) · contrato agente
+cultural_social 48/48 · pytest 892→896 · masters v9.21.
+PRIMERA VERTICAL CON ANALYTICS F31 AGREGADOS MIGRADOS:
+6 compute-on-read byte a byte (status_counts · upcoming
+ventana strings 30d · budget_by_category ·
+venue_utilization · entertainment_costs · seasonal_data
+con mismos redondeos) — el alimento del feature-store de
+las olas ML 2027.
 
 ## CHANGELOG G25 (v9.19 → v9.20)
 OLA 2.1-OCTAVA — OCTAVO VERTICAL DE PERSISTENCIA REAL (PATH
@@ -2148,7 +2172,7 @@ vertical drop-in total) · suite 885→892 · smoke B0 VERDE ·
 ruff 1256 ≤ 1282 · mypy módulos nuevos 0 (≤ 733, sin
 re-baseline) · consistency 13/13.
 
-QUEDÓ FUERA (by design): 11 repos in-memory restantes
+QUEDÓ FUERA (by design): 10 repos in-memory restantes
 → siguientes verticales (mecánica §3.8 probada) ·
 age_group CAYÓ (agente acoplado a privados ~6
 sitios — refactor de contrato ANTES, ola aparte) ·
@@ -2156,11 +2180,82 @@ wellness y member_360 sync read-heavy compute (ola
 aparte) · ApprovalEngine → Q-PER-03 (Ola 2.3) ·
 alembic upgrade head en deploy.
 
-age_group CAYÓ (agente acoplado a privados ~6
-sitios — refactor de contrato ANTES, ola aparte) ·
-wellness y member_360 sync read-heavy compute (ola
-aparte) · ApprovalEngine → Q-PER-03 (Ola 2.3) ·
-alembic upgrade head en deploy.
+### §3.8-NONA OLA 2.1-NONA · PERSISTENCIA REAL — VERTICAL CULTURAL_SOCIAL (✅ CERRADA 2026-11-20)
+
+PERFIL PREVIO (candidato limpio perfilado por la octava en
+'proximos'): async-FIRST — 23/23 métodos ya async, el
+agente YA awaited en 48 call sites → drop-in como
+engagement §3.8-tris, guest §3.8-SEXTA, satisfaction
+§3.8-SEPTIMA y communication §3.8-OCTAVA (0 cirugía
+async, cuarta vertical drop-in total). Contrato limpio:
+el agente NO toca privados del repo (grep en los 48 call
+sites: 0 self.repo._*).
+
+0031 (1d649fe) — vertical cultural_social: 4 tablas
+(cultural_events · entertainment_acts ·
+cultural_programs · art_exhibitions) espejo 1:1 de
+models/cultural_social + CulturalSocialRepository async
+contrato EXACTO del in-memory (23 métodos · None/[]/dict
+sin excepciones custom SALVO la ValueError literal de
+get_status_counts vía _get_store, reproducida con el
+mismo mensaje · ids uuid4().hex[:8] SIN prefijo) +
+entertainment_ids/requirements/event_ids a JSONB
+(criterio families §3.8-bis · enums como .value,
+reconstrucción al leer — lección run #28) + MIGRACIÓN
+NONE (cuarta vertical drop-in total) + alembic
+0009_cultural_social (4 tablas · pk deterministas ·
+SIN índices: todos los reads cargan la tabla chica y
+filtran en Python como el in-memory — criterio octava) +
+swap OPT-IN 9º repo + suite 4 (write-restart-read 4
+entidades con enums+JSONB roundtrip · update dict
+parcial + cancel + filtros enum/fecha-rango · analytics
+compute-on-read · contrato vacío None/[]/{} +
+ValueError literal).
+
+COMPUTE-ON-READ (aritmética del in-memory BYTE a BYTE —
+PRIMERA VERTICAL CON ANALYTICS F31 AGREGADOS): 6
+métodos (status_counts por entidad · upcoming ventana
+strings hoy..hoy+N comparando lexicográfico ·
+budget_by_category por CulturalCategory ·
+venue_utilization con avg_guests round 1 ·
+entertainment_costs con avg_cost/cost_per_minute/
+contracted_rate round 0/1 · seasonal_data con
+enrollment_rate). Los analytics quedan como la costura
+donde aterrizan las olas ML 2027 (feature-store: estos
+6 son el alimento de member_360/wellness/ml_intelligence).
+
+LECCIÓN RUN #39 INSTITUCIONALIZADA (aplicada ANTES del
+push, no después — por eso run #42 VERDE a la primera):
+ruff vertical 0 deuda (1 F401 detectado y arreglado en
+sandbox) · mypy vertical 0 (10 fixes pre-push: 3 enums
+en reconstrucción + 7 generics dict[str, Any]) · ruff
+global 1256 ≤ 1282 · todo bajo el lock del CI (uv sync
+--frozen), NO bajo venv de máquina · dry-run del git am
+sobre worktree pristine de la base exacta 570b2f5 ·
+AST contrato 23/23 idéntico (nombres + args, diff
+vacío).
+
+GATES AL CIERRE (CI run #42 VERDE @ 1d649fe — 5/5 jobs,
+sin saga §8; sandbox espejo bajo lock): persistencia
+50/50 (3 auth + 6 family + 6 engagement + 6 event + 6
+compliance + 6 guest + 6 satisfaction + 7 communication
++ 4 cultural_social) + contrato agente cultural_social
+48/48 drop-in SIN TOCAR UN BYTE (cuarta vertical drop-in
+total) · suite 892→896 · smoke B0 VERDE · ruff 1256 ≤
+1282 · mypy módulos nuevos 0 (≤ 733, sin re-baseline) ·
+consistency 13/13.
+
+QUEDÓ FUERA (by design): 10 repos in-memory restantes
+→ siguientes verticales (mecánica §3.8 probada —
+siguiente limpio: executive_dashboard 15m/5 dicts) ·
+age_group CAYÓ (agente acoplado a privados ~6 sitios —
+refactor de contrato ANTES, ola aparte) ·
+document_intelligence (RAG lazy — ola aparte por
+dependencia) · sports_recreation (~16 privados —
+refactor primero) · finance (17m sync — cirugía async
+como compliance) · wellness/member_360/ml_intelligence
+(compute read-heavy — olas aparte) · ApprovalEngine →
+Q-PER-03 (Ola 2.3) · alembic upgrade head en deploy.
 
 ---
 
@@ -2652,14 +2747,15 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA CERRADOS) ═══
-  Q-PER-01  11 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA CERRADOS) ═══
+  Q-PER-01  10 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
             §3.8-SEXTA · satisfaction en Ola 2.1-septima
             §3.8-SEPTIMA · communication en Ola 2.1-octava
-            §3.8-OCTAVA; 12 - 1) → SQLAlchemy async via db/orm/
+            §3.8-OCTAVA · cultural_social en Ola 2.1-nona
+            §3.8-NONA; 11 - 1) → SQLAlchemy async via db/orm/
             (mecánica §3.8 probada: ORM + alembic + repo + gate
             — ya con lección run #28: read-path re-construye
             enums · lección run #39: los ratchets ruff/mypy
@@ -2736,6 +2832,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.20 · Generación G25 (sincronizada con
-MASTER_BASE.md v9.20 y MASTER_CHECKLIST.md v9.20)
+END OF MASTER_CHECKPOINT.md v9.21 · Generación G26 (sincronizada con
+MASTER_BASE.md v9.21 y MASTER_CHECKLIST.md v9.21)
 

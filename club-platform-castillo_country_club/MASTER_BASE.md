@@ -1,9 +1,23 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.20 · Generación G25 (Ola 2.1-octava — persistencia real: vertical communication) · Date: 2026-11-20
+### Version: 9.21 · Generación G26 (Ola 2.1-nona — persistencia real: vertical cultural_social) · Date: 2026-11-20
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
+
+## CHANGELOG G26 (v9.20 → v9.21)
+OLA 2.1-NONA — NOVENO VERTICAL DE PERSISTENCIA REAL CERRADO
+(cultural_social — detalle completo en CHECKPOINT §3.8-NONA):
+4 tablas + CulturalSocialRepository async contrato exacto
+(23 métodos · None/[]/dict · async-FIRST drop-in — 0
+cirugía, el agente YA awaited en 48 call sites) + alembic
+0009 · run #42 VERDE @ 1d649fe a la PRIMERA (5/5 jobs ·
+persistencia 50/50 = 3+6+6+6+6+6+6+7+4 · contrato agente
+cultural_social 48/48) · SIN saga §8: lección run #39
+aplicada ANTES (ruff/mypy vertical 0 bajo el lock del CI
+en sandbox, antes del push) · pytest 892→896 · masters
+v9.21. Primera vertical con analytics agregados F31
+compute-on-read migrados byte a byte.
 
 ## CHANGELOG G25 (v9.19 → v9.20)
 OLA 2.1-OCTAVA — OCTAVO VERTICAL DE PERSISTENCIA REAL CERRADO
@@ -1523,12 +1537,12 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               (G20) · 5 tablas engagement +
 │   │                               MemberEngagementRepository async
 │   │                               (G21 · alembic 0001+0002+0003)
-│   ├── db/repositories/          ← 11 repos in-memory restantes
+│   ├── db/repositories/          ← 10 repos in-memory restantes
 │   │                               → Q-PER-01 (family, engagement,
 │   │                               event, compliance, guest,
-│   │                               satisfaction y communication
-│   │                               migrados · users de
-│   │                               Q-PER-04 ya no vive acá)
+│   │                               satisfaction, communication y
+│   │                               cultural_social migrados ·
+│   │                               users de Q-PER-04 ya no vive acá)
 │   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
@@ -1541,14 +1555,17 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   · 0006_guest_management (4 tablas)
 │                                   · 0007_satisfaction (3 tablas)
 │                                   · 0008_communication (9 tablas)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1 archivos · 892 tests PASSED
+│                                   · 0009_cultural_social (4 tablas)
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1 archivos · 896 tests PASSED
 │                                   (808 def + 16 parametrizados + 9
 │                                   persistencia write-restart-read —
 │                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
 │                                   + Ola 2.1-bis 6 + Ola 2.1-tris 6
 │                                   + Ola 2.2 event 6 + Ola 2.1-quinqua 6
 │                                   + Ola 2.1-sexta guest 6 + Ola
-│                                   2.1-septima satisfaction 6)
+│                                   2.1-septima satisfaction 6 + Ola
+│                                   2.1-octava communication 7 + Ola
+│                                   2.1-nona cultural_social 4)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1859,7 +1876,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.20 · Generación G25 (sincronizada con
-MASTER_CHECKPOINT.md v9.20 y MASTER_CHECKLIST.md v9.20)
+END OF MASTER_BASE.md v9.21 · Generación G26 (sincronizada con
+MASTER_CHECKPOINT.md v9.21 y MASTER_CHECKLIST.md v9.21)
 
 
