@@ -354,6 +354,44 @@ class AgeGroupRepository:
 
     # ── Age Group Summaries (async) ────────────────────────
 
+    # ── Contract surface (refactor 0039: observable reads over
+    # privates — the agent consumes these instead of reaching into
+    # internals; outputs identical to the private state) ──────
+
+    async def get_distribution(
+        self,
+    ) -> list[AgeGroupDistribution]:
+        """Public demographic distribution with balance analysis.
+
+        Contract surface for the agent: exposes _compute_distribution
+        as an observable read. Returns the same list the internal
+        analytics use.
+        """
+        return self._compute_distribution()
+
+    async def get_activity_enrollment(
+        self, activity_id: str
+    ) -> list[dict[str, Any]]:
+        """Enrollment records for one activity (observable read).
+
+        Returns a shallow copy of the internal enrollment list for
+        the activity ([] when the activity has no enrollments).
+        """
+        return list(self._enrollment.get(activity_id, []))
+
+    async def get_monthly_snapshots(
+        self,
+    ) -> dict[str, dict[str, Any]]:
+        """Monthly snapshots by group (observable read).
+
+        Returns a shallow copy of the internal monthly snapshots
+        mapping month -> {age_group: metrics}.
+        """
+        return {
+            month: dict(snap)
+            for month, snap in self._monthly_snapshots.items()
+        }
+
     async def get_age_group_summary(
         self, age_group: str
     ) -> AgeGroupSummary | None:
