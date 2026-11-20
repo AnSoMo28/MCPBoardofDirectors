@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.18 · Generación G23 (Ola 2.1-quinqua + Ola 2.1-sexta — persistencia real: vertical compliance + guest_management) · Date: 2026-11-20
+### Version: 9.19 · Generación G24 (Ola 2.1-septima — persistencia real: vertical satisfaction) · Date: 2026-11-20
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -15,9 +15,26 @@
 ###          G23 — Ola 2.1-quinqua + Ola 2.1-sexta absorbidas
 ###          (§3.8-QUINQUE + §3.8-SEXTA NUEVOS · Q-PER-01 → 13
 ###          repos · fix 0023 runs #33→#34)
+###          G24 — Ola 2.1-septima absorbida
+###          (§3.8-SEPTIMA NUEVO · Q-PER-01 → 12
+###          repos · run #37 @ fb02cd5 VERDE)
 
 ---
 
+
+
+
+## CHANGELOG G24 (v9.18 → v9.19)
+OLA 2.1-SEPTIMA — SÉPTIMO VERTICAL DE PERSISTENCIA REAL (PATH
+2.2 · séptimo repo de los 13 restantes) CERRADO (fb02cd5 —
+evidencia: ola21septima-changelog.json + OUT del APLICAR +
+CI run #37): 3 tablas + SatisfactionRepository async contrato
+EXACTO (10 métodos · None/[]/dict · async-FIRST drop-in — 0
+cirugía, segunda vertical drop-in total) + alembic 0007 +
+suite 6 + swap OPT-IN 7º repo + metadata dataset demo A TABLA
+(criterio 0011). CI run #37 VERDE 5/5 · persistencia 39/39
+(3+6+6+6+6+6+6) · contrato agente 21/21 · pytest 879→885 ·
+masters v9.19.
 
 ## CHANGELOG G23 (v9.17 → v9.18)
 OLA 2.1-QUINQUA + OLA 2.1-SEXTA — QUINTO Y SEXTO VERTICAL DE
@@ -70,9 +87,9 @@ contrato agente compliance 28/28 · smoke B0 VERDE · ruff/mypy ≤
 baseline (sin re-baseline) · consistency 13/13. DEUDA VIVA: 13
 repos in-memory restantes (Q-PER-01) · ApprovalEngine dict
 (Q-PER-03) · alembic upgrade head en deploy. END: masters v9.18
-· Q-PER-01: 13 repos — siguiente vertical: satisfaction (10
-async · 13 calls — candidato limpio) o prioridad del Chief
-Architect de los 13.
+· Q-PER-01: 12 repos — siguiente vertical: candidato del
+Chief Architect de los 12 (age_group refactor primero ·
+wellness/member_360 olas aparte).
 
 ## CHANGELOG G22 (v9.16 → v9.17)
 
@@ -1977,7 +1994,7 @@ necesitan margen (~10×) — presupuestos al filo flakesean
 por ruido del host. (Nota: el label 'pytest 846' del job
 backend quedó stale — cosmético; el gate cuenta el real.)
 
-QUEDÓ FUERA (by design): 13 repos in-memory restantes →
+QUEDÓ FUERA (by design): 12 repos in-memory restantes →
 siguientes verticales (mecánica §3.8 probada: ORM + alembic +
 repo + gate) · age_group CAYÓ (agente acoplado a privados del
 repo en ~6 sitios — refactor de contrato ANTES de migrar, ola
@@ -1985,6 +2002,77 @@ aparte) · wellness y member_360 sync read-heavy compute (ola
 aparte) · satisfaction siguiente candidato limpio (10 async ·
 13 calls) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
 upgrade head en deploy.
+
+---
+
+### §3.8-SEPTIMA OLA 2.1-SEPTIMA · PERSISTENCIA REAL — VERTICAL SATISFACTION (✅ CERRADA 2026-11-20)
+
+PERFIL PREVIO (del changelog ola21septima-changelog.json):
+async-FIRST — 10/10 métodos ya async, el agente YA awaited
+en 13 call sites → drop-in como engagement §3.8-tris y
+guest §3.8-SEXTA (0 cirugía async). Contrato limpio: el
+agente NO toca privados del repo (grep en los 13 call
+sites: 0 self.repo._*) — a diferencia de age_group
+(~6 sitios), satisfaction migra sin refactor previo.
+
+0026 (fb02cd5) — vertical satisfaction: 3 tablas
+(satisfaction_surveys · satisfaction_reports ·
+satisfaction_event_metadata) espejo 1:1 de
+models/satisfaction + SatisfactionRepository async
+contrato EXACTO del in-memory (10 métodos · None/[]/dict
+sin excepciones custom · ids uuid4().hex[:8] SIN
+prefijo) + questions a JSONB (criterio families
+§3.8-bis · category como .value, reconstrucción
+SatisfactionCategory al leer — roundtrip pérdida
+cero) + MIGRACIÓN NONE (segunda vertical drop-in
+total) + alembic 0007_satisfaction (3 tablas · pk
+deterministas · ix event_id/family_id en surveys ·
+ix event_id en reports · enums String(32) sin CHECK)
++ swap OPT-IN 7º repo (auth + family + engagement +
+event + compliance + guest + satisfaction) + metadata
+del dataset demo A TABLA (criterio 0011: dataset UNA
+fuente — response_rate / best/worst_event / P3-
+SURVEY_FOLLOW_UP leen de la TABLA; con la tabla vacía
+el ORM reproduce EXACTO el comportamiento observable
+del in-memory sin seed) + suite 6 (write-restart-read
+survey/report con questions roundtrip · trends filtro
+N meses + ventana 3 · health 5 factores · intelligence
+10 categorías + NPS · benchmarks _BENCHMARKS CR ·
+propuestas P1-P5 con metadata de tabla).
+
+COMPUTE-ON-READ (aritmética del in-memory BYTE a BYTE
+sobre los rows de las tablas en UNA sesión de lectura
+por método): trends (filtro N meses + ventana 3 meses
+1.03/0.97) · health (5 factores ponderados
+0.25/0.20/0.20/0.20/0.15 + nivel EXCELLENT/HEALTHY/
+ATTENTION/CRITICAL + trend) · intelligence (10
+categorías con trend por mitades de eventos ·
+comparación por tipo de evento · sentiment flow
+mensual · NPS promoters/passives/detractors · 5
+señales cross-domain) · benchmarks (club avg vs
+_BENCHMARKS CR constante de clase · outliers ±0.5 ·
+best/worst event type) · propuestas P1-P5 (food
+review · format replication · survey follow-up sobre
+metadata de TABLA · pricing review value<3.5 &
+quality>4.0 · detractores últimos 10).
+
+GATES AL CIERRE (CI run #37 VERDE @ fb02cd5 — 5/5
+jobs; sandbox espejo bajo uv.lock): persistencia
+39/39 (3 auth + 6 family + 6 engagement + 6 event + 6
+compliance + 6 guest + 6 satisfaction) + back-to-back
+re-runnable 39/39 · contrato agente satisfaction
+21/21 drop-in SIN TOCAR UN BYTE (segunda vertical
+drop-in total) · suite 879→885 · smoke B0 VERDE ·
+ruff/mypy ≤ baseline (sin re-baseline) · consistency
+13/13.
+
+QUEDÓ FUERA (by design): 12 repos in-memory restantes
+→ siguientes verticales (mecánica §3.8 probada) ·
+age_group CAYÓ (agente acoplado a privados ~6
+sitios — refactor de contrato ANTES, ola aparte) ·
+wellness y member_360 sync read-heavy compute (ola
+aparte) · ApprovalEngine → Q-PER-03 (Ola 2.3) ·
+alembic upgrade head en deploy.
 
 ---
 
@@ -2476,20 +2564,19 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA CERRADOS) ═══
-  Q-PER-01  13 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA CERRADOS) ═══
+  Q-PER-01  12 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
-            §3.8-SEXTA; 18 - 5) → SQLAlchemy async via db/orm/
+            §3.8-SEXTA · satisfaction en Ola 2.1-septima
+            §3.8-SEPTIMA; 18 - 6) → SQLAlchemy async via db/orm/
             (mecánica §3.8 probada: ORM + alembic + repo + gate
             — ya con lección run #28: read-path re-construye
-            enums). Siguiente: satisfaction (perfilado: 10
-            async · 13 calls — candidato limpio) o prioridad
-            del Chief Architect de los 13 (age_group CAYÓ:
-            agente acoplado a privados — refactor antes;
-            member_360: compute, ola aparte; las simples
-            siguen la mecánica).
+            enums). Siguiente: candidato del Chief Architect
+            de los 12 (age_group CAYÓ: agente acoplado a
+            privados — refactor antes; member_360: compute,
+            ola aparte; las simples siguen la mecánica).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
@@ -2557,6 +2644,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.18 · Generación G23 (sincronizada con
-MASTER_BASE.md v9.18 y MASTER_CHECKLIST.md v9.18)
+END OF MASTER_CHECKPOINT.md v9.19 · Generación G24 (sincronizada con
+MASTER_BASE.md v9.19 y MASTER_CHECKLIST.md v9.19)
 
