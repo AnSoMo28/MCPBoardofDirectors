@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.21 · Generación G26 (Ola 2.1-nona — persistencia real: vertical cultural_social) · Date: 2026-11-20
+### Version: 9.22 · Generación G27 (Ola 2.1-décima — persistencia real: vertical executive_dashboard) · Date: 2026-11-20
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -1556,7 +1556,8 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   · 0007_satisfaction (3 tablas)
 │                                   · 0008_communication (9 tablas)
 │                                   · 0009_cultural_social (4 tablas)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1 archivos · 896 tests PASSED
+│                                   · 0010_executive_dashboard (5 tablas)
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1 archivos · 900 tests PASSED
 │                                   (808 def + 16 parametrizados + 9
 │                                   persistencia write-restart-read —
 │                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
@@ -1565,7 +1566,8 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   + Ola 2.1-sexta guest 6 + Ola
 │                                   2.1-septima satisfaction 6 + Ola
 │                                   2.1-octava communication 7 + Ola
-│                                   2.1-nona cultural_social 4)
+│                                   2.1-nona cultural_social 4 + Ola
+│                                   2.1-décima executive_dashboard 4)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1876,7 +1878,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.21 · Generación G26 (sincronizada con
-MASTER_CHECKPOINT.md v9.21 y MASTER_CHECKLIST.md v9.21)
+END OF MASTER_BASE.md v9.22 · Generación G27 (sincronizada con
+MASTER_CHECKPOINT.md v9.22 y MASTER_CHECKLIST.md v9.22)
 
 

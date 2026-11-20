@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.21 · Generación G26 (Ola 2.1-nona — persistencia real: vertical cultural_social) · 180 checks · ZERO tolerance
+### Version: 9.22 · Generación G27 (Ola 2.1-décima — persistencia real: vertical executive_dashboard) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,31 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G27 (v9.21 → v9.22)
+OLA 2.1-DÉCIMA CERRADA — GATES:
+
+PASO persistence extiende executive_dashboard (run #44):
+write → restart → read OK — ahora auth+family+engagement+
+event+compliance+guest+satisfaction+communication+
+cultural_social+executive_dashboard (54 tests ·
+3+6+6+6+6+6+6+7+4+4). Evidencia: CI run #44 VERDE @
+e0c6960 (5/5 jobs · a la PRIMERA, sin saga §8) ·
+persistencia 54/54 · AST contrato 15/15 idéntico (quinta
+vertical drop-in total — 0 cirugía, 0 tests del agente
+ajustados · 9 call sites ya awaited · 0 privados).
+Lección run #39 INSTITUCIONALIZADA: ruff/mypy del
+vertical verificados en sandbox bajo el lock del CI
+(uv sync --frozen) ANTES del push — ruff vertical 0 (7
+detectados y arreglados) · mypy vertical 0 (20 errores
+→ 0 en raíz) · ruff global 1256 ≤ 1282 sin re-baseline.
+Cifras: pytest 896→900 · persistencia 50→54 · repos
+10→9 · consistency 13/13.
+END: masters v9.22 · Q-PER-01 → 9 repos restantes ·
+siguiente vertical: document_intelligence (repos 9 —
+perfilarlo contra el árbol; si arrastra RAG lazy,
+documentación aparte) o el refactor age_group antes de
+su vertical (§5.3).
 
 ## CHANGELOG G26 (v9.20 → v9.21)
 OLA 2.1-NONA CERRADA — GATES:
@@ -1650,6 +1675,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.21 · Generación G26 (sincronizada con
-MASTER_BASE.md v9.21 y MASTER_CHECKPOINT.md v9.21)
+END OF MASTER_CHECKLIST.md v9.22 · Generación G27 (sincronizada con
+MASTER_BASE.md v9.22 y MASTER_CHECKPOINT.md v9.22)
 
