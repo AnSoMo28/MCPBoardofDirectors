@@ -1503,7 +1503,8 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   ├── db/repositories/          ← 13 repos in-memory restantes
 │   │                               → Q-PER-01 (family, engagement,
 │   │                               event, compliance y guest migrados
-│   │                               · users de Q-PER-04 ya no vive acá)│   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
+│   │                               · users de Q-PER-04 ya no vive acá)
+│   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
 │   └── server.py                 ← entry point MCP (adaptador delgado)
