@@ -233,7 +233,8 @@ def build_runtime() -> Runtime:
         logger.info(
             "[bootstrap] CLUB_PERSISTENCE_URL presente — repos migrados a PG "
             "(2.1-bis: family · 2.1-tris: engagement · 2.2: event · "
-            "2.1-quinqua: compliance · 2.1-sexta: guest)"
+            "2.1-quinqua: compliance · 2.1-sexta: guest · "
+            "2.1-septima: satisfaction)"
         )
 
     def _orm_repo(key: str) -> Any | None:
@@ -270,6 +271,12 @@ def build_runtime() -> Runtime:
             )
 
             return _GuestRepoORM(_persist_engine)
+        if key == "satisfaction_repo":
+            from club_mcp.db.orm.repositories.satisfaction_repo import (
+                SatisfactionRepository as _SatisfactionRepoORM,
+            )
+
+            return _SatisfactionRepoORM(_persist_engine)
         return None
 
     def repo_for(key: str) -> Any:
