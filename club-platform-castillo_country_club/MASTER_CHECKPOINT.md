@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.23 · Generación G28 (Ola 2.1-undécima — persistencia real: vertical proactive_recommendation) · Date: 2026-11-20
+### Version: 9.24 · Generación G29 (Ola 2.1-duodécima — persistencia real: vertical facility_management) · Date: 2026-11-20
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -36,12 +36,56 @@
 ###          (§3.8-UNDECIMA NUEVO · Q-PER-01 → 8
 ###          repos · run #46 @ e09698b VERDE a
 ###          la primera — cuarta generación
+###          consecutiva sin saga §8);
+###          G29 — Ola 2.1-duodécima absorbida
+###          (§3.8-DUODECIMA NUEVO · Q-PER-01 → 7
+###          repos · run #48 @ 15f9db7 VERDE a
+###          la primera — quinta generación
 ###          consecutiva sin saga §8)
 
 ---
 
 
 
+
+## CHANGELOG G29 (v9.23 → v9.24)
+OLA 2.1-DUODECIMA — DUODÉCIMO VERTICAL DE PERSISTENCIA REAL
+(PATH 2.2 · 12º repo de los 8 restantes) CERRADO (15f9db7 —
+evidencia: OUT del APLICAR-VERTICAL-DUODECIMA + CI run #48 VERDE
+a la PRIMERA, sin saga §8): 5 tablas (facilities ·
+maintenance_tasks · event_setups · inspections ·
+facility_reservations) + FacilityManagementRepository async
+contrato EXACTO (22 métodos · None/[] sin excepciones custom ·
+async-FIRST drop-in, séptima vertical drop-in total — el agente
+YA awaited en 31 call sites · 0 privados · 0 dependencias de
+módulo) + alembic 0012 + suite 4 + swap OPT-IN 12º repo ·
+persistencia 62/62 (3+6+6+6+6+6+6+7+4+4+4+4) · AST contrato
+22/22 idéntico · pytest 904→908 · masters v9.24. SEMÁNTICAS
+LITERALES DEL IN-MEMORY preservadas: status LITERALES del
+create_* (OPERATIONAL · SCHEDULED · REQUESTED · CONFIRMED — no
+los defaults del modelo) · update_* = record.update con
+whitelist SIN updated_at (estos modelos no lo tienen) · filtros
+list_* por igualdad en Python · list_reservations sort (date,
+start_time) DESPUÉS de filtros · check_reservation_conflict
+overlap + CANCELLED/NO_SHOW excluidos · 4 analytics
+COMPUTE-ON-READ sobre tablas (health 5 factores · utilization
+serie determinista md5 · space optimization · 9 dimensiones
+D1-D9). MYPY GLOBAL 704 ≤ 733 ESTABLE — la baja de la undécima
+se conserva. ERRATA G29: BASE v9.23 decía "9 persistencia"
+(cifra stale desde antes de la undécima) — corregida a 12
+suites (62 tests).
+
+QUEDÓ FUERA (by design): 7 repos in-memory restantes →
+NINGUNO drop-in limpio (perfilado G29 contra el árbol @
+15f9db7): age_group (agente acoplado a 6 privados — refactor
+de contrato ANTES, ola aparte) · sports_recreation (27
+privados tocados — refactor primero) · finance (17m sync ·
+0 awaited — cirugía async como compliance) · wellness (22m
+sync · 0 awaited) · member_360 (11m sync · compute read-heavy)
+· document_intelligence (RAG lazy — ola aparte por
+dependencia) · ml_intelligence (numpy/sklearn — ola aparte)
+· ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic upgrade head
+en deploy.
 
 ## CHANGELOG G28 (v9.22 → v9.23)
 OLA 2.1-UNDECIMA — UNDÉCIMO VERTICAL DE PERSISTENCIA REAL (PATH
@@ -2437,10 +2481,98 @@ facility_management (perfilado en la undécima: candidato
 siguiente) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
 upgrade head en deploy.
 (proactive_recommendation 23m/8 dicts — el candidato async-FIRST
-  total que la undécima eligió — YA MIGRADO en Ola 2.1-undécima
+total que la undécima eligió — YA MIGRADO en Ola 2.1-undécima
 §3.8-UNDECIMA: run #46 @ e09698b VERDE.)
+(facility_management 22m/5 dicts — el candidato anunciado por
+la undécima en masters v9.23 — YA MIGRADO en Ola 2.1-duodécima
+§3.8-DUODECIMA: run #48 @ 15f9db7 VERDE.)
 
-### §3.8-NONA OLA 2.1-NONA · PERSISTENCIA REAL — VERTICAL CULTURAL_SOCIAL (✅ CERRADA 2026-11-20)
+### §3.8-DUODECIMA OLA 2.1-DUODECIMA · PERSISTENCIA REAL — VERTICAL FACILITY_MANAGEMENT (✅ CERRADA 2026-11-20)
+
+PERFIL PREVIO (candidato perfilado contra el árbol REAL en la
+sesión de la duodécima — anunciado por la undécima en masters
+v9.23 END: "siguiente vertical: facility_management"): 22
+métodos async (20 públicos: 5 CRUD facilities · 4 maintenance ·
+4 setups · 3 inspections · 3 reservations + conflict · 4
+analytics) + 2 helpers privados reproducidos (_generate_
+utilization_series determinista md5 · _suggest_alternative_
+use). 5 dicts → 5 tablas. Agente: 31 call sites YA awaited ·
+0 self.repo._* · 39 tests intactos. SEED DEMO (12 facilities +
+8 maintenance + 5 inspections + 4 setups + 10 reservations) NO
+reproducido — las 5 tablas nacen vacías (criterio
+communication §3.8-OCTAVA: el seed es del demo in-memory).
+Analytics COMPUTE-ON-READ: helpers _REVENUE_RATES/_HEALTH_
+LEVELS/_DIMENSION_LEVELS reproducidos byte a byte.
+
+0037 (15f9db7) — vertical facility_management: 5 tablas
+(facilities · maintenance_tasks · event_setups · inspections ·
+facility_reservations) espejo 1:1 de models/facility_management
++ FacilityManagementRepository async contrato EXACTO del
+in-memory (22 métodos · None/[] sin excepciones custom · AST
+contrato 22/22 idéntico: nombres + kind + args + defaults) +
+amenities/requirements/corrective_actions a JSONB (criterio
+families §3.8-bis · enums como .value String(32),
+reconstrucción al leer — lección run #28) + SIN índices
+(criterio communication §3.8-OCTAVA · SIN seed) + alembic
+0012_facility_management (5 tablas · _mk registro en
+Base.metadata — patrón 0008-0011) + swap OPT-IN 12º repo
+(bootstrap + db/orm/__init__ + CI persistence job) + suite 4
+(facilities JSONB/filtros/update dict · maintenance+setups
+enums+JSONB · inspections+reservations sort/conflict/rango ·
+analytics compute-on-read).
+
+SEMÁNTICAS LITERALES DEL IN-MEMORY PRESERVADAS: status
+LITERALES del create_* que NO son los defaults del modelo
+(OPERATIONAL facility · SCHEDULED maintenance · REQUESTED
+setup · CONFIRMED reservation — esta última contra el default
+PENDING del modelo Pydantic) · update_* = record.update con
+whitelist _UPDATABLE SIN updated_at (estos modelos no lo
+tienen — a diferencia de proactive) · clave desconocida
+ignorada (Pydantic la descartaba igual) · filtros list_* por
+igualdad EN Python sobre la tabla completa · list_reservations
+sort (date, start_time) DESPUÉS de filtros ·
+check_reservation_conflict overlap literal + excluye
+CANCELLED/NO_SHOW + exclude_id · D7 indexa dicts s["setup_date"]
+en el in-memory → Pydantic s.setup_date en el ORM (misma
+data).
+
+LECCIÓN RUN #39 INSTITUCIONALIZADA (aplicada ANTES del push —
+quinta generación consecutiva VERDE a la primera): ruff
+vertical 0 deuda (4 corregidos en raíz: F401 Any sin uso ·
+F841 facilities sin usar · C416 comprehension · RUF003 minus
+sign + 1 isort autofixed) · mypy vertical 0 (5 errores → 0 en
+raíz: 3 firmas updates dict[str, Any] + 2 dicts del helper) ·
+ruff global 1265 ≤ 1282 SIN re-baseline (igual al baseline
+pristine — vertical 0 deuda) · mypy global 704 ≤ 733 ESTABLE
+(la BAJA 29 de la undécima se conserva) · todo bajo el lock
+del CI (uv sync --frozen --extra dev) · suite 4/4
+re-ejecutada · AST contrato verificado dos veces (antes y
+después de los fixes mypy).
+
+GATES AL CIERRE (CI run #48 VERDE @ 15f9db7 — 5/5 jobs, sin
+saga §8; sandbox espejo bajo lock): persistencia 62/62 (3
+auth + 6 family + 6 engagement + 6 event + 6 compliance + 6
+guest + 6 satisfaction + 7 communication + 4 cultural_social
++ 4 executive_dashboard + 4 proactive_recommendation + 4
+facility_management) + contrato agente facility_management
+drop-in SIN TOCAR UN BYTE (séptima vertical drop-in total — 39
+tests del agente intactos) · suite 904→908 · smoke B0 VERDE
+(19 agentes · 207 tools · RBAC 207/207) · ruff 1265 ≤ 1282 ·
+mypy global 704 ≤ 733 estable · consistency 13/13.
+
+QUEDÓ FUERA (by design): 7 repos in-memory restantes →
+NINGUNO drop-in limpio (perfilado G29 contra el árbol @
+15f9db7): age_group (agente acoplado a 6 privados — refactor
+de contrato ANTES, ola aparte) · sports_recreation (27
+privados tocados — refactor primero) · finance (17m sync ·
+0 awaited — cirugía async como compliance) · wellness (22m
+sync · 0 awaited) · member_360 (11m sync · compute
+read-heavy) · document_intelligence (RAG lazy — ola aparte
+por dependencia) · ml_intelligence (numpy/sklearn — ola
+aparte) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
+upgrade head en deploy.
+
+### §3.8-DÉCIMA OLA 2.1-DÉCIMA · PERSISTENCIA REAL — VERTICAL EXECUTIVE_DASHBOARD (✅ CERRADA 2026-11-20)
 
 PERFIL PREVIO (candidato limpio perfilado por la octava en
 'proximos'): async-FIRST — 23/23 métodos ya async, el
@@ -3009,8 +3141,8 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA CERRADOS) ═══
-  Q-PER-01  8 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA CERRADOS) ═══
+  Q-PER-01  7 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
@@ -3019,7 +3151,12 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             §3.8-OCTAVA · cultural_social en Ola 2.1-nona
             §3.8-NONA · executive_dashboard en Ola 2.1-décima
             §3.8-DÉCIMA · proactive_recommendation en Ola
-            2.1-undécima §3.8-UNDECIMA; 11 - 3) → SQLAlchemy
+            2.1-undécima §3.8-UNDECIMA; facility_management en Ola 2.1-duodécima
+            §3.8-DUODECIMA; NINGUNO de los 7 restantes
+            es drop-in limpio — perfilado G29: age_group 6
+            privados · sports 27 · finance/wellness/
+            member_360 sync · doc_intel RAG · ml_intel
+            numpy) → SQLAlchemy
             async via db/orm/
             (mecánica §3.8 probada: ORM + alembic + repo + gate
             — ya con lección run #28: read-path re-construye
@@ -3097,6 +3234,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.23 · Generación G28 (sincronizada con
-MASTER_BASE.md v9.23 y MASTER_CHECKLIST.md v9.23)
+END OF MASTER_CHECKPOINT.md v9.24 · Generación G29 (sincronizada con
+MASTER_BASE.md v9.24 y MASTER_CHECKLIST.md v9.24)
 

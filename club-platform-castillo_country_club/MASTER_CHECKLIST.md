@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.23 · Generación G28 (Ola 2.1-undécima — persistencia real: vertical proactive_recommendation) · 180 checks · ZERO tolerance
+### Version: 9.24 · Generación G29 (Ola 2.1-duodécima — persistencia real: vertical facility_management) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,46 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G29 (v9.23 → v9.24)
+OLA 2.1-DUODECIMA CERRADA — GATES:
+
+PASO persistence extiende facility_management (run
+#48): write → restart → read OK — ahora auth+family+
+engagement+event+compliance+guest+satisfaction+
+communication+cultural_social+executive_dashboard+
+proactive_recommendation+facility_management (62
+tests · 3+6+6+6+6+6+6+7+4+4+4+4). Evidencia: CI run
+#48 VERDE @ 15f9db7 (5/5 jobs · a la PRIMERA, sin
+saga §8) · persistencia 62/62 · AST contrato 22/22
+idéntico (séptima vertical drop-in total — 0 cirugía,
+0 tests del agente ajustados · 31 call sites ya
+awaited · 0 privados · 0 dependencias). Lección run
+#39 INSTITUCIONALIZADA: ruff/mypy del vertical
+verificados en sandbox bajo el lock del CI (uv sync
+--frozen) ANTES del push — ruff vertical 0 (4+1
+corregidos en raíz: F401 · F841 · C416 · RUF003 +
+isort autofixed) · mypy vertical 0 (5 errores → 0 en
+raíz: 3 firmas updates dict[str, Any] + 2 dicts del
+helper) · ruff global 1265 ≤ 1282 sin re-baseline
+(vertical 0 deuda — igual al baseline pristine) · mypy
+global 704 ≤ 733 ESTABLE (la BAJA 29 de la undécima
+se conserva). Cifras: pytest 904→908 · persistencia
+58→62 · repos 8→7 · consistency 13/13.
+END: masters v9.24 · Q-PER-01 → 7 repos restantes ·
+NINGUNO es drop-in limpio (perfilado G29 contra el
+árbol @ 15f9db7): age_group (6 privados tocados por
+el agente — refactor de contrato ANTES, §5.3) ·
+sports_recreation (27 privados tocados — refactor
+primero) · finance (17m sync · 0 awaited — cirugía
+async como compliance) · wellness (22m sync · 0
+awaited) · member_360 (11m sync · 0 awaited ·
+compute read-heavy) · document_intelligence (RAG
+lazy — ola aparte por dependencia) · ml_intelligence
+(numpy/sklearn — ola aparte). La decimotercera
+empieza por el REFACTOR de contrato de age_group
+(~6 sitios · 1425L el repo), NO por un vertical
+directo — el perfilado manda.
 
 ## CHANGELOG G28 (v9.22 → v9.23)
 OLA 2.1-UNDECIMA CERRADA — GATES:
@@ -1704,5 +1744,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.23 · Generación G28 (sincronizada con
-MASTER_BASE.md v9.23 y MASTER_CHECKPOINT.md v9.23)
+END OF MASTER_CHECKLIST.md v9.24 · Generación G29 (sincronizada con
+MASTER_BASE.md v9.24 y MASTER_CHECKPOINT.md v9.24)
