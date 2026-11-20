@@ -46,6 +46,7 @@ from club_mcp.models.communication import (
     TemplateCategory,
 )
 
+
 PG_URL = os.environ.get("CLUB_PERSISTENCE_URL", "")
 SQLITE_URL = "sqlite+aiosqlite:///_persist_communication.db"
 
@@ -263,11 +264,11 @@ async def test_logs_filters_sort_limit() -> None:
 
     all_logs = await repo.list_logs(limit=2)
     assert len(all_logs) == 2  # [:limit] del in-memory
-    ids = [l.id for l in all_logs]
+    ids = [log.id for log in all_logs]
     # sort por sent_at desc: los 3 se crearon en el mismo now() — el
     # orden relativo de inserción preserva desc (mismo contrato).
     assert set(ids) <= {l1.id, l2.id, l3.id}
-    assert all(l.sent_at for l in all_logs)
+    assert all(log.sent_at for log in all_logs)
 
 
 # ── test 4 · preferences por member (primer match) + updates ──────────

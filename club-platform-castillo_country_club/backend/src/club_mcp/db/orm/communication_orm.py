@@ -50,6 +50,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from club_mcp.db.orm.base import Base
 
+
 # JSONB en postgres, JSON en sqlite (dev/suite local): misma API.
 # (idéntico a families §3.8-bis y satisfaction §3.8-SEPTIMA).
 JSONType = JSONB().with_variant(JSON(), "sqlite")

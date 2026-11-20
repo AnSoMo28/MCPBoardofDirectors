@@ -46,7 +46,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -86,6 +86,7 @@ from club_mcp.models.communication import (
     ScheduledNotification,
     SentimentDataPoint,
 )
+
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncEngine
@@ -155,7 +156,7 @@ def _template_from_orm(r: NotificationTemplateORM) -> NotificationTemplate:
         channels=[
             NotificationChannel(c) for c in (r.channels or []) if c
         ],
-        variables=list(r.variables or []),
+        variables=[str(v) for v in (r.variables or [])],
         is_active=r.is_active,
         created_at=r.created_at,
     )
@@ -165,7 +166,7 @@ def _scheduled_from_orm(r: ScheduledNotificationORM) -> ScheduledNotification:
     return ScheduledNotification(
         id=r.id,
         template_id=r.template_id,
-        recipient_ids=list(r.recipient_ids or []),
+        recipient_ids=[str(x) for x in (r.recipient_ids or [])],
         channel=NotificationChannel(r.channel),
         scheduled_at=r.scheduled_at,
         status=NotificationStatus(r.status),
@@ -218,7 +219,7 @@ def _personalized_from_orm(
         title=r.title,
         body=r.body,
         channel=NotificationChannel(r.channel),
-        recipient_ids=list(r.recipient_ids or []),
+        recipient_ids=[str(x) for x in (r.recipient_ids or [])],
         status=NotificationStatus(r.status),
         sent_at=r.sent_at,
         created_by=r.created_by,
@@ -299,7 +300,7 @@ _UPDATABLE: dict[str, set[str]] = {
 }
 
 
-def _apply_updates(obj: Any, updates: dict, key: str) -> None:
+def _apply_updates(obj: Any, updates: dict[str, Any], key: str) -> None:
     """record.update(updates) del in-memory — setattr por clave de columna.
 
     Las claves que no calzan con una columna se ignoran (el dict del
@@ -352,8 +353,8 @@ class CommunicationRepository:
         return _announcement_from_orm(record)
 
     async def update_announcement(
-        self, announcement_id: str, updates: dict
-    ) -> Optional[Announcement]:
+        self, announcement_id: str, updates: dict[str, Any]
+    ) -> Announcement | None:
         async with session_scope(self._engine) as s:
             record = await s.get(AnnouncementORM, announcement_id)
             if record is None:
@@ -364,8 +365,8 @@ class CommunicationRepository:
 
     async def list_announcements(
         self,
-        announcement_type: Optional[AnnouncementType] = None,
-        status: Optional[AnnouncementStatus] = None,
+        announcement_type: AnnouncementType | None = None,
+        status: AnnouncementStatus | None = None,
     ) -> list[Announcement]:
         # ojo: el orden de inserción ES el orden del dict in-memory
         async with session_scope(self._engine) as s:
@@ -382,9 +383,9 @@ class CommunicationRepository:
         self,
         page: int = 1,
         page_size: int = 12,
-        status: Optional[AnnouncementStatus] = None,
-        announcement_type: Optional[AnnouncementType] = None,
-        search: Optional[str] = None,
+        status: AnnouncementStatus | None = None,
+        announcement_type: AnnouncementType | None = None,
+        search: str | None = None,
     ) -> dict[str, Any]:
         """MISMA semántica del in-memory: filtro base + search + sort
         por id desc + paginación (total_pages=max(1, ceil))."""
@@ -412,7 +413,7 @@ class CommunicationRepository:
 
     async def get_announcement(
         self, announcement_id: str
-    ) -> Optional[Announcement]:
+    ) -> Announcement | None:
         async with session_scope(self._engine) as s:
             record = await s.get(AnnouncementORM, announcement_id)
             if record is None:
@@ -447,7 +448,7 @@ class CommunicationRepository:
 
     async def get_emergency(
         self, emergency_id: str
-    ) -> Optional[EmergencyBroadcast]:
+    ) -> EmergencyBroadcast | None:
         async with session_scope(self._engine) as s:
             record = await s.get(EmergencyBroadcastORM, emergency_id)
             if record is None:
@@ -455,8 +456,8 @@ class CommunicationRepository:
             return _emergency_from_orm(record)
 
     async def update_emergency(
-        self, emergency_id: str, updates: dict
-    ) -> Optional[EmergencyBroadcast]:
+        self, emergency_id: str, updates: dict[str, Any]
+    ) -> EmergencyBroadcast | None:
         async with session_scope(self._engine) as s:
             record = await s.get(EmergencyBroadcastORM, emergency_id)
             if record is None:
@@ -467,7 +468,7 @@ class CommunicationRepository:
 
     async def list_emergencies(
         self,
-        emergency_type: Optional[EmergencyType] = None,
+        emergency_type: EmergencyType | None = None,
     ) -> list[EmergencyBroadcast]:
         async with session_scope(self._engine) as s:
             rows = await _load_all(s, EmergencyBroadcastORM)
@@ -508,7 +509,7 @@ class CommunicationRepository:
 
     async def get_template(
         self, template_id: str
-    ) -> Optional[NotificationTemplate]:
+    ) -> NotificationTemplate | None:
         async with session_scope(self._engine) as s:
             record = await s.get(NotificationTemplateORM, template_id)
             if record is None:
@@ -516,8 +517,8 @@ class CommunicationRepository:
             return _template_from_orm(record)
 
     async def update_template(
-        self, template_id: str, updates: dict
-    ) -> Optional[NotificationTemplate]:
+        self, template_id: str, updates: dict[str, Any]
+    ) -> NotificationTemplate | None:
         async with session_scope(self._engine) as s:
             record = await s.get(NotificationTemplateORM, template_id)
             if record is None:
@@ -528,7 +529,7 @@ class CommunicationRepository:
 
     async def list_templates(
         self,
-        category: Optional[Any] = None,
+        category: Any | None = None,
         active_only: bool = False,
     ) -> list[NotificationTemplate]:
         # ojo: orden de inserción ES el orden del dict in-memory
@@ -568,7 +569,7 @@ class CommunicationRepository:
 
     async def get_scheduled(
         self, scheduled_id: str
-    ) -> Optional[ScheduledNotification]:
+    ) -> ScheduledNotification | None:
         async with session_scope(self._engine) as s:
             record = await s.get(ScheduledNotificationORM, scheduled_id)
             if record is None:
@@ -576,8 +577,8 @@ class CommunicationRepository:
             return _scheduled_from_orm(record)
 
     async def update_scheduled(
-        self, scheduled_id: str, updates: dict
-    ) -> Optional[ScheduledNotification]:
+        self, scheduled_id: str, updates: dict[str, Any]
+    ) -> ScheduledNotification | None:
         async with session_scope(self._engine) as s:
             record = await s.get(ScheduledNotificationORM, scheduled_id)
             if record is None:
@@ -588,7 +589,7 @@ class CommunicationRepository:
 
     async def list_scheduled(
         self,
-        status: Optional[Any] = None,
+        status: Any | None = None,
     ) -> list[ScheduledNotification]:
         status_val = getattr(status, "value", status)
         async with session_scope(self._engine) as s:
@@ -609,7 +610,7 @@ class CommunicationRepository:
         recipient_count: int,
         status: NotificationStatus,
         created_by: str = "",
-        notes: Optional[str] = None,
+        notes: str | None = None,
     ) -> NotificationLog:
         record = NotificationLogORM(
             id=_gen_id(),
@@ -629,10 +630,10 @@ class CommunicationRepository:
     async def list_logs(
         self,
         limit: int = 50,
-        date_from: Optional[str] = None,
-        date_to: Optional[str] = None,
-        channel: Optional[NotificationChannel] = None,
-        notification_type: Optional[str] = None,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        channel: NotificationChannel | None = None,
+        notification_type: str | None = None,
     ) -> list[NotificationLog]:
         """MISMA aritmética del in-memory: filtros aditivos · sent_at
         ISO parse (ValueError/TypeError → skip silencioso) · sort desc
@@ -672,7 +673,7 @@ class CommunicationRepository:
                 r for r in results
                 if r.notification_type == notification_type
             ]
-        results.sort(key=lambda l: l.sent_at, reverse=True)
+        results.sort(key=lambda log: log.sent_at, reverse=True)
         return results[:limit]
 
     # ── Communication Preferences ────────────────────────────
@@ -704,7 +705,7 @@ class CommunicationRepository:
 
     async def get_preferences(
         self, preferences_id: str
-    ) -> Optional[CommunicationPreferences]:
+    ) -> CommunicationPreferences | None:
         async with session_scope(self._engine) as s:
             record = await s.get(
                 CommunicationPreferencesORM, preferences_id
@@ -715,7 +716,7 @@ class CommunicationRepository:
 
     async def get_preferences_by_member(
         self, member_id: str
-    ) -> Optional[CommunicationPreferences]:
+    ) -> CommunicationPreferences | None:
         # PRIMER registro cuyo member_id calza (orden de inserción =
         # orden del dict in-memory)
         async with session_scope(self._engine) as s:
@@ -726,8 +727,8 @@ class CommunicationRepository:
             return None
 
     async def update_preferences(
-        self, preferences_id: str, updates: dict
-    ) -> Optional[CommunicationPreferences]:
+        self, preferences_id: str, updates: dict[str, Any]
+    ) -> CommunicationPreferences | None:
         async with session_scope(self._engine) as s:
             record = await s.get(
                 CommunicationPreferencesORM, preferences_id
@@ -769,7 +770,7 @@ class CommunicationRepository:
 
     async def get_personalized(
         self, notification_id: str
-    ) -> Optional[PersonalizedNotification]:
+    ) -> PersonalizedNotification | None:
         async with session_scope(self._engine) as s:
             record = await s.get(
                 PersonalizedNotificationORM, notification_id
@@ -779,8 +780,8 @@ class CommunicationRepository:
             return _personalized_from_orm(record)
 
     async def update_personalized(
-        self, notification_id: str, updates: dict
-    ) -> Optional[PersonalizedNotification]:
+        self, notification_id: str, updates: dict[str, Any]
+    ) -> PersonalizedNotification | None:
         async with session_scope(self._engine) as s:
             record = await s.get(
                 PersonalizedNotificationORM, notification_id
@@ -829,7 +830,7 @@ class CommunicationRepository:
         )
         return _campaign_from_orm(record)
 
-    async def get_campaign(self, campaign_id: str) -> Optional[Campaign]:
+    async def get_campaign(self, campaign_id: str) -> Campaign | None:
         async with session_scope(self._engine) as s:
             record = await s.get(CampaignORM, campaign_id)
             if record is None:
@@ -838,7 +839,7 @@ class CommunicationRepository:
 
     async def list_campaigns(
         self,
-        status: Optional[Any] = None,
+        status: Any | None = None,
         limit: int = 20,
     ) -> list[Campaign]:
         status_val = getattr(status, "value", status)
@@ -852,8 +853,8 @@ class CommunicationRepository:
             return results[:limit]
 
     async def update_campaign(
-        self, campaign_id: str, updates: dict
-    ) -> Optional[Campaign]:
+        self, campaign_id: str, updates: dict[str, Any]
+    ) -> Campaign | None:
         async with session_scope(self._engine) as s:
             record = await s.get(CampaignORM, campaign_id)
             if record is None:
@@ -895,7 +896,7 @@ class CommunicationRepository:
     async def get_sentiment_history(
         self,
         days: int = 30,
-        channel: Optional[NotificationChannel] = None,
+        channel: NotificationChannel | None = None,
     ) -> list[SentimentDataPoint]:
         """MISMA aritmética del in-memory: cutoff timestamp · parse
         fromisoformat (Z→+00:00 · ValueError/TypeError → skip) · filtro
@@ -905,7 +906,7 @@ class CommunicationRepository:
         now = datetime.now(tz=UTC)
         cutoff = now.timestamp() - (days * 86400)
 
-        results: list = []
+        results: list[SentimentDataPoint] = []
         for r in rows:
             ts = r.timestamp or ""
             if not ts:

@@ -34,6 +34,7 @@ from sqlalchemy.dialects import postgresql
 
 from club_mcp.db.orm.base import Base
 
+
 revision: str = "0008"
 down_revision: str | None = "0007"
 branch_labels: str | Sequence[str] | None = None
