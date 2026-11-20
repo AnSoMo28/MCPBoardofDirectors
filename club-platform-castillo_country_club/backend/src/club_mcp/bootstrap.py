@@ -234,7 +234,7 @@ def build_runtime() -> Runtime:
             "[bootstrap] CLUB_PERSISTENCE_URL presente — repos migrados a PG "
             "(2.1-bis: family · 2.1-tris: engagement · 2.2: event · "
             "2.1-quinqua: compliance · 2.1-sexta: guest · "
-            "2.1-septima: satisfaction)"
+            "2.1-septima: satisfaction · 2.1-octava: communication)"
         )
 
     def _orm_repo(key: str) -> Any | None:
@@ -277,6 +277,12 @@ def build_runtime() -> Runtime:
             )
 
             return _SatisfactionRepoORM(_persist_engine)
+        if key == "communication_repo":
+            from club_mcp.db.orm.repositories.communication_repo import (
+                CommunicationRepository as _CommunicationRepoORM,
+            )
+
+            return _CommunicationRepoORM(_persist_engine)
         return None
 
     def repo_for(key: str) -> Any:
