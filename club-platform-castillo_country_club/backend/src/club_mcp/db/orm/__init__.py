@@ -1,9 +1,9 @@
 """db.orm — persistencia real (Ola 2.1): ORM + alembic.
 
-Paquete HERMANO de db.repositories (10 repos in-memory
-restantes — Q-PER-01; 9 verticales ya migradas: auth + family +
+Paquete HERMANO de db.repositories (9 repos in-memory
+restantes — Q-PER-01; 10 verticales ya migradas: auth + family +
 engagement + event + compliance + guest + satisfaction +
-communication + cultural_social):
+communication + cultural_social + executive_dashboard):
 
     base.py      Declarative Base + naming convention determinista
     engine.py    engine async LAZY (primer consumidor de DATABASE_URL)

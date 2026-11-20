@@ -235,7 +235,8 @@ def build_runtime() -> Runtime:
             "(2.1-bis: family · 2.1-tris: engagement · 2.2: event · "
             "2.1-quinqua: compliance · 2.1-sexta: guest · "
             "2.1-septima: satisfaction · 2.1-octava: communication · "
-            "2.1-nona: cultural_social)"
+            "2.1-nona: cultural_social · "
+            "2.1-décima: executive_dashboard)"
         )
 
     def _orm_repo(key: str) -> Any | None:
@@ -290,6 +291,12 @@ def build_runtime() -> Runtime:
             )
 
             return _CulturalSocialRepoORM(_persist_engine)
+        if key == "executive_dashboard_repo":
+            from club_mcp.db.orm.repositories.executive_dashboard_repo import (
+                ExecutiveDashboardRepository as _ExecutiveDashboardRepoORM,
+            )
+
+            return _ExecutiveDashboardRepoORM(_persist_engine)
         return None
 
     def repo_for(key: str) -> Any:
