@@ -1,9 +1,21 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.19 · Generación G24 (Ola 2.1-septima — persistencia real: vertical satisfaction) · Date: 2026-11-20
+### Version: 9.20 · Generación G25 (Ola 2.1-octava — persistencia real: vertical communication) · Date: 2026-11-20
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
+
+## CHANGELOG G25 (v9.19 → v9.20)
+OLA 2.1-OCTAVA — OCTAVO VERTICAL DE PERSISTENCIA REAL CERRADO
+(communication — detalle completo en CHECKPOINT §3.8-OCTAVA):
+9 tablas + CommunicationRepository async contrato exacto
+(35 métodos · None/[]/dict · async-FIRST drop-in — 0
+cirugía, el agente YA awaited en 38 call sites) + alembic
+0008 · saga §8 como la sexta: run #39 ROJO (ruff ratchet
++37 estilo) → fix 0029 → run #40 VERDE @ ed35109 (5/5
+jobs · persistencia 46/46 = 3+6+6+6+6+6+6+7 · contrato
+agente communication 38/38) · pytest 885→892 · masters
+v9.20.
 
 ## CHANGELOG G24 (v9.18 → v9.19)
 OLA 2.1-SEPTIMA — SÉPTIMO VERTICAL DE PERSISTENCIA REAL CERRADO
@@ -1511,10 +1523,11 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               (G20) · 5 tablas engagement +
 │   │                               MemberEngagementRepository async
 │   │                               (G21 · alembic 0001+0002+0003)
-│   ├── db/repositories/          ← 12 repos in-memory restantes
+│   ├── db/repositories/          ← 11 repos in-memory restantes
 │   │                               → Q-PER-01 (family, engagement,
-│   │                               event, compliance, guest y
-│   │                               satisfaction migrados · users de
+│   │                               event, compliance, guest,
+│   │                               satisfaction y communication
+│   │                               migrados · users de
 │   │                               Q-PER-04 ya no vive acá)
 │   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
@@ -1527,7 +1540,8 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   · 0005_compliance (3 tablas)
 │                                   · 0006_guest_management (4 tablas)
 │                                   · 0007_satisfaction (3 tablas)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1 archivos · 885 tests PASSED
+│                                   · 0008_communication (9 tablas)
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1 archivos · 892 tests PASSED
 │                                   (808 def + 16 parametrizados + 9
 │                                   persistencia write-restart-read —
 │                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
@@ -1845,7 +1859,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.19 · Generación G24 (sincronizada con
-MASTER_CHECKPOINT.md v9.19 y MASTER_CHECKLIST.md v9.19)
+END OF MASTER_BASE.md v9.20 · Generación G25 (sincronizada con
+MASTER_CHECKPOINT.md v9.20 y MASTER_CHECKLIST.md v9.20)
 
 

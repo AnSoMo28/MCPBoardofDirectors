@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.19 · Generación G24 (Ola 2.1-septima — persistencia real: vertical satisfaction) · 180 checks · ZERO tolerance
+### Version: 9.20 · Generación G25 (Ola 2.1-octava — persistencia real: vertical communication) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,25 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G25 (v9.19 → v9.20)
+OLA 2.1-OCTAVA CERRADA — GATES:
+
+PASO persistence extiende communication (runs #39/#40):
+write → restart → read OK — ahora auth+family+engagement+
+event+compliance+guest+satisfaction+communication (46
+tests · 3+6+6+6+6+6+6+7). Evidencia: CI run #40 VERDE @
+ed35109 (5/5 jobs) · persistencia 46/46 · contrato agente
+communication 38/38 (async-FIRST drop-in — 0 cirugía, 0
+tests ajustados). Saga §8 como la sexta: run #39 ROJO
+(ruff ratchet +37 deuda de estilo — todos los gates
+funcionales VERDE en ese run) → fix-forward 0029 → #40
+VERDE. Cifras: pytest 885→892 · persistencia 39→46 ·
+repos 12→11 · ruff/mypy sin re-baseline (≤ baseline) ·
+consistency 13/13.
+END: masters v9.20 · Q-PER-01 → 11 repos restantes ·
+siguiente vertical: candidato del Chief Architect de los
+11 restantes (age_group refactor primero).
 
 ## CHANGELOG G24 (v9.18 → v9.19)
 OLA 2.1-SEPTIMA CERRADA — GATES:
@@ -1609,6 +1628,6 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.19 · Generación G24 (sincronizada con
-MASTER_BASE.md v9.19 y MASTER_CHECKPOINT.md v9.19)
+END OF MASTER_CHECKLIST.md v9.20 · Generación G25 (sincronizada con
+MASTER_BASE.md v9.20 y MASTER_CHECKPOINT.md v9.20)
 

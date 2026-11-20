@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.19 · Generación G24 (Ola 2.1-septima — persistencia real: vertical satisfaction) · Date: 2026-11-20
+### Version: 9.20 · Generación G25 (Ola 2.1-octava — persistencia real: vertical communication) · Date: 2026-11-20
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -17,12 +17,31 @@
 ###          repos · fix 0023 runs #33→#34)
 ###          G24 — Ola 2.1-septima absorbida
 ###          (§3.8-SEPTIMA NUEVO · Q-PER-01 → 12
-###          repos · run #37 @ fb02cd5 VERDE)
+###          repos · run #37 @ fb02cd5 VERDE);
+###          G25 — Ola 2.1-octava absorbida
+###          (§3.8-OCTAVA NUEVO · Q-PER-01 → 11
+###          repos · saga §8 runs #39 ROJO →
+###          fix 0029 → #40 @ ed35109 VERDE)
 
 ---
 
 
 
+
+## CHANGELOG G25 (v9.19 → v9.20)
+OLA 2.1-OCTAVA — OCTAVO VERTICAL DE PERSISTENCIA REAL (PATH
+2.2 · octavo repo de los 12 restantes) CERRADO (ea5e4c0 →
+ed35109 — evidencia: OUT del APLICAR-OCTAVA + OUT del
+APLICAR-FIX-OCTAVA + CI runs #39/#40): 9 tablas +
+CommunicationRepository async contrato EXACTO (35 métodos
+· None/[]/dict · async-FIRST drop-in — 0 cirugía, tercera
+vertical drop-in total) + alembic 0008 + suite 7 + swap
+OPT-IN 8º repo. Saga §8 completa como la sexta: run #39
+ROJO (ruff ratchet +37 deuda de estilo: 30× UP045 · 4×
+I001 · 3× E741) → fix-forward 0029 (ruff/mypy-clean ·
+AST 35/35 intacto · sin revert) → run #40 VERDE 5/5 ·
+persistencia 46/46 (3+6+6+6+6+6+6+7) · contrato agente
+communication 38/38 · pytest 885→892 · masters v9.20.
 
 ## CHANGELOG G24 (v9.18 → v9.19)
 OLA 2.1-SEPTIMA — SÉPTIMO VERTICAL DE PERSISTENCIA REAL (PATH
@@ -2066,8 +2085,77 @@ drop-in total) · suite 879→885 · smoke B0 VERDE ·
 ruff/mypy ≤ baseline (sin re-baseline) · consistency
 13/13.
 
-QUEDÓ FUERA (by design): 12 repos in-memory restantes
+### §3.8-OCTAVA OLA 2.1-OCTAVA · PERSISTENCIA REAL — VERTICAL COMMUNICATION (✅ CERRADA 2026-11-20)
+
+PERFIL PREVIO (del análisis de la ola): async-FIRST — 35/35
+métodos ya async, el agente YA awaited en 38 call sites →
+drop-in como engagement §3.8-tris, guest §3.8-SEXTA y
+satisfaction §3.8-SEPTIMA (0 cirugía async, tercera vertical
+drop-in total). Contrato limpio: el agente NO toca privados
+del repo (grep en los 38 call sites: 0 self.repo._*).
+
+0028 (ea5e4c0) — vertical communication: 9 tablas
+(announcements · emergency_broadcasts ·
+notification_templates · scheduled_notifications ·
+notification_logs · communication_preferences ·
+personalized_notifications · communication_campaigns ·
+sentiment_data_points) espejo 1:1 de models/communication +
+CommunicationRepository async contrato EXACTO del
+in-memory (35 métodos · None/[]/dict sin excepciones custom
+· ids uuid4().hex[:8] SIN prefijo) + channels/recipient_ids
+a JSONB (criterio families §3.8-bis · enums como .value,
+reconstrucción al leer — lección run #28) + MIGRACIÓN NONE
+(tercera vertical drop-in total) + alembic 0008_communication
+(9 tablas · pk deterministas · ix announcement_id en logs ·
+ix member_id en preferences · enums String(32) sin CHECK) +
+swap OPT-IN 8º repo (auth + family + engagement + event +
+compliance + guest + satisfaction + communication) + suite
+7 (write-restart-read announcement/emergency/template/
+scheduled · update dict parcial · logs filtros fecha/canal/
+tipo + sort + limit · preferences primer-match por member ·
+campaign metrics JSONB + delete · sentiment ventana N días +
+canal · contrato vacío None/[]).
+
+COMPUTE-ON-READ (aritmética del in-memory BYTE a BYTE
+sobre los rows de las tablas en UNA sesión de lectura por
+método): campaign metrics (recipients/acknowledged/failed
+por channel · status transitions) · sentiment history
+(ventana N días por canal · 3 categorías) · preferences
+merge (primer-match por member_id).
+
+SAGA §8 COMPLETA (lección run #39 — quinta demostración de
+la regla): el 0028 pasó TODOS los gates funcionales (pytest
+892 · persistence 46/46 · smoke B0 · consistency 13/13 ·
+secret-audit) pero subió el ratchet ruff 1282→1319 (+37:
+30× UP045 Optional[X]→X|None · 4× I001 imports · 3× E741
+lambda l) → run #39 ROJO a los ~4 min. Diagnóstico
+read-only (regla §8: nada se toca sin reproducir el fallo
+exacto — reproducción local con el ruff 0.15.12 del lock)
+→ fix-forward 0029 (ed35109): ruff check --fix 35
+automáticos + E741 a mano (lambda l→log ×3) + mypy del
+vertical 12→0 (dict[str, Any] ×8 · str() explícito en el
+borde JSONB→Pydantic · results tipado). AST contrato
+35/35 INTACTO (0 cambios de comportamiento — Optional vs
+|None es cosmético) · SIN revert (misma saga que la sexta
+run #33→#34) · run #40 VERDE 5/5.
+
+GATES AL CIERRE (CI run #40 VERDE @ ed35109 — 5/5 jobs;
+sandbox espejo bajo lock): persistencia 46/46 (3 auth +
+6 family + 6 engagement + 6 event + 6 compliance + 6 guest
++ 6 satisfaction + 7 communication) + contrato agente
+communication 38/38 drop-in SIN TOCAR UN BYTE (tercera
+vertical drop-in total) · suite 885→892 · smoke B0 VERDE ·
+ruff 1256 ≤ 1282 · mypy módulos nuevos 0 (≤ 733, sin
+re-baseline) · consistency 13/13.
+
+QUEDÓ FUERA (by design): 11 repos in-memory restantes
 → siguientes verticales (mecánica §3.8 probada) ·
+age_group CAYÓ (agente acoplado a privados ~6
+sitios — refactor de contrato ANTES, ola aparte) ·
+wellness y member_360 sync read-heavy compute (ola
+aparte) · ApprovalEngine → Q-PER-03 (Ola 2.3) ·
+alembic upgrade head en deploy.
+
 age_group CAYÓ (agente acoplado a privados ~6
 sitios — refactor de contrato ANTES, ola aparte) ·
 wellness y member_360 sync read-heavy compute (ola
@@ -2564,19 +2652,23 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA CERRADOS) ═══
-  Q-PER-01  12 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA CERRADOS) ═══
+  Q-PER-01  11 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
             §3.8-SEXTA · satisfaction en Ola 2.1-septima
-            §3.8-SEPTIMA; 18 - 6) → SQLAlchemy async via db/orm/
+            §3.8-SEPTIMA · communication en Ola 2.1-octava
+            §3.8-OCTAVA; 12 - 1) → SQLAlchemy async via db/orm/
             (mecánica §3.8 probada: ORM + alembic + repo + gate
             — ya con lección run #28: read-path re-construye
-            enums). Siguiente: candidato del Chief Architect
-            de los 12 (age_group CAYÓ: agente acoplado a
-            privados — refactor antes; member_360: compute,
-            ola aparte; las simples siguen la mecánica).
+            enums · lección run #39: los ratchets ruff/mypy
+            corren en CI ANTES de cerrar la vertical — pasarlos
+            en sandbox primero). Siguiente: candidato del
+            Chief Architect de los 11 (age_group CAYÓ:
+            agente acoplado a privados — refactor antes;
+            member_360: compute, ola aparte; las simples
+            siguen la mecánica).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
@@ -2644,6 +2736,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.19 · Generación G24 (sincronizada con
-MASTER_BASE.md v9.19 y MASTER_CHECKLIST.md v9.19)
+END OF MASTER_CHECKPOINT.md v9.20 · Generación G25 (sincronizada con
+MASTER_BASE.md v9.20 y MASTER_CHECKLIST.md v9.20)
 
