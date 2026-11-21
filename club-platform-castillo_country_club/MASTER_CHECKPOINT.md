@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.27 · Generación G32 (Ola 2.1-decimoquinta — persistencia real: vertical finance) · Date: 2026-11-21
+### Version: 9.28 · Generación G33 (Ola 2.1-decimosexta — persistencia real: vertical wellness) · Date: 2026-11-21
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -58,12 +58,113 @@
 ###          @ b23080d — primera saga §8 en 8 generaciones
 ###          (orden de heap PG MVCC en get_budget, invisible
 ###          en sqlite) → repair 0046 run #57 @ 98cc4de
-###          VERDE a la primera del repair)
+###          VERDE a la primera del repair);
+###          G33 — Ola 2.1-decimosexta absorbida
+###          (§3.8-DECIMOSEXTA NUEVO · Q-PER-01 → 3
+###          repos · vertical 0048 run #59 VERDE 5/5
+###          @ 0c8438a A LA PRIMERA — segunda vertical
+###          seguida sin saga §8: cirugía async 22m
+###          (la más grande: compliance 8 → finance
+###          17 → wellness 22) con predictibilidad
+###          total sandbox→remoto)
 
 ---
 
 
 
+
+## CHANGELOG G33 (v9.27 → v9.28)
+OLA 2.1-DECIMOSEXTA — DECIMOSEXTO VERTICAL DE
+PERSISTENCIA REAL (PATH 2.2 · 16º repo de los 4 restantes
+— el candidato anunciado por G32 END) CERRADO en UNA
+corrida (0c8438a · run #59 VERDE 5/5 — evidencia: OUT del
+APLICAR-VERTICAL-DECIMASEXTA + CI run #59 — https://
+github.com/AnSoMo28/MCPBoardofDirectors/actions/runs/
+44949505867): vertical 0048. 5 tablas (wellness_profiles
+lists JSONB · wellness_goals · wellness_activities ·
+wellness_classes SIN created_at · wellness_appointments)
++ WellnessRepository async contrato EXACTO (22 métodos —
+misma superficie del in-memory tras la cirugía async del
+propio vertical, mecánica compliance §3.8-QUINQUE / finance
+§3.8-DECIMOQUINTA) + cirugía async del in-memory (22 def →
+async def — la MÁS GRANDE de la familia sync: compliance 8
+→ finance 17 → wellness 22 · 0 cirugía del agente: ya
+desacoplado, 0 self.repo._) + alembic 0016_wellness +
+swap OPT-IN 16º repo + suite 4. GATES AL CIERRE (run #59
+VERDE 5/5): persistencia 79/79 (3 auth + 6 family + 6
+engagement + 6 event + 6 compliance + 6 guest + 6
+satisfaction + 7 communication + 4 cultural_social + 4
+executive_dashboard + 4 proactive_recommendation + 4
+facility_management + 4 age_group + 4 sports_recreation +
+5 finance + 4 wellness) · pytest 921→925 · repos 4→3 ·
+ruff 1221→1197 ≤ 1282 (BAJA 24 — sexta vertical
+consecutiva) · mypy 733→723 ≤ 733 (BAJA 10 — quinta
+vertical que BAJA mypy) · consistency 13/13 · smoke B0
+VERDE · contrato AST 22/22 idéntico (nombres+args+
+defaults+async — verificado por ast.parse contra AMBOS
+repos) · drop-in in-memory vs ORM con dataset sembrado
+por los MISMOS métodos públicos: correlations + insights
+canon idénticos.
+
+SEMÁNTICAS LITERALES DEL IN-MEMORY PRESERVADAS: ids wlp_/
+goal_/wla_/cls_/appt_{hex8} · enums reconstruidos
+explícitos (estilo finance ExpenseCategory(e.category) —
+sin type: ignore) · profile lists JSONB roundtrip ·
+fitness_level str|enum al borde (_plain) · goals ACTIVE
+literal del create · activities date "" literal · classes
+SIN created_at (espejo del observable) · appointments
+SCHEDULED literal + enrolled_count += 1 si la clase existe
+(clase inexistente NO rompe — literal) · cancel con floor
+max(0, n-1) (doble cancel clava en 0 — MISMO floor) ·
+update_profile/update_goal None-ignora + updated_at
+SIEMPRE en profile · list_activities sort date DESC
+(orden contractual EXPLÍCITO) + filtros date string-
+compare · list_goals/list_classes/list_appointments
+filtros en Python con order_by(id) — lección MVCC run
+#56 INSTITUCIONALIZADA desde el diseño: TODO read del
+contrato lleva order_by(id) explícito, jamás el heap físico
+del result-set · streak = unique dates (literal del
+in-memory: cuenta fechas únicas, NO consecutivos) ·
+compute-on-read byte a byte: get_recommendations (avg
+150 OMS · clases [:3] · guards de perfil/goals/
+activities) · generate_report (breakdown · most_freq ·
+summary 🏃 STRING LITERAL MISMO) · compute_prediction
+(engagement 4 componentes: activity 4x, duration /10,
+goal_rate /5, perfil 10 — dataset demo = 62.5 · umbrales
+70/45/25 · churn 100-eng · forecast by_type · factores 4
+señales · confidence 10/15/15) · detect_anomalies (gap
+14d MEDIUM/30d HIGH · engagement_drop sin actividades ·
+goal_stagnation <10% MEDIUM · drop 50% segunda mitad ·
+overtraining 600 min/7d · summary ⚠️/ℹ️/✅ MISMO) ·
+compute_correlations (Pearson _pearson/_significance
+replicados como funciones de módulo · engagement por
+familia · retention 14d · revenue_proxy minutes/100 ·
+satisfaction goal_rate/100 · 3 tiers SIEMPRE · segmentos
+avg_spend 50k+eng×150k · NPS eng-10 · ranking revenue
+fam×eng×200_000 · sat min(1, eng/100+0.3) · churn min
+(0.3, eng/500) sort DESC) · compute_insights (90 días ·
+executive summary · key_findings financial SIEMPRE con ₡
+por codepoints · churn/20 · forecast ±5%/−10%).
+
+DEUDA DEL VERTICAL PAGADA DENTRO (lección run #39 —
+ratchets en sandbox bajo lock ANTES del push): ruff
+vertical 35→0: UP017×16 (timezone.utc→UTC) · C401×4
+(set comprehension) · RUF001/RUF003 (confusables ℹ/× —
+emoji armado por codepoints: runtime string idéntico,
+fuente limpio) · F401 (ActivityType/date sin uso) · B905
+(zip strict) · F841 (_report) · TC001 (TYPE_CHECKING
+import del repo en el agente) · SIM108 (ternario) ·
+I001×2 (isort). mypy 3→0 (await faltante de
+compute_prediction en insights · max key __getitem__ ·
+Any return cast · union-attr guard tipado).
+
+QUEDÓ FUERA (by design): 3 repos in-memory restantes →
+member_360 (11m sync · compute read-heavy — perfilar de
+primera: la mecánica compute de wellness/finance aplica)
+· document_intelligence (RAG lazy — ola aparte por
+dependencia) · ml_intelligence (numpy/sklearn — ola
+aparte) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
+upgrade head en deploy.
 
 ## CHANGELOG G32 (v9.26 → v9.27)
 OLA 2.1-DECIMOQUINTA — DECIMOQUINTO VERTICAL DE
@@ -125,6 +226,81 @@ compute read-heavy) · document_intelligence (RAG lazy —
 ola aparte por dependencia) · ml_intelligence (numpy/
 sklearn — ola aparte) · ApprovalEngine → Q-PER-03
 (Ola 2.3) · alembic upgrade head en deploy.
+
+### §3.8-DECIMOSEXTA OLA 2.1-DECIMOSEXTA · PERSISTENCIA REAL — VERTICAL WELLNESS (✅ CERRADA 2026-11-21)
+
+PERFIL PREVIO (candidato anunciado por G32 END: "wellness
+22m sync · 0 awaited — cirugía async como compliance/
+finance"). Una entrega: vertical 0048 (run #59 VERDE 5/5
+@ 0c8438a — A LA PRIMERA, https://github.com/AnSoMo28/
+MCPBoardofDirectors/actions/runs/44949505867).
+
+PERFILADO REAL contra el árbol (regla §3.2.7): 22 métodos
+públicos SYNC · 0 privados de instancia tocados por el
+agente (solo _gen_id idéntico + 2 @staticmethod
+_pearson/_significance NO tocados — replicados como
+funciones de módulo en el ORM) · sin seed · sin deps (ni
+RAG ni numpy/sklearn) · suite del agente 28 tests (7
+clases · 4 fixtures autouse sync seed — migradas a async
+pytest_asyncio) · modelos SANOS (imports datetime/Any
+correctos — el bug H-2 de guest NO se repite). Verdict:
+mecánica compliance §3.8-QUINQUE / finance §3.8-DECIMO-
+QUINTA — cirugía async 22/22, la más grande de la familia
+sync.
+
+0048 (0c8438a · run #59): 5 tablas espejo del estado del
+in-memory (wellness_profiles lists JSONB · wellness_goals
+· wellness_activities · wellness_classes SIN created_at —
+el modelo no lo tiene: espejo exacto del observable ·
+wellness_appointments) + WellnessRepository async contrato
+EXACTO (22 métodos — AST 22/22 idéntico verificado por
+ast.parse contra AMBOS repos: nombres+args+defaults+
+async) + CIRUGÍA ASYNC del in-memory (22 def → async
+def, cuerpos intactos — el agente YA desacoplado: 14
+call sites = await, 0 cirugía del agente) + alembic
+0016_wellness (@0015 · sin índices · sin seed) + swap
+OPT-IN 16º repo (bootstrap + db/orm/__init__ + CI
+persistence job) + suite 4 (entidades write-restart-read
+con enrolled_count increment/floor · filtros/updates
+None-ignora · compute-on-read tras restart con aritmética
+REAL: engagement 62.5 · trend stable · goal_stagnation
+al 0% · drop-in in-memory vs ORM con dataset sembrado
+por los MISMOS métodos públicos: correlations + insights
+canon idénticos).
+
+HALLAZGO DE PERFILADO que cambió la suite: el dataset
+demo produce engagement 62.5 (6×4=24 + 285/10=28.5 +
+goal_rate 0/1→0 + perfil 10) con trend STABLE (62.5 ∈
+[45,70)) y goal_stagnation al 0% (goal ACTIVE target 5.0
+current 0 → progress 0 < 10) — NO los 85/improving que
+una estimación de memoria daría. El suite final afirma
+la aritmética REAL del in-memory porque se VERIFICÓ
+ejecutando: predictibilidad total sandbox→remoto (todo
+lo validado en el run #58-previo calzó 1:1 con el run
+#59 remoto).
+
+GATES AL CIERRE (run #59 VERDE 5/5; sandbox espejo bajo
+lock): persistencia 79/79 (…+4 wellness) · pytest
+921→925 · contrato AST 22/22 idéntico · drop-in canon
+correlations/insights idéntico · ruff 1221→1197 ≤ 1282
+(BAJA 24 — sexta vertical consecutiva) · mypy 733→723
+≤ 733 (BAJA 10 — quinta vertical que BAJA mypy) · smoke
+B0 VERDE (19 agentes · 207 tools · RBAC 207/207) ·
+consistency 13/13 · alembic upgrade head → 0016
+verificado.
+
+DEUDA DEL VERTICAL PAGADA DENTRO (lección run #39):
+ruff vertical 35→0 + mypy 3→0 (detalle completo en
+CHANGELOG G33) — el vertical NO sube deuda: la BAJA en
+ambos ratchets (−24 ruff · −10 mypy globales).
+
+QUEDÓ FUERA (by design): 3 repos in-memory restantes →
+member_360 (11m sync · compute read-heavy — perfilar de
+primera: la mecánica compute de wellness/finance aplica)
+· document_intelligence (RAG lazy — ola aparte por
+dependencia) · ml_intelligence (numpy/sklearn — ola
+aparte) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
+upgrade head en deploy.
 
 ## CHANGELOG G31 (v9.25 → v9.26)
 OLA 2.1-DECIMOCUARTA — DECIMOCUARTO VERTICAL DE PERSISTENCIA
@@ -2685,6 +2861,15 @@ la undécima en masters v9.23 — YA MIGRADO en Ola 2.1-duodécima
 +invisible en sqlite) + repair 0046 run #57 @ 98cc4de
 +VERDE. Lección MVCC: el orden contractual vive en el ENUM
 +u ORDER BY, NUNCA en el heap.)
++(wellness 22m sync · 0 awaited — la cirugía async MÁS
++GRANDE de la familia sync: compliance 8 → finance 17 →
++wellness 22 — el candidato anunciado por G32 END —
++YA MIGRADO en Ola 2.1-decimosexta §3.8-DECIMOSEXTA:
++vertical 0048 run #59 VERDE 5/5 @ 0c8438a A LA PRIMERA.
++Lección de perfilado: el dataset demo produce
++engagement 62.5 con goal_stagnation al 0% — el suite
++afirma la aritmética REAL del in-memory, verificada
++ejecutando, no estimada.)
 
 ### §3.8-DECIMOQUINTA OLA 2.1-DECIMOQUINTA · PERSISTENCIA REAL — VERTICAL FINANCE (✅ CERRADA 2026-11-21)
 
@@ -3602,8 +3787,8 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA · age_group §3.8-DECIMATERCERA · sports_recreation §3.8-DECIMOCUARTA · finance §3.8-DECIMOQUINTA CERRADOS) ═══
-  Q-PER-01  4 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA · age_group §3.8-DECIMATERCERA · sports_recreation §3.8-DECIMOCUARTA · finance §3.8-DECIMOQUINTA · wellness §3.8-DECIMOSEXTA CERRADOS) ═══
+  Q-PER-01  3 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
@@ -3621,12 +3806,18 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             finance en Ola 2.1-decimoquinta §3.8-DECIMOQUINTA
             (cirugía async como compliance — con lección MVCC
             run #56: el orden contractual vive en el ENUM u
-            ORDER BY, nunca en el heap);
-            de los 4 restantes NINGUNO necesita refactor
+            ORDER BY, nunca en el heap) ·
+            wellness en Ola 2.1-decimosexta §3.8-DECIMOSEXTA
+            (cirugía async 22m — la más grande de la familia
+            sync: compliance 8 → finance 17 → wellness 22 ·
+            run #59 VERDE a la primera · perfilado que cambió
+            el suite: aritmética REAL engagement 62.5
+            verificada ejecutando);
+            de los 3 restantes NINGUNO necesita refactor
             de contrato (0 privados tocados) — pero
-            wellness/member_360 son sync ·
+            member_360 es sync ·
             doc_intel RAG · ml_intel numpy →
-            siguientes: wellness/member_360 cirugía
+            siguientes: member_360 cirugía
             async / compute · doc_intel/ml_intel
             olas aparte) → SQLAlchemy
             async via db/orm/
@@ -3636,10 +3827,13 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             corren en CI ANTES de cerrar la vertical — pasarlos
             en sandbox primero · lección run #56: PG MVCC
             reordena el heap tras UPDATE — contrato de orden
-            solo con ENUM u ORDER BY). Siguiente: candidato del
-            Chief Architect de los 4 (wellness/member_360:
-            cirugía async / compute, olas aparte; las simples
-            siguen la mecánica).
+            solo con ENUM u ORDER BY · lección de perfilado
+            wellness: el suite afirma la aritmética REAL del
+            in-memory, verificada ejecutando — no estimada).
+            Siguiente: candidato del
+            Chief Architect de los 3 (member_360:
+            cirugía async / compute; doc_intel/ml_intel
+            olas aparte por dependencia).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
@@ -3707,6 +3901,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.27 · Generación G32 (sincronizada con
-MASTER_BASE.md v9.27 y MASTER_CHECKLIST.md v9.27)
+END OF MASTER_CHECKPOINT.md v9.28 · Generación G33 (sincronizada con
+MASTER_BASE.md v9.28 y MASTER_CHECKLIST.md v9.28)
 

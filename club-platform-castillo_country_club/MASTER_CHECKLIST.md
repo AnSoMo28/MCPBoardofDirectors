@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.27 · Generación G32 (Ola 2.1-decimoquinta — persistencia real: vertical finance) · 180 checks · ZERO tolerance
+### Version: 9.28 · Generación G33 (Ola 2.1-decimosexta — persistencia real: vertical wellness) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,66 @@
 ###          cambia la evidencia)
 
 ---
+
+
+## CHANGELOG G33 (v9.27 → v9.28)
+OLA 2.1-DECIMOSEXTA CERRADA — GATES:
+
+PASO persistence extiende wellness (run #59): write →
+restart → read OK — ahora auth+family+engagement+event+
+compliance+guest+satisfaction+communication+cultural_
+social+executive_dashboard+proactive_recommendation+
+facility_management+age_group+sports_recreation+finance
++wellness (79 tests · 3+6+6+6+6+6+6+7+4+4+4+4+4+4+5+4).
+Evidencia: vertical 0048 run #59 VERDE 5/5 @ 0c8438a A LA
+PRIMERA (segunda saga §8-tris consecutiva sin ROJO:
+#57 finance → #59 wellness — https://github.com/
+AnSoMo28/MCPBoardofDirectors/actions/runs/44949505867).
+DECIMOSEXTA vertical de la familia de cirugía async —
+la MÁS GRANDE hasta ahora: 22 métodos sync→async
+(compliance 8 → finance 17 → wellness 22) con 0
+cirugía del agente (ya desacoplado: 0 self.repo._).
+Contrato AST 22/22 idéntico (nombres+args+defaults+
+async verificado por ast.parse contra AMBOS repos).
+5 tablas espejo 1:1 (wellness_profiles JSONB lists ·
+wellness_goals · wellness_activities · wellness_classes
+SIN created_at — el modelo no lo tiene, espejo exacto
+del observable · wellness_appointments) + alembic
+0016 (@0015 · sin índices · sin seed — el in-memory
+nace vacío). SEMÁNTICAS LITERALES preservadas: ids
+wlp_/goal_/wla_/cls_/appt_{hex8} · enums reconstruidos
+explícitos · SCHEDULED/ACTIVE literales del create ·
+enrolled_count += 1 en create_appointment con floor
+max(0, n-1) en cancel (doble cancel clava en 0) ·
+update_* None-ignora + updated_at SIEMPRE · filtros
+list_* con order_by(id) EXPLÍCITO en TODOS los reads
+(lección MVCC run #56 institucionalizada desde el
+diseño) · streak = unique dates (literal del in-
+memory, NO consecutivos) · compute-on-read byte a
+byte: prediction engagement 4 componentes (24+28.5+
+0+10 = 62.5 en el dataset demo — aritmética REAL
+afirmada por el suite, verificada ejecutando) ·
+anomalías 4 detectores (gap 14d/30d · stagnation <10%
+· drop 50% · overtraining 600 min/sem) · Pearson
+_pearson/_significance replicados como funciones de
+módulo · 3 tiers SIEMPRE · ranking revenue 200_000 ·
+insights 90 días. DEUDA DEL VERTICAL PAGADA DENTRO
+(lección run #39): ruff vertical 35→0 (UP017×16 ·
+C401×4 · RUF001/RUF003 confusables por codepoints —
+runtime string idéntico · F401 · B905 · TC001 ·
+SIM108 · F841) + mypy 3→0. Cifras: pytest 921→925 ·
+persistencia 75→79 · repos 4→3 · consistency 13/13 ·
+ruff 1221→1197 ≤ 1282 (BAJA 24 — sexta vertical
+consecutiva que BAJA) · mypy 733→723 ≤ 733 (BAJA 10
+— quinta vertical que BAJA mypy) · smoke B0 VERDE.
+CONTRATO DROP-IN con dataset sembrado por los MISMOS
+métodos públicos: correlations + insights canon
+idénticos in-memory vs ORM.
+END: masters v9.28 · Q-PER-01 → 3 repos restantes ·
+siguiente: member_360 (11m sync · compute read-heavy
+— perfilar de primera) · document_intelligence (RAG
+lazy — ola aparte por dependencia) · ml_intelligence
+(numpy/sklearn — ola aparte).
 
 ## CHANGELOG G32 (v9.26 → v9.27)
 OLA 2.1-DECIMOQUINTA CERRADA — GATES:
@@ -1862,5 +1922,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.27 · Generación G32 (sincronizada con
-MASTER_BASE.md v9.27 y MASTER_CHECKPOINT.md v9.27)
+END OF MASTER_CHECKLIST.md v9.28 · Generación G33 (sincronizada con
+MASTER_BASE.md v9.28 y MASTER_CHECKPOINT.md v9.28)
