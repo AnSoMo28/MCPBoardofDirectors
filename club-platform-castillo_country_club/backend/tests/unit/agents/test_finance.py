@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import date
 from uuid import UUID
 
+import pytest_asyncio
+
 import pytest
 
 from club_mcp.agents.finance import FinanceAgent
@@ -35,32 +37,32 @@ def fin_agent(
     return FinanceAgent(fin_repo, approval_engine, family_repo=family_repo)
 
 
-def _seed_financials(repo: FinanceRepository) -> None:
+async def _seed_financials(repo: FinanceRepository) -> None:
     """Seed some expenses and invoices."""
     from club_mcp.models.finance import ExpenseCreate, InvoiceCreate, InvoiceItem
 
     # Set budgets
-    repo.set_budget("maintenance", 50000.0)
-    repo.set_budget("food_beverage", 30000.0)
-    repo.set_budget("staff", 80000.0)
-    repo.set_budget("events", 20000.0)
+    await repo.set_budget("maintenance", 50000.0)
+    await repo.set_budget("food_beverage", 30000.0)
+    await repo.set_budget("staff", 80000.0)
+    await repo.set_budget("events", 20000.0)
 
     # Expenses
-    repo.create_expense(ExpenseCreate(
+    await repo.create_expense(ExpenseCreate(
         description="Poda de jardines",
         amount=3500.0,
         category="maintenance",
         vendor="Jardín Express",
         date="2025-01-15",
     ))
-    repo.create_expense(ExpenseCreate(
+    await repo.create_expense(ExpenseCreate(
         description="Catering evento",
         amount=8000.0,
         category="food_beverage",
         vendor="Chef Mario",
         date="2025-01-20",
     ))
-    repo.create_expense(ExpenseCreate(
+    await repo.create_expense(ExpenseCreate(
         description="Mantenimiento piscina",
         amount=5000.0,
         category="maintenance",
@@ -69,7 +71,7 @@ def _seed_financials(repo: FinanceRepository) -> None:
     ))
 
     # Invoice
-    repo.create_invoice(
+    await repo.create_invoice(
         InvoiceCreate(
             family_id="fam-001",
             items=[
@@ -206,9 +208,9 @@ class TestInvoiceCreate:
 
 class TestBudgetCheck:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, fin_agent):
-        _seed_financials(fin_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, fin_agent):
+        await _seed_financials(fin_agent.repo)
 
     @pytest.mark.asyncio
     async def test_check_budget(self, fin_agent):
@@ -284,9 +286,9 @@ class TestPaymentProcess:
 
 class TestReportGenerate:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, fin_agent):
-        _seed_financials(fin_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, fin_agent):
+        await _seed_financials(fin_agent.repo)
 
     @pytest.mark.asyncio
     async def test_generates_report(self, fin_agent):
@@ -323,9 +325,9 @@ class TestReportGenerate:
 
 class TestAccountStatus:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, fin_agent):
-        _seed_financials(fin_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, fin_agent):
+        await _seed_financials(fin_agent.repo)
 
     @pytest.mark.asyncio
     async def test_family_with_invoice(self, fin_agent):
@@ -341,13 +343,12 @@ class TestAccountStatus:
     @pytest.mark.asyncio
     async def test_balance_reflects_payments(self, fin_agent):
         from club_mcp.models.finance import PaymentCreate
-        fin_agent.repo.create_payment(PaymentCreate(
+        await fin_agent.repo.create_payment(PaymentCreate(
             family_id="fam-001", amount=5000, method="transfer",
         ))
-        fin_agent.repo.list_payments(family_id="fam-001")
         # Mark as paid manually for test
-        p = fin_agent.repo.list_payments(family_id="fam-001")[0]
-        fin_agent.repo.update_payment_status(p.id, "paid")
+        p = (await fin_agent.repo.list_payments(family_id="fam-001"))[0]
+        await fin_agent.repo.update_payment_status(p.id, "paid")
 
         res = await fin_agent.finance_account_status("fam-001")
         assert res["data"]["total_paid"] == 5000
@@ -394,9 +395,9 @@ class TestCategoryUpdate:
 
 class TestGenerateAiAnalysis:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, fin_agent):
-        _seed_financials(fin_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, fin_agent):
+        await _seed_financials(fin_agent.repo)
 
     @pytest.mark.asyncio
     async def test_returns_success(self, fin_agent):

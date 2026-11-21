@@ -1,12 +1,19 @@
 """In-memory financial repository.
 
+Ola 2.1-decimoquinta: cirugía async sync→async (misma mecánica
+que compliance §3.8-QUINQUE — el agente YA era 100% async en sus
+tools y 100% desacoplado de privados: 0 self.repo._). El cuerpo de
+cada método NO cambia: async def + return igual — el contrato
+observable queda idéntico, solo pasa a ser awaitable para que el
+repo ORM (db/orm) pueda ser drop-in exacto.
+
 Production will swap for PostgreSQL + SQLAlchemy.
 """
 
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
 
 from club_mcp.models.finance import (
@@ -21,7 +28,6 @@ from club_mcp.models.finance import (
     FinancialReport,
     Invoice,
     InvoiceCreate,
-    InvoiceItem,
     InvoiceStatus,
     Payment,
     PaymentCreate,
@@ -49,9 +55,9 @@ class FinanceRepository:
 
     # ── Expenses ───────────────────────────────────────────
 
-    def create_expense(self, data: ExpenseCreate) -> Expense:
+    async def create_expense(self, data: ExpenseCreate) -> Expense:
         eid = _gen_id("exp")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         rec = {
             "id": eid,
             "description": data.description,
@@ -66,12 +72,12 @@ class FinanceRepository:
         self._expenses[eid] = rec
         return Expense(**rec)
 
-    def get_expense(self, expense_id: str) -> Expense | None:
+    async def get_expense(self, expense_id: str) -> Expense | None:
         if expense_id not in self._expenses:
             return None
         return Expense(**self._expenses[expense_id])
 
-    def list_expenses(
+    async def list_expenses(
         self,
         category: str | None = None,
         date_from: str | None = None,
@@ -90,9 +96,9 @@ class FinanceRepository:
 
     # ── Invoices ───────────────────────────────────────────
 
-    def create_invoice(self, data: InvoiceCreate, family_name: str = "") -> Invoice:
+    async def create_invoice(self, data: InvoiceCreate, family_name: str = "") -> Invoice:
         iid = _gen_id("inv")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         items = []
         subtotal = 0.0
         for item in data.items:
@@ -125,18 +131,18 @@ class FinanceRepository:
         self._invoices[iid] = rec
         return Invoice(**rec)
 
-    def get_invoice(self, invoice_id: str) -> Invoice | None:
+    async def get_invoice(self, invoice_id: str) -> Invoice | None:
         if invoice_id not in self._invoices:
             return None
         return Invoice(**self._invoices[invoice_id])
 
-    def update_invoice_status(self, invoice_id: str, status: str) -> Invoice | None:
+    async def update_invoice_status(self, invoice_id: str, status: str) -> Invoice | None:
         if invoice_id not in self._invoices:
             return None
         self._invoices[invoice_id]["status"] = status
         return Invoice(**self._invoices[invoice_id])
 
-    def list_invoices(
+    async def list_invoices(
         self,
         family_id: str | None = None,
         status: str | None = None,
@@ -152,9 +158,9 @@ class FinanceRepository:
 
     # ── Payments ───────────────────────────────────────────
 
-    def create_payment(self, data: PaymentCreate, family_name: str = "") -> Payment:
+    async def create_payment(self, data: PaymentCreate, family_name: str = "") -> Payment:
         pid = _gen_id("pay")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         rec = {
             "id": pid,
             "invoice_id": data.invoice_id,
@@ -171,13 +177,13 @@ class FinanceRepository:
         self._payments[pid] = rec
         return Payment(**rec)
 
-    def update_payment_status(self, payment_id: str, status: str) -> Payment | None:
+    async def update_payment_status(self, payment_id: str, status: str) -> Payment | None:
         if payment_id not in self._payments:
             return None
         self._payments[payment_id]["status"] = status
         return Payment(**self._payments[payment_id])
 
-    def list_payments(self, family_id: str | None = None) -> list[Payment]:
+    async def list_payments(self, family_id: str | None = None) -> list[Payment]:
         out: list[Payment] = []
         for rec in self._payments.values():
             if family_id and rec["family_id"] != family_id:
@@ -187,7 +193,7 @@ class FinanceRepository:
 
     # ── Budgets ────────────────────────────────────────────
 
-    def get_budget(self, period: str = "monthly") -> BudgetSummary:
+    async def get_budget(self, period: str = "monthly") -> BudgetSummary:
         lines: list[BudgetLine] = []
         total_budgeted = 0.0
         total_spent = 0.0
@@ -223,11 +229,11 @@ class FinanceRepository:
             lines=lines,
         )
 
-    def set_budget(self, category: str, amount: float) -> None:
+    async def set_budget(self, category: str, amount: float) -> None:
         self._budgets[category] = amount
 
-    def get_account_status(self, family_id: str) -> AccountStatus | None:
-        invoices = self.list_invoices(family_id=family_id)
+    async def get_account_status(self, family_id: str) -> AccountStatus | None:
+        invoices = await self.list_invoices(family_id=family_id)
         if not invoices:
             # Return empty account status rather than None for unknown families
             return AccountStatus(
@@ -235,7 +241,7 @@ class FinanceRepository:
                 family_name="",
             )
 
-        payments = self.list_payments(family_id=family_id)
+        payments = await self.list_payments(family_id=family_id)
         total_invoiced = sum(inv.total for inv in invoices)
         total_paid = sum(pay.amount for pay in payments if pay.status == PaymentStatus.PAID.value)
         balance = total_invoiced - total_paid
@@ -266,13 +272,13 @@ class FinanceRepository:
 
     # ── Reports ────────────────────────────────────────────
 
-    def generate_report(
+    async def generate_report(
         self,
         report_type: str,
         date_from: str,
         date_to: str,
     ) -> FinancialReport:
-        expenses = self.list_expenses(date_from=date_from, date_to=date_to)
+        expenses = await self.list_expenses(date_from=date_from, date_to=date_to)
         payments_list = [
             p for p in self._payments.values()
             if p.get("date", "") >= date_from and p.get("date", "") <= date_to
@@ -316,7 +322,7 @@ class FinanceRepository:
 
     # ── Cash Position ──────────────────────────────────────
 
-    def get_cash_position(self) -> float:
+    async def get_cash_position(self) -> float:
         """Get current cash position: seed + paid payments - expenses."""
         total_paid = sum(
             p["amount"] for p in self._payments.values()
@@ -331,10 +337,10 @@ class FinanceRepository:
 
     # ── Accounts Receivable ────────────────────────────────
 
-    def get_accounts_receivable_summary(self) -> dict[str, Any]:
+    async def get_accounts_receivable_summary(self) -> dict[str, Any]:
         """Get total AR and aging buckets from unpaid invoices."""
         today = date.today()
-        all_invoices = self.list_invoices()
+        all_invoices = await self.list_invoices()
         unpaid = [
             inv for inv in all_invoices
             if inv.status != InvoiceStatus.PAID.value
@@ -389,7 +395,7 @@ class FinanceRepository:
 
     # ── Monthly Trend ──────────────────────────────────────
 
-    def get_monthly_trend(
+    async def get_monthly_trend(
         self, date_from: str, date_to: str
     ) -> list[FinancialMonthlyTrend]:
         """Aggregate revenue and expenses by month."""

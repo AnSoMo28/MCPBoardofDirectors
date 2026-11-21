@@ -144,7 +144,7 @@ class FinanceAgent(BaseAgent):
     ) -> dict[str, Any]:
         """Execute expense creation post-approval."""
         validated = ExpenseCreate(**expense_data)
-        expense = self.repo.create_expense(validated)
+        expense = await self.repo.create_expense(validated)
 
         return {
             "status": "success",
@@ -225,7 +225,7 @@ class FinanceAgent(BaseAgent):
     ) -> dict[str, Any]:
         """Execute invoice creation post-approval."""
         validated = InvoiceCreate(**invoice_data)
-        invoice = self.repo.create_invoice(validated)
+        invoice = await self.repo.create_invoice(validated)
 
         return {
             "status": "success",
@@ -250,7 +250,7 @@ class FinanceAgent(BaseAgent):
         period: str = "monthly",
     ) -> dict[str, Any]:
         """Check budget status."""
-        budget = self.repo.get_budget(period)
+        budget = await self.repo.get_budget(period)
         emoji = "✅" if budget.utilization_pct < 80 else "⚠️"
 
         return {
@@ -339,15 +339,15 @@ class FinanceAgent(BaseAgent):
     ) -> dict[str, Any]:
         """Execute payment processing post-approval."""
         validated = PaymentCreate(**payment_data)
-        payment = self.repo.create_payment(validated)
+        payment = await self.repo.create_payment(validated)
         # Auto-approve the payment post HITL approval
-        payment = self.repo.update_payment_status(payment.id, "paid") or payment
+        payment = await self.repo.update_payment_status(payment.id, "paid") or payment
 
         # If linked to an invoice, mark it as paid
         if validated.invoice_id:
-            inv = self.repo.get_invoice(validated.invoice_id)
+            inv = await self.repo.get_invoice(validated.invoice_id)
             if inv:
-                self.repo.update_invoice_status(validated.invoice_id, "paid")
+                await self.repo.update_invoice_status(validated.invoice_id, "paid")
 
         return {
             "status": "success",
@@ -386,7 +386,7 @@ class FinanceAgent(BaseAgent):
                 "message": "La fecha de inicio debe ser anterior a la fecha de fin.",
             }
 
-        report = self.repo.generate_report(report_type, date_from, date_to)
+        report = await self.repo.generate_report(report_type, date_from, date_to)
 
         return {
             "status": "success",
@@ -410,7 +410,7 @@ class FinanceAgent(BaseAgent):
         family_id: str,
     ) -> dict[str, Any]:
         """Get account status for a family."""
-        status = self.repo.get_account_status(family_id)
+        status = await self.repo.get_account_status(family_id)
 
         if not status or (not status.invoices and status.total_invoiced == 0):
             return {
@@ -480,7 +480,7 @@ class FinanceAgent(BaseAgent):
             }
 
         rows: list[dict[str, Any]] = []
-        for inv in self.repo.list_invoices(family_id=family_id):
+        for inv in await self.repo.list_invoices(family_id=family_id):
             rows.append({
                 "id": inv.id,
                 "date": (inv.due_date or str(inv.created_at.date())),
@@ -490,7 +490,7 @@ class FinanceAgent(BaseAgent):
                 "status": inv.status.value,
                 "method": "",
             })
-        for pay in self.repo.list_payments(family_id=family_id):
+        for pay in await self.repo.list_payments(family_id=family_id):
             rows.append({
                 "id": pay.id,
                 "date": pay.date or "",
@@ -544,7 +544,7 @@ class FinanceAgent(BaseAgent):
                 "status": "error",
                 "message": "Se requiere family_id 🧾",
             }
-        invoices = self.repo.list_invoices(
+        invoices = await self.repo.list_invoices(
             family_id=family_id,
             status=status or None,
         )
@@ -601,7 +601,7 @@ class FinanceAgent(BaseAgent):
                 "message": "El presupuesto no puede ser negativo.",
             }
 
-        self.repo.set_budget(cat_enum.value, budget_amount)
+        await self.repo.set_budget(cat_enum.value, budget_amount)
 
         return {
             "status": "success",
@@ -639,12 +639,12 @@ class FinanceAgent(BaseAgent):
 
         # ── 1. Gather data ──
         try:
-            budget = self.repo.get_budget(budget_period)
+            budget = await self.repo.get_budget(budget_period)
         except Exception:
             budget = BudgetSummary(period=budget_period)
 
         try:
-            report = self.repo.generate_report("income_expense", date_from, date_to)
+            report = await self.repo.generate_report("income_expense", date_from, date_to)
         except Exception:
             report = FinancialReport(
                 report_type="income_expense",
@@ -1376,7 +1376,7 @@ class FinanceAgent(BaseAgent):
 
         # 1. Gather data
         try:
-            report = self.repo.generate_report(
+            report = await self.repo.generate_report(
                 "income_expense", date_from, date_to
             )
         except Exception:
@@ -1387,7 +1387,7 @@ class FinanceAgent(BaseAgent):
             )
 
         try:
-            budget = self.repo.get_budget(budget_period)
+            budget = await self.repo.get_budget(budget_period)
         except Exception:
             budget = BudgetSummary(period=budget_period)
 
@@ -1404,15 +1404,15 @@ class FinanceAgent(BaseAgent):
         )
 
         # 3. Cash position
-        cash_position = self.repo.get_cash_position()
+        cash_position = await self.repo.get_cash_position()
 
         # 4. Accounts receivable + aging
-        ar_data = self.repo.get_accounts_receivable_summary()
+        ar_data = await self.repo.get_accounts_receivable_summary()
         accounts_receivable = ar_data["total_ar"]
         ar_aging: list[FinancialARAgingBucket] = ar_data["aging"]
 
         # 5. Collection ratio
-        all_invoices = self.repo.list_invoices()
+        all_invoices = await self.repo.list_invoices()
         total_invoiced = sum(inv.total for inv in all_invoices)
         total_paid_inv = sum(
             inv.total for inv in all_invoices
@@ -1425,7 +1425,7 @@ class FinanceAgent(BaseAgent):
 
         # 6. Monthly trend
         monthly_trend: list[FinancialMonthlyTrend] = (
-            self.repo.get_monthly_trend(date_from, date_to)
+            await self.repo.get_monthly_trend(date_from, date_to)
         )
 
         # 7. Revenue by source
@@ -1517,12 +1517,12 @@ class FinanceAgent(BaseAgent):
 
         # ── 1. Gather all data (same as generate_ai_analysis) ──
         try:
-            budget = self.repo.get_budget(budget_period)
+            budget = await self.repo.get_budget(budget_period)
         except Exception:
             budget = BudgetSummary(period=budget_period)
 
         try:
-            report = self.repo.generate_report(
+            report = await self.repo.generate_report(
                 "income_expense", date_from, date_to
             )
         except Exception:
@@ -1562,7 +1562,7 @@ class FinanceAgent(BaseAgent):
 
         cash_position = 0.0
         try:
-            cash_position = self.repo.get_cash_position()
+            cash_position = await self.repo.get_cash_position()
         except Exception:
             logger.exception("[finance] Failed to load cash position")
 
@@ -1757,7 +1757,7 @@ class FinanceAgent(BaseAgent):
         months = self._months_in_period(period)
 
         try:
-            report = self.repo.generate_report(
+            report = await self.repo.generate_report(
                 "income_expense", date_from, date_to
             )
         except Exception:
@@ -1768,7 +1768,7 @@ class FinanceAgent(BaseAgent):
             )
 
         try:
-            budget = self.repo.get_budget(budget_period)
+            budget = await self.repo.get_budget(budget_period)
         except Exception:
             budget = BudgetSummary(period=budget_period)
 
@@ -1812,7 +1812,7 @@ class FinanceAgent(BaseAgent):
         annualizer = 12 / max(months, 1)
 
         try:
-            budget = self.repo.get_budget(budget_period)
+            budget = await self.repo.get_budget(budget_period)
         except Exception:
             budget = BudgetSummary(period=budget_period)
 
@@ -1947,7 +1947,7 @@ class FinanceAgent(BaseAgent):
         months = self._months_in_period(period)
 
         try:
-            report = self.repo.generate_report(
+            report = await self.repo.generate_report(
                 "income_expense", date_from, date_to
             )
         except Exception:
@@ -2040,12 +2040,12 @@ class FinanceAgent(BaseAgent):
         months = self._months_in_period(period)
 
         try:
-            budget = self.repo.get_budget(budget_period)
+            budget = await self.repo.get_budget(budget_period)
         except Exception:
             budget = BudgetSummary(period=budget_period)
 
         try:
-            report = self.repo.generate_report(
+            report = await self.repo.generate_report(
                 "income_expense", date_from, date_to
             )
         except Exception:

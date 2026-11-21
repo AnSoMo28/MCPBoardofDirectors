@@ -196,8 +196,8 @@ class TestFinanceLedger:
             family_repo=FamilyRepository(),
         )
 
-    def _seed_invoice(self, agent, family_id="fam-001"):
-        return agent.repo.create_invoice(
+    async def _seed_invoice(self, agent, family_id="fam-001"):
+        return await agent.repo.create_invoice(
             InvoiceCreate(
                 family_id=family_id,
                 items=[
@@ -216,11 +216,12 @@ class TestFinanceLedger:
     def test_transactions_require_family(self):
         assert _run(self._agent().finance_transactions_list(family_id=""))["status"] == "error"
 
-    def test_transactions_pagination(self):
+    @pytest.mark.asyncio
+    async def test_transactions_pagination(self):
         agent = self._agent()
-        self._seed_invoice(agent)
-        out = _run(
-            agent.finance_transactions_list(family_id="fam-001", page=1, page_size=1)
+        await self._seed_invoice(agent)
+        out = await agent.finance_transactions_list(
+            family_id="fam-001", page=1, page_size=1
         )
         assert out["status"] == "success"
         assert out["total"] >= 1
@@ -228,19 +229,21 @@ class TestFinanceLedger:
         assert len(out["transactions"]) == 1
         assert out["transactions"][0]["type"] == "charge"
 
-    def test_transactions_type_filter(self):
+    @pytest.mark.asyncio
+    async def test_transactions_type_filter(self):
         agent = self._agent()
-        self._seed_invoice(agent)
-        out = _run(
-            agent.finance_transactions_list(family_id="fam-001", type="payment")
+        await self._seed_invoice(agent)
+        out = await agent.finance_transactions_list(
+            family_id="fam-001", type="payment"
         )
         assert out["status"] == "success"
         assert all(t["type"] == "payment" for t in out["transactions"])
 
-    def test_invoices_list_shape(self):
+    @pytest.mark.asyncio
+    async def test_invoices_list_shape(self):
         agent = self._agent()
-        inv = self._seed_invoice(agent)
-        out = _run(agent.finance_invoices_list(family_id="fam-001"))
+        inv = await self._seed_invoice(agent)
+        out = await agent.finance_invoices_list(family_id="fam-001")
         assert out["status"] == "success"
         assert out["total"] == len(out["invoices"]) == 1
         row = out["invoices"][0]
