@@ -442,7 +442,8 @@ export function WellnessAIAdvisor({
                     { "--stagger-i": i } as React.CSSProperties
                   }
                 >
-                  <button
+                  <Button
+                    variant="unstyled"
                     className="waa__finding-header"
                     onClick={() => toggleFinding(i)}
                     type="button"
@@ -461,7 +462,7 @@ export function WellnessAIAdvisor({
                       <p className="waa__finding-text">{finding.finding}</p>
                     </div>
                     <ChevronDown className="waa__finding-chevron w-4 h-4" aria-hidden="true" />
-                  </button>
+                  </Button>
                   <div className="waa__finding-body">
                     <p className="waa__finding-action">→ {finding.action}</p>
                   </div>

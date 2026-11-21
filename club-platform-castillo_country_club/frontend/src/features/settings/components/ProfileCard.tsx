@@ -1,11 +1,12 @@
 /**
  * @component ProfileCard (Fase 25)
  * @namespace .glass-settings__profile
- * @depends SettingsPage.css
+ * @depends ProfileCard.css
  * @note Profile with avatar, role, meta rows, and AI perception block.
  *       "Así te ve el club" — shows how the AI system perceives the socio.
- * @import import '../SettingsPage.css';
+ * @import import './ProfileCard.css';
  */
+import "./ProfileCard.css";
 
 import { User, Mail, Shield } from "lucide-react";
 import type { User as UserType } from "@/stores/auth.store";

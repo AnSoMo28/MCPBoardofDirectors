@@ -290,7 +290,8 @@ export default function ExpenseManager() {
                 </label>
                 <div className="glass-expense-category-grid">
                   {categoryOptions.map((opt) => (
-                    <button
+                    <Button
+                      variant="unstyled"
                       key={opt.value}
                       type="button"
                       onClick={() => setCategory(opt.value)}
@@ -302,7 +303,7 @@ export default function ExpenseManager() {
                       aria-pressed={category === opt.value}
                     >
                       {opt.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>

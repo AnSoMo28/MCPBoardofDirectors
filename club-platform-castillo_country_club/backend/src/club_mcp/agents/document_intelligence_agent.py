@@ -24,13 +24,13 @@ from club_mcp.db.repositories.document_intelligence_repo import (
 )
 from club_mcp.hitl.approval_types import ApprovalLevel
 from club_mcp.models.document_intelligence import (
-    CreateDocument,
     CreateKnowledgeReport,
     DocumentAccessLevel,
     DocumentCategory,
     DocumentType,
     IngestionStatus,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +83,7 @@ class DocumentIntelligenceAgent(BaseAgent):
         category: str = "",
         limit: int = 24,
         offset: int = 0,
+        user_role: str = "socio",
     ) -> dict[str, Any]:
         if not query:
             return {
@@ -94,7 +95,10 @@ class DocumentIntelligenceAgent(BaseAgent):
 
         result = await self.repo.search_documents_rag(
             query=query,
-            user_role="admin",  # TODO: pass actual user role from context
+            # Q-SEC-04 (Ola 1.2): least privilege — el default es socio
+            # (sin rol conocido NUNCA admin); la capa HTTP inyecta el
+            # rol real del JWT verificado vía IDENTITY_FIELDS.
+            user_role=user_role,
             document_types=type_list,
             category=category or None,
             limit=limit,
@@ -121,6 +125,7 @@ class DocumentIntelligenceAgent(BaseAgent):
         question: str = "",
         conversation_id: str = "",
         max_sources: int = 5,
+        user_role: str = "socio",
     ) -> dict[str, Any]:
         if not question:
             return {
@@ -130,7 +135,8 @@ class DocumentIntelligenceAgent(BaseAgent):
 
         result = await self.repo.query_knowledge(
             question=question,
-            user_role="admin",  # TODO: pass actual user role from context
+            # Q-SEC-04: mismo least-privilege que search_documents.
+            user_role=user_role,
             conversation_id=conversation_id or None,
             max_sources=max_sources,
         )
@@ -156,6 +162,7 @@ class DocumentIntelligenceAgent(BaseAgent):
         document_type_filter: str = "",
         access_level: str = "internal",
         limit: int = 5,
+        user_role: str = "socio",
     ) -> dict[str, Any]:
         if not query:
             return {
@@ -167,11 +174,17 @@ class DocumentIntelligenceAgent(BaseAgent):
             # Use hybrid search directly
             candidates = await self.repo.rag.search_engine.search(
                 query=query,
-                user_role="admin",
+                # Q-SEC-04: rol del caller (router lo inyecta del JWT);
+                # socio default = least privilege sin caller conocido.
+                user_role=user_role,
                 top_k=limit,
                 category=category_filter or None,
                 document_type=document_type_filter or None,
             )
+            # b0v: la búsqueda híbrida devuelve content="" — poblar desde
+            # el vectorstore, igual que RAGService.search_documents hace
+            # internamente (sin esto el caller recibía fragments vacíos).
+            candidates = self.repo.rag.populate_content(candidates)
 
             if not candidates:
                 return {
@@ -559,12 +572,15 @@ class DocumentIntelligenceAgent(BaseAgent):
         date_to: str = "",
         categories: list[str] | None = None,
         audience: str = "internal",
+        user_role: str = "socio",
     ) -> dict[str, Any]:
         """Genera el reporte tras aprobación HITL usando RAG."""
         # Use RAG to get relevant content
         rag_response = await self.repo.rag.query_rag(
             question=f"Genera un reporte sobre: {topic}",
-            user_role="admin",
+            # Q-SEC-04: HITL executor — corre tras aprobación; el rol
+            # del caller original se reinyecta desde la capa HTTP.
+            user_role=user_role,
             max_sources=10,
         )
 

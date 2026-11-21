@@ -156,7 +156,8 @@ function YearTimeline({
         const hasReport = !!insight;
 
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={period}
             type="button"
             className="rqi-timeline-period"
@@ -175,7 +176,7 @@ function YearTimeline({
             <span className="rqi-timeline-label">
               {periodCfg?.label ?? period}
             </span>
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -537,7 +538,8 @@ function InsightMobileCard({
 
   return (
     <div className="rqi-card" data-status={insight.status}>
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="rqi-card-header"
         onClick={onToggle}
@@ -558,7 +560,7 @@ function InsightMobileCard({
             <ChevronDown size={16} aria-hidden="true" />
           )}
         </div>
-      </button>
+      </Button>
 
       <div className="rqi-card-stats">
         <div className="rqi-card-stat">
@@ -803,7 +805,8 @@ export function QuarterlyInsights() {
                 {(
                   Object.values(InsightPeriod) as InsightPeriod[]
                 ).map((p) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={p}
                     type="button"
                     className="rqi-period-pill"
@@ -815,7 +818,7 @@ export function QuarterlyInsights() {
                   >
                     {(INSIGHT_PERIOD_CONFIG as Record<string, { label: string }>)[p]
                       ?.label ?? p}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>

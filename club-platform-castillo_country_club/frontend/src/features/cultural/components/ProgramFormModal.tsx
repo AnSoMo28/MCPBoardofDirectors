@@ -15,6 +15,7 @@ import { Button } from '@/shared/components/ui/Button';
 import { showToast } from '@/shared/components/ui/Toast';
 
 import type { CulturalCategory } from '../types';
+import './ProgramFormModal.css';
 // ══════════════════════════════════════════════════════════
 //  TYPES
 // ══════════════════════════════════════════════════════════
@@ -116,7 +117,7 @@ export default function ProgramFormModal({ onClose, onSuccess }: ProgramFormModa
   const selectedCategory = CATEGORY_OPTIONS.find((c) => c.key === form.category);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="program-form-modal fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-xl border border-[color-mix(in_srgb,var(--color-teal-400)_15%,transparent)] bg-[var(--color-surface-1)] shadow-[var(--shadow-elevated)]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--color-surface-3)] px-6 py-4">

@@ -23,6 +23,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useRef, useEffect, useCallback } from "react";
+import './DashboardCanvas.css';
 
 // ═══════════════════════════════════════════════════════════
 // §1  Types
@@ -362,6 +363,7 @@ export function DashboardCanvas({
   return (
     <canvas
       ref={canvasRef}
+      className="dashboard-canvas"
       aria-hidden="true"
       style={{
         position: "absolute",

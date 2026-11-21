@@ -35,6 +35,7 @@ import { usePreferenceIntelligence } from "../hooks/usePreferenceIntelligence";
 import type { ChannelSuggestion } from "../hooks/usePreferenceIntelligence";
 
 import "./CommunicationPreferences.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // ICON MAP — token → Lucide component (runtime lookup)
@@ -62,7 +63,8 @@ function ToggleSwitch({
   label: string;
 }) {
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       role="switch"
       aria-checked={checked}
@@ -72,7 +74,7 @@ function ToggleSwitch({
       data-checked={checked}
     >
       <span className="prefs__toggle-thumb" />
-    </button>
+    </Button>
   );
 }
 
@@ -341,13 +343,14 @@ function ChannelSuggestions({
             <p className="prefs__suggestion-reason">{s.reason}</p>
           </div>
           {onApply && (
-            <button
+            <Button
+              variant="unstyled"
               className="prefs__suggestion-apply"
               onClick={() => onApply(s.channel)}
               aria-label={`Activar canal ${s.label}`}
             >
               Activar
-            </button>
+            </Button>
           )}
         </div>
       ))}
@@ -444,10 +447,10 @@ export function CommunicationPreferences() {
                 />
               </div>
             </div>
-            <button className="prefs__search-btn" onClick={formState.handleSearch}>
+            <Button variant="unstyled" className="prefs__search-btn" onClick={formState.handleSearch}>
               <Search size={16} />
               <span>Consultar</span>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -489,14 +492,15 @@ export function CommunicationPreferences() {
               />
             </div>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             className="prefs__search-btn"
             onClick={formState.handleSearch}
             disabled={formState.isLoading}
           >
             <Search size={16} />
             <span>{formState.isLoading ? "Buscando…" : "Consultar"}</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -515,9 +519,9 @@ export function CommunicationPreferences() {
             <AlertTriangle size={28} className="prefs__not-found-icon" />
             <h3>Error al consultar</h3>
             <p>No se pudieron cargar las preferencias.</p>
-            <button className="prefs__search-btn" onClick={formState.handleSearch}>
+            <Button variant="unstyled" className="prefs__search-btn" onClick={formState.handleSearch}>
               <span>Reintentar</span>
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -532,7 +536,8 @@ export function CommunicationPreferences() {
               <UserPlus size={28} className="prefs__not-found-icon" />
               <h3>Sin preferencias registradas</h3>
               <p>El socio {formState.searchedMember} aún no tiene preferencias configuradas.</p>
-              <button
+              <Button
+                variant="unstyled"
                 className="prefs__create-btn"
                 onClick={() => {
                   formState.setHasChanges(true);
@@ -540,7 +545,7 @@ export function CommunicationPreferences() {
               >
                 <UserPlus size={16} />
                 <span>Configurar Preferencias</span>
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -843,7 +848,8 @@ export function CommunicationPreferences() {
                 </span>
               )}
 
-              <button
+              <Button
+                variant="unstyled"
                 className="prefs__save-btn"
                 onClick={formState.handleSave}
                 disabled={!formState.hasChanges || formState.isSaving}
@@ -857,7 +863,7 @@ export function CommunicationPreferences() {
                       ? "Guardar Preferencias"
                       : "Crear Preferencias"}
                 </span>
-              </button>
+              </Button>
             </div>
           </div>
         )}

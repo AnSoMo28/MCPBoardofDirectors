@@ -297,7 +297,8 @@ function MobileQuadrantList({
                       : Minus;
 
                 return (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={p.family_id}
                     type="button"
                     className="eng-traj__mobile-item"
@@ -319,7 +320,7 @@ function MobileQuadrantList({
                       size={14}
                       className="eng-traj__mobile-item-arrow"
                     />
-                  </button>
+                  </Button>
                 );
               })}
               {families.length > 5 && (

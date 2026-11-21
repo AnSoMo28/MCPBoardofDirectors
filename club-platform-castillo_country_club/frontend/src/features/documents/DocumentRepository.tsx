@@ -92,14 +92,15 @@ export function DocumentRepository() {
           </span>
         )}
         {doc.searchInput && (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             onClick={() => doc.setSearchInput("")}
             className="glass-docs__search-clear"
             aria-label="Limpiar búsqueda"
           >
             <X size={18} />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -145,13 +146,14 @@ export function DocumentRepository() {
         </AnimatePresence>
 
         {doc.activeTypes.length > 0 && (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             onClick={doc.clearTypes}
             className="glass-docs__clear-all"
           >
             Limpiar
-          </button>
+          </Button>
         )}
       </div>
 
@@ -223,14 +225,15 @@ export function DocumentRepository() {
           {/* ── Load more ── */}
           {doc.hasMore && (
             <div className="glass-docs__load-more">
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="glass-docs__load-more-btn"
                 onClick={doc.loadMore}
               >
                 Ver más ({doc.total - doc.results.length} documentos
                 restantes)
-              </button>
+              </Button>
             </div>
           )}
         </>

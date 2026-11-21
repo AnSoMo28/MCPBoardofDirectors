@@ -1,0 +1,48 @@
+{
+  "ola": "2.1-tris",
+  "date": "2026-11-17",
+  "path": "NEXT-STEPS-2027 PATH 2.1-tris (tercer vertical: member_engagement — el master v9.15 fija 'event/membership primero'; membership vive acá: profiles/campaigns/rewards/feedback/referrals son el ciclo del socio. event es sync → su propia ola)",
+  "gate": "pytest write → restart runtime → read OK (aiosqlite local; pgvector real en CI) + contrato agente 42/42",
+  "changes": [
+    "db/orm/engagement_orm.py: 5 tablas (engagement_profiles · reactivation_campaigns · loyalty_rewards · member_feedback · referrals) — espejo 1:1 de models/member_engagement; listas flexibles a JSONB (mismo criterio que families §3.8-bis)",
+    "db/orm/repositories/engagement_repo.py: MemberEngagementRepository async — contrato EXACTO del in-memory (21 métodos · None/[] sin excepciones custom · ids uuid4().hex[:8] idénticos)",
+    "alembic 0003_engagement (5 tablas · pk deterministas; enums como String(24) sin CHECK — la validación vive en Pydantic del borde, mismo estilo que tier/status en families)",
+    "bootstrap.py: swap OPT-IN extiende a member_engagement_repo (junto a family) — verificado POR EJECUCIÓN: con CLUB_PERSISTENCE_URL el agente recibe el repo ORM; sin env el in-memory (los 855 tests no cambian)",
+    "CI: el paso persistence corre la suite engagement (junto a auth + family)",
+    "tests/unit/persistence/test_engagement_persistence.py: 6 tests (write-restart-read 5 entidades · updates con enums roundtrip · filtros de list_* · contrato None/[] · agente con repo ORM inyectado)"
+  ],
+  "decision_arquitectura": {
+    "por_que_engagement": "de los 17 repos restantes es el mejor pattern-fit: async-first (21 async / 2 sync) · CRUD puro de 5 entidades independientes (sin FKs cruzados) · es EL dominio membership (el ciclo del socio que el master pedía) · event_repo es sync (36 defs — su propia ola, ya documentado en 2.1-bis)",
+    "por_que_no_member_360": "sync Y read-heavy: 19 de sus 22 métodos computan (churn/LTV/journey/scores) sobre datos derivados — patrón §3.8 no aplica directo; su ola es otra mecánica (materialized view o compute-on-read contra tablas base)"
+  },
+  "bugs_cazados": [
+    {
+      "id": "2.1tris-01",
+      "en": "validación local 4/6",
+      "problema": "enums inventados en la suite (EngagementLevel.HIGH/VERY_HIGH, CampaignType.WINBACK, FeedbackChannel.APP) — el enum real es HIGHLY_ENGAGED/ENGAGED/DISENGAGED, REACTIVATION, IN_APP",
+      "como_se_cazo": "correr la suite contra sqlite real ANTES del parche (la lección del run #19 aplicada desde el diseño)",
+      "fix": "enums reales del modelo leído del árbol (cifras vivas, no de memoria)"
+    },
+    {
+      "id": "2.1tris-02",
+      "en": "NameError _CAMPAIGN_COLUMNS",
+      "problema": "referencias en minúsculas dentro de los métodos vs definiciones UPPER del módulo — py_compile pasa (es runtime)",
+      "como_se_cazo": "la propia suite local (4/6 → fix → 6/6)",
+      "fix": "unificación de nombres + columnas movidas antes de la clase"
+    }
+  ],
+  "quedo_fuera": [
+    "event_repo: SYNC (36 defs) — su propia ola con su parche (awaits + repo + gate), como ya registró 2.1-bis",
+    "los otros 15 repos in-memory (siguientes verticales: misma mecánica §3.8/§3.8-bis)",
+    "member_360: sync read-heavy — mecánica distinta (compute), ola aparte",
+    "ApprovalEngine → Q-PER-03 (Ola 2.3 del PATH)"
+  ],
+  "cifras": {
+    "tests_persistencia": "15 (3 auth + 6 family + 6 engagement)",
+    "tests_contrato_agente_engagement": "42/42 verde contra el in-memory SIN cambios (radio 0)",
+    "suite_total_estimada": "855 → 861 (+6 engagement)",
+    "ruff_modulos_nuevos": "0 deuda (lock 0.15.12 — verificado)",
+    "mypy_modulos_nuevos": "0 deuda (lock 2.1.0 — verificado)"
+  },
+  "validacion_sandbox": "sqlite real (aiosqlite · sqlalchemy): 6/6 + back-to-back 6/6 + contrato 42/42 + swap por ejecución en ambos modos (con/sin CLUB_PERSISTENCE_URL) — todo con las versiones del uv.lock"
+}

@@ -372,14 +372,15 @@ export default function DecisionCockpit() {
                 "Evento mensual de networking corporativo",
                 "Descuento early renewal 15% para Q1",
               ].map((s) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={s}
                   type="button"
                   onClick={() => setDecisionText(s)}
                   className="glass-decision-pill focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)]"
                 >
                   {s}
-                </button>
+                </Button>
               ))}
             </div>
           </div>

@@ -7,6 +7,7 @@
  */
 
 import { cn } from "@/shared/lib/utils";
+import './DocumentOutline.css';
 
 interface DocSection {
   id: string;
@@ -28,7 +29,7 @@ export function DocumentOutline({
   onNavigate,
 }: DocumentOutlineProps) {
   return (
-    <nav className="glass-decision__outline" aria-label="Secciones del documento">
+    <nav className="document-outline glass-decision__outline" aria-label="Secciones del documento">
       {sections.map((section) => {
         const isActive = section.id === activeId;
         const isLoaded = loadedModules.includes(section.module);

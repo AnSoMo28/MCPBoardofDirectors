@@ -52,6 +52,7 @@ import { SPORT_CONFIG, SKILL_LEVEL_CONFIG } from "../types";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { CoachingFormModal } from "./CoachingFormModal";
 import "./CoachingPanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -155,7 +156,8 @@ function ViewToggle({
   return (
     <div className="spt-coach__toggle" role="tablist" aria-label="Vista de coaching">
       {(["coaches", "sessions"] as const).map((view) => (
-        <button
+        <Button
+          variant="unstyled"
           key={view}
           type="button"
           role="tab"
@@ -165,7 +167,7 @@ function ViewToggle({
           onClick={() => onViewChange(view)}
         >
           {view === "coaches" ? "👨‍🏫 Coaches" : "📋 Sesiones"}
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -410,14 +412,15 @@ export function CoachingPanel({
       {/* ── Header ── */}
       <div className="spt-coach__header">
         <h3 className="spt-coach__title">🎾 Coaching Deportivo</h3>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="spt-coach__new-btn"
           onClick={() => setShowForm(true)}
         >
           <Plus className="spt-coach__new-btn-icon" />
           Nueva Sesión
-        </button>
+        </Button>
       </div>
 
       {/* ── Quick Stats ── */}

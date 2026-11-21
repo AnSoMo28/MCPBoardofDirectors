@@ -1,11 +1,12 @@
 /**
  * @component LoginBranding (Fase 25)
  * @namespace .glass-login__left
- * @depends LoginPage.css, MarbleCanvas
+ * @depends LoginBranding.css, MarbleCanvas
  * @note Left panel: marble canvas, logo with golden aura, shimmer title,
  *       time-aware greeting, club pulse preview.
- * @import import '../LoginPage.css';
+ * @import import './LoginBranding.css';
  */
+import "./LoginBranding.css";
 
 import MarbleCanvas from "@/shared/components/layout/MarbleCanvas";
 

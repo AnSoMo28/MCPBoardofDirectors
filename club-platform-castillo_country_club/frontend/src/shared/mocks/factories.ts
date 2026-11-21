@@ -14719,3 +14719,497 @@ export function createMockSubmitFeedback(
     },
   };
 }
+
+// ── reports.get_board_report (B2 — dev mock, backend ya sirve el tool) ──
+// Shape = features/reports/types.BoardReport (lo que consume
+// BoardReportsPage). El backend real devuelve BoardReportData
+// {id, year, quarter, executive_summary, membership_analysis, ...};
+// la vista administra ambos shapes via metadata/sections derivadas.
+export function createMockGetBoardReport(
+  params?: Record<string, unknown>,
+): import("@/features/reports/types").BoardReport {
+  const period = (params?.period as string) || "2026-Q3";
+  const [yearS, quarter] = period.split("-Q");
+  const year = Number(yearS) || 2026;
+  const quarterNum = Number(quarter) || 3;
+  const prevQuarter = quarterNum === 1 ? `Q4 ${year - 1}` : `Q${quarterNum - 1} ${year}`;
+  const reportId = `rpt-${year}-Q${quarterNum}`;
+
+  return {
+    id: reportId,
+    title: `Reporte de Junta Directiva — ${period}`,
+    type: "quarterly",
+    period,
+    status: "published",
+    generated_at: new Date().toISOString(),
+    generated_by: "ai",
+    approved_by: "Lic. Patricia Herrera",
+    sections: [
+      {
+        id: "sec-001",
+        title: "Situación Financiera",
+        content:
+          `Los ingresos por cuotas representaron el 62% del total, seguidos de ` +
+          `instalaciones (14%) y eventos (12%). Los gastos se mantuvieron dentro ` +
+          `del presupuesto con un margen neto del 28.8%.`,
+        type: "narrative",
+      },
+      {
+        id: "sec-002",
+        title: "Análisis de Membresía",
+        content:
+          `La tasa de retención se mantiene en 94%. Sin embargo, 17 familias ` +
+          `(12%) muestran señales de desengagement. Causas principales: falta ` +
+          `de actividades para jóvenes (35%), insatisfacción con relación ` +
+          `calidad-precio (28%).`,
+        type: "narrative",
+        ai_confidence: 0.85,
+      },
+      {
+        id: "sec-003",
+        title: "Recomendaciones Estratégicas",
+        content:
+          `1. Programa de reactivación para familias en riesgo.\n` +
+          `2. Ampliar horario del gimnasio a 5AM-10PM.\n` +
+          `3. Crear programa de actividades juveniles.\n` +
+          `4. Evaluar inversión en señalización digital para golf.\n` +
+          `5. Fortalecer comunicación con notificaciones push.`,
+        type: "recommendation",
+        ai_confidence: 0.78,
+      },
+    ],
+    executive_summary:
+      `El ${period} cerró con resultados financieros sólidos. Los ingresos ` +
+      `totales alcanzaron los ₡125 millones, un crecimiento del 8.2% respecto ` +
+      `a ${prevQuarter}. La membresía se mantiene en 145 familias activas, ` +
+      `con 17 identificadas como en riesgo.\n\n` +
+      `El NPS de satisfacción se mantiene en 72 puntos. Las instalaciones ` +
+      `deportivas muestran una ocupación promedio del 61%, con la cancha de ` +
+      `tenis como la más demandada (85%).`,
+    metadata: {
+      total_families: 145,
+      active_members: 487,
+      revenue_total: 125_000_000,
+      revenue_change_pct: 8.2,
+      occupancy_rate: 61.5,
+      satisfaction_nps: 72,
+      youth_engagement_pct: 68,
+      senior_engagement_pct: 55,
+    },
+  };
+}
+
+// ══════════════════════════════════════════════════════════════
+// B3 — risk matrix + today guests (dev mocks mirroring the real
+// backend tools registered in B3: executive_dashboard.get_risk_matrix
+// and guest_management.get_today_guests/get_today_summary).
+// ══════════════════════════════════════════════════════════════
+
+export function createMockGetRiskMatrix(
+  params?: Record<string, unknown>,
+): import("@/features/reports/types").RiskSummary {
+  const period = (params?.period as string) || "2026-Q4";
+  const [yearS, quarter] = period.split("-Q");
+  const year = Number(yearS) || 2026;
+  const quarterNum = Number(quarter) || 4;
+  const identified = `${year}-${quarterNum === 1 ? "01" : quarterNum === 2 ? "04" : quarterNum === 3 ? "07" : "10"}-01`;
+
+  const seed: Array<
+    [string, string, number, number, string, string]
+  > = [
+    ["Churn segmento básico", "membership", 3, 4, "Campañas de reactivación + encuestas de salida al segmento.", "Directora de Membresía"],
+    ["Incremento de costos de mantenimiento", "financial", 3, 3, "Revisión trimestral de contratos de proveedores.", "Administración"],
+    ["Dependencia de eventos sociales para revenue", "financial", 2, 4, "Diversificar fuentes de ingreso (convenciones, alquiler externo).", "Directora de Finanzas"],
+    ["Incidente de seguridad en instalaciones", "operational", 2, 4, "Protocolo de seguridad + simulacros trimestrales.", "Jefe de Operaciones"],
+    ["Latencia en herramientas de datos", "systems", 2, 2, "Monitoreo y presupuesto de infraestructura.", "TI"],
+    ["Baja asistencia a actividades de bienestar", "engagement", 2, 3, "Programa de incentivos por asistencia.", "Coordinación de Bienestar"],
+  ];
+
+  const items = seed.map(([title, category, probability, impact, mitigation, owner], i) => {
+    const score = probability * impact;
+    const level = score >= 12 ? "critical" : score >= 8 ? "high" : score >= 4 ? "medium" : "low";
+    return {
+      id: `risk-${year}-Q${quarterNum}-${String(i + 1).padStart(2, "0")}`,
+      title,
+      description: `${title} — señal monitoreada por la plataforma.`,
+      category,
+      probability,
+      impact,
+      score,
+      level,
+      mitigation,
+      owner,
+      identified_at: identified,
+    } as import("@/features/reports/types").RiskItem;
+  });
+
+  const critical = items.filter((i) => i.level === "critical").length;
+  const high = items.filter((i) => i.level === "high").length;
+  const medium = items.filter((i) => i.level === "medium").length;
+  const low = items.filter((i) => i.level === "low").length;
+  return { total_risks: items.length, critical, high, medium, low, items };
+}
+
+export function createMockGetTodayGuests(
+  params?: Record<string, unknown>,
+): import("@/features/guests/types").GuestListResponse {
+  const status = (params?.status as string) || "";
+  const today = "2026-06-05";
+  const all = [
+    {
+      id: "gci-001",
+      guest_name: "Andrés Mora",
+      guest_id: "gst-001",
+      id_number: "1-1020-3040",
+      host_family_id: "fam-002",
+      host_family_name: "Familia Mora",
+      host_member_name: "Diego Mora",
+      facility_id: "fac-tennis",
+      facility_name: "Canchas de Tenis",
+      check_in_time: `${today}T09:40:00Z`,
+      check_out_time: null,
+      status: "active" as const,
+      purpose: "social",
+      purpose_label: "Social",
+      notes: "Visita #6",
+      approved_by: "mem-005",
+      approved_by_name: "Diego Mora",
+    } as unknown as import("@/features/guests/types").GuestCheckIn,
+    {
+      id: "gci-002",
+      guest_name: "Valentina Solano",
+      guest_id: "gst-002",
+      id_number: "1-2030-4050",
+      host_family_id: "fam-004",
+      host_family_name: "Familia Solano",
+      host_member_name: "María Elena Solano",
+      facility_id: "fac-pool",
+      facility_name: "Piscina Principal",
+      check_in_time: `${today}T08:15:00Z`,
+      check_out_time: `${today}T16:30:00Z`,
+      status: "departed" as const,
+      purpose: "family",
+      purpose_label: "Familiar",
+      notes: "Visita #3",
+      approved_by: "mem-015",
+      approved_by_name: "María Elena Solano",
+    } as unknown as import("@/features/guests/types").GuestCheckIn,
+    {
+      id: "gci-003",
+      guest_name: "Daniela Montero",
+      guest_id: "gst-003",
+      id_number: "1-3040-5060",
+      host_family_id: "fam-008",
+      host_family_name: "Familia Montero",
+      host_member_name: "Silvia Montero",
+      facility_id: "fac-gym",
+      facility_name: "Gimnasio",
+      check_in_time: `${today}T10:00:00Z`,
+      check_out_time: null,
+      status: "active" as const,
+      purpose: "social",
+      purpose_label: "Social",
+      notes: "Visita #4",
+      approved_by: "mem-035",
+      approved_by_name: "Silvia Montero",
+    } as unknown as import("@/features/guests/types").GuestCheckIn,
+  ];
+  const checkins = status ? all.filter((c) => c.status === status) : all;
+  const active_count = checkins.filter((c) => c.status === "active").length;
+  const departed_count = checkins.filter((c) => c.status === "departed").length;
+  return {
+    checkins,
+    total: checkins.length,
+    date: today,
+    active_count,
+    departed_count,
+    total_count: checkins.length,
+  };
+}
+
+export function createMockGetTodaySummary(
+  _params?: Record<string, unknown>,
+): import("@/features/guests/types").GuestTodaySummary {
+  const today = "2026-06-05";
+  return {
+    date: today,
+    total_expected: 3,
+    checked_in: 3,
+    departed: 1,
+    currently_present: 2,
+    by_facility: [
+      { facility_id: "fac-pool", facility_name: "Piscina Principal", count: 1 },
+      { facility_id: "fac-gym", facility_name: "Gimnasio", count: 1 },
+      { facility_id: "fac-tennis", facility_name: "Canchas de Tenis", count: 1 },
+    ],
+    by_purpose: [
+      { purpose: "social", label: "Social", count: 2 },
+      { purpose: "family", label: "Familiar", count: 1 },
+    ],
+  } as unknown as import("@/features/guests/types").GuestTodaySummary;
+}
+
+// ══════════════════════════════════════════════════════════════
+// B4 — dev mocks for legacy-keyed reads whose backend tools landed
+// in B3/B4 (finance.get_transactions/get_invoices, guests.* block,
+// facilities.get_facility, engagement survey reads, stress_test).
+// Mirrors the real tools' contracts so dev-without-backend renders
+// the same shapes as production.
+// ══════════════════════════════════════════════════════════════
+
+export function createMockFinanceTransactionsList(
+  params?: Record<string, unknown>,
+): import("@/features/finance/types").TransactionListResponse {
+  const page = (params?.page as number) || 1;
+  const pageSize = (params?.page_size as number) || 15;
+  const all: import("@/features/finance/types").Transaction[] = [
+    {
+      id: "inv-2026-081",
+      date: "2026-11-01",
+      description: "Cuota mensual noviembre — Familia Chen",
+      category: "membership",
+      category_label: "Membresía",
+      amount: 150_000,
+      type: "charge",
+      reference: "INV-2026-081",
+      status: "completed",
+    },
+    {
+      id: "pay-2026-112",
+      date: "2026-11-05",
+      description: "Pago transferencia — INV-2026-081",
+      category: "payment",
+      category_label: "Pago",
+      amount: 150_000,
+      type: "payment",
+      reference: "PAY-2026-112",
+      status: "completed",
+    },
+    {
+      id: "inv-2026-082",
+      date: "2026-11-08",
+      description: "Alquiler cancha tenis — 2 horas",
+      category: "facilities",
+      category_label: "Instalaciones",
+      amount: 24_000,
+      type: "charge",
+      reference: "INV-2026-082",
+      facility_name: "Canchas de Tenis",
+      status: "pending",
+    },
+    {
+      id: "pay-2026-118",
+      date: "2026-10-28",
+      description: "Pago SINPE — factura octubre",
+      category: "payment",
+      category_label: "Pago",
+      amount: 148_500,
+      type: "payment",
+      reference: "PAY-2026-118",
+      status: "completed",
+    },
+  ];
+  const total = all.length;
+  const start = (page - 1) * pageSize;
+  return {
+    transactions: all.slice(start, start + pageSize),
+    total,
+    page,
+    page_size: pageSize,
+    total_pages: Math.max(1, Math.ceil(total / pageSize)),
+  };
+}
+
+export function createMockFinanceInvoicesList(
+  _params?: Record<string, unknown>,
+): { invoices: import("@/features/finance/types").Invoice[]; total: number } {
+  const invoices: import("@/features/finance/types").Invoice[] = [
+    {
+      id: "inv-2026-081",
+      invoice_number: "INV-2026-081",
+      date: "2026-11-01",
+      due_date: "2026-11-15",
+      amount: 150_000,
+      paid_amount: 150_000,
+      balance: 0,
+      status: "paid",
+      items: [{ description: "Cuota mensual noviembre", quantity: 1, unit_price: 150_000, total: 150_000 }],
+    },
+    {
+      id: "inv-2026-082",
+      invoice_number: "INV-2026-082",
+      date: "2026-11-08",
+      due_date: "2026-11-22",
+      amount: 24_000,
+      paid_amount: 0,
+      balance: 24_000,
+      status: "pending",
+      items: [{ description: "Alquiler cancha tenis", quantity: 2, unit_price: 12_000, total: 24_000 }],
+    },
+    {
+      id: "inv-2026-079",
+      invoice_number: "INV-2026-079",
+      date: "2026-10-01",
+      due_date: "2026-10-15",
+      amount: 148_500,
+      paid_amount: 100_000,
+      balance: 48_500,
+      status: "partial",
+      items: [{ description: "Cuota mensual octubre", quantity: 1, unit_price: 148_500, total: 148_500 }],
+    },
+  ];
+  return { invoices, total: invoices.length };
+}
+
+export function createMockGetSurveyResults(
+  _params?: Record<string, unknown>,
+): Record<string, unknown> {
+  // SurveyResultsResponse-compatible payload (features/engagement/types).
+  return {
+    survey_id: "srv-2026-gala",
+    survey_name: "Encuesta Gala Anual 2026",
+    total_responses: 48,
+    completion_rate: 0.86,
+    avg_overall_score: 4.3,
+    avg_nps: 42,
+    nps_distribution: { promoters: 31, passives: 9, detractors: 8 },
+    question_summaries: [
+      { question_id: "q-1", question: "Calidad general del evento", type: "rating", avg_score: 4.5 },
+      { question_id: "q-2", question: "Organización y horarios", type: "rating", avg_score: 4.1 },
+      { question_id: "q-3", question: "Comida y bebida", type: "rating", avg_score: 3.9 },
+      { question_id: "q-4", question: "Recomendaría el evento", type: "nps", avg_score: 4.6 },
+    ],
+    sentiment_breakdown: {
+      positive: 36, positive_pct: 75,
+      neutral: 7, neutral_pct: 14.6,
+      negative: 5, negative_pct: 10.4,
+    },
+    ai_insights: [
+      {
+        type: "trend",
+        title: "Satisfacción en alza",
+        description: "La Gala Anual superó el promedio histórico de eventos sociales (4.3 vs 4.1).",
+        confidence: 0.88,
+      },
+    ],
+    recent_comments: [
+      { member: "Familia Chen", comment: "Excelente organización, la cena fue memorable.", submitted_at: "2026-10-28T21:40:00Z" },
+      { member: "Familia Mora", comment: "Los horarios fueron ajustados pero valió la pena.", submitted_at: "2026-10-28T20:05:00Z" },
+    ],
+  };
+}
+
+export function createMockGetActiveSurvey(
+  _params?: Record<string, unknown>,
+): Record<string, unknown> {
+  // SurveyTemplate-compatible payload.
+  return {
+    id: "standard-v1",
+    name: "Encuesta Estándar de Satisfacción",
+    description: "Cuestionario de 10 dimensiones aplicado tras cada evento.",
+    event_type: "general",
+    questions: Array.from({ length: 10 }, (_, i) => ({
+      id: `q-${i + 1}`,
+      order: i + 1,
+      type: "rating",
+      question: `Pregunta estándar ${i + 1} (instalaciones, comida, atención, ...)`,
+      options: ["1", "2", "3", "4", "5"],
+      required: true,
+      ai_suggested: i >= 8,
+    })),
+    is_active: true,
+    usage_count: 48,
+    avg_completion_rate: 0.92,
+  };
+}
+
+export function createMockGetFacility(
+  params?: Record<string, unknown>,
+): Record<string, unknown> {
+  // FacilityDetailData-compatible payload composed from repo reads (B3
+  // tool: facility_management.get_facility).
+  const facilityId = (params?.facilityId as string) || (params?.facility_id as string) || "fac-001";
+  return {
+    status: "success",
+    message: "🏟️ Piscina Principal",
+    facility: {
+      id: facilityId,
+      name: "Piscina Principal",
+      facility_type: "pool",
+      status: "operational",
+      location: "Zona norte",
+      capacity: 120,
+      description: "Piscina semiolímpica con área infantil.",
+      amenities: ["vestidores", "bar", "sombrillas"],
+      opening_time: "06:00",
+      closing_time: "22:00",
+    },
+    upcoming_reservations: [
+      { id: "res-301", family_name: "Familia Chen", date: "2026-11-12", time: "10:00", status: "confirmed" },
+      { id: "res-305", family_name: "Familia Solano", date: "2026-11-13", time: "16:00", status: "pending" },
+    ],
+    utilization_history: Array.from({ length: 7 }, (_, i) => ({
+      date: `2026-11-${String(i + 3).padStart(2, "0")}`,
+      utilization: 48 + ((i * 7) % 30),
+    })),
+    maintenance_log: [
+      { id: "mnt-101", maintenance_type: "cleaning", status: "completed", priority: "low", scheduled_date: "2026-11-02" },
+      { id: "mnt-104", maintenance_type: "repair", status: "in_progress", priority: "medium", scheduled_date: "2026-11-09" },
+    ],
+  };
+}
+
+export function createMockDesignReactivationCampaign(
+  params?: Record<string, unknown>,
+): import("@/features/engagement/types").CampaignListResponse {
+  // member_engagement.design_reactivation_campaign (HITL write in the
+  // backend) — the dev mock returns the list/action shape the page reads.
+  const action = (params?.action as string) || "list";
+  const campaigns: import("@/features/engagement/types").ReactivationCampaign[] = [
+    {
+      id: "rc-2026-01",
+      name: "Reactivación Otoño 2026",
+      description: "Contacto dirigido a familias con 90+ días sin asistencia.",
+      status: "active",
+      target_level: "dormant",
+      target_level_label: "Inactivas (90+ días)",
+      target_count: 42,
+      reached_count: 38,
+      responded_count: 12,
+      reactivated_count: 9,
+      response_rate: 0.32,
+      reactivation_rate: 0.24,
+      channel: "email",
+      channel_label: "Correo",
+      message_template: "¡Te extrañamos en el club! Esta semana, clase gratis.",
+      start_date: "2026-09-15",
+      end_date: "2026-11-15",
+      created_at: "2026-09-10T09:00:00Z",
+    },
+    {
+      id: "rc-2026-02",
+      name: "Winback Fiesta de Fin de Año",
+      description: "Invitación personal + beneficio por referido.",
+      status: "draft",
+      target_level: "at_risk",
+      target_level_label: "En riesgo (60-90 días)",
+      target_count: 25,
+      reached_count: 0,
+      responded_count: 0,
+      reactivated_count: 0,
+      response_rate: 0,
+      reactivation_rate: 0,
+      channel: "sms",
+      channel_label: "SMS",
+      message_template: "Reserva tu mesa: la fiesta del año te espera.",
+      start_date: "2026-12-01",
+      end_date: "2026-12-20",
+      created_at: "2026-11-05T15:30:00Z",
+    },
+  ];
+  if (action === "get" && params?.campaign_id) {
+    const found = campaigns.find((c) => c.id === params.campaign_id);
+    return { campaigns: found ? [found] : [], total: found ? 1 : 0 } as import("@/features/engagement/types").CampaignListResponse;
+  }
+  return { campaigns, total: campaigns.length } as import("@/features/engagement/types").CampaignListResponse;
+}

@@ -1,0 +1,37 @@
+{
+  "ola": "2.2",
+  "date": "2026-11-18",
+  "path": "NEXT-STEPS-2027 PATH 2.2 (cuarto vertical: event — el repo sync que la guía §5.3 registró como 'su propia ola con awaits + repo + gate'; FASE 2 = Events del proyecto). 4 entidades del agregado: events · event_rsvps · event_vendors · event_program_items.",
+  "gate": "pytest write → restart runtime → read OK (aiosqlite local; pgvector real en CI) + contrato None/[]/False sin excepciones custom",
+  "changes": [
+    "db/orm/event_orm.py: 4 tablas (events · event_rsvps · event_vendors · event_program_items) — espejo 1:1 de models/event; listas del agregado (facility_ids/age_groups/tags/member_ids) a JSONB (criterio families §3.8-bis); FK event_id ON DELETE CASCADE en los 3 hijos",
+    "db/orm/repositories/event_repo.py: EventRepository async — contrato EXACTO del in-memory (25 métodos · None/[]/False sin excepciones custom · ids f\"{prefix}_{uuid4().hex[:8]}\": evt_/rsvp_/vnd_/prog_)",
+    "MIGRACIÓN ASYNC DEL DOMINIO (lo que la guía §5.3 registró como 'su propia ola con awaits + repo + gate'): el repo in-memory event era sync TOTAL (0 async de 36 defs) y el agente lo llamaba SIN await (41 call sites) — a diferencia de engagement (ya async nativo, swap drop-in). Esta ola ejecuta la migración: 35 call sites del agente → await (35 líneas exactas, regex quirúrgico) · 25 métodos públicos del in-memory → async (mismas firmas, mismos cuerpos; los 11 privados quedan sync) · 2 cross-calls internos (compute_analytics/generate_report → list_rsvps) → await · tests del agente: helper _create_and_publish + 6 fixtures event_id → async · b4_tools: _seed → _run(asyncio.run)",
+    "alembic 0004_event (4 tablas · pk/fk deterministas · ix_events_date_start/status + ix por event_id; enums String(24) sin CHECK)",
+    "bootstrap.py: swap OPT-IN extiende a event_repo (junto a family + engagement) — verificado POR EJECUCIÓN en ambos modos: con CLUB_PERSISTENCE_URL el agente recibe el repo ORM async (tool get_event responde); sin env el in-memory ahora async (mismo contrato)",
+    "CI: el paso persistence corre la suite event (junto a auth + family + engagement)",
+    "tests/unit/persistence/test_event_persistence.py: 6 tests (write-restart-read del agregado · auto-waitlist por cupo + capacity · enums roundtrip por update · CASCADE al borrar evento · search/calendar/analytics/report/conflicts · contrato None/[]/False)"
+  ],
+  "decision_arquitectura": {
+    "sync_vs_async": "la 'naturaleza sync' del dominio (cupos que no se sobrevenden) es requerimiento de CONSISTENCIA, no estilo de código: add_rsvp cuenta los confirmados vigentes dentro de la MISMA transacción antes de decidir waitlist — punto de decisión crítica serializado por la transacción, resto I/O async end-to-end (engine por inyección · session_scope · Pydantic en el borde).",
+    "delete_event": "el in-memory rebuildaba los dicts filtrando event_id; acá el invariante lo garantiza FK ON DELETE CASCADE dentro de la transacción (menos código, garantía física)",
+    "current_attendance_waitlist_count": "eran derivados recalculados (_refresh_attendance) — siguen como columnas-cache que el repo refresca con COUNT real tras cada mutación de RSVP; el read SIEMPRE lee de la tabla (no miente)",
+    "promocion_waitlist": "NO se automatiza: remove de un confirmado deja el waitlisted tal cual (mismo comportamiento observable del in-memory — promoción manual vía update_rsvp). El contrato manda sobre la mejora.",
+    "por_que_event_fue_ola_aparte": "engagement era async-first (21 async/2 sync): el swap del 0015 fue drop-in. event era sync TOTAL (0 async en 36 defs, agente con 41 call sites sin await): la migración a async/await — piso técnico del PATH 2 — requería tocar agente + repo in-memory + tests JUNTO con las 4 tablas. Por eso la guía lo registró como 'su propia ola con awaits + repo + gate' desde 2.1-bis."
+  },
+  "bugs_cazados": [],
+  "quedo_fuera": [
+    "los otros 15 repos in-memory (Q-PER-01 → sigue 15 tras este vertical; siguientes verticales: misma mecánica §3.8/§3.8-bis/§3.8-tris)",
+    "member_360: sync read-heavy — mecánica distinta (compute), ola aparte",
+    "ApprovalEngine → Q-PER-03 (Ola 2.3 del PATH)",
+    "bump G22 de masters (v9.16 → v9.17) para absorber esta ola — su propio parche chore, como G19/G20/G21"
+  ],
+  "cifras": {
+    "tests_persistencia": "21 (3 auth + 6 family + 6 engagement + 6 event)",
+    "tests_contrato_agente_event": "50/50 verde contra el in-memory MIGRADO async — mismos asserts, cero cambios de lógica de test (solo await en helpers/fixtures)",
+    "tests_b4_tools_registry": "12/12 (consumidor secundario del repo, _seed migrado)",
+    "suite_total_estimada": "861 → 867 (+6 persistencia event)",
+    "migracion_async": "agente: 35 awaits · in-memory: 25 async públicos · cross-calls: 2 · fixtures/helper tests: 7 · b4_seed: 1"
+  },
+  "validacion_sandbox": "sqlite real (aiosqlite · sqlalchemy): persistencia 21/21 + back-to-back 21/21 (re-runnable) + agente 50/50 + b4_tools 12/12 + swap por ejecución en ambos modos (con CLUB_PERSISTENCE_URL → repo ORM async responde; sin env → in-memory async mismo contrato)"
+}

@@ -68,6 +68,7 @@ import { RippleWave } from "./RippleWave";
 import { AgingOutStrip } from "./AgingOutStrip";
 
 import "./AgeGroupAdvisorBanner.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ── §0  Constants ────────────────────────────────────────── */
 
@@ -271,7 +272,8 @@ export function AgeGroupAdvisorBanner({ insights, topInsights, hasHighSeverity, 
           aria-label="Filtrar por capa de inteligencia"
           data-testid="ag-advisor-lens"
         >
-          <button
+          <Button
+            variant="unstyled"
             className="ag-advisor__pill"
             data-active={!activeLayer || undefined}
             onClick={() => setActiveLayer(null)}
@@ -281,7 +283,7 @@ export function AgeGroupAdvisorBanner({ insights, topInsights, hasHighSeverity, 
           >
             <span>Todos</span>
             <span className="ag-advisor__pill-count">{insights.length}</span>
-          </button>
+          </Button>
 
           {LAYERS.map((layer) => {
             const meta = AGE_GROUP_LAYER_META[layer];
@@ -291,7 +293,8 @@ export function AgeGroupAdvisorBanner({ insights, topInsights, hasHighSeverity, 
             ).length;
 
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={layer}
                 className="ag-advisor__pill"
                 data-active={activeLayer === layer || undefined}
@@ -310,7 +313,7 @@ export function AgeGroupAdvisorBanner({ insights, topInsights, hasHighSeverity, 
                 {count > 0 && (
                   <span className="ag-advisor__pill-count">{count}</span>
                 )}
-              </button>
+              </Button>
             );
           })}
         </div>

@@ -1,13 +1,15 @@
 /**
  * @component PeriodSelector (Fase 25)
  * @namespace .glass-board__period-*
- * @depends BoardReportViewer.css
+ * @depends PeriodSelector.css
  * @note URL-synced period selector with keyboard navigation.
- * @import import '../BoardReportViewer.css';
+ * @import import './PeriodSelector.css';
  */
+import "./PeriodSelector.css";
 
 import { useCallback } from "react";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/components/ui/Button";
 
 interface PeriodSelectorProps {
   periods: { value: string; label: string }[];
@@ -48,7 +50,8 @@ export function PeriodSelector({
     >
       <span className="glass-board__period-label">Periodo:</span>
       {periods.map((p) => (
-        <button
+        <Button
+          variant="unstyled"
           key={p.value}
           type="button"
           aria-pressed={selectedPeriod === p.value}
@@ -60,7 +63,7 @@ export function PeriodSelector({
           )}
         >
           {p.label}
-        </button>
+        </Button>
       ))}
     </div>
   );

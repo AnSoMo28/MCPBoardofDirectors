@@ -15,6 +15,7 @@ from club_mcp.hitl.approval_types import ApprovalLevel
 from club_mcp.models.event import (
     EventCategory,
     EventCreate,
+    EventSearchParams,
     EventStatus,
     RSVPStatus,
     VendorContractStatus,
@@ -86,8 +87,8 @@ class EventOrchestratorAgent(BaseAgent):
     ) -> dict[str, Any]:
         """Execute event creation post-approval."""
         validated = EventCreate(**event_data)
-        event = self.event_repo.create_event(validated)
-        self.event_repo.update_event(event.id, {"status": EventStatus.APPROVED.value})
+        event = await self.event_repo.create_event(validated)
+        await self.event_repo.update_event(event.id, {"status": EventStatus.APPROVED.value})
 
         return {
             "status": "success",
@@ -114,7 +115,7 @@ class EventOrchestratorAgent(BaseAgent):
         replace_all: bool = False,
     ) -> dict[str, Any]:
         """Build or update the program / itinerary for an event."""
-        event = self.event_repo.get_event(event_id)
+        event = await self.event_repo.get_event(event_id)
         if not event:
             return {
                 "status": "error",
@@ -123,11 +124,11 @@ class EventOrchestratorAgent(BaseAgent):
 
         if replace_all:
             for item in event.programs:
-                self.event_repo.remove_program_item(item.id)
+                await self.event_repo.remove_program_item(item.id)
 
         created: list[dict] = []
         for idx, item in enumerate(program_items):
-            pi = self.event_repo.add_program_item(
+            pi = await self.event_repo.add_program_item(
                 event_id=event_id,
                 title=item.get("title", f"Actividad {idx + 1}"),
                 time_start=item.get("time_start", "00:00"),
@@ -175,7 +176,7 @@ class EventOrchestratorAgent(BaseAgent):
         bulk_rsvps: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         """Manage RSVPs for an event."""
-        event = self.event_repo.get_event(event_id)
+        event = await self.event_repo.get_event(event_id)
         if not event:
             return {
                 "status": "error",
@@ -231,13 +232,13 @@ class EventOrchestratorAgent(BaseAgent):
         new_status: str | None,
         bulk_rsvps: list[dict[str, Any]] | None,
     ) -> dict[str, Any]:
-        event = self.event_repo.get_event(event_id)
+        event = await self.event_repo.get_event(event_id)
         etitle = event.title if event else ""
 
         if action == "add":
             if not family_id:
                 return {"status": "error", "message": "Se requiere family_id."}
-            rsvp = self.event_repo.add_rsvp(
+            rsvp = await self.event_repo.add_rsvp(
                 event_id=event_id,
                 family_id=family_id,
                 member_ids=member_ids or [],
@@ -269,7 +270,7 @@ class EventOrchestratorAgent(BaseAgent):
                 updates["dietary_restrictions"] = dietary_restrictions
             if notes:
                 updates["notes"] = notes
-            rsvp = self.event_repo.update_rsvp(rsvp_id, updates)
+            rsvp = await self.event_repo.update_rsvp(rsvp_id, updates)
             if not rsvp:
                 return {"status": "error", "message": "RSVP no encontrado."}
             return {
@@ -281,7 +282,7 @@ class EventOrchestratorAgent(BaseAgent):
         if action == "remove":
             if not rsvp_id:
                 return {"status": "error", "message": "Se requiere rsvp_id."}
-            if not self.event_repo.remove_rsvp(rsvp_id):
+            if not await self.event_repo.remove_rsvp(rsvp_id):
                 return {"status": "error", "message": "RSVP no encontrado."}
             return {
                 "status": "success",
@@ -295,7 +296,7 @@ class EventOrchestratorAgent(BaseAgent):
                     sf = RSVPStatus(new_status)
                 except ValueError:
                     pass
-            rsvps = self.event_repo.list_rsvps(event_id, status=sf)
+            rsvps = await self.event_repo.list_rsvps(event_id, status=sf)
             return {
                 "status": "success",
                 "message": f'📋 {len(rsvps)} RSVPs para "{etitle}".',
@@ -306,7 +307,7 @@ class EventOrchestratorAgent(BaseAgent):
         if action == "add_bulk":
             results = []
             for rd in (bulk_rsvps or []):
-                rsvp = self.event_repo.add_rsvp(
+                rsvp = await self.event_repo.add_rsvp(
                     event_id=event_id,
                     family_id=rd.get("family_id", ""),
                     member_ids=rd.get("member_ids", []),
@@ -346,7 +347,7 @@ class EventOrchestratorAgent(BaseAgent):
         vendor_id: str | None = None,
     ) -> dict[str, Any]:
         """Coordinate vendors for an event (HITL for mutations)."""
-        event = self.event_repo.get_event(event_id)
+        event = await self.event_repo.get_event(event_id)
         if not event:
             return {
                 "status": "error",
@@ -354,7 +355,7 @@ class EventOrchestratorAgent(BaseAgent):
             }
 
         if action == "list":
-            vendors = self.event_repo.list_vendors(event_id)
+            vendors = await self.event_repo.list_vendors(event_id)
             return {
                 "status": "success",
                 "message": f'📋 {len(vendors)} proveedores para "{event.title}".',
@@ -400,11 +401,11 @@ class EventOrchestratorAgent(BaseAgent):
         action = params["action"]
         vendor_data = params.get("vendor_data")
         vendor_id = params.get("vendor_id")
-        event = self.event_repo.get_event(event_id)
+        event = await self.event_repo.get_event(event_id)
         etitle = event.title if event else ""
 
         if action == "add" and vendor_data:
-            vendor = self.event_repo.add_vendor(
+            vendor = await self.event_repo.add_vendor(
                 event_id=event_id,
                 name=vendor_data.get("name", ""),
                 service_type=vendor_data.get("service_type", ""),
@@ -425,7 +426,7 @@ class EventOrchestratorAgent(BaseAgent):
                 }
 
         if action == "update" and vendor_id and vendor_data:
-            vendor = self.event_repo.update_vendor(vendor_id, vendor_data)
+            vendor = await self.event_repo.update_vendor(vendor_id, vendor_data)
             if vendor:
                 return {
                     "status": "success",
@@ -434,14 +435,14 @@ class EventOrchestratorAgent(BaseAgent):
                 }
 
         if action == "remove" and vendor_id:
-            if self.event_repo.remove_vendor(vendor_id):
+            if await self.event_repo.remove_vendor(vendor_id):
                 return {
                     "status": "success",
                     "message": f'🗑️ Proveedor eliminado de "{etitle}".',
                 }
 
         if action == "approve_contract" and vendor_id:
-            vendor = self.event_repo.update_vendor(
+            vendor = await self.event_repo.update_vendor(
                 vendor_id,
                 {"contract_status": VendorContractStatus.APPROVED.value},
             )
@@ -475,7 +476,7 @@ class EventOrchestratorAgent(BaseAgent):
         new_max_capacity: int | None = None,
     ) -> dict[str, Any]:
         """Get capacity info or update max capacity."""
-        event = self.event_repo.get_event(event_id)
+        event = await self.event_repo.get_event(event_id)
         if not event:
             return {
                 "status": "error",
@@ -483,9 +484,9 @@ class EventOrchestratorAgent(BaseAgent):
             }
 
         if new_max_capacity is not None:
-            self.event_repo.update_event(event_id, {"max_capacity": new_max_capacity})
+            await self.event_repo.update_event(event_id, {"max_capacity": new_max_capacity})
 
-        cap = self.event_repo.get_capacity_info(event_id)
+        cap = await self.event_repo.get_capacity_info(event_id)
         if not cap:
             return {"status": "error", "message": "No se pudo obtener capacidad."}
 
@@ -522,7 +523,7 @@ class EventOrchestratorAgent(BaseAgent):
     )
     async def event_get_analytics(self, event_id: str) -> dict[str, Any]:
         """Get analytics and metrics for an event."""
-        analytics = self.event_repo.compute_analytics(event_id)
+        analytics = await self.event_repo.compute_analytics(event_id)
         if not analytics:
             return {
                 "status": "error",
@@ -567,7 +568,7 @@ class EventOrchestratorAgent(BaseAgent):
                 "message": "Formato de fecha inválido. Usa YYYY-MM-DD o ISO. 📅",
             }
 
-        source = self.event_repo.get_event(event_id)
+        source = await self.event_repo.get_event(event_id)
         if not source:
             return {
                 "status": "error",
@@ -575,7 +576,7 @@ class EventOrchestratorAgent(BaseAgent):
             }
 
         suffix = title_suffix or f"— {start.strftime('%d/%m/%Y')}"
-        cloned = self.event_repo.clone_event(event_id, start, end, suffix)
+        cloned = await self.event_repo.clone_event(event_id, start, end, suffix)
         if not cloned:
             return {"status": "error", "message": "No se pudo clonar el evento."}
 
@@ -587,6 +588,78 @@ class EventOrchestratorAgent(BaseAgent):
                 f"Recuerda revisar y publicar cuando esté listo. ✨"
             ),
             "data": cloned.model_dump(mode="json"),
+        }
+
+
+    # ─────────────────────────────────────────────────────────
+    # B4 TOOLS: EVENT READS (AUTO × 2)
+    # VI §6 flagged events.get_event / list_events as capability-
+    # without-tool: event_repo already had get_event (L84) and
+    # search_events (L108). These wrappers expose them with the
+    # search params the mi-club pages send (query/category/status/
+    # dates + pagination).
+    # ─────────────────────────────────────────────────────────
+
+    @MCPTool(
+        "get_event",
+        "Obtener el detalle completo de un evento.",
+        approval=ApprovalLevel.AUTO,
+    )
+    async def get_event(self, event_id: str = "") -> dict[str, Any]:
+        if not event_id:
+            return {"status": "error", "message": "Se requiere event_id 📅"}
+        event = await self.event_repo.get_event(event_id)
+        if event is None:
+            return {
+                "status": "not_found",
+                "message": f"No encontramos el evento '{event_id}'.",
+            }
+        return {
+            "status": "success",
+            "message": f"📅 {event.title} — {event.status.value}",
+            "event": event.model_dump(mode="json"),
+        }
+
+    @MCPTool(
+        "list_events",
+        "Listar y filtrar eventos con paginación.",
+        approval=ApprovalLevel.AUTO,
+    )
+    async def list_events(
+        self,
+        query: str | None = None,
+        category: str | None = None,
+        status: str | None = None,
+        date_from: str | None = None,
+        date_to: str | None = None,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> dict[str, Any]:
+        if page < 1 or not 1 <= page_size <= 100:
+            return {
+                "status": "error",
+                "message": "page >= 1 y page_size entre 1 y 100.",
+            }
+        try:
+            params = EventSearchParams(
+                query=query,
+                category=EventCategory(category) if category else None,
+                status=EventStatus(status) if status else None,
+                date_from=datetime.fromisoformat(date_from) if date_from else None,
+                date_to=datetime.fromisoformat(date_to) if date_to else None,
+                page=page,
+                page_size=page_size,
+            )
+        except ValueError as exc:
+            return {"status": "error", "message": f"Filtro inválido: {exc}"}
+        events = await self.event_repo.search_events(params)
+        return {
+            "status": "success",
+            "message": f"📅 {len(events)} evento(s) encontrado(s).",
+            "events": [e.model_dump(mode="json") for e in events],
+            "total": len(events),
+            "page": page,
+            "page_size": page_size,
         }
 
     # ─────────────────────────────────────────────────────────
@@ -624,7 +697,7 @@ class EventOrchestratorAgent(BaseAgent):
                     "message": f"Categoría no válida: {category}. Opciones: {valid}",
                 }
 
-        cal = self.event_repo.get_calendar(start, end, category)
+        cal = await self.event_repo.get_calendar(start, end, category)
         total = sum(d.total_events for d in cal)
         conflicts = sum(1 for d in cal if d.has_conflicts)
 
@@ -691,7 +764,7 @@ class EventOrchestratorAgent(BaseAgent):
                 "request_id": str(request.request_id),
             }
 
-        report = self.event_repo.generate_report(start, end, report_type)
+        report = await self.event_repo.generate_report(start, end, report_type)
 
         return {
             "status": "success",
@@ -710,7 +783,7 @@ class EventOrchestratorAgent(BaseAgent):
         """Execute financial report generation post-approval."""
         start = datetime.fromisoformat(params["date_from"])
         end = datetime.fromisoformat(params["date_to"])
-        report = self.event_repo.generate_report(start, end, "financial")
+        report = await self.event_repo.generate_report(start, end, "financial")
         return {
             "status": "success",
             "message": f"📊 Reporte financiero: {report.total_events} eventos.",
@@ -759,7 +832,7 @@ class EventOrchestratorAgent(BaseAgent):
                 }
 
         # Base calendar
-        cal = self.event_repo.get_calendar(start, end, category)
+        cal = await self.event_repo.get_calendar(start, end, category)
 
         # Enrich each day
         enriched_days: list[dict[str, Any]] = []
@@ -779,10 +852,10 @@ class EventOrchestratorAgent(BaseAgent):
                 category_counts[cat] = category_counts.get(cat, 0) + 1
 
                 # Capacity per event
-                cap = self.event_repo.get_capacity_info(brief.id)
+                cap = await self.event_repo.get_capacity_info(brief.id)
 
                 # RSVP summary per event
-                rsvps = self.event_repo.list_rsvps(brief.id)
+                rsvps = await self.event_repo.list_rsvps(brief.id)
                 confirmed = sum(
                     1 for r in rsvps
                     if r.status == RSVPStatus.CONFIRMED
@@ -824,7 +897,7 @@ class EventOrchestratorAgent(BaseAgent):
                 day_end = day_start.replace(
                     hour=23, minute=59, second=59
                 )
-                conflicts = self.event_repo.get_conflict_details(
+                conflicts = await self.event_repo.get_conflict_details(
                     day_start, day_end, category
                 )
                 day_conflicts = [
@@ -905,7 +978,7 @@ class EventOrchestratorAgent(BaseAgent):
                     ),
                 }
 
-        conflicts = self.event_repo.get_conflict_details(
+        conflicts = await self.event_repo.get_conflict_details(
             start, end, category
         )
 

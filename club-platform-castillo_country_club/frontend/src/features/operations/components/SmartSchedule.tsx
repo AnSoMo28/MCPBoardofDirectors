@@ -49,6 +49,7 @@ import type {
 } from "@/shared/mocks/contracts";
 import ExportButton from "@/shared/components/export/ExportButton";
 import { ConflictSeverity } from "@/features/recommendations/types";
+import './SmartSchedule.css';
 
 /* ══════════════════════════════════════════════════════════
    Helpers & Configs
@@ -151,7 +152,7 @@ function UtilizationTooltip({ active, payload }: { active?: boolean; payload?: U
   const name = isStaff ? (d as ScheduleStaffUtilization).staff_name : (d as ScheduleFacilityUtilization).facility;
 
   return (
-    <div style={TOOLTIP_STYLE} className="rounded-lg p-3 border border-white/[0.08] shadow-lg min-w-[160px]">
+    <div style={TOOLTIP_STYLE} className="smart-schedule rounded-lg p-3 border border-white/[0.08] shadow-lg min-w-[160px]">
       <p className="text-xs font-bold text-[var(--color-silver-200)] font-[family-name:var(--font-ui)] mb-1.5">
         {name}
       </p>
@@ -534,7 +535,8 @@ function EventCalendarSection({ date }: { date: string }) {
                 key={evt.id}
                 className="p-3 rounded-xl bg-[var(--color-surface-2)] border border-white/[0.04]"
               >
-                <button
+                <Button
+                  variant="unstyled"
                   type="button"
                   onClick={() => setExpandedEvent(expanded ? null : evt.id)}
                   className="w-full text-left flex items-center justify-between gap-3 min-h-[44px] focus-visible:outline-2 focus-visible:outline-[var(--color-gold-400)]"
@@ -568,7 +570,7 @@ function EventCalendarSection({ date }: { date: string }) {
                       <ChevronDown size={14} className="text-[var(--color-silver-500)]" />
                     )}
                   </div>
-                </button>
+                </Button>
 
                 {expanded && (
                   <motion.div
@@ -2294,7 +2296,8 @@ export default function SmartSchedule() {
                           </div>
 
                           {/* Block */}
-                          <button
+                          <Button
+                            variant="unstyled"
                             type="button"
                             onClick={() => setExpandedBlock(expanded ? null : m.id)}
                             className={cn(
@@ -2361,7 +2364,7 @@ export default function SmartSchedule() {
                                 )}
                               </motion.div>
                             )}
-                          </button>
+                          </Button>
                         </div>
                       );
                     })}

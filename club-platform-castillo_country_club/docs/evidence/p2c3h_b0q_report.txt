@@ -1,0 +1,132 @@
+P2-C3h · b0q — diagnóstico §4: ancla no encontrada en family_profile.__init__
+
+  · target analizado: scripts/p2c3h_b0.ts (1516 líneas)
+  · llamadas patch() encontradas: 3
+
+── §A · el paciente: backend/src/club_mcp/agents/family_profile.py ──
+  · existe ✓ · 74485 bytes · 1809 líneas
+  · finales de línea: CRLF=1808 · LF-lone=0 · CR-lone=0 · BOM=no · tabs=0
+  · git ls-files --eol: i/lf    w/crlf  attr/                 	backend/src/club_mcp/agents/family_profile.py
+  · git status: clean
+  · región __init__ (l.148–162, «CR» = \r visible):
+      148 │     description: str = "Gestion de perfiles familiares e inteligencia"«CR»
+      149 │ «CR»
+      150 │     def __init__(«CR»
+      151 │         self,«CR»
+      152 │         repo: FamilyRepository | None = None,«CR»
+      153 │         rag_service: Any | None = None,«CR»
+      154 │     ) -> None:«CR»
+      155 │         super().__init__()«CR»
+      156 │         self.repo = repo or FamilyRepository()«CR»
+      157 │         self.rag_service = rag_service«CR»
+      158 │         self.system_prompt = AGENT_SYSTEM_PROMPTS.get("family_profile", "")«CR»
+      159 │ «CR»
+      160 │     def _register_tools(self) -> None:«CR»
+      161 │         pass«CR»
+      162 │ «CR»
+
+── §B · función patch() y llamada fallida (autoridad: tu disco) ──
+  · definición (l.1310–1343):
+      1310 │ function patch(p: string, anchor: string, replacement: string, label: string): void {
+      1311 │   const src = read(p);
+      1312 │   const first = src.indexOf(anchor);
+      1313 │   if (first === -1) { say(`  ✗ ${label}: ancla no encontrada en ${rel(p)} — ABORTAR TODO`); throw new Error(label); }
+      1314 │   if (src.indexOf(anchor, first + 1) !== -1) { say(`  ✗ ${label}: ancla duplicada — ABORTAR TODO`); throw new Error(label); }
+      1315 │   fs.writeFileSync(p, src.slice(0, first) + replacement + src.slice(first + anchor.length), "utf8");
+      1316 │   say(`  ✓ parche ${label} aplicado a ${rel(p)}`);
+      1317 │ }
+      1318 │ 
+      1319 │ say("── §1 Guardas previas ──");
+      1320 │ {
+      1321 │   // Guard A: TOOL_PERMISSION_MAP sin otros importers
+      1322 │   const offenders: string[] = [];
+      1323 │   const stack = [path.join(BE, "src")];
+      1324 │   while (stack.length) {
+      1325 │     const dir = stack.pop()!;
+      1326 │     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      1327 │       const p = path.join(dir, e.name);
+      1328 │       if (e.isDirectory()) { if (e.name !== "__pycache__") stack.push(p); continue; }
+      1329 │       if (!e.name.endsWith(".py")) continue;
+      1330 │       if (p.replaceAll("\\", "/").endsWith("auth/rbac.py") || p.replaceAll("\\", "/").endsWith("api/routes/agents.py")) continue;
+      1331 │       if (read(p).includes("TOOL_PERMISSION_MAP")) offenders.push(rel(p));
+      1332 │     }
+      1333 │   }
+      1334 │   if (offenders.length) {
+      1335 │     say(`  ✗ TOOL_PERMISSION_MAP usado en: ${offenders.join(", ")} — abortando (revisar antes)`);
+      1336 │     process.exit(1);
+      1337 │   }
+      1338 │   say("  · TOOL_PERMISSION_MAP sin importers externos ✓");
+      1339 │ }
+      1340 │ say("");
+      1341 │ 
+      1342 │ say("── §2 Archivos nuevos ──");
+      1343 │ W(path.join(BE, "src/club_mcp/registry.py"), PY_REGISTRY);
+  · llamada family_profile.__init__ (l.1357–1384):
+      1355 │ say("── §4 Parches anclados ──");
+      1356 │ // F-2: family_profile acepta approval_engine/notifier (wiring por nombre + split-brain)
+      1357 │ patch(
+      1358 │   path.join(BE, "src/club_mcp/agents/family_profile.py"),
+      1359 │   `    def __init__(
+      1360 │         self,
+      1361 │         repo: FamilyRepository | None = None,
+      1362 │         rag_service: Any | None = None,
+      1363 │     ) -> None:
+      1364 │         super().__init__()
+      1365 │         self.repo = repo or FamilyRepository()
+      1366 │         self.rag_service = rag_service
+      1367 │         self.system_prompt = AGENT_SYSTEM_PROMPTS.get("family_profile", "")`,
+      1368 │   `    def __init__(
+      1369 │         self,
+      1370 │         repo: FamilyRepository | None = None,
+      1371 │         approval_engine: Any | None = None,
+      1372 │         notifier: Any | None = None,
+      1373 │         rag_service: Any | None = None,
+      1374 │     ) -> None:
+      1375 │         super().__init__()
+      1376 │         self.repo = repo or FamilyRepository()
+      1377 │         # P2-C3h B0 (F-2): acepta el engine compartido del composition root
+      1378 │         if approval_engine is not None:
+      1379 │             self.approval_engine = approval_engine
+      1380 │         self.notifier = notifier
+      1381 │         self.rag_service = rag_service
+      1382 │         self.system_prompt = AGENT_SYSTEM_PROMPTS.get("family_profile", "")`,
+      1383 │   "family_profile.__init__",
+      1384 │ );
+      1385 │ say("");
+      1386 │ 
+      1387 │ // B0.5: ApprovalEngine — registry de executores
+
+── §C · hipótesis sobre la llamada fallida ──
+  · ancla (multiline, primeras líneas no vacías):
+      1│     def __init__(
+      2│         self,
+      3│         repo: FamilyRepository | None = None,
+      4│         rag_service: Any | None = None,
+      5│     ) -> None:
+      6│         super().__init__()
+      7│         self.repo = repo or FamilyRepository()
+      8│         self.rag_service = rag_service
+  · raw indexOf: NO · tras CRLF→LF del archivo: SÍ · whitespace-colapsado: SÍ
+  · causa = CRLF (H1): el código está, los finales de línea no — fix mecánico en §E
+
+── §D · pre-test de todas las patch() (predicción del re-run §4) ──
+  1. l.1357 · family_profile.__init__ · backend/src/club_mcp/agents/family_profile.py · raw NO · crlf SÍ · ws SÍ → CRLF
+  2. l.1388 · approval_engine.__init__ + executores · backend/src/club_mcp/hitl/approval_engine.py · raw NO · crlf SÍ · ws SÍ → CRLF
+  3. l.1411 · approval_engine.approve dispatch · backend/src/club_mcp/hitl/approval_engine.py · raw NO · crlf SÍ · ws SÍ → CRLF
+  · todas las falencias son CRLF → tras la conversión §E, §4 debería pasar
+
+── §E · fix (solo si todos los fallos son CRLF) ──
+  ✓ convertido a LF: backend/src/club_mcp/agents/family_profile.py · rollback: git checkout -- backend/src/club_mcp/agents/family_profile.py
+  ✓ convertido a LF: backend/src/club_mcp/hitl/approval_engine.py · rollback: git checkout -- backend/src/club_mcp/hitl/approval_engine.py
+  · re-test raw tras conversión · family_profile.__init__: ✓
+  · re-test raw tras conversión · approval_engine.__init__ + executores: ✓
+  · re-test raw tras conversión · approval_engine.approve dispatch: ✓
+  · todas las anclas CRLF ahora matchean en crudo.
+
+── siguiente paso ──
+  · relanzar B0: npx tsx scripts/p2c3h_b0.ts
+  · B0 es re-entrante hasta §3 (reescribe archivos completos); §4 no escribió nada aún.
+  · si aborta de nuevo en §4 con OTRO label: pegá §D (predicción) + el nuevo error.
+  · nota: §D cubre las llamadas patch(...); si una sección posterior usa otro helper
+    (insertAfter, replace...), ese aborto saldrá en la próxima corrida — pegarlo igual.
+

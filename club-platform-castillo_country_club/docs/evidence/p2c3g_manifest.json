@@ -1,0 +1,416 @@
+{
+  "generatedAt": "2026-11-05T02:36:53.246Z",
+  "source": "p2c3g_raw.json",
+  "expect": {
+    "refs": 238,
+    "toolBackend": 169,
+    "equiv": 18,
+    "mockOnly": 47,
+    "capacidad": 1,
+    "deuda": 3
+  },
+  "rows": [
+    {
+      "n": 1,
+      "file": "features/communications/hooks/usePreferencesForm.ts",
+      "line": 84,
+      "old": "communication.get_communication_history",
+      "real": "communication.get_communication_analytics",
+      "cls": "LOSSY",
+      "why": "history → analytics: shape distinto",
+      "context": [
+        "   83     // ── History query (for intelligence layer) ─────",
+        "   84 >   const historyQ = useMCPQuery<{ history: HistoryItem[] }>(",
+        "   85       \"communication\","
+      ],
+      "oldElsewhere": [],
+      "realInFrontend": [
+        {
+          "file": "features/communications/hooks/useCommunicationData.ts",
+          "line": 61
+        },
+        {
+          "file": "shared/mocks/contracts.ts",
+          "line": 1450
+        }
+      ],
+      "abs": "frontend/src/features/communications/hooks/usePreferencesForm.ts"
+    },
+    {
+      "n": 2,
+      "file": "features/engagement/ReactivationCampaigns.tsx",
+      "line": 107,
+      "old": "engagement.list_reactivation_campaigns",
+      "real": "member_engagement.design_reactivation_campaign",
+      "cls": "RISKY",
+      "why": "list → design: generación, no listado",
+      "context": [
+        "  106     // ── Queries ──────────────────────────────────────────────",
+        "  107 >   const campaignsQ = useMCPQuery<CampaignListResponse>(",
+        "  108       \"engagement\","
+      ],
+      "oldElsewhere": [],
+      "realInFrontend": [
+        {
+          "file": "shared/mocks/contracts.ts",
+          "line": 1340
+        }
+      ],
+      "abs": "frontend/src/features/engagement/ReactivationCampaigns.tsx"
+    },
+    {
+      "n": 3,
+      "file": "features/engagement/SatisfactionReport.tsx",
+      "line": 331,
+      "old": "engagement.get_survey_results",
+      "real": "satisfaction.analyze_event_satisfaction",
+      "cls": "LOSSY",
+      "why": "survey_results → análisis computado",
+      "context": [
+        "  330   export function SatisfactionReport({ surveyId: propId }: SatisfactionReportProps) {",
+        "  331 >   const resultsQ = useMCPQuery<SurveyResultsResponse>(",
+        "  332       \"engagement\","
+      ],
+      "oldElsewhere": [
+        {
+          "file": "shared/lib/mock-data.ts",
+          "line": 943,
+          "tag": "[MOCK?]"
+        }
+      ],
+      "realInFrontend": [
+        {
+          "file": "shared/mocks/contracts.ts",
+          "line": 1357
+        },
+        {
+          "file": "shared/types/ai-intelligence.ts",
+          "line": 700
+        }
+      ],
+      "abs": "frontend/src/features/engagement/SatisfactionReport.tsx"
+    },
+    {
+      "n": 4,
+      "file": "features/engagement/SatisfactionSurvey.tsx",
+      "line": 271,
+      "old": "engagement.get_active_survey",
+      "real": "satisfaction.get_survey_for_event",
+      "cls": "LOSSY",
+      "why": "active_survey → probablemente exige event_id",
+      "context": [
+        "  270     // ── Data fetching ────────────────────────────────────────",
+        "  271 >   const surveyQ = useMCPQuery<SurveyTemplate>(",
+        "  272       \"engagement\","
+      ],
+      "oldElsewhere": [],
+      "realInFrontend": [
+        {
+          "file": "shared/mocks/contracts.ts",
+          "line": 1356
+        }
+      ],
+      "abs": "frontend/src/features/engagement/SatisfactionSurvey.tsx"
+    },
+    {
+      "n": 5,
+      "file": "features/facilities/FacilityMap.tsx",
+      "line": 503,
+      "old": "facilities.get_utilization",
+      "real": "facility_management.get_amenity_utilization",
+      "cls": "SAFE",
+      "why": "get_utilization → amenity_utilization (alcance amenity)",
+      "context": [
+        "  502   ",
+        "  503 >   const { data: utilizationData } = useMCPQuery<AmenityUtilizationResponse>(",
+        "  504       \"facilities\","
+      ],
+      "oldElsewhere": [],
+      "realInFrontend": [],
+      "abs": "frontend/src/features/facilities/FacilityMap.tsx"
+    },
+    {
+      "n": 6,
+      "file": "features/facilities/components/ReservationCalendar.tsx",
+      "line": 512,
+      "old": "facilities.list_reservations",
+      "real": "facility_management.get_facility_reservations",
+      "cls": "SAFE",
+      "why": "list/get_reservations → get_facility_reservations",
+      "context": [
+        "  511   ",
+        "  512 >   const { data, isLoading, isError, error } = useMCPQuery<CalendarQueryResponse>(",
+        "  513       \"facilities\","
+      ],
+      "oldElsewhere": [],
+      "realInFrontend": [],
+      "abs": "frontend/src/features/facilities/components/ReservationCalendar.tsx"
+    },
+    {
+      "n": 7,
+      "file": "features/finance/hooks/useFamilyAccount.ts",
+      "line": 31,
+      "old": "finance.get_family_account",
+      "real": "finance.finance_account_status",
+      "cls": "LOSSY",
+      "why": "family_account → status: shape parcial",
+      "context": [
+        "   30   export function useFamilyAccount({ familyId, txPage, txType, activeTab }: Opts) {",
+        "   31 >   const accountQ = useMCPQuery<FamilyAccountData>(",
+        "   32       \"finance\","
+      ],
+      "oldElsewhere": [
+        {
+          "file": "shared/lib/mock-data.ts",
+          "line": 929,
+          "tag": "[MOCK?]"
+        }
+      ],
+      "realInFrontend": [],
+      "abs": "frontend/src/features/finance/hooks/useFamilyAccount.ts"
+    },
+    {
+      "n": 8,
+      "file": "features/finance/hooks/useFamilyAccount.ts",
+      "line": 50,
+      "old": "finance.get_invoices",
+      "real": "finance.finance_invoice_create",
+      "cls": "RISKY",
+      "why": "get_invoices (lectura) → create (ESCRITURA)",
+      "context": [
+        "   49   ",
+        "   50 >   const invQ = useMCPQuery<Invoice[]>(",
+        "   51       \"finance\","
+      ],
+      "oldElsewhere": [],
+      "realInFrontend": [],
+      "abs": "frontend/src/features/finance/hooks/useFamilyAccount.ts"
+    },
+    {
+      "n": 9,
+      "file": "features/guests/GuestList.tsx",
+      "line": 148,
+      "old": "guests.list_trial_memberships",
+      "real": "guest_management.manage_trial_memberships",
+      "cls": "RISKY",
+      "why": "list → manage: dispatch CRUD",
+      "context": [
+        "  147   ",
+        "  148 >   const trialsQ = useMCPQuery<TrialListResponse>(",
+        "  149       \"guests\","
+      ],
+      "oldElsewhere": [],
+      "realInFrontend": [
+        {
+          "file": "shared/mocks/contracts.ts",
+          "line": 1507
+        }
+      ],
+      "abs": "frontend/src/features/guests/GuestList.tsx"
+    },
+    {
+      "n": 10,
+      "file": "features/guests/GuestRegistration.tsx",
+      "line": 127,
+      "old": "families.search_families",
+      "real": "family_profile.family_search",
+      "cls": "SAFE",
+      "why": "search_families / list_families → family_search",
+      "context": [
+        "  126     // ── Queries ──",
+        "  127 >   const hostQ = useMCPQuery<FamilySearchResponse>(",
+        "  128       \"families\","
+      ],
+      "oldElsewhere": [],
+      "realInFrontend": [],
+      "abs": "frontend/src/features/guests/GuestRegistration.tsx"
+    },
+    {
+      "n": 11,
+      "file": "features/guests/GuestRegistration.tsx",
+      "line": 134,
+      "old": "facilities.list_available_facilities",
+      "real": "facility_management.manage_facilities",
+      "cls": "RISKY",
+      "why": "list_available → manage: dispatch CRUD",
+      "context": [
+        "  133   ",
+        "  134 >   const facilityQ = useMCPQuery<FacilityListResponse>(",
+        "  135       \"facilities\","
+      ],
+      "oldElsewhere": [],
+      "realInFrontend": [
+        {
+          "file": "shared/mocks/contracts.ts",
+          "line": 1346
+        }
+      ],
+      "abs": "frontend/src/features/guests/GuestRegistration.tsx"
+    },
+    {
+      "n": 12,
+      "file": "features/mi-club/hooks/useMiClubLanding.ts",
+      "line": 435,
+      "old": "families.get_family",
+      "real": "family_profile.family_get_profile",
+      "cls": "SAFE",
+      "why": "get_family → family_get_profile",
+      "context": [
+        "  434     /* ── Family ── */",
+        "  435 >   const familyQ = useMCPQuery<FamilyDetailResponse>(",
+        "  436       \"families\","
+      ],
+      "oldElsewhere": [],
+      "realInFrontend": [],
+      "abs": "frontend/src/features/mi-club/hooks/useMiClubLanding.ts"
+    },
+    {
+      "n": 13,
+      "file": "features/mi-club/hooks/useMyReservations.ts",
+      "line": 201,
+      "old": "facilities.get_reservations",
+      "real": "facility_management.get_facility_reservations",
+      "cls": "SAFE",
+      "why": "list/get_reservations → get_facility_reservations",
+      "context": [
+        "  200       refetch,",
+        "  201 >   } = useMCPQuery<ReservationListResponse>(",
+        "  202       \"facilities\","
+      ],
+      "oldElsewhere": [
+        {
+          "file": "shared/lib/mock-data.ts",
+          "line": 926,
+          "tag": "[MOCK?]"
+        }
+      ],
+      "realInFrontend": [],
+      "abs": "frontend/src/features/mi-club/hooks/useMyReservations.ts"
+    },
+    {
+      "n": 14,
+      "file": "features/reports/hooks/useBoardReport.ts",
+      "line": 104,
+      "old": "reports.get_board_report",
+      "real": "executive_dashboard.generate_quarterly_board_report",
+      "cls": "SAFE",
+      "why": "get → generate (compute+return); revisar params",
+      "context": [
+        "  103       error,",
+        "  104 >   } = useMCPQuery<BoardReport>(",
+        "  105       \"reports\","
+      ],
+      "oldElsewhere": [
+        {
+          "file": "shared/lib/mock-data.ts",
+          "line": 950,
+          "tag": "[MOCK?]"
+        }
+      ],
+      "realInFrontend": [],
+      "abs": "frontend/src/features/reports/hooks/useBoardReport.ts"
+    },
+    {
+      "n": 15,
+      "file": "features/reports/hooks/useBoardReport.ts",
+      "line": 114,
+      "old": "reports.get_risk_matrix",
+      "real": "member_360.get_member_risk_assessment",
+      "cls": "SAFE",
+      "why": "risk_matrix → risk_assessment; revisar shape",
+      "context": [
+        "  113       isLoading: isRiskLoading,",
+        "  114 >   } = useMCPQuery<RiskSummary>(",
+        "  115       \"reports\","
+      ],
+      "oldElsewhere": [
+        {
+          "file": "shared/lib/mock-data.ts",
+          "line": 951,
+          "tag": "[MOCK?]"
+        }
+      ],
+      "realInFrontend": [],
+      "abs": "frontend/src/features/reports/hooks/useBoardReport.ts"
+    },
+    {
+      "n": 16,
+      "file": "features/wellness/components/WellnessFamilySelector.tsx",
+      "line": 26,
+      "old": "families.list_families",
+      "real": "family_profile.family_search",
+      "cls": "SAFE",
+      "why": "search_families / list_families → family_search",
+      "context": [
+        "   25   ",
+        "   26 >   const { data: familiesResp, isLoading } = useMCPQuery<FamilyListResponse>(",
+        "   27       \"families\","
+      ],
+      "oldElsewhere": [
+        {
+          "file": "shared/lib/mock-data.ts",
+          "line": 915,
+          "tag": "[MOCK?]"
+        }
+      ],
+      "realInFrontend": [],
+      "abs": "frontend/src/features/wellness/components/WellnessFamilySelector.tsx"
+    },
+    {
+      "n": 17,
+      "file": "shared/components/export/hooks/useDecisionDocument.ts",
+      "line": 86,
+      "old": "finance.narrative_generate",
+      "real": "advisor_intelligence.generate_insight_narrative",
+      "cls": "SAFE",
+      "why": "narrative_generate → generate_insight_narrative",
+      "context": [
+        "   85     /* ── Queries (staggered) ── */",
+        "   86 >   const narrativeQ = useMCPQuery<FinanceNarrativeGenerateResponse>(",
+        "   87       \"finance\","
+      ],
+      "oldElsewhere": [
+        {
+          "file": "shared/mocks/contracts.ts",
+          "line": 1332,
+          "tag": "[MOCK?]"
+        }
+      ],
+      "realInFrontend": [
+        {
+          "file": "shared/mocks/contracts.ts",
+          "line": 1454
+        }
+      ],
+      "abs": "frontend/src/shared/components/export/hooks/useDecisionDocument.ts"
+    },
+    {
+      "n": 18,
+      "file": "shared/components/export/hooks/useDecisionDocument.ts",
+      "line": 93,
+      "old": "finance.scenario_simulate",
+      "real": "advisor_intelligence.simulate_scenario",
+      "cls": "SAFE",
+      "why": "scenario_simulate → simulate_scenario",
+      "context": [
+        "   92   ",
+        "   93 >   const scenarioQ = useMCPQuery<FinanceScenarioSimulateResponse>(",
+        "   94       \"finance\","
+      ],
+      "oldElsewhere": [
+        {
+          "file": "shared/mocks/contracts.ts",
+          "line": 1326,
+          "tag": "[MOCK?]"
+        }
+      ],
+      "realInFrontend": [
+        {
+          "file": "shared/mocks/contracts.ts",
+          "line": 1456
+        }
+      ],
+      "abs": "frontend/src/shared/components/export/hooks/useDecisionDocument.ts"
+    }
+  ]
+}

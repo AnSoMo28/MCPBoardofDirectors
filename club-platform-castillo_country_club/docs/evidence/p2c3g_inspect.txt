@@ -1,0 +1,928 @@
+P2-C3g · g2-inspect — evidencia para el diseño del parche
+  filas: 18 · SAFE 10 · LOSSY 4 · RISKY 4
+
+══ A. inventario shared/ ═══════════════════════════════════════════════════
+  shared/mocks/
+    contracts.ts
+    factories.ts
+    mock-registry.ts
+    normalizeEnums.ts
+    validateMocks.ts
+  shared/lib/
+    adaptiveThresholds.ts
+    advisor-engine
+    analytics.ts
+    api.ts
+    canvas.ts
+    chartTheme.ts
+    exportReport.ts
+    financial
+    focusTrap.ts
+    forceSimulation.ts
+    highlight.tsx
+    mcp
+    mock-data.ts
+    reactionTemplate.ts
+    riskTheme.ts
+    routePrefetch.ts
+    routes.ts
+    score-utils.ts
+    toolNameAdapter.ts
+    ui
+    utils.ts
+  (sin shared/api/)
+  shared/hooks/
+    useAdvisorBanner.ts
+    useAdvisorNarrative.ts
+    useAutonomousAdvisor.ts
+    useBackendHealth.ts
+    useBreakpoint.ts
+    useCalibratedConfidence.ts
+    useCommandInterface.ts
+    useDataFreshness.ts
+    useEvolutionAlerts.ts
+    useExecutiveSummary.ts
+    useExportDropdown.ts
+    useGlobalStatus.ts
+    useInsightCounts.ts
+    useKeyboardNav.ts
+    useMCPQuery.ts
+    useMLAdvisor.ts
+    useMLData.ts
+    usePermissionContext.tsx
+    usePermissionGate.ts
+    usePulseVitals.ts
+    useRAGContext.ts
+    useReducedMotion.ts
+    useRestoreFocus.ts
+    useRipple.ts
+    useRouteFocus.ts
+    useScrollSpy.ts
+    useScrollToTop.ts
+    useSystemEvolution.ts
+    useTilt.ts
+    useTwinSimulation.ts
+    useWebVitals.ts
+
+══ B. definición de useMCPQuery ════════════════════════════════════════════
+  1 archivo(s) definen useMCPQuery
+  ── shared/hooks/useMCPQuery.ts:110 · cabecera+imports ──
+     1 // src/shared/hooks/useMCPQuery.ts
+     2 // ═══════════════════════════════════════════════════════════
+     3 // MCP QUERY — React Query integration for MCP tool calls
+     4 //
+     5 // @level       Level 6+ Agency · Apple Production Grade · 2027
+     6 // @namespace   N/A — shared hook
+     7 // @keyframes   0
+     8 // @depends     @tanstack/react-query, @/shared/lib/api
+     9 //
+    10 // The PRIMARY data-fetching hook for all features.
+    11 // Wraps React Query's useQuery/useMutation around callMCPTool.
+    12 //
+    13 // Every feature that needs backend data uses this hook:
+    14 //   const { data, isLoading, error } = useMCPQuery<T>(
+    15 //     "events", "get_calendar", { month: "2026-08" }
+    16 //   );
+  ── cuerpo (≤80 lin) ──
+   110 export function useMCPQuery<T = unknown>(
+   111   agent: string,
+   112   tool: string,
+   113   params: Record<string, unknown> = {},
+   114   options?: Omit<UseQueryOptions<T, Error>, "queryKey" | "queryFn">,
+   115 ) {
+   116   return useQuery<T, Error>({
+   117     queryKey: [agent, tool, params],
+   118     queryFn: () => callMCPTool<T>(agent, tool, params),
+   119     retry: MCP_QUERY_RETRY_COUNT,
+   120     retryDelay: mcpRetryDelay,
+   121     ...options,
+   122   });
+   123 }
+   124 
+   125 // ═══════════════════════════════════════════════════════════
+   126 // §3 MUTATION HOOK
+   127 // ═══════════════════════════════════════════════════════════
+   128 
+   129 /**
+   130  * Execute an MCP agent tool as a mutation (write operation).
+   131  *
+   132  * Automatically invalidates all queries for the same agent
+   133  * on success, triggering background refetch of stale data.
+   134  *
+   135  * Spread order is CRITICAL:
+   136  *   1. ...options first (onError, onMutate, onSettled pass through)
+   137  *   2. mutationFn override (always routes through callMCPTool)
+   138  *   3. onSuccess override (always invalidates + delegates to user callback)
+   139  *
+   140  * This ensures user callbacks are NEVER silently replaced,
+   141  * and cache invalidation NEVER depends on whether the user passes onSuccess.
+   142  *
+   143  * @typeParam T — Expected response type
+   144  * @typeParam P — Parameters type (must extend Record<string, unknown>)
+   145  * @param agent — MCP server/agent name
+   146  * @param tool — Tool name
+   147  * @param options — React Query mutation options (onSuccess, onError, etc.)
+   148  * @returns React Query mutation result with mutate, isLoading, error, etc.
+   149  *
+   150  * @example
+   151  * const mutation = useMCPMutation<CreateEventResponse, CreateEventParams>(
+   152  *   "events", "create_event",
+   153  *   {
+   154  *     onSuccess: (data) => {
+   155  *       showToast({ type: "success", message: "Event created" });
+   156  *     },
+   157  *   }
+   158  * );
+   159  *
+   160  * mutation.mutate({ title: "Gala", date: "2026-09-01" });
+   161  */
+   162 export function useMCPMutation<
+   163   T = unknown,
+   164   P extends Record<string, unknown> = Record<string, unknown>,
+   165 >(agent: string, tool: string, options?: UseMutationOptions<T, Error, P>) {
+   166   const queryClient = useQueryClient();
+   167 
+   168   return useMutation<T, Error, P>({
+   169     // Step 1: Spread user options FIRST
+   170     // onError, onMutate, onSettled, retry, etc. pass through unchanged
+   171     ...options,
+   172 
+   173     // Step 2: Override mutationFn — ALWAYS route through callMCPTool
+   174     // Users should not replace the transport layer
+   175     mutationFn: (params: P) => callMCPTool<T>(agent, tool, params),
+   176 
+   177     // Step 3: Override onSuccess — ALWAYS invalidate + delegate
+   178     // React Query v5 signature: (data, variables, context) — 3 params
+   179     // context is the return value of onMutate (if provided)
+   180     onSuccess: (data, variables, onMutateResult, context) => {
+   181       // Invalidate all queries for this agent (fires refetch)
+   182       queryClient.invalidateQueries({ queryKey: [agent] });
+   183 
+   184       // Delegate to user's onSuccess if provided
+   185       // Returning the result preserves Promise chaining for async callbacks
+   186       return options?.onSuccess?.(data, variables, onMutateResult, context);
+   187     },
+   188   });
+   189 }
+  ── líneas mock/env del archivo (≤25) ──
+
+══ C. call-sites (anclas: server y tool son tokens separados) ══════════════
+  # 1 [LOSSY] features/communications/hooks/usePreferencesForm.ts:84   communication.get_communication_history → communication.get_communication_analytics
+         81     );
+         82   
+         83     // ── History query (for intelligence layer) ─────
+         84 >   const historyQ = useMCPQuery<{ history: HistoryItem[] }>(
+         85       "communication",
+         86       "get_communication_history",
+         87       { member_id: searchedMember ?? "", limit: 100 },
+         88       { enabled: !!searchedMember, staleTime: 60_000 },
+         89     );
+         90   
+         91     // ── Create mutation ────────────────────────────
+         92     const createMut = useMCPMutation<CommunicationPreferencesResponse>(
+         93       "communication",
+         94       "manage_communication_preferences",
+         95       {
+         96         onSuccess: (data: CommunicationPreferencesResponse) => {
+  # 2 [RISKY] features/engagement/ReactivationCampaigns.tsx:107   engagement.list_reactivation_campaigns → member_engagement.design_reactivation_campaign
+        104     const [errors, setErrors] = useState<Record<string, string>>({});
+        105   
+        106     // ── Queries ──────────────────────────────────────────────
+        107 >   const campaignsQ = useMCPQuery<CampaignListResponse>(
+        108       "engagement",
+        109       "list_reactivation_campaigns",
+        110       {},
+        111       { placeholderData: keepPreviousData },
+        112     );
+        113   
+        114     // ── Mutations ────────────────────────────────────────────
+        115     const createMut = useMCPMutation<unknown, CampaignForm>(
+        116       "engagement",
+        117       "create_reactivation_campaign",
+        118       {
+        119         onSuccess: () => {
+  # 3 [LOSSY] features/engagement/SatisfactionReport.tsx:331   engagement.get_survey_results → satisfaction.analyze_event_satisfaction
+        328    * breakdown, and recent comments.
+        329    */
+        330   export function SatisfactionReport({ surveyId: propId }: SatisfactionReportProps) {
+        331 >   const resultsQ = useMCPQuery<SurveyResultsResponse>(
+        332       "engagement",
+        333       "get_survey_results",
+        334       propId ? { survey_id: propId } : {},
+        335       { staleTime: 120_000 },
+        336     );
+        337   
+        338     // ── Loading ─────────────────────────────────────────────
+        339     if (resultsQ.isLoading) {
+        340       return (
+        341         <PageContainer title="Resultados de Encuesta" subtitle="Cargando análisis...">
+        342           <div data-glass-eng-report="" className="eng-report">
+        343             <div className="eng-report__kpis">
+  # 4 [LOSSY] features/engagement/SatisfactionSurvey.tsx:271   engagement.get_active_survey → satisfaction.get_survey_for_event
+        268     const [submitted, setSubmitted] = useState(false);
+        269   
+        270     // ── Data fetching ────────────────────────────────────────
+        271 >   const surveyQ = useMCPQuery<SurveyTemplate>(
+        272       "engagement",
+        273       "get_active_survey",
+        274       surveyId ? { survey_id: surveyId } : {},
+        275       { staleTime: 300_000 },
+        276     );
+        277   
+        278     const submitMut = useMCPMutation<unknown, Record<string, unknown>>(
+        279       "engagement",
+        280       "submit_survey_response",
+        281       {
+        282         onSuccess: () => {
+        283           setSubmitted(true);
+  # 5 [SAFE] features/facilities/FacilityMap.tsx:503   facilities.get_utilization → facility_management.get_amenity_utilization
+        500       },
+        501     );
+        502   
+        503 >   const { data: utilizationData } = useMCPQuery<AmenityUtilizationResponse>(
+        504       "facilities",
+        505       "get_utilization",
+        506       {},
+        507     );
+        508   
+        509     const facilities = useMemo(() => data?.facilities ?? [], [data]);
+  # 6 [SAFE] features/facilities/components/ReservationCalendar.tsx:512   facilities.list_reservations → facility_management.get_facility_reservations
+        509     const dateFrom = viewMode === "week" ? weekDates[0] : anchorDate;
+        510     const dateTo = viewMode === "week" ? weekDates[6] : anchorDate;
+        511   
+        512 >   const { data, isLoading, isError, error } = useMCPQuery<CalendarQueryResponse>(
+        513       "facilities",
+        514       "list_reservations",
+        515       { facilityId, dateFrom, dateTo },
+        516       { enabled: !!facilityId },
+        517     );
+        518   
+  # 7 [LOSSY] features/finance/hooks/useFamilyAccount.ts:31   finance.get_family_account → finance.finance_account_status
+         28   }
+         29   
+         30   export function useFamilyAccount({ familyId, txPage, txType, activeTab }: Opts) {
+         31 >   const accountQ = useMCPQuery<FamilyAccountData>(
+         32       "finance",
+         33       "get_family_account",
+         34       familyId ? { family_id: familyId } : {},
+         35       { staleTime: 60_000 },
+         36     );
+         37   
+         38     const txQ = useMCPQuery<TransactionListResponse>(
+         39       "finance",
+         40       "get_transactions",
+         41       {
+         42         ...(familyId ? { family_id: familyId } : {}),
+         43         page: txPage,
+  # 8 [RISKY] features/finance/hooks/useFamilyAccount.ts:50   finance.get_invoices → finance.finance_invoice_create
+         47       { enabled: activeTab === "transactions", placeholderData: keepPreviousData },
+         48     );
+         49   
+         50 >   const invQ = useMCPQuery<Invoice[]>(
+         51       "finance",
+         52       "get_invoices",
+         53       familyId ? { family_id: familyId } : {},
+         54       { enabled: activeTab === "invoices" },
+         55     );
+         56   
+         57     const account = accountQ.data;
+         58   
+         59     const agingBuckets: AgingBucket[] = useMemo(() => {
+         60       if (!account || account.balance <= 0) return [];
+         61       const b90 = account.aging_90_plus * 0.4;
+         62       const b90p = account.aging_90_plus * 0.6;
+  # 9 [RISKY] features/guests/GuestList.tsx:148   guests.list_trial_memberships → guest_management.manage_trial_memberships
+        145       { enabled: activeTab === "today", refetchInterval: 60_000 },
+        146     );
+        147   
+        148 >   const trialsQ = useMCPQuery<TrialListResponse>(
+        149       "guests",
+        150       "list_trial_memberships",
+        151       { page: trialPage, page_size: 10 },
+        152       { enabled: activeTab === "trials", placeholderData: keepPreviousData },
+        153     );
+        154   
+        155     // ── Checkout mutation ──
+        156     const checkoutMut = useMCPMutation<unknown, { checkin_id: string }>(
+        157       "guests",
+        158       "checkout_guest",
+        159       {
+        160         onSuccess: () => showToast({ type: "success", message: "Salida registrada" }),
+  #10 [SAFE] features/guests/GuestRegistration.tsx:127   families.search_families → family_profile.family_search
+        124     }, [step]);
+        125   
+        126     // ── Queries ──
+        127 >   const hostQ = useMCPQuery<FamilySearchResponse>(
+        128       "families",
+        129       "search_families",
+        130       { query: hostSearch, limit: 8 },
+        131       { enabled: hostSearch.length >= 2 },
+        132     );
+        133   
+  #11 [RISKY] features/guests/GuestRegistration.tsx:134   facilities.list_available_facilities → facility_management.manage_facilities
+        131       { enabled: hostSearch.length >= 2 },
+        132     );
+        133   
+        134 >   const facilityQ = useMCPQuery<FacilityListResponse>(
+        135       "facilities",
+        136       "list_available_facilities",
+        137       {},
+        138       { staleTime: 60_000 },
+        139     );
+        140   
+        141     // ── Mutation ──
+        142     const checkinMut = useMCPMutation<unknown, GuestCheckInForm>(
+        143       "guests",
+        144       "register_guest_checkin",
+        145       {
+        146         onSuccess: () => {
+  #12 [SAFE] features/mi-club/hooks/useMiClubLanding.ts:435   families.get_family → family_profile.family_get_profile
+        432     const user = useAuthStore((s) => s.user);
+        433   
+        434     /* ── Family ── */
+        435 >   const familyQ = useMCPQuery<FamilyDetailResponse>(
+        436       "families",
+        437       "get_family",
+        438       { familyId: user?.familyId || "" },
+        439       { enabled: !!user?.familyId },
+        440     );
+        441   
+  #13 [SAFE] features/mi-club/hooks/useMyReservations.ts:201   facilities.get_reservations → facility_management.get_facility_reservations
+        198       isLoading,
+        199       error,
+        200       refetch,
+        201 >   } = useMCPQuery<ReservationListResponse>(
+        202       "facilities",
+        203       "get_reservations",
+        204       { family_id: user?.familyId || "" },
+        205       { enabled: !!user?.familyId },
+        206     );
+        207   
+  #14 [SAFE] features/reports/hooks/useBoardReport.ts:104   reports.get_board_report → executive_dashboard.generate_quarterly_board_report
+        101       data: report,
+        102       isLoading,
+        103       error,
+        104 >   } = useMCPQuery<BoardReport>(
+        105       "reports",
+        106       "get_board_report",
+        107       { period: selectedPeriod },
+        108       { staleTime: 5 * 60_000, placeholderData: keepPreviousData },
+        109     );
+        110   
+  #15 [SAFE] features/reports/hooks/useBoardReport.ts:114   reports.get_risk_matrix → member_360.get_member_risk_assessment
+        111     const {
+        112       data: riskData,
+        113       isLoading: isRiskLoading,
+        114 >   } = useMCPQuery<RiskSummary>(
+        115       "reports",
+        116       "get_risk_matrix",
+        117       { period: selectedPeriod },
+        118       { staleTime: 5 * 60_000 },
+        119     );
+        120   
+  #16 [SAFE] features/wellness/components/WellnessFamilySelector.tsx:26   families.list_families → family_profile.family_search
+         23   export function WellnessFamilySelector({ selectedId, onSelect }: Props) {
+         24     const [search, setSearch] = useState("");
+         25   
+         26 >   const { data: familiesResp, isLoading } = useMCPQuery<FamilyListResponse>(
+         27       "families",
+         28       "list_families",
+         29       { page: 1, limit: 100, search: search || undefined },
+         30       { staleTime: 60_000 },
+         31     );
+         32   
+  #17 [SAFE] shared/components/export/hooks/useDecisionDocument.ts:86   finance.narrative_generate → advisor_intelligence.generate_insight_narrative
+         83     }, [isOpen]);
+         84   
+         85     /* ── Queries (staggered) ── */
+         86 >   const narrativeQ = useMCPQuery<FinanceNarrativeGenerateResponse>(
+         87       "finance",
+         88       "narrative_generate",
+         89       { period: "mayo_2026", audience: "junta", detail_level: "ejecutivo" },
+         90       { enabled: isOpen, staleTime: 600_000 },
+         91     );
+         92   
+  #18 [SAFE] shared/components/export/hooks/useDecisionDocument.ts:93   finance.scenario_simulate → advisor_intelligence.simulate_scenario
+         90       { enabled: isOpen, staleTime: 600_000 },
+         91     );
+         92   
+         93 >   const scenarioQ = useMCPQuery<FinanceScenarioSimulateResponse>(
+         94       "finance",
+         95       "scenario_simulate",
+         96       { variables: {} },
+         97       { enabled: isOpen && stage >= 1, staleTime: 300_000 },
+         98     );
+         99   
+
+══ D. registros mock — estructura y entradas ═══════════════════════════════
+  archivos de registro: shared/mocks/contracts.ts, shared/mocks/factories.ts, shared/mocks/mock-registry.ts, shared/mocks/normalizeEnums.ts, shared/mocks/validateMocks.ts, shared/lib/mock-data.ts
+  ── shared/mocks/contracts.ts · primeras 45 lin ──
+     1 // src/shared/mocks/contracts.ts
+     2 // ═══════════════════════════════════════════════════════════
+     3 // MCP Tool Response Contracts — Castillo Country Club
+     4 //
+     5 // Source of truth for ALL tool response shapes.
+     6 // - Frontend types DERIVE from these contracts
+     7 // - Mock factories MUST satisfy these contracts
+     8 // - Backend MUST return shapes matching these contracts
+     9 //
+    10 // When migrating a tool to backend real:
+    11 //   1. Delete the factory from mock-registry.ts
+    12 //   2. The contract stays (it's the interface, not the mock)
+    13 //   3. Verify backend response matches contract
+    14 //
+    15 // Naming: {ServerName}_{ToolName}Contract
+    16 // ═══════════════════════════════════════════════════════════
+    17 
+    18 // ── Common ──
+    19 
+    20 export interface PaginationMeta {
+    21   total: number;
+    22   page: number;
+    23   page_size: number;
+    24   total_pages: number;
+    25 }
+    26 
+    27 export interface BaseToolResponse {
+    28   status: string;
+    29   message: string;
+    30 }
+    31 
+    32 export interface HITLResponse extends BaseToolResponse {
+    33   request_id?: string;
+    34   details?: Record<string, unknown>;
+    35 }
+    36 
+    37 // ═══════════════════════════════════════════════════════════
+    38 // FINANCE AGENT
+    39 // ═══════════════════════════════════════════════════════════
+    40 
+    41 /** get_financial_summary */
+    42 export interface get_financial_summary_Contract extends BaseToolResponse {
+    43   data: {
+    44     period: string;
+    45     revenue_total: number;
+  ── shared/lib/mock-data.ts · primeras 45 lin ──
+     1 // src/shared/lib/mock-data.ts
+     2 // Mock data alineado 1:1 con los types de cada feature
+     3 
+     4 export function simulateDelay(ms = 300): Promise<void> {
+     5   return new Promise((r) => setTimeout(r, ms + Math.random() * 200));
+     6 }
+     7 
+     8 export function getMockResponse<T>(
+     9   agent: string,
+    10   tool: string,
+    11   params: Record<string, unknown>,
+    12 ): T | null {
+    13   const key = `${agent}.${tool}`;
+    14   const handler = REGISTRY[key];
+    15   return handler ? (handler(params) as T) : null;
+    16 }
+    17 
+    18 // ── Helpers ──
+    19 const NOW = new Date();
+    20 const dAgo = (n: number) =>
+    21   new Date(NOW.getTime() - n * 86_400_000).toISOString();
+    22 const dFuture = (n: number) =>
+    23   new Date(NOW.getTime() + n * 86_400_000).toISOString();
+    24 const ok = (msg: string) => ({ status: "success", message: msg });
+    25 const dateOnly = (n: number) => dAgo(n).slice(0, 10);
+  ── entradas por nombre (viejo ∪ real) ──
+  ▸ communication.get_communication_history  — sin entrada en los registros mock
+  ▸ communication.get_communication_analytics  @ shared/mocks/contracts.ts:1450
+       1450   "communication.get_communication_analytics": get_communication_analytics_Contract;
+       1451   "communication.send_board_package": send_board_package_Contract;
+       1452 
+       1453   // ═══ ADVISOR INTELLIGENCE (5 tools — completo desde F21) ═══
+       1454   "advisor_intelligence.generate_insight_narrative": AdvisorInsightNarrativeResponse;
+       1455   "advisor_intelligence.generate_action_plan": AdvisorActionPlanResponse;
+       1456   "advisor_intelligence.simulate_scenario": AdvisorScenarioResponse;
+       1457   "advisor_intelligence.generate_board_brief": AdvisorBoardBriefResponse;
+       1458   "advisor_intelligence.ask_advisor": AdvisorAskResponse;
+       1459 
+       1460   // ═══ DOCUMENT INTELLIGENCE / RAG (8 tools — completo desde F27) ═══
+       1461   "document_intelligence.search_documents": search_documents_Contract;
+       1462   "document_intelligence.knowledge_query": knowledge_query_Contract;
+       1463   "document_intelligence.query_documents": query_documents_Contract;
+       1464   "document_intelligence.search_similar": search_similar_Contract;
+       1465   "document_intelligence.get_repository_stats": get_repository_stats_Contract;
+  ▸ engagement.list_reactivation_campaigns  — sin entrada en los registros mock
+  ▸ member_engagement.design_reactivation_campaign  @ shared/mocks/contracts.ts:1340
+       1340   "member_engagement.design_reactivation_campaign": design_reactivation_campaign_Contract;
+       1341   "member_engagement.manage_loyalty_rewards": manage_loyalty_rewards_Contract;
+       1342   "member_engagement.submit_feedback": submit_feedback_Contract;
+       1343   "member_engagement.manage_referrals": manage_referrals_Contract;
+       1344 
+       1345   // ═══ FACILITY MANAGEMENT (7 tools — F30b COMPLETO) ═══
+       1346   "facility_management.manage_facilities": manage_facilities_Contract;
+       1347   "facility_management.schedule_maintenance": schedule_maintenance_Contract;
+       1348   "facility_management.coordinate_event_setup": coordinate_event_setup_Contract;
+       1349   "facility_management.get_facility_occupancy": get_facility_occupancy_Contract;
+       1350   "facility_management.manage_inspections": manage_inspections_Contract;
+       1351   "facility_management.report_facility_issue": report_facility_issue_Contract;
+       1352   "facility_management.get_maintenance_schedule": get_maintenance_schedule_Contract;
+       1353 
+       1354   // ═══ SATISFACTION (6 tools — F30b COMPLETO) ═══
+       1355   "satisfaction.submit_satisfaction_survey": submit_satisfaction_survey_Contract;
+       1356   "satisfaction.get_survey_for_event": get_survey_for_event_Contract;
+       1357   "satisfaction.analyze_event_satisfaction": analyze_event_satisfaction_Contract;
+       1358   "satisfaction.get_satisfaction_trends": get_satisfaction_trends_Contract;
+       1359   "satisfaction.generate_satisfaction_report": generate_satisfaction_report_Contract;
+       1360   "satisfaction.get_satisfaction_questions": get_satisfaction_questions_Contract;
+       1361 
+       1362   // ═══ CULTURAL SOCIAL (6 tools — F30b COMPLETO) ═══
+       1363   "cultural_social.organize_formal_gala": organize_formal_gala_Contract;
+       1364   "cultural_social.manage_entertainment_acts": manage_entertainment_acts_Contract;
+       1365   "cultural_social.manage_cultural_program": manage_cultural_program_Contract;
+  ▸ engagement.get_survey_results  @ shared/lib/mock-data.ts:943
+        943   "engagement.get_survey_results": mockSurveyResults,
+        944   "engagement.get_survey": mockGetSurvey,
+        945   "engagement.submit_survey": () => ok("Encuesta enviada. ¡Gracias!"),
+        946   // Documents
+        947   "documents.search_documents": mockSearchDocuments,
+        948   "knowledge.query": mockKnowledgeQuery,
+        949   // Reports
+  ▸ satisfaction.analyze_event_satisfaction  @ shared/mocks/contracts.ts:1357
+       1357   "satisfaction.analyze_event_satisfaction": analyze_event_satisfaction_Contract;
+       1358   "satisfaction.get_satisfaction_trends": get_satisfaction_trends_Contract;
+       1359   "satisfaction.generate_satisfaction_report": generate_satisfaction_report_Contract;
+       1360   "satisfaction.get_satisfaction_questions": get_satisfaction_questions_Contract;
+       1361 
+       1362   // ═══ CULTURAL SOCIAL (6 tools — F30b COMPLETO) ═══
+       1363   "cultural_social.organize_formal_gala": organize_formal_gala_Contract;
+       1364   "cultural_social.manage_entertainment_acts": manage_entertainment_acts_Contract;
+       1365   "cultural_social.manage_cultural_program": manage_cultural_program_Contract;
+       1366   "cultural_social.manage_social_events": manage_social_events_Contract;
+       1367   "cultural_social.manage_art_exhibitions": manage_art_exhibitions_Contract;
+       1368   "cultural_social.get_cultural_calendar": cultural_social_get_cultural_calendar_Contract;
+       1369   "cultural_social.get_cultural_analytics": cultural_social_get_cultural_analytics_Contract;
+       1370   "cultural_social.get_cultural_summary": cultural_social_get_cultural_summary_Contract;
+       1371   "cultural_social.generate_cultural_proposals": cultural_social_generate_cultural_proposals_Contract;
+       1372 
+  ▸ engagement.get_active_survey  — sin entrada en los registros mock
+  ▸ satisfaction.get_survey_for_event  @ shared/mocks/contracts.ts:1356
+       1356   "satisfaction.get_survey_for_event": get_survey_for_event_Contract;
+       1357   "satisfaction.analyze_event_satisfaction": analyze_event_satisfaction_Contract;
+       1358   "satisfaction.get_satisfaction_trends": get_satisfaction_trends_Contract;
+       1359   "satisfaction.generate_satisfaction_report": generate_satisfaction_report_Contract;
+       1360   "satisfaction.get_satisfaction_questions": get_satisfaction_questions_Contract;
+       1361 
+       1362   // ═══ CULTURAL SOCIAL (6 tools — F30b COMPLETO) ═══
+       1363   "cultural_social.organize_formal_gala": organize_formal_gala_Contract;
+       1364   "cultural_social.manage_entertainment_acts": manage_entertainment_acts_Contract;
+       1365   "cultural_social.manage_cultural_program": manage_cultural_program_Contract;
+       1366   "cultural_social.manage_social_events": manage_social_events_Contract;
+       1367   "cultural_social.manage_art_exhibitions": manage_art_exhibitions_Contract;
+       1368   "cultural_social.get_cultural_calendar": cultural_social_get_cultural_calendar_Contract;
+       1369   "cultural_social.get_cultural_analytics": cultural_social_get_cultural_analytics_Contract;
+       1370   "cultural_social.get_cultural_summary": cultural_social_get_cultural_summary_Contract;
+       1371   "cultural_social.generate_cultural_proposals": cultural_social_generate_cultural_proposals_Contract;
+  ▸ facilities.get_utilization  — sin entrada en los registros mock
+  ▸ facility_management.get_amenity_utilization  — sin entrada en los registros mock
+  ▸ facilities.list_reservations  — sin entrada en los registros mock
+  ▸ facility_management.get_facility_reservations  — sin entrada en los registros mock
+  ▸ finance.get_family_account  @ shared/lib/mock-data.ts:929
+        929   "finance.get_family_account": mockFamilyAccount,
+        930   "finance.get_my_account": mockFamilyAccount,
+        931   // Guests
+        932   "guests.list_todays_guests": mockListGuests,
+        933   "guests.get_today_summary": mockGuestSummary,
+        934   "guests.register_guest": () => ok("Invitado registrado exitosamente"),
+        935   // Communications
+  ▸ finance.finance_account_status  — sin entrada en los registros mock
+  ▸ finance.get_invoices  — sin entrada en los registros mock
+  ▸ finance.finance_invoice_create  — sin entrada en los registros mock
+  ▸ guests.list_trial_memberships  — sin entrada en los registros mock
+  ▸ guest_management.manage_trial_memberships  @ shared/mocks/contracts.ts:1507
+       1507   "guest_management.manage_trial_memberships": manage_trial_memberships_Contract;
+       1508   "guest_management.manage_guest_privileges": manage_guest_privileges_Contract;
+       1509   "guest_management.get_guest_analytics": get_guest_analytics_Contract;
+       1510   "guest_management.guest_management_insights": guest_management_insights_Contract;
+       1511 
+       1512   // ═══ MEMBERS INTELLIGENCE HUB (4 tools — F14c, Patrón A) ═══
+       1513   "members.members_health_score": members_health_score_Contract;
+       1514   "members.members_segmentation": members_segmentation_Contract;
+       1515   "members.members_lifetime_value": members_lifetime_value_Contract;
+       1516   "members.members_churn_prevention": members_churn_prevention_Contract;
+       1517 
+       1518 
+       1519 
+       1520   // ═══ COMMUNICATIONS GENERATIVE (3 tools — F14d, Patrón A) ═══
+       1521   "communication.generate_personalized": communications_generate_personalized_Contract;
+       1522   "communication.campaign_generate": communications_campaign_generate_Contract;
+       1523   "communication.sentiment_analyze": communications_sentiment_analyze_Contract;
+       1524 
+       1525   // ═══ COMMUNICATION PREFERENCES (2 tools — F11, Patrón A) ═══
+       1526   "communication.manage_communication_preferences": manage_communication_preferences_Contract;
+       1527   "communication.communication_insights": communication_insights_Contract;
+       1528 
+       1529 }
+       1530 
+       1531 /** Extract contract type for a given server + tool */
+       1532 /** Extract contract type for a given server + tool */
+  ▸ families.search_families  — sin entrada en los registros mock
+  ▸ family_profile.family_search  — sin entrada en los registros mock
+  ▸ facilities.list_available_facilities  — sin entrada en los registros mock
+  ▸ facility_management.manage_facilities  @ shared/mocks/contracts.ts:1346
+       1346   "facility_management.manage_facilities": manage_facilities_Contract;
+       1347   "facility_management.schedule_maintenance": schedule_maintenance_Contract;
+       1348   "facility_management.coordinate_event_setup": coordinate_event_setup_Contract;
+       1349   "facility_management.get_facility_occupancy": get_facility_occupancy_Contract;
+       1350   "facility_management.manage_inspections": manage_inspections_Contract;
+       1351   "facility_management.report_facility_issue": report_facility_issue_Contract;
+       1352   "facility_management.get_maintenance_schedule": get_maintenance_schedule_Contract;
+       1353 
+       1354   // ═══ SATISFACTION (6 tools — F30b COMPLETO) ═══
+       1355   "satisfaction.submit_satisfaction_survey": submit_satisfaction_survey_Contract;
+       1356   "satisfaction.get_survey_for_event": get_survey_for_event_Contract;
+       1357   "satisfaction.analyze_event_satisfaction": analyze_event_satisfaction_Contract;
+       1358   "satisfaction.get_satisfaction_trends": get_satisfaction_trends_Contract;
+       1359   "satisfaction.generate_satisfaction_report": generate_satisfaction_report_Contract;
+       1360   "satisfaction.get_satisfaction_questions": get_satisfaction_questions_Contract;
+       1361 
+       1362   // ═══ CULTURAL SOCIAL (6 tools — F30b COMPLETO) ═══
+       1363   "cultural_social.organize_formal_gala": organize_formal_gala_Contract;
+       1364   "cultural_social.manage_entertainment_acts": manage_entertainment_acts_Contract;
+       1365   "cultural_social.manage_cultural_program": manage_cultural_program_Contract;
+       1366   "cultural_social.manage_social_events": manage_social_events_Contract;
+       1367   "cultural_social.manage_art_exhibitions": manage_art_exhibitions_Contract;
+       1368   "cultural_social.get_cultural_calendar": cultural_social_get_cultural_calendar_Contract;
+       1369   "cultural_social.get_cultural_analytics": cultural_social_get_cultural_analytics_Contract;
+       1370   "cultural_social.get_cultural_summary": cultural_social_get_cultural_summary_Contract;
+       1371   "cultural_social.generate_cultural_proposals": cultural_social_generate_cultural_proposals_Contract;
+  ▸ families.get_family  @ shared/lib/mock-data.ts:916
+        916   "families.get_family_detail": mockGetFamilyDetail,
+        917   "families.create_family": () => ok("Familia creada exitosamente"),
+        918   "families.update_family": () => ok("Familia actualizada"),
+        919   // Events
+        920   "events.list_events": mockListEvents,
+        921   "events.get_event_detail": mockGetEventDetail,
+        922   "events.create_event": () => ok("Evento creado"),
+  ▸ family_profile.family_get_profile  — sin entrada en los registros mock
+  ▸ facilities.get_reservations  @ shared/lib/mock-data.ts:926
+        926   "facilities.get_reservations": mockGetReservations,
+        927   // Finance
+        928   "finance.get_financial_summary": mockFinancialSummary,
+        929   "finance.get_family_account": mockFamilyAccount,
+        930   "finance.get_my_account": mockFamilyAccount,
+        931   // Guests
+        932   "guests.list_todays_guests": mockListGuests,
+  ▸ reports.get_board_report  @ shared/lib/mock-data.ts:950
+        950   "reports.get_board_report": mockBoardReport,
+        951   "reports.get_risk_matrix": mockRiskMatrix,
+        952   // Dashboard
+        953   "executive_dashboard.get_executive_summary": mockExecutiveSummary,
+        954   "executive_dashboard.generate_ai_analysis": mockGenerateAiAnalysis,
+        955 };
+        956 // ── Agregar al final del REGISTRY ──
+  ▸ executive_dashboard.generate_quarterly_board_report  — sin entrada en los registros mock
+  ▸ reports.get_risk_matrix  @ shared/lib/mock-data.ts:951
+        951   "reports.get_risk_matrix": mockRiskMatrix,
+        952   // Dashboard
+        953   "executive_dashboard.get_executive_summary": mockExecutiveSummary,
+        954   "executive_dashboard.generate_ai_analysis": mockGenerateAiAnalysis,
+        955 };
+        956 // ── Agregar al final del REGISTRY ──
+        957 
+  ▸ member_360.get_member_risk_assessment  — sin entrada en los registros mock
+  ▸ families.list_families  @ shared/lib/mock-data.ts:915
+        915   "families.list_families": mockListFamilies,
+        916   "families.get_family_detail": mockGetFamilyDetail,
+        917   "families.create_family": () => ok("Familia creada exitosamente"),
+        918   "families.update_family": () => ok("Familia actualizada"),
+        919   // Events
+        920   "events.list_events": mockListEvents,
+        921   "events.get_event_detail": mockGetEventDetail,
+  ▸ finance.narrative_generate  @ shared/mocks/contracts.ts:1332
+       1332   "finance.narrative_generate": FinanceNarrativeGenerateResponse;
+       1333   "finance.decision_simulate": finance_decision_simulate_Contract;
+       1334   // ═══ DECISION COCKPIT (1 tool — F14d, Patrón A) ═══
+       1335   // "finance.decision_simulate": finance_decision_simulate_Contract;  
+       1336 
+       1337   // ═══ MEMBER ENGAGEMENT (6 tools — F30b COMPLETO) ═══
+       1338   "member_engagement.get_engagement_dashboard": get_engagement_dashboard_Contract;
+  ▸ advisor_intelligence.generate_insight_narrative  @ shared/mocks/contracts.ts:1454
+       1454   "advisor_intelligence.generate_insight_narrative": AdvisorInsightNarrativeResponse;
+       1455   "advisor_intelligence.generate_action_plan": AdvisorActionPlanResponse;
+       1456   "advisor_intelligence.simulate_scenario": AdvisorScenarioResponse;
+       1457   "advisor_intelligence.generate_board_brief": AdvisorBoardBriefResponse;
+       1458   "advisor_intelligence.ask_advisor": AdvisorAskResponse;
+       1459 
+       1460   // ═══ DOCUMENT INTELLIGENCE / RAG (8 tools — completo desde F27) ═══
+  ▸ finance.scenario_simulate  @ shared/mocks/contracts.ts:1326
+       1326   "finance.scenario_simulate": FinanceScenarioSimulateResponse;
+       1327   "finance.opportunities_scan": FinanceOpportunitiesScanResponse;
+       1328   "finance.board_briefing": FinanceBoardBriefingResponse;
+       1329   "finance.member_profitability": FinanceMemberProfitabilityResponse;
+       1330   "finance.stress_test": FinanceStressTestResponse;
+       1331   "finance.seasonal_calendar": FinanceSeasonalCalendarResponse;
+       1332   "finance.narrative_generate": FinanceNarrativeGenerateResponse;
+  ▸ advisor_intelligence.simulate_scenario  @ shared/mocks/contracts.ts:1456
+       1456   "advisor_intelligence.simulate_scenario": AdvisorScenarioResponse;
+       1457   "advisor_intelligence.generate_board_brief": AdvisorBoardBriefResponse;
+       1458   "advisor_intelligence.ask_advisor": AdvisorAskResponse;
+       1459 
+       1460   // ═══ DOCUMENT INTELLIGENCE / RAG (8 tools — completo desde F27) ═══
+       1461   "document_intelligence.search_documents": search_documents_Contract;
+       1462   "document_intelligence.knowledge_query": knowledge_query_Contract;
+
+══ E. backend — def de los 16 tools reales (verdad de terreno) ═════════════
+  raíz: backend · 130 py (verifier: 102)
+  ▸ member_engagement.design_reactivation_campaign  @ src/club_mcp/agents/member_engagement_agent.py:180
+        179     )
+        180     async def design_reactivation_campaign(
+        181         self,
+        182         action: str = "list",
+        183         campaign_id: str = "",
+        184         name: str = "",
+        185         campaign_type: str = "reactivation",
+        186         description: str = "",
+        187         target_member_ids: str = "",
+        188         target_engagement_level: str = "",
+        189         channels: str = "email",
+        190         message_template: str = "",
+        191         start_date: str = "",
+        192         end_date: str = "",
+  ▸ finance.finance_invoice_create  @ src/club_mcp/agents/finance.py:167
+        166     )
+        167     async def finance_invoice_create(
+        168         self,
+        169         family_id: str,
+        170         items: list[dict[str, Any]],
+        171         due_date: str = "",
+        172         notes: str = "",
+        173         tax_rate: float = 0.0,
+        174     ) -> dict[str, Any]:
+        175         """Generate an invoice for a family (HITL)."""
+        176         if not items:
+        177             return {
+        178                 "status": "error",
+        179                 "message": "La factura debe tener al menos un ítem.",
+  ▸ guest_management.manage_trial_memberships  @ src/club_mcp/agents/guest_management_agent.py:394
+        393     )
+        394     async def manage_trial_memberships(
+        395         self,
+        396         action: str = "list",
+        397         trial_id: str = "",
+        398         guest_name: str = "",
+        399         guest_email: str = "",
+        400         guest_phone: str = "",
+        401         referred_by_family_id: str = "",
+        402         trial_type: str = "",
+        403         start_date: str = "",
+        404         end_date: str = "",
+        405         privileges: str = "",
+        406         notes: str = "",
+  ▸ facility_management.manage_facilities  @ src/club_mcp/agents/facility_management_agent.py:86
+         85     )
+         86     async def manage_facilities(
+         87         self,
+         88         action: str = "list",
+         89         facility_id: str = "",
+         90         name: str = "",
+         91         facility_type: str = "",
+         92         location: str = "",
+         93         capacity: int = 0,
+         94         description: str = "",
+         95         amenities: str = "",
+         96         opening_time: str = "06:00",
+         97         closing_time: str = "22:00",
+         98         responsible_member_id: str = "",
+  ▸ communication.get_communication_analytics  @ src/club_mcp/agents/communication_agent.py:1645
+       1644     )
+       1645     async def get_communication_analytics(
+       1646         self,
+       1647         period: str = "current_month",
+       1648     ) -> dict[str, Any]:
+       1649         logs = await self.repo.list_logs(limit=500)
+       1650 
+       1651         if not logs:
+       1652             return {
+       1653                 "status": "success",
+       1654                 "message": "📋 Sin datos de comunicaciones aún.",
+       1655                 "analytics": self._empty_analytics(period),
+       1656             }
+       1657 
+  ▸ satisfaction.analyze_event_satisfaction  @ src/club_mcp/agents/satisfaction_agent.py:301
+        300     )
+        301     async def analyze_event_satisfaction(
+        302         self,
+        303         event_id: str = "",
+        304         requested_by: str = "system",
+        305     ) -> dict[str, Any]:
+        306         if not event_id:
+        307             return {
+        308                 "status": "error",
+        309                 "message": "Se requiere event_id 📋",
+        310             }
+        311 
+        312         analysis = await self._compute_event_analysis(event_id)
+        313         if not analysis:
+  ▸ satisfaction.get_survey_for_event  @ src/club_mcp/agents/satisfaction_agent.py:268
+        267     )
+        268     async def get_survey_for_event(
+        269         self,
+        270         event_id: str = "",
+        271     ) -> dict[str, Any]:
+        272         if not event_id:
+        273             return {
+        274                 "status": "error",
+        275                 "message": "Se requiere event_id 📋",
+        276             }
+        277 
+        278         surveys = await self.repo.get_surveys_by_event(event_id)
+        279 
+        280         return {
+  ▸ finance.finance_account_status  @ src/club_mcp/agents/finance.py:408
+        407     )
+        408     async def finance_account_status(
+        409         self,
+        410         family_id: str,
+        411     ) -> dict[str, Any]:
+        412         """Get account status for a family."""
+        413         status = self.repo.get_account_status(family_id)
+        414 
+        415         if not status or (not status.invoices and status.total_invoiced == 0):
+        416             return {
+        417                 "status": "success",
+        418                 "message": "📋 No hay actividad financiera para esta familia.",
+        419                 "data": {"family_id": family_id, "balance_due": 0},
+        420             }
+  ▸ facility_management.get_amenity_utilization  @ src/club_mcp/agents/facility_management_agent.py:790
+        789     )
+        790     async def get_amenity_utilization(
+        791         self, facility_type: str = "",
+        792     ) -> dict[str, Any]:
+        793         type_filter = None
+        794         if facility_type:
+  ▸ facility_management.get_amenity_utilization  @ src/club_mcp/db/repositories/facility_management_repo.py:785
+        784 
+        785     async def get_amenity_utilization(
+        786         self, facility_type: Optional[FacilityType] = None,
+        787     ) -> AmenityUtilizationResponse:
+        788         """Per-facility utilization analysis with time series."""
+        789         today = datetime.now(tz=timezone.utc)
+  ▸ facility_management.get_facility_reservations  @ src/club_mcp/agents/facility_management_agent.py:726
+        725     )
+        726     async def get_facility_reservations(
+        727         self, facility_id: str = "", date_from: str = "",
+        728         date_to: str = "", status: str = "",
+        729     ) -> dict[str, Any]:
+        730         status_filter = None
+  ▸ family_profile.family_search  — def no hallado (spec dinámico o lambda)
+  ▸ family_profile.family_get_profile  — def no hallado (spec dinámico o lambda)
+  ▸ executive_dashboard.generate_quarterly_board_report  @ src/club_mcp/agents/executive_dashboard_agent.py:82
+         81     )
+         82     async def generate_quarterly_board_report(
+         83         self,
+         84         year: int = 0,
+         85         quarter: str = "",
+         86         requested_by: str = "system",
+  ▸ member_360.get_member_risk_assessment  @ src/club_mcp/agents/member_360_agent.py:284
+        283     )
+        284     async def get_member_risk_assessment(self, member_id: str) -> dict[str, Any]:
+        285         member_error = self._member_lookup_error(member_id)
+        286         if member_error:
+        287             return member_error
+        288         result = self.repo.get_risk_assessment(member_id)
+  ▸ advisor_intelligence.generate_insight_narrative  @ src/club_mcp/agents/advisor_intelligence.py:105
+        104     )
+        105     async def generate_insight_narrative(
+        106         self,
+        107         insight_data: dict[str, Any],
+        108         financial_context: Optional[dict[str, Any]] = None,
+        109         events_context: Optional[dict[str, Any]] = None,
+  ▸ advisor_intelligence.simulate_scenario  @ src/club_mcp/agents/advisor_intelligence.py:231
+        230     )
+        231     async def simulate_scenario(
+        232         self,
+        233         base_data: dict[str, Any],
+        234         proposed_changes: list[dict[str, Any]],
+        235         timeframe: str = "quarter",
+
+══ F. precedente — useCommunicationData.ts:61 (ya llama al nombre real de #1) 
+    50     { staleTime, enabled },
+    51   );
+    52 
+    53   const scheduledQuery = useMCPQuery<ScheduledMCPResponse>(
+    54     "communication", "schedule_notification", { action: "list" },
+    55     { staleTime: 60_000, enabled },
+    56   );
+    57 
+    58   const analytics: CommunicationAnalyticsData | null = useMemo(() => {
+    59     if (!analyticsQuery.data?.analytics) return null;
+    60     return normalizeEnums(
+    61       analyticsQuery.data.analytics, "communication.get_communication_analytics",
+    62     ) as CommunicationAnalyticsData;
+    63   }, [analyticsQuery.data]);
+    64 
+    65   const history = historyQuery.data?.history ?? null;
+    66   const scheduled = scheduledQuery.data?.scheduled ?? null;
+    67 
+    68   const insights = useCommunicationAdvisor( analytics ?? undefined, (history ?? []) as HistoryItem[], (scheduled ?? []) as ScheduledItem[], 
+    69 
+    70   const queries = [analyticsQuery, historyQuery, scheduledQuery];
+    71   const isLoading = queries.some((q) => q.isLoading);
+    72   const isError = queries.some((q) => q.isError);
+    73   const error = queries.find((q) => q.isError)?.error ?? null;

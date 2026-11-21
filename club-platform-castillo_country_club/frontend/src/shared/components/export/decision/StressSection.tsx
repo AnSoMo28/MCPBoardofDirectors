@@ -8,6 +8,7 @@ import { Activity } from "lucide-react";
 import { formatCurrency } from "@/shared/lib/utils";
 import type { StressMetric } from "../hooks/useDecisionDocument";
 import { SectionSkeleton } from "./SectionSkeleton";
+import './StressSection.css';
 
 interface StressSectionProps {
   id: string;
@@ -28,7 +29,7 @@ export function StressSection({
   aiCommentary,
 }: StressSectionProps) {
   return (
-    <div id={id} className="glass-decision__section">
+    <div id={id} className="stress-section glass-decision__section">
       <div className="glass-decision__section-header">
         <Activity size={16} className="glass-decision__section-icon glass-decision__section-icon--rose" />
         <h2 className="glass-decision__section-title">3. Resiliencia Financiera</h2>

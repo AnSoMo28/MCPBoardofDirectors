@@ -55,6 +55,7 @@ import {
 } from "@/shared/lib/score-utils";
 
 import "./SentimentMonitor.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // Intelligence Layer — Pure Functions
@@ -429,9 +430,9 @@ function SatisfactionCorrelation({ sentimentScore, activeAlerts, topTopics }: {
             </p>
           </div>
         </div>
-        <button className="sentiment__sat-cta-btn" onClick={() => setShouldFetch(true)}>
+        <Button variant="unstyled" className="sentiment__sat-cta-btn" onClick={() => setShouldFetch(true)}>
           <Heart size={14} /><span>Analizar correlación</span>
-        </button>
+        </Button>
       </div>
     );
   }
@@ -446,7 +447,7 @@ function SatisfactionCorrelation({ sentimentScore, activeAlerts, topTopics }: {
         <div className="sentiment__error-inline">
           <AlertTriangle size={16} />
           <span>No se pudieron cargar tendencias de satisfacción.</span>
-          <button className="sentiment__retry-inline" onClick={() => satQ.refetch()}>Reintentar</button>
+          <Button variant="unstyled" className="sentiment__retry-inline" onClick={() => satQ.refetch()}>Reintentar</Button>
         </div>
       </div>
     );
@@ -635,7 +636,7 @@ export function SentimentMonitor() {
             <AlertTriangle size={24} />
             <h3>Error al cargar sentimiento</h3>
             <p>No pudimos obtener los datos de sentimiento.</p>
-            <button className="sentiment__retry-btn" onClick={() => query.refetch()}>Reintentar</button>
+            <Button variant="unstyled" className="sentiment__retry-btn" onClick={() => query.refetch()}>Reintentar</Button>
           </div>
         </div>
       </div>
@@ -871,7 +872,8 @@ export function SentimentMonitor() {
             const tv = topicVelocities[idx];
             return (
               <div key={idx} className="sentiment__topic-card">
-                <button
+                <Button
+                  variant="unstyled"
                   type="button"
                   onClick={() => setExpandedTopic(expandedTopic === idx ? null : idx)}
                   className="sentiment__topic-btn"
@@ -887,7 +889,7 @@ export function SentimentMonitor() {
                     <span className="sentiment__topic-velocity" data-level={tv.velocityLevel}>{tv.velocityLabel}</span>
                   )}
                   <span className="sentiment__topic-chevron">{expandedTopic === idx ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
-                </button>
+                </Button>
 
                 {expandedTopic === idx && (
                   <div className="sentiment__topic-expanded">
@@ -917,9 +919,9 @@ export function SentimentMonitor() {
       <div className="sentiment__section-card">
         <div className="sentiment__section-header">
           <h3 className="sentiment__section-title"><Sparkles size={14} /> Keywords</h3>
-          <button className="sentiment__toggle-btn" onClick={() => setShowAllKeywords(!showAllKeywords)}>
+          <Button variant="unstyled" className="sentiment__toggle-btn" onClick={() => setShowAllKeywords(!showAllKeywords)}>
             {showAllKeywords ? "Colapsar" : "Ver todos"}
-          </button>
+          </Button>
         </div>
 
         <div className="sentiment__keywords-grid">

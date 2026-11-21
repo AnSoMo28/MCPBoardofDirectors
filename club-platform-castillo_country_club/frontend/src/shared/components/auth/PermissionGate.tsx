@@ -87,6 +87,7 @@ import { PermissionDenied } from "./PermissionDenied";
 // Styles
 import "./PermissionGate.css";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 TYPES
@@ -387,13 +388,14 @@ export function PermissionGate({
               </span>
             </div>
             {onRequestAccess && (
-              <button
+              <Button
+                variant="unstyled"
                 className="perm-dim__request-btn"
                 onClick={onRequestAccess}
                 type="button"
               >
                 Solicitar acceso
-              </button>
+              </Button>
             )}
           </div>
         )}

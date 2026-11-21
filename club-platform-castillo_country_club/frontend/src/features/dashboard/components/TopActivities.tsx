@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { Trophy } from "lucide-react";
 import { CHART_PALETTE } from "@/shared/lib/chartTheme";
 import type { ActivityData } from "../types";
+import './TopActivities.css';
 
 interface TopActivitiesProps {
   data: ActivityData[];
@@ -63,7 +64,7 @@ export function TopActivities({ data }: TopActivitiesProps) {
       : { initial: { width: 0 }, animate: { width: `${pct}%` }, transition: { duration: 0.7, delay: 0.15 * index, ease: "easeOut" as const } };
 
   return (
-    <motion.div {...m(0.35)} className="glass-card p-6">
+    <motion.div {...m(0.35)} className="top-activities glass-card p-6">
       <div className="flex items-center gap-2 mb-6">
         <Trophy size={20} strokeWidth={1.5} style={{ color: CHART_PALETTE.gold }} />
         <h3 className="text-lg font-semibold text-[var(--color-silver-100)] font-[family-name:var(--font-display)]">

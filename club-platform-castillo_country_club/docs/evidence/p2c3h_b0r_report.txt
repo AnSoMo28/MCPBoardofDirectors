@@ -1,0 +1,59 @@
+P2-C3h · b0r — diagnóstico §5: ModuleNotFoundError 'club_mcp.config.club_registry'
+
+  · archivos auditados: 131 .py (backend/src + backend/scripts + backend/tests)
+
+── §A · el paciente: backend/src/club_mcp/config/club_registry.py ──
+  · config/ existe ✓ · config/__init__.py ✓ · config/club_registry.py ✗ AUSENTE
+  · contenido de config/: __init__.py, __pycache__, settings.py
+  · .py en la raíz de club_mcp/: __init__.py, bootstrap.py, registry.py, server.py
+  · git status config/: clean
+
+── §B · ¿dónde vive get_club_config? (grep en src+scripts+tests) ──
+  · patrón: get_club_config|club_registry|club_config|ClubConfig|CLUB_REGISTRY (i)
+  · hits: 6 en 2 archivo(s)
+      backend/src/club_mcp/agents/event_orchestrator.py:35 │ club_config: dict[str, Any] | None = None,
+      backend/src/club_mcp/agents/event_orchestrator.py:42 │ self.club_config = club_config or {}
+      backend/src/club_mcp/bootstrap.py:165 │ from club_mcp.config.club_registry import get_club_config
+      backend/src/club_mcp/bootstrap.py:173 │ club_config = get_club_config("castillo_country_club")
+      backend/src/club_mcp/bootstrap.py:211 │ elif pname == "club_config":
+      backend/src/club_mcp/bootstrap.py:212 │ kwargs[pname] = club_config
+  · def get_club_config: 0 definiciones
+
+── §C · auditoría de imports club_mcp/relativos (predicción completa) ──
+  ✗ club_mcp.services.approval_service · módulo inexistente ← backend/src/club_mcp/agents/ml_intelligence.py:34
+  ✗ club_mcp.services.claude_service · módulo inexistente ← backend/src/club_mcp/agents/ml_intelligence.py:35
+  ✗ club_mcp.config.club_registry · módulo inexistente ← backend/src/club_mcp/bootstrap.py:165
+  ✗ club_mcp.auth.rbac · símbolo TOOL_PERMISSION_MAP ausente ← backend/tests/unit/auth/test_rbac.py:5
+  · otros 334 imports resuelven ✓ (módulo y símbolo)
+
+── §D · runtime (mismo intérprete que el smoke) ──
+  · comando: uv run python -c "<import test>" (cwd=backend, PYTHONPATH=src)
+  · módulos probados: club_mcp, club_mcp.services.approval_service, club_mcp.services.claude_service, club_mcp.config.club_registry, club_mcp.auth.rbac
+  OK  club_mcp -> C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\__init__.py
+  FAIL club_mcp.services.approval_service -> ModuleNotFoundError: No module named 'club_mcp.services'
+  FAIL club_mcp.services.claude_service -> ModuleNotFoundError: No module named 'club_mcp.services'
+  FAIL club_mcp.config.club_registry -> ModuleNotFoundError: No module named 'club_mcp.config.club_registry'
+  OK  club_mcp.auth.rbac -> C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\auth\rbac.py
+  warning: `VIRTUAL_ENV=C:/Users/nipag/Documents/MCPClubesPrivados/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+  · si aparece 'warning: VIRTUAL_ENV=… will be ignored': benigno — uv usa el .venv del proyecto.
+
+── §E · veredicto ──
+  · get_club_config no está definido en ningún módulo del árbol.
+  · candidato por nombre: backend/src/club_mcp/agents/event_orchestrator.py:35 │ club_config: dict[str, Any] | None = None,
+  · candidato por nombre: backend/src/club_mcp/agents/event_orchestrator.py:42 │ self.club_config = club_config or {}
+  · candidato por nombre: backend/src/club_mcp/bootstrap.py:173 │ club_config = get_club_config("castillo_country_club")
+  · candidato por nombre: backend/src/club_mcp/bootstrap.py:211 │ elif pname == "club_config":
+  · candidato por nombre: backend/src/club_mcp/bootstrap.py:212 │ kwargs[pname] = club_config
+  · lista completa a resolver en la próxima pasada (b0s):
+      1. backend/src/club_mcp/agents/ml_intelligence.py:34 · módulo club_mcp.services.approval_service inexistente
+      2. backend/src/club_mcp/agents/ml_intelligence.py:35 · módulo club_mcp.services.claude_service inexistente
+      3. backend/src/club_mcp/bootstrap.py:165 · módulo club_mcp.config.club_registry inexistente
+      4. backend/tests/unit/auth/test_rbac.py:5 · símbolo TOOL_PERMISSION_MAP ausente en club_mcp.auth.rbac
+
+── siguiente paso ──
+  · pegar el output COMPLETO de p2c3h_b0r_report.txt en el chat.
+  · NO relanzar B0: §4 ya aplicó sus parches (anclas viejas consumidas — no es idempotente).
+  · tras el fix (b0s o edición manual) correr SOLO el smoke:
+      cd backend && uv run python scripts/smoke_b0.py
+  · si el smoke avanza y falla en otro import: ya estaría en §C de este reporte.
+

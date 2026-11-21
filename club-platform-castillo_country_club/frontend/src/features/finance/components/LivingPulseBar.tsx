@@ -9,6 +9,7 @@ import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
 import { cn } from "@/shared/lib/utils";
 import { HEALTH_GRADE_CONFIG } from "../types";
 import type { AmbientMode } from "../hooks/useAmbientState";
+import './LivingPulseBar.css';
 
 interface LivingPulseBarProps {
   healthScore: number;
@@ -37,7 +38,7 @@ export function LivingPulseBar({
   return (
     <div className={cn("flex items-center gap-3", className)}>
       {/* Bar */}
-      <div className="living-pulse-bar flex-1">
+      <div className="living-pulse-bar living-pulse-bar flex-1">
         <motion.div
           className="living-pulse-bar__fill"
           style={{ backgroundColor: fillColor }}

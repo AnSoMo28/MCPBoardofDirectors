@@ -47,6 +47,7 @@ import type {
 import { SPORT_CONFIG } from "../types";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import "./LiveArenaGrid.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -333,7 +334,8 @@ function CourtCard({
       {/* ── Action (hover reveal) ── */}
       <div className="spt-arena__card-actions" data-visible={hovered}>
         {isAvailable ? (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-arena__card-action spt-arena__card-action--book"
             onClick={(e) => {
@@ -343,9 +345,10 @@ function CourtCard({
           >
             Reservar ahora
             <ChevronRight className="spt-arena__card-action-icon" />
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-arena__card-action spt-arena__card-action--view"
             onClick={(e) => {
@@ -355,7 +358,7 @@ function CourtCard({
           >
             <Eye className="spt-arena__card-action-icon" />
             Ver detalle
-          </button>
+          </Button>
         )}
       </div>
     </article>

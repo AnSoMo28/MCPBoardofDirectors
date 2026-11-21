@@ -64,6 +64,7 @@ import { detectNarrativeThread } from "../lib/narrativeEngine";
 import type { NarrativeThread } from "../lib/narrativeEngine";
 
 import "./CampaignGenerator.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // Presentation helpers (no business logic)
@@ -345,10 +346,10 @@ export function CampaignGenerator() {
             <label className="campaign__label">Segmento objetivo</label>
             <div className="campaign__segment-grid">
               {CAMPAIGN_SEGMENT_OPTIONS.map((seg, i) => (
-                <button key={seg.id} className="campaign__segment-btn" data-selected={segment === seg.id} data-segment={seg.token} onClick={() => setSegment(seg.id)} aria-pressed={segment === seg.id} style={{ "--stagger-i": i } as React.CSSProperties}>
+                <Button variant="unstyled" key={seg.id} className="campaign__segment-btn" data-selected={segment === seg.id} data-segment={seg.token} onClick={() => setSegment(seg.id)} aria-pressed={segment === seg.id} style={{ "--stagger-i": i } as React.CSSProperties}>
                   <span className="campaign__segment-name">{seg.id}</span>
                   <span className="campaign__segment-count">{seg.count} familias</span>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -358,7 +359,7 @@ export function CampaignGenerator() {
             <textarea id="cg-objective" value={objective} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setObjective(e.target.value)} placeholder="Ej: Incrementar participación en actividades deportivas del segmento Deportivos en 30%" className="campaign__textarea" rows={3} />
             <div className="campaign__suggestion-chips">
               {CAMPAIGN_OBJECTIVE_SUGGESTIONS.map((s) => (
-                <button key={s} className="campaign__suggestion-chip" data-selected={objective === s} onClick={() => setObjective(s)}>{s}</button>
+                <Button variant="unstyled" key={s} className="campaign__suggestion-chip" data-selected={objective === s} onClick={() => setObjective(s)}>{s}</Button>
               ))}
             </div>
           </div>
@@ -369,17 +370,17 @@ export function CampaignGenerator() {
               {CAMPAIGN_CHANNEL_OPTIONS.map((ch, i) => {
                 const ChIcon = CHANNEL_ICONS[ch.id] ?? Mail;
                 return (
-                  <button key={ch.id} className="campaign__channel-btn" data-selected={channel === ch.id} data-channel={ch.token} onClick={() => setChannel(ch.id)} aria-pressed={channel === ch.id} style={{ "--stagger-i": i } as React.CSSProperties}>
+                  <Button variant="unstyled" key={ch.id} className="campaign__channel-btn" data-selected={channel === ch.id} data-channel={ch.token} onClick={() => setChannel(ch.id)} aria-pressed={channel === ch.id} style={{ "--stagger-i": i } as React.CSSProperties}>
                     <ChIcon size={16} /><span>{ch.label}</span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
           </div>
 
-          <button className="campaign__generate-btn" onClick={handleGenerate} disabled={!segment || !objective.trim()}>
+          <Button variant="unstyled" className="campaign__generate-btn" onClick={handleGenerate} disabled={!segment || !objective.trim()}>
             <Sparkles size={16} /><span>Generar Campaña</span>
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -404,7 +405,7 @@ export function CampaignGenerator() {
           <div className="campaign__error">
             <AlertTriangle size={24} /><h3>No se pudo generar</h3>
             <p>Intentá con otros parámetros.</p>
-            <button className="campaign__retry-btn" onClick={() => setShouldFetch(false)}>Nueva campaña</button>
+            <Button variant="unstyled" className="campaign__retry-btn" onClick={() => setShouldFetch(false)}>Nueva campaña</Button>
           </div>
         </div>
       </div>
@@ -437,10 +438,10 @@ export function CampaignGenerator() {
           {CAMPAIGN_SEGMENT_OPTIONS.map((s) => <option key={s.id} value={s.id}>{s.id} ({s.count})</option>)}
         </select>
         <input type="text" value={objective} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setObjective(e.target.value)} className="campaign__input campaign__input--compact" />
-        <button className="campaign__generate-btn campaign__generate-btn--compact" onClick={() => {
+        <Button variant="unstyled" className="campaign__generate-btn campaign__generate-btn--compact" onClick={() => {
           if (!segment || !objective.trim()) { showToast({ type: "error", message: "Completá los campos" }); return; }
           setSelectedVariant(0); query.refetch();
-        }}><Sparkles size={14} /><span>Re-generar</span></button>
+        }}><Sparkles size={14} /><span>Re-generar</span></Button>
       </div>
 
       {/* Fatigue Warning */}
@@ -538,11 +539,11 @@ export function CampaignGenerator() {
 
           <div className="campaign__variant-tabs">
             {data.variants.map((v, i) => (
-              <button key={v.variant_id} className="campaign__variant-tab" data-selected={i === selectedVariant} data-best={i === bestVariantIdx} onClick={() => setSelectedVariant(i)}>
+              <Button variant="unstyled" key={v.variant_id} className="campaign__variant-tab" data-selected={i === selectedVariant} data-best={i === bestVariantIdx} onClick={() => setSelectedVariant(i)}>
                 <span className="campaign__variant-tab-id">V{v.variant_id}</span>
                 <span className="campaign__variant-tab-name">{v.name}</span>
                 {variantAnalyses[i] && <span className="campaign__variant-tab-score">{variantAnalyses[i].score.composite}%</span>}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -596,7 +597,7 @@ export function CampaignGenerator() {
                   </div>
                 )}
                 <div className="campaign__variant-actions">
-                  <button className="campaign__copy-btn" onClick={() => handleCopy(v.body)}><Copy size={12} /><span>Copiar variante</span></button>
+                  <Button variant="unstyled" className="campaign__copy-btn" onClick={() => handleCopy(v.body)}><Copy size={12} /><span>Copiar variante</span></Button>
                 </div>
               </div>
             );
@@ -717,9 +718,9 @@ export function CampaignGenerator() {
 
       {/* Actions */}
       <div className="campaign__actions">
-        <button className="campaign__send-btn" onClick={() => showToast({ type: "info", message: "Campaña enviada para aprobación — pendiente revisión del staff" })}>
+        <Button variant="unstyled" className="campaign__send-btn" onClick={() => showToast({ type: "info", message: "Campaña enviada para aprobación — pendiente revisión del staff" })}>
           <Send size={14} /><span>Programar Campaña</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -6,6 +6,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import './StatCard.css';
 
 interface StatCardProps {
   title: string;
@@ -52,7 +53,7 @@ export function StatCard({
       } : undefined}
     >
       {/* Header: title + icon */}
-      <div className="flex items-start justify-between mb-3 sm:mb-4">
+      <div className="stat-card flex items-start justify-between mb-3 sm:mb-4">
         <p className="text-xs sm:text-sm font-medium text-[var(--color-silver-400)] font-[family-name:var(--font-ui)] truncate">
           {title}
         </p>

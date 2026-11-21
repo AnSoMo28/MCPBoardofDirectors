@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 from datetime import datetime, timezone, timedelta
 
@@ -87,9 +89,9 @@ def _tenis_data() -> dict:
     }
 
 
-def _create_and_publish(repo: EventRepository, data: dict) -> str:
-    ev = repo.create_event(EventCreate(**data))
-    repo.update_event(ev.id, {"status": EventStatus.PUBLISHED.value})
+async def _create_and_publish(repo: EventRepository, data: dict) -> str:
+    ev = await repo.create_event(EventCreate(**data))
+    await repo.update_event(ev.id, {"status": EventStatus.PUBLISHED.value})
     return ev.id
 
 
@@ -124,7 +126,7 @@ class TestEventCreate:
     async def test_execute_creates_and_approves(self, event_agent):
         res = await event_agent.execute_event_create(_fiesta_data())
         assert res["status"] == "success"
-        event = event_agent.event_repo.get_event(res["data"]["id"])
+        event = await event_agent.event_repo.get_event(res["data"]["id"])
         assert event is not None
         assert event.status == EventStatus.APPROVED
         assert event.title == "Fiesta de Fin de Año"
@@ -145,7 +147,7 @@ class TestBuildProgram:
 
     @pytest.fixture
     def event_id(self, event_repo: EventRepository) -> str:
-        return _create_and_publish(event_repo, _fiesta_data())
+        return asyncio.run(_create_and_publish(event_repo, _fiesta_data()))
 
     @pytest.mark.asyncio
     async def test_adds_program_items(self, event_agent, event_id):
@@ -180,7 +182,7 @@ class TestBuildProgram:
         )
         assert res["status"] == "success"
         assert res["total_items"] == 1
-        event = event_agent.event_repo.get_event(event_id)
+        event = await event_agent.event_repo.get_event(event_id)
         assert len(event.programs) == 1
 
 
@@ -193,7 +195,7 @@ class TestManageRSVPs:
 
     @pytest.fixture
     def event_id(self, event_repo: EventRepository) -> str:
-        return _create_and_publish(event_repo, _fiesta_data())
+        return asyncio.run(_create_and_publish(event_repo, _fiesta_data()))
 
     @pytest.mark.asyncio
     async def test_add_rsvp(self, event_agent, event_id):
@@ -207,7 +209,7 @@ class TestManageRSVPs:
 
     @pytest.mark.asyncio
     async def test_add_rsvp_waitlists_when_full(self, event_agent, event_repo, event_id):
-        event_repo.update_event(event_id, {"max_capacity": 5})
+        await event_repo.update_event(event_id, {"max_capacity": 5})
         await event_agent.event_manage_rsvps(
             event_id=event_id, action="add",
             family_id="fam_fill", member_ids=["a", "b", "c", "d", "e"],
@@ -260,8 +262,8 @@ class TestManageRSVPs:
         await event_agent.event_manage_rsvps(
             event_id=event_id, action="add", family_id="f1", member_ids=["m1"],
         )
-        rsvps = event_repo.list_rsvps(event_id)
-        event_repo.update_rsvp(rsvps[0].id, {"status": "declined"})
+        rsvps = await event_repo.list_rsvps(event_id)
+        await event_repo.update_rsvp(rsvps[0].id, {"status": "declined"})
         res = await event_agent.event_manage_rsvps(
             event_id=event_id, action="list", new_status="declined",
         )
@@ -302,11 +304,11 @@ class TestCoordinateVendors:
 
     @pytest.fixture
     def event_id(self, event_repo: EventRepository) -> str:
-        return _create_and_publish(event_repo, _fiesta_data())
+        return asyncio.run(_create_and_publish(event_repo, _fiesta_data()))
 
     @pytest.mark.asyncio
     async def test_list_vendors_direct(self, event_agent, event_repo, event_id):
-        event_repo.add_vendor(event_id, "Catering CR", "catering")
+        await event_repo.add_vendor(event_id, "Catering CR", "catering")
         res = await event_agent.event_coordinate_vendors(event_id, "list")
         assert res["status"] == "success"
         assert len(res["data"]) == 1
@@ -352,7 +354,7 @@ class TestCoordinateVendors:
 
     @pytest.mark.asyncio
     async def test_execute_approve_contract(self, event_agent, event_repo, event_id):
-        vendor = event_repo.add_vendor(event_id, "Sonido Pro", "audio_visual")
+        vendor = await event_repo.add_vendor(event_id, "Sonido Pro", "audio_visual")
         res = await event_agent.execute_coordinate_vendors({
             "event_id": event_id, "action": "approve_contract",
             "vendor_id": vendor.id,
@@ -375,7 +377,7 @@ class TestManageCapacity:
 
     @pytest.fixture
     def event_id(self, event_repo: EventRepository) -> str:
-        return _create_and_publish(event_repo, _fiesta_data())
+        return asyncio.run(_create_and_publish(event_repo, _fiesta_data()))
 
     @pytest.mark.asyncio
     async def test_get_capacity_info(self, event_agent, event_id):
@@ -413,7 +415,7 @@ class TestGetAnalytics:
 
     @pytest.fixture
     def event_id(self, event_repo: EventRepository) -> str:
-        return _create_and_publish(event_repo, _fiesta_data())
+        return asyncio.run(_create_and_publish(event_repo, _fiesta_data()))
 
     @pytest.mark.asyncio
     async def test_empty_event(self, event_agent, event_id):
@@ -448,7 +450,7 @@ class TestCloneTemplate:
 
     @pytest.fixture
     def event_id(self, event_repo: EventRepository) -> str:
-        return _create_and_publish(event_repo, _fiesta_data())
+        return asyncio.run(_create_and_publish(event_repo, _fiesta_data()))
 
     @pytest.mark.asyncio
     async def test_clone_basic(self, event_agent, event_id):
@@ -463,12 +465,12 @@ class TestCloneTemplate:
 
     @pytest.mark.asyncio
     async def test_clone_preserves_program(self, event_agent, event_repo, event_id):
-        event_repo.add_program_item(event_id, "Cena", "19:00", "21:00")
+        await event_repo.add_program_item(event_id, "Cena", "19:00", "21:00")
         res = await event_agent.event_clone_template(
             event_id, "2026-07-01T18:00:00", "2026-07-02T02:00:00",
             title_suffix="Verano",
         )
-        cloned = event_agent.event_repo.get_event(res["data"]["id"])
+        cloned = await event_agent.event_repo.get_event(res["data"]["id"])
         assert len(cloned.programs) == 1
         assert cloned.programs[0].title == "Cena"
 
@@ -509,15 +511,15 @@ class TestGetCalendar:
     @pytest.mark.asyncio
     async def test_calendar_with_events(self, event_agent, event_repo):
         """Fiesta spans Dec31-Jan1 (2 days) + Tenis on Dec28 (1 day) = 3 event-days."""
-        _create_and_publish(event_repo, _fiesta_data())
-        _create_and_publish(event_repo, _tenis_data())
+        await _create_and_publish(event_repo, _fiesta_data())
+        await _create_and_publish(event_repo, _tenis_data())
         res = await event_agent.event_get_calendar("2025-12-25", "2026-01-02")
         assert res["total_events"] == 3
 
     @pytest.mark.asyncio
     async def test_calendar_by_category(self, event_agent, event_repo):
-        _create_and_publish(event_repo, _fiesta_data())
-        _create_and_publish(event_repo, _tenis_data())
+        await _create_and_publish(event_repo, _fiesta_data())
+        await _create_and_publish(event_repo, _tenis_data())
         res = await event_agent.event_get_calendar(
             "2025-12-25", "2026-01-02", category="sports",
         )
@@ -545,7 +547,7 @@ class TestGenerateReport:
 
     @pytest.mark.asyncio
     async def test_executive_report(self, event_agent, event_repo):
-        _create_and_publish(event_repo, _fiesta_data())
+        await _create_and_publish(event_repo, _fiesta_data())
         # date_to must be after event start (Dec 31 18:00) to include it
         res = await event_agent.event_generate_report("2025-12-01", "2026-01-02")
         assert res["status"] == "success"
@@ -567,7 +569,7 @@ class TestGenerateReport:
 
     @pytest.mark.asyncio
     async def test_execute_financial_report(self, event_agent, event_repo):
-        _create_and_publish(event_repo, _fiesta_data())
+        await _create_and_publish(event_repo, _fiesta_data())
         res = await event_agent.execute_generate_report_financial({
             "date_from": "2025-12-01", "date_to": "2026-01-02",
         })
@@ -606,7 +608,7 @@ class TestHITLFullFlow:
         assert exec_res["status"] == "success"
 
         # 4. Verify event exists
-        event = event_agent.event_repo.get_event(exec_res["data"]["id"])
+        event = await event_agent.event_repo.get_event(exec_res["data"]["id"])
         assert event is not None
         assert event.status == EventStatus.APPROVED
 
@@ -624,12 +626,12 @@ class TestHITLFullFlow:
         assert rejected.status == ApprovalStatus.REJECTED
 
         # 3. Event should NOT exist (never created)
-        events = event_repo.search_events(EventSearchParams())
+        events = await event_repo.search_events(EventSearchParams())
         assert len(events) == 0
 
     @pytest.mark.asyncio
     async def test_approve_financial_report_flow(self, event_agent, event_repo):
-        _create_and_publish(event_repo, _fiesta_data())
+        await _create_and_publish(event_repo, _fiesta_data())
 
         # 1. Request financial report → HITL
         res = await event_agent.event_generate_report(

@@ -1,0 +1,607 @@
+/**
+ * @component MyReservations (Fase 25 — REWRITE)
+ * @namespace .glass-reservations
+ * @depends globals.css (tokens), Button/EmptyState/CardSkeleton (ui kit)
+ * @note Socio reservations: today hero + live countdown + day timeline,
+ *       reservation cards with date block, smart rebook suggestions,
+ *       filter tabs. Pareja css G10.2-T2 — completa el archivo vacío
+ *       detectado en auditoría (P0): 5 tsx dependían de esta hoja.
+ * @import import './reservations/MyReservations.css';
+ */
+
+/* ═══════════════════════════════════════
+   Root
+   ═══════════════════════════════════════ */
+
+.glass-reservations {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 56rem;
+}
+
+/* ═══════════════════════════════════════
+   Filter Tabs
+   ═══════════════════════════════════════ */
+
+.glass-reservations__filters {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface-2) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-silver-100) 6%, transparent);
+  width: fit-content;
+}
+
+.glass-reservations__filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-silver-300);
+  background: transparent;
+  transition: background 0.25s var(--ease-apple), color 0.25s var(--ease-apple),
+    box-shadow 0.25s var(--ease-apple);
+  cursor: pointer;
+}
+
+.glass-reservations__filter-btn:hover:not(:disabled) {
+  color: var(--color-silver-100);
+  background: color-mix(in srgb, var(--color-silver-100) 5%, transparent);
+}
+
+.glass-reservations__filter-btn--active {
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+}
+
+.glass-reservations__filter-btn:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.glass-reservations__filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.glass-reservations__filter-count--inactive {
+  color: var(--color-silver-500);
+  background: color-mix(in srgb, var(--color-silver-100) 8%, transparent);
+}
+
+/* ═══════════════════════════════════════
+   Skeleton
+   ═══════════════════════════════════════ */
+
+.glass-reservations__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ═══════════════════════════════════════
+   Today Hero
+   ═══════════════════════════════════════ */
+
+.glass-reservations__today-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px 24px 18px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-gold-400) 8%, transparent),
+    color-mix(in srgb, var(--color-teal-400) 4%, transparent) 55%,
+    transparent
+  );
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 22%, transparent);
+  overflow: hidden;
+  animation: glass-reservations-hero-in 0.45s var(--ease-apple) both;
+}
+
+.glass-reservations__today-hero::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-gold-400) 12%, transparent),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.glass-reservations__today-hero-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-gold-400);
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+}
+
+.glass-reservations__today-hero-facility {
+  margin: 4px 0 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-silver-100);
+}
+
+.glass-reservations__today-hero-time {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-silver-300);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════
+   Countdown (niveles: normal · warning · urgent)
+   ═══════════════════════════════════════ */
+
+.glass-reservations__countdown {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  width: fit-content;
+  margin-top: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.glass-reservations__countdown-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.glass-reservations__countdown-time {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.glass-reservations__countdown--normal {
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-teal-400) 22%, transparent);
+}
+
+.glass-reservations__countdown--warning {
+  color: var(--color-amber-400);
+  background: color-mix(in srgb, var(--color-amber-400) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-amber-400) 22%, transparent);
+  animation: glass-reservations-countdown-pulse 2.4s ease-in-out infinite;
+}
+
+.glass-reservations__countdown--urgent {
+  color: var(--color-rose-400);
+  background: color-mix(in srgb, var(--color-rose-400) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-rose-400) 25%, transparent);
+  animation: glass-reservations-countdown-pulse 1.2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════
+   Day Timeline
+   ═══════════════════════════════════════ */
+
+.glass-reservations__timeline {
+  margin-top: 14px;
+}
+
+.glass-reservations__timeline-track {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--color-silver-100) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-silver-100) 6%, transparent);
+  overflow: hidden;
+}
+
+.glass-reservations__timeline-block {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 5px;
+  opacity: 0.85;
+}
+
+.glass-reservations__timeline-block--active {
+  opacity: 1;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-gold-400) 45%, transparent);
+}
+
+.glass-reservations__timeline-block-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-abyss);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.glass-reservations__timeline-now {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--color-rose-400);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-rose-400) 60%, transparent);
+}
+
+.glass-reservations__timeline-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+
+.glass-reservations__timeline-label {
+  font-size: 10px;
+  color: var(--color-silver-500);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════
+   Reservation Card
+   ═══════════════════════════════════════ */
+
+.glass-reservations__card {
+  position: relative;
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  border: 1px solid color-mix(in srgb, var(--color-silver-100) 7%, transparent);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.3s var(--ease-apple),
+    box-shadow 0.3s var(--ease-apple), transform 0.3s var(--ease-apple);
+}
+
+.glass-reservations__card:hover {
+  border-color: color-mix(in srgb, var(--color-gold-400) 30%, transparent);
+  box-shadow: var(--shadow-float);
+  transform: translateY(-2px);
+}
+
+.glass-reservations__card:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
+.glass-reservations__card--past {
+  opacity: 0.62;
+}
+
+.glass-reservations__card--past:hover {
+  opacity: 0.85;
+}
+
+.glass-reservations__card-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+}
+
+/* ── Date block ── */
+
+.glass-reservations__card-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-silver-100) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-silver-100) 8%, transparent);
+}
+
+.glass-reservations__card-date--active {
+  background: color-mix(in srgb, var(--color-gold-400) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold-400) 35%, transparent);
+}
+
+.glass-reservations__card-date-month {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-silver-500);
+}
+
+.glass-reservations__card-date--active .glass-reservations__card-date-month {
+  color: color-mix(in srgb, var(--color-gold-400) 75%, var(--color-silver-300));
+}
+
+.glass-reservations__card-date-day {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-silver-100);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Info ── */
+
+.glass-reservations__card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-reservations__card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.glass-reservations__card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-silver-100);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glass-reservations__card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.glass-reservations__card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.glass-reservations__card-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--color-silver-300);
+  font-variant-numeric: tabular-nums;
+}
+
+.glass-reservations__card-notes {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--color-silver-500);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glass-reservations__rebook-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 8%, transparent);
+  transition: background 0.25s var(--ease-apple), color 0.25s var(--ease-apple);
+}
+
+.glass-reservations__rebook-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-teal-400) 14%, transparent);
+}
+
+.glass-reservations__rebook-btn:focus-visible {
+  outline: 2px solid var(--color-teal-400);
+  outline-offset: 2px;
+}
+
+.glass-reservations__card-arrow {
+  flex-shrink: 0;
+  color: var(--color-silver-500);
+  transition: transform 0.3s var(--ease-apple), color 0.3s var(--ease-apple);
+}
+
+.glass-reservations__card:hover .glass-reservations__card-arrow {
+  color: var(--color-gold-400);
+  transform: translateX(3px);
+}
+
+/* ═══════════════════════════════════════
+   Rebook Suggestion
+   ═══════════════════════════════════════ */
+
+.glass-reservations__suggestion {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-teal-400) 5%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--color-teal-400) 30%, transparent);
+  transition: background 0.3s var(--ease-apple), border-color 0.3s var(--ease-apple);
+}
+
+.glass-reservations__suggestion:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-teal-400) 9%, transparent);
+  border-color: color-mix(in srgb, var(--color-teal-400) 55%, transparent);
+}
+
+.glass-reservations__suggestion:focus-visible {
+  outline: 2px solid var(--color-teal-400);
+  outline-offset: 2px;
+}
+
+.glass-reservations__suggestion-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+}
+
+.glass-reservations__suggestion-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: var(--color-teal-400);
+  background: color-mix(in srgb, var(--color-teal-400) 12%, transparent);
+}
+
+.glass-reservations__suggestion-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.glass-reservations__suggestion-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-silver-100);
+}
+
+.glass-reservations__suggestion-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-silver-300);
+}
+
+.glass-reservations__suggestion-arrow {
+  flex-shrink: 0;
+  color: var(--color-teal-400);
+  transition: transform 0.3s var(--ease-apple);
+}
+
+.glass-reservations__suggestion:hover:not(:disabled) .glass-reservations__suggestion-arrow {
+  transform: translateX(4px);
+}
+
+/* ═══════════════════════════════════════
+   Keyframes (nombres únicos prefijados)
+   ═══════════════════════════════════════ */
+
+@keyframes glass-reservations-hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glass-reservations-countdown-pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-amber-400) 22%, transparent);
+  }
+  50% {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-amber-400) 45%, transparent);
+  }
+}
+
+/* ═══════════════════════════════════════
+   Light theme overrides
+   ═══════════════════════════════════════ */
+
+.light .glass-reservations__filters {
+  background: color-mix(in srgb, var(--color-surface-2) 70%, transparent);
+  border-color: color-mix(in srgb, var(--color-abyss) 8%, transparent);
+}
+
+.light .glass-reservations__card {
+  background: color-mix(in srgb, var(--color-silver-100) 88%, transparent);
+  border-color: color-mix(in srgb, var(--color-abyss) 8%, transparent);
+}
+
+.light .glass-reservations__card:hover {
+  border-color: color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+}
+
+.light .glass-reservations__today-hero {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-gold-400) 10%, transparent),
+    color-mix(in srgb, var(--color-teal-400) 6%, transparent) 55%,
+    transparent
+  );
+}
+
+.light .glass-reservations__timeline-track {
+  background: color-mix(in srgb, var(--color-abyss) 6%, transparent);
+}
+
+.light .glass-reservations__timeline-block-label {
+  color: var(--color-abyss);
+}
+
+/* ═══════════════════════════════════════
+   Reduced motion
+   ═══════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-reservations__today-hero,
+  .glass-reservations__countdown--warning,
+  .glass-reservations__countdown--urgent {
+    animation: none;
+  }
+  .glass-reservations__card,
+  .glass-reservations__card:hover,
+  .glass-reservations__card-arrow,
+  .glass-reservations__suggestion,
+  .glass-reservations__suggestion-arrow {
+    transition: none;
+    transform: none;
+  }
+}

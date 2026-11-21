@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-import pytest
 from uuid import UUID
+
+import pytest
+import pytest_asyncio
 
 from club_mcp.agents.compliance import ComplianceAgent
 from club_mcp.db.repositories.compliance_repo import ComplianceRepository
@@ -23,10 +25,10 @@ def comp_agent(
     return ComplianceAgent(comp_repo, approval_engine)
 
 
-def _seed_compliance(repo: ComplianceRepository) -> None:
+async def _seed_compliance(repo: ComplianceRepository) -> None:
     """Seed audits, documents, and alerts."""
     # Audit
-    repo.create_audit({
+    await repo.create_audit({
         "title": "Auditoría Seguridad Q1",
         "area": "safety",
         "status": "completed",
@@ -55,7 +57,7 @@ def _seed_compliance(repo: ComplianceRepository) -> None:
         "score_pct": 100.0,
     })
 
-    repo.create_audit({
+    await repo.create_audit({
         "title": "Auditoría Alimentos Q1",
         "area": "food_safety",
         "status": "completed",
@@ -75,14 +77,14 @@ def _seed_compliance(repo: ComplianceRepository) -> None:
     })
 
     # Documents
-    repo.add_document({
+    await repo.add_document({
         "name": "Licencia de funcionamiento",
         "area": "licensing",
         "issuer": "Municipio",
         "expiry_date": "2025-12-31",
         "status": "current",
     })
-    repo.add_document({
+    await repo.add_document({
         "name": "Certificado HACCP",
         "area": "food_safety",
         "issuer": "SENASAG",
@@ -91,7 +93,7 @@ def _seed_compliance(repo: ComplianceRepository) -> None:
     })
 
     # Alerts
-    repo.create_alert({
+    await repo.create_alert({
         "title": "Temperatura fuera de rango",
         "description": "Refrigerador de cocina a 8°C",
         "area": "food_safety",
@@ -160,9 +162,9 @@ class TestAuditCreate:
 
 class TestCheckRun:
 
-    @pytest.fixture
-    def audit_id(self, comp_agent) -> str:
-        res = comp_agent.repo.create_audit({
+    @pytest_asyncio.fixture
+    async def audit_id(self, comp_agent) -> str:
+        res = await comp_agent.repo.create_audit({
             "title": "Test Audit",
             "area": "safety",
             "status": "in_progress",
@@ -218,15 +220,18 @@ class TestCheckRun:
     async def test_audit_disappears_before_check_is_added(
         self, comp_agent, monkeypatch,
     ):
-        audit = comp_agent.repo.create_audit({
+        audit = await comp_agent.repo.create_audit({
             "title": "Test Audit",
             "area": "safety",
             "status": "in_progress",
         })
+        async def _missing_audit(_audit_id: str, _check: object) -> None:
+            return None
+
         monkeypatch.setattr(
             comp_agent.repo,
             "add_check_to_audit",
-            lambda _audit_id, _check: None,
+            _missing_audit,
         )
 
         res = await comp_agent.compliance_check_run(
@@ -254,13 +259,13 @@ class TestCheckRun:
 
 class TestAuditGet:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, comp_agent):
-        _seed_compliance(comp_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, comp_agent):
+        await _seed_compliance(comp_agent.repo)
 
     @pytest.mark.asyncio
     async def test_get_existing_audit(self, comp_agent):
-        audits = comp_agent.repo.list_audits()
+        audits = await comp_agent.repo.list_audits()
         res = await comp_agent.compliance_audit_get(audits[0].id)
         assert res["status"] == "success"
 
@@ -358,9 +363,9 @@ class TestAlertCreate:
 
 class TestAlertList:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, comp_agent):
-        _seed_compliance(comp_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, comp_agent):
+        await _seed_compliance(comp_agent.repo)
 
     @pytest.mark.asyncio
     async def test_list_all_alerts(self, comp_agent):
@@ -391,9 +396,9 @@ class TestAlertList:
 
 class TestReportGenerate:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, comp_agent):
-        _seed_compliance(comp_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, comp_agent):
+        await _seed_compliance(comp_agent.repo)
 
     @pytest.mark.asyncio
     async def test_generates_report(self, comp_agent):

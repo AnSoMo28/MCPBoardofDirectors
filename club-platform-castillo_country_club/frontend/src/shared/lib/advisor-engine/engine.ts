@@ -3,7 +3,7 @@
 // ADVISOR ENGINE — Core Engine Class + React Hook
 //
 // @level       Level 6+ Agency · Apple Production Grade · 2027
-// @version     v2.0
+// @version     v2.1  (G10-MC04: alineado a VERSION_SYNC 2.1.0 — drift v2.0↔2.1.0 desde G8 detectado por verify-master-consistency)
 // @namespace   N/A — engine class + hook
 // @keyframes   0
 // @depends     ./types, ./health-score, ./causal-chain, ./evaluate

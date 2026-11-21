@@ -150,10 +150,16 @@ class FamilyProfileAgent(BaseAgent):
     def __init__(
         self,
         repo: FamilyRepository | None = None,
+        approval_engine: Any | None = None,
+        notifier: Any | None = None,
         rag_service: Any | None = None,
     ) -> None:
         super().__init__()
         self.repo = repo or FamilyRepository()
+        # P2-C3h B0 (F-2): acepta el engine compartido del composition root
+        if approval_engine is not None:
+            self.approval_engine = approval_engine
+        self.notifier = notifier
         self.rag_service = rag_service
         self.system_prompt = AGENT_SYSTEM_PROMPTS.get("family_profile", "")
 

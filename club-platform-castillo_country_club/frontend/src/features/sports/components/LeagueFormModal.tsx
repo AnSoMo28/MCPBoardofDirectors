@@ -36,6 +36,7 @@ import { X, Users, Calendar, AlertTriangle, Plus, Trash2 } from "lucide-react";
 import type { SportType, LeagueFormat, SportsDashboardMode } from "../types";
 import { SPORT_CONFIG, LEAGUE_FORMAT_CONFIG } from "../types";
 import "./LeagueFormModal.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -147,7 +148,8 @@ function TeamBuilder({
           }}
           className="spt-lf__input spt-lf__input--compact"
         />
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="spt-lf__add-btn"
           onClick={onAddTeam}
@@ -155,7 +157,7 @@ function TeamBuilder({
           aria-label="Agregar equipo"
         >
           <Plus className="spt-lf__add-icon" />
-        </button>
+        </Button>
       </div>
 
       {error && <p className="spt-lf__error">{error}</p>}
@@ -165,14 +167,15 @@ function TeamBuilder({
           {teams.map((team, idx) => (
             <span key={`${team}-${idx}`} className="spt-lf__team-chip">
               {team}
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="spt-lf__team-remove"
                 onClick={() => onRemoveTeam(idx)}
                 aria-label={`Quitar ${team}`}
               >
                 <Trash2 className="spt-lf__team-remove-icon" />
-              </button>
+              </Button>
             </span>
           ))}
         </div>
@@ -328,14 +331,15 @@ export function LeagueFormModal({
               Requiere aprobación del administrador (HITL)
             </p>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-lf__close-btn"
             onClick={onClose}
             aria-label="Cerrar"
           >
             <X className="spt-lf__close-icon" />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}
@@ -468,14 +472,16 @@ export function LeagueFormModal({
 
           {/* Actions */}
           <div className="spt-lf__actions">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="spt-lf__cancel-btn"
               onClick={onClose}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="submit"
               className="spt-lf__submit-btn"
               disabled={isSubmitting}
@@ -489,7 +495,7 @@ export function LeagueFormModal({
               ) : (
                 "Enviar para Aprobación"
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

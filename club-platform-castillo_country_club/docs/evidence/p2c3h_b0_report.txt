@@ -1,0 +1,79 @@
+P2-C3h · B0 — composition root + registry + HITL
+  base: 00417eb P2-C3g: migrar frontend a tools MCP reales (#1 #2 #5 #6 #9 #10 #11 #16, D5, C16)
+  ⚠ árbol NO limpio (30 cambios previos) — git es el rollback
+
+── §1 Guardas previas ──
+  · TOOL_PERMISSION_MAP sin importers externos ✓
+
+── §2 Archivos nuevos ──
+  ✓ escrito backend/src/club_mcp/registry.py (287 líneas)
+  ✓ escrito backend/src/club_mcp/bootstrap.py (279 líneas)
+  ✓ escrito backend/scripts/smoke_b0.py (148 líneas)
+
+── §3 Reescrituras ──
+  ✓ escrito backend/src/club_mcp/api/app.py (122 líneas)
+  ✓ escrito backend/src/club_mcp/api/routes/agents.py (151 líneas)
+  ✓ escrito backend/src/club_mcp/server.py (36 líneas)
+  ✓ escrito backend/src/club_mcp/auth/rbac.py (233 líneas)
+
+── §4 Parches anclados ──
+  ✓ parche family_profile.__init__ aplicado a backend/src/club_mcp/agents/family_profile.py
+
+  ✓ parche approval_engine.__init__ + executores aplicado a backend/src/club_mcp/hitl/approval_engine.py
+  ✓ parche approval_engine.approve dispatch aplicado a backend/src/club_mcp/hitl/approval_engine.py
+
+── §5 Gates ──
+  · intérprete: uv run python
+  ✓ py_compile 8/8 archivos
+
+  · corriendo smoke_b0.py …
+    warning: `VIRTUAL_ENV=C:/Users/nipag/Documents/MCPClubesPrivados/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+    Traceback (most recent call last):
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\scripts\smoke_b0.py", line 144, in <module>
+        main()
+        ~~~~^^
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\scripts\smoke_b0.py", line 27, in main
+        rt = get_runtime()
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\bootstrap.py", line 277, in get_runtime
+        _RUNTIME = build_runtime()
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\bootstrap.py", line 165, in build_runtime
+        from club_mcp.config.club_registry import get_club_config
+    ModuleNotFoundError: No module named 'club_mcp.config.club_registry'
+  ✗ SMOKE exit=2 — pegar el bloque completo arriba en el chat
+
+── §6 git status (rollback = git checkout) ──
+M backend/src/club_mcp/agents/family_profile.py
+ M backend/src/club_mcp/api/app.py
+ M backend/src/club_mcp/api/routes/agents.py
+ M backend/src/club_mcp/auth/rbac.py
+D  backend/src/club_mcp/auth/tool_permissions.py
+ M backend/src/club_mcp/hitl/approval_engine.py
+ M backend/src/club_mcp/server.py
+ M backend/uv.lock
+?? backend/scripts/
+?? backend/src/club_mcp/bootstrap.py
+?? backend/src/club_mcp/registry.py
+?? p2c3h_b0d_report.txt
+?? p2c3h_b0p_report.txt
+?? p2c3h_b0q_report.txt
+?? p2c3h_b0w_report.txt
+?? p2c3h_backlog_report.txt
+?? p2c3h_evidence_report.txt
+?? p2c3h_registry2_report.txt
+?? p2c3h_registry_report.txt
+?? p2c3h_wiring_report.txt
+?? scripts/p2c3h_b0.ts
+?? scripts/p2c3h_b0.ts.bak_winpatch
+?? scripts/p2c3h_b0d.ts
+?? scripts/p2c3h_b0p.ts
+?? scripts/p2c3h_b0q.ts
+?? scripts/p2c3h_b0w.ts
+?? scripts/p2c3h_backlog.ts
+?? scripts/p2c3h_evidence.ts
+?? scripts/p2c3h_registry.ts
+?? scripts/p2c3h_registry2.ts
+?? scripts/p2c3h_wiring.ts
+
+══ B0 completo ─═
+  Siguiente (h7): pegar el tail de gates+smoke → si VERDE, B1 (4 migrables)
+  + B2 (15 cross-agent) estilo C3g, y limpieza de toolNameAdapter.

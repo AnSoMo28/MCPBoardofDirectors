@@ -1,0 +1,29 @@
+{
+  "ola": "2.1-octava",
+  "date": "2026-11-20",
+  "path": "NEXT-STEPS-2027 PATH 2.2 (octavo vertical: communication — announcements · emergencies · templates · scheduled · logs · preferences · personalized · campaigns · sentiment). De los 12 repos in-memory restantes (Q-PER-01), communication es el siguiente candidato limpio perfilado y verificado: async-FIRST (35/35 métodos ya async, el agente ya awaited en 38 call sites — drop-in como engagement §3.8-tris, guest §3.8-SEXTA y satisfaction §3.8-SEPTIMA, sin cirugía async), contrato limpio (el agente NO toca privados del repo — verificado por grep en los 38 call sites: 0 self.repo._*). El MAYOR vertical drop-in hasta la fecha: 9 dominios en un solo repo.",
+  "gate": "pytest write → restart runtime → read OK (aiosqlite local; pgvector real en CI) + contrato None/[]/dict sin excepciones custom",
+  "changes": [
+    "db/orm/communication_orm.py: 9 tablas (announcements · emergency_broadcasts · notification_templates · scheduled_notifications · notification_logs · communication_preferences · personalized_notifications · communication_campaigns · sentiment_data_points) — espejo 1:1 de models/communication; channels/recipient_ids/variables/params/metrics a JSONB (criterio families §3.8-bis); enums String(32) sin CHECK (reconstrucción Pydantic al leer)",
+    "db/orm/repositories/communication_repo.py: CommunicationRepository async — contrato EXACTO del in-memory (35 métodos · None/[]/dict sin excepciones custom · ids uuid4().hex[:8] SIN prefijo, igual que el in-memory; updates dict como record.update del in-memory — setattr por clave de columna, id intocable)",
+    "alembic 0008_communication (9 tablas · pk deterministas · sin ix: todos los reads cargan la tabla chica y filtran en Python como el in-memory — same contract)",
+    "bootstrap.py: swap OPT-IN extiende a communication_repo (junto a family + engagement + event + compliance + guest + satisfaction) — 8º repo migrado",
+    "CI: el paso persistence corre la suite communication (junto a auth + family + engagement + event + compliance + guest + satisfaction)",
+    "tests/unit/persistence/test_communication_persistence.py: 7 tests (write-restart-read announcement/emergency/template/scheduled con enums+JSONB roundtrip · update dict parcial + None-filter · logs filtros fecha/canal/tipo + sort desc + limit · preferences primer-match por member + defaults roundtrip · campaign metrics JSONB roundtrip + delete idempotente · sentiment ventana N días + canal + sort · contrato vacío sin excepciones)"
+  ],
+  "decision_arquitectura": {
+    "por_que_communication": "de los 12 restantes, el siguiente candidato limpio y el MAYOR drop-in: async-FIRST (35/35 async, el agente YA awaited en 38 call sites — 0 cirugía) y contrato limpio (0 privados del repo tocados por el agente, verificado por grep). 9 dicts planos CRUD sin compute pesado — cero riesgo de deriva aritmética (a diferencia de member_360/wellness/ml_intelligence: compute, olas aparte).",
+    "semantica_updates": "el in-memory hacía record.update(updates) sobre dicts planos; el ORM aplica setattr por clave de columna conocida (_UPDATABLE por entidad, id intocable) — las claves que no calzan con columnas se ignoran silenciosamente (el dict del in-memory las guardaba pero Pydantic las descartaba al reconstruir: mismo comportamiento observable del contrato)",
+    "por_que_sin_indice": "ninguna query del contrato filtra por SQL: todas cargan la tabla (chica) y filtran/sortean/paginan en Python EXACTO como el in-memory iteraba .values() — mismo orden de inserción, mismo contrato observable. Los ix de las verticales previas eran para queries que sí filtraban por FK en SQL",
+    "dates_como_text": "sent_at/created_at/scheduled_at/timestamp persisten ISO strings en Text (mismo formato del in-memory — create_log usaba datetime.now().isoformat()): el contrato del agente compara strings, no datetimes; el roundtrip es pérdida cero",
+    "proximos": "11 repos in-memory restantes (Q-PER-01 → 11): age_group (refactor de contrato ANTES — ~6 privados tocados), cultural_social (23m async/4 dicts — candidato limpio próximo), executive_dashboard (15m/5), proactive_recommendation (23m/6), document_intelligence (15m/2 + RAG lazy — ola aparte por dependencia), sports_recreation (33m async pero ~16 privados tocados — refactor primero), finance (17m sync — cirugía async como compliance), member_360/wellness/ml_intelligence (compute read-heavy — olas aparte)"
+  },
+  "cifras": {
+    "metodos": 35,
+    "tablas": 9,
+    "suite_persistence": "39 + 7 = 46 tests (3+6+6+6+6+6+6+7)",
+    "pytest": "885 + 7 = 892",
+    "q_per_01_repos": "12 → 11",
+    "contrato_agente": "38 call sites awaited · 0 privados tocados (grep verificado)"
+  }
+}

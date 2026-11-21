@@ -1,10 +1,11 @@
 /**
  * @component SourceChips (Fase 25)
  * @namespace .glass-knowledge__source*
- * @depends KnowledgeQuery.css
+ * @depends SourceChips.css
  * @note Source citation chips with inline expand for snippet.
- * @import import '../KnowledgeQuery.css';
+ * @import import './SourceChips.css';
  */
+import "./SourceChips.css";
 
 import { useState } from "react";
 import { FileText, BookOpen } from "lucide-react";
@@ -12,6 +13,7 @@ import {
   DOCUMENT_TYPE_CONFIG,
   type KnowledgeSource,
 } from "@/features/documents/types";
+import { Button } from "@/shared/components/ui/Button";
 
 interface SourceChipsProps {
   sources: KnowledgeSource[];
@@ -33,7 +35,8 @@ export function SourceChips({ sources }: SourceChipsProps) {
 
           return (
             <div key={source.document_id}>
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="glass-knowledge__source-chip"
                 onClick={() =>
@@ -48,7 +51,7 @@ export function SourceChips({ sources }: SourceChipsProps) {
                 <span className="glass-knowledge__source-chip-relevance">
                   {Math.round(source.relevance * 100)}%
                 </span>
-              </button>
+              </Button>
 
               {isExpanded && (
                 <div className="glass-knowledge__source-expand">

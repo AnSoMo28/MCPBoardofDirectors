@@ -1,0 +1,181 @@
+P2-C3g · g5-patch2 — des-bloqueo #2/#9 + cirugía de campo de los aplicados
+  filas: 2 renombres+adaptador · 2 campo · 6 auditorías · ledger · gates tsc por fila
+
+══ A. Fila #2 — campaigns ═══════════════════════════════════════════════
+  #2 REWRITE ✓ frontend/src/features/engagement/ReactivationCampaigns.tsx
+      engagement.list_reactivation_campaigns → member_engagement.design_reactivation_campaign {action:"list"}
+      lecturas de total reescritas: 0 · types.ts: total → total? (backend no lo envía)
+    ↻ gate tsc …
+    ✓ tsc OK — fila confirmada
+
+══ B. Fila #9 — trials ═════════════════════════════════════════════════
+  #9 DEMORADO — TrialListResponse aparece 3 veces (esperado 2: import + query):
+      ── frontend/src/features/guests/GuestList.tsx:24 ──
+           23 │ //     departed, by_facility(Array<{count}>) }             ← ./types (by usage) ✅
+           24 │ //   TrialListResponse { trials(TrialMembership[]), total,
+           25 │ //     conversion_rate, active_count }                     ← ./types (by usage) ✅
+           26 │ //   TrialMembership { id, guest_name, host_family_name,
+      ── frontend/src/features/guests/GuestList.tsx:63 ──
+           62 │   type GuestListResponse,
+           63 │   type TrialListResponse,
+           64 │   type GuestTodaySummary,
+           65 │   GUEST_STATUS_CONFIG,
+      ── frontend/src/features/guests/GuestList.tsx:148 ──
+          147 │ 
+
+══ C. Campo — WellnessFamilySelector (C16) ═════════════════════════════
+  ── bloque del componente (evidencia) ──
+      ── frontend/src/features/wellness/components/WellnessFamilySelector.tsx:28 ──
+           23 │ export function WellnessFamilySelector({ selectedId, onSelect }: Props) {
+           24 │   const [search, setSearch] = useState("");
+           25 │ 
+           26 │   const { data: familiesResp, isLoading } = useMCPQuery<FamilyListResponse>(
+           27 │     "family_profile",
+           28 │     "family_search",
+           29 │     { query: search || "", limit: 100 },
+           30 │     { staleTime: 60_000 },
+           31 │   );
+           32 │ 
+           33 │   const families = familiesResp?.families ?? [];
+           34 │   const filtered = search
+           35 │     ? families.filter((f) =>
+           36 │         f.familyName.toLowerCase().includes(search.toLowerCase()),
+           37 │       )
+           38 │     : families;
+           39 │ 
+           40 │   return (
+      hook: import { useMCPQuery } from "@/shared/hooks/useMCPQuery";
+      ⚠ NOTA: se lee familiesResp?.… — verificar si el wrapper devuelve UseQueryResult (¿falta .data?)
+  C16 DEMORADO — ítems de family_search sin confirmar como snake_case:
+      snake:✗ · camel-backend:✗ · alias:no
+      ── backend/src/club_mcp/db/repositories/family_repo.py:238 ──
+          238 │     async def search_families(self, params: FamilySearchParams) -> FamilyListResponse:
+          239 │         results: list[dict] = []
+          240 │ 
+          241 │         for record in self._families.values():
+          242 │             if params.tier and record["tier"] != params.tier:
+          243 │                 continue
+          244 │             if params.status and record["status"] != params.status:
+          245 │                 continue
+          246 │             if params.engagement_min is not None and record["engagement_score"] < params.engagement_min:
+          247 │                 continue
+          248 │             if params.engagement_max is not None and record["engagement_score"] > params.engagement_max:
+          249 │                 continue
+          250 │             if params.joined_after and record["join_date"] < params.joined_after:
+          251 │                 continue
+          252 │             if params.joined_before and record["join_date"] > params.joined_before:
+          253 │                 continue
+          254 │             if params.query:
+          255 │                 query_lower = params.query.lower()
+          256 │                 if query_lower not in record["name"].lower() and query_lower not in record["email"].lower():
+
+══ D. Campo — FacilityMap filtros (D5) ═════════════════════════════════
+      FacilityType → backend [pool, gym, tennis_court, squash_court, golf_course, restaurant, lounge, ballroom, garden, parking, playground, spa, kids_area] · frontend [?] → INCOMPATIBLE (filtro de tipo cae → C3h)
+      status → backend [operational, maintenance, closed, reserved, renovation] · frontend [?] → filtro client-side NO (C3h)
+  D5 REWRITE ✓ frontend/src/features/facilities/FacilityMap.tsx — params {action:"list"} + búsqueda client-side en useMemo
+    ↻ gate tsc …
+    ✓ tsc OK — fila confirmada
+
+══ E. Auditoría de campo — frontend ↔ backend ═══════════════════════════
+  config de alias camelCase en backend: no (pydantic snake_case por defecto)
+  ▸ HistoryItem ↔ ?
+      ✗ no extraíble — frontend:✓ · backend:✗
+  ▸ FacilityReservation (local ReservationCalendar) ↔ ?
+      ✗ no extraíble — frontend:✗ · backend:✗
+  ▸ Reservation (facilities/types) ↔ ?
+      ✗ no extraíble — frontend:✓ · backend:✗
+  ▸ Facility ↔ ?
+      ✗ no extraíble — frontend:✓ · backend:✗
+  ▸ TrialMembership (guests/types) ↔ ?
+      ✗ no extraíble — frontend:✓ · backend:✗
+  ▸ ReactivationCampaign ↔ ?
+      ✗ no extraíble — frontend:✓ · backend:✗
+  ▸ Family (families/types) ↔ FamilyListResponse
+      fe(14): id, familyName, status, tier, since, primaryContact, members, memberCount, totalBalance, engagementScore, churnRisk, lastActivity, address, notes
+      be(4): families, total, limit, offset
+      · solo-fe: id, familyName, status, tier, since, primaryContact, members, memberCount, totalBalance, engagementScore, churnRisk, lastActivity, address, notes · solo-be: families, total, limit, offset
+  ▸ usePreferencesForm — bloque history (evidencia post-g3):
+      ── frontend/src/features/communications/hooks/usePreferencesForm.ts:86 ──
+           83 │   // ── History query (for intelligence layer) ─────
+           84 │   const historyQ = useMCPQuery<{ history: HistoryItem[] }>(
+           85 │     "communication",
+           86 │     "get_notification_history",
+           87 │     { limit: 100 },
+           88 │     { enabled: !!searchedMember, staleTime: 60_000 },
+           89 │   );
+           90 │ 
+           91 │   // ── Create mutation ────────────────────────────
+           92 │   const createMut = useMCPMutation<CommunicationPreferencesResponse>(
+           93 │     "communication",
+           94 │     "manage_communication_preferences",
+
+══ F. Nueva deuda — pares (agente, tool) viejos en archivos tocados ═════
+  ✗ engagement.create_reactivation_campaign — tool:✗ no existe · agente:✓ (ReactivationCampaigns.tsx)
+        ? backend/src/club_mcp/models/executive_dashboard.py:40:     ENGAGEMENT = "engagement"
+        ? backend/src/club_mcp/models/member_360.py:59:     ENGAGEMENT = "engagement"
+  ✗ engagement.pause_campaign — tool:✗ no existe · agente:✓ (ReactivationCampaigns.tsx)
+        ? backend/src/club_mcp/models/executive_dashboard.py:40:     ENGAGEMENT = "engagement"
+        ? backend/src/club_mcp/models/member_360.py:59:     ENGAGEMENT = "engagement"
+  ✗ engagement.resume_campaign — tool:✗ no existe · agente:✓ (ReactivationCampaigns.tsx)
+        ? backend/src/club_mcp/models/executive_dashboard.py:40:     ENGAGEMENT = "engagement"
+        ? backend/src/club_mcp/models/member_360.py:59:     ENGAGEMENT = "engagement"
+  ✗ engagement.cancel_campaign — tool:✗ no existe · agente:✓ (ReactivationCampaigns.tsx)
+        ? backend/src/club_mcp/models/executive_dashboard.py:40:     ENGAGEMENT = "engagement"
+        ? backend/src/club_mcp/models/member_360.py:59:     ENGAGEMENT = "engagement"
+  ✗ guests.get_today_guests — tool:✗ no existe · agente:✓ (GuestList.tsx)
+        ? backend/src/club_mcp/db/repositories/guest_management_repo.py:601:                 entry = priv_counts.setdefault(p, {"usage_count": 0, "guests": set()})
+        ? backend/src/club_mcp/db/repositories/guest_management_repo.py:603:                 entry["guests"].add(g["id"])
+  ✗ guests.get_today_summary — tool:✗ no existe · agente:✓ (GuestList.tsx)
+        ? backend/src/club_mcp/db/repositories/guest_management_repo.py:601:                 entry = priv_counts.setdefault(p, {"usage_count": 0, "guests": set()})
+        ? backend/src/club_mcp/db/repositories/guest_management_repo.py:603:                 entry["guests"].add(g["id"])
+  ✗ guests.list_trial_memberships — tool:✗ no existe · agente:✓ (GuestList.tsx)
+        ? backend/src/club_mcp/db/repositories/guest_management_repo.py:601:                 entry = priv_counts.setdefault(p, {"usage_count": 0, "guests": set()})
+        ? backend/src/club_mcp/db/repositories/guest_management_repo.py:603:                 entry["guests"].add(g["id"])
+  ✗ guests.checkout_guest — tool:✗ no existe · agente:✓ (GuestList.tsx)
+        ? backend/src/club_mcp/db/repositories/guest_management_repo.py:601:                 entry = priv_counts.setdefault(p, {"usage_count": 0, "guests": set()})
+        ? backend/src/club_mcp/db/repositories/guest_management_repo.py:603:                 entry["guests"].add(g["id"])
+  ✗ guests.register_guest_checkin — tool:✗ no existe · agente:✓ (GuestRegistration.tsx)
+        ? backend/src/club_mcp/db/repositories/guest_management_repo.py:601:                 entry = priv_counts.setdefault(p, {"usage_count": 0, "guests": set()})
+        ? backend/src/club_mcp/db/repositories/guest_management_repo.py:603:                 entry["guests"].add(g["id"])
+
+══ G. HITL — ¿action="list" pasa el gate? (evidencia) ══════════════════
+      backend/src/club_mcp/server.py:18: from club_mcp.hitl.approval_engine import ApprovalEngine
+      backend/src/club_mcp/server.py:84:     approval_engine = ApprovalEngine()
+      backend/src/club_mcp/server.py:110:         FamilyProfileAgent(family_repo, approval_engine, notifier),
+      backend/src/club_mcp/server.py:111:         EventOrchestratorAgent(event_repo, approval_engine, notifier, club_config),
+      backend/src/club_mcp/server.py:112:         AgeGroupAgent(age_group_repo, approval_engine, notifier),
+      backend/src/club_mcp/server.py:115:             approval_engine,
+      backend/src/club_mcp/server.py:119:         WellnessAgent(wellness_repo, approval_engine, notifier),
+      backend/src/club_mcp/server.py:120:         ComplianceAgent(compliance_repo, approval_engine, notifier),
+      backend/src/club_mcp/server.py:121:         SportsRecreationAgent(sports_recreation_repo, approval_engine, notifier),                         
+      backend/src/club_mcp/server.py:122:         CulturalSocialAgent(cultural_social_repo, approval_engine, notifier),
+      backend/src/club_mcp/server.py:123:         CommunicationAgent(communication_repo, approval_engine, notifier),
+      backend/src/club_mcp/server.py:124:         FacilityManagementAgent(facility_management_repo, approval_engine, notifier),
+      backend/src/club_mcp/server.py:125:         MemberEngagementAgent(member_engagement_repo, approval_engine, notifier),        
+      backend/src/club_mcp/server.py:126:         GuestManagementAgent(guest_management_repo, approval_engine, notifier),
+
+══ H. Cirugía del ledger VI14_EQUIVALENCES ══════════════════════════════
+  ✂ list_reactivation_campaigns — línea 105 eliminada: "engagement.list_reactivation_campaigns": ["design_reactivation_campaign"],
+  · list_trial_memberships: fila no aplicada — la entrada queda
+
+══ I. End-state ════════════════════════════════════════════════════════
+  #2 APLICADO · #9 DEMORADO · C16 DEMORADO · D5 APLICADO
+  equivalente:  17 → 16   (1 resueltas por renombre+adaptador)
+  toolBackend:  169    (sin cambio — este parche no agrega tools)
+  missingBoth:  3      (sin cambio)
+  colaC3h:      4 + 0 nuevas por mismatch de campo:
+  deuda backend: 6 filas (#3 #4 #8 #14 #15 #17) + las nuevas de la sección F
+  dev-mock:     sin cambio (añadir fábricas sigue siendo opcional)
+  resumen corrida: aplicados 2 · ya presentes 0 · demorados 2 · revertidos/saltados 0
+  git diff --stat:
+     .../communications/hooks/usePreferencesForm.ts         |  4 ++--
+     .../src/features/engagement/ReactivationCampaigns.tsx  |  6 +++---
+     .../frontend/src/features/engagement/types.ts          |  2 +-
+     .../frontend/src/features/facilities/FacilityMap.tsx   | 18 ++++++++++++------
+     .../facilities/components/ReservationCalendar.tsx      |  6 +++---
+     .../frontend/src/features/guests/GuestRegistration.tsx | 10 +++++-----
+     .../wellness/components/WellnessFamilySelector.tsx     |  6 +++---
+     .../scripts/p2c3e_vi14_patch.ts                        |  2 --
+     8 files changed, 29 insertions(+), 25 deletions(-)
+
+✓ reporte: p2c3g_patch2_report.txt

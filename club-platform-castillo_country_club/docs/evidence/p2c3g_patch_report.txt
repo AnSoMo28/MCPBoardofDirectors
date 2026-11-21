@@ -1,0 +1,41 @@
+P2-C3g · g3-patch — renombres verificados + cirugía del ledger
+  filas: 18 · REWRITE 8 · C3H 4 · DEUDA 6
+
+══ A. Filas — renombres con preflight ══════════════════════════════════════
+  # 1 REWRITE ✓  frontend/src/features/communications/hooks/usePreferencesForm.ts — "communication","get_communication_history" → "communication","get_notification_history" · firma sin member_id → params reducidos a { limit: 100 }
+  # 2 DEMORADO engagement.list_reactivation_campaigns — preflight: CampaignListResponse sin clave "campaigns"
+  # 3 DEUDA    engagement.get_survey_results — analyze_event_satisfaction agrega por EVENTO ≠ resultados por encuesta (question_summaries, nps)
+  # 4 DEUDA    engagement.get_active_survey — get_survey_for_event devuelve respuestas enviadas ≠ plantilla con preguntas que el form necesita
+  # 5 REWRITE ✓  frontend/src/features/facilities/FacilityMap.tsx — "facilities","get_utilization" → "facility_management","get_amenity_utilization"
+  # 6 REWRITE ✓  frontend/src/features/facilities/components/ReservationCalendar.tsx — "facilities","list_reservations" → "facility_management","get_facility_reservations"
+  # 7 C3H      finance.get_family_account ≡ finance.finance_account_status — finance_account_status da saldo/overdue sin aging ni monthly_dues — adaptador de consumidor
+  # 8 DEUDA    finance.get_invoices — finance_invoice_create es ESCRITURA con HITL — no existe tool de listado de facturas
+  # 9 DEMORADO guests.list_trial_memberships — preflight: TrialListResponse sin clave "trial_memberships"
+  #10 REWRITE ✓  frontend/src/features/guests/GuestRegistration.tsx — "families","search_families" → "family_profile","family_search"
+  #11 REWRITE ✓  frontend/src/features/guests/GuestRegistration.tsx — "facilities","list_available_facilities" → "facility_management","manage_facilities"
+  #12 C3H      families.get_family ≡ family_profile.family_get_profile — family_get_profile existe (AUTO) pero shape de retorno sin capturar y consumer camelCase — adaptador
+  #13 C3H      facilities.get_reservations ≡ facility_management.get_facility_reservations — get_facility_reservations no filtra por family_id — filtrar client-side en el hook
+  #14 DEUDA    reports.get_board_report — generate_quarterly_board_report es HITL: devuelve request de aprobación, no el reporte
+  #15 DEUDA    reports.get_risk_matrix — no existe tool de matriz de riesgo; get_member_risk_assessment es por member_id
+  #16 REWRITE ✓  frontend/src/features/wellness/components/WellnessFamilySelector.tsx — "families","list_families" → "family_profile","family_search"
+  #17 DEUDA    finance.narrative_generate — generate_insight_narrative exige insight_data (dict) — el hook no tiene insight que transformar
+  #18 C3H      finance.scenario_simulate ≡ advisor_intelligence.simulate_scenario — simulate_scenario exige base_data+proposed_changes — sourcearlos antes (adaptador de consumidor)
+
+══ B. Cirugía del ledger VI14_EQUIVALENCES ═════════════════════════════════
+  ledger: scripts/p2c3e_vi14_patch.ts
+  removidas 1 entradas (0 falsas equivalencias + 1 resueltas por renombre):
+    ✂ families.search_families
+  actualizadas 0 (#1 no aplicado → real corregido a get_notification_history)
+  marcadas 0/4 con // P2-C3h (cola de adaptación)
+
+══ C. End-state tras esta corrida ══════════════════════════════════════════
+  equivalente:  18 → 17   (1 removidas; las 4 C3H siguen como equivalencia)
+  toolBackend:  169      (sin cambio — este parche no agrega tools)
+  missingBoth:  3 → 3    (0 falsas equivalencias pasan a deuda)
+  colaC3h:      4 filas  (#7 #12 #13 #18 — adaptadores de consumidor)
+  destino:      C3h adapta los 4 consumidores → equivalente llega a 0
+  dev-mock:     ninguna de las 18 tiene fábrica bajo viejo ni real
+               (evidencia B) — ya rotas en dev-mock; este parche corrige
+               la ruta backend real. Agregar fábricas es opcional.
+
+  resumen corrida: aplicados 6 · ya presentes 0 · demorados 2 · saltados 0

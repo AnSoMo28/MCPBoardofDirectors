@@ -9,6 +9,7 @@ import { cn } from "@/shared/lib/utils";
 import type { WellnessInsights, WellnessMode } from "../types";
 import { WELLNESS_LEVEL_CONFIG } from "../types";
 import "./WellnessExecutiveBrief.css";
+import { Button } from "@/shared/components/ui/Button";
 
 interface Props {
   insights: WellnessInsights | null;
@@ -116,14 +117,15 @@ export function WellnessExecutiveBrief({
       {/* ── Key Findings (expandable) ── */}
       {keyFindings.length > 0 && (
         <>
-          <button
+          <Button
+            variant="unstyled"
             className="wb__toggle"
             onClick={() => setExpanded(!expanded)}
             type="button"
           >
             {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
             {expanded ? "Menos" : `${keyFindings.length} hallazgos`}
-          </button>
+          </Button>
           {expanded && (
             <div className="wb__findings">
               {keyFindings.map((kf, i) => (

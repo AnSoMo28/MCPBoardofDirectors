@@ -1,0 +1,451 @@
+# CI — Castillo AI Platform · G12.1 (Q-CI-01 → CERRADO DE VERDAD)
+#
+# CORRECCIÓN RAÍZ (0004): este workflow vivió ANIDADO en
+# club-platform-castillo_country_club/.github/workflows/ desde G10 —
+# GitHub Actions SOLO descubre workflows en .github/workflows/ de la
+# RAÍZ del repo → 0 corridas en toda la historia (push a165339 nunca
+# disparó nada). Movido a raíz; los masters ya documentaban
+# `.github/workflows/ci.yml` (BASE:236/CP:268/CL:228) — el árbol es
+# el que estaba desincronizado, no la documentación.
+#
+# DETERMINISMO (0004): ratchets corren las versiones del uv.lock
+# (mypy 2.1.0 · ruff 0.15.12 vía `uv run`) — nunca `uvx`/pip-latest.
+# El baseline 1288/735 fue medido con latest-del-día; el lock da
+# 1292/737 → re-baseline honesto (delta G12 = 0 en ambos).
+#
+# Q-CI-03 (run #3 · 741e0a4 — 2 rojos, 2 verdes): frontend y
+# consistency VERDES; las anotaciones de deuda (vitest/eslint) son
+# informativas — el ratchet aguantó. Los rojos eran del PROPIO
+# workflow, no del código:
+#   (a) ci-summary heredaba defaults.run.working-directory del nivel
+#       workflow pero NO hace checkout → bash ni siquiera arranca
+#       ("No such file or directory"). Defaults bajados a nivel job,
+#       solo donde se usan; ci-summary corre en la raíz del workspace.
+#   (b) `uv pip install -e .` nunca fue validado en sandbox y es
+#       redundante con `uv sync` (que ya instala el proyecto editable
+#       cuando está empaquetado) — paso eliminado. uv sync ahora
+#       --frozen: si el lock falta o desincroniza, CI lo dice en el
+#       paso exacto en vez de fallar difuso más adelante.
+#
+# Estrategia HONESTA (lección del P0 0002: un gate verde no prueba nada
+# del artefacto; un CI rojo por deuda vieja prueba que nadie lo mira):
+#
+#   1. GATES DUROS (bloquean el merge — hoy están VERDES):
+#      build + verify:build-css (OUTPUT real del bundle) · VI ·
+#      consistency (masters↔manifest↔árbol) · pytest 818 · smoke B0.
+#
+#   2. RATCHET DE DEUDA (bloquean si SUBEN; ideally bajan):
+#      La deuda pre-G10 está medida y congelada en backend/docs/evidence/
+#      ci-baseline.json: vitest 0 fails (G15: 6→0, deuda #G10-1 cerrada)
+#      · guardian 15146 err · eslint
+#      1583 err · ruff 1292 · mypy 737. Un PR que sube cualquiera de
+#      esas cifras NO pasa. Bajarlas es siempre bienvenido (y actualiza
+#      el baseline con --fix-baseline en el mismo PR).
+#
+#      Q-CI-05 (run #7 · forense del log): DOS ratchets estaban
+#      CIEGOS y uno era no-op — el verde del run #7 los enmascaró:
+#      (a) guardian: el patrón matcheaba 2 líneas (header + summary)
+#          → ERRS multilinea → "[ integer expected" (exit 2) → el if
+#          lo trató como falso → NUNCA bloqueó (no-op desde G10).
+#      (b) vitest: ANSI + \r intra-línea en el runner → grep binario
+#          → "|| echo 0" → fails=0 SIEMPRE (run #7 reportó 0 con 6).
+#      (c) diseño: "|| echo 0" convierte CUALQUIER extracción fallida
+#          en verde garantizado. Fix: strip ANSI/\r + patrón anclado
+#          al summary + head -1 + extracción OBLIGATORIA (sin número
+#          no hay verde). Mordida probada en sandbox (baseline fingido
+#          < real → exit 1).
+#
+#   3. TODO corre en PR + push a audit/**; el master del repo de
+#      trabajo es audit/p2c3 (dual-track documentado en CHECKPOINT §3.6).
+#
+# Corrida de referencia (sandbox G10, 2026-11-11): frontend ~4 min
+# (build 18.3s + vitest 90s) · backend ~4 min (uv sync 90s + pytest 13s
+# + smoke 8s) — dentro del budget gratis de GitHub Actions.
+
+name: CI
+
+on:
+  push:
+    branches: [audit/**]
+  pull_request:
+    branches: [audit/**, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ════════════════════════════════════════════════════════════════
+  # JOB 1 — CONSISTENCY (el slice del AI Guardian, DECISION-0006 §5)
+  # Sin deps de node ni python: corre en 2 segundos.
+  # ════════════════════════════════════════════════════════════════
+  consistency:
+    name: masters ↔ manifest ↔ árbol (MC-01..09 · IG-01..04)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: club-platform-castillo_country_club
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: verify-master-consistency
+        run: python scripts/verify-master-consistency.py
+
+  # ════════════════════════════════════════════════════════════════
+  # JOB 2 — FRONTEND (gates duros + ratchet de deuda)
+  # ════════════════════════════════════════════════════════════════
+  frontend:
+    name: frontend (build · css · VI · vitest · guardian · lint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: club-platform-castillo_country_club/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: club-platform-castillo_country_club/frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+
+      # GATE DURO 1 — type-check + build (tsc -b && vite build)
+      - name: "build (tsc -b && vite build)"
+        run: pnpm run build
+
+      # GATE DURO 2 — sonda del OUTPUT: el gate que cazó el P0 0002
+      - name: verify-build-css (post-build bundle probe)
+        run: pnpm run verify:build-css
+
+      # GATE DURO 3 — integración (8 checks VI v3.3.0)
+      - name: verify-integration
+        run: pnpm run verify:integration
+
+      # RATCHET - vitest: G15 cerró la deuda #G10-1 — los 6 tests stale
+      # (features guests/lib desincronizadas pre-e15068e) actualizados a
+      # la realidad del src: 470/470. Baseline 6→0 mismo-PR. check3 e2e
+      # con timeout 30000 (npx tsx en frío bajo 8 workers).
+      # Q-CI-05: vitest escribe ANSI + \r intra-línea en el runner →
+      # grep binario → "|| echo 0" → fails=0 SIEMPRE (run #7: 6 reales
+      # reportados como 0). Strip ANSI/\r + extracción OBLIGATORIA.
+      # G15.1 (run #9 · 1137dce): 470/470 PASÓ y aún así exit 1 — con 0
+      # fails vitest omite la palabra "failed" del summary ("Tests 470
+      # passed (470)") → el regex viejo 'Tests +N failed' no matcheaba →
+      # "no pude extraer" → rojo por ÉXITO. Fix: parsear el summary como
+      # par fails/total (3 estados: número, 0 si solo "passed", rojo si
+      # no hay summary). NUEVO ratchet de total (≥ 470): sin él, borrar
+      # tests bajaría fails a 0 y el ratchet de deuda aplaudiría — el
+      # CI perdió 464 tests así en la era pre-Q-CI-05 (818→27→470).
+      - name: vitest ratchet (fails <= baseline AND total >= floor)
+        run: |
+          set +e
+          pnpm run test 2>&1 | tee /tmp/vitest.log
+          CLEAN=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/vitest.log | tr -d '\r')
+          # fails: "7 failed | 463 passed" → 7 · "470 passed" (sin failed) → 0
+          R=$(echo "$CLEAN" | grep -aoE 'Tests +[0-9]+ failed' | grep -oE '[0-9]+' | head -1)
+          [ -z "$R" ] && R=0
+          # total: siempre presente entre paréntesis del summary "Tests … (470)"
+          T=$(echo "$CLEAN" | grep -aoE 'Tests +([0-9]+ )?(failed \| )?[0-9]+ passed +\([0-9]+\)' | grep -oE '\([0-9]+\)' | tr -d '()' | head -1)
+          if [ -z "$T" ]; then echo "::error::vitest: no pude extraer el total del summary — ratchet CIEGO prohibido"; exit 1; fi
+          BASE=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['vitest_fails'])")
+          FLOOR=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['vitest_total_floor'])")
+          echo "fails=$R baseline=$BASE · total=$T floor=$FLOOR"
+          if [ "$R" -gt "$BASE" ]; then
+            echo "::error::vitest debt subió ($R > $BASE) - fix los tests nuevos o actualiza baseline con justificación"
+            exit 1
+          fi
+          if [ "$T" -lt "$FLOOR" ]; then
+            echo "::error::suite ENCOCIÓ en silencio: total=$T < floor=$FLOOR (borrar tests baja fails sin bajar deuda — prohíbelo o re-baselinea con justificación)"
+            exit 1
+          fi
+
+      # RATCHET - guardian: 15146 err congelados (muro M-01, FASE 2 sin
+      # migrar; score 8.2 vs threshold 9.3 = deuda conocida §15).
+      # Q-CI-05: extracción robusta — el patrón viejo matcheaba DOS
+      # líneas (header "files: N · errors: N" + summary) → ERRS
+      # multilinea → "[ integer expected" (exit 2) → if falso →
+      # NUNCA bloqueó (ratchet no-op desde G10). Anclamos ^errors: del
+      # summary, strip ANSI/\r, head -1 y extracción obligatoria.
+      - name: guardian ratchet (errors <= baseline)
+        run: |
+          set +e
+          pnpm run guardian 2>&1 | tee /tmp/guardian.log
+          R=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/guardian.log | tr -d '\r' | grep -aoE '^[[:space:]]+errors: +[0-9]+' | grep -oE '[0-9]+' | head -1)
+          if [ -z "$R" ]; then echo "::error::guardian: no pude extraer errors del log — ratchet CIEGO prohibido"; exit 1; fi
+          BASE=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['guardian_errors'])")
+          echo "guardian errors=$R baseline=$BASE"
+          if [ "$R" -gt "$BASE" ]; then
+            echo "::error::guardian debt subió ($R > $BASE) - las X-series no pueden empeorar"
+            exit 1
+          fi
+
+      # RATCHET - eslint: 1583 err congelados. Q-CI-05: mismo helper —
+      # el patrón viejo extraía el número de PROBLEMS si el de errors
+      # se movía de lugar; anclamos "\(N errors" del resumen final.
+      - name: lint ratchet (errors <= baseline)
+        run: |
+          set +e
+          pnpm run lint 2>&1 | tee /tmp/eslint.log
+          R=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/eslint.log | tr -d '\r' | grep -aoE '\([0-9]+ errors' | grep -oE '[0-9]+' | head -1)
+          if [ -z "$R" ]; then echo "::error::eslint: no pude extraer errors del log — ratchet CIEGO prohibido"; exit 1; fi
+          BASE=$(python3 -c "import json;print(json.load(open('../backend/docs/evidence/ci-baseline.json'))['eslint_errors'])")
+          echo "eslint errors=$R baseline=$BASE"
+          if [ "$R" -gt "$BASE" ]; then
+            echo "::error::eslint debt subió ($R > $BASE)"
+            exit 1
+          fi
+
+      - name: upload dist artifact (evidencia del OUTPUT)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: club-platform-castillo_country_club/frontend/dist/
+          retention-days: 7
+
+  # ════════════════════════════════════════════════════════════════
+  # JOB 2.5 — SECURITY (Ola 1.3 · GATE DURO)
+  # secret-audit: 0 literales de secreto en src/ fuera de allowlist.
+  # El gate es de ARTEFACTO: recorre el árbol compilado-que-va-a-prod
+  # y busca los patrones; una línea nueva con password="..." sin
+  # allowlist = ROJO. Mordida probada (secreto plantado → cazado).
+  # ════════════════════════════════════════════════════════════════
+  security:
+    name: secret-audit (0 literales en src/)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: club-platform-castillo_country_club/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: secret-audit (allowlist viva)
+        run: python scripts/secret_audit.py
+
+  # ════════════════════════════════════════════════════════════════
+  # JOB 3 — BACKEND (gates duros + ratchet)
+  # ════════════════════════════════════════════════════════════════
+  backend:
+    name: backend (pytest 846 · persistence · smoke B0 · ruff · mypy)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: club-platform-castillo_country_club/backend
+    # Ola 2.1 — el gate del PATH (write → restart → read) corre contra
+    # Postgres REAL (pgvector/pg16, el mismo del docker-compose) — no
+    # TestClient: la lección verify-build-css aplicada a persistencia.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: club_db
+          POSTGRES_USER: club_user
+          POSTGRES_PASSWORD: club_pass
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U club_user -d club_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      CLUB_PERSISTENCE_URL: postgresql+asyncpg://club_user:club_pass@localhost:5432/club_db
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        run: pipx install uv
+      - name: Setup Python 3.12
+        run: uv python install 3.12
+
+      # GATE DURO 4 — la suite completa (818 base + 9 G12 = 827).
+      # uv sync YA instala el proyecto (editable): `uv pip install -e .`
+      # era redundante, nunca se validó en sandbox y muere en proyectos
+      # virtuales (Q-CI-03 (b)). --frozen = lock commiteado tal cual; si
+      # falta o desincronizó, CI lo dice EN ESTE PASO, no difuso después.
+      - name: uv sync --frozen (lock exacto, extra dev)
+        run: uv sync --frozen --extra dev
+      # Q-CI-04 (run #4 · 41695fa): 827/827 PASÓ y aún así exit 1 —
+      # pytest 9 (unraisableexception) promueve a error de sesión 3
+      # ResourceWarnings de teardown Linux-only: 2 sockets AF_UNIX
+      # (fd=12/13) + 1 event loop sin cerrar, de transports de tests.
+      # Windows no tiene AF_UNIX → por eso gates locales verdes y CI
+      # rojo. 827-passed sigue siendo el signal; la higiene de cierre
+      # queda registrada como deuda cosmética (no afecta el artefacto).
+      - name: pytest 846 (suite completa + persistencia)
+        run: uv run pytest tests/unit -q -p no:unraisableexception
+
+      # GATE DURO 4b (Ola 2.1) — PATH 2.1: write → restart → read OK
+      # contra el postgres REAL del service container (el sandbox ya
+      # lo probó en verde sobre aiosqlite; acá es contra pgvector).
+      # Ola 2.1-bis: la suite incluye el vertical family (6 tests:
+      # write-restart-read · FK members · contrato de errores · seed
+      # idempotente compartido · JSONB roundtrip) junto a la auth.
+      # Ola 2.1-tris: + vertical engagement (6 tests: write-restart-read
+      # de 5 entidades · updates con enums · filtros list_* · contrato
+      # None/[] · agente con repo ORM inyectado).
+      # Ola 2.2: + vertical event (6 tests: write-restart-read del
+      # agregado completo · auto-waitlist por cupo · enums roundtrip ·
+      # CASCADE al borrar · search/calendar/analytics/report/conflicts ·
+      # contrato None/[]/False).
+      # Ola 2.1-quinqua: + vertical compliance (6 tests: write-restart-read
+      # audit/document · update None-filter + list filters DESC ·
+      # add_check recalcula score_pct · alert lifecycle resolve ·
+      # generate_report lee las 3 tablas).
+      # Ola 2.1-sexta: + vertical guest (6 tests: write-restart-read
+      # guest/event/trial · update_* con enums · filtros list_* ·
+      # analytics dict · funnel 5 etapas + health 5 factores +
+      # forecast con snapshots de tabla · propuestas P1-P5).
+      # Ola 2.1-septima: + vertical satisfaction (6 tests: write-restart-read
+      # survey/report con questions roundtrip · trends filtro N meses +
+      # ventana 3 · health 5 factores + intelligence 10 categorías + NPS ·
+      # benchmarks _BENCHMARKS CR · propuestas P1-P5 con metadata de tabla).
+      # Ola 2.1-octava: + vertical communication (7 tests: write-restart-read
+      # announcement/emergency/template/scheduled · update dict parcial ·
+      # logs filtros fecha/canal/tipo + sort + limit · preferences
+      # primer-match por member · campaign metrics JSONB + delete ·
+      # sentiment ventana N días + canal · contrato vacío None/[]).
+      # Ola 2.1-nona: + vertical cultural_social (4 tests: write-restart-read
+      # event/act/program/exhibition con enums+JSONB roundtrip · update dict
+      # parcial + cancel · filtros list_* enum+fecha · analytics compute-on-
+      # read (status_counts · upcoming ventana 30d · budget_by_category ·
+      # venue_utilization · entertainment_costs · seasonal enrollment) ·
+      # contrato vacío None/[]/{} + ValueError literal).
+      # Ola 2.1-décima: + vertical executive_dashboard (4 tests: write-restart-
+      # read summary/anomaly/report/export con KPIs JSONB roundtrip ·
+      # overwrite por id (anomalías duplicables) y por período (risk matrix
+      # keying del in-memory) · update dict parcial + updated_at · contados
+      # risk compute-on-read · clear count antes de DELETE · contrato vacío
+      # None/[]).
+      # Ola 2.1-undécima: + vertical proactive_recommendation (4 tests:
+      # write-restart-read recommendation/prediction con tags/factors
+      # JSONB · suggestion/conflict/draft/cluster/pricing/insights con
+      # enums roundtrip + personalization_data/top_activities JSONB ·
+      # update dict parcial + clave desconocida ignorada · sort por
+      # score · filtros por igualdad · size derivado · status "proposed"
+      # literal · contrato vacío None/[]).
+      # Ola 2.1-duodécima: + vertical facility_management (4 tests:
+      # write-restart-read facility/maintenance/setup/inspection con
+      # enums roundtrip + amenities/requirements/corrective_actions
+      # JSONB · reservation CONFIRMED literal + conflict overlap ·
+      # filtros list_* + sort (date,start_time) · update dict parcial
+      # + clave desconocida ignorada · analytics compute-on-read
+      # (health 5 factores · utilization · 9 dimensiones) · contrato
+      # vacío None/[]).
+      # Ola 2.1-decimatercera: + vertical age_group (4 tests:
+      # write-restart-read activities JSONB lists + enums roundtrip +
+      # update dict None-ignora + delete cascada enrollments ·
+      # contract surface distribution/enrollment/snapshots con
+      # censo+snapshots sembrados (dato de primera clase H-3) ·
+      # participation/recommendations sort DESC/trends 0.85 ·
+      # intelligence compute-on-read health 5 factores + forecast
+      # + proposals R1-R5).
+      # Ola 2.1-decimocuarta: + vertical sports_recreation (4 tests:
+      # write-restart-read reservations/tournaments/classes con
+      # JSONB lists (prizes/equipment_needed/focus_areas/teams/
+      # standings) + enums roundtrip + status/is_active literales
+      # del create · update dict parcial + clave desconocida
+      # ignorada · filtros list_* · analytics compute-on-read F32
+      # (popularity ranks · court utilization · enrollment fill ·
+      # tournament metrics · equipment lifecycle · coaching
+      # effectiveness · seasonal patterns · member profile) ·
+      # contrato vacío None/[]).
+      - name: persistence (write → restart → read OK · auth + family + engagement + event + compliance + guest + satisfaction + communication + cultural_social + executive_dashboard + proactive_recommendation + facility_management + age_group + sports_recreation)
+        run: uv run pytest tests/unit/persistence -q -p no:unraisableexception
+
+      # GATE DURO 5 — el gate ejecutable B0 (19 agentes · 207 tools · RBAC)
+      - name: smoke_b0 (composicion+registro+RBAC+HITL+HTTP)
+        run: uv run python scripts/smoke_b0.py
+
+      # GATE DURO 6 — Ola 1.1 (Q-SEC-01/02): production sin secretos
+      # RECHAZA arrancar. Este paso es el gate de ARTEFACTO del
+      # fail-fast: existe el validator Y el CI lo demuestra por
+      # ejecución — sin env, Settings(production) debe tronar.
+      - name: fail-fast gate (prod sin secretos rechaza)
+        run: |
+          uv run python - <<'EOF'
+          from club_mcp.config.settings import Settings
+          try:
+              Settings(club_env="production")
+          except ValueError as exc:
+              print(f"FAIL-FAST OK: {exc}")
+          else:
+              raise SystemExit(
+                  "::error::production arrancó sin JWT_SECRET_KEY — "
+                  "el validator Q-SEC-01 dejó de morder"
+              )
+          # y con secreto real arranca:
+          ok = Settings(club_env="production", jwt_secret_key="ci-" + "k"*40)
+          print(f"prod con secreto real: OK ({ok.club_env})")
+          EOF
+
+      # RATCHET — ruff: 1292 err congelados bajo lock 0.15.12 (892 autofixables:
+      # UP045/UP017/F401). 1288 era deriva de uvx-latest 0.17.4 (C401/SIM105).
+      # Q-CI-05: mismo helper para TODOS los ratchets — extracción
+      # obligatoria (sin "|| echo 0": una cifra que no se puede leer
+      # es un ratchet CIEGO, no un ratchet verde).
+      - name: ruff ratchet (errors <= baseline)
+        run: |
+          set +e
+          uv run ruff check src tests 2>&1 | tee /tmp/ruff.log
+          R=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/ruff.log | tr -d '\r' | grep -aoE 'Found [0-9]+ errors' | grep -oE '[0-9]+' | head -1)
+          if [ -z "$R" ]; then echo "::error::ruff: no pude extraer errors del log — ratchet CIEGO prohibido"; exit 1; fi
+          BASE=$(python3 -c "import json;print(json.load(open('docs/evidence/ci-baseline.json'))['ruff_errors'])")
+          echo "ruff errors=$R baseline=$BASE"
+          if [ "$R" -gt "$BASE" ]; then
+            echo "::error::ruff debt subió ($R > $BASE) — 892 son autofixables: ruff check --fix baja el piso"
+            exit 1
+          fi
+
+      # RATCHET — mypy strict: 735 err bajo lock (G16: la atribución
+      # G12.1 estaba invertida — 735 es la cifra ESTABLE del lock en
+      # 4 commits; 828 es la deriva de uvx-latest 2.4.1; el 737 era
+      # medición local con venv de máquina, nunca reproducible aquí).
+      # Q-CI-05: mismo helper (ver arriba) — mypy sano pero mismo
+      # contrato: extracción obligatoria o rojo.
+      - name: mypy strict ratchet (errors <= baseline)
+        run: |
+          set +e
+          uv run mypy src/club_mcp 2>&1 | tee /tmp/mypy.log
+          R=$(sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/mypy.log | tr -d '\r' | grep -aoE 'Found [0-9]+ errors' | grep -oE '[0-9]+' | head -1)
+          if [ -z "$R" ]; then echo "::error::mypy: no pude extraer errors del log — ratchet CIEGO prohibido"; exit 1; fi
+          BASE=$(python3 -c "import json;print(json.load(open('docs/evidence/ci-baseline.json'))['mypy_errors'])")
+          echo "mypy errors=$R baseline=$BASE"
+          if [ "$R" -gt "$BASE" ]; then
+            echo "::error::mypy debt subió ($R > $BASE)"
+            exit 1
+          fi
+
+  # ════════════════════════════════════════════════════════════════
+  # JOB 4 — RESUMEN (falla el PR si cualquier gate duro o ratchet rompió)
+  # ════════════════════════════════════════════════════════════════
+  ci-summary:
+    name: CI verdict (gates duros + ratchets)
+    needs: [consistency, frontend, security, backend]
+    runs-on: ubuntu-latest
+    if: always()
+    timeout-minutes: 30
+    # SIN defaults y SIN checkout a propósito: solo lee needs.*.result.
+    # (Q-CI-03 (a): heredar el working-directory del nivel workflow sin
+    # checkout hacía que bash no pudiera ni arrancar.)
+    steps:
+      - name: verdict
+        run: |
+          echo "consistency: ${{ needs.consistency.result }}"
+          echo "frontend:    ${{ needs.frontend.result }}"
+          echo "security:    ${{ needs.security.result }}"
+          echo "backend:     ${{ needs.backend.result }}"
+          if [ "${{ needs.consistency.result }}" != "success" ] || \
+             [ "${{ needs.frontend.result }}" != "success" ] || \
+             [ "${{ needs.security.result }}" != "success" ] || \
+             [ "${{ needs.backend.result }}" != "success" ]; then
+            echo "::error::CI ROJO — ver jobs arriba (gates duros o ratchet de deuda)"
+            exit 1
+          fi
+          echo "CI VERDE — gates duros ✓ ratchets ✓"

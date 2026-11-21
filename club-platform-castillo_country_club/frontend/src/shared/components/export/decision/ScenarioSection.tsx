@@ -7,6 +7,7 @@
 import { BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import type { ScenarioDelta } from "../hooks/useDecisionDocument";
 import { SectionSkeleton } from "./SectionSkeleton";
+import './ScenarioSection.css';
 
 interface ScenarioSectionProps {
   id: string;
@@ -28,7 +29,7 @@ export function ScenarioSection({
   aiCommentary,
 }: ScenarioSectionProps) {
   return (
-    <div id={id} className="glass-decision__section">
+    <div id={id} className="scenario-section glass-decision__section">
       <div className="glass-decision__section-header">
         <BarChart3 size={16} className="glass-decision__section-icon glass-decision__section-icon--teal" />
         <h2 className="glass-decision__section-title">2. Impacto de Escenarios</h2>

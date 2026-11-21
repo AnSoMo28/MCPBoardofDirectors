@@ -1,0 +1,17 @@
+--- a/club-platform-castillo_country_club/backend/pyproject.toml
++++ b/club-platform-castillo_country_club/backend/pyproject.toml
+@@ -173,6 +173,14 @@
+     "ignore::DeprecationWarning:datetime.*",
+     "error",
+     "ignore::DeprecationWarning:pydantic.main.*",
++    # Python 3.14: chromadb 1.5.9 usa asyncio.iscoroutinefunction en su import
++    # (telemetry/opentelemetry/__init__.py:128), deprecado desde 3.14. En
++    # filterwarnings las entradas POSTERIORES tienen mayor precedencia (pytest
++    # aplica la lista en orden inverso), por lo que este ignore DEBE ir despues
++    # de "error": si va antes, el warning escala a error y revientan los 48
++    # tests de document_intelligence en el setup del fixture doc_repo.
++    # Eliminar esta linea cuando chromadb > 1.5.9 arregle el import.
++    "ignore:'asyncio.iscoroutinefunction' is deprecated:DeprecationWarning",
+ ]
+ 
+ # ═══════════════════════════════════════════════════════════

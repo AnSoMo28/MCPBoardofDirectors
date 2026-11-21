@@ -27,6 +27,7 @@ import type {
   GenreAffinity,
 } from '../types';
 import './CulturalTasteGenome.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -411,7 +412,8 @@ export function CulturalTasteGenome({
           const isHovered = hoveredDimension === dim.key;
 
           return (
-            <button
+            <Button
+              variant="unstyled"
               key={dim.key}
               className={`cultural-taste-genome__legend-item ${isHovered ? 'cultural-taste-genome__legend-item--hovered' : ''}`}
               onMouseEnter={() => handleDimensionHover(dim.key)}
@@ -429,7 +431,7 @@ export function CulturalTasteGenome({
               <span className="cultural-taste-genome__legend-value">
                 {value}
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>

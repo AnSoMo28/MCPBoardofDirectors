@@ -1,0 +1,150 @@
+P2-C3g · g6-patch3 — cierre de C3g: #9 + C16 + auditoría con resolvers fijos
+  filas: #9 renombre+adaptador · C16 campo · 7 auditorías · inventario · HITL · ledger
+
+══ A. Fila #9 — trials ═════════════════════════════════════════════════
+  #9 DEMORADO — propiedades de trialsQ no mapeadas: conversion_rate
+
+══ B. Campo — WellnessFamilySelector (C16) ═════════════════════════════
+      ítem resuelto vía FamilyListResponse.families → FamilyBrief (backend/src/club_mcp/models/family.py)
+      campos backend (7): id, name, tier, status, member_count, engagement_score, join_date
+      renames camel→snake: memberCount→member_count
+      import families/types: línea eliminada
+  C16 REWRITE ✓ frontend/src/features/wellness/components/WellnessFamilySelector.tsx — .familyName→.name + interfaz local WellnessFamilyItem (7 campos)
+    ↻ gate tsc …
+    ✗ tsc FALLÓ — revirtiendo SOLO esta fila:
+      src/features/wellness/components/WellnessFamilySelector.tsx(33,22): error TS2304: Cannot find name 'Family'.
+      src/features/wellness/components/WellnessFamilySelector.tsx(49,11): error TS2339: Property 'familyName' does not exist on type 'WellnessFamilyItem'.
+      src/features/wellness/components/WellnessFamilySelector.tsx(125,27): error TS2339: Property 'familyName' does not exist on type 'WellnessFamilyItem'.
+      src/features/wellness/components/WellnessFamilySelector.tsx(136,29): error TS2339: Property 'familyName' does not exist on type 'WellnessFamilyItem'.
+      Command failed: npx tsc -p tsconfig.app.json --noEmit
+    ⤺ fila revertida (el resto de la corrida permanece)
+
+══ C. Auditoría de campo — frontend ↔ backend ═══════════════════════════
+  alias camelCase en backend: no
+  ▸ HistoryItem ↔ NotificationLog
+      · fe(9) be(9) · fe-sin-par-backend: — · solo-be: —
+  ▸ FacilityReservation ↔ FacilityReservation
+      · fe(14) be(14) · fe-sin-par-backend: — · solo-be: —
+  ▸ Reservation (facilities/types) ↔ FacilityReservation
+      ⚠ MISMATCH camel→snake → cola C3h: facilityId⇒facility_id, facilityName⇒facility_name, familyId⇒family_id, familyName⇒family_name, startTime⇒start_time, endTime⇒end_time, guestCount⇒guest_count, createdBy⇒created_by, createdAt⇒created_at
+      · fe(14) be(14) · fe-sin-par-backend: — · solo-be: —
+  ▸ Facility ↔ Facility
+      · fe(13) be(13) · fe-sin-par-backend: — · solo-be: —
+  ▸ TrialMembership (guests/types) ↔ TrialMembership
+      · fe(18) be(13) · fe-sin-par-backend: guest_id, host_family_id, host_family_name, trial_type_label, facilities_access, activities_attended, feedback_score, conversion_probability · solo-be: referred_by_family_id, privileges, updated_at
+  ▸ ReactivationCampaign ↔ ReactivationCampaign
+      · fe(18) be(16) · fe-sin-par-backend: target_level, target_level_label, target_count, reached_count, responded_count, reactivated_count, response_rate, reactivation_rate, channel, channel_label, created_at · solo-be: campaign_type, target_member_ids, target_engagement_level, channels, budget, sent_count, response_count, conversion_count, notes
+  ▸ Family (families/types) ↔ backend/src/club_mcp/models/family.py
+      ⚠ MISMATCH camel→snake → cola C3h: memberCount⇒member_count, engagementScore⇒engagement_score
+      · fe(14) be(7) · fe-sin-par-backend: familyName, since, primaryContact, members, totalBalance, churnRisk, lastActivity, address, notes · solo-be: name, join_date
+
+══ D. Inventario de deuda — pares viejos en archivos tocados ════════════
+  ✗ engagement.create_reactivation_campaign (ReactivationCampaigns.tsx)
+      agente mapeado → member_engagement_agent.py ✓
+      tools disponibles: name="get_engagement_insights" name="design_reactivation_campaign" name="manage_loyalty_rewards" name="submit_feedback" name="manage_referrals" name="get_engagement_dashboard"
+  ✗ engagement.pause_campaign (ReactivationCampaigns.tsx)
+      agente mapeado → member_engagement_agent.py ✓
+      tools disponibles: name="get_engagement_insights" name="design_reactivation_campaign" name="manage_loyalty_rewards" name="submit_feedback" name="manage_referrals" name="get_engagement_dashboard"
+  ✗ engagement.resume_campaign (ReactivationCampaigns.tsx)
+      agente mapeado → member_engagement_agent.py ✓
+      tools disponibles: name="get_engagement_insights" name="design_reactivation_campaign" name="manage_loyalty_rewards" name="submit_feedback" name="manage_referrals" name="get_engagement_dashboard"
+  ✗ engagement.cancel_campaign (ReactivationCampaigns.tsx)
+      agente mapeado → member_engagement_agent.py ✓
+      tools disponibles: name="get_engagement_insights" name="design_reactivation_campaign" name="manage_loyalty_rewards" name="submit_feedback" name="manage_referrals" name="get_engagement_dashboard"
+  ✗ guests.get_today_guests (GuestList.tsx)
+      agente mapeado → guest_management_agent.py ✓
+      tools disponibles: name="plan_private_event" name="manage_trial_memberships" name="register_guest" name="manage_guest_privileges" name="get_guest_analytics" name="get_guest_health_score" name="get_conversion_funnel" name="get_guest_analytics_enhanced" name="get_guest_forecast" name="generate_guest_engagement_proposals"
+  ✗ guests.get_today_summary (GuestList.tsx)
+      agente mapeado → guest_management_agent.py ✓
+      tools disponibles: name="plan_private_event" name="manage_trial_memberships" name="register_guest" name="manage_guest_privileges" name="get_guest_analytics" name="get_guest_health_score" name="get_conversion_funnel" name="get_guest_analytics_enhanced" name="get_guest_forecast" name="generate_guest_engagement_proposals"
+  ✗ guests.list_trial_memberships (GuestList.tsx)
+      agente mapeado → guest_management_agent.py ✓
+      tools disponibles: name="plan_private_event" name="manage_trial_memberships" name="register_guest" name="manage_guest_privileges" name="get_guest_analytics" name="get_guest_health_score" name="get_conversion_funnel" name="get_guest_analytics_enhanced" name="get_guest_forecast" name="generate_guest_engagement_proposals"
+  ✗ guests.checkout_guest (GuestList.tsx)
+      agente mapeado → guest_management_agent.py ✓
+      tools disponibles: name="plan_private_event" name="manage_trial_memberships" name="register_guest" name="manage_guest_privileges" name="get_guest_analytics" name="get_guest_health_score" name="get_conversion_funnel" name="get_guest_analytics_enhanced" name="get_guest_forecast" name="generate_guest_engagement_proposals"
+  ✗ guests.register_guest_checkin (GuestRegistration.tsx)
+      agente mapeado → guest_management_agent.py ✓
+      tools disponibles: name="plan_private_event" name="manage_trial_memberships" name="register_guest" name="manage_guest_privileges" name="get_guest_analytics" name="get_guest_health_score" name="get_conversion_funnel" name="get_guest_analytics_enhanced" name="get_guest_forecast" name="generate_guest_engagement_proposals"
+
+══ E. HITL — ¿action="list" pasa sin aprobación? ══════════════════════
+      ── backend/src/club_mcp/hitl/approval_engine.py:29 ──
+           29 │ class ApprovalEngine:
+           30 │     """
+           31 │     In-memory approval engine.
+           32 │     Production version persists to database.
+           33 │     """
+           34 │ 
+           35 │     def __init__(self) -> None:
+           36 │         self._requests: dict[UUID, ApprovalRequest] = {}
+           37 │         self._callbacks: dict[UUID, Callable] = {}
+           38 │ 
+           39 │ 
+           40 │ 
+           41 │     async def create_request(
+           42 │         self,
+           43 │         agent: str,
+           44 │         tool: str,
+           45 │         params: dict[str, Any],
+           46 │         requested_by: str,
+           47 │         approval_level: ApprovalLevel,
+           48 │         risk_summary: str = "",
+           49 │         estimated_impact: str = "",
+           50 │         affected_count: int = 0,
+           51 │         approver_roles: Optional[list[str]] = None,
+           52 │         on_approved: Optional[Callable] = None,
+           53 │     ) -> ApprovalRequest:
+           54 │         expiry = EXPIRY_BY_LEVEL.get(approval_level)
+           55 │         request = ApprovalRequest(
+           56 │             agent=agent,
+           57 │             tool=tool,
+           58 │             params=params,
+           59 │             requested_by=requested_by,
+           60 │             approval_level=approval_level,
+           61 │             risk_summary=risk_summary,
+           62 │             estimated_impact=estimated_impact,
+           63 │             affected_count=affected_count,
+           64 │             approver_roles=approver_roles or [],  # ← FIX: persist
+           65 │             expires_at=datetime.now(timezone.utc) + expiry if expiry else None,
+           66 │         )
+           67 │         self._requests[request.request_id] = request
+  ── puntos de decisión (fuera de agents/) ──
+      backend/src/club_mcp/hitl/approval_engine.py:22: ApprovalLevel.AUTO: None,
+      backend/src/club_mcp/hitl/approval_engine.py:24: ApprovalLevel.HITL: timedelta(hours=48),
+  exención para lecturas: ⚠ POSIBLE — líneas:
+      backend/src/club_mcp/rag/parsers.py:165: io.BytesIO(content), read_only=True, data_only=True
+      backend/src/club_mcp/rag/reranker.py:9: Bypass logic:
+      backend/src/club_mcp/rag/reranker.py:31: _BYPASS_THRESHOLD = 5  # Skip reranking if ≤ 5 candidates
+      backend/src/club_mcp/rag/reranker.py:36: Cross-encoder reranker with GPU auto-detection and conditional bypass.
+      backend/src/club_mcp/rag/reranker.py:39: Bypasses reranking when result set is small (≤5 candidates).
+      backend/src/club_mcp/rag/reranker.py:44: bypass_threshold: Skip reranking if candidates ≤ this number.
+  ── alternativas en member_engagement_agent ──
+      backend/src/club_mcp/agents/member_engagement_agent.py:79: name="get_engagement_insights",
+      backend/src/club_mcp/agents/member_engagement_agent.py:171: name="design_reactivation_campaign",
+      backend/src/club_mcp/agents/member_engagement_agent.py:956: name="get_engagement_dashboard",
+
+══ F. Cirugía del ledger VI14_EQUIVALENCES ══════════════════════════════
+  · list_trial_memberships: #9 no aplicado — la entrada queda
+
+══ G. End-state ════════════════════════════════════════════════════════
+  #9 DEMORADO · C16 REVERTIDO
+  equivalente:  16 → 16   (0 resueltas)
+  toolBackend:  169    (sin cambio)
+  missingBoth:  3      (sin cambio)
+  colaC3h:      4 + 2 nuevas por mismatch de campo:
+      - Reservation (facilities/types) ↔ FacilityReservation: facilityId⇒facility_id, facilityName⇒facility_name, familyId⇒family_id, familyName⇒family_name, startTime⇒start_time, endTime⇒end_time, guestCount⇒guest_count, createdBy⇒created_by, createdAt⇒created_at
+      - Family (families/types) ↔ backend/src/club_mcp/models/family.py: memberCount⇒member_count, engagementScore⇒engagement_score
+  deuda backend: 6 filas (#3 #4 #8 #14 #15 #17) + sección D
+  resumen corrida: aplicados 0 · ya 0 · demorados 1 · revertidos/saltados 1
+  git diff --stat:
+     .../communications/hooks/usePreferencesForm.ts         |  4 ++--
+     .../src/features/engagement/ReactivationCampaigns.tsx  |  6 +++---
+     .../frontend/src/features/engagement/types.ts          |  2 +-
+     .../frontend/src/features/facilities/FacilityMap.tsx   | 18 ++++++++++++------
+     .../facilities/components/ReservationCalendar.tsx      |  6 +++---
+     .../frontend/src/features/guests/GuestRegistration.tsx | 10 +++++-----
+     .../wellness/components/WellnessFamilySelector.tsx     |  6 +++---
+     .../scripts/p2c3e_vi14_patch.ts                        |  2 --
+     8 files changed, 29 insertions(+), 25 deletions(-)
+
+✓ reporte: p2c3g_patch3_report.txt

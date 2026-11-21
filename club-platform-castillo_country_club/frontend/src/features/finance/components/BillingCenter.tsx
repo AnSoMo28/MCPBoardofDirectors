@@ -365,7 +365,8 @@ export default function BillingCenter() {
 
           <div className="flex flex-wrap gap-2 mb-3">
             {FAMILY_PRESETS.map((fam) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={fam.id}
                 type="button"
                 onClick={() => setFamilyId(fam.id)}
@@ -377,7 +378,7 @@ export default function BillingCenter() {
               >
                 {fam.name}
                 <span className="text-[10px] opacity-60">({fam.tier})</span>
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -530,7 +531,8 @@ export default function BillingCenter() {
               {VIEW_TABS.map((tab) => {
                 const Icon = tab.icon;
                 return (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={tab.id}
                     type="button"
                     role="tab"
@@ -543,7 +545,7 @@ export default function BillingCenter() {
                   >
                     <Icon size={14} />
                     <span className="hidden sm:inline">{tab.label}</span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -646,14 +648,15 @@ export default function BillingCenter() {
                                 Ítem {idx + 1}
                               </span>
                               {invItems.length > 1 && (
-                                <button
+                                <Button
+                                  variant="unstyled"
                                   type="button"
                                   onClick={() => removeItem(idx)}
                                   className="p-1.5 rounded text-[var(--color-silver-500)] hover:text-[var(--color-rose-400)] hover:bg-[var(--color-surface-3)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                                   aria-label={`Eliminar ítem ${idx + 1}`}
                                 >
                                   <Trash2 size={14} />
-                                </button>
+                                </Button>
                               )}
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-[1fr_80px_110px_100px] gap-2">
@@ -928,7 +931,8 @@ export default function BillingCenter() {
                           {account.invoices
                             .filter((i) => i.status !== "paid" && i.status !== "cancelled")
                             .map((inv) => (
-                              <button
+                              <Button
+                                variant="unstyled"
                                 key={inv.id}
                                 type="button"
                                 onClick={() => setPayAmount(String(inv.total))}
@@ -938,7 +942,7 @@ export default function BillingCenter() {
                                 )}
                               >
                                 #{inv.id.slice(-6).toUpperCase()} — {formatCurrency(inv.total)}
-                              </button>
+                              </Button>
                             ))}
                         </div>
                       </div>

@@ -39,6 +39,7 @@ import {
 } from "../types";
 
 import "./RecClusterViz.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES & CONSTANTS
@@ -726,7 +727,8 @@ export function SocialClusters() {
           role="radiogroup"
           aria-label="Vista"
         >
-          <button
+          <Button
+            variant="unstyled"
             className="rcl-view-pill"
             data-active={
               viewMode === "map" ? "" : undefined
@@ -737,8 +739,9 @@ export function SocialClusters() {
           >
             <Map size={13} aria-hidden="true" />
             Mapa
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             className="rcl-view-pill"
             data-active={
               viewMode === "list" ? "" : undefined
@@ -749,7 +752,7 @@ export function SocialClusters() {
           >
             <List size={13} aria-hidden="true" />
             Lista
-          </button>
+          </Button>
         </div>
       </div>
 

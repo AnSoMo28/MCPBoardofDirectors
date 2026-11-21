@@ -533,7 +533,8 @@ export function ThePulse({
           {/* ── On-Demand Toggle — glass separator ── */}
           {hasOnDemandVitals && (
             <>
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 onClick={onToggleExpand}
                 className="glass-pulse-separator group"
@@ -546,7 +547,7 @@ export function ThePulse({
                   {expandVitals ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </span>
                 <span className="glass-pulse-separator__line" />
-              </button>
+              </Button>
 
               {expandVitals && (
                 <motion.div

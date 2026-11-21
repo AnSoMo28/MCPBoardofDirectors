@@ -22,6 +22,7 @@ import type {
 import type { MemberPredictions } from "../lib/memberPredictions";
 import type { MemberBriefingPackage } from "../lib/memberNarrative";
 import "./MemberDecisionStage.css";
+import { Button } from "@/shared/components/ui/Button";
 
 interface MemberDecisionStageProps {
   temperature: MemberTemperature;
@@ -152,21 +153,23 @@ export function MemberDecisionStage({
       {/* CTA */}
       <div className="glass-m360-decision__cta-row">
         {topAction?.tool ? (
-          <button
+          <Button
+            variant="unstyled"
             className="glass-m360-decision__cta"
             data-urgency={stateIsCritical ? "critical" : "urgent"}
           >
             {topAction.label}
             <span className="glass-m360-decision__cta-arrow">→</span>
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
+            variant="unstyled"
             className="glass-m360-decision__cta"
             data-urgency={stateIsCritical ? "critical" : "urgent"}
           >
             {stateIsCritical ? "Contactar ahora" : "Iniciar plan de retención"}
             <span className="glass-m360-decision__cta-arrow">→</span>
-          </button>
+          </Button>
         )}
 
         <div className="glass-m360-decision__meta">

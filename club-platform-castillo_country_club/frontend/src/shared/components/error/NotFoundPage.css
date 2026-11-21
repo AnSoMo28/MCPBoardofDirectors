@@ -1,0 +1,69 @@
+/**
+ * @component NotFoundPage
+ * @namespace .not-found-page
+ * @archetype state · domain silver
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados not-found-page-*.
+ */
+.not-found-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 24px;
+  border-radius: var(--radius-lg);
+  animation: not-found-page-fade-up 0.5s var(--ease-apple) 1;
+}
+
+@keyframes not-found-page-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* El vacío tiene gravedad: icono flotando lento */
+.not-found-page__icon {
+  animation: not-found-page-float 4.5s ease-in-out infinite;
+  filter: drop-shadow(0 8px 16px color-mix(in srgb, var(--color-abyss) 25%, transparent));
+}
+
+@keyframes not-found-page-float {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-5px) rotate(1.5deg); }
+}
+
+/* Skeleton: shimmer diagonal en los placeholders del interior */
+.not-found-page__skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-silver-100) 4%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.not-found-page__skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--color-silver-100) 7%, transparent) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: not-found-page-shimmer 1.8s var(--ease-apple) infinite;
+}
+
+@keyframes not-found-page-shimmer {
+  to { transform: translateX(100%); }
+}
+
+.light .not-found-page__skeleton {
+  background: color-mix(in srgb, var(--color-abyss) 5%, transparent);
+}
+
+.light .not-found-page__skeleton::after {
+  background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--color-silver-100) 50%, transparent) 50%, transparent 80%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .not-found-page, .not-found-page__icon, .not-found-page__skeleton::after { animation: none; }
+}

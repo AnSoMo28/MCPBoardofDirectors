@@ -26,6 +26,7 @@ import type {
   AdvisorSeverity,
 } from '../lib/advisor/types';
 import './CulturalPulse.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -149,7 +150,8 @@ export function CulturalPulse({
   );
 
   return (
-    <button
+    <Button
+      variant="unstyled"
       className={`cultural-pulse ${hasUrgent ? 'cultural-pulse--urgent' : ''} ${className}`}
       style={pulseStyle}
       onClick={onExpand}
@@ -228,6 +230,6 @@ export function CulturalPulse({
           )}
         </div>
       </div>
-    </button>
+    </Button>
   );
 }

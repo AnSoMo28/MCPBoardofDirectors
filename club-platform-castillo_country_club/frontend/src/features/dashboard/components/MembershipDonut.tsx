@@ -19,6 +19,7 @@ import { Card } from "@/shared/components/ui/Card";
 import { CHART, TOOLTIP_STYLE } from "@/shared/lib/chartTheme";
 import type { TierData } from "../types";
 import { TIER_CONFIG } from "../types";
+import './MembershipDonut.css';
 
 /* ══════════════════════════════════════════════════════════
    Animated Counter
@@ -127,7 +128,7 @@ export function MembershipDonut({ data }: MembershipDonutProps) {
 
   return (
     <motion.div {...(m ?? {})}>
-      <Card tilt className="p-6">
+      <Card tilt className="membership-donut p-6">
         <h3 className="text-lg font-semibold text-[var(--color-silver-100)] font-[family-name:var(--font-display)] mb-6">
           Membresías por nivel
         </h3>

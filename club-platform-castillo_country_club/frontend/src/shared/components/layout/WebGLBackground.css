@@ -1,0 +1,61 @@
+/**
+ * @component WebGLBackground
+ * @namespace .web-g-l-background
+ * @archetype chrome · domain silver
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados web-g-l-background-*.
+ */
+.web-g-l-background {
+  position: relative;
+}
+
+/* Micro-vida del marco: una brasa tenue del dominio late en el borde inferior */
+.web-g-l-background::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-silver-300) 25.1%, transparent), transparent);
+  animation: web-g-l-background-ember 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes web-g-l-background-ember {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.9; }
+}
+
+/* Ítems interactivos del chrome: prensado + aro */
+.web-g-l-background :active {
+  transition: transform 0.12s var(--ease-spring);
+  transform: translateY(1px);
+}
+
+.web-g-l-background :focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-silver-300) 66.7%, transparent);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Estado activo de navegación: pastilla con luz interior */
+.web-g-l-background__active-indicator {
+  background: color-mix(in srgb, var(--color-silver-300) 10.2%, transparent);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--color-silver-300) 13.3%, transparent);
+  transition: box-shadow 0.3s var(--ease-apple);
+}
+
+.web-g-l-background__active-indicator:hover {
+  box-shadow: inset 0 0 18px color-mix(in srgb, var(--color-silver-300) 20%, transparent);
+}
+
+.light .web-g-l-background::after {
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-silver-500) 31.4%, transparent), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .web-g-l-background::after, .web-g-l-background__active-indicator { animation: none; transition: none; }
+}

@@ -1,11 +1,12 @@
 /**
  * @component AwarenessChart (Fase 25)
  * @namespace .glass-ai__awareness
- * @depends AISystemPage.css
+ * @depends AwarenessChart.css
  * @note Interactive SVG chart with health zones, tooltips, unique gradient IDs.
  *       ARIA accessible. Responsive via viewBox.
- * @import import './AISystemPage.css';
+ * @import import './AwarenessChart.css';
  */
+import "./AwarenessChart.css";
 
 import { useState, useId, useMemo } from "react";
 import { cn } from "@/shared/lib/utils";

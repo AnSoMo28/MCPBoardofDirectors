@@ -19,6 +19,7 @@ import type { BaseInsight } from "@/shared/components/AdvisorBanner";
 import type { SportsDashboardMode } from "../types";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import "./SportsIntelligenceStream.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -79,13 +80,14 @@ function InsightCard({
         </p>
       )}
       {insight.action && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="spt-stream__card-action"
           data-approval={insight.action.approval}
         >
           {insight.action.label}
-        </button>
+        </Button>
       )}
     </article>
   );
@@ -155,13 +157,14 @@ export function SportsIntelligenceStream({
         ))}
       </div>
       {!expanded && hiddenCount > 0 && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="spt-stream__expand"
           onClick={() => setExpanded(true)}
         >
           Ver {hiddenCount} más
-        </button>
+        </Button>
       )}
     </aside>
   );

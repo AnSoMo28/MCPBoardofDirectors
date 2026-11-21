@@ -1,3 +1,4 @@
+import './DocumentHeader.css';
 interface DocumentHeaderProps {
   period: string;
   audience: string;

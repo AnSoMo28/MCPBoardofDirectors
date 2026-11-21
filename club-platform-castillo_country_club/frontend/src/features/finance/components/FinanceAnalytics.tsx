@@ -151,7 +151,8 @@ function Section({
 
   return (
     <div className={cn("glass-analytics-section", variantClass)}>
-      <button
+      <Button
+        variant="unstyled"
         id={btnId}
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -176,7 +177,7 @@ function Section({
         ) : (
           <ChevronDown size={16} className="text-[var(--color-silver-500)]" />
         )}
-      </button>
+      </Button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div

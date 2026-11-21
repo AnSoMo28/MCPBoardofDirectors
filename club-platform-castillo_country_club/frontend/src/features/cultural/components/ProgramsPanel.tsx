@@ -37,6 +37,7 @@ import {
   formatEnrollment,
 } from '../types';
 import ProgramFormModal from './ProgramFormModal';
+import './ProgramsPanel.css';
 
 // ══════════════════════════════════════════════════════════
 //  TYPES
@@ -166,7 +167,7 @@ export default function ProgramsPanel() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="programs-panel flex items-center justify-center py-24">
         <Loader2 className="h-8 w-8 animate-spin text-[var(--color-teal-400)]" />
       </div>
     );
@@ -225,7 +226,8 @@ export default function ProgramsPanel() {
       {/* ── Category Filters ── */}
       <div className="flex flex-wrap gap-2">
         {CATEGORY_FILTERS.map((f) => (
-          <button
+          <Button
+            variant="unstyled"
             key={f.key}
             onClick={() => setCategoryFilter(f.key)}
             className={cn(
@@ -236,7 +238,7 @@ export default function ProgramsPanel() {
             )}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 

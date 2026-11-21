@@ -10,6 +10,7 @@ import { DECISION_SCENARIO_CONFIG, DECISION_RISK_CONFIG } from "@/features/finan
 import type { DecisionScenario } from "@/shared/mocks/contracts";
 import type { FinanceDecisionSimulateResponse } from "@/features/finance/types";
 import { SectionSkeleton } from "./SectionSkeleton";
+import './DecisionSection.css';
 
 interface DecisionSectionProps {
   id: string;
@@ -19,7 +20,7 @@ interface DecisionSectionProps {
 
 export function DecisionSection({ id, isLoading, data }: DecisionSectionProps) {
   return (
-    <div id={id} className="glass-decision__section">
+    <div id={id} className="decision-section glass-decision__section">
       <div className="glass-decision__section-header">
         <Crosshair size={16} className="glass-decision__section-icon" />
         <h2 className="glass-decision__section-title">4. Decisiones Simuladas</h2>

@@ -76,6 +76,7 @@ import {
 } from "../types";
 
 import "./Member360IntelligencePanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -293,7 +294,8 @@ function DimensionCard({ def, index, isExpanded, onToggle, memberId, profile, he
       }
     >
       {/* Header */}
-      <button
+      <Button
+        variant="unstyled"
         onClick={onToggle}
         className="glass-m360-intelligence__dim-header"
       >
@@ -325,7 +327,7 @@ function DimensionCard({ def, index, isExpanded, onToggle, memberId, profile, he
             <ChevronDown className="w-4 h-4" />
           )}
         </div>
-      </button>
+      </Button>
 
       {/* Expanded content */}
       {isExpanded && (
@@ -931,13 +933,14 @@ function D8Engagement({ memberId }: { memberId: string }) {
           )}
         </div>
       )}
-      <button
+      <Button
+        variant="unstyled"
         onClick={() => refetch()}
         className="glass-m360-intelligence__regenerate-btn"
       >
         <Zap className="w-3 h-3" />
         Regenerar propuestas
-      </button>
+      </Button>
     </div>
   );
 }

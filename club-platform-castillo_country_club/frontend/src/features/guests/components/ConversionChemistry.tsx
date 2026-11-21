@@ -39,6 +39,7 @@ import type {
 } from "../types";
 
 import "./ConversionChemistry.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -143,7 +144,8 @@ function SponsorCard({
   readonly onClick?: (s: SponsorMatch) => void;
 }) {
   return (
-    <button
+    <Button
+      variant="unstyled"
       className="gst-chem__sponsor"
       onClick={() => onClick?.(sponsor)}
       aria-label={`Sponsor: ${sponsor.memberName} — Compatibilidad: ${sponsor.compatibility}%`}
@@ -174,7 +176,7 @@ function SponsorCard({
           <span>{sponsor.effectiveness.conversions}/{sponsor.effectiveness.totalGuestsSponsored} convertidos</span>
         </div>
       )}
-    </button>
+    </Button>
   );
 }
 

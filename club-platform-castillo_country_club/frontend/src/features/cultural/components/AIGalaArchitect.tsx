@@ -31,6 +31,7 @@ import type {
 import type { DesignResult } from '../lib/eventDesigner';
 import { useEventDesigner } from '../hooks/useEventDesigner';
 import './AIGalaArchitect.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -139,13 +140,14 @@ export function AIGalaArchitect({
               {phaseLabel(designer.phase)}
             </span>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             className="ai-gala-architect__close"
             onClick={onClose}
             aria-label="Cerrar"
           >
             ×
-          </button>
+          </Button>
         </header>
 
         {/* ═══════════════════════════════════════ */}
@@ -168,7 +170,8 @@ export function AIGalaArchitect({
               </span>
               <div className="ai-gala-architect__concepts-grid">
                 {GALA_CONCEPTS.map((concept) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={concept}
                     className={`ai-gala-architect__concept-chip ${
                       selectedConcept === concept
@@ -185,7 +188,7 @@ export function AIGalaArchitect({
                     }}
                   >
                     {concept}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -224,20 +227,22 @@ export function AIGalaArchitect({
 
             {/* Actions */}
             <div className="ai-gala-architect__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-gala-architect__btn ai-gala-architect__btn--secondary"
                 onClick={handleSetIntention}
                 disabled={!intentionText.trim()}
               >
                 Capturar intención
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="unstyled"
                 className="ai-gala-architect__btn ai-gala-architect__btn--primary"
                 onClick={handleGenerate}
                 disabled={!designer.intent}
               >
                 Armar gala con AI →
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -284,12 +289,13 @@ export function AIGalaArchitect({
               </div>
             </div>
             <div className="ai-gala-architect__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-gala-architect__btn ai-gala-architect__btn--primary"
                 onClick={onClose}
               >
                 Cerrar
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -548,7 +554,8 @@ function GalaRefinementView({
           Refinar gala
         </span>
         <div className="ai-gala-architect__refine-actions">
-          <button
+          <Button
+            variant="unstyled"
             className="ai-gala-architect__btn ai-gala-architect__btn--ghost"
             onClick={() =>
               onRefine({
@@ -562,8 +569,9 @@ function GalaRefinementView({
             }
           >
             Gala íntima (-30% invitados)
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             className="ai-gala-architect__btn ai-gala-architect__btn--ghost"
             onClick={() =>
               onRefine({
@@ -577,8 +585,9 @@ function GalaRefinementView({
             }
           >
             Gala grande (+40% invitados)
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             className="ai-gala-architect__btn ai-gala-architect__btn--ghost"
             onClick={() =>
               onRefine({
@@ -592,7 +601,7 @@ function GalaRefinementView({
             }
           >
             Aumentar budget 50%
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -706,19 +715,22 @@ function GalaRefinementView({
 
       {/* Actions */}
       <div className="ai-gala-architect__actions">
-        <button
+        <Button
+          variant="unstyled"
           className="ai-gala-architect__btn ai-gala-architect__btn--ghost"
           onClick={onReset}
         >
           Empezar de nuevo
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="unstyled"
           className="ai-gala-architect__btn ai-gala-architect__btn--secondary"
           onClick={onRegenerate}
         >
           Regenerar
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="unstyled"
           className="ai-gala-architect__btn ai-gala-architect__btn--primary"
           onClick={onConfirm}
           disabled={!readyToExecute}
@@ -726,7 +738,7 @@ function GalaRefinementView({
           {readyToExecute
             ? '✦ Armar así'
             : `Bloqueado: ${blockers[0] ?? 'riesgos pendientes'}`}
-        </button>
+        </Button>
       </div>
     </section>
   );

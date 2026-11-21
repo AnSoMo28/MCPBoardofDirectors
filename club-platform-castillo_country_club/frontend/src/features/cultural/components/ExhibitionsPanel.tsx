@@ -37,6 +37,7 @@ import {
   EXHIBITION_STATUS_CONFIG
 } from '../types';
 import ExhibitionFormModal from './ExhibitionFormModal';
+import './ExhibitionsPanel.css';
 
 // ══════════════════════════════════════════════════════════
 //  TYPES
@@ -149,7 +150,7 @@ export default function ExhibitionsPanel() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="exhibitions-panel flex items-center justify-center py-24">
         <Loader2 className="h-8 w-8 animate-spin text-[var(--color-sage-400)]" />
       </div>
     );
@@ -208,7 +209,8 @@ export default function ExhibitionsPanel() {
       {/* ── Status Filters ── */}
       <div className="flex flex-wrap gap-2">
         {STATUS_FILTERS.map((f) => (
-          <button
+          <Button
+            variant="unstyled"
             key={f.key}
             onClick={() => setStatusFilter(f.key)}
             className={cn(
@@ -219,7 +221,7 @@ export default function ExhibitionsPanel() {
             )}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 

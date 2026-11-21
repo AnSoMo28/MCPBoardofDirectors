@@ -1,10 +1,11 @@
 /**
  * @component RiskPopoverContent (Fase 25)
  * @namespace .glass-risk__pop
- * @depends RiskHeatmap.css, riskTheme
+ * @depends RiskPopoverContent.css, riskTheme
  * @note Popover detail panel for a risk cell. Desktop absolute, mobile bottom sheet.
- * @import import '../RiskHeatmap.css';
+ * @import import './RiskPopoverContent.css';
  */
+import "./RiskPopoverContent.css";
 
 import { X } from "lucide-react";
 import { Badge } from "@/shared/components/ui";
@@ -13,6 +14,7 @@ import {
   RISK_CATEGORY_CONFIG,
 } from "@/shared/lib/riskTheme";
 import type { RiskItem } from "@/features/reports/types";
+import { Button } from "@/shared/components/ui/Button";
 
 interface RiskPopoverContentProps {
   risks: RiskItem[];
@@ -44,7 +46,8 @@ export function RiskPopoverContent({
           />
           <h4 className="glass-risk__pop-title">{primary.title}</h4>
         </div>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="glass-risk__pop-close"
           onClick={(e) => {
@@ -54,7 +57,7 @@ export function RiskPopoverContent({
           aria-label="Cerrar detalle de riesgo"
         >
           <X />
-        </button>
+        </Button>
       </div>
 
       {/* Badges */}

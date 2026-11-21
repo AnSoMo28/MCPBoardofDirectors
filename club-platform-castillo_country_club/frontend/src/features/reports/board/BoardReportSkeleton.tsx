@@ -1,10 +1,11 @@
 /**
  * @component BoardReportSkeleton (Fase 25)
  * @namespace .glass-board (reuses glass classes for skeleton shape)
- * @depends BoardReportViewer.css, Skeleton from ui
+ * @depends BoardReportSkeleton.css, Skeleton from ui
  * @note Loading skeleton that mirrors the report structure.
- * @import import '../BoardReportViewer.css';
+ * @import import './BoardReportSkeleton.css';
  */
+import "./BoardReportSkeleton.css";
 
 import { Skeleton } from "@/shared/components/ui";
 

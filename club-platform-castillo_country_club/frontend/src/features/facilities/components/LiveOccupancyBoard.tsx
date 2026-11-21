@@ -56,6 +56,7 @@ import type {
 } from "../types";
 
 import "./LiveOccupancyBoard.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // CONSTANTS
@@ -426,7 +427,8 @@ function FacilityCard({
       {/* Actions (Sense 4: INTENCIÓN) */}
       <div className="fac-occ__card-actions">
         {liveStatus === "available" ? (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="fac-occ__btn fac-occ__btn--book"
             onClick={(e) => {
@@ -436,9 +438,10 @@ function FacilityCard({
           >
             Reservar ahora
             <ChevronRight className="fac-occ__btn-icon" />
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="fac-occ__btn fac-occ__btn--view"
             onClick={(e) => {
@@ -448,7 +451,7 @@ function FacilityCard({
           >
             <Eye className="fac-occ__btn-icon" />
             Ver detalle
-          </button>
+          </Button>
         )}
       </div>
     </article>

@@ -70,6 +70,7 @@ import type { TournamentMetrics_Contract } from "@/shared/mocks/contracts";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { TournamentFormModal } from "./TournamentFormModal";
 import "./TournamentPanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -418,7 +419,8 @@ function TournamentCard({
               TOURNAMENT_STATUS_CONFIG[newStatus as TournamentStatus];
             if (!targetCfg) return null;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={newStatus}
                 type="button"
                 className="spt-trn__card-transition-btn"
@@ -426,7 +428,7 @@ function TournamentCard({
                 onClick={() => onStatusChange?.(tournament.id, newStatus)}
               >
                 {targetCfg.icon} {targetCfg.label}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -552,14 +554,15 @@ export function TournamentPanel({
       {/* ── Header ── */}
       <div className="spt-trn__header">
         <h3 className="spt-trn__title">🏆 Torneos Deportivos</h3>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="spt-trn__new-btn"
           onClick={() => setShowForm(true)}
         >
           <Plus className="spt-trn__new-btn-icon" />
           Nuevo Torneo
-        </button>
+        </Button>
       </div>
 
       {/* ── KPI Strip ── */}

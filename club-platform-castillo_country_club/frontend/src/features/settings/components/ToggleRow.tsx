@@ -1,12 +1,14 @@
 /**
  * @component ToggleRow (Fase 25)
  * @namespace .glass-settings__toggle-row
- * @depends SettingsPage.css
+ * @depends ToggleRow.css
  * @note Accessible toggle switch with label and description.
- * @import import '../SettingsPage.css';
+ * @import import './ToggleRow.css';
  */
+import "./ToggleRow.css";
 
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/components/ui/Button";
 
 interface ToggleRowProps {
   label: string;
@@ -33,7 +35,8 @@ export function ToggleRow({
           </p>
         )}
       </div>
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         role="switch"
         aria-checked={checked}
@@ -46,7 +49,7 @@ export function ToggleRow({
         )}
       >
         <span className="glass-settings__toggle-switch-knob" />
-      </button>
+      </Button>
     </div>
   );
 }

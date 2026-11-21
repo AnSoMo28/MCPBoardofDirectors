@@ -38,6 +38,7 @@ import type {
 import type { DesignResult } from '../lib/eventDesigner';
 import { useEventDesigner } from '../hooks/useEventDesigner';
 import './AISocialArchitect.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -163,13 +164,14 @@ export function AISocialArchitect({
               {phaseLabel(designer.phase)}
             </span>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             className="ai-social-architect__close"
             onClick={onClose}
             aria-label="Cerrar"
           >
             ×
-          </button>
+          </Button>
         </header>
 
         {/* ═══════════════════════════════════════ */}
@@ -192,7 +194,8 @@ export function AISocialArchitect({
               </span>
               <div className="ai-social-architect__goals-grid">
                 {SOCIAL_GOALS.map((goal) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={goal.id}
                     className={`ai-social-architect__goal-chip ${
                       selectedGoal === goal.id
@@ -209,7 +212,7 @@ export function AISocialArchitect({
                     <span className="ai-social-architect__goal-label">
                       {goal.label}
                     </span>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -230,7 +233,8 @@ export function AISocialArchitect({
               </span>
               <div className="ai-social-architect__suggestions-list">
                 {ACTIVITY_SUGGESTIONS.map((suggestion) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={suggestion}
                     className={`ai-social-architect__suggestion-chip ${
                       selectedActivity === suggestion
@@ -247,7 +251,7 @@ export function AISocialArchitect({
                     }}
                   >
                     {suggestion}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -259,7 +263,8 @@ export function AISocialArchitect({
               </span>
               <div className="ai-social-architect__group-size-options">
                 {GROUP_SIZE_OPTIONS.map((opt) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={opt.value}
                     className={`ai-social-architect__group-chip ${
                       selectedGroupSize === opt.value
@@ -269,7 +274,7 @@ export function AISocialArchitect({
                     onClick={() => setSelectedGroupSize(opt.value)}
                   >
                     {opt.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -299,20 +304,22 @@ export function AISocialArchitect({
 
             {/* Actions */}
             <div className="ai-social-architect__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-social-architect__btn ai-social-architect__btn--secondary"
                 onClick={handleSetIntention}
                 disabled={!intentionText.trim()}
               >
                 Capturar intención
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="unstyled"
                 className="ai-social-architect__btn ai-social-architect__btn--primary"
                 onClick={handleGenerate}
                 disabled={!designer.intent}
               >
                 Diseñar intervención →
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -360,12 +367,13 @@ export function AISocialArchitect({
               </div>
             </div>
             <div className="ai-social-architect__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-social-architect__btn ai-social-architect__btn--primary"
                 onClick={onClose}
               >
                 Cerrar
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -624,7 +632,8 @@ function SocialRefinementView({
           Refinar intervención
         </span>
         <div className="ai-social-architect__refine-actions">
-          <button
+          <Button
+            variant="unstyled"
             className="ai-social-architect__btn ai-social-architect__btn--ghost"
             onClick={() =>
               onRefine({
@@ -638,8 +647,9 @@ function SocialRefinementView({
             }
           >
             Grupo íntimo (-40%)
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             className="ai-social-architect__btn ai-social-architect__btn--ghost"
             onClick={() =>
               onRefine({
@@ -653,8 +663,9 @@ function SocialRefinementView({
             }
           >
             Grupo amplio (+50%)
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             className="ai-social-architect__btn ai-social-architect__btn--ghost"
             onClick={() =>
               onRefine({
@@ -668,7 +679,7 @@ function SocialRefinementView({
             }
           >
             Aumentar budget 50%
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -780,19 +791,22 @@ function SocialRefinementView({
 
       {/* Actions */}
       <div className="ai-social-architect__actions">
-        <button
+        <Button
+          variant="unstyled"
           className="ai-social-architect__btn ai-social-architect__btn--ghost"
           onClick={onReset}
         >
           Empezar de nuevo
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="unstyled"
           className="ai-social-architect__btn ai-social-architect__btn--secondary"
           onClick={onRegenerate}
         >
           Regenerar
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="unstyled"
           className="ai-social-architect__btn ai-social-architect__btn--primary"
           onClick={onConfirm}
           disabled={!readyToExecute}
@@ -800,7 +814,7 @@ function SocialRefinementView({
           {readyToExecute
             ? '🤝 Diseñar así'
             : `Bloqueado: ${blockers[0] ?? 'riesgos pendientes'}`}
-        </button>
+        </Button>
       </div>
     </section>
   );

@@ -440,6 +440,137 @@ class FinanceAgent(BaseAgent):
             "overdue_amount": status.overdue_amount,
         }
 
+
+    # ─────────────────────────────────────────────────────────
+    # B3 TOOL: FINANCE TRANSACTIONS LIST (AUTO)
+    # VI §6 flagged finance.get_transactions as missingBoth. The repo has
+    # no "transactions" entity — but the account ledger already exists as
+    # invoices (charges) + payments (credits). This tool presents that
+    # ledger as the TransactionListResponse contract the page consumes
+    # (transactions[] + page/page_size/total/total_pages), read-only.
+    # ─────────────────────────────────────────────────────────
+
+    @MCPTool(
+        "finance_transactions_list",
+        "Consultar el historial de transacciones de una familia "
+        "(facturas emitidas y pagos aplicados).",
+        approval=ApprovalLevel.AUTO,
+    )
+    async def finance_transactions_list(
+        self,
+        family_id: str = "",
+        page: int = 1,
+        page_size: int = 15,
+        type: str = "",
+    ) -> dict[str, Any]:
+        if not family_id:
+            return {
+                "status": "error",
+                "message": "Se requiere family_id 💳",
+            }
+        if page < 1 or not 1 <= page_size <= 100:
+            return {
+                "status": "error",
+                "message": "page >= 1 y page_size entre 1 y 100.",
+            }
+        if type and type not in ("charge", "payment"):
+            return {
+                "status": "error",
+                "message": "type debe ser 'charge' o 'payment' (vacío = todos).",
+            }
+
+        rows: list[dict[str, Any]] = []
+        for inv in self.repo.list_invoices(family_id=family_id):
+            rows.append({
+                "id": inv.id,
+                "date": (inv.due_date or str(inv.created_at.date())),
+                "description": f"Factura {inv.id} — {inv.family_name}",
+                "amount": inv.total,
+                "type": "charge",
+                "status": inv.status.value,
+                "method": "",
+            })
+        for pay in self.repo.list_payments(family_id=family_id):
+            rows.append({
+                "id": pay.id,
+                "date": pay.date or "",
+                "description": (
+                    f"Pago {pay.id} — {pay.method.value}"
+                    + (f" ({pay.reference})" if pay.reference else "")
+                ),
+                "amount": pay.amount,
+                "type": "payment",
+                "status": pay.status.value,
+                "method": pay.method.value,
+            })
+        rows.sort(key=lambda r: r["date"], reverse=True)
+        if type:
+            rows = [r for r in rows if r["type"] == type]
+
+        total = len(rows)
+        start = (page - 1) * page_size
+        chunk = rows[start:start + page_size]
+
+        return {
+            "status": "success",
+            "message": f"💳 {total} transacción(es) para {family_id}.",
+            "transactions": chunk,
+            "page": page,
+            "page_size": page_size,
+            "total": total,
+            "total_pages": (total + page_size - 1) // page_size,
+        }
+
+    # ─────────────────────────────────────────────────────────
+    # B3 TOOL: FINANCE INVOICES LIST (AUTO)
+    # VI §6's equivalence (finance.get_invoices → finance_invoice_create)
+    # was semantically invalid: a READ mapped to a HITL write. This is the
+    # real read tool over repo.list_invoices, with the shape the account
+    # page consumes (invoices[] + total).
+    # ─────────────────────────────────────────────────────────
+
+    @MCPTool(
+        "finance_invoices_list",
+        "Consultar las facturas de una familia con su estado de pago.",
+        approval=ApprovalLevel.AUTO,
+    )
+    async def finance_invoices_list(
+        self,
+        family_id: str = "",
+        status: str = "",
+    ) -> dict[str, Any]:
+        if not family_id:
+            return {
+                "status": "error",
+                "message": "Se requiere family_id 🧾",
+            }
+        invoices = self.repo.list_invoices(
+            family_id=family_id,
+            status=status or None,
+        )
+        payload = [
+            {
+                "id": inv.id,
+                "number": inv.id,
+                "family_id": inv.family_id,
+                "family_name": inv.family_name,
+                "total": inv.total,
+                "subtotal": inv.subtotal,
+                "tax": inv.tax,
+                "status": inv.status.value,
+                "due_date": inv.due_date,
+                "paid_date": inv.paid_date or "",
+                "notes": inv.notes,
+            }
+            for inv in invoices
+        ]
+        return {
+            "status": "success",
+            "message": f"🧾 {len(payload)} factura(s) para {family_id}.",
+            "invoices": payload,
+            "total": len(payload),
+        }
+
     # ─────────────────────────────────────────────────────────
     # Tool 7: finance_category_update  🟡 SEMI-AUTO
     # ─────────────────────────────────────────────────────────

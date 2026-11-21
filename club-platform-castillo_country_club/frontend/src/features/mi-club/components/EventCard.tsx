@@ -1,15 +1,17 @@
 /**
  * @component EventCard (Fase 25)
  * @namespace .glass-landing__event-card
- * @depends MiClubLanding.css
+ * @depends EventCard.css
  * @note Event card with emoji icon, title, time, location.
  *       Click navigates to event detail.
- * @import import '../MiClubLanding.css';
+ * @import import './EventCard.css';
  */
+import "./EventCard.css";
 
 import { Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router";
 import { EVENT_CATEGORY_CONFIG } from "@/features/events/types";
+import { Button } from "@/shared/components/ui/Button";
 
 interface EventCardProps {
   event: {
@@ -33,7 +35,8 @@ export function EventCard({ event }: EventCardProps) {
     event.date_start.split("T")[1]?.slice(0, 5) ?? "";
 
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className="glass-landing__event-card"
       onClick={() => navigate(`/mi-club/eventos/${event.id}`)}
@@ -61,6 +64,6 @@ export function EventCard({ event }: EventCardProps) {
           )}
         </div>
       </div>
-    </button>
+    </Button>
   );
 }

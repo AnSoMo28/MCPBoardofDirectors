@@ -1,0 +1,89 @@
+P2-C3h · b0s — fix §5: crear config/club_registry.py (H2) + re-smoke + triage
+
+  · archivos auditados: 131 .py (backend/src + backend/scripts + backend/tests)
+  · única escritura prevista: backend/src/club_mcp/config/club_registry.py (si falta)
+
+── §0 Guardas ──
+  · bootstrap.py importa club_mcp.config.club_registry ✓ (ancla intacta)
+  · get_club_config sin otra definición en el árbol ✓ (H2 confirmado)
+  · config/club_registry.py no existe → §A lo crea
+
+── §A · crear backend/src/club_mcp/config/club_registry.py ──
+  ✓ escrito backend/src/club_mcp/config/club_registry.py (46 líneas)
+  · settings.py (superficie pública — insumo para poblar club_config en b0t):
+      l.12 │ class Settings(BaseSettings):
+      l.15 │ model_config = SettingsConfigDict(
+      l.22 │ club_name: str = "castillo_country_club"
+      l.23 │ club_env: str = "development"
+      l.26 │ database_url: str = "postgresql+asyncpg://club_user:club_pass@localhost:5432/club_db"
+      l.29 │ redis_url: str = "redis://localhost:6379/0"
+      l.32 │ ollama_host: str = "http://localhost:11434"
+      l.33 │ ollama_fast_model: str = "qwen2.5:7b"
+      l.34 │ ollama_smart_model: str = "qwen2.5:32b"
+      l.37 │ jwt_secret_key: str = "change-me-in-production"
+      l.38 │ jwt_algorithm: str = "HS256"
+      l.39 │ jwt_expiration_hours: int = 24
+      l.42 │ cloud_ai_enabled: bool = False
+      l.43 │ cloud_ai_api_key: str = ""
+      l.62 │ Returns:
+
+── §B · re-smoke ──
+  · predicción: ml_intelligence NO alcanzable desde el smoke → sin blockers conocidos
+  · caveat: bootstrap.py usa importlib/__import__ — hay imports dinámicos que esta predicción estática no ve
+  · corriendo: uv run python scripts/smoke_b0.py (cwd=backend, PYTHONPATH=src)
+    warning: `VIRTUAL_ENV=C:/Users/nipag/Documents/MCPClubesPrivados/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+    Traceback (most recent call last):
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\scripts\smoke_b0.py", line 144, in <module>
+        main()
+        ~~~~^^
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\scripts\smoke_b0.py", line 27, in main
+        rt = get_runtime()
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\bootstrap.py", line 277, in get_runtime
+        _RUNTIME = build_runtime()
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\bootstrap.py", line 204, in build_runtime
+        kwargs[pname] = repo_for(repo_key)
+                        ~~~~~~~~^^^^^^^^^^
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\bootstrap.py", line 179, in repo_for
+        cls = _load_repo_class(key)
+      File "C:\Users\nipag\Documents\MCPClubesPrivados\club-platform-castillo_country_club\backend\src\club_mcp\bootstrap.py", line 104, in _load_repo_class
+        raise LookupError(f"Repository class not found for '{repo_key}' in {module_name}")
+    LookupError: Repository class not found for 'member_360_repo' in club_mcp.db.repositories.member_360_repo
+  ✗ SMOKE exit=2 — causa probable en §C/§D; pegar el reporte completo
+
+── §C · triage ml_intelligence (READ-ONLY — el fix es b0t) ──
+  · imports rotos (club_mcp.services.* no existe en el árbol):
+      l.34 │ from club_mcp.services.approval_service import ApprovalLevel, MCPTool
+      l.35 │ from club_mcp.services.claude_service import get_claude_service
+  · símbolo ApprovalLevel → definido en club_mcp.hitl.approval_types (backend/src/club_mcp/hitl/approval_types.py:l.13)
+  · símbolo MCPTool → definido en club_mcp.agents.base (backend/src/club_mcp/agents/base.py:l.18)
+  · símbolo get_claude_service → SIN definición en el árbol (crear módulo o re-apuntar en b0t)
+  · importers de ml_intelligence: backend/tests/unit/agents/test_ml_intelligence.py:l.86
+  · veredicto: FUERA DE CADENA → no bloquea el smoke; diferir a b0t
+  · el archivo no figura en el git status de B0 → daño del baseline, NO de B0
+
+── §D · triage test_rbac (READ-ONLY — el fix es b0t) ──
+  · primeras líneas del test:
+      l.1 │ """Tests for RBAC permissions and tool mapping."""
+      l.2 │ 
+      l.3 │ from __future__ import annotations
+      l.4 │ 
+      l.5 │ from club_mcp.auth.rbac import (
+      l.6 │     ROLE_PERMISSIONS,
+      l.7 │     TOOL_PERMISSION_MAP,
+      l.8 │     Permission,
+  · TOOL_PERMISSION_MAP aún referenciado en: backend/src/club_mcp/auth/rbac.py:l.5, backend/tests/unit/auth/test_rbac.py:l.7, backend/tests/unit/auth/test_rbac.py:l.62, backend/tests/unit/auth/test_rbac.py:l.68, backend/tests/unit/auth/test_rbac.py:l.74, backend/tests/unit/auth/test_rbac.py:l.88, backend/tests/unit/auth/test_rbac.py:l.91
+  · auth/tool_permissions.py: no está en el árbol (B0 lo borró — git status 'D') → el import del test quedó colgando
+  · auth/rbac.py ahora expone: Permission, ROLE_PERMISSIONS, check_permission, WRITE_LEVELS, AGENT_POLICY, TOOL_PERMISSION_OVERRIDES, permission_for
+  · causa raíz: el Guard A de B0 escaneó solo backend/src — no vio el import en tests/
+  · veredicto: solo rompe pytest, no el smoke → reescribir el import del test en b0t
+
+── §E · git / rollback ──
+  · git status config/: ?? club-platform-castillo_country_club/backend/src/club_mcp/config/club_registry.py
+  · rollback: club_registry.py es NUEVO (no trackeado) — borrarlo restaura el estado previo
+
+── siguiente paso ──
+  · pegar el output COMPLETO de p2c3h_b0s_report.txt en el chat.
+  · smoke VERDE → h7 gate superado → seguir con B1 (4 migrables) + B2 (15 cross-agent).
+  · smoke ROJO con ModuleNotFoundError 'club_mcp.services' → es §C: b0t re-apunta/crea esos imports.
+  · test_rbac (§D) se corrige en b0t junto con §C — NO relanzar B0 (§4 ya consumió anclas).
+

@@ -1,11 +1,12 @@
 /**
  * @component MatrixCell (Fase 25)
  * @namespace .glass-risk__cell
- * @depends RiskHeatmap.css, riskTheme
+ * @depends MatrixCell.css, riskTheme
  * @note Interactive grid cell with heat gradient, count circle,
  *       stagger animation, glow pulse.
- * @import import '../RiskHeatmap.css';
+ * @import import './MatrixCell.css';
  */
+import "./MatrixCell.css";
 
 import { cn } from "@/shared/lib/utils";
 import { getRiskCellColor } from "@/shared/lib/riskTheme";

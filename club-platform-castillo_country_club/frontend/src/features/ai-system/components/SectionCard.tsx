@@ -1,18 +1,20 @@
 /**
  * @component SectionCard (Fase 25)
  * @namespace .glass-ai__section
- * @depends AISystemPage.css
+ * @depends SectionCard.css
  * @note Collapsible section wrapper with per-section ErrorBoundary.
  *       Collapse state controlled externally (persisted in localStorage).
  *       Error boundary resets on retry via key change.
- * @import import './AISystemPage.css';
+ * @import import './SectionCard.css';
  */
+import "./SectionCard.css";
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Error Boundary (class component)
@@ -56,7 +58,8 @@ class SectionErrorBoundary extends React.Component<
           <p className="glass-ai__section-error-text">
             Error en {this.props.sectionTitle}
           </p>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-ai__section-error-retry"
             onClick={() => {
@@ -65,7 +68,7 @@ class SectionErrorBoundary extends React.Component<
             }}
           >
             Reintentar
-          </button>
+          </Button>
         </div>
       );
     }
@@ -112,7 +115,8 @@ export function SectionCard({
       tabIndex={-1}
     >
       {/* Header */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="glass-ai__section-header"
         onClick={onToggle}
@@ -138,7 +142,7 @@ export function SectionCard({
             <ChevronUp size={16} />
           )}
         </span>
-      </button>
+      </Button>
 
       {/* Body (animated) */}
       <AnimatePresence initial={false}>

@@ -34,6 +34,7 @@ import type {
 } from "../types";
 
 import "./SpatialGraphView.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -965,7 +966,8 @@ export function SpatialGraphView({
           role="dialog"
           aria-label={`Personality: ${panelNode.facility_name}`}
         >
-          <button
+          <Button
+            variant="unstyled"
             className="glass-fac-graph__panel-close"
             onClick={handleClosePanel}
             aria-label="Close personality panel"
@@ -981,7 +983,7 @@ export function SpatialGraphView({
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
-          </button>
+          </Button>
 
           <div className="glass-fac-graph__panel-header">
             <h3 className="glass-fac-graph__panel-name">
@@ -1022,7 +1024,8 @@ export function SpatialGraphView({
 
       {/* ── I5: Zoom Controls ── */}
       <div className="glass-fac-graph__controls" role="toolbar" aria-label="Controles de navegación">
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="glass-fac-graph__ctrl-btn"
           onClick={() => zoomTowardCenter(1 + ZOOM_STEP * 2)}
@@ -1034,11 +1037,12 @@ export function SpatialGraphView({
             <circle cx="11" cy="11" r="7" />
             <path d="M21 21l-4.35-4.35M8 11h6M11 8v6" />
           </svg>
-        </button>
+        </Button>
 
         <span className="glass-fac-graph__ctrl-zoom">{zoomPercent}%</span>
 
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="glass-fac-graph__ctrl-btn"
           onClick={() => zoomTowardCenter(1 / (1 + ZOOM_STEP * 2))}
@@ -1050,11 +1054,12 @@ export function SpatialGraphView({
             <circle cx="11" cy="11" r="7" />
             <path d="M21 21l-4.35-4.35M8 11h6" />
           </svg>
-        </button>
+        </Button>
 
         <div className="glass-fac-graph__ctrl-divider" />
 
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="glass-fac-graph__ctrl-btn"
           onClick={fitToView}
@@ -1064,9 +1069,10 @@ export function SpatialGraphView({
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
             <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
           </svg>
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="glass-fac-graph__ctrl-btn"
           onClick={resetView}
@@ -1077,12 +1083,13 @@ export function SpatialGraphView({
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
             <path d="M3 3v5h5" />
           </svg>
-        </button>
+        </Button>
 
         {positionOverrides.size > 0 && (
           <>
             <div className="glass-fac-graph__ctrl-divider" />
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="glass-fac-graph__ctrl-btn glass-fac-graph__ctrl-btn--reset-pin"
               onClick={clearOverrides}
@@ -1095,7 +1102,7 @@ export function SpatialGraphView({
               <span className="glass-fac-graph__ctrl-badge">
                 {positionOverrides.size}
               </span>
-            </button>
+            </Button>
           </>
         )}
       </div>

@@ -35,6 +35,7 @@ import { generateNarrativeSafe } from "../lib/conciergeNarrative";
 import type { UseGuestDashboardReturn } from "../hooks/useGuestDashboard";
 
 import "./GuestConciergeVoice.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -288,7 +289,7 @@ export function GuestConciergeVoice({
       {isTypingComplete && narrative.actions.length > 0 && (
         <div className="gst-voice__actions" role="group" aria-label="Acciones disponibles">
           {narrative.actions.map((action, i) => (
-            <button
+            <Button
               key={`${action.tool}-${i}`}
               className="gst-voice__action"
               data-variant={action.variant}
@@ -299,7 +300,7 @@ export function GuestConciergeVoice({
               aria-label={action.label}
             >
               {action.label}
-            </button>
+            </Button>
           ))}
         </div>
       )}

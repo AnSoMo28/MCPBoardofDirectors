@@ -56,6 +56,7 @@ import type { AvailableSlot } from "../lib/calendarSignals";
 
 // Styles
 import "./ChronoCompass.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 CONSTANTS
@@ -192,7 +193,8 @@ export function ChronoCompass({
           const isActive = activeSlotStart === slot.start;
 
           return (
-            <button
+            <Button
+              variant="unstyled"
               key={`${slot.start}-${i}`}
               type="button"
               onClick={() => onSlotClick({ start: slot.start, end: slot.end })}
@@ -211,7 +213,7 @@ export function ChronoCompass({
               <span className="chrono__gap-label">
                 {slot.start}–{slot.end}
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>

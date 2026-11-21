@@ -46,6 +46,7 @@ import {
 } from "../types";
 
 import "./RecAutonomousQueue.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -240,7 +241,7 @@ function ActionCard({
         {/* Action buttons */}
         <div className="raq-card-actions">
           {canExecute && (
-            <button
+            <Button
               type="button"
               className="raq-action-btn"
               data-variant="execute"
@@ -248,11 +249,11 @@ function ActionCard({
             >
               <Zap size={13} aria-hidden="true" />
               <span>Ejecutar</span>
-            </button>
+            </Button>
           )}
 
           {action.readiness === ActionReadiness.AwaitingApproval && (
-            <button
+            <Button
               type="button"
               className="raq-action-btn"
               data-variant="approve"
@@ -260,7 +261,7 @@ function ActionCard({
             >
               <CheckCircle2 size={13} aria-hidden="true" />
               <span>Aprobar</span>
-            </button>
+            </Button>
           )}
 
           {action.readiness === ActionReadiness.ConflictBlocked && (
@@ -412,7 +413,8 @@ export function RecAutonomousQueue({ actions, mode, reducedMotion, onExecuteActi
 
         {/* Expand/collapse */}
         {sortedActions.length > 5 && (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="raq-expand-btn"
             onClick={handleToggle}
@@ -428,7 +430,7 @@ export function RecAutonomousQueue({ actions, mode, reducedMotion, onExecuteActi
                 <span>Ver {sortedActions.length - 5} acciones más</span>
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -440,7 +442,8 @@ export function RecAutonomousQueue({ actions, mode, reducedMotion, onExecuteActi
             {summary.ready} acción{summary.ready > 1 ? "es" : ""} lista
             {summary.ready > 1 ? "s" : ""} para ejecutar en modo Actuar
           </span>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="raq-execute-all-btn"
             onClick={() => {
@@ -452,7 +455,7 @@ export function RecAutonomousQueue({ actions, mode, reducedMotion, onExecuteActi
           >
             <ExternalLink size={12} aria-hidden="true" />
             Ejecutar listas
-          </button>
+          </Button>
         </div>
       )}
     </div>

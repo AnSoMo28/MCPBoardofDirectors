@@ -50,6 +50,7 @@ import { MEMORY_TYPES } from "../config";
 
 import "../family-atoms.css";
 import "./MemoryLane.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Icon Registry
@@ -195,7 +196,8 @@ function MemoryEntry({
         </div>
 
         {/* Title — always visible, expandable toggle */}
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fm-mem__title-btn"
           onClick={toggleExpand}
@@ -208,7 +210,7 @@ function MemoryEntry({
           ) : (
             <ChevronDown size={12} className="fm-mem__expand-icon" aria-hidden="true" />
           )}
-        </button>
+        </Button>
 
         {/* Expandable body */}
         <div className="fm-mem__body" data-expanded={expanded}>
@@ -219,14 +221,15 @@ function MemoryEntry({
           {memory.mediaUrl && (
             <div className="fm-mem__media">
               {/* P5: fm-action-btn atom provides base button styling */}
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="fm-action-btn fm-mem__media-btn"
                 onClick={() => setMediaExpanded(!mediaExpanded)}
               >
                 <Camera size={11} aria-hidden="true" />
                 {mediaExpanded ? "Ocultar" : "Ver imagen"}
-              </button>
+              </Button>
               {mediaExpanded && (
                 <div className="fm-mem__media-preview">
                   <img
@@ -256,7 +259,8 @@ function MemoryEntry({
             <div className="fm-mem__members">
               <Users size={10} className="fm-mem__members-icon" aria-hidden="true" />
               {memory.members.map((memberId) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={memberId}
                   type="button"
                   className="fm-mem__member-avatar"
@@ -264,7 +268,7 @@ function MemoryEntry({
                   onClick={() => onMemberClick?.(memberId)}
                 >
                   {formatMemberInitials(memberId)}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -272,14 +276,15 @@ function MemoryEntry({
           {/* P3: CTA — Every insight has a button */}
           {onShare && (
             <div className="fm-mem__actions">
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="fm-action-btn fm-mem__share-btn"
                 onClick={() => onShare(memory)}
               >
                 <Share2 size={10} aria-hidden="true" />
                 Compartir
-              </button>
+              </Button>
             </div>
           )}
         </div>

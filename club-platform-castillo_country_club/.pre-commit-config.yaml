@@ -1,0 +1,77 @@
+# Pre-commit — Castillo AI Platform · G10 · Ola 0.3 (Q-CI-02 → CERRADO)
+#
+# El script `pnpm run precommit` existía desde B6 pero era DECORATIVO:
+# nadie lo invocaba automáticamente. Este config lo vuelve real.
+#
+# Filosofía (misma que la CI): el commit local corre lo BARATO y
+# CRÍTICO (<10s); la CI corre lo caro (build completo, 818 tests,
+# mypy). Nada de pyre en cada commit.
+#
+# Instalación (una vez por clon):
+#   pip install pre-commit && pre-commit install
+#
+# Corrida manual sobre todo el árbol:
+#   pre-commit run --all-files
+
+repos:
+  # ── higiene universal (rápido, <2s) ──────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: trailing-whitespace (excepto masters ASCII-art)
+        exclude: club-platform-castillo_country_club/MASTER_.*\.md$
+      - id: end-of-file-fixer
+        exclude: club-platform-castillo_country_club/MASTER_.*\.md$
+      - id: check-yaml
+        files: \.github/workflows/.*\.yml$
+      - id: check-json
+        files: backend/docs/evidence/.*\.json$
+      - id: check-merge-conflict
+
+  # ── hooks locales (lógica en .githooks/, entry simple) ──────
+  - repo: local
+    hooks:
+      # CONSISTENCY — el slice del AI Guardian en cada commit que toque
+      # masters o manifest (~1s, Python puro). Si cambiás MASTER_*.md o
+      # architecture.manifest.ts SIN sincronizar el resto, el commit se
+      # rechaza. Fin del drift silencioso (hallazgo #75).
+      - id: verify-master-consistency
+        name: verify-master-consistency (MC-01..09 IG-01..04)
+        entry: python club-platform-castillo_country_club/scripts/verify-master-consistency.py
+        language: system
+        pass_filenames: false
+        files: |
+          (?x)^(
+            club-platform-castillo_country_club/(
+              MASTER_(BASE|CHECKPOINT|CHECKLIST)\.md|
+              frontend/architecture\.manifest\.ts|
+              frontend/tools/.*\.ts|
+              scripts/verify-integration\.ts
+            )
+          )$
+
+      # GUARDIAN ratchet — si el staged toca frontend/src, el guardian
+      # opina ANTES del commit (225ms). Lógica: .githooks/guardian-ratchet.sh
+      - id: architecture-guardian
+        name: architecture-guardian v4.1.3 (ratchet local)
+        entry: club-platform-castillo_country_club/.githooks/guardian-ratchet.sh
+        language: system
+        pass_filenames: false
+        files: club-platform-castillo_country_club/frontend/src/.*
+
+      # VI — cambios en shared/ → integración (8 checks, ~2s)
+      - id: verify-integration
+        name: verify-integration v3.3.0
+        entry: bash -c 'cd club-platform-castillo_country_club/frontend && pnpm run verify:integration'
+        language: system
+        pass_filenames: false
+        files: club-platform-castillo_country_club/frontend/src/shared/.*
+
+      # CSS TOKEN BOUNDARY — fuga var(--font-*/--color-*) en staged.
+      # Lógica: .githooks/css-token-boundary.sh
+      - id: css-token-boundary
+        name: css token boundary (AG-30 local)
+        entry: club-platform-castillo_country_club/.githooks/css-token-boundary.sh
+        language: system
+        files: club-platform-castillo_country_club/frontend/src/.*\.(css|ts|tsx)$

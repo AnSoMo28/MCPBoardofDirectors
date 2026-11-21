@@ -28,11 +28,25 @@ import { useWellnessQueries } from "./useWellnessQueries";
 import { useWellnessAdvisor } from "./useWellnessAdvisor";
 import { calculateWellnessScore } from "../types";
 import type { WellnessAdvisorInsight, WellnessMode } from "../types";
-import type { Family } from "@/features/families/types";
 import type {
   AdvisorReactionInsight,
   AdvisorAction,
 } from "@/features/dashboard/types";
+
+/**
+ * P2-C3g C16 — shape real de family_search: FamilyBrief
+ * (backend/src/club_mcp/models/family.py · 7 campos snake_case).
+ * Deuda C3h: unificar con el Family compartido (14 camelCase).
+ */
+interface SelectedFamily {
+  id: string;
+  name: string;
+  tier: string;
+  status: string;
+  member_count: number;
+  engagement_score: number;
+  join_date: string;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // §2  Helpers
@@ -70,7 +84,7 @@ export function useWellnessDashboard(propFamilyId?: string) {
 
   // ── State ─────────────────────────────────────────────────
 
-  const [selectedFamily, setSelectedFamily] = useState<Family | null>(
+  const [selectedFamily, setSelectedFamily] = useState<SelectedFamily | null>(
     null,
   );
   const [activeTab, setActiveTab] = useState("overview");
@@ -208,7 +222,7 @@ export function useWellnessDashboard(propFamilyId?: string) {
 
   // ── Family selection ─────────────────────────────────────
 
-  const handleFamilySelect = useCallback((family: Family) => {
+  const handleFamilySelect = useCallback((family: SelectedFamily) => {
     setSelectedFamily(family);
     setReactions([]);
     setActionStates({});
@@ -224,7 +238,7 @@ export function useWellnessDashboard(propFamilyId?: string) {
 
   const familyName =
     queries.profileData?.family_name ||
-    selectedFamily?.familyName ||
+    selectedFamily?.name ||
     "Familia";
 
   return {

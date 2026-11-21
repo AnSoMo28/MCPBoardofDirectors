@@ -1,0 +1,90 @@
+P2-C3g · g11-patch7 — C16: inserción tras el fin de la sentencia import (fix g10)
+
+══ A. Evidencia — selectedFamily / Family / imports en la cadena ══
+  ── src/features/wellness/hooks/useWellnessDashboard.ts (253 líneas) · selectedFamily|Family|familyName|memberCount|engagementScore ──
+      31│ import type { Family } from "@/features/families/types";
+      73│   const [selectedFamily, setSelectedFamily] = useState<Family | null>(
+      86│   // ── Family resolution ────────────────────────────────────
+      89│     propFamilyId || user?.familyId || selectedFamily?.id || "";
+     209│   // ── Family selection ─────────────────────────────────────
+     211│   const handleFamilySelect = useCallback((family: Family) => {
+     212│     setSelectedFamily(family);
+     218│     setSelectedFamily(null);
+     225│   const familyName =
+     227│     selectedFamily?.familyName ||
+     233│     familyName,
+     234│     selectedFamily,
+  ── useState con Family ──
+      73│   const [selectedFamily, setSelectedFamily] = useState<Family | null>(
+  ── imports families/types ──
+      31│ import type { Family } from "@/features/families/types";
+  ── fin del bloque de imports (l30-38) ──
+      30│ import type { WellnessAdvisorInsight, WellnessMode } from "../types";
+      31│ import type { Family } from "@/features/families/types";
+      32│ import type {
+      33│   AdvisorReactionInsight,
+      34│   AdvisorAction,
+      35│ } from "@/features/dashboard/types";
+      36│ 
+      37│ // ═══════════════════════════════════════════════════════════════
+      38│ // §2  Helpers
+  ── otros archivos con selectedFamily: 5 (los homónimos locales no cambian) ──
+    frontend/src/features/communications/hooks/usePersonalizedComposer.ts
+    frontend/src/features/families/components/FamilyQuickPreview.tsx
+    frontend/src/features/families/components/IntelligenceGlance.tsx
+    frontend/src/features/finance/components/MemberProfitabilityMatrix.tsx
+    frontend/src/features/wellness/WellnessDashboard.tsx
+
+══ B. Fila C16 — cadena selector + hook + consumidores ══
+  guards hook: param=1/1 · setSelected(family)=1/1 · useState-Family=1/1 · última import=l32
+  · inserción: tras l35 (fin de sentencia import MULTILÍNEA — caso g10)
+  · ventana de inserción en el resultado:
+        34│   AdvisorAction,
+        35│ } from "@/features/dashboard/types";
+        36│ 
+        37│ /**
+        38│  * P2-C3g C16 — shape real de family_search: FamilyBrief
+        39│  * (backend/src/club_mcp/models/family.py · 7 campos snake_case).
+        40│  * Deuda C3h: unificar con el Family compartido (14 camelCase).
+        41│  */
+        42│ interface SelectedFamily {
+        43│   id: string;
+        44│   name: string;
+        45│   tier: string;
+        46│   status: string;
+        47│   member_count: number;
+        48│   engagement_score: number;
+        49│   join_date: string;
+        50│ }
+        51│ 
+        52│ // ═══════════════════════════════════════════════════════════════
+  C16 REWRITE ✓ cadena completa:
+    · selector: WellnessFamilyItem(7 snake) local · onSelect re-tipado
+    · hook: SelectedFamily top-level · useState: const [selectedFamily, setSelectedFamily] = useState<Family | null>(
+      → const [selectedFamily, setSelectedFamily] = useState<SelectedFamily | null>(
+    · hook renames: familyName×1→.name · memberCount×0 · engagementScore×0
+    · hook import: import Family eliminado
+    · consumers modificados: frontend/src/features/wellness/WellnessDashboard.tsx
+    ↻ gate tsc …
+  ✓ tsc OK — C16 APLICADA (selector + hook + consumers)
+
+══ C. End-state ══
+  C16 APLICADO ✓ · #9 APLICADO (g8)
+  → C3g-FRONTEND CERRADO — filas migradas/degradadas: #1 #2 #5 #6 #9 #10 #11 #16 + D5 + C16
+  · deuda backend: #3 #4 #8 #14 #15 #17 · inventario D (9 llamadas viejas) → C3h
+  · cola C3h campos: Reservation 9 renames · Family compartido 14↔7 · TrialList KPIs/paginación
+  sugerido: git add -A && git commit -m "P2-C3g: migrar frontend a tools MCP reales (#1 #2 #5 #6 #9 #10 #11 #16, D5, C16)"
+  · entradas key:[…] en ledger VI14: 22
+  git diff --stat:
+.../communications/hooks/usePreferencesForm.ts     |  4 +-
+ .../features/engagement/ReactivationCampaigns.tsx  |  6 +-
+ .../frontend/src/features/engagement/types.ts      |  2 +-
+ .../src/features/facilities/FacilityMap.tsx        | 18 +++--
+ .../facilities/components/ReservationCalendar.tsx  |  6 +-
+ .../frontend/src/features/guests/GuestList.tsx     | 77 ++++++++++++++++------
+ .../src/features/guests/GuestRegistration.tsx      | 10 +--
+ .../src/features/wellness/WellnessDashboard.tsx    |  2 +-
+ .../wellness/components/WellnessFamilySelector.tsx | 39 +++++++----
+ .../wellness/hooks/useWellnessDashboard.ts         | 22 +++++--
+ .../scripts/p2c3e_vi14_patch.ts                    |  3 -
+ 11 files changed, 130 insertions(+), 59 deletions(-)

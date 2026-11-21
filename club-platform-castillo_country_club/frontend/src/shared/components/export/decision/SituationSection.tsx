@@ -6,6 +6,7 @@
 
 import { ShieldCheck } from "lucide-react";
 import { SectionSkeleton } from "./SectionSkeleton";
+import './SituationSection.css';
 
 interface SituationSectionProps {
   id: string;
@@ -14,7 +15,7 @@ interface SituationSectionProps {
 
 export function SituationSection({ id, summary }: SituationSectionProps) {
   return (
-    <div id={id} className="glass-decision__section">
+    <div id={id} className="situation-section glass-decision__section">
       <div className="glass-decision__section-header">
         <ShieldCheck size={16} className="glass-decision__section-icon" />
         <h2 className="glass-decision__section-title">1. Situación Actual</h2>

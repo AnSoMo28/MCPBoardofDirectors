@@ -18,6 +18,7 @@ import { cn } from "@/shared/lib/utils";
 import { Target } from "lucide-react";
 
 import type { SatisfactionIntelligence } from "@/shared/mocks/contracts";
+import './SatisfactionImpactMatrix.css';
 
 // ═══ CONFIG ═════════════════════════════════════════════════════════════════
 
@@ -88,7 +89,7 @@ export function SatisfactionImpactMatrix({ intelligence, className }: Props) {
           className
         )}
       >
-        <Target className="w-8 h-8 mx-auto text-[var(--color-silver-500)] mb-2" />
+        <Target className="satisfaction-impact-matrix w-8 h-8 mx-auto text-[var(--color-silver-500)] mb-2" />
         <p className="text-sm text-[var(--color-silver-400)]">
           Se necesitan al menos 2 tipos de evento para la matriz
         </p>

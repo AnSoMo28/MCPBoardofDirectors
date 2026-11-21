@@ -14,6 +14,7 @@
 import { Activity } from "lucide-react";
 import { AdvisorBanner, type BaseInsight } from "@/shared/components/AdvisorBanner";
 import type { EngInsight } from "../hooks/useMemberEngagementAdvisor";
+import './EngagementAdvisorBanner.css';
 
 const ENGAGEMENT_LAYER_CONFIG: Record<string, { label: string; color: string }> = {
   diagnostic: { label: "Diagnóstico", color: "var(--color-amber-400)" },
@@ -48,7 +49,7 @@ export function EngagementAdvisorBanner({
       icon={Activity}
       emptyMessage="Engagement estable — sin alertas activas."
       onExecute={onExecute as ((insight: BaseInsight) => void) | undefined}
-      className={className}
+      className={`engagement-advisor-banner ${className}`}
     />
   );
 }

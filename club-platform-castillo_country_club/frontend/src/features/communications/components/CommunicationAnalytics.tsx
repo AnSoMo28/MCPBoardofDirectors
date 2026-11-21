@@ -46,6 +46,7 @@ import {
   INSIGHT_PRIORITY_CONFIG,
 } from "../types";
 import "./CommunicationAnalytics.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ══════════════════════════════════════════════════════════
    Icon Maps (presentation concern — LucideIcon)
@@ -157,9 +158,9 @@ function AIInsightsSection({
             <h3 className="analytics__section-title">Insights AI</h3>
             <p className="analytics__section-sub">Motor de AI para análisis profundo de comunicaciones</p>
           </div>
-          <button className="analytics__generate-btn" onClick={() => setShouldFetch(true)}>
+          <Button variant="unstyled" className="analytics__generate-btn" onClick={() => setShouldFetch(true)}>
             <Brain size={16} /><span>Generar Análisis</span>
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -189,7 +190,7 @@ function AIInsightsSection({
         <div className="analytics__error-inline">
           <AlertTriangle size={18} />
           <span>Error al generar análisis.</span>
-          <button className="analytics__retry-btn" onClick={() => insightsQ.refetch()}>Reintentar</button>
+          <Button variant="unstyled" className="analytics__retry-btn" onClick={() => insightsQ.refetch()}>Reintentar</Button>
         </div>
       </div>
     );
@@ -210,9 +211,9 @@ function AIInsightsSection({
             {sortedInsights.length} insights{autoTriggered ? " — activado por anomalías detectadas" : ""}
           </p>
         </div>
-        <button className="analytics__refresh-btn" onClick={() => insightsQ.refetch()}>
+        <Button variant="unstyled" className="analytics__refresh-btn" onClick={() => insightsQ.refetch()}>
           <RefreshCw size={14} /><span>Regenerar</span>
-        </button>
+        </Button>
       </div>
 
       {summary && <div className="analytics__ai-summary"><p>{summary}</p></div>}
@@ -714,7 +715,7 @@ export function CommunicationAnalytics() {
             <AlertTriangle size={24} />
             <h3>Error al cargar analytics</h3>
             <p>No pudimos obtener los datos. Intentá de nuevo.</p>
-            <button className="analytics__retry-btn" onClick={refetch}>Reintentar</button>
+            <Button variant="unstyled" className="analytics__retry-btn" onClick={refetch}>Reintentar</Button>
           </div>
         </div>
       </div>

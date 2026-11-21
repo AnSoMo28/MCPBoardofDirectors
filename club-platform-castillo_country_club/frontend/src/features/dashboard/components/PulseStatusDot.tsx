@@ -9,6 +9,7 @@
 
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
+import './PulseStatusDot.css';
 
 interface PulseStatusDotProps {
   criticalCount: number;
@@ -23,7 +24,7 @@ export function PulseStatusDot({ criticalCount, warningCount }: PulseStatusDotPr
       <motion.span
         animate={reduced ? {} : { scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
         transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-        className="inline-block w-2 h-2 rounded-full bg-[var(--color-rose-400)]"
+        className="pulse-status-dot inline-block w-2 h-2 rounded-full bg-[var(--color-rose-400)]"
         style={{ boxShadow: "0 0 6px var(--color-rose-400)" }}
         aria-label={`${criticalCount} crítico${criticalCount !== 1 ? "s" : ""}`}
       />

@@ -774,6 +774,84 @@ class FacilityManagementAgent(BaseAgent):
             **analytics.model_dump(mode="json"),
         }
 
+
+    # ──────────────────────────────────────────────────
+    # 🟢 B3 TOOL: GET FACILITY DETAIL (AUTO)
+    # VI §6 flagged facilities.get_facility as "capability without tool":
+    # the repo had get_facility (L438) but no registered tool. This tool
+    # composes the FacilityDetailData contract the page consumes
+    # (facility + upcoming_reservations + utilization_history +
+    # maintenance_log), derived 100% from repo reads.
+    # ──────────────────────────────────────────────────
+
+    @MCPTool(
+        name="get_facility",
+        description=(
+            "Obtener el detalle completo de una instalación: datos, "
+            "próximas reservas, historial de utilización y bitácora "
+            "de mantenimiento."
+        ),
+        approval=ApprovalLevel.AUTO,
+    )
+    async def get_facility(
+        self,
+        facility_id: str = "",
+    ) -> dict[str, Any]:
+        if not facility_id:
+            return {
+                "status": "error",
+                "message": "Se requiere facility_id 🏟️",
+            }
+        facility = await self.repo.get_facility(facility_id)
+        if facility is None:
+            return {
+                "status": "not_found",
+                "message": f"No encontramos la instalación '{facility_id}'.",
+            }
+
+        reservations = await self.repo.list_reservations(
+            facility_id=facility_id,
+        )
+        upcoming = [
+            r.model_dump(mode="json")
+            for r in reservations
+            if r.status.value in ("pending", "confirmed")
+        ][:5]
+
+        utilization = await self.repo.get_amenity_utilization(
+            facility_type=facility.facility_type,
+        )
+        per_facility = {
+            item.facility_id: item
+            for item in utilization.facilities
+        }
+        amenity = per_facility.get(facility.id)
+        history: list[dict[str, Any]] = []
+        if amenity is not None:
+            history = [
+                {
+                    "date": point.get("date", ""),
+                    "utilization": point.get("utilization", 0),
+                }
+                for point in (amenity.time_series or [])[:14]
+            ]
+
+        maintenance = await self.repo.list_maintenance(
+            facility_id=facility_id,
+        )
+        maintenance_log = [
+            t.model_dump(mode="json") for t in maintenance
+        ][:10]
+
+        return {
+            "status": "success",
+            "message": f"🏟️ {facility.name}: {facility.facility_type.value}",
+            "facility": facility.model_dump(mode="json"),
+            "upcoming_reservations": upcoming,
+            "utilization_history": history,
+            "maintenance_log": maintenance_log,
+        }
+
     # ──────────────────────────────────────────────────
     # 🟢 TOOL: GET AMENITY UTILIZATION (AUTO)
     # ──────────────────────────────────────────────────

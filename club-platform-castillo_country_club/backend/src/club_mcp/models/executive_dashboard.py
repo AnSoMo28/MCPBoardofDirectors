@@ -190,6 +190,47 @@ class CreateBoardReport(BaseModel):
     outlook: str = ""
 
 
+# ── Risk Matrix (B3) ────────────────────────────────────────
+# Board-level 4x4 risk register: probability(1-4) × impact(1-4),
+# the exact contract the frontend RiskHeatmap renders
+# (features/reports/types.ts RiskSummary/RiskItem).
+
+class RiskItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    title: str
+    description: str = ""
+    category: str = "operational"
+    probability: int = Field(2, ge=1, le=4)
+    impact: int = Field(2, ge=1, le=4)
+    score: int = 0
+    level: str = "medium"
+    mitigation: str = ""
+    owner: str = ""
+    identified_at: str = ""
+    review_date: Optional[str] = None
+
+
+class RiskMatrix(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    period: str
+    items: list[RiskItem] = Field(default_factory=list)
+    total_risks: int = 0
+    critical: int = 0
+    high: int = 0
+    medium: int = 0
+    low: int = 0
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class CreateRiskMatrix(BaseModel):
+    period: str
+    items: list[RiskItem] = Field(default_factory=list)
+
+
 # ── Export Request ──────────────────────────────────────────
 
 class ExportRequest(BaseModel):

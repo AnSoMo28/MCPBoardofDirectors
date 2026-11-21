@@ -11,6 +11,7 @@ import {
   NARRATIVE_CATEGORY_CONFIG,
 } from "@/features/finance/types";
 import type { NarrativeRecommendation } from "@/features/finance/types";
+import './RecommendationsSection.css';
 
 interface RecommendationsSectionProps {
   id: string;
@@ -22,7 +23,7 @@ export function RecommendationsSection({
   recommendations,
 }: RecommendationsSectionProps) {
   return (
-    <div id={id} className="glass-decision__section">
+    <div id={id} className="recommendations-section glass-decision__section">
       <div className="glass-decision__section-header">
         <TrendingUp size={16} className="glass-decision__section-icon" />
         <h2 className="glass-decision__section-title">6. Recomendaciones</h2>

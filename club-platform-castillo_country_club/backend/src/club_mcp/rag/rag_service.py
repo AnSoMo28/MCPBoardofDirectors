@@ -191,6 +191,14 @@ class RAGService:
         confidence = self._compute_confidence(context_chunks)
 
         # 8. Build sources
+        # b0v: RRF scores are bounded by 1/(k+1) per ranking source — with
+        # vector-only results (BM25 off) a chunk tops out at ~0.016, so the
+        # old absolute floor of 0.05 filtered EVERYTHING. The floor is now
+        # relative: half of the best observed score, with 0.01 as an
+        # absolute minimum so garbage never passes. Cross-encoder rerank
+        # (when active) rewrites final_score to [0,1] and is unaffected.
+        best = max((c.final_score for c in context_chunks), default=0.0)
+        rel_floor = max(0.01, best / 2) if best > 0 else 0.05
         sources = [
             KnowledgeSource(
                 document_id=c.document_id,
@@ -200,7 +208,7 @@ class RAGService:
                 document_type=c.document_type,
             )
             for c in context_chunks
-            if c.final_score > 0.05  # Minimum relevance threshold
+            if c.final_score >= rel_floor
         ]
 
         # 9. Generate answer with Claude
@@ -589,6 +597,16 @@ class RAGService:
             logger.warning("[rag] Could not populate content: %s", exc)
 
         return candidates
+
+    def populate_content(self, candidates: list[SearchResult]) -> list[SearchResult]:
+        """Public wrapper of _populate_content.
+
+        P2-C3h b0v: agents calling search_engine.search() directly get
+        SearchResult.content == "" (hybrid search stores only metadata);
+        this fills it from the vector store. search_documents() already
+        did it internally — direct callers had the gap.
+        """
+        return self._populate_content(candidates)
 
     def _build_context(self, chunks: list[SearchResult]) -> str:
         """

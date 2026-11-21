@@ -25,6 +25,7 @@ import { useMCPQuery, useMCPMutation } from "@/shared/hooks/useMCPQuery";
 import { timeAgo, formatNumber } from "@/shared/lib/utils";
 import { showToast } from "@/shared/components/ui";
 import "./AnnouncementBoard.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ══════════════════════════════════════════════════════════
    Backend Types (verified from V1 — backend-aligned)
@@ -333,12 +334,13 @@ export function AnnouncementBoard() {
               <p className="glass-comm-announcement__error-desc">
                 No se pudieron cargar los analytics.
               </p>
-              <button
+              <Button
+                variant="unstyled"
                 className="glass-comm-announcement__btn"
                 onClick={() => analyticsQ.refetch()}
               >
                 Reintentar
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -766,12 +768,13 @@ export function AnnouncementBoard() {
             <p className="glass-comm-announcement__error-desc">
               No pudimos obtener el listado de anuncios. Intentá de nuevo.
             </p>
-            <button
+            <Button
+              variant="unstyled"
               className="glass-comm-announcement__btn"
               onClick={() => announcementsQ.refetch()}
             >
               Reintentar
-            </button>
+            </Button>
           </div>
         )}
 
@@ -1008,7 +1011,8 @@ export function AnnouncementBoard() {
                         {/* Actions */}
                         {ann.status === "draft" && (
                           <div className="glass-comm-announcement__card-actions">
-                            <button
+                            <Button
+                              variant="unstyled"
                               className="glass-comm-announcement__btn glass-comm-announcement__btn--primary glass-comm-announcement__btn--flex"
                               onClick={() =>
                                 publishMut.mutate({
@@ -1020,8 +1024,9 @@ export function AnnouncementBoard() {
                             >
                               <Send size={14} />
                               Publicar
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="unstyled"
                               className="glass-comm-announcement__btn"
                               onClick={() =>
                                 archiveMut.mutate({
@@ -1033,7 +1038,7 @@ export function AnnouncementBoard() {
                             >
                               <Archive size={14} />
                               Archivar
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </article>
@@ -1048,14 +1053,16 @@ export function AnnouncementBoard() {
                       Página {page} de {totalPages}
                     </p>
                     <div className="glass-comm-announcement__pagination-controls">
-                      <button
+                      <Button
+                        variant="unstyled"
                         className="glass-comm-announcement__btn"
                         onClick={() => setPage(Math.max(1, page - 1))}
                         disabled={page === 1}
                       >
                         Anterior
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="unstyled"
                         className="glass-comm-announcement__btn"
                         onClick={() =>
                           setPage(Math.min(totalPages, page + 1))
@@ -1063,7 +1070,7 @@ export function AnnouncementBoard() {
                         disabled={page === totalPages}
                       >
                         Siguiente
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}

@@ -36,6 +36,7 @@ import {
   PERFORMANCE_STATUS_CONFIG,
 } from '../types';
 import EntertainmentFormModal from './EntertainmentFormModal';
+import './EntertainmentPanel.css';
 
 // ══════════════════════════════════════════════════════════
 //  TYPES
@@ -157,7 +158,7 @@ export default function EntertainmentPanel() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="entertainment-panel flex items-center justify-center py-24">
         <Loader2 className="h-8 w-8 animate-spin text-[var(--color-emerald-400)]" />
       </div>
     );
@@ -196,7 +197,8 @@ export default function EntertainmentPanel() {
       {/* ── Type Filters ── */}
       <div className="flex flex-wrap gap-2">
         {TYPE_FILTERS.map((f) => (
-          <button
+          <Button
+            variant="unstyled"
             key={f.key}
             onClick={() => setTypeFilter(f.key)}
             className={cn(
@@ -207,7 +209,7 @@ export default function EntertainmentPanel() {
             )}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 

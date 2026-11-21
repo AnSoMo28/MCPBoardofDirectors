@@ -290,7 +290,8 @@ function DayIntelSection({ dayEvents, intel, startTime, onSlotClick }: DayIntelP
           />
           <div className="qap-intel__slots">
             {intel.availableSlots.map((slot, i) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={i}
                 type="button"
                 onClick={() => onSlotClick(slot)}
@@ -304,7 +305,7 @@ function DayIntelSection({ dayEvents, intel, startTime, onSlotClick }: DayIntelP
                 <span className="qap-intel__slot-dur">
                   ({formatSlotDuration(slot.durationMinutes)})
                 </span>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -351,7 +352,8 @@ function TagSelector({ selectedTags, onChange }: TagSelectorProps) {
         {TAG_PRESETS.map((tag) => {
           const sel = selectedTags.includes(tag);
           return (
-            <button
+            <Button
+              variant="unstyled"
               key={tag}
               type="button"
               onClick={() => toggleTag(tag)}
@@ -360,7 +362,7 @@ function TagSelector({ selectedTags, onChange }: TagSelectorProps) {
             >
               {sel && "\u2713 "}
               {tag}
-            </button>
+            </Button>
           );
         })}
 
@@ -368,25 +370,27 @@ function TagSelector({ selectedTags, onChange }: TagSelectorProps) {
         {selectedTags
           .filter((t) => !TAG_PRESETS.includes(t as typeof TAG_PRESETS[number]))
           .map((tag) => (
-            <button
+            <Button
+              variant="unstyled"
               key={tag}
               type="button"
               onClick={() => toggleTag(tag)}
               className="qap-tag qap-tag--selected"
             >
               {"\u2713 "}{tag}
-            </button>
+            </Button>
           ))}
 
         {/* Add custom tag */}
         {!showCustomTag ? (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             onClick={() => setShowCustomTag(true)}
             className="qap-tag qap-tag--add"
           >
             + Personalizada
-          </button>
+          </Button>
         ) : (
           <div className="qap-tag-input">
             <input
@@ -400,22 +404,24 @@ function TagSelector({ selectedTags, onChange }: TagSelectorProps) {
               autoFocus
               className="qap-tag-input__field"
             />
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               onClick={addCustomTag}
               className="qap-tag-input__btn qap-tag-input__btn--ok"
               aria-label="Agregar etiqueta"
             >
               {"\u2713"}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="button"
               onClick={() => { setShowCustomTag(false); setCustomTagInput(""); }}
               className="qap-tag-input__btn qap-tag-input__btn--cancel"
               aria-label="Cancelar"
             >
               {"\u2715"}
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -595,7 +601,8 @@ export function QuickAddPanel({
                   const cat = EVENT_CATEGORY_CONFIG[ev.category];
                   const time = extractTime(ev.date_start);
                   return (
-                    <button
+                    <Button
+                      variant="unstyled"
                       key={ev.id}
                       type="button"
                       onClick={() => window.open(`/admin/events/${ev.id}`, "_blank")}
@@ -608,7 +615,7 @@ export function QuickAddPanel({
                       <span aria-hidden="true">{cat.icon}</span>
                       <span className="qap-existing__chip-title">{ev.title}</span>
                       <span className="qap-existing__chip-time">{time}</span>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -642,7 +649,8 @@ export function QuickAddPanel({
               <div className="qap-cat-grid">
                 {(Object.entries(EVENT_CATEGORY_CONFIG) as [EventCategory, typeof EVENT_CATEGORY_CONFIG[EventCategory]][]).map(
                   ([key, config]) => (
-                    <button
+                    <Button
+                      variant="unstyled"
                       key={key}
                       type="button"
                       onClick={() => handleCategoryChange(key)}
@@ -658,7 +666,7 @@ export function QuickAddPanel({
                     >
                       <span aria-hidden="true">{config.icon}</span>
                       <span className="qap-cat-btn__label">{config.label}</span>
-                    </button>
+                    </Button>
                   ),
                 )}
               </div>
@@ -761,24 +769,26 @@ export function QuickAddPanel({
                       <span className="qap-conflict__item-text">
                         {c.title} &middot; {extractTime(c.date_start)}&ndash;{extractTime(c.date_end)}
                       </span>
-                      <button
+                      <Button
+                        variant="unstyled"
                         type="button"
                         onClick={() => window.open(`/admin/events/${c.id}`, "_blank")}
                         className="qap-conflict__link"
                       >
                         Ver
-                      </button>
+                      </Button>
                     </div>
                   ))}
                   {suggestedSlot && (
-                    <button
+                    <Button
+                      variant="unstyled"
                       type="button"
                       onClick={() => setStartTime(suggestedSlot)}
                       className="qap-conflict__suggest"
                     >
                       <ArrowRight size={12} />
                       Sugerir: {suggestedSlot}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

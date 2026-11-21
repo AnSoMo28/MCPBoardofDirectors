@@ -43,6 +43,7 @@ import {
   SEASONAL_ACTION_CATEGORY_CONFIG,
 } from "../types";
 import './SeasonalCalendar.css';
+import { Button } from "@/shared/components/ui/Button";
 
 /* ══════════════════════════════════════════════════════════
    Constants — HEX for SVG (Rule #3)
@@ -762,7 +763,8 @@ export default function SeasonalCalendar() {
               {SEASONAL_LAYER_CONFIGS.map((layer) => {
                 const isActive = visibleLayers.has(layer.id);
                 return (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={layer.id}
                     type="button"
                     onClick={() => toggleLayer(layer.id)}
@@ -775,7 +777,7 @@ export default function SeasonalCalendar() {
                   >
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: isActive ? layer.color : "var(--color-silver-600)" }} />
                     <span style={{ color: isActive ? layer.color : "var(--color-silver-600)" }}>{layer.label}</span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -874,7 +876,8 @@ export default function SeasonalCalendar() {
 
                 return (
                   <div key={m.month}>
-                    <button
+                    <Button
+                      variant="unstyled"
                       type="button"
                       onClick={() => toggleMonth(m.month)}
                       className={cn(
@@ -944,7 +947,7 @@ export default function SeasonalCalendar() {
                       {isExpanded
                         ? <ChevronUp size={16} className="text-[var(--color-silver-500)] flex-shrink-0" />
                         : <ChevronDown size={16} className="text-[var(--color-silver-500)] flex-shrink-0" />}
-                    </button>
+                    </Button>
 
                     <AnimatePresence>
                       {isExpanded && (

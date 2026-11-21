@@ -1,10 +1,11 @@
 /**
  * @component SettingSection (Fase 25)
  * @namespace .glass-settings__section
- * @depends SettingsPage.css
+ * @depends SettingSection.css
  * @note Reusable section card with icon header.
- * @import import '../SettingsPage.css';
+ * @import import './SettingSection.css';
  */
+import "./SettingSection.css";
 
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";

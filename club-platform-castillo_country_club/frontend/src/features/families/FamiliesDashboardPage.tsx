@@ -21,6 +21,7 @@
 import { useCallback } from "react";
 import { useParams, useNavigate } from "react-router";
 import { FamiliesDashboard } from "./components/FamiliesDashboard";
+import './FamiliesDashboardPage.css';
 
 // ═══════════════════════════════════════════════════════════
 // §1  Component
@@ -53,7 +54,7 @@ export default function FamiliesDashboardPage() {
 
   if (!id) {
     return (
-      <div className="fm-dash" data-testid="families-dashboard" data-state="error">
+      <div className="families-dashboard-page fm-dash" data-testid="families-dashboard" data-state="error">
         <p className="fm-dash__error">ID de familia no especificado.</p>
       </div>
     );

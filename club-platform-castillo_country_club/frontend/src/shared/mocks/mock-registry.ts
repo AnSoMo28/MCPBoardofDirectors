@@ -225,6 +225,9 @@ import {
   createMockGetAgeGroupAnalyticsEnhanced,
   createMockGenerateAgeGroupEngagementProposals,
 
+  // ── Reports (B2) ──────────────────────────────────────
+  createMockGetBoardReport,
+
   // ── Guest Management Intelligence (F40) ──────────────
   createMockGetGuestHealthScore,
   createMockGetConversionFunnel,
@@ -253,6 +256,19 @@ import {
   createMockSubmitFeedback,
   createExecutiveAiAnalysis,
   createMockIdentifySocialClusters,
+
+  // ── B3 (risk matrix + today guests) ─────────────────
+  createMockGetRiskMatrix,
+  createMockGetTodayGuests,
+  createMockGetTodaySummary,
+
+  // ── B4 (legacy-keyed dev mocks) ─────────────────────
+  createMockFinanceTransactionsList,
+  createMockFinanceInvoicesList,
+  createMockGetSurveyResults,
+  createMockGetActiveSurvey,
+  createMockGetFacility,
+  createMockDesignReactivationCampaign,
 } from "./factories";
 
 
@@ -324,10 +340,20 @@ export const MOCK_REGISTRY: Record<string, Record<string, MockFactory>> = {
       createMockNarrativeGenerate(params),
     finance_decision_simulate: (params) =>
       createMockFinanceDecisionSimulate(params),
+
+    // ── B4: legacy reads (backend tools landed in B3 — the
+    //    useFamilyAccount callsite still uses these keys).
+    get_transactions: (params) => createMockFinanceTransactionsList(params),
+    get_invoices: (params) => createMockFinanceInvoicesList(params),
+    stress_test: (params) => createMockStressTest(params),
   },
 
   // ── Member Engagement ──
   member_engagement: {
+    // B4: the real HITL tool exists (member_engagement_agent.py:171) —
+    // dev mock serves the page while no backend session is active.
+    design_reactivation_campaign: (params) =>
+      createMockDesignReactivationCampaign(params),
     get_engagement_dashboard: () => createEngagementDashboard(),
     get_engagement_insights: (params) => createMockGetEngagementInsights(params),
     submit_feedback: (params) => createMockSubmitFeedback(params),
@@ -441,6 +467,9 @@ export const MOCK_REGISTRY: Record<string, Record<string, MockFactory>> = {
 
   // ── Guest Management ──
   guest_management: {
+    // B3: today board (the real tools landed in B3 — AUTO reads).
+    get_today_guests: (params) => createMockGetTodayGuests(params),
+    get_today_summary: (params) => createMockGetTodaySummary(params),
     register_guest: (params) =>
       createMockRegisterGuestResponse(params),
     plan_private_event: (params) =>
@@ -529,6 +558,36 @@ export const MOCK_REGISTRY: Record<string, Record<string, MockFactory>> = {
     get_pending_approvals: () => createPendingApprovals(),
     approve_request: () => createApproveRequest(),
     reject_request: () => createRejectRequest(),
+  },
+
+  // ── Engagement (B4) — legacy satisfaction reads; the real tools live
+  //    in the backend (satisfaction.survey_results / active_survey, B3).
+  engagement: {
+    get_survey_results: (params) => createMockGetSurveyResults(params),
+    get_active_survey: (params) => createMockGetActiveSurvey(params),
+  },
+
+  // ── Guests (B4) — legacy server name; canonical mocks live in
+  //    guest_management (the registry alias guests → guest_management
+  //    resolves at runtime; this block serves dev-without-backend).
+  guests: {
+    get_today_guests: (params) => createMockGetTodayGuests(params),
+    get_today_summary: (params) => createMockGetTodaySummary(params),
+    manage_trial_memberships: (params) =>
+      createMockTrialMembershipsResponse(params),
+  },
+
+  // ── Facilities (B4) — legacy reads; canonical mock entries live in
+  //    facility_management.
+  facilities: {
+    get_facility: (params) => createMockGetFacility(params),
+  },
+
+  // ── Families (B4) — mi-club landing reads; canonical entry is
+  //    family_profile.family_get_profile (the B3 adapter handles the
+  //    camelCase shape on the backend side).
+  families: {
+    get_family: (params) => createMockFamilyDetail(params),
   },
   
   // ── Families — F29 Complete (16 tools) ──
@@ -646,7 +705,17 @@ export const MOCK_REGISTRY: Record<string, Record<string, MockFactory>> = {
     generate_age_group_engagement_proposals: (params) =>
       createMockGenerateAgeGroupEngagementProposals(params),
 
-  }
+  },
+
+  // ── Reports (B2/B3) — dev mock; los tools reales ya viven en el backend
+  //    (executive_dashboard.get_board_report + get_risk_matrix, AUTO +
+  //    create-on-demand). Este server existe para DEV sin backend: el
+  //    router prefiere backend en cuanto haya sesión real (ver mcp-router
+  //    Step 1).
+  reports: {
+    get_board_report: (params) => createMockGetBoardReport(params),
+    get_risk_matrix: (params) => createMockGetRiskMatrix(params),
+  },
 };
 
 // ── Lookup Function ──

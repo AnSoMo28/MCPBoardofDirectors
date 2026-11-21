@@ -14,6 +14,7 @@ import { cn } from "@/shared/lib/utils";
 import type { AdvisorBoardBriefResponse } from "@/shared/mocks/contracts";
 import { trackEvent } from "@/shared/lib/analytics";
 import './AIBoardBriefViewer.css';
+import { Button } from "@/shared/components/ui/Button";
 
 /* ──────────────────────────────────────
    Types
@@ -325,14 +326,14 @@ export default function AIBoardBriefViewer({
             <p className="glass-brief__seal-date">{formatBriefDate()}</p>
           </div>
           <div className="glass-brief__header-actions">
-            <button onClick={handlePrint} className="glass-brief__pdf-btn">
+            <Button variant="unstyled" onClick={handlePrint} className="glass-brief__pdf-btn">
               <Printer className="w-3.5 h-3.5" />
               <span>PDF</span>
-            </button>
+            </Button>
             {onClose && (
-              <button onClick={onClose} className="glass-brief__close-btn">
+              <Button variant="unstyled" onClick={onClose} className="glass-brief__close-btn">
                 Cerrar
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -348,7 +349,8 @@ export default function AIBoardBriefViewer({
           <div className="glass-brief__toc">
             <div className="glass-brief__toc-scroll">
               {sections.filter((s) => s.level <= 2).map((s) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={s.id}
                   onClick={() => scrollToSection(s.id)}
                   className={cn(
@@ -358,7 +360,7 @@ export default function AIBoardBriefViewer({
                   )}
                 >
                   {s.title}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -493,7 +495,7 @@ export default function AIBoardBriefViewer({
         {/* ── Q&A — Anticipated Questions ── */}
         {briefData.q_and_a.length > 0 && (
           <div className="glass-brief__qa">
-            <button onClick={qaToggle} className="glass-brief__qa-toggle">
+            <Button variant="unstyled" onClick={qaToggle} className="glass-brief__qa-toggle">
               <MessageSquare className="w-4 h-4 text-[var(--color-silver-400)]" />
               <span>Preguntas que probablemente harán</span>
               <span className="glass-brief__qa-count">{briefData.q_and_a.length}</span>
@@ -504,7 +506,7 @@ export default function AIBoardBriefViewer({
               >
                 <ChevronDown className="w-4 h-4 text-[var(--color-silver-400)]" />
               </motion.div>
-            </button>
+            </Button>
 
             {/* Preview when collapsed */}
             {!showQA && briefData.q_and_a[0] && (
