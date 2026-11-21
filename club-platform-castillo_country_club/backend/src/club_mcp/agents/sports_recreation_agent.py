@@ -15,6 +15,7 @@ TOOLS:
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from typing import Any, Optional
 
 from club_mcp.agents.base import BaseAgent, MCPTool
@@ -1186,16 +1187,16 @@ class SportsRecreationAgent(BaseAgent):
         # ── Member engagement score (0-100) ──
         total_reservations = sum(
             1
-            for r in self.repo._reservations.values()
-            if self.repo._ev(r.get("status")) != "cancelled"
+            for r in self.repo.get_reservations_view().values()
+            if self.repo.status_value(r.get("status")) != "cancelled"
         )
         total_active_classes = sum(
             1
-            for c in self.repo._fitness_classes.values()
+            for c in self.repo.get_fitness_classes_view().values()
             if c.get("is_active", True)
         )
-        total_coaching = len(self.repo._coaching_sessions)
-        total_tournaments = len(self.repo._tournaments)
+        total_coaching = len(self.repo.get_coaching_sessions_view())
+        total_tournaments = len(self.repo.get_tournaments_view())
 
         reservation_component = min(100.0, total_reservations * 2.0)
         class_component = min(100.0, total_active_classes * 5.0)
@@ -1212,8 +1213,8 @@ class SportsRecreationAgent(BaseAgent):
 
         # ── Peak hours from reservation data ──
         peak_hours: dict[str, int] = {}
-        for r in self.repo._reservations.values():
-            if self.repo._ev(r.get("status")) == "cancelled":
+        for r in self.repo.get_reservations_view().values():
+            if self.repo.status_value(r.get("status")) == "cancelled":
                 continue
             start_h = r.get("start_time", "0:00").split(":")[0]
             hour_key = f"{start_h}:00"
@@ -1349,8 +1350,8 @@ class SportsRecreationAgent(BaseAgent):
         unique_members = coaching.unique_members_coached
         total_reservations = sum(
             1
-            for r in self.repo._reservations.values()
-            if self.repo._ev(r.get("status")) != "cancelled"
+            for r in self.repo.get_reservations_view().values()
+            if self.repo.status_value(r.get("status")) != "cancelled"
         )
         raw_participation = (
             total_reservations * 1.5 + unique_members * 3.0 + coaching.total_sessions * 2.0
@@ -1498,7 +1499,7 @@ class SportsRecreationAgent(BaseAgent):
         def weather_risk(date_str: str, sport_type: SportType) -> Optional[str]:
             if sport_type not in OUTDOOR_SPORTS:
                 return None
-            dt = self.repo._parse_date(date_str)
+            dt = self.repo.parse_date(date_str)
             if dt is None:
                 return None
             month = dt.month
@@ -1512,8 +1513,8 @@ class SportsRecreationAgent(BaseAgent):
         items: list[SportsCalendarItem] = []
 
         # ── Reservations ──
-        for r in self.repo._reservations.values():
-            if self.repo._ev(r.get("status")) == "cancelled":
+        for r in self.repo.get_reservations_view().values():
+            if self.repo.status_value(r.get("status")) == "cancelled":
                 continue
             if r["date"] < date_from or r["date"] > date_to:
                 continue
@@ -1529,22 +1530,22 @@ class SportsRecreationAgent(BaseAgent):
                     start_time=r["start_time"],
                     end_time=r["end_time"],
                     location=r["court_name"],
-                    status=self.repo._ev(r.get("status", "confirmed")),
+                    status=self.repo.status_value(r.get("status", "confirmed")),
                     weather_risk=weather_risk(r["date"], r["sport"]),
                     entity_id=r["id"],
                 )
             )
 
         # ── Tournaments ──
-        for t in self.repo._tournaments.values():
+        for t in self.repo.get_tournaments_view().values():
             if t["end_date"] < date_from or t["start_date"] > date_to:
                 continue
             if sport_filter and t["sport"] != sport_filter:
                 continue
 
-            status_val = self.repo._ev(t.get("status", "draft"))
-            start = self.repo._parse_date(max(t["start_date"], date_from))
-            end = self.repo._parse_date(min(t["end_date"], date_to))
+            status_val = self.repo.status_value(t.get("status", "draft"))
+            start = self.repo.parse_date(max(t["start_date"], date_from))
+            end = self.repo.parse_date(min(t["end_date"], date_to))
 
             if start and end:
                 current = start
@@ -1576,7 +1577,7 @@ class SportsRecreationAgent(BaseAgent):
             "jueves": 3, "viernes": 4, "sábado": 5, "sabado": 5, "domingo": 6,
         }
 
-        for c in self.repo._fitness_classes.values():
+        for c in self.repo.get_fitness_classes_view().values():
             if not c.get("is_active", True):
                 continue
             if sport_filter and c["sport"] != sport_filter:
@@ -1587,8 +1588,8 @@ class SportsRecreationAgent(BaseAgent):
             if target_wd is None:
                 continue
 
-            start_dt = self.repo._parse_date(date_from)
-            end_dt = self.repo._parse_date(date_to)
+            start_dt = self.repo.parse_date(date_from)
+            end_dt = self.repo.parse_date(date_to)
             if not start_dt or not end_dt:
                 continue
 
@@ -1622,7 +1623,7 @@ class SportsRecreationAgent(BaseAgent):
                 current += timedelta(days=1)
 
         # ── Coaching Sessions ──
-        for s in self.repo._coaching_sessions.values():
+        for s in self.repo.get_coaching_sessions_view().values():
             if s["date"] < date_from or s["date"] > date_to:
                 continue
             if sport_filter and s["sport"] != sport_filter:
@@ -1638,22 +1639,22 @@ class SportsRecreationAgent(BaseAgent):
                     end_time=s["end_time"],
                     location=s["location"],
                     participants=2,
-                    status=self.repo._ev(s.get("status", "scheduled")),
+                    status=self.repo.status_value(s.get("status", "scheduled")),
                     weather_risk=weather_risk(s["date"], s["sport"]),
                     entity_id=s["id"],
                 )
             )
 
         # ── Leagues (show on match days — Saturdays) ──
-        for l in self.repo._leagues.values():
+        for l in self.repo.get_leagues_view().values():
             if l["end_date"] < date_from or l["start_date"] > date_to:
                 continue
             if sport_filter and l["sport"] != sport_filter:
                 continue
 
-            status_val = self.repo._ev(l.get("status", "proposed"))
-            start_dt = self.repo._parse_date(max(l["start_date"], date_from))
-            end_dt = self.repo._parse_date(min(l["end_date"], date_to))
+            status_val = self.repo.status_value(l.get("status", "proposed"))
+            start_dt = self.repo.parse_date(max(l["start_date"], date_from))
+            end_dt = self.repo.parse_date(min(l["end_date"], date_to))
 
             if start_dt and end_dt:
                 current = start_dt
@@ -1974,7 +1975,7 @@ class SportsRecreationAgent(BaseAgent):
         weekend_count = 0
 
         for r in all_reservations:
-            dt = self.repo._parse_date(r.date)
+            dt = self.repo.parse_date(r.date)
             if dt is None:
                 continue
             if dt.weekday() < 5:

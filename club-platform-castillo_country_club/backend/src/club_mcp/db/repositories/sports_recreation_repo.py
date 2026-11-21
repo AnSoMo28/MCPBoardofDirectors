@@ -5,7 +5,8 @@ All methods are async to match the project's repository pattern.
 
 from __future__ import annotations
 
-from typing import Optional
+from datetime import datetime
+from typing import Any, Optional
 from uuid import uuid4
 
 from club_mcp.models.sports_recreation import (
@@ -58,6 +59,42 @@ class SportsRecreationRepository:
         self._equipment: dict[str, dict] = {}
         self._leagues: dict[str, dict] = {}
         self._recommendations: dict[str, dict] = {}
+
+    # ── contrato observable de lectura (refactor 0042 · pre-vertical) ─────
+    # Vistas superficiales de las colecciones + delegación de helpers
+    # puros: el agente deja de tocar privados (mecánica del 0039).
+    # CERO lógica nueva — mismas comprehensiones en el agente, sobre
+    # estas vistas. El vertical ORM posterior replica el contrato.
+
+    def get_reservations_view(self) -> dict[str, dict]:
+        """Copia superficial de las reservas (id → registro)."""
+        return dict(self._reservations)
+
+    def get_tournaments_view(self) -> dict[str, dict]:
+        """Copia superficial de los torneos (id → registro)."""
+        return dict(self._tournaments)
+
+    def get_fitness_classes_view(self) -> dict[str, dict]:
+        """Copia superficial de las clases de fitness (id → registro)."""
+        return dict(self._fitness_classes)
+
+    def get_coaching_sessions_view(self) -> dict[str, dict]:
+        """Copia superficial de las sesiones de coaching (id → registro)."""
+        return dict(self._coaching_sessions)
+
+    def get_leagues_view(self) -> dict[str, dict]:
+        """Copia superficial de las ligas (id → registro)."""
+        return dict(self._leagues)
+
+    @staticmethod
+    def status_value(value) -> str:
+        """Delegación observable de _ev (enum/str → str)."""
+        return SportsRecreationRepository._ev(value)
+
+    @staticmethod
+    def parse_date(date_str: str) -> Optional[datetime]:
+        """Delegación observable de _parse_date (ISO → datetime | None)."""
+        return SportsRecreationRepository._parse_date(date_str)
 
     # ── helpers ────────────────────────────────────────────────────────────
 
