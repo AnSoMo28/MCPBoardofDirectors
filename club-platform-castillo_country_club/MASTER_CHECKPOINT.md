@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.25 · Generación G30 (Ola 2.1-decimatercera — persistencia real: vertical age_group) · Date: 2026-11-21
+### Version: 9.26 · Generación G31 (Ola 2.1-decimocuarta — persistencia real: vertical sports_recreation) · Date: 2026-11-21
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -46,12 +46,74 @@
 ###          (§3.8-DECIMATERCERA NUEVO · Q-PER-01 → 6
 ###          repos · refactor 0039 run #50 @ d84cecd +
 ###          run #51 @ 2a63042 VERDE a la primera —
-###          sexta generación consecutiva sin saga §8)
+###          sexta generación consecutiva sin saga §8);
+###          G31 — Ola 2.1-decimocuarta absorbida
+###          (§3.8-DECIMOCUARTA NUEVO · Q-PER-01 → 5
+###          repos · refactor 0042 run #53 @ 8f0a638 +
+###          run #54 @ 8e1bb82 VERDE a la primera —
+###          séptima generación consecutiva sin saga §8)
 
 ---
 
 
 
+
+## CHANGELOG G31 (v9.25 → v9.26)
+OLA 2.1-DECIMOCUARTA — DECIMOCUARTO VERTICAL DE PERSISTENCIA
+REAL (PATH 2.2 · 14º repo de los 6 restantes — el candidato
+anunciado por G30) CERRADO en DOS corridas (8e1bb82 —
+evidencia: OUT del APLICAR-VERTICAL-DECIMOCUARTA + CI runs
+#53 y #54 VERDE, la segunda a la PRIMERA, sin saga §8):
+refactor 0042 (8f0a638 · run #53) — contrato sports_
+recreation desacoplado ANTES de migrar (regla §3.2.7 ·
+hallazgo §5.3): 7 públicos observables (5 vistas + status_
+value + parse_date) · agente reescrito sobre públicos (27
+privados tocados → 0 · mismo output BYTE A BYTE verificado
+por probe pre/post con cmp == 0 · fix datetime/Any latente) +
+vertical 0043 (8e1bb82 · run #54): 7 tablas (sports_
+reservations · sports_tournaments · sports_fitness_classes
+· sports_coaching_sessions · sports_equipment · sports_
+leagues · sports_recommendations) + SportsRecreationRepository
+async contrato EXACTO (40 métodos · AST 40/40 idéntico —
+novena vertical drop-in tras el refactor) + alembic 0014 +
+suite 4 + swap OPT-IN 14º repo · persistencia 70/70
+(3+6+6+6+6+6+6+7+4+4+4+4+4+4) · pytest 912→916 · masters
+v9.26. PIEZA DE DISEÑO — VISTAS ASYNC DEL CONTRATO 0042:
+las 5 vistas quedaron sync en el in-memory (dict local, sin
+I/O) pero el ORM necesita I/O → el vertical COMPLETA el
+contrato observable unificado (mecánica 0039/0040): 5 vistas
+in-memory → async def (cuerpo intacto return dict(self._x)) ·
+ORM con session_scope · agente await en los 11 sitios · 61
+tests del agente intactos (ninguno consumía las vistas).
+SEMÁNTICAS LITERALES DEL IN-MEMORY preservadas: ids res_/
+trn_/cls_/coach_/eq_/lg_/srec_ + hex8 · status CONFIRMED/
+DRAFT/PROPOSED/scheduled literales del create · current_
+participants/enrolled/round=0 · is_active=1 · notes/last_
+maintenance None · filtros list_* en Python (orden de
+inserción) · update whitelist (clave desconocida ignorada) ·
+enums .value + rehidratación · analytics F32 reproducidos
+compute-on-read byte a byte (popularity ranks DESC · court
+utilization 14h/día · enrollment fill ASC · tournament
+metrics by_status · equipment lifecycle +30/+15/+20 con
+needs_repair=80 · coaching effectiveness top_coach ·
+seasonal 12 meses PEAK_MONTHS · member profile favorite).
+SIN índices · SIN seed (el in-memory nace vacío: contrato
+vacío idéntico). MYPY GLOBAL 727 ≤ 733 BAJA 1 · RUFF 1233 ≤
+1282 BAJA 43 (tercera vertical que BAJA ambos ratchets).
+GATE DROP-IN AGENTE↔REPO ORM VERDE: output idéntico contra
+sqlite real (analytics · health · calendar · proposals ×2
+con dataset de 7 entidades sembradas por métodos públicos) →
+cmp == 0 (25075 bytes · ids uuid4 y timestamps
+normalizados — no-determinísticos por diseño del
+contrato).
+
+QUEDÓ FUERA (by design): 5 repos in-memory restantes →
+finance (17m sync · 0 awaited — cirugía async como
+compliance) · wellness (22m sync · 0 awaited) · member_360
+(11m sync · compute read-heavy) · document_intelligence
+(RAG lazy — ola aparte por dependencia) · ml_intelligence
+(numpy/sklearn — ola aparte) · ApprovalEngine → Q-PER-03
+(Ola 2.3) · alembic upgrade head en deploy.
 
 ## CHANGELOG G30 (v9.24 → v9.25)
 OLA 2.1-DECIMATERCERA — DECIMOTERCER VERTICAL DE PERSISTENCIA
@@ -2541,6 +2603,96 @@ la undécima en masters v9.23 — YA MIGRADO en Ola 2.1-duodécima
 (§5.3: agente acoplado a 6 privados) — YA MIGRADO en Ola
 2.1-decimatercera §3.8-DECIMATERCERA: refactor 0039 run #50
 @ d84cecd + vertical 0040 run #51 @ 2a63042 VERDE.)
++(sports_recreation 40m/7 dicts — el candidato del REFACTOR
++primero (§5.3: agente acoplado a 27 privados — el más
++acoplado de la lista) — YA MIGRADO en Ola 2.1-decimocuarta
++§3.8-DECIMOCUARTA: refactor 0042 run #53 @ 8f0a638 +
++vertical 0043 run #54 @ 8e1bb82 VERDE. El patrón
++refactor→vertical queda aplicado dos veces.)
+
+### §3.8-DECIMOCUARTA OLA 2.1-DECIMOCUARTA · PERSISTENCIA REAL — VERTICAL SPORTS_RECREATION (✅ CERRADA 2026-11-21)
+
+PERFIL PREVIO (candidato anunciado por G30 END: "sports_
+recreation 27 privados tocados — refactor de contrato ANTES,
+como age_group"). Dos entregas, dos runs VERDE:
+
+REFACTOR 0042 (8f0a638 · run #53 VERDE): repo +7 públicos
+observables (5 vistas get_*_view copias superficiales +
+status_value delegando _ev + parse_date delegando
+_parse_date) · agente reescrito sobre públicos (27 privados
+tocados → 0 · mismas comprehensions · mismos rounds ·
+mismo output BYTE A BYTE verificado por probe pre/post con
+cmp == 0) · fix datetime/Any latente del agente · pytest
+912/912 (0 tests tocados).
+
+0043 (8e1bb82 · run #54 VERDE a la primera): 7 tablas
+(sports_reservations · sports_tournaments · sports_fitness_
+classes · sports_coaching_sessions · sports_equipment ·
+sports_leagues · sports_recommendations) espejo 1:1 del
+estado interno del in-memory + SportsRecreationRepository
+async contrato EXACTO (40 métodos públicos = 25 CRUD + 8
+analytics F32 + 7 del refactor 0042 · AST contrato 40/40
+idéntico: nombres + args + defaults) + prizes/equipment_
+needed/focus_areas/teams/standings JSONB + enums .value +
+alembic 0014_sports_recreation (_mk registro en
+Base.metadata — patrón 0008-0013 · SIN índices · SIN seed)
++ swap OPT-IN 14º repo (bootstrap + db/orm/__init__ + CI
+persistence job) + suite 4 (entities JSONB/enums/
+literales · coaching/equipment/leagues CRUD+filtros ·
+analytics popularity/utilization/enrollment · analytics
+metrics/lifecycle/seasonal/profile).
+
+PIEZA DE DISEÑO — VISTAS ASYNC DEL CONTRATO 0042: el
+refactor dejó las 5 vistas sync en el in-memory (dict
+local, sin I/O); el repo ORM necesita I/O → el vertical
+COMPLETA el contrato observable unificado (mecánica
+0039/0040 de age_group): vistas in-memory → async def
+(cuerpo intacto) · ORM con session_scope · agente await en
+los 11 sitios. 61/61 tests del agente verdes (ninguno
+consumía las vistas). El agente YA desacoplado del 0042 no
+cambió UN BYTE de lógica — solo los await de la
+unificación.
+
+SEMÁNTICAS LITERALES DEL IN-MEMORY PRESERVADAS: ids res_/
+trn_/cls_/coach_/eq_/lg_/srec_{hex8} · status CONFIRMED/
+DRAFT/PROPOSED/scheduled literales del create · current_
+participants/current_enrolled/current_round=0 · is_active
+True · notes/last_maintenance None · filtros list_* en
+Python (orden de inserción) · update con whitelist (clave
+desconocida ignorada — el in-memory la guardaba en el dict
+pero Pydantic la ignoraba: mismo output observable) ·
+enums .value al persistir + rehidratación al leer ·
+analytics F32 reproducidos compute-on-read byte a byte.
+
+FIX DENTRO DEL VERTICAL (lección guest §1.1): el agente
+usaba SportsRecommendation en su anotación (línea de
+popular_sports) SIN importarlo — ruff F821 del gate
+vertical lo cazó al correr el ruff bajo lock. Fix: +1
+import, 0 cambio de lógica.
+
+GATES AL CIERRE (CI runs #53 + #54 VERDE — 5/5 jobs cada
+uno, sin saga §8; sandbox espejo bajo lock): persistencia
+70/70 (3 auth + 6 family + 6 engagement + 6 event + 6
+compliance + 6 guest + 6 satisfaction + 7 communication + 4
+cultural_social + 4 executive_dashboard + 4 proactive_
+recommendation + 4 facility_management + 4 age_group + 4
+sports_recreation) · contrato agente sports drop-in SIN
+TOCAR UN BYTE de lógica tras el refactor (novena vertical
+drop-in total — 61 tests del agente intactos · gate
+drop-in agente↔repo ORM VERDE con output idéntico contra
+sqlite real: cmp == 0 · 25075 bytes) · suite 912→916 ·
+smoke B0 VERDE (19 agentes · 207 tools · RBAC 207/207) ·
+ruff 1233 ≤ 1282 BAJA 43 · mypy global 727 ≤ 733 BAJA 1
+(tercera vertical que BAJA ambos ratchets) · consistency
+13/13 · alembic upgrade head → 0014 verificado.
+
+QUEDÓ FUERA (by design): 5 repos in-memory restantes →
+finance (17m sync · 0 awaited — cirugía async como
+compliance) · wellness (22m sync · 0 awaited) · member_360
+(11m sync · compute read-heavy) · document_intelligence
+(RAG lazy — ola aparte por dependencia) · ml_intelligence
+(numpy/sklearn — ola aparte) · ApprovalEngine → Q-PER-03
+(Ola 2.3) · alembic upgrade head en deploy.
 
 ### §3.8-DECIMATERCERA OLA 2.1-DECIMATERCERA · PERSISTENCIA REAL — VERTICAL AGE_GROUP (✅ CERRADA 2026-11-21)
 
@@ -3289,8 +3441,8 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA · age_group §3.8-DECIMATERCERA CERRADOS) ═══
-  Q-PER-01  6 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA · age_group §3.8-DECIMATERCERA · sports_recreation §3.8-DECIMOCUARTA CERRADOS) ═══
+  Q-PER-01  5 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
@@ -3302,25 +3454,25 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             2.1-undécima §3.8-UNDECIMA; facility_management en Ola 2.1-duodécima
             §3.8-DUODECIMA; age_group en Ola 2.1-decimatercera
             §3.8-DECIMATERCERA (tras el refactor 0039);
-            de los 6 restantes SOLO sports_recreation
-            pide refactor primero (27 privados — patrón
-            refactor→vertical probado); finance/wellness/
-            member_360 sync · doc_intel RAG · ml_intel
-            numpy →
-            siguientes: sports refactor primero ·
-            finance/wellness/member_360 cirugía async ·
-            doc_intel/ml_intel olas aparte) → SQLAlchemy
+            sports_recreation en Ola 2.1-decimocuarta
+            §3.8-DECIMOCUARTA (tras el refactor 0042 —
+            patrón refactor→vertical aplicado dos veces);
+            de los 5 restantes NINGUNO necesita refactor
+            de contrato (0 privados tocados) — pero
+            finance/wellness/member_360 son sync ·
+            doc_intel RAG · ml_intel numpy →
+            siguientes: finance/wellness/member_360
+            cirugía async / compute · doc_intel/ml_intel
+            olas aparte) → SQLAlchemy
             async via db/orm/
             (mecánica §3.8 probada: ORM + alembic + repo + gate
             — ya con lección run #28: read-path re-construye
             enums · lección run #39: los ratchets ruff/mypy
             corren en CI ANTES de cerrar la vertical — pasarlos
             en sandbox primero). Siguiente: candidato del
-            Chief Architect de los 6 (sports_recreation:
-            refactor de contrato primero — patrón age_group
-            0039+0040 probado; finance/wellness/member_360:
-            cirugía async / compute, olas aparte; las simples
-            siguen la mecánica).
+            Chief Architect de los 5 (finance/wellness/
+            member_360: cirugía async / compute, olas
+            aparte; las simples siguen la mecánica).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
@@ -3388,6 +3540,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.25 · Generación G30 (sincronizada con
-MASTER_BASE.md v9.25 y MASTER_CHECKLIST.md v9.25)
+END OF MASTER_CHECKPOINT.md v9.26 · Generación G31 (sincronizada con
+MASTER_BASE.md v9.26 y MASTER_CHECKLIST.md v9.26)
 

@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.25 · Generación G30 (Ola 2.1-decimatercera — persistencia real: vertical age_group) · 180 checks · ZERO tolerance
+### Version: 9.26 · Generación G31 (Ola 2.1-decimocuarta — persistencia real: vertical sports_recreation) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,44 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G31 (v9.25 → v9.26)
+OLA 2.1-DECIMOCUARTA CERRADA — GATES:
+
+PASO persistence extiende sports_recreation (runs #53+#54):
+write → restart → read OK — ahora auth+family+engagement+
+event+compliance+guest+satisfaction+communication+cultural_
+social+executive_dashboard+proactive_recommendation+facility_
+management+age_group+sports_recreation (70 tests ·
+3+6+6+6+6+6+6+7+4+4+4+4+4+4). Evidencia: CI run #53 VERDE @
+8f0a638 (refactor contrato — 7 públicos observables · vistas
+async · output byte a byte · 912 tests) + CI run #54 VERDE @
+8e1bb82 a la PRIMERA, sin saga §8 (5/5 jobs · persistencia
+70/70 · AST contrato 40/40 idéntico — novena vertical
+drop-in tras el refactor 0042: 0 cirugía, 0 tests del agente
+ajustados · agente YA desacoplado). Lección run #39
+INSTITUCIONALIZADA: ruff/mypy del vertical verificados en
+sandbox bajo el lock del CI (uv sync --frozen) ANTES del
+push — ruff vertical limpio (79 autofixes de estilo en los
+archivos del vertical) · ruff global 1233 ≤ 1282 BAJA 43 ·
+mypy global 727 ≤ 733 BAJA 1 (tercera vertical que BAJA
+ambos ratchets). Cifras: pytest 912→916 · persistencia
+66→70 · repos 6→5 · consistency 13/13. FIX DENTRO DEL
+VERTICAL (lección guest §1.1): el agente usaba
+SportsRecommendation en su anotación SIN importarlo (ruff
+F821 del gate vertical lo cazó); fix +1 import 0 lógica.
+PIEZA DE DISEÑO DEL VERTICAL: las 5 vistas del contrato 0042
+se completan ASYNC (in-memory async def con cuerpo intacto ·
+ORM con session_scope · agente await en 11 sitios —
+contrato observable unificado, mecánica 0039/0040).
+END: masters v9.26 · Q-PER-01 → 5 repos restantes ·
+siguiente: finance (17m sync · 0 awaited — cirugía async
+como compliance) · wellness (22m sync · 0 awaited) ·
+member_360 (11m sync · compute read-heavy) ·
+document_intelligence (RAG lazy — ola aparte por
+dependencia) · ml_intelligence (numpy/sklearn — ola
+aparte). El patrón refactor→vertical queda aplicado dos
+veces (age_group 0039+0040 · sports 0042+0043).
 
 ## CHANGELOG G30 (v9.24 → v9.25)
 OLA 2.1-DECIMATERCERA CERRADA — GATES:
@@ -1782,5 +1820,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.25 · Generación G30 (sincronizada con
-MASTER_BASE.md v9.25 y MASTER_CHECKPOINT.md v9.25)
+END OF MASTER_CHECKLIST.md v9.26 · Generación G31 (sincronizada con
+MASTER_BASE.md v9.26 y MASTER_CHECKPOINT.md v9.26)
