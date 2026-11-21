@@ -26,6 +26,7 @@ from __future__ import annotations
 import os
 
 import pytest
+from sqlalchemy import select
 
 from club_mcp.db.orm.base import Base
 from club_mcp.db.orm.repositories.finance_repo import (
@@ -247,6 +248,58 @@ async def test_budgets_cash_and_account_status_restart() -> None:
     assert status2 is not None
     assert status2.total_paid == 4000.0, "pagos paid sobreviven restart"
     assert status2.overdue_count == 1, "overdue sobrevive restart"
+
+
+async def test_budget_lines_enum_order_not_physical() -> None:
+    """Regresión run #56: lines en orden ExpenseCategory, NUNCA el físico.
+
+    PG (MVCC) mueve una fila UPDATE-ada al final del heap: tras el
+    set_budget("maintenance") un SELECT sin ORDER BY devolvía
+    "maintenance" ÚLTIMA (sqlite conserva el orden físico y por eso
+    el sandbox no lo veía). El orden contractual del in-memory es
+    el del enum sembrado en __init__ — el ORM itera el ENUM, no el
+    result-set. Este test fuerza un orden físico NO-enum en sqlite
+    (borrar las 9 sembradas + reinsertar desordenadas) y exige el
+    orden enum igual: muere en cualquier backend que filtre el heap.
+    """
+    from club_mcp.db.orm.finance_orm import FinanceBudgetORM
+    from club_mcp.db.orm.session import session_scope
+
+    await _reset_backend()
+    repo = _repo()
+    budget = await repo.get_budget()  # siembra las 9 (orden enum físico)
+    assert [line.category for line in budget.lines] == [
+        c.value for c in ExpenseCategory
+    ], "orden contractual = orden ExpenseCategory"
+
+    # forzar heap físico NO-enum: borrar las 9 y reinsertarlas AL REVÉS
+    engine = repo._engine
+    async with session_scope(engine) as s:
+        for row in (await s.execute(select(FinanceBudgetORM))).scalars():
+            await s.delete(row)
+    reversed_cats = [c.value for c in ExpenseCategory]
+    reversed_cats.reverse()
+    async with session_scope(engine) as s:
+        for cat in reversed_cats:
+            s.add(FinanceBudgetORM(category=cat, amount=1000.0))
+
+    # precondición del test: el heap físico está garantizado al revés
+    # (sqlite lo conserva; PG lo garantiza tras el UPDATE de MVCC —
+    # si algún backend devolviera orden enum aquí, el assert final
+    # seguiría pasando: este guard solo hace el test auto-explicativo)
+    async with session_scope(engine) as s:
+        physical = [
+            row.category
+            for row in (await s.execute(select(FinanceBudgetORM))).scalars()
+        ]
+    assert physical == reversed_cats, "heap físico garantizado NO-enum"
+
+    # get_budget DEBE devolver el orden enum igual que el in-memory
+    budget2 = await repo.get_budget()
+    assert [line.category for line in budget2.lines] == [
+        c.value for c in ExpenseCategory
+    ], "orden del enum aunque el heap físico esté al revés"
+    assert budget2.total_budgeted == 9000.0, "9 × 1000 reinsertadas"
 
 
 async def test_report_and_ar_summary() -> None:

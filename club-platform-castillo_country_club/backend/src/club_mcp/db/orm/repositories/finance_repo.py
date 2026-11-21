@@ -34,6 +34,11 @@ Semántica literal del in-memory que se preserva:
     in-memory iteraba el dict sembrado en __init__), spent Σ
     expenses de la categoría · utilization_pct 0.0 si budgeted≤0
     (división por cero guardada MISMA) · rounds a 1 decimal.
+    Orden de lines = orden de ExpenseCategory (el contractual del
+    in-memory): iteramos el ENUM, nunca el result-set — PG mueve
+    una fila UPDATE-ada al final del heap (MVCC) y un SELECT sin
+    ORDER BY devolvería "maintenance" al final tras el set_budget
+    (run #56: sqlite guarda el orden físico, PG no → divergencia).
   * set_budget: UPSERT por categoría (el in-memory era
     dict[key]=amount).
   * get_account_status: AccountStatus VACÍO para familia sin
@@ -431,14 +436,15 @@ class FinanceRepository:
                 spent_by_cat.get(e.category, 0.0) + e.amount
             )
 
-        for cat, budgeted in budgets.items():
-            spent = spent_by_cat.get(cat, 0.0)
+        for cat in ExpenseCategory:
+            budgeted = budgets.get(cat.value, 0.0)
+            spent = spent_by_cat.get(cat.value, 0.0)
             remaining = budgeted - spent
             util = round(
                 (spent / budgeted * 100) if budgeted > 0 else 0.0, 1
             )
             lines.append(BudgetLine(
-                category=cat,
+                category=cat.value,
                 budgeted=budgeted,
                 spent=round(spent, 2),
                 remaining=round(remaining, 2),
