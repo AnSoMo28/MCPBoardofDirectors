@@ -239,7 +239,8 @@ def build_runtime() -> Runtime:
             "2.1-décima: executive_dashboard · "
             "2.1-undécima: proactive_recommendation · "
             "2.1-duodécima: facility_management · "
-            "2.1-decimatercera: age_group)"
+            "2.1-decimatercera: age_group · "
+            "2.1-decimocuarta: sports_recreation)"
         )
 
     def _orm_repo(key: str) -> Any | None:
@@ -318,6 +319,12 @@ def build_runtime() -> Runtime:
             )
 
             return _AgeGroupRepoORM(_persist_engine)
+        if key == "sports_recreation_repo":
+            from club_mcp.db.orm.repositories.sports_recreation_repo import (
+                SportsRecreationRepository as _SportsRepoORM,
+            )
+
+            return _SportsRepoORM(_persist_engine)
         return None
 
     def repo_for(key: str) -> Any:

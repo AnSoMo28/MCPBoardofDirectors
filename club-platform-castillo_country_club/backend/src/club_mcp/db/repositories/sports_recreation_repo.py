@@ -6,16 +6,15 @@ All methods are async to match the project's repository pattern.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
 from club_mcp.models.sports_recreation import (
-    CalendarItemType,
     ClassEnrollmentStat,
     ClassType,
-    CoachStat,
     CoachingEffectiveness,
     CoachingSession,
+    CoachStat,
     CourtReservation,
     CourtUtilizationStat,
     CreateCoachingSession,
@@ -35,11 +34,6 @@ from club_mcp.models.sports_recreation import (
     SeasonalPattern,
     SportLeague,
     SportPopularity,
-    SportsAnalytics,
-    SportsCalendarItem,
-    SportsHealthFactor,
-    SportsHealthSummary,
-    SportsProposal,
     SportsRecommendation,
     SportType,
     Tournament,
@@ -66,23 +60,27 @@ class SportsRecreationRepository:
     # CERO lógica nueva — mismas comprehensiones en el agente, sobre
     # estas vistas. El vertical ORM posterior replica el contrato.
 
-    def get_reservations_view(self) -> dict[str, dict]:
-        """Copia superficial de las reservas (id → registro)."""
+    async def get_reservations_view(self) -> dict[str, dict]:
+        """Copia superficial de las reservas (id → registro).
+
+        async por el vertical 0043 (contrato observable unificado:
+        el repo ORM la implementa con I/O — mismo await del agente).
+        """
         return dict(self._reservations)
 
-    def get_tournaments_view(self) -> dict[str, dict]:
+    async def get_tournaments_view(self) -> dict[str, dict]:
         """Copia superficial de los torneos (id → registro)."""
         return dict(self._tournaments)
 
-    def get_fitness_classes_view(self) -> dict[str, dict]:
-        """Copia superficial de las clases de fitness (id → registro)."""
+    async def get_fitness_classes_view(self) -> dict[str, dict]:
+        """Copia superficial de las clases (id → registro)."""
         return dict(self._fitness_classes)
 
-    def get_coaching_sessions_view(self) -> dict[str, dict]:
-        """Copia superficial de las sesiones de coaching (id → registro)."""
+    async def get_coaching_sessions_view(self) -> dict[str, dict]:
+        """Copia superficial de las sesiones (id → registro)."""
         return dict(self._coaching_sessions)
 
-    def get_leagues_view(self) -> dict[str, dict]:
+    async def get_leagues_view(self) -> dict[str, dict]:
         """Copia superficial de las ligas (id → registro)."""
         return dict(self._leagues)
 
@@ -92,7 +90,7 @@ class SportsRecreationRepository:
         return SportsRecreationRepository._ev(value)
 
     @staticmethod
-    def parse_date(date_str: str) -> Optional[datetime]:
+    def parse_date(date_str: str) -> datetime | None:
         """Delegación observable de _parse_date (ISO → datetime | None)."""
         return SportsRecreationRepository._parse_date(date_str)
 
@@ -114,13 +112,13 @@ class SportsRecreationRepository:
         self._reservations[rid] = rec
         return CourtReservation(**rec)
 
-    async def get_reservation(self, reservation_id: str) -> Optional[CourtReservation]:
+    async def get_reservation(self, reservation_id: str) -> CourtReservation | None:
         rec = self._reservations.get(reservation_id)
         return CourtReservation(**rec) if rec else None
 
     async def update_reservation(
         self, reservation_id: str, updates: dict
-    ) -> Optional[CourtReservation]:
+    ) -> CourtReservation | None:
         rec = self._reservations.get(reservation_id)
         if not rec:
             return None
@@ -130,10 +128,10 @@ class SportsRecreationRepository:
 
     async def list_reservations(
         self,
-        member_id: Optional[str] = None,
-        sport: Optional[SportType] = None,
-        date: Optional[str] = None,
-        status: Optional[ReservationStatus] = None,
+        member_id: str | None = None,
+        sport: SportType | None = None,
+        date: str | None = None,
+        status: ReservationStatus | None = None,
     ) -> list[CourtReservation]:
         results = list(self._reservations.values())
         if member_id:
@@ -159,13 +157,13 @@ class SportsRecreationRepository:
         self._tournaments[tid] = rec
         return Tournament(**rec)
 
-    async def get_tournament(self, tournament_id: str) -> Optional[Tournament]:
+    async def get_tournament(self, tournament_id: str) -> Tournament | None:
         rec = self._tournaments.get(tournament_id)
         return Tournament(**rec) if rec else None
 
     async def update_tournament(
         self, tournament_id: str, updates: dict
-    ) -> Optional[Tournament]:
+    ) -> Tournament | None:
         rec = self._tournaments.get(tournament_id)
         if not rec:
             return None
@@ -175,8 +173,8 @@ class SportsRecreationRepository:
 
     async def list_tournaments(
         self,
-        sport: Optional[SportType] = None,
-        status: Optional[TournamentStatus] = None,
+        sport: SportType | None = None,
+        status: TournamentStatus | None = None,
     ) -> list[Tournament]:
         results = list(self._tournaments.values())
         if sport:
@@ -198,13 +196,13 @@ class SportsRecreationRepository:
         self._fitness_classes[cid] = rec
         return FitnessClass(**rec)
 
-    async def get_fitness_class(self, class_id: str) -> Optional[FitnessClass]:
+    async def get_fitness_class(self, class_id: str) -> FitnessClass | None:
         rec = self._fitness_classes.get(class_id)
         return FitnessClass(**rec) if rec else None
 
     async def update_fitness_class(
         self, class_id: str, updates: dict
-    ) -> Optional[FitnessClass]:
+    ) -> FitnessClass | None:
         rec = self._fitness_classes.get(class_id)
         if not rec:
             return None
@@ -214,8 +212,8 @@ class SportsRecreationRepository:
 
     async def list_fitness_classes(
         self,
-        sport: Optional[SportType] = None,
-        class_type: Optional[ClassType] = None,
+        sport: SportType | None = None,
+        class_type: ClassType | None = None,
         active_only: bool = False,
     ) -> list[FitnessClass]:
         results = list(self._fitness_classes.values())
@@ -243,15 +241,15 @@ class SportsRecreationRepository:
 
     async def get_coaching_session(
         self, session_id: str
-    ) -> Optional[CoachingSession]:
+    ) -> CoachingSession | None:
         rec = self._coaching_sessions.get(session_id)
         return CoachingSession(**rec) if rec else None
 
     async def list_coaching_sessions(
         self,
-        member_id: Optional[str] = None,
-        coach_name: Optional[str] = None,
-        sport: Optional[SportType] = None,
+        member_id: str | None = None,
+        coach_name: str | None = None,
+        sport: SportType | None = None,
     ) -> list[CoachingSession]:
         results = list(self._coaching_sessions.values())
         if member_id:
@@ -275,13 +273,13 @@ class SportsRecreationRepository:
         self._equipment[eid] = rec
         return Equipment(**rec)
 
-    async def get_equipment(self, equipment_id: str) -> Optional[Equipment]:
+    async def get_equipment(self, equipment_id: str) -> Equipment | None:
         rec = self._equipment.get(equipment_id)
         return Equipment(**rec) if rec else None
 
     async def update_equipment(
         self, equipment_id: str, updates: dict
-    ) -> Optional[Equipment]:
+    ) -> Equipment | None:
         rec = self._equipment.get(equipment_id)
         if not rec:
             return None
@@ -291,8 +289,8 @@ class SportsRecreationRepository:
 
     async def list_equipment(
         self,
-        sport: Optional[SportType] = None,
-        location: Optional[str] = None,
+        sport: SportType | None = None,
+        location: str | None = None,
     ) -> list[Equipment]:
         results = list(self._equipment.values())
         if sport:
@@ -315,13 +313,13 @@ class SportsRecreationRepository:
         self._leagues[lid] = rec
         return SportLeague(**rec)
 
-    async def get_league(self, league_id: str) -> Optional[SportLeague]:
+    async def get_league(self, league_id: str) -> SportLeague | None:
         rec = self._leagues.get(league_id)
         return SportLeague(**rec) if rec else None
 
     async def update_league(
         self, league_id: str, updates: dict
-    ) -> Optional[SportLeague]:
+    ) -> SportLeague | None:
         rec = self._leagues.get(league_id)
         if not rec:
             return None
@@ -331,8 +329,8 @@ class SportsRecreationRepository:
 
     async def list_leagues(
         self,
-        sport: Optional[SportType] = None,
-        status: Optional[LeagueStatus] = None,
+        sport: SportType | None = None,
+        status: LeagueStatus | None = None,
     ) -> list[SportLeague]:
         results = list(self._leagues.values())
         if sport:
@@ -353,8 +351,8 @@ class SportsRecreationRepository:
 
     async def list_recommendations(
         self,
-        member_id: Optional[str] = None,
-        sport: Optional[SportType] = None,
+        member_id: str | None = None,
+        sport: SportType | None = None,
     ) -> list[SportsRecommendation]:
         results = list(self._recommendations.values())
         if member_id:
@@ -379,7 +377,7 @@ class SportsRecreationRepository:
             return default
 
     @staticmethod
-    def _parse_date(date_str: str) -> Optional[datetime]:
+    def _parse_date(date_str: str) -> datetime | None:
         """Safely parse an ISO date string."""
         try:
             return datetime.fromisoformat(date_str)
@@ -608,7 +606,7 @@ class SportsRecreationRepository:
             base_urgency = condition_urgency.get(cond_val, 10)
 
             # Factor in maintenance recency
-            days_since: Optional[int] = None
+            days_since: int | None = None
             maintenance_str = e.get("last_maintenance")
             if maintenance_str:
                 last_dt = self._parse_date(maintenance_str)
@@ -676,7 +674,7 @@ class SportsRecreationRepository:
             all_members.add(member)
 
         coaches: list[CoachStat] = []
-        top_coach: Optional[str] = None
+        top_coach: str | None = None
         max_sessions = 0
 
         for name, data in coach_data.items():
