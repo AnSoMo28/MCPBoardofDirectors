@@ -6,10 +6,9 @@ recommendations, and wellness reports.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from club_mcp.agents.base import BaseAgent, MCPTool
-from club_mcp.db.repositories.wellness_repo import WellnessRepository
 from club_mcp.hitl.approval_types import ApprovalLevel
 from club_mcp.models.wellness import (
     ActivityType,
@@ -17,6 +16,12 @@ from club_mcp.models.wellness import (
     GoalStatus,
     WellnessGoalType,
 )
+
+
+if TYPE_CHECKING:
+    from club_mcp.db.repositories.wellness_repo import (
+        WellnessRepository,
+    )
 
 
 class WellnessAgent(BaseAgent):
@@ -54,7 +59,7 @@ class WellnessAgent(BaseAgent):
         family_id: str,
     ) -> dict[str, Any]:
         """Get wellness profile for a family."""
-        profile = self.repo.get_profile_by_family(family_id)
+        profile = await self.repo.get_profile_by_family(family_id)
         if not profile:
             return {
                 "status": "not_found",
@@ -129,11 +134,15 @@ class WellnessAgent(BaseAgent):
             "notes": notes,
         }
 
-        existing = self.repo.get_profile_by_family(family_id)
+        existing = await self.repo.get_profile_by_family(family_id)
         if existing:
-            profile = self.repo.update_profile(existing.id, updates)
+            profile = await self.repo.update_profile(existing.id, updates)
+            if profile is None:
+                # in-memory: unreachable (existing acaba de leerse) —
+                # el guard existe solo para el tipado, no el contrato
+                profile = await self.repo.create_profile(updates)
         else:
-            profile = self.repo.create_profile(updates)
+            profile = await self.repo.create_profile(updates)
 
         return {
             "status": "success",
@@ -181,7 +190,7 @@ class WellnessAgent(BaseAgent):
                 "message": "La duración debe ser mayor a cero minutos.",
             }
 
-        activity = self.repo.log_activity({
+        activity = await self.repo.log_activity({
             "family_id": family_id,
             "member_name": member_name,
             "activity_type": at_enum.value,
@@ -244,7 +253,7 @@ class WellnessAgent(BaseAgent):
                 "message": "El valor objetivo debe ser mayor a cero.",
             }
 
-        goal = self.repo.create_goal({
+        goal = await self.repo.create_goal({
             "family_id": family_id,
             "goal_type": gt_enum.value,
             "title": title,
@@ -294,7 +303,7 @@ class WellnessAgent(BaseAgent):
                     ),
                 }
 
-        goals = self.repo.list_goals(family_id, status_filter)
+        goals = await self.repo.list_goals(family_id, status_filter)
 
         if not goals:
             return {
@@ -331,7 +340,7 @@ class WellnessAgent(BaseAgent):
         family_id: str,
     ) -> dict[str, Any]:
         """Get personalized wellness recommendations."""
-        recs = self.repo.get_recommendations(family_id)
+        recs = await self.repo.get_recommendations(family_id)
 
         if not recs:
             return {
@@ -374,7 +383,7 @@ class WellnessAgent(BaseAgent):
         notes: str = "",
     ) -> dict[str, Any]:
         """Schedule a wellness class appointment (HITL)."""
-        cls = self.repo.get_class(class_id)
+        cls = await self.repo.get_class(class_id)
         if not cls:
             return {
                 "status": "error",
@@ -420,8 +429,8 @@ class WellnessAgent(BaseAgent):
         self, params: dict[str, Any]
     ) -> dict[str, Any]:
         """Execute class scheduling post-approval."""
-        appointment = self.repo.create_appointment(params)
-        cls = self.repo.get_class(params["class_id"])
+        appointment = await self.repo.create_appointment(params)
+        cls = await self.repo.get_class(params["class_id"])
 
         return {
             "status": "success",
@@ -461,7 +470,7 @@ class WellnessAgent(BaseAgent):
                 "message": "La fecha de inicio debe ser anterior a la fecha de fin.",
             }
 
-        report = self.repo.generate_report(family_id, date_from, date_to)
+        report = await self.repo.generate_report(family_id, date_from, date_to)
 
         return {
             "status": "success",
@@ -484,7 +493,7 @@ class WellnessAgent(BaseAgent):
         family_id: str,
     ) -> dict[str, Any]:
         """Predict wellness engagement and churn risk."""
-        prediction = self.repo.compute_prediction(family_id)
+        prediction = await self.repo.compute_prediction(family_id)
 
         risk_emoji = {
             "low": "🟢",
@@ -519,7 +528,7 @@ class WellnessAgent(BaseAgent):
         family_id: str,
     ) -> dict[str, Any]:
         """Detect wellness anomalies for a family."""
-        response = self.repo.detect_anomalies(family_id)
+        response = await self.repo.detect_anomalies(family_id)
 
         return {
             "status": "success",
@@ -540,7 +549,7 @@ class WellnessAgent(BaseAgent):
         self,
     ) -> dict[str, Any]:
         """Compute cross-domain wellness correlations (club-wide)."""
-        response = self.repo.compute_correlations()
+        response = await self.repo.compute_correlations()
 
         total_segments = len(response.segment_insights)
         total_activities = len(response.activity_value_ranking)
@@ -587,16 +596,12 @@ class WellnessAgent(BaseAgent):
         family_id: str,
     ) -> dict[str, Any]:
         """Generate comprehensive wellness insights for a family."""
-        response = self.repo.compute_insights(family_id)
+        response = await self.repo.compute_insights(family_id)
 
         critical = len(response.critical_insights)
         findings = len(response.key_findings)
 
-        if critical > 0:
-            alert = f" ⚠️ {critical} acción(es) crítica(s)."
-        else:
-            alert = ""
-
+        alert = f" ⚠️ {critical} acción(es) crítica(s)." if critical > 0 else ""
         return {
             "status": "success",
             "message": (
