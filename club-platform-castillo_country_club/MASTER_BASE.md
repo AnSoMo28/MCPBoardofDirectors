@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.24 · Generación G29 (Ola 2.1-duodécima — persistencia real: vertical facility_management) · Date: 2026-11-20
+### Version: 9.25 · Generación G30 (Ola 2.1-decimatercera — persistencia real: vertical age_group) · Date: 2026-11-21
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -1537,14 +1537,14 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               (G20) · 5 tablas engagement +
 │   │                               MemberEngagementRepository async
 │   │                               (G21 · alembic 0001+0002+0003)
-│   ├── db/repositories/          ← 7 repos in-memory restantes
+│   ├── db/repositories/          ← 6 repos in-memory restantes
 │   │                               → Q-PER-01 (family, engagement,
 │   │                               event, compliance, guest,
 │   │                               satisfaction, communication,
 │   │                               cultural_social, executive_
 │   │                               dashboard, proactive_recommen-
-│   │                               dation y facility_management
-│   │                               migrados ·
+│   │                               dation, facility_management y
+│   │                               age_group migrados ·
 │   │                               users de Q-PER-04 ya no vive acá)
 │   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
@@ -1562,8 +1562,9 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   · 0010_executive_dashboard (5 tablas)
 │                                   · 0011_proactive_recommendation (8 tablas)
 │                                   · 0012_facility_management (5 tablas)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1 archivos · 908 tests PASSED
-│                                   (808 def + 16 parametrizados + 12
+│                                   · 0013_age_group (4 tablas)
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 912 tests PASSED
+│                                   (808 def + 16 parametrizados + 13
 │                                   persistencia write-restart-read —
 │                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
 │                                   + Ola 2.1-bis 6 + Ola 2.1-tris 6
@@ -1576,7 +1577,8 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   Ola 2.1-undécima
 │                                   proactive_recommendation 4 + Ola
 │                                   2.1-duodécima
-│                                   facility_management 4)
+│                                   facility_management 4 + Ola
+│                                   2.1-decimatercera age_group 4)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1887,7 +1889,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.24 · Generación G29 (sincronizada con
-MASTER_CHECKPOINT.md v9.24 y MASTER_CHECKLIST.md v9.24)
+END OF MASTER_BASE.md v9.25 · Generación G30 (sincronizada con
+MASTER_CHECKPOINT.md v9.25 y MASTER_CHECKLIST.md v9.25)
 
 

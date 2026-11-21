@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.24 · Generación G29 (Ola 2.1-duodécima — persistencia real: vertical facility_management) · Date: 2026-11-20
+### Version: 9.25 · Generación G30 (Ola 2.1-decimatercera — persistencia real: vertical age_group) · Date: 2026-11-21
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -41,12 +41,63 @@
 ###          (§3.8-DUODECIMA NUEVO · Q-PER-01 → 7
 ###          repos · run #48 @ 15f9db7 VERDE a
 ###          la primera — quinta generación
-###          consecutiva sin saga §8)
+###          consecutiva sin saga §8);
+###          G30 — Ola 2.1-decimatercera absorbida
+###          (§3.8-DECIMATERCERA NUEVO · Q-PER-01 → 6
+###          repos · refactor 0039 run #50 @ d84cecd +
+###          run #51 @ 2a63042 VERDE a la primera —
+###          sexta generación consecutiva sin saga §8)
 
 ---
 
 
 
+
+## CHANGELOG G30 (v9.24 → v9.25)
+OLA 2.1-DECIMATERCERA — DECIMOTERCER VERTICAL DE PERSISTENCIA
+REAL (PATH 2.2 · 13º repo de los 7 restantes) CERRADO en DOS
+corridas (2a63042 — evidencia: OUT del APLICAR-VERTICAL-
+DECIMATERCERA + CI runs #50 y #51 VERDE, la segunda a la
+PRIMERA, sin saga §8): refactor 0039 (d84cecd · run #50) —
+contrato age_group desacoplado ANTES de migrar (regla §3.2.7 ·
+hallazgo §5.3): 3 públicos observables nuevos (get_distribution
+· get_activity_enrollment · get_monthly_snapshots) · agente
+reescrito sobre públicos (6 sitios · mismas comprehensions ·
+mismos rounds · mismo output BYTE A BYTE verificado por probe
+pre/post con cmp == 0) + vertical 0040 (2a63042 · run #51): 4
+tablas (age_group_activities · age_group_enrollments ·
+age_group_monthly_snapshots PK compuesto month+age_group ·
+age_group_member_counts) + AgeGroupRepository async contrato
+EXACTO (18 métodos · None/[] sin excepciones custom ·
+async-FIRST drop-in tras el desacople — octava vertical
+drop-in total · 0 dependencias de módulo) + alembic 0013 +
+suite 4 + swap OPT-IN 13º repo · persistencia 66/66
+(3+6+6+6+6+6+6+7+4+4+4+4+4) · AST contrato 18/18 idéntico ·
+pytest 908→912 · masters v9.25. SEMÁNTICAS LITERALES DEL
+IN-MEMORY preservadas: ids act_{hex8} · status ACTIVE
+literal del create · update None-ignora + enum .value +
+updated_at SIEMPRE · delete cascada enrollments · filtros
+list_* en Python · sort confidence DESC · period "Q3 2026"
+literal · propuestas R1-R5 byte a byte · 5 factores health
+ponderados · trends factor 0.85 · _SEASONAL_MULTIPLIER ·
+AGE_GROUP_DESCRIPTIONS. SNAPSHOTS Y CENSO DATOS DE PRIMERA
+CLASE (hallazgo H-3): +3 métodos de siembra de deploy
+(set_member_count · set_family_count · upsert_monthly_snapshot)
+— las tablas nacen VACÍAS (el seed DEMO de 47 actividades NO
+se reproduce, criterio communication §3.8-OCTAVA). MYPY
+GLOBAL 703 ≤ 733 BAJA 1 · RUFF 1264 ≤ 1282 BAJA 1 (segunda
+vertical que BAJA ambos ratchets).
+
+QUEDÓ FUERA (by design): 6 repos in-memory restantes →
+sports_recreation (27 privados tocados — refactor de
+contrato ANTES como age_group: el patrón refactor→vertical
+0039+0040 queda probado) · finance (17m sync · 0 awaited —
+cirugía async como compliance) · wellness (22m sync · 0
+awaited) · member_360 (11m sync · compute read-heavy) ·
+document_intelligence (RAG lazy — ola aparte por
+dependencia) · ml_intelligence (numpy/sklearn — ola aparte)
+· ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic upgrade head
+en deploy.
 
 ## CHANGELOG G29 (v9.23 → v9.24)
 OLA 2.1-DUODECIMA — DUODÉCIMO VERTICAL DE PERSISTENCIA REAL
@@ -2486,6 +2537,103 @@ total que la undécima eligió — YA MIGRADO en Ola 2.1-undécima
 (facility_management 22m/5 dicts — el candidato anunciado por
 la undécima en masters v9.23 — YA MIGRADO en Ola 2.1-duodécima
 §3.8-DUODECIMA: run #48 @ 15f9db7 VERDE.)
+(age_group 18m/4 dicts — el candidato del REFACTOR primero
+(§5.3: agente acoplado a 6 privados) — YA MIGRADO en Ola
+2.1-decimatercera §3.8-DECIMATERCERA: refactor 0039 run #50
+@ d84cecd + vertical 0040 run #51 @ 2a63042 VERDE.)
+
+### §3.8-DECIMATERCERA OLA 2.1-DECIMATERCERA · PERSISTENCIA REAL — VERTICAL AGE_GROUP (✅ CERRADA 2026-11-21)
+
+PERFIL PREVIO (candidato perfilado contra el árbol REAL —
+hallazgo §5.3 de la guía G24: "casi drop-in" verificado por
+grep CAYÓ: el agente tocaba ~6 privados del repo
+(_compute_distribution · _enrollment · _monthly_snapshots) —
+acoplamiento a la implementación, no contrato). Decisión
+senior documentada en masters v9.24 END: la decimatercera
+EMPIEZA por el refactor de contrato ANTES del vertical
+(regla §3.2.7). Dos entregas, dos runs VERDE:
+
+REFACTOR 0039 (d84cecd · run #50 VERDE): repo +3 públicos
+observables (get_distribution → delega _compute_distribution
+· get_activity_enrollment → copia superficial ·
+get_monthly_snapshots → copia superficial) · agente 6 sitios
+reescritos sobre públicos (mismas comprehensions · mismos
+rounds · mismos outputs) · diff +47/−6 en 2 archivos · 0
+self.repo._ restantes · CONTRATO BYTE A BYTE: probe de los 4
+métodos ejecutado pre (stash) y post refactor con mismo seed
+demo → cmp == 0 (3288 bytes) · pytest 908/908 (0 tests
+tocados) · ruff/mypy 0 deuda nueva (1265/704 = baseline).
+
+0040 (2a63042 · run #51 VERDE a la primera): 4 tablas
+(age_group_activities · age_group_enrollments ·
+age_group_monthly_snapshots PK compuesto (month, age_group) ·
+age_group_member_counts) espejo 1:1 del estado interno del
+in-memory + AgeGroupRepository async contrato EXACTO (18
+métodos públicos = 15 existentes + 3 del refactor · AST
+contrato 18/18 idéntico: nombres + kind + args + defaults) +
+equipment_needed/tags/schedule_days JSONB + created/updated
+ISO strings + enums .value + alembic 0013_age_group (4 tablas
+· _mk registro en Base.metadata — patrón 0008-0012 · SIN
+índices · SIN seed) + swap OPT-IN 13º repo (bootstrap + db/
+orm/__init__ + CI persistence job) + suite 4 (activities
+JSONB/enums/update None-ignora/delete cascada · contract
+surface censo+snapshots H-3 · participation/recommendations/
+trends · intelligence compute-on-read health/forecast/
+proposals).
+
+SEMÁNTICAS LITERALES DEL IN-MEMORY PRESERVADAS: ids
+act_{hex8} · status ACTIVE literal del create · update con
+None ignora + enum .value + updated_at SIEMPRE · delete
+cascada _enrollment.pop · filtros list_* en Python (orden de
+inserción) · sort por confidence DESC · period "Q3 2026"
+literal · propuestas R1-R5 byte a byte · 5 factores health
+ponderados · trends factor 0.85 · _SEASONAL_MULTIPLIER ·
+AGE_GROUP_DESCRIPTIONS reproducidos byte a byte.
+
+FIX DENTRO DEL VERTICAL (lección guest §1.1 — el bug latente
+TAMBIÉN del in-memory): models/age_group_activity.py usaba
+uuid4() en EngagementProposal.proposal_id default_factory SIN
+importar uuid4 — from __future__ import annotations lo
+disimulaba; el in-memory TAMBIÉN explotaba al llamar
+generate_engagement_proposals (nadie lo ejercitaba contra
+runtime real). La suite de persistencia lo cazó al primer
+run. Fix: +1 import, 0 cambio de lógica.
+
+H-3 DATOS DE PRIMERA CLASE: age_group_monthly_snapshots (PK
+compuesto month+age_group) y age_group_member_counts nacen
+como tablas — el in-memory solo las tenía como constantes con
+seed_demo_data=True que el runtime nunca activa (el sistema
+"demo" mostraba tendencias que el "real" no tenía). +3
+métodos de siembra de deploy (set_member_count ·
+set_family_count · upsert_monthly_snapshot): el deploy carga
+censo/snapshots UNA vez (criterio 0011) — las tablas nacen
+VACÍAS (el seed DEMO de 47 actividades NO se reproduce,
+criterio communication §3.8-OCTAVA).
+
+GATES AL CIERRE (CI runs #50 + #51 VERDE — 5/5 jobs cada uno,
+sin saga §8; sandbox espejo bajo lock): persistencia 66/66
+(3 auth + 6 family + 6 engagement + 6 event + 6 compliance +
+6 guest + 6 satisfaction + 7 communication + 4 cultural_social
++ 4 executive_dashboard + 4 proactive_recommendation + 4
+facility_management + 4 age_group) · contrato agente
+age_group drop-in SIN TOCAR UN BYTE tras el refactor (octava
+vertical drop-in total — 26 tests del agente intactos · gate
+drop-in agente↔repo ORM VERDE con output idéntico contra
+sqlite real) · suite 908→912 · smoke B0 VERDE (19 agentes ·
+207 tools · RBAC 207/207) · ruff 1264 ≤ 1282 BAJA 1 · mypy
+global 703 ≤ 733 BAJA 1 (segunda vertical que BAJA ambos
+ratchets) · consistency 13/13.
+
+QUEDÓ FUERA (by design): 6 repos in-memory restantes →
+sports_recreation (27 privados tocados — refactor de
+contrato ANTES, como age_group: el patrón refactor→vertical
+0039+0040 queda PROBADO como camino) · finance (17m sync ·
+0 awaited — cirugía async como compliance) · wellness (22m
+sync · 0 awaited) · member_360 (11m sync · compute
+read-heavy) · document_intelligence (RAG lazy — ola aparte
+por dependencia) · ml_intelligence (numpy/sklearn — ola
+aparte) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
+upgrade head en deploy.
 
 ### §3.8-DUODECIMA OLA 2.1-DUODECIMA · PERSISTENCIA REAL — VERTICAL FACILITY_MANAGEMENT (✅ CERRADA 2026-11-20)
 
@@ -3141,8 +3289,8 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA CERRADOS) ═══
-  Q-PER-01  7 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA · age_group §3.8-DECIMATERCERA CERRADOS) ═══
+  Q-PER-01  6 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
@@ -3152,20 +3300,26 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             §3.8-NONA · executive_dashboard en Ola 2.1-décima
             §3.8-DÉCIMA · proactive_recommendation en Ola
             2.1-undécima §3.8-UNDECIMA; facility_management en Ola 2.1-duodécima
-            §3.8-DUODECIMA; NINGUNO de los 7 restantes
-            es drop-in limpio — perfilado G29: age_group 6
-            privados · sports 27 · finance/wellness/
+            §3.8-DUODECIMA; age_group en Ola 2.1-decimatercera
+            §3.8-DECIMATERCERA (tras el refactor 0039);
+            de los 6 restantes SOLO sports_recreation
+            pide refactor primero (27 privados — patrón
+            refactor→vertical probado); finance/wellness/
             member_360 sync · doc_intel RAG · ml_intel
-            numpy) → SQLAlchemy
+            numpy →
+            siguientes: sports refactor primero ·
+            finance/wellness/member_360 cirugía async ·
+            doc_intel/ml_intel olas aparte) → SQLAlchemy
             async via db/orm/
             (mecánica §3.8 probada: ORM + alembic + repo + gate
             — ya con lección run #28: read-path re-construye
             enums · lección run #39: los ratchets ruff/mypy
             corren en CI ANTES de cerrar la vertical — pasarlos
             en sandbox primero). Siguiente: candidato del
-            Chief Architect de los 11 (age_group CAYÓ:
-            agente acoplado a privados — refactor antes;
-            member_360: compute, ola aparte; las simples
+            Chief Architect de los 6 (sports_recreation:
+            refactor de contrato primero — patrón age_group
+            0039+0040 probado; finance/wellness/member_360:
+            cirugía async / compute, olas aparte; las simples
             siguen la mecánica).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
@@ -3234,6 +3388,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.24 · Generación G29 (sincronizada con
-MASTER_BASE.md v9.24 y MASTER_CHECKLIST.md v9.24)
+END OF MASTER_CHECKPOINT.md v9.25 · Generación G30 (sincronizada con
+MASTER_BASE.md v9.25 y MASTER_CHECKLIST.md v9.25)
 

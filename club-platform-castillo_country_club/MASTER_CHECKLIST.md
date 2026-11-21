@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.24 · Generación G29 (Ola 2.1-duodécima — persistencia real: vertical facility_management) · 180 checks · ZERO tolerance
+### Version: 9.25 · Generación G30 (Ola 2.1-decimatercera — persistencia real: vertical age_group) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,44 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G30 (v9.24 → v9.25)
+OLA 2.1-DECIMATERCERA CERRADA — GATES:
+
+PASO persistence extiende age_group (runs #50+#51): write →
+restart → read OK — ahora auth+family+engagement+event+
+compliance+guest+satisfaction+communication+cultural_social+
+executive_dashboard+proactive_recommendation+facility_
+management+age_group (66 tests · 3+6+6+6+6+6+6+7+4+4+4+4+4).
+Evidencia: CI run #50 VERDE @ d84cecd (refactor contrato —
+3 públicos observables · output byte a byte · 908 tests) +
+CI run #51 VERDE @ 2a63042 a la PRIMERA, sin saga §8 (5/5
+jobs · persistencia 66/66 · AST contrato 18/18 idéntico —
+octava vertical drop-in total tras el refactor 0039: 0
+cirugía, 0 tests del agente ajustados · agente YA
+desacoplado). Lección run #39 INSTITUCIONALIZADA: ruff/mypy
+del vertical verificados en sandbox bajo el lock del CI (uv
+sync --frozen) ANTES del push — ruff vertical 0 (10
+corregidos: I001 · RUF002 · 2×SIM910 · 4×RUF001 · RUF021) ·
+mypy vertical 0 · ruff global 1264 ≤ 1282 BAJA 1 · mypy
+global 703 ≤ 733 BAJA 1 (segunda vertical que BAJA ambos
+ratchets). Cifras: pytest 908→912 · persistencia 62→66 ·
+repos 7→6 · consistency 13/13. FIX DENTRO DEL VERTICAL
+(lección guest §1.1): models/age_group_activity.py usaba
+uuid4() en EngagementProposal.proposal_id default_factory
+SIN import — el in-memory TAMBIÉN explotaba (nadie
+ejercitaba generate_engagement_proposals contra runtime
+real); fix +1 import 0 lógica.
+END: masters v9.25 · Q-PER-01 → 6 repos restantes ·
+siguiente: sports_recreation (27 privados tocados —
+refactor de contrato ANTES, §5.3, como age_group) ·
+finance (17m sync · 0 awaited — cirugía async como
+compliance) · wellness (22m sync · 0 awaited) ·
+member_360 (11m sync · compute read-heavy) ·
+document_intelligence (RAG lazy — ola aparte por
+dependencia) · ml_intelligence (numpy/sklearn — ola
+aparte). El patrón refactor→vertical de age_group queda
+probado como camino para sports_recreation.
 
 ## CHANGELOG G29 (v9.23 → v9.24)
 OLA 2.1-DUODECIMA CERRADA — GATES:
@@ -1744,5 +1782,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.24 · Generación G29 (sincronizada con
-MASTER_BASE.md v9.24 y MASTER_CHECKPOINT.md v9.24)
+END OF MASTER_CHECKLIST.md v9.25 · Generación G30 (sincronizada con
+MASTER_BASE.md v9.25 y MASTER_CHECKPOINT.md v9.25)
