@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.26 · Generación G31 (Ola 2.1-decimocuarta — persistencia real: vertical sports_recreation) · Date: 2026-11-21
+### Version: 9.27 · Generación G32 (Ola 2.1-decimoquinta — persistencia real: vertical finance) · Date: 2026-11-21
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -51,12 +51,80 @@
 ###          (§3.8-DECIMOCUARTA NUEVO · Q-PER-01 → 5
 ###          repos · refactor 0042 run #53 @ 8f0a638 +
 ###          run #54 @ 8e1bb82 VERDE a la primera —
-###          séptima generación consecutiva sin saga §8)
+###          séptima generación consecutiva sin saga §8);
+###          G32 — Ola 2.1-decimoquinta absorbida
+###          (§3.8-DECIMOQUINTA NUEVO · Q-PER-01 → 4
+###          repos · vertical 0045 run #56 ROJO 919/920
+###          @ b23080d — primera saga §8 en 8 generaciones
+###          (orden de heap PG MVCC en get_budget, invisible
+###          en sqlite) → repair 0046 run #57 @ 98cc4de
+###          VERDE a la primera del repair)
 
 ---
 
 
 
+
+## CHANGELOG G32 (v9.26 → v9.27)
+OLA 2.1-DECIMOQUINTA — DECIMOQUINTO VERTICAL DE
+PERSISTENCIA REAL (PATH 2.2 · 15º repo de los 5 restantes
+— el candidato anunciado por G31) CERRADO en DOS corridas
+(b23080d + 98cc4de — evidencia: OUT del APLICAR-VERTICAL-
+DECIMOQUINTA + CI runs #56 y #57, la segunda VERDE a la
+primera del repair): vertical 0045 (b23080d · run #56
+ROJO 919/920 — UN solo test) + repair 0046 (98cc4de · run
+#57 VERDE). 5 tablas (finance_expenses · finance_invoices
+items JSONB · finance_payments · finance_budgets H-3 PK
+natural · finance_cash_balance H-3 singleton ₡45M) +
+FinanceRepository async contrato EXACTO (17 métodos —
+misma superficie del in-memory tras la cirugía async del
+propio vertical, mecánica compliance §3.8-QUINQUE) + swap
+OPT-IN 15º repo (alembic 0015 + suite 5). PRIMERA saga §8
+en 8 generaciones (G25→G31 a la primera): causa raíz del
+run #56 — get_budget del repo ORM iteraba el result-set de
+un SELECT sin ORDER BY; PG (MVCC) mueve una fila UPDATE-ada
+al final del heap → tras set_budget("maintenance") la línea
+volvía ÚLTIMA contra PG real; sqlite conserva el orden
+físico → sandbox y CI-sqlite lo daban verde (920/920): bug
+PG-only invisible en sandbox. FIX 0046 QUIRÚRGICO: iterar
+ExpenseCategory (ENUM = orden contractual del dict sembrado
+en __init__) con .get(cat.value, 0.0) + test de regresión
+con heap físico garantizado NO-enum (borra las 9 y las
+reinserta AL REVÉS, verificado con SELECT directo dentro
+del test, y exige orden enum). FEEDBACK DE PROCESO DEL
+USUARIO INSTITUCIONALIZADO: CI ROJO con log inaccesible →
+pedir el log al usuario DE INMEDIATO (el log clavó la causa
+raíz en minutos) — no invertir tiempo en reproducción
+indirecta. AUDITORÍA de orden de TODO el repo ORM finance:
+list_expenses/list_invoices/list_payments/generate_report/
+trend order_by(id) o sorted ✓ · AR buckets dict fijo ✓ ·
+SOLO get_budget filtraba orden físico. GATES AL CIERRE
+(run #57 VERDE 5/5): persistencia 75/75 (3 auth + 6 family
++ 6 engagement + 6 event + 6 compliance + 6 guest + 6
+satisfaction + 7 communication + 4 cultural_social + 4
+executive_dashboard + 4 proactive_recommendation + 4
+facility_management + 4 age_group + 4 sports_recreation +
+5 finance) · pytest 920→921 · ruff 1221 ≤ 1282 · mypy
+727 ≤ 733 (0 deuda nueva) · consistency 13/13 · smoke B0
+VERDE · contrato in-memory 17/17 drop-in (mismo dataset
+sembrado por los MISMOS métodos públicos: budget · cash ·
+report emoji byte a byte · AR · status · trend — get_budget
+con el ORDEN del enum). SEMÁNTICAS LITERALES DEL IN-MEMORY
+preservadas: 9 categorías sembradas 0.0 + caja 45M idempo-
+tente (_ensure_seed_states — el in-memory las siembra en
+__init__) · invoices subtotal/tax/total con round 2 ·
+status DRAFT/sent literales · payments PENDING/paid ·
+get_cash_position = singleton + pagos paid - gastos ·
+AR buckets 0-30/31-60/61-90/90+ por días vencidos ·
+report 📈/📉 por signo del neto STRING LITERAL MISMO ·
+trend meses sorted con labels Ene..Dic.
+
+QUEDÓ FUERA (by design): 4 repos in-memory restantes →
+wellness (22m sync · 0 awaited) · member_360 (11m sync ·
+compute read-heavy) · document_intelligence (RAG lazy —
+ola aparte por dependencia) · ml_intelligence (numpy/
+sklearn — ola aparte) · ApprovalEngine → Q-PER-03
+(Ola 2.3) · alembic upgrade head en deploy.
 
 ## CHANGELOG G31 (v9.25 → v9.26)
 OLA 2.1-DECIMOCUARTA — DECIMOCUARTO VERTICAL DE PERSISTENCIA
@@ -2609,6 +2677,99 @@ la undécima en masters v9.23 — YA MIGRADO en Ola 2.1-duodécima
 +§3.8-DECIMOCUARTA: refactor 0042 run #53 @ 8f0a638 +
 +vertical 0043 run #54 @ 8e1bb82 VERDE. El patrón
 +refactor→vertical queda aplicado dos veces.)
++(finance 17m/4 dicts — el candidato de la cirugía async
++primero (G31 END: "17m sync · 0 awaited — cirugía async
++como compliance") — YA MIGRADO en Ola 2.1-decimoquinta
++§3.8-DECIMOQUINTA: vertical 0045 run #56 ROJO 919/920 @
++b23080d (orden de heap PG MVCC en get_budget — bug
++invisible en sqlite) + repair 0046 run #57 @ 98cc4de
++VERDE. Lección MVCC: el orden contractual vive en el ENUM
++u ORDER BY, NUNCA en el heap.)
+
+### §3.8-DECIMOQUINTA OLA 2.1-DECIMOQUINTA · PERSISTENCIA REAL — VERTICAL FINANCE (✅ CERRADA 2026-11-21)
+
+PERFIL PREVIO (candidato anunciado por G31 END: "finance
+17m sync · 0 awaited — cirugía async como compliance").
+Dos entregas: vertical 0045 (run #56 ROJO 919/920) +
+repair 0046 (run #57 VERDE @ 98cc4de — a la primera del
+repair).
+
+0045 (b23080d · run #56): 5 tablas espejo del estado del
+in-memory (finance_expenses · finance_invoices items JSONB
+· finance_payments · finance_budgets H-3 · finance_cash_
+balance H-3 singleton ₡45M) + FinanceRepository async
+contrato EXACTO (17 métodos: 5 create/list expenses/
+invoices/payments + update_invoice_status/update_payment_
+status + set_budget/get_budget + get_cash_position +
+generate_report + get_accounts_receivable_summary +
+get_monthly_trend + get_account_status) + CIRUGÍA ASYNC
+del in-memory (17 def → async def, mecánica compliance
+§3.8-QUINQUE — el agente YA desacoplado: 36 awaits, 0
+cirugía del agente) + alembic 0015_finance (@0014 · SIN
+índices · seed de 9 budgets 0.0 + caja 45M idempotente en
+_ensure_seed_states — el in-memory los siembra en __init__)
++ swap OPT-IN 15º repo (bootstrap + db/orm/__init__ + CI
+persistence job) + suite 5 (entities JSONB/enums/
+literales · budgets/cash/account status + restart H-3 ·
+report emoji/breakdowns/AR/trend · contrato in-memory
+drop-in con dataset sembrado por los MISMOS métodos
+públicos).
+
+REPAIR 0046 (98cc4de · run #57 VERDE a la primera del
+repair): causa raíz del run #56 — get_budget iteraba el
+dict armado desde un SELECT sin ORDER BY; PG (MVCC) mueve
+una fila UPDATE-ada al final del heap → "maintenance"
+volvía ÚLTIMA contra PG tras el set_budget; sqlite
+conserva el orden físico de inserción → sandbox y CI-
+sqlite lo daban verde: bug PG-only. FIX QUIRÚRGICO:
+get_budget itera ExpenseCategory (ENUM — orden
+contractual del dict sembrado en __init__ del in-memory)
+con budgets.get(cat.value, 0.0) + test de regresión
+test_budget_lines_enum_order_not_physical (reinserta las
+9 categorías AL REVÉS — heap físico garantizado NO-enum,
+verificado con SELECT directo dentro del test — y exige
+orden enum + total 9000.0: pica en cualquier backend que
+devuelva el heap). AUDITORÍA de orden de TODO el repo:
+list_*/generate_report/trend order_by(id)/sorted · AR
+buckets dict fijo — SOLO get_budget filtraba el heap.
+
+FEEDBACK DE PROCESO DEL USUARIO INSTITUCIONALIZADO:
+CI ROJO con log inaccesible → pedir el log DE
+INMEDIATO. El log del usuario clavó la causa raíz en
+minutos (At index 5 diff: maintenance al final); la
+reproducción indirecta en sandbox es IMPOSIBLE para bugs
+PG-only (sqlite esconde el MVCC) — no volver a invertir
+tiempo en ella.
+
+GATES AL CIERRE (run #57 VERDE 5/5; sandbox espejo bajo
+lock): persistencia 75/75 (…+5 finance) · contrato
+in-memory 17/17 drop-in idéntico (budget · cash · report
+emoji byte a byte · AR · status · trend — con el ORDEN
+del enum en get_budget) · suite 920→921 · smoke B0 VERDE
+(19 agentes · 207 tools · RBAC 207/207) · ruff 1221 ≤
+1282 · mypy 727 ≤ 733 (0 deuda nueva) · consistency
+13/13 · alembic upgrade head → 0015 verificado.
+
+SEMÁNTICAS LITERALES DEL IN-MEMORY PRESERVADAS: 9
+categorías ExpenseCategory sembradas 0.0 + caja 45M ·
+ids exp_/inv_/pay_{hex8} · invoices subtotal = Σ qty×
+unit_price · tax = round(subtotal×tax_rate/100, 2) ·
+total = round(sub+tax, 2) · status DRAFT del create ·
+paid_date "" · payments PENDING del create · date solo si
+el Create no trae · method guarda .value · update_*_status
+solo el status · get_cash_position = caja + Σ pagos paid
+− Σ gastos (round 2) · AR aging por días vencidos ·
+report income SOLO pagos paid en [from,to] · emoji 📈/📉
+por signo del neto (STRING LITERAL MISMO) · trend meses
+sorted con labels Ene..Dic · get_budget 9 líneas SIEMPRE
+en orden ExpenseCategory.
+
+QUEDÓ FUERA (by design): 4 repos in-memory restantes →
+wellness (22m sync · 0 awaited) · member_360 (11m sync ·
+compute read-heavy) · document_intelligence (RAG lazy —
+ola aparte por dependencia) · ml_intelligence (numpy/
+sklearn — ola aparte) · ApprovalEngine → Q-PER-03
+(Ola 2.3) · alembic upgrade head en deploy.
 
 ### §3.8-DECIMOCUARTA OLA 2.1-DECIMOCUARTA · PERSISTENCIA REAL — VERTICAL SPORTS_RECREATION (✅ CERRADA 2026-11-21)
 
@@ -3441,8 +3602,8 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA · age_group §3.8-DECIMATERCERA · sports_recreation §3.8-DECIMOCUARTA CERRADOS) ═══
-  Q-PER-01  5 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA · age_group §3.8-DECIMATERCERA · sports_recreation §3.8-DECIMOCUARTA · finance §3.8-DECIMOQUINTA CERRADOS) ═══
+  Q-PER-01  4 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
@@ -3457,22 +3618,28 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             sports_recreation en Ola 2.1-decimocuarta
             §3.8-DECIMOCUARTA (tras el refactor 0042 —
             patrón refactor→vertical aplicado dos veces);
-            de los 5 restantes NINGUNO necesita refactor
+            finance en Ola 2.1-decimoquinta §3.8-DECIMOQUINTA
+            (cirugía async como compliance — con lección MVCC
+            run #56: el orden contractual vive en el ENUM u
+            ORDER BY, nunca en el heap);
+            de los 4 restantes NINGUNO necesita refactor
             de contrato (0 privados tocados) — pero
-            finance/wellness/member_360 son sync ·
+            wellness/member_360 son sync ·
             doc_intel RAG · ml_intel numpy →
-            siguientes: finance/wellness/member_360
-            cirugía async / compute · doc_intel/ml_intel
+            siguientes: wellness/member_360 cirugía
+            async / compute · doc_intel/ml_intel
             olas aparte) → SQLAlchemy
             async via db/orm/
             (mecánica §3.8 probada: ORM + alembic + repo + gate
             — ya con lección run #28: read-path re-construye
             enums · lección run #39: los ratchets ruff/mypy
             corren en CI ANTES de cerrar la vertical — pasarlos
-            en sandbox primero). Siguiente: candidato del
-            Chief Architect de los 5 (finance/wellness/
-            member_360: cirugía async / compute, olas
-            aparte; las simples siguen la mecánica).
+            en sandbox primero · lección run #56: PG MVCC
+            reordena el heap tras UPDATE — contrato de orden
+            solo con ENUM u ORDER BY). Siguiente: candidato del
+            Chief Architect de los 4 (wellness/member_360:
+            cirugía async / compute, olas aparte; las simples
+            siguen la mecánica).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
@@ -3540,6 +3707,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.26 · Generación G31 (sincronizada con
-MASTER_BASE.md v9.26 y MASTER_CHECKLIST.md v9.26)
+END OF MASTER_CHECKPOINT.md v9.27 · Generación G32 (sincronizada con
+MASTER_BASE.md v9.27 y MASTER_CHECKLIST.md v9.27)
 

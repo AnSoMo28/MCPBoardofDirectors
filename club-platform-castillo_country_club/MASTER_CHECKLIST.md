@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.26 · Generación G31 (Ola 2.1-decimocuarta — persistencia real: vertical sports_recreation) · 180 checks · ZERO tolerance
+### Version: 9.27 · Generación G32 (Ola 2.1-decimoquinta — persistencia real: vertical finance) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -9,6 +9,48 @@
 ###          cambia la evidencia)
 
 ---
+
+## CHANGELOG G32 (v9.26 → v9.27)
+OLA 2.1-DECIMOQUINTA CERRADA — GATES:
+
+PASO persistence extiende finance (runs #56+#57): write →
+restart → read OK — ahora auth+family+engagement+event+
+compliance+guest+satisfaction+communication+cultural_
+social+executive_dashboard+proactive_recommendation+
+facility_management+age_group+sports_recreation+finance
+(75 tests · 3+6+6+6+6+6+6+7+4+4+4+4+4+4+5). Evidencia:
+CI run #56 ROJO 919/920 @ b23080d (UN solo test: orden de
+get_budget contra PG real — PG MVCC mueve la fila UPDATE-ada
+al final del heap; sqlite conserva el orden físico → bug
+invisible en sandbox) → repair 0046 → CI run #57 VERDE @
+98cc4de a la primera del repair (5/5 jobs · persistencia
+75/75 · contrato in-memory 17/17 drop-in — DECIMOQUINTA
+vertical drop-in: 0 cirugía del agente, ya desacoplado tras
+la cirugía async del propio vertical). PRIMERA saga §8 en
+8 generaciones (G25→G31 habían sido a la primera) — pero el
+repair cerró en UNA corrida: causa raíz diagnósticada por el
+log del usuario (feedback de proceso institucionalizado:
+CI ROJO + log inaccesible → pedir el log de inmediato, no
+reproducción indirecta). FIX QUIRÚRGICO: get_budget itera
+ExpenseCategory (el ENUM — orden contractual del dict
+sembrado en __init__), NUNCA el result-set sin ORDER BY +
+test de regresión con heap físico garantizado NO-enum
+(reinserta las 9 categorías al revés y exige orden enum —
+pica en cualquier backend que devuelva el heap). AUDITORÍA
+de orden de TODO el repo finance: list_*/report/trend
+order_by(id)/sorted ✓ · AR buckets dict fijo ✓ · SOLO
+get_budget filtraba el heap físico. Cifras: pytest
+920→921 · persistencia 74→75 · repos 5→4 · consistency
+13/13 · ruff 1221 ≤ 1282 · mypy 727 ≤ 733 (0 deuda nueva).
+Lección MVCC INSTITUCIONALIZADA: un SELECT sin ORDER BY
+NO tiene orden — el contrato de orden se define en el ENUM
+o en ORDER BY, nunca en el heap (sqlite lo esconde).
+END: masters v9.27 · Q-PER-01 → 4 repos restantes ·
+siguiente: wellness (22m sync · 0 awaited — cirugía
+async como compliance/finance) · member_360 (11m sync ·
+compute read-heavy) · document_intelligence (RAG lazy —
+ola aparte por dependencia) · ml_intelligence
+(numpy/sklearn — ola aparte).
 
 ## CHANGELOG G31 (v9.25 → v9.26)
 OLA 2.1-DECIMOCUARTA CERRADA — GATES:
@@ -1820,5 +1862,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.26 · Generación G31 (sincronizada con
-MASTER_BASE.md v9.26 y MASTER_CHECKPOINT.md v9.26)
+END OF MASTER_CHECKLIST.md v9.27 · Generación G32 (sincronizada con
+MASTER_BASE.md v9.27 y MASTER_CHECKPOINT.md v9.27)
