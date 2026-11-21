@@ -52,10 +52,10 @@ class Member360Agent(BaseAgent):
     def _register_tools(self) -> None:
         pass
 
-    def _member_lookup_error(self, member_id: str) -> dict[str, str] | None:
+    async def _member_lookup_error(self, member_id: str) -> dict[str, str] | None:
         if not member_id.strip():
             return {"status": "error", "message": "member_id is required."}
-        if self.repo.get_member_identity(member_id) is None:
+        if await self.repo.get_member_identity(member_id) is None:
             return {
                 "status": "not_found",
                 "message": f"Member {member_id} was not found.",
@@ -74,23 +74,23 @@ class Member360Agent(BaseAgent):
         approval=ApprovalLevel.AUTO,
     )
     async def get_member_360_profile(self, member_id: str) -> dict[str, Any]:
-        member_error = self._member_lookup_error(member_id)
+        member_error = await self._member_lookup_error(member_id)
         if member_error:
             return member_error
 
-        identity = self.repo.get_member_identity(member_id)
+        identity = await self.repo.get_member_identity(member_id)
         if not identity:
             return {
                 "status": "not_found",
                 "message": f"Member {member_id} was not found.",
             }
 
-        health = self.repo.get_health_score(member_id)
-        journey = self.repo.get_member_journey(member_id)
-        churn = self.repo.get_churn_prediction(member_id)
-        ltv = self.repo.get_ltv_analysis(member_id)
-        activity = self.repo.get_activity_summary(member_id)
-        social = self.repo.get_social_profile(member_id)
+        health = await self.repo.get_health_score(member_id)
+        journey = await self.repo.get_member_journey(member_id)
+        churn = await self.repo.get_churn_prediction(member_id)
+        ltv = await self.repo.get_ltv_analysis(member_id)
+        activity = await self.repo.get_activity_summary(member_id)
+        social = await self.repo.get_social_profile(member_id)
         activity_dates = [
             domain["last_activity"]
             for domain in activity.get("by_domain", [])
@@ -133,10 +133,10 @@ class Member360Agent(BaseAgent):
         approval=ApprovalLevel.AUTO,
     )
     async def get_member_health_score(self, member_id: str) -> dict[str, Any]:
-        member_error = self._member_lookup_error(member_id)
+        member_error = await self._member_lookup_error(member_id)
         if member_error:
             return member_error
-        result = self.repo.get_health_score(member_id)
+        result = await self.repo.get_health_score(member_id)
         result["factors"] = [
             factor.model_dump(mode="json") for factor in result["factors"]
         ]
@@ -153,10 +153,10 @@ class Member360Agent(BaseAgent):
         approval=ApprovalLevel.AUTO,
     )
     async def get_member_journey(self, member_id: str) -> dict[str, Any]:
-        member_error = self._member_lookup_error(member_id)
+        member_error = await self._member_lookup_error(member_id)
         if member_error:
             return member_error
-        result = self.repo.get_member_journey(member_id)
+        result = await self.repo.get_member_journey(member_id)
         if "error" in result:
             return result
         result["milestones"] = [
@@ -176,10 +176,10 @@ class Member360Agent(BaseAgent):
         approval=ApprovalLevel.AUTO,
     )
     async def get_member_churn_prediction(self, member_id: str) -> dict[str, Any]:
-        member_error = self._member_lookup_error(member_id)
+        member_error = await self._member_lookup_error(member_id)
         if member_error:
             return member_error
-        result = self.repo.get_churn_prediction(member_id)
+        result = await self.repo.get_churn_prediction(member_id)
         return MemberChurnPredictionResponse(**result).model_dump(mode="json")
 
     # ─── Tool 5: LTV Analysis ────────────────────────────────────────────────
@@ -193,10 +193,10 @@ class Member360Agent(BaseAgent):
         approval=ApprovalLevel.AUTO,
     )
     async def get_member_ltv_analysis(self, member_id: str) -> dict[str, Any]:
-        member_error = self._member_lookup_error(member_id)
+        member_error = await self._member_lookup_error(member_id)
         if member_error:
             return member_error
-        result = self.repo.get_ltv_analysis(member_id)
+        result = await self.repo.get_ltv_analysis(member_id)
         if "error" in result:
             return result
         return MemberLTVAnalysisResponse(**result).model_dump(mode="json")
@@ -214,7 +214,7 @@ class Member360Agent(BaseAgent):
     async def get_member_activity_summary(
         self, member_id: str, period_days: int = 90
     ) -> dict[str, Any]:
-        member_error = self._member_lookup_error(member_id)
+        member_error = await self._member_lookup_error(member_id)
         if member_error:
             return member_error
         if not 1 <= period_days <= 3650:
@@ -222,7 +222,7 @@ class Member360Agent(BaseAgent):
                 "status": "error",
                 "message": "period_days must be between 1 and 3650.",
             }
-        result = self.repo.get_activity_summary(member_id, period_days)
+        result = await self.repo.get_activity_summary(member_id, period_days)
         return MemberActivitySummaryResponse(**result).model_dump(mode="json")
 
     # ─── Tool 7: Social Profile ──────────────────────────────────────────────
@@ -236,10 +236,10 @@ class Member360Agent(BaseAgent):
         approval=ApprovalLevel.AUTO,
     )
     async def get_member_social_profile(self, member_id: str) -> dict[str, Any]:
-        member_error = self._member_lookup_error(member_id)
+        member_error = await self._member_lookup_error(member_id)
         if member_error:
             return member_error
-        result = self.repo.get_social_profile(member_id)
+        result = await self.repo.get_social_profile(member_id)
         result["connections"] = [
             connection.model_dump(mode="json")
             for connection in result["connections"]
@@ -259,10 +259,10 @@ class Member360Agent(BaseAgent):
     async def generate_member_engagement_proposals(
         self, member_id: str
     ) -> dict[str, Any]:
-        member_error = self._member_lookup_error(member_id)
+        member_error = await self._member_lookup_error(member_id)
         if member_error:
             return member_error
-        result = self.repo.generate_engagement_proposals(member_id)
+        result = await self.repo.generate_engagement_proposals(member_id)
         if "error" in result:
             return result
         result["proposals"] = [
@@ -282,10 +282,10 @@ class Member360Agent(BaseAgent):
         approval=ApprovalLevel.AUTO,
     )
     async def get_member_risk_assessment(self, member_id: str) -> dict[str, Any]:
-        member_error = self._member_lookup_error(member_id)
+        member_error = await self._member_lookup_error(member_id)
         if member_error:
             return member_error
-        result = self.repo.get_risk_assessment(member_id)
+        result = await self.repo.get_risk_assessment(member_id)
         return MemberRiskAssessmentResponse(**result).model_dump(mode="json")
 
     # ─── Tool 10: Search Members 360 ─────────────────────────────────────────
@@ -342,7 +342,7 @@ class Member360Agent(BaseAgent):
                 "message": f"sort_by must be one of: {', '.join(sorted(valid_sorts))}.",
             }
 
-        result = self.repo.search_members(
+        result = await self.repo.search_members(
             query=query,
             tier=tier,
             health_level=health_level,

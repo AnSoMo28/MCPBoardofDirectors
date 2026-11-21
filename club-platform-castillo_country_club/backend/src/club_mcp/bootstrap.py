@@ -242,7 +242,8 @@ def build_runtime() -> Runtime:
             "2.1-decimatercera: age_group · "
             "2.1-decimocuarta: sports_recreation · "
             "2.1-decimoquinta: finance · "
-            "2.1-decimosexta: wellness)"
+            "2.1-decimosexta: wellness · "
+            "2.1-decimaseptima: member_360)"
         )
 
     def _orm_repo(key: str) -> Any | None:
@@ -339,6 +340,12 @@ def build_runtime() -> Runtime:
             )
 
             return _WellnessRepoORM(_persist_engine)
+        if key == "member_360_repo":
+            from club_mcp.db.orm.repositories.member360_repo import (
+                Member360Repository as _Member360RepoORM,
+            )
+
+            return _Member360RepoORM(_persist_engine)
         return None
 
     def repo_for(key: str) -> Any:
