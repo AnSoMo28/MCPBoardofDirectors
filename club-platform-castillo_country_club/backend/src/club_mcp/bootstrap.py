@@ -238,7 +238,8 @@ def build_runtime() -> Runtime:
             "2.1-nona: cultural_social · "
             "2.1-décima: executive_dashboard · "
             "2.1-undécima: proactive_recommendation · "
-            "2.1-duodécima: facility_management)"
+            "2.1-duodécima: facility_management · "
+            "2.1-decimatercera: age_group)"
         )
 
     def _orm_repo(key: str) -> Any | None:
@@ -311,6 +312,12 @@ def build_runtime() -> Runtime:
             )
 
             return _FacilityRepoORM(_persist_engine)
+        if key == "age_group_repo":
+            from club_mcp.db.orm.repositories.age_group_repo import (
+                AgeGroupRepository as _AgeGroupRepoORM,
+            )
+
+            return _AgeGroupRepoORM(_persist_engine)
         return None
 
     def repo_for(key: str) -> Any:
