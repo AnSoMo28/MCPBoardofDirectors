@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.28 · Generación G33 (Ola 2.1-decimosexta — persistencia real: vertical wellness) · 180 checks · ZERO tolerance
+### Version: 9.29 · Generación G34 (Ola 2.1-decimaseptima — persistencia real: vertical member_360) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -10,6 +10,74 @@
 
 ---
 
+
+
+## CHANGELOG G34 (v9.28 → v9.29)
+OLA 2.1-DECIMASEPTIMA CERRADA — GATES:
+
+PASO persistence extiende member_360 (run #61): write →
+restart → read OK — ahora auth+family+engagement+event+
+compliance+guest+satisfaction+communication+cultural_
+social+executive_dashboard+proactive_recommendation+
+facility_management+age_group+sports_recreation+finance
++wellness+member_360 (83 tests · 3+6+6+6+6+6+6+7+4+4+4+4
++4+4+5+4+4). Evidencia: vertical 0050 run #61 VERDE 5/5
+@ facc83a A LA PRIMERA (tercera vertical seguida sin
+saga §8: #57 finance → #59 wellness → #61 member_360 —
+https://github.com/AnSoMo28/MCPBoardofDirectors/
+actions/runs/45034294188). DECIMASEPTIMA vertical de la
+familia de cirugía async — la primera READ-ONLY: 21
+métodos sync→async (compliance 8 → finance 17 →
+wellness 22 → member_360 21) con 0 cirugía del agente
+(ya desacoplado: 0 self.repo._). Contrato AST 11/11
+públicos idéntico (nombres+args+defaults+async
+verificado por inspect.signature contra AMBOS repos).
+2 tablas espejo 1:1 (member360_members 12 del MEMBER_SEED
++ member360_health_factors 5×5 explícitos + _DEFAULT_
+FACTORS para el resto — HALLAZGO de perfilado: el repo
+NO tiene writes públicos; el ORM siembra members SOLO
+con opt-in del ctor (seed_demo_data=True — mecánica
+family_repo.seed_demo_data) y factors del SEED GLOBAL
+SIEMPRE (el in-memory lee HEALTH_FACTORS_SEED sin
+depender de _members: health/churn/risk FUNCIONAN sin
+opt-in con m-001 87.9 excellent byte a byte) + alembic
+0017 (@0016 · sin índices · member_id UNIQUE). SEMÁNTICAS
+LITERALES preservadas: contrato vacío sin opt-in EXACTO
+(members VACÍOS: identity/search/journey/ltv/proposals →
+None/[]/{"error": "Member not found"}) · search canon
+completo (orden health_score_desc m-012 90.85 → m-001
+87.9 → m-003 71.9 · empates 60.75 estables por orden de
+inserción (order_by(id) — lección run #56) · filtros
+query/tier/health_level/churn_risk/journey_stage · sort
+tier_desc mapa literal · paginación slice · ltv_desc
+placeholder MISMO) · compute-on-read byte a byte en lo
+DETERMINISTA (m-007 39.9 CRITICAL · churn HIGH 60.1 ·
+risk_factors engagement/social/activity exactos ·
+journey PEAK/ONBOARDING por tenure+engagement · LTV
+breakdown 30/25/15/10/12/8 · proposals retention 82/
+social 75 · random STATELESS: forma-only para lo
+aleatorio — canon determinista completo) · drop-in
+in-memory vs ORM con dataset del MISMO opt-in.
+DEUDA DEL VERTICAL PAGADA DENTRO (lección run #39):
+ruff vertical 6→0 (RUF002 ×→x 6 · TC003 · I001) + mypy
+10→0 (type-arg dict→dict[str,Any] 10). Cifras: pytest
+925→929 · persistencia 79→83 · repos 3→2 · consistency
+13/13 · ruff 1221→1199 ≤ 1282 (BAJA 22 — séptima
+vertical consecutiva que BAJA) · mypy 733→723 ≤ 733
+(BAJA 10 — sexta vertical que BAJA mypy) · smoke B0
+VERDE. NOTA de predictibilidad sandbox: los 6 tests de
+prophet (ml_intelligence) fallan SOLO con --all-extras
+local (pandas 3.1.1 + Pandas4Warning escalado por
+filterwarnings=["error"] DENTRO de prophet.fit); el CI
+instala --extra dev SIN ml → _HAS_PROPHET=False →
+fallback — verificado corriendo el espejo EXACTO del CI
+(uv sync --frozen --extra dev): 929/929.
+END: masters v9.29 · Q-PER-01 → 2 repos restantes (AMBOS
+olas aparte por dependencia: document_intelligence RAG
+lazy · ml_intelligence numpy/sklearn — la ola de
+persistencia SIN dependencias TERMINÓ) · siguiente: Ola
+2.3 Q-PER-03 (ApprovalEngine) o doc_intel/ml_intel como
+olas dedicadas.
 
 ## CHANGELOG G33 (v9.27 → v9.28)
 OLA 2.1-DECIMOSEXTA CERRADA — GATES:
@@ -1922,5 +1990,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.28 · Generación G33 (sincronizada con
-MASTER_BASE.md v9.28 y MASTER_CHECKPOINT.md v9.28)
+END OF MASTER_CHECKLIST.md v9.29 · Generación G34 (sincronizada con
+MASTER_BASE.md v9.29 y MASTER_CHECKPOINT.md v9.29)

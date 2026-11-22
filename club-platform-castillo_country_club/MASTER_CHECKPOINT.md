@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.28 · Generación G33 (Ola 2.1-decimosexta — persistencia real: vertical wellness) · Date: 2026-11-21
+### Version: 9.29 · Generación G34 (Ola 2.1-decimaseptima — persistencia real: vertical member_360) · Date: 2026-11-22
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -66,12 +66,134 @@
 ###          seguida sin saga §8: cirugía async 22m
 ###          (la más grande: compliance 8 → finance
 ###          17 → wellness 22) con predictibilidad
-###          total sandbox→remoto)
+###          total sandbox→remoto);
+###          G34 — Ola 2.1-decimaseptima absorbida
+###          (§3.8-DECIMASEPTIMA NUEVO · Q-PER-01 → 2
+###          repos · vertical 0050 run #61 VERDE 5/5
+###          @ facc83a A LA PRIMERA — tercera vertical
+###          seguida sin saga §8: cirugía async 21m
+###          READ-ONLY (la ola de persistencia SIN
+###          dependencias TERMINÓ: quedan doc_intel
+###          RAG + ml_intel numpy — olas aparte)
 
 ---
 
 
 
+
+## CHANGELOG G34 (v9.28 → v9.29)
+OLA 2.1-DECIMASEPTIMA — DECIMASEPTIMO VERTICAL DE
+PERSISTENCIA REAL (PATH 2.2 · 17º repo de los 3 restantes
+— el candidato anunciado por G33 END) CERRADO en UNA
+corrida (facc83a · run #61 VERDE 5/5 — evidencia: OUT del
+APLICAR-VERTICAL-DECIMASEPTIMA + CI run #61 — https://
+github.com/AnSoMo28/MCPBoardofDirectors/actions/runs/
+45034294188): vertical 0050. 2 tablas (member360_members
+12 del MEMBER_SEED · member360_health_factors 5×5) +
+Member360Repository async contrato EXACTO (11 métodos —
+misma superficie del in-memory tras la cirugía async del
+propio vertical, mecánica compliance §3.8-QUINQUE /
+finance / wellness) + cirugía async del in-memory (21
+def → async def — READ-ONLY: sin writes públicos, el
+dataset vive en constantes de módulo · 0 cirugía del
+agente: ya desacoplado, 0 self.repo._ · 18 call sites
+del agente ganaron await incluido el guard
+_member_lookup_error) + alembic 0017_member360 + swap
+OPT-IN 17º repo + suite 4. GATES AL CIERRE (run #61
+VERDE 5/5): persistencia 83/83 (3 auth + 6 family + 6
+engagement + 6 event + 6 compliance + 6 guest + 6
+satisfaction + 7 communication + 4 cultural_social + 4
+executive_dashboard + 4 proactive_recommendation + 4
+facility_management + 4 age_group + 4 sports_recreation +
+5 finance + 4 wellness + 4 member_360) · pytest
+925→929 · repos 3→2 · ruff 1221→1199 ≤ 1282 (BAJA 22 —
+séptima vertical consecutiva) · mypy 733→723 ≤ 733
+(BAJA 10 — sexta vertical que BAJA mypy) · consistency
+13/13 · smoke B0 VERDE · contrato AST 11/11 idéntico
+(nombres+args+defaults+async — verificado por inspect.
+signature contra AMBOS repos) · drop-in in-memory vs
+ORM con dataset del MISMO opt-in: canon determinista
+idéntico.
+
+HALLAZGO DE PERFILADO que fijó el DISEÑO del ORM: el
+repo NO tiene métodos de escritura públicos (READ-ONLY
+— dataset en constantes de módulo), PERO el in-memory
+lee HEALTH_FACTORS_SEED GLOBAL sin depender de
+_members: health/churn/risk/activity/social FUNCIONAN
+sin opt-in (m-001 87.9 excellent byte a byte). El ORM
+lo espeja fiel: members solo con opt-in del ctor
+(seed_demo_data=True — siembra idempotente estilo
+family_repo.seed_demo_data por INSERT directo, no hay
+create_* en el contrato) + factors del SEED GLOBAL
+SIEMPRE sembrados (_ensure_seed idempotente). Una
+primera versión del ORM con "tablas vacías sin opt-in"
+ROMPÍA el contrato real — se corrigió contra el
+in-memory EJECUTADO, no asumido (regla §3.2.7).
+
+SEMÁNTICAS LITERALES DEL IN-MEMORY PRESERVADAS:
+contrato vacío sin opt-in EXACTO (identity/search/
+journey/ltv/proposals → None/[]/{"error": "Member not
+found"}) · search pipeline COMPLETO (filtro query
+name/family · tier · compute por miembro · health_
+level/churn_risk/journey_stage por .value · sort_map
+CON ltv_desc placeholder · paginación slice · empates
+estables por orden de inserción: order_by(id)
+explícito — lección run #56) · get_health_factors SEED
+si tiene, _DEFAULT_FACTORS si no (MISMO fallback dict)
+· get_health_score composite/level/trend por comparación
+prev=comp±5 · get_member_journey stage por tenure+
+engagement (m-009 ONBOARDING tenure 45<90 · m-001 PEAK
+eng 92≥80 tenure>365) · days_in floor 15 · stage_history
+· milestones (join + aniversarios ≤3 · 50 actividades ·
+próximo evento) · next_transition mapa literal ·
+get_churn_prediction level por composite (m-007 HIGH ·
+score 100-composite 60.1 · risk_factors <40 con severity
+high<25 · protective >70 · acciones por nivel · horizonte
+90) · get_ltv_analysis tenure//30 max 1 · multiplier por
+tier · breakdown 30/25/15/10/12/8 · tier_avg ±30% ·
+projection 12m ±10% · trend por eng · tier LTV por
+umbrales 1.2/0.7 · get_activity_summary total eng/5 ·
+dominios eng/20 sample · heatmap 7×7 · venues 3 ·
+streaks · get_social_profile conexiones sample del
+resto · clusters sample 0-2 · influencia 20-95 ·
+get_risk_assessment umbral 45/70 · overall por
+composite (<40 critical — m-007 CRITICAL, NO high: la
+primera versión del suite afirmó high de memoria y el
+perfilado REAL lo corrigió) · generate_engagement_
+proposals MISMO motor (eng<50 retention 82 · social<40
+social 75 · cross-domain sample inactive 68 · tier
+upgrade basic/bronce/plata+eng>70 · aniversario ≤30d 90
+· wellness gap eng>40 72) · señales 3.
+
+DEUDA DEL VERTICAL PAGADA DENTRO (lección run #39 —
+ratchets en sandbox bajo lock ANTES del push): ruff
+vertical 8→0: RUF002×6 (confusables × → x en docstrings)
+· TC003 (datetime.date TYPE_CHECKING) · I001 (isort).
+mypy 10→0 (type-arg dict→dict[str, Any] 9 firmas +
+list[dict]→list[dict[str, Any]] 1 — la deuda de los 13
+type-arg de models/member_360.py es PRE-existente del
+baseline 65650b6, NO del vertical: 0 en archivos del
+vertical tras pagar los 10 propios).
+
+PREDICTIBILIDAD SANDBOX (hallazgo del turno): los 6
+tests de prophet (ml_intelligence) fallan SOLO con
+--all-extras local — pandas 3.1.1 emite Pandas4Warning
+DENTRO de prophet.fit (inplace deprecado PDEP-8) y
+filterwarnings=["error"] lo escala; el CI instala
+--extra dev SIN ml → _HAS_PROPHET=False → fallback
+PATH — los 6 pasan. Verificado corriendo el espejo
+EXACTO del CI (uv sync --frozen --extra dev): 929/929
+— MISMA causa por la que el run #59 ya pasaba con el
+mismo lock. (Cuando llegue la vertical ml_intelligence:
+olar la dependencia ANTES — pin prophet compatible o
+guard Pandas4Warning en pyproject.)
+
+QUEDÓ FUERA (by design): 2 repos in-memory restantes —
+AMBAS olas aparte por dependencia: document_intelligence
+(RAG lazy) · ml_intelligence (numpy/sklearn+prophet)
+— la ola de persistencia SIN dependencias TERMINÓ ·
+ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic upgrade
+head en deploy.
 
 ## CHANGELOG G33 (v9.27 → v9.28)
 OLA 2.1-DECIMOSEXTA — DECIMOSEXTO VERTICAL DE
@@ -165,6 +287,86 @@ primera: la mecánica compute de wellness/finance aplica)
 dependencia) · ml_intelligence (numpy/sklearn — ola
 aparte) · ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic
 upgrade head en deploy.
+
+### §3.8-DECIMASEPTIMA OLA 2.1-DECIMASEPTIMA · PERSISTENCIA REAL — VERTICAL MEMBER_360 (✅ CERRADA 2026-11-22)
+
+PERFIL PREVIO (candidato anunciado por G33 END: "member_360
+11m sync · compute read-heavy — perfilar de primera").
+Una entrega: vertical 0050 (run #61 VERDE 5/5 @ facc83a —
+A LA PRIMERA, https://github.com/AnSoMo28/
+MCPBoardofDirectors/actions/runs/45034294188).
+
+PERFILADO REAL contra el árbol (regla §3.2.7): 11 métodos
+públicos SYNC · READ-ONLY (0 writes públicos — dataset en
+constantes de módulo: MEMBER_SEED 12 · HEALTH_FACTORS_
+SEED 5×5 + _DEFAULT_FACTORS) · 10 privados de instancia +
+2 helpers de módulo (_days_ago/_dt_ago NO tocados —
+importados del MISMO in-memory, fuente única) · 0 privados
+tocados por el agente (18 call sites) · random STATELESS
+(canon determinista completo + forma-only para lo
+aleatorio) · suite del agente 12 tests (0 tocados en
+output — el contrato se mantuvo). Verdict: mecánica
+compliance §3.8-QUINQUE / finance / wellness — cirugía
+async 21/21, la primera vertical READ-ONLY.
+
+0050 (facc83a · run #61): 2 tablas espejo del observable
+(member360_members 12 del MEMBER_SEED · member360_health_
+factors 5×5 — Date join_date · age/age_group NULLABLE ·
+Float score/weight · Text details) + Member360Repository
+async contrato EXACTO (11 métodos — AST 11/11 idéntico
+verificado por inspect.signature contra AMBOS repos:
+nombres+args+defaults+async) + CIRUGÍA ASYNC del
+in-memory (21 def → async def, cuerpos intactos + 33
+awaits internos + 2 fixes quirúrgicos de patrón .get
+sobre corrutina) + alembic 0017_member360 (@0016 · sin
+índices · member_id UNIQUE · sin seed en migración — el
+seed vive en el repo ORM idempotente) + swap OPT-IN 17º
+repo (bootstrap + db/orm/__init__ + CI persistence job) +
+suite 4 (contrato sin opt-in EXACTO · seed+search canon
+completo con orden y empates estables · compute-on-read
+byte a byte con m-007 60.1/CRITICAL · drop-in in-memory
+vs ORM con canon determinista + forma-only random).
+
+HALLAZGO DE PERFILADO que fijó el DISEÑO (el del
+CHANGELOG): factors del SEED GLOBAL SIEMPRE + members
+solo con opt-in — corregido contra el in-memory
+EJECUTADO (m-001 87.9 excellent sin opt-in), la primera
+versión del ORM lo rompía. Además el suite se corrigió
+TRES veces contra valores REALES: m-007 overall CRITICAL
+(39.9<40, no high) · severidades medium/high/high (no
+high/high/high) · protective m-007 VACÍO (financial 55
+≤ 70, no ["financial"]) · LTV tenure 1825//30=60 (no
+61) · tier_desc page2 m-004/m-008/m-010/m-005/m-006 (no
+m-004/m-008/m-010). El suite final afirma la aritmética
+REAL del in-memory porque se VERIFICÓ ejecutando:
+predictibilidad total sandbox→remoto (run #61 calzó
+1:1 con lo validado bajo lock).
+
+GATES AL CIERRE (run #61 VERDE 5/5; sandbox espejo bajo
+lock — uv sync --frozen --extra dev, espejo EXACTO del
+CI): persistencia 83/83 (…+4 member_360) · pytest
+925→929 · contrato AST 11/11 idéntico · drop-in canon
+determinista idéntico · ruff 1221→1199 ≤ 1282 (BAJA 22
+— séptima vertical consecutiva) · mypy 733→723 ≤ 733
+(BAJA 10 — sexta vertical que BAJA mypy) · smoke B0
+VERDE (19 agentes · 207 tools · RBAC 207/207) ·
+consistency 13/13 · alembic upgrade head → 0017
+verificado (sqlite: version head + upgrade()
+standalone contra metadata vacío con las 12+7 columnas
+exactas — MISMO estándar de la 16ª: el DDL real del
+CI/deploy corre vía _reset_backend create_all +
+seed_users en PG).
+
+DEUDA DEL VERTICAL PAGADA DENTRO (lección run #39):
+ruff vertical 8→0 + mypy 10→0 (detalle completo en
+CHANGELOG G34) — el vertical NO sube deuda: la BAJA en
+ambos ratchets (−22 ruff · −10 mypy globales).
+
+QUEDÓ FUERA (by design): 2 repos in-memory restantes —
+AMBAS olas aparte por dependencia: document_
+intelligence (RAG lazy) · ml_intelligence (numpy/
+sklearn+prophet) · ApprovalEngine → Q-PER-03 (Ola 2.3)
+· alembic upgrade head en deploy.
 
 ## CHANGELOG G32 (v9.26 → v9.27)
 OLA 2.1-DECIMOQUINTA — DECIMOQUINTO VERTICAL DE
@@ -2870,6 +3072,17 @@ la undécima en masters v9.23 — YA MIGRADO en Ola 2.1-duodécima
 +engagement 62.5 con goal_stagnation al 0% — el suite
 +afirma la aritmética REAL del in-memory, verificada
 +ejecutando, no estimada.)
++(member_360 11m sync · compute read-heavy — el candidato
++anunciado por G33 END, READ-ONLY: sin writes públicos,
++dataset en constantes de módulo — YA MIGRADO en Ola
++2.1-decimaseptima §3.8-DECIMASEPTIMA: vertical 0050
++run #61 VERDE 5/5 @ facc83a A LA PRIMERA. HALLAZGO que
++fijó el diseño: factors del SEED GLOBAL SIEMPRE
++sembrados + members solo con opt-in — el in-memory lee
++HEALTH_FACTORS_SEED sin depender de _members y health/
++churn/risk FUNCIONAN sin opt-in; una primera versión
++del ORM con tablas vacías rompía ese contrato REAL,
++corregido ejecutando, no asumido.)
 
 ### §3.8-DECIMOQUINTA OLA 2.1-DECIMOQUINTA · PERSISTENCIA REAL — VERTICAL FINANCE (✅ CERRADA 2026-11-21)
 
@@ -3787,8 +4000,8 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             anula el access control por rol del vectorstore. → rol
             real del JWT.
 
-═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA · age_group §3.8-DECIMATERCERA · sports_recreation §3.8-DECIMOCUARTA · finance §3.8-DECIMOQUINTA · wellness §3.8-DECIMOSEXTA CERRADOS) ═══
-  Q-PER-01  3 repositorios in-memory restantes (family en
+═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA · age_group §3.8-DECIMATERCERA · sports_recreation §3.8-DECIMOCUARTA · finance §3.8-DECIMOQUINTA · wellness §3.8-DECIMOSEXTA · member_360 §3.8-DECIMASEPTIMA CERRADOS) ═══
+  Q-PER-01  2 repositorios in-memory restantes (family en
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
@@ -3812,14 +4025,19 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             sync: compliance 8 → finance 17 → wellness 22 ·
             run #59 VERDE a la primera · perfilado que cambió
             el suite: aritmética REAL engagement 62.5
-            verificada ejecutando);
-            de los 3 restantes NINGUNO necesita refactor
-            de contrato (0 privados tocados) — pero
-            member_360 es sync ·
-            doc_intel RAG · ml_intel numpy →
-            siguientes: member_360 cirugía
-            async / compute · doc_intel/ml_intel
-            olas aparte) → SQLAlchemy
+            verificada ejecutando) ·
+            member_360 en Ola 2.1-decimaseptima
+            §3.8-DECIMASEPTIMA (cirugía async 21m
+            READ-ONLY — la primera vertical sin writes
+            públicos: factors del SEED GLOBAL SIEMPRE +
+            members solo con opt-in, hallazgo que fijó el
+            diseño del ORM · run #61 VERDE a la primera ·
+            random stateless: canon determinista completo);
+            de los 2 restantes NINGUNO necesita refactor
+            de contrato (0 privados tocados) — PERO
+            doc_intel RAG · ml_intel numpy+prophet →
+            olas aparte por dependencia: la ola de
+            persistencia SIN dependencias TERMINÓ) → SQLAlchemy
             async via db/orm/
             (mecánica §3.8 probada: ORM + alembic + repo + gate
             — ya con lección run #28: read-path re-construye
@@ -3828,12 +4046,19 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             en sandbox primero · lección run #56: PG MVCC
             reordena el heap tras UPDATE — contrato de orden
             solo con ENUM u ORDER BY · lección de perfilado
-            wellness: el suite afirma la aritmética REAL del
-            in-memory, verificada ejecutando — no estimada).
-            Siguiente: candidato del
-            Chief Architect de los 3 (member_360:
-            cirugía async / compute; doc_intel/ml_intel
-            olas aparte por dependencia).
+            wellness+member_360: el suite afirma la aritmética
+            REAL del in-memory, verificada ejecutando — no
+            estimada · lección de predictibilidad G34: el
+            espejo del CI importa — uv sync --frozen --extra
+            dev SIN extras locales: los 6 prophet tests
+            fallan solo con --all-extras (pandas 3.1.1
+            Pandas4Warning escalado dentro de prophet.fit)
+            y el CI los corre por el fallback _HAS_PROPHET=
+            False). Siguiente: la ola de persistencia SIN
+            dependencias TERMINÓ — candidato del Chief
+            Architect: Ola 2.3 Q-PER-03 (ApprovalEngine)
+            o doc_intel/ml_intel como olas DEDICADAS (sus
+            dependencias las olan PRIMERO).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
@@ -3901,6 +4126,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.28 · Generación G33 (sincronizada con
-MASTER_BASE.md v9.28 y MASTER_CHECKLIST.md v9.28)
+END OF MASTER_CHECKPOINT.md v9.29 · Generación G34 (sincronizada con
+MASTER_BASE.md v9.29 y MASTER_CHECKLIST.md v9.29)
 

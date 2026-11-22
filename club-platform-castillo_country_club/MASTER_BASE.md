@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.28 · Generación G33 (Ola 2.1-decimosexta — persistencia real: vertical wellness) · Date: 2026-11-21
+### Version: 9.29 · Generación G34 (Ola 2.1-decimaseptima — persistencia real: vertical member_360) · Date: 2026-11-22
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -1537,7 +1537,7 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               (G20) · 5 tablas engagement +
 │   │                               MemberEngagementRepository async
 │   │                               (G21 · alembic 0001+0002+0003)
-│   ├── db/repositories/          ← 3 repos in-memory restantes
+│   ├── db/repositories/          ← 2 repos in-memory restantes
 │   │                               → Q-PER-01 (family, engagement,
 │   │                               event, compliance, guest,
 │   │                               satisfaction, communication,
@@ -1545,7 +1545,8 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               dashboard, proactive_recommen-
 │   │                               dation, facility_management,
 │   │                               age_group, sports_recreation,
-│   │                               finance y wellness migrados ·
+│   │                               finance, wellness y member_360
+│   │                               migrados ·
 │   │                               users de Q-PER-04 ya no vive acá)
 │   ├── hitl/                     ← ApprovalEngine (in-memory → Q-PER-03)
 │   ├── models/                   ← 22 módulos de esquemas
@@ -1567,7 +1568,8 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   · 0014_sports_recreation (7 tablas)
 │                                   · 0015_finance (5 tablas · 2 H-3)
 │                                   · 0016_wellness (5 tablas)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 925 tests PASSED
+│                                   · 0017_member360 (2 tablas)
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 929 tests PASSED
 │                                   (808 def + 16 parametrizados + 15
 │                                   persistencia write-restart-read —
 │                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
@@ -1586,7 +1588,8 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   2.1-decimocuarta
 │                                   sports_recreation 4 + Ola
 │                                   2.1-decimoquinta finance 5 + Ola
-│                                   2.1-decimosexta wellness 4)
+│                                   2.1-decimosexta wellness 4 + Ola
+│                                   2.1-decimaseptima member_360 4)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1897,7 +1900,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.28 · Generación G33 (sincronizada con
-MASTER_CHECKPOINT.md v9.28 y MASTER_CHECKLIST.md v9.28)
+END OF MASTER_BASE.md v9.29 · Generación G34 (sincronizada con
+MASTER_CHECKPOINT.md v9.29 y MASTER_CHECKLIST.md v9.29)
 
 
