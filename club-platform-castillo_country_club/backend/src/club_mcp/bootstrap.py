@@ -230,6 +230,16 @@ def build_runtime() -> Runtime:
         from club_mcp.db.orm.session import make_engine as _make_engine
 
         _persist_engine = _make_engine(_persist_url)
+        # Ola 2.3 — estado durable del ApprovalEngine (Q-PER-03): el
+        # motor HITL delega solicitudes a approvals + ledger
+        # approval_events; sin env, 100% in-memory (contrato igual).
+        from club_mcp.db.orm.repositories.approval_repo import ApprovalStore
+
+        approval_engine._store = ApprovalStore(_persist_engine)  # type: ignore[attr-defined]
+        logger.info(
+            "[bootstrap] CLUB_PERSISTENCE_URL presente — ApprovalEngine con "
+            "estado durable (Ola 2.3: approvals + approval_events)"
+        )
         logger.info(
             "[bootstrap] CLUB_PERSISTENCE_URL presente — repos migrados a PG "
             "(2.1-bis: family · 2.1-tris: engagement · 2.2: event · "
@@ -243,7 +253,8 @@ def build_runtime() -> Runtime:
             "2.1-decimocuarta: sports_recreation · "
             "2.1-decimoquinta: finance · "
             "2.1-decimosexta: wellness · "
-            "2.1-decimaseptima: member_360)"
+            "2.1-decimaseptima: member_360 · "
+            "2.3: approval_engine)"
         )
 
     def _orm_repo(key: str) -> Any | None:
