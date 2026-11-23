@@ -47,6 +47,18 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# ── pgvector canonical types (asyncpg codec path) ──────────
+# register_vector installs the codec ON each pool connection; Vector
+# is the parameter type asyncpg serializes (README oficial pgvector).
+# Fallback a lista plana: sin pgvector el store es importable y solo
+# falla si el backend realmente corre SQL.
+try:
+    from pgvector import Vector as _PgVector
+
+    _VectorParam = _PgVector
+except ImportError:  # pragma: no cover - env sin pgvector
+    _VectorParam = list  # type: ignore[assignment,misc]
+
 # ── Shared constants (identical to the chromadb store) ──────
 
 # Access level hierarchy for metadata filtering
@@ -236,8 +248,16 @@ class PgVectorStore:
         @asynccontextmanager
         async def _ctx() -> Any:
             if self._pool is None:
+                # register_vector en cada conexión del pool (patrón
+                # canónico pgvector/asyncpg): instala el codec que
+                # serializa Vector params y lee columnas vector.
+                from pgvector.asyncpg import register_vector
+
+                async def _init(conn: Any) -> None:
+                    await register_vector(conn)
+
                 self._pool = await asyncpg.create_pool(
-                    self._dsn, min_size=1, max_size=4
+                    self._dsn, min_size=1, max_size=4, init=_init
                 )
             async with self._pool.acquire() as conn:
                 yield conn
@@ -252,13 +272,19 @@ class PgVectorStore:
         The persistence suites create the schema with
         Base.metadata.create_all BEFORE the store runs; this is the
         safety net for direct usage (routes singleton, RAGService
-        default). Fails soft: extension 'vector' is expected
-        pre-installed (pgvector image / migration 0019).
+        default). CREATE EXTENSION requires superuser — in the
+        pgvector/pgvector:pg16 CI service it is preinstalled, and
+        alembic 0019 is the production path; here it is best-effort
+        (failures surface on the first real SQL statement).
         """
         async with await self._acquire() as conn:
-            await conn.execute(
-                "CREATE EXTENSION IF NOT EXISTS vector"
-            )
+            try:
+                await conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
+            except Exception as exc:
+                logger.debug(
+                    "[pgvectorstore] CREATE EXTENSION skipped (%s) — "
+                    "se asume preinstalada", exc,
+                )
             await conn.execute(f"""
                 CREATE TABLE IF NOT EXISTS {self._table} (
                     chunk_id        VARCHAR(64) PRIMARY KEY,
@@ -309,7 +335,7 @@ class PgVectorStore:
                 chunk_id,
                 sanitized.pop("document_id", ""),
                 doc,
-                json.dumps(emb),
+                _VectorParam(emb),
                 access,
                 json.dumps(sanitized, ensure_ascii=False),
             ))
@@ -323,7 +349,7 @@ class PgVectorStore:
                 f"""
                 INSERT INTO {self._table}
                     (chunk_id, document_id, document, embedding, access_level, metadata_json)
-                VALUES ($1, $2, $3, $4::jsonb::vector, $5, $6::jsonb)
+                VALUES ($1, $2, $3, $4, $5, $6::jsonb)
                 ON CONFLICT (chunk_id) DO UPDATE SET
                     document_id = EXCLUDED.document_id,
                     document = EXCLUDED.document,
@@ -354,17 +380,20 @@ class PgVectorStore:
             raises ValueError BEFORE touching the DB (fail-fast, no
             silent empty results).
         """
-        clauses, where_params = self._where_to_sql(where)
+        # offset=2: $1 es el embedding (Vector), $2 el LIMIT — las
+        # cláusulas where empiezan en $3 (lección run #67: sin el
+        # offset, "access_level <= $1" comparaba INTEGER contra VECTOR).
+        clauses, where_params = self._where_to_sql(where, offset=2)
 
         sql = f"""
             SELECT chunk_id, document, metadata_json, access_level,
-                   embedding <=> $1::vector AS distance
+                   embedding <=> $1 AS distance
             FROM {self._table}
         """
         if clauses:
             sql += " WHERE " + " AND ".join(clauses)
         sql += " ORDER BY distance ASC LIMIT $2"
-        params: list[Any] = [json.dumps(embedding), n_results, *where_params]
+        params: list[Any] = [_VectorParam(embedding), n_results, *where_params]
 
         results = self._run(self._fetch_all(sql, *params))
         total_all = self.count()
@@ -391,9 +420,12 @@ class PgVectorStore:
             return rows
 
     def _where_to_sql(
-        self, where: dict[str, Any] | None
+        self, where: dict[str, Any] | None, offset: int = 0
     ) -> tuple[list[str], list[Any]]:
         """Translate the where-language subset to SQL clauses.
+
+        offset: número de placeholders $n que YA ocupan posición en
+        la sentencia destino (query() usa $1 embedding + $2 LIMIT).
 
         Subset (inventory of real usage): $lte on access_level, plain
         equality on document_id / category / document_type. The JSONB
@@ -417,16 +449,16 @@ class PgVectorStore:
                         "PgVectorStore.where: $lte only on access_level "
                         "(dedicated column)"
                     )
-                clauses.append(f"access_level <= ${len(params) + 1}")
+                clauses.append(f"access_level <= ${len(params) + offset + 1}")
                 params.append(int(cond["$lte"]))
             else:
                 if key == "access_level":
-                    clauses.append(f"access_level = ${len(params) + 1}")
+                    clauses.append(f"access_level = ${len(params) + offset + 1}")
                     params.append(int(cond))
                 else:
                     clauses.append(
                         f"metadata_json->>{self._quote_literal(key)} "
-                        f"= ${len(params) + 1}"
+                        f"= ${len(params) + offset + 1}"
                     )
                     params.append(str(cond))
         return clauses, params
@@ -475,8 +507,8 @@ class PgVectorStore:
             sets: list[str] = []
             params: list[Any] = []
             if embeddings is not None:
-                sets.append(f"embedding = ${len(params) + 1}::jsonb::vector")
-                params.append(json.dumps(embeddings[i]))
+                sets.append(f"embedding = ${len(params) + 1}")
+                params.append(_VectorParam(embeddings[i]))
             if documents is not None:
                 sets.append(f"document = ${len(params) + 1}")
                 params.append(documents[i])

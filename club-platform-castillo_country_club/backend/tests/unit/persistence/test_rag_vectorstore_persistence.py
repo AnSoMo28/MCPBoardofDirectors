@@ -20,10 +20,12 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+from typing import Any
 
 import pytest
 
-from club_mcp.db.orm.base import Base
+import club_mcp.db.orm.rag_orm  # noqa: F401 — registra rag_chunks en Base.metadata
+from club_mcp.db.orm.rag_orm import RagChunkORM
 from club_mcp.rag.pg_vectorstore import (
     ACCESS_HIERARCHY,
     ROLE_ACCESS,
@@ -44,22 +46,70 @@ def _backend_url() -> str:
 
 
 async def _reset_backend() -> None:
-    """Re-runnable: DROP del backend antes de cada test (Ola 2.1f)."""
+    """Re-runnable RAG-ONLY: drop/create rag_chunks sola.
+
+    Lección del run #67: Base.metadata (drop|create)_all GLOBAL aquí
+    rompía dos cosas a la vez — (1) rag_chunks nunca llegaba a
+    crearse porque rag_orm no se importaba, y (2) un drop_all global
+    sobre las tablas de las DEMÁS verticales en el PG compartido de
+    CI dejaba el backend inconsistente entre suites. Este reset
+    toca EXCLUSIVAMENTE la tabla del swap.
+    """
     from sqlalchemy.ext.asyncio import create_async_engine
 
     engine = create_async_engine(_backend_url())
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(
+            lambda sync: RagChunkORM.__table__.drop(
+                sync, checkfirst=True
+            )
+        )
+        await conn.run_sync(
+            lambda sync: RagChunkORM.__table__.create(
+                sync, checkfirst=True
+            )
+        )
     await engine.dispose()
+
+
+def _schema_ready() -> None:
+    """CREATE EXTENSION vector en la db de tests (una vez por sesión).
+
+    El service pgvector/pgvector:pg16 la trae preinstalada; este
+    paso es un no-op allí y el safety net en cualquier otro PG
+    (requiere superuser — como postgres del service).
+    """
+    dsn = _mk_dsn()
+    if not dsn:
+        return
+
+    async def _go() -> None:
+        import asyncpg
+
+        conn = await asyncpg.connect(dsn)
+        try:
+            await conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        except Exception:
+            pass
+        finally:
+            await conn.close()
+
+    asyncio.run(_go())
 
 
 pytestmark = pytest.mark.asyncio
 
 
 def _mk_dsn() -> str:
-    """asyncpg DSN para el backend de este test (sqlite → skip PG paths)."""
+    """asyncpg DSN para el backend de este test (sqlite → skip PG paths).
+
+    CLUB_PERSISTENCE_URL llega como sqlalchemy URL
+    (postgresql+asyncpg://) — asyncpg quiere postgresql:// y sin
+    password-encoded '+' del scheme.
+    """
     if PG_URL:
-        return PG_URL.replace("postgresql+asyncpg://", "postgresql://", 1)
+        dsn = PG_URL.replace("postgresql+asyncpg://", "postgresql://", 1)
+        return dsn
     return ""
 
 
@@ -206,16 +256,14 @@ class TestBridge:
     reason="sqlite backend: PgVectorStore habla asyncpg, no sqlite (CI corre el PG real)",
 )
 class TestPgVectorStorePersistence:
-    """CI-only: contra el service pgvector/pgvector:pg16 real."""
+    """CI-only: contra el service pgvector/pgvector:pg16 real.
+
+    _reset_backend (rag-only) ya crea la tabla; _schema_ready corre
+    una vez (CREATE EXTENSION) en el setup del primer test.
+    """
 
     async def test_write_restart_read(self) -> None:
-        await _reset_backend()
-        from sqlalchemy.ext.asyncio import create_async_engine
-
-        engine = create_async_engine(_backend_url())
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        await engine.dispose()  # restart REAL: engine nuevo tras el write
+        await _reset_backend()  # drop+create rag_chunks (rag-only)  # restart REAL: engine nuevo tras el write
 
         store = PgVectorStore(dsn=_mk_dsn())
         emb = [0.1] * 1024
@@ -238,13 +286,7 @@ class TestPgVectorStorePersistence:
         assert "category" in meta and "access_level" in meta
 
     async def test_access_control_lte(self) -> None:
-        await _reset_backend()
-        from sqlalchemy.ext.asyncio import create_async_engine
-
-        engine = create_async_engine(_backend_url())
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        await engine.dispose()
+        await _reset_backend()  # drop+create rag_chunks (rag-only)
 
         store = PgVectorStore(dsn=_mk_dsn())
         emb = [0.1] * 1024
@@ -269,13 +311,7 @@ class TestPgVectorStorePersistence:
         assert len(admin) == 3
 
     async def test_update_access_metadata_roundtrip(self) -> None:
-        await _reset_backend()
-        from sqlalchemy.ext.asyncio import create_async_engine
-
-        engine = create_async_engine(_backend_url())
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        await engine.dispose()
+        await _reset_backend()  # drop+create rag_chunks (rag-only)
 
         store = PgVectorStore(dsn=_mk_dsn())
         emb = [0.1] * 1024
@@ -292,13 +328,7 @@ class TestPgVectorStorePersistence:
         assert got["metadatas"][0]["access_level"] == 1
 
     async def test_delete_by_document(self) -> None:
-        await _reset_backend()
-        from sqlalchemy.ext.asyncio import create_async_engine
-
-        engine = create_async_engine(_backend_url())
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        await engine.dispose()
+        await _reset_backend()  # drop+create rag_chunks (rag-only)
 
         store = PgVectorStore(dsn=_mk_dsn())
         emb = [0.1] * 1024
@@ -314,13 +344,7 @@ class TestPgVectorStorePersistence:
         assert store.count() == 0
 
     async def test_get_by_ids_shape(self) -> None:
-        await _reset_backend()
-        from sqlalchemy.ext.asyncio import create_async_engine
-
-        engine = create_async_engine(_backend_url())
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        await engine.dispose()
+        await _reset_backend()  # drop+create rag_chunks (rag-only)
 
         store = PgVectorStore(dsn=_mk_dsn())
         emb = [0.1] * 1024
@@ -336,13 +360,7 @@ class TestPgVectorStorePersistence:
         assert items[0]["metadata"]["category"] == "finanzas"
 
     async def test_stats_shape(self) -> None:
-        await _reset_backend()
-        from sqlalchemy.ext.asyncio import create_async_engine
-
-        engine = create_async_engine(_backend_url())
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        await engine.dispose()
+        await _reset_backend()  # drop+create rag_chunks (rag-only)
 
         store = PgVectorStore(dsn=_mk_dsn())
         emb = [0.1] * 1024
