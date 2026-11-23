@@ -6,6 +6,7 @@ Modules:
     chunker     — Semantic-aware text chunking
     embeddings  — Vector embedding generation (bge-m3)
     vectorstore — ChromaDB vector storage with access control
+    pg_vectorstore — PostgreSQL + pgvector storage (Ola 2.2 opt-in)
 
 Architecture:
     File → Parser → Chunker → Embedder → VectorStore
@@ -15,18 +16,22 @@ Architecture:
 
 __version__ = "1.0.0"
 
-from club_mcp.rag.parsers import DocumentParser, CleanDocument, DocumentMetadata
-from club_mcp.rag.chunker import SmartChunker, ChunkData, ChunkMetadata
+from club_mcp.rag.chunker import ChunkData, ChunkMetadata, SmartChunker
 from club_mcp.rag.embeddings import EmbeddingService
+from club_mcp.rag.parsers import CleanDocument, DocumentMetadata, DocumentParser
+from club_mcp.rag.pg_vectorstore import PgVectorStore, build_vectorstore
 from club_mcp.rag.vectorstore import ChromaVectorStore
 
+
 __all__ = [
-    "DocumentParser",
-    "CleanDocument",
-    "DocumentMetadata",
-    "SmartChunker",
+    "ChromaVectorStore",
     "ChunkData",
     "ChunkMetadata",
+    "CleanDocument",
+    "DocumentMetadata",
+    "DocumentParser",
     "EmbeddingService",
-    "ChromaVectorStore",
+    "PgVectorStore",
+    "SmartChunker",
+    "build_vectorstore",
 ]

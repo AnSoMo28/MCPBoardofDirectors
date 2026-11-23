@@ -80,13 +80,15 @@ class DocumentIntelligenceRepository:
     def _build_rag_service(self) -> Any:
         """Build and connect all RAG components."""
         from club_mcp.rag.embeddings import EmbeddingService
-        from club_mcp.rag.vectorstore import ChromaVectorStore
+        from club_mcp.rag.pg_vectorstore import build_vectorstore
         from club_mcp.rag.search import HybridSearchEngine
         from club_mcp.rag.reranker import Reranker
         from club_mcp.rag.rag_service import RAGService
 
         embeddings = EmbeddingService()
-        vectorstore = ChromaVectorStore()
+        # Ola 2.2 opt-in: CLUB_RAG_BACKEND=pgvector → PgVectorStore
+        # (tabla rag_chunks); default → ChromaVectorStore (sin cambio).
+        vectorstore = build_vectorstore()
         search = HybridSearchEngine(embeddings, vectorstore)
         reranker = Reranker()
 

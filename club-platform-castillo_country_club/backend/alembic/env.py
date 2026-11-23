@@ -16,6 +16,7 @@ from alembic import context
 from sqlalchemy import pool
 
 from club_mcp.config.settings import get_settings
+from club_mcp.db.orm import rag_orm  # noqa: F401 — Ola 2.2: registra rag_chunks
 from club_mcp.db.orm import users_orm  # noqa: F401 — registra la tabla en Base
 from club_mcp.db.orm.base import Base
 

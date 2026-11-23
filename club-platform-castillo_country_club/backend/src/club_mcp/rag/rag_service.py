@@ -14,7 +14,7 @@ All methods are async and production-grade.
 Usage:
     rag = RAGService(
         embeddings=EmbeddingService(),
-        vectorstore=ChromaVectorStore(),
+        vectorstore=build_vectorstore(),  # Ola 2.2: chroma | pgvector opt-in
         search=HybridSearchEngine(...),
         reranker=Reranker(),
         claude=ClaudeService(),
