@@ -16,7 +16,7 @@ Usage:
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, cast
 
 logger = logging.getLogger(__name__)
 
@@ -217,6 +217,29 @@ class ChromaVectorStore:
         """Delete specific chunks by ID."""
         if ids:
             self._collection.delete(ids=ids)
+
+    def get_chunks_by_document(
+        self,
+        document_id: str,
+        limit: int | None = None,
+        include: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """
+        Raw chunks of a document by metadata (0055 public API).
+
+        Returns the store's native get() payload (ids/documents/metadatas).
+        Consumed by DocumentIntelligenceRepository.search_similar_rag
+        (source-chunk fetch) and update_access_metadata (rewrite). A
+        pgvector store exposes the same shape — ids may be str there.
+        """
+        kwargs: dict[str, Any] = {"where": {"document_id": document_id}}
+        if limit is not None:
+            kwargs["limit"] = limit
+        if include is not None:
+            kwargs["include"] = include
+        # chromadb tipa get() como GetResult (TypedDict): mismas llaves,
+        # pero mypy no acepta la equivalencia implícita — cast documentado.
+        return cast(dict[str, Any], self._collection.get(**kwargs))
 
     # ── Access control helpers ────────────────────────────
 

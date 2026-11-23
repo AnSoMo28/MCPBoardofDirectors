@@ -374,7 +374,10 @@ def build_runtime() -> Runtime:
 
     # rag_service comes from the document repo (single CommunicationAgent, W-2b)
     doc_repo = repo_for("document_intelligence_repo")
-    rag_service = getattr(doc_repo, "_rag_service", None)
+    # 0055: public contract — same semantics as the old
+    # getattr(doc_repo, "_rag_service", None): None WITHOUT triggering
+    # the lazy RAG build (loading bge-m3 at bootstrap is a behavior change).
+    rag_service = doc_repo.rag_service_ready
 
     agents: list[BaseAgent] = []
     for module_name in _AGENT_MODULES:

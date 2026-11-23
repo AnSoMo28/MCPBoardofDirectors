@@ -171,8 +171,8 @@ class DocumentIntelligenceAgent(BaseAgent):
             }
 
         try:
-            # Use hybrid search directly
-            candidates = await self.repo.rag.search_engine.search(
+            # 0055: hybrid search via repo contract (was self.repo.rag.* tunnel).
+            candidates = await self.repo.search_chunks(
                 query=query,
                 # Q-SEC-04: rol del caller (router lo inyecta del JWT);
                 # socio default = least privilege sin caller conocido.
@@ -181,10 +181,6 @@ class DocumentIntelligenceAgent(BaseAgent):
                 category=category_filter or None,
                 document_type=document_type_filter or None,
             )
-            # b0v: la búsqueda híbrida devuelve content="" — poblar desde
-            # el vectorstore, igual que RAGService.search_documents hace
-            # internamente (sin esto el caller recibía fragments vacíos).
-            candidates = self.repo.rag.populate_content(candidates)
 
             if not candidates:
                 return {
@@ -464,24 +460,9 @@ class DocumentIntelligenceAgent(BaseAgent):
             "status": "published",
         })
 
-        # Update ChromaDB metadata
-        try:
-            from club_mcp.rag.vectorstore import ACCESS_HIERARCHY
-
-            chunks = self.repo.rag.vectorstore._collection.get(
-                where={"document_id": doc_id},
-            )
-            if chunks.get("ids"):
-                updated_metas = []
-                for meta in chunks["metadatas"]:
-                    meta["access_level"] = ACCESS_HIERARCHY.get(access_level, 1)
-                    updated_metas.append(meta)
-                self.repo.rag.vectorstore.update(
-                    ids=chunks["ids"],
-                    metadatas=updated_metas,
-                )
-        except Exception as exc:
-            logger.warning("[document_intelligence] ChromaDB metadata update failed: %s", exc)
+        # 0055: propagate access level to RAG chunk metadata via repo
+        # contract (was the duplicated ChromaDB tunnel block).
+        self.repo.update_access_metadata(document_id=doc_id, access_level=access_level)
 
         logger.info("[document_intelligence] Document approved: %s (%s)", file_name, doc_id)
 
@@ -575,8 +556,10 @@ class DocumentIntelligenceAgent(BaseAgent):
         user_role: str = "socio",
     ) -> dict[str, Any]:
         """Genera el reporte tras aprobación HITL usando RAG."""
-        # Use RAG to get relevant content
-        rag_response = await self.repo.rag.query_rag(
+        # 0055: RAG conversational response via repo contract (was
+        # self.repo.rag.query_rag tunnel) — the report needs sources and
+        # answer separately, so the raw RAGResponse object is returned.
+        rag_response = await self.repo.query_knowledge_rag(
             question=f"Genera un reporte sobre: {topic}",
             # Q-SEC-04: HITL executor — corre tras aprobación; el rol
             # del caller original se reinyecta desde la capa HTTP.
@@ -780,23 +763,9 @@ class DocumentIntelligenceAgent(BaseAgent):
                 "message": f"Documento {document_id} no encontrado.",
             }
 
-        # Update ChromaDB metadata
-        try:
-            from club_mcp.rag.vectorstore import ACCESS_HIERARCHY
-            chunks = self.repo.rag.vectorstore._collection.get(
-                where={"document_id": document_id},
-            )
-            if chunks.get("ids"):
-                updated_metas = []
-                for meta in chunks["metadatas"]:
-                    meta["access_level"] = ACCESS_HIERARCHY.get(new_access_level, 1)
-                    updated_metas.append(meta)
-                self.repo.rag.vectorstore.update(
-                    ids=chunks["ids"],
-                    metadatas=updated_metas,
-                )
-        except Exception as exc:
-            logger.warning("[document_intelligence] ChromaDB access update failed: %s", exc)
+        # 0055: propagate the new access level to RAG chunk metadata via
+        # repo contract (was the duplicated ChromaDB tunnel block).
+        self.repo.update_access_metadata(document_id=document_id, access_level=new_access_level)
 
         logger.info("[document_intelligence] Access changed: %s → %s", doc.file_name, new_access_level)
 

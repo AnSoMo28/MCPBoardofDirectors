@@ -737,6 +737,11 @@ Responde basándote EXCLUSIVAMENTE en el contexto documental proporcionado. Cita
         return self._vectorstore
 
     @property
+    def embeddings(self) -> EmbeddingService:
+        """Access embeddings (0055 — for similar-doc search, etc.)."""
+        return self._embeddings
+
+    @property
     def search_engine(self) -> HybridSearchEngine:
         """Access search engine (for index management)."""
         return self._search
