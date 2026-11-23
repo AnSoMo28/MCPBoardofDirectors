@@ -30,6 +30,7 @@ from __future__ import annotations
 from typing import Any
 
 import sqlalchemy as sa
+from sqlalchemy import event
 from sqlalchemy.dialects.postgresql import JSONB
 
 from club_mcp.db.orm.base import Base
@@ -64,3 +65,32 @@ class RagChunkORM(Base):
 
     sa.Index("ix_rag_chunks_document_id", document_id)
     sa.Index("ix_rag_chunks_access_level", access_level)
+
+
+# ── Ola 2.2-tris (run #68) ─────────────────────────────────
+# LECCIÓN (96 fails del run #68): con rag_orm importado en la
+# colección de pytest, TODO Base.metadata.create_all global (las
+# 19 verticales lo corren) emite el DDL VECTOR(1024) de esta
+# tabla — y la primera suite alfabética (age_group) corre ANTES
+# de que la suite rag alcance su setup. Si la extensión vector
+# no existe en la db, create_all explota con UndefinedObject
+# "type vector does not exist" y arrastra a las 19 verticales.
+# El punto donde eso se decide es LA CREACIÓN DE LA TABLA, no la
+# suite: este listener garantiza la extensión antes del DDL, para
+# TODO camino (create_all de cualquier suite · alembic 0019 ·
+# runtime). Idempotente por diseño (IF NOT EXISTS); best-effort
+# (sqlite → no-op; un PG sin pgvector instalado debe fallar en
+# el INSERT, con un error legible, no acá — el store ya lo dice
+# así). No usa pool del store: DDL one-shot por conexión nueva.
+
+
+@event.listens_for(RagChunkORM.__table__, "before_create")
+def _ensure_vector_extension(target: sa.Table, connection: sa.Connection, **_kw: Any) -> None:
+    """CREATE EXTENSION vector antes del DDL de rag_chunks (idempotente).
+
+    Solo PG: sqlite (variant TEXT) no tiene extensiones y el
+    dialecto del listener nunca dispara en CI sqlite-less runs.
+    """
+    if connection.dialect.name != "postgresql":
+        return
+    connection.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS vector")

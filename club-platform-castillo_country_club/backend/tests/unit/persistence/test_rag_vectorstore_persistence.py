@@ -75,9 +75,12 @@ async def _reset_backend() -> None:
 def _schema_ready() -> None:
     """CREATE EXTENSION vector en la db de tests (una vez por sesión).
 
-    El service pgvector/pgvector:pg16 la trae preinstalada; este
-    paso es un no-op allí y el safety net en cualquier otro PG
-    (requiere superuser — como postgres del service).
+    Ola 2.2-tris (run #68): REDUNDANTE con el listener before_create
+    de rag_orm (que corre para TODO create_all de cualquier suite) —
+    se mantiene como belt-and-suspenders del primer _reset_backend
+    de ESTA suite (drop directo de la tabla sin pasar por create_all
+    también dispara el listener en el create inmediatamente después;
+    este es el safety net del DDL one-shot asyncpg).
     """
     dsn = _mk_dsn()
     if not dsn:
@@ -258,8 +261,11 @@ class TestBridge:
 class TestPgVectorStorePersistence:
     """CI-only: contra el service pgvector/pgvector:pg16 real.
 
-    _reset_backend (rag-only) ya crea la tabla; _schema_ready corre
-    una vez (CREATE EXTENSION) en el setup del primer test.
+    _reset_backend (rag-only) ya crea la tabla. La extensión vector
+    la asegura el listener before_create de rag_orm (Ola 2.2-tris,
+    run #68): corre para TODO create_all de cualquier suite — la
+    primera alfabética (age_group) ya tenía rag_chunks registrado en
+    Base.metadata ANTES de que esta suite corriera su setup.
     """
 
     async def test_write_restart_read(self) -> None:
