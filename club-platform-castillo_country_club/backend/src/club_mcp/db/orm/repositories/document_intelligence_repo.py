@@ -746,13 +746,18 @@ class DocumentIntelligenceRepository:
             "by_access_level": by_access,
         }
 
-        # Merge with RAG stats (vector store, BM25, conversations)
-        try:
-            rag_stats = self.rag.get_stats()
-            return {
-                **metadata_stats,
-                "rag": rag_stats,
-            }
-        except Exception as exc:
-            logger.warning("[doc_repo] Could not get RAG stats: %s", exc)
-            return metadata_stats
+        # Merge with RAG stats SOLO si ya fue construido (W-2b, run #70:
+        # self.rag es LAZY — al tocarla acá dispara el build del RAG y la
+        # descarga de bge-m3 (2.3 GB) en el runner: >30s = pytest-timeout.
+        # get_stats() es una lectura de metadatos: nunca debe construir
+        # el pipeline — misma regla que rag_service_ready en bootstrap).
+        rag_stats = self.rag_service_ready
+        if rag_stats is not None:
+            try:
+                return {
+                    **metadata_stats,
+                    "rag": rag_stats.get_stats(),
+                }
+            except Exception as exc:
+                logger.warning("[doc_repo] Could not get RAG stats: %s", exc)
+        return metadata_stats

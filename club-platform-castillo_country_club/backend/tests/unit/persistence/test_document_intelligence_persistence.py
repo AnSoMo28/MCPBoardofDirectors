@@ -279,6 +279,13 @@ async def test_stats_compute_on_read() -> None:
     assert stats["by_type"] == {"regulation": 1, "minutes": 1, "newsletter": 1}
     assert stats["by_category"] == {"governance": 2, "marketing": 1}
     assert stats["by_access_level"] == {"internal": 1, "restricted": 1, "public": 1}
+    # run #70 (W-2b bis): get_stats() es una LECTURA de metadatos — el
+    # merge rag va SOLO si el RAG ya fue construido (rag_service_ready);
+    # tocar la property lazy self.rag acá disparaba el build → descarga
+    # de bge-m3 (2.3 GB) >30s → pytest-timeout del runner. Sin build no
+    # hay key "rag": el contrato observable del CI-safe.
+    assert "rag" not in stats
+    assert repo.rag_service_ready is None  # get_stats NO construyó el RAG
 
     # ── RESTART: compute-on-read SOBREVIVE (lee de la tabla) ──
     repo = await _restart_repo(repo)
@@ -287,6 +294,25 @@ async def test_stats_compute_on_read() -> None:
     assert stats2["total_chunks"] == 19
     assert stats2["total_size_bytes"] == 2500
     assert stats2["by_type"]["regulation"] == 1
+    assert "rag" not in stats2  # restart tampoco dispara el build
+
+    # ── CON RAG YA CONSTRUIDO: el merge aparece (contrato completo) ──
+    # Stub mínimo con get_stats (self-contained — las demás suites de
+    # persistencia definen sus fakes inline): sembrado DIRECTO en
+    # _rag_service como haría el runtime tras un primer build, la key
+    # "rag" aparece con sus stats y las de metadatos SIGUEN intactas.
+    # Sin esto el test del run #70 construía el RAG real (bge-m3, 2.3 GB)
+    # desde get_stats y explotaba por pytest-timeout (>30s) en el runner.
+    class _FakeStatsRag:
+        def get_stats(self) -> dict:
+            return {"fake": "stats"}
+
+    repo._rag_service = _FakeStatsRag()
+    stats3 = await repo.get_stats()
+    assert stats3["rag"] == {"fake": "stats"}
+    assert stats3["total_documents"] == 3
+    assert stats3["total_chunks"] == 19
+    repo._rag_service = None  # cleanup: no afectar al repo siguiente
 
     # vacío: contrato vacío idéntico (sin excepciones)
     await _reset_backend()
