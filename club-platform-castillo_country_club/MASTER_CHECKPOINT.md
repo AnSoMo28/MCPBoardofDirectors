@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.29 · Generación G34 (Ola 2.1-decimaseptima — persistencia real: vertical member_360) · Date: 2026-11-22
+### Version: 9.30 · Generación G35 (Ola 2.3 — persistencia real: vertical approval_engine · ledger tamper-evident) · Date: 2026-11-23
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -75,6 +75,15 @@
 ###          READ-ONLY (la ola de persistencia SIN
 ###          dependencias TERMINÓ: quedan doc_intel
 ###          RAG + ml_intel numpy — olas aparte)
+###          G35 — Ola 2.3 absorbida (Q-PER-03
+###          CERRADO · vertical 0052 run #64
+###          VERDE 5/5 @ 774eddb tras errata
+###          0053 una línea de YAML (run #63
+###          nació muerto — lección: jamás
+###          dos puntos+espacio en un escalar
+###          YAML sin comillas) · approvals +
+###          ledger hash-chain R-6 + spans
+###          OTel R-1 · ADR-0007)
 
 ---
 
@@ -194,6 +203,112 @@ AMBAS olas aparte por dependencia: document_intelligence
 — la ola de persistencia SIN dependencias TERMINÓ ·
 ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic upgrade
 head en deploy.
+
+## CHANGELOG G35 (v9.29 → v9.30)
+OLA 2.3 — VERTICAL APPROVALENGINE (Q-PER-03 · radar
+R-1/R-6) CERRADO en DOS pasos (7752b1a vertical 0052 +
+774eddb errata 0053 — evidencia: OUT del APLICAR-VERTICAL-
+2.3 + OUT del APLICAR-ERRATA + CI run #64 VERDE 5/5 —
+https://github.com/AnSoMo28/MCPBoardofDirectors/
+actions/runs/45093869682): vertical 0052 (7752b1a ·
+11 archivos · 1391 insertos) — el run #63 nació muerto
+por YAML inválido del ci.yml (mi parche escribió "Ola
+2.3: approvals" en el step name del job backend —
+dos puntos+espacio en escalar sin comillas → mapping
+values are not allowed here · 0 jobs) + errata 0053
+(774eddb · SOLO esa línea → guion largo) → run #64
+corrió el pipeline REAL: 5/5 jobs VERDE en ~4.5 min.
+2 tablas (approvals espejo 1:1 del ApprovalRequest —
+id agent action tool status payload actor expires_at
+created/decided_at · approval_events ledger append-only
+— event_hash sha256(prev_hash + canon determinista
+sort_keys UTC-naive) GENESIS "0"*64 · verify_chain()
+re-deriva y una edición post-hoc rompe EXACTO ahí ·
+dominó hacia adelante) + ApprovalStore protocol EN EL
+MOTOR (hitl/approval_engine.py — la inversión de
+dependencias: hitl NO importa db.orm, el ORM implementa
+el protocol en db/orm/repositories/approval_repo.py) +
+ctor store=None OPT-IN (sin CLUB_PERSISTENCE_URL corre
+100% in-memory byte a byte: smoke B0 y los 929
+pre-existentes no cambian) + _get_or_raise sync→async
+(0 call sites fuera del motor — el corazón de Q-PER-03:
+approve() tras restart ya no revienta) + bootstrap
+cablea el 18º repo + spans OTel (db/orm/session.py: UN
+span club.db.session por session_scope con repo·status·
+latency_ms·statements·rows — R-1 del radar · 0 deps
+nuevas: otel-api 1.45.2 ya en lock · tracer no-op sin
+provider · OPT-IN CLUB_OTEL_EXPORT) + alembic
+0018_approvalengine (up → down -1 → up determinista,
+sqlite file) + ADR-0007-observabilidad-ledger-hitl.md.
+GATES AL CIERRE (run #64 VERDE 5/5): persistencia
+95/95 (3 auth + 6 family + 6 engagement + 6 event + 6
+compliance + 6 guest + 6 satisfaction + 7 communication
++ 4 cultural_social + 4 executive_dashboard + 4
+proactive_recommendation + 4 facility_management + 4
+age_group + 4 sports_recreation + 5 finance + 4 wellness
++ 4 member_360 + 12 approval_engine) · pytest
+929→941 · ruff 1199→1196 ≤ 1282 (BAJA 3) · mypy
+723→719 ≤ 723 (BAJA 4 — el typing nuevo paga deuda
+vieja) · consistency 13/13 · smoke B0 VERDE · contrato
+AST del motor idéntico (única adición tolerada:
+store=None OPT-IN · verificado por inspect.signature) ·
+ledger tamper-evident VERIFICADO por test (editar actor
+post-hoc → verify_chain() rompe en la fila exacta).
+
+QUEDÓ FUERA (by design): 1 repo in-memory restante —
+AMBAS olas dedicadas por dependencia: document_
+intelligence (RAG lazy — requiere Ola 2.2
+Chroma→pgvector primero) · ml_intelligence (numpy/
+sklearn+prophet — olar ANTES: pin prophet o guard
+Pandas4Warning, lección G34). El radar de observabilidad
+queda: R-1 ENTREGADO · R-6 ENTREGADO · R-2/R-4 esperan
+volumen/3.4 · R-3/R-5 esperan sus olas.
+
+### §3.9 OLA 2.3 · PERSISTENCIA REAL — VERTICAL APPROVALENGINE (✅ CERRADA 2026-11-23)
+
+PERFIL PREVIO (candidato anunciado por G34 END: "Ola
+2.3 Q-PER-03 (ApprovalEngine) o doc_intel/ml_intel
+como olas dedicadas"). Tres entregas en una ola:
+vertical 0052 + errata 0053 + ADR-0007.
+
+POR QUÉ UNA OLA APARTE Y NO "LA 18ª VERTICAL": el
+ApprovalEngine NO es un repo más de Q-PER-01 — es el
+gate Q-PER-03 PROPIO ("approval creada, proceso muere,
+approval sigue pendiente": dict en memoria). Su diseño
+mandó 3 piezas de regalo: (a) el ledger hash-chain
+R-6 — el "nunca antes visto": la aprobación no solo
+sobrevive el restart, ES AUDITABLE criptográficamente
+(rewrites de "quién aprobó qué" rompen la cadena en la
+fila exacta — dominó hacia adelante); (b) los spans
+OTel R-1 de cada session_scope (0 deps nuevas —
+otel-api ya en el lock); (c) la INVERSIÓN de
+dependencias: el protocol ApprovalStore vive EN EL
+MOTOR, hitl NO importa db.orm (lógica de negocio, no
+repo de datos — la implementación ORM llega por el
+ctor store=None OPT-IN, cableada en bootstrap igual que
+las 17 verticales: sin CLUB_PERSISTENCE_URL el
+comportamiento pre-2.3 es byte a byte).
+
+LECCIÓN DE PROCESO (la primera saga §8 en 4 olas —
+#61 → #62 → #63 muerto → #64): el run #63 nació muerto
+por un YAML inválido que NINGÚN gate local cazó porque
+el sandbox validó el CI con un stub de gh que emitía
+JSON compacto. Tres correcciones institucionalizadas:
+(1) NUNCA dos puntos+espacio dentro de un escalar YAML
+sin comillas (el linter del CI es el parser de GitHub
+— corramos yaml.safe_load del workflow en el gate
+local ANTES del push); (2) el poll de CI parsea JSON
+con python (patrón BUMP-G34), jamás grep sobre
+"status":"..." (gh imprime pretty con espacios); (3)
+validar el parche contra el commit REAL clonado de
+GitHub (fetch tras cada push), no contra el worktree
+del sandbox. La errata 0053 fue UNA línea — la
+cirugía mínima de la oficina aplicada a infraestructura.
+
+GATES AL CIERRE: persistencia 95/95 · pytest 941 ·
+ruff 1196 ≤ 1282 · mypy 719 ≤ 723 · consistency 13/13
+· smoke B0 VERDE · alembic 0018 up/down/up · AST motor
+idéntico + store=None.
 
 ## CHANGELOG G33 (v9.27 → v9.28)
 OLA 2.1-DECIMOSEXTA — DECIMOSEXTO VERTICAL DE
@@ -4061,8 +4176,10 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             dependencias las olan PRIMERO).
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
-  Q-PER-03  ApprovalEngine: dict en memoria (docstring propio lo
-            admite) → tabla approvals + expiración persistente.
+  Q-PER-03  CERRADO (Ola 2.3 · vertical 0052 + errata 0053 · run #64
+            VERDE 5/5 @ 774eddb): tabla approvals + approval_events
+            ledger hash-chain tamper-evident (R-6) + expiración
+            persistente + spans OTel (R-1) · ADR-0007 · §3.9.
   Q-PER-04  CERRADO (Ola 2.1): tabla users + seed CLI idempotente
             (los 4 roles con bcrypt ya correcto · login lee la DB).
 
@@ -4126,6 +4243,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.29 · Generación G34 (sincronizada con
-MASTER_BASE.md v9.29 y MASTER_CHECKLIST.md v9.29)
+END OF MASTER_CHECKPOINT.md v9.30 · Generación G35 (sincronizada con
+MASTER_BASE.md v9.30 y MASTER_CHECKLIST.md v9.30)
 

@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.29 · Generación G34 (Ola 2.1-decimaseptima — persistencia real: vertical member_360) · 180 checks · ZERO tolerance
+### Version: 9.30 · Generación G35 (Ola 2.3 — persistencia real: vertical approval_engine · ledger tamper-evident) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -11,6 +11,46 @@
 ---
 
 
+
+## CHANGELOG G35 (v9.29 → v9.30)
+OLA 2.3 — VERTICAL APPROVALENGINE (Q-PER-03 + R-1/R-6
+DEL RADAR DE OBSERVABILIDAD) CERRADO — GATES DEL RUN #64
+VERDE 5/5 @ 774eddb (https://github.com/AnSoMo28/
+MCPBoardofDirectors/actions/runs/45093869682 — primera
+corrida REAL sobre el vertical: el run #63 murió al nacer
+por YAML inválido del ci.yml, errata 0053 una línea —
+dos puntos → guion en el step name): persistencia 95/95
+(83 + approval_engine 12: 8 ciclo/tamper/expiración/dual/
+drop-in/re-register/pendientes/digest + 4 R-1 spans) ·
+pytest 929→941 · ruff 1199→1196 ≤ 1282 (BAJA 3) · mypy
+723→719 ≤ 723 (BAJA 4) · consistency 13/13 · smoke B0
+VERDE. 2 tablas (approvals espejo 1:1 del request +
+approval_events ledger append-only hash-chain
+tamper-evident — event_hash = sha256(prev_hash + canon)
+· GENESIS "0"*64 · verify_chain() re-deriva: una edición
+post-hoc rompe EXACTO ahí) + ApprovalStore protocol en
+hitl/approval_engine.py con ORM en approval_repo (la
+INVERSIÓN: hitl NO importa db.orm) + ctor store=None
+OPT-IN (sin CLUB_PERSISTENCE_URL corre 100% in-memory
+byte a byte — AST contrato público idéntico, única
+adición tolerada store=None) + spans OTel club.db.session
+por session_scope (R-1: repo·status·latency_ms·
+statements·rows · otel-api ya en lock · 0 deps nuevas ·
+tracer no-op sin provider) + alembic 0018 (up/down/up
+determinista) + ADR-0007. R-6 ENTREGADO con el vertical
+(ledger auditable criptográficamente: reescribir quién
+aprobó qué sin delatarlo es imposible). Q-PER-03 pasa a
+CERRADO: "approval creada, proceso muere, approval sigue
+pendiente" YA NO — el estado vive en la tabla y sobrevive
+el restart.
+END: masters v9.30 · Q-PER-03 CERRADO (Ola 2.3) · en P1
+quedan SOLO las dos olas dedicadas: document_intelligence
+(requiere Ola 2.2 Chroma→pgvector primero) ·
+ml_intelligence (numpy/sklearn/prophet — olar la
+dependencia ANTES: pin prophet compatible o guard
+Pandas4Warning en pyproject, lección G34). Radar de
+observabilidad: R-1 ENTREGADO · R-6 ENTREGADO · R-2/R-4
+esperan volumen/3.4 · R-3/R-5 esperan sus olas.
 
 ## CHANGELOG G34 (v9.28 → v9.29)
 OLA 2.1-DECIMASEPTIMA CERRADA — GATES:
@@ -1990,5 +2030,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.29 · Generación G34 (sincronizada con
-MASTER_BASE.md v9.29 y MASTER_CHECKPOINT.md v9.29)
+END OF MASTER_CHECKLIST.md v9.30 · Generación G35 (sincronizada con
+MASTER_BASE.md v9.30 y MASTER_CHECKPOINT.md v9.30)
