@@ -5,8 +5,9 @@ restantes — Q-PER-01; 17 verticales de repo ya migradas: auth +
 family + engagement + event + compliance + guest + satisfaction +
 communication + cultural_social + executive_dashboard +
 proactive_recommendation + facility_management + age_group +
-sports_recreation + finance + wellness + member_360 · + Ola 2.3:
-ApprovalEngine con estado durable):
+sports_recreation + finance + wellness + member_360 +
+document_intelligence · + Ola 2.3: ApprovalEngine con estado
+durable):
 
     base.py      Declarative Base + naming convention determinista
     engine.py    engine async LAZY (primer consumidor de DATABASE_URL)
@@ -15,6 +16,10 @@ ApprovalEngine con estado durable):
     users_orm.py tabla users (espejo 1:1 de auth.models.User)
     approvals_orm.py  tablas approvals + approval_events (ledger
                  hash-chain tamper-evident — Ola 2.3/ADR-0007)
+    document_intelligence_orm.py tablas documents +
+                 knowledge_reports (espejo 1:1 de los 2 dicts del
+                 repo doc_intel — Ola 2.1-decimoctava; la capa RAG
+                 YA vive en rag_orm/rag_chunks de la Ola 2.2)
     repositories/user_repo.py  UserRepository async
     repositories/approval_repo.py  ApprovalStore async (estado del
                  ApprovalEngine + ledger — Ola 2.3)

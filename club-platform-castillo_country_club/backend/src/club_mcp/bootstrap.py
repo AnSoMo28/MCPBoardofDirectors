@@ -254,6 +254,7 @@ def build_runtime() -> Runtime:
             "2.1-decimoquinta: finance · "
             "2.1-decimosexta: wellness · "
             "2.1-decimaseptima: member_360 · "
+            "2.1-decimoctava: document_intelligence · "
             "2.3: approval_engine)"
         )
 
@@ -357,6 +358,17 @@ def build_runtime() -> Runtime:
             )
 
             return _Member360RepoORM(_persist_engine)
+        if key == "document_intelligence_repo":
+            # Ola 2.1-decimoctava: metadatos + reports a tabla; el
+            # pipeline RAG se HEREDA (2.2 pgvector · lazy build
+            # idéntico — rag_service_ready sigue sin disparar el build).
+            from club_mcp.db.orm.repositories.document_intelligence_repo import (
+                DocumentIntelligenceRepository as _DocIntelRepoORM,
+            )
+
+            return _DocIntelRepoORM(
+                _persist_engine, claude_service=claude_service
+            )
         return None
 
     def repo_for(key: str) -> Any:
