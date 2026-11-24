@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.31 · Generación G36 (Ola 2.1-decimonovena — persistencia real: vertical ml_intelligence · Q-PER-01 CERRADO DEL TODO) · Date: 2026-11-24
+### Version: 9.32 · Generación G37 (Ola 3.2 — presupuesto LLM persistente: vertical llm_calls · Q-LLM-02 CERRADO DEL TODO) · Date: 2026-11-24
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -84,6 +84,16 @@
 ###          YAML sin comillas) · approvals +
 ###          ledger hash-chain R-6 + spans
 ###          OTel R-1 · ADR-0007)
+###          G37 — Ola 3.2 absorbida (vertical
+###          llm_calls + presupuesto LLM persistente
+###          §3.11-PRIMA · Q-LLM-02 CERRADO DEL
+###          TODO: el contorno G12 pagado — el día
+###          vive EN TABLA y sobrevive restart · run
+###          #76 VERDE 5/5 a la primera @ aede317 ·
+###          suite 6+1 · persistencia 135 · lección
+###          0053 auto-aplicada ':' fuera del scalar
+###          YAML · arreglado el bloque duplicado que
+###          el bump G36 dejó en el árbol del BASE)
 ###          G36 — Ola 2.1-decimonovena absorbida
 ###          (§3.10-DECIMONOVENA NUEVO · Q-PER-01
 ###          CERRADO DEL TODO — 0 repos
@@ -4219,8 +4229,18 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             §3.10-DECIMONOVENA (la que cerró el frente: numpy/
             sklearn+prophet — la dependencia oliada PRIMERO
             con filterwarnings Pandas4Warning · run #73 VERDE 5/5
-            tras bis mypy-ratchet 19→0 · canon byte a byte) —
-            19/19 verticales · 0 repos in-memory · SQLAlchemy
+            tras bis mypy-ratchet 19→0 · canon byte a byte) ·
+            llm_calls + presupuesto persistente en Ola 3.2
+            §3.11-PRIMA (la que cerró Q-LLM-02 DEL TODO: el
+            contorno G12 "persistencia real llega con
+            PostgreSQL" pagado — TokenUsageLedgerPersistent
+            MISMA API record/snapshot, el día acumula EN
+            TABLA llm_usage_daily y sobrevive restart · run
+            #76 VERDE 5/5 a la primera · señal 80/95
+            re-derivada desde tabla · lección 0053
+            auto-aplicada en el step YAML) —
+            19/19 verticales + presupuesto LLM · 0 repos
+            in-memory · SQLAlchemy
             async via db/orm/ (mecánica §3.8 probada: ORM + alembic
             + repo + gate — lecciones: run #28 read-path re-
             construye enums · run #39 los ratchets ruff/mypy
@@ -4310,8 +4330,10 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             sin timeout, sin backoff, sin fallback a Ollama (ollama
             está en settings y NUNCA se consume). → política de
             reintentos + circuit breaker + fallback local.
-  Q-LLM-02  Token/cost accounting: usage se devuelve y se descarta →
-            persistir + presupuesto + alertas.
+  Q-LLM-02  ✅ CERRADO (Ola 3.2 · G37 · aede317 · run #76): tablas
+            llm_calls + llm_usage_daily · señal 80/95 desde tabla
+            · presupuesto sobrevive restart. [histórico G9: usage
+            se devolvía y se descartaba]
   Q-LLM-03  Prompts (ai/prompts.py, 814 líneas) = constantes sin
             versionado → registro con hash/versión por prompt.
   Q-LLM-04  Evals: golden set + LLM-as-judge (markers pytest
@@ -4357,6 +4379,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.31 · Generación G36 (sincronizada con
-MASTER_BASE.md v9.31 y MASTER_CHECKLIST.md v9.31)
+END OF MASTER_CHECKPOINT.md v9.32 · Generación G37 (sincronizada con
+MASTER_BASE.md v9.32 y MASTER_CHECKLIST.md v9.32
 

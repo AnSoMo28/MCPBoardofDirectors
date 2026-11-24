@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.31 · Generación G36 (Ola 2.1-decimonovena — persistencia real: vertical ml_intelligence · Q-PER-01 CERRADO DEL TODO) · Date: 2026-11-24
+### Version: 9.32 · Generación G37 (Ola 3.2 — presupuesto LLM persistente: vertical llm_calls · Q-LLM-02 CERRADO DEL TODO) · Date: 2026-11-24
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -1552,6 +1552,10 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               ml_intelligence TODOS
 │   │                               migrados · users de Q-PER-04
 │   │                               ya no vive acá)
+│   │                               · Ola 3.2: llm_calls_repo
+│   │                               (presupuesto LLM persistente
+│   │                               — swap del ledger G12, OPT-IN
+│   │                               CLUB_PERSISTENCE_URL)
 │   ├── hitl/                     ← ApprovalEngine (tabla approvals + ledger hash-chain · Q-PER-03 CERRADO)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
@@ -1577,8 +1581,11 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   · 0019_rag_chunks (VECTOR 1024)
 │                                   · 0020_document_intelligence (2 tablas)
 │                                   · 0021_ml_intelligence (1 tabla)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 974 tests PASSED
-│                                   (808 def + 16 parametrizados + 166
+│                                   · 0022_llm_calls (2 tablas + 3
+│                                   índices — presupuesto LLM
+│                                   persistente, Ola 3.2)
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 981 tests PASSED
+│                                   (808 def + 16 parametrizados + 173
 │                                   persistencia write-restart-read —
                                    B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
                                    + Ola 2.1-bis 6 + Ola 2.1-tris 6
@@ -1601,28 +1608,8 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
                                    approval_engine 12 + Ola
                                    2.1-decimoctava document_intelligence
                                    6 + Ola 2.1-decimonovena
-                                   ml_intelligence 4)
-│                                   (808 def + 16 parametrizados + 15
-│                                   persistencia write-restart-read —
-│                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
-│                                   + Ola 2.1-bis 6 + Ola 2.1-tris 6
-│                                   + Ola 2.2 event 6 + Ola 2.1-quinqua 6
-│                                   + Ola 2.1-sexta guest 6 + Ola
-│                                   2.1-septima satisfaction 6 + Ola
-│                                   2.1-octava communication 7 + Ola
-│                                   2.1-nona cultural_social 4 + Ola
-│                                   2.1-décima executive_dashboard 4 +
-│                                   Ola 2.1-undécima
-│                                   proactive_recommendation 4 + Ola
-│                                   2.1-duodécima
-│                                   facility_management 4 + Ola
-│                                   2.1-decimatercera age_group 4 + Ola
-│                                   2.1-decimocuarta
-│                                   sports_recreation 4 + Ola
-│                                   2.1-decimoquinta finance 5 + Ola
-│                                   2.1-decimosexta wellness 4 + Ola
-│                                   2.1-decimaseptima member_360 4 + Ola 2.3
-│                                   approval_engine 12)
+                                   ml_intelligence 4 + Ola 3.2
+                                   llm_calls 6 + PG-real 1)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1933,7 +1920,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.31 · Generación G36 (sincronizada con
-MASTER_CHECKPOINT.md v9.31 y MASTER_CHECKLIST.md v9.31)
+END OF MASTER_BASE.md v9.32 · Generación G37 (sincronizada con
+MASTER_CHECKPOINT.md v9.32 y MASTER_CHECKLIST.md v9.32
 
 

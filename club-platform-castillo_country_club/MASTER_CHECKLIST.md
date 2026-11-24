@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.31 · Generación G36 (Ola 2.1-decimonovena — persistencia real: vertical ml_intelligence · Q-PER-01 CERRADO DEL TODO) · 180 checks · ZERO tolerance
+### Version: 9.32 · Generación G37 (Ola 3.2 — presupuesto LLM persistente: vertical llm_calls · Q-LLM-02 CERRADO DEL TODO) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -11,6 +11,50 @@
 ---
 
 
+
+## CHANGELOG G37 (v9.31 → v9.32)
+
+OLA 3.2 — VERTICAL LLM_CALLS + PRESUPUESTO
+PERSISTENTE (Q-LLM-02 CERRADO DEL TODO — el
+contorno G12 "persistencia real llega con
+PostgreSQL" pagado: el presupuesto LLM vive EN
+TABLA y SOBREVIVE al restart)
+CERRADO en UN paso (aede317 vertical 0062 —
+evidencia: OUT del APLICAR-VERTICAL-3.2-LLM-CALLS
++ CI run #76 VERDE 5/5 a la primera):
+- 2 tablas: llm_calls (append-only — provider·
+  model·tokens·degraded·provider_error·
+  latency_ms·called_at·date_key) + llm_usage_daily
+  (UNIQUE date_key · tokens·calls — el día se
+  acumula EN TABLA) · alembic 0022 con 3 índices
+  explícitos estilo 0018 (called_at auditoría ·
+  date_key presupuesto · up/down/up determinista
+  verificado).
+- LLMCallsRepository async + TokenUsageLedger-
+  Persistent (adapter MISMA API record/snapshot —
+  _acall y los 6 consumidores NO cambian un byte;
+  señal 80/95 MISMA del ledger G12 recalculada
+  DESDE TABLA) · swap OPT-IN POR DENTRO del
+  ResilientClaudeService (bootstrap: con
+  CLUB_PERSISTENCE_URL cablea el adapter — sin
+  env, contorno in-memory byte a byte · smoke B0
+  VERDE).
+- persistencia 128→135 (llm_calls 6: write-
+  restart-read presupuesto · umbral re-derivado
+  tras restart · degraded honesta 0/0 · auditoría
+  ordenada ASC/DESC · drop-in in-memory vs ORM
+  MISMA señal 90% · contrato vacío + 1 PG-real
+  en CI) · pytest 974→981 · ruff vertical 0 ·
+  mypy vertical 0 (regla §3.2.8: archivo NUEVO
+  nace en 0) · globales 1189/721 ≤ baseline
+  1282/733 · MC 13/13 · wiring e2e sobre DB
+  migrada (warning 90% · critical 95%+ ·
+  snapshot desde tabla) · lección 0053
+  auto-aplicada (':' fuera del scalar YAML del
+  step persistence).
+- Errata G36.1 absorbida (89822a2): árbol de
+  alembic del BASE cortado en 0018 → 3 líneas,
+  head real = 22 migraciones.
 
 ## CHANGELOG G36 (v9.30 → v9.31)
 OLA 2.1-DECIMONOVENA — VERTICAL ML_INTELLIGENCE
@@ -903,7 +947,9 @@ RESILIENCIA LLM PRODUCTION-GRADE — Q-LLM-01/02 (cola §15 P2):
   · Q-LLM-01 cerrado de verdad: el setting ollama_host/ollama_fast_model
     (fantasma desde el inicio) SE CONSUME al degradar — respuesta marcada
     degraded + provider_error (degradación honesta, nunca silenciosa).
-  · TokenUsageLedger (Q-LLM-02 contorno): accounting por día de proceso,
+  · TokenUsageLedger (Q-LLM-02 contorno en G12; CERRADO en Ola 3.2/
+    G37 — presupuesto en tabla llm_usage_daily + llm_calls, ver
+    CHANGELOG G37): accounting por día de proceso,
     budget diario configurable, WARNING 80% / CRITICAL 95%, señal
     budget_alert en la respuesta + log. Persistencia real llega con
     Q-PER-01 (PostgreSQL) — no se duplica infra a medias.
@@ -2059,5 +2105,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.31 · Generación G36 (sincronizada con
-MASTER_BASE.md v9.31 y MASTER_CHECKPOINT.md v9.31)
+END OF MASTER_CHECKLIST.md v9.32 · Generación G37 (sincronizada con
+MASTER_BASE.md v9.32 y MASTER_CHECKPOINT.md v9.32
