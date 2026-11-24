@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.32 · Generación G37 (Ola 3.2 — presupuesto LLM persistente: vertical llm_calls · Q-LLM-02 CERRADO DEL TODO) · Date: 2026-11-24
+### Version: 9.33 · Generación G38 (Ola 3.3 — prompts versionados: vertical prompt_registry · Q-LLM-03 CERRADO DEL TODO) · Date: 2026-11-24
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -84,6 +84,18 @@
 ###          YAML sin comillas) · approvals +
 ###          ledger hash-chain R-6 + spans
 ###          OTel R-1 · ADR-0007)
+###          G38 — Ola 3.3 absorbida (vertical
+###          prompt_registry · Q-LLM-03 CERRADO
+###          DEL TODO: 39 PromptSpec v1.0.0 =
+###          texto del árbol byte a byte + sha256
+###          fingerprint (semilla del golden set
+###          3.4/Q-LLM-04) · render() valida kwargs
+###          ANTES de gastar el LLM · dedupe RAG ·
+###          ADR-0008 · suite 9 tests · pytest 990
+###          CI · run #78 ROJO → #79 VERDE 5/5
+###          fix-forward (guard id() → WeakSet por
+###          identidad — heisenbug PRE-EXISTENTE)
+###          @ 7c6044f · MC 13/13)
 ###          G37 — Ola 3.2 absorbida (vertical
 ###          llm_calls + presupuesto LLM persistente
 ###          §3.11-PRIMA · Q-LLM-02 CERRADO DEL
@@ -4239,7 +4251,8 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             #76 VERDE 5/5 a la primera · señal 80/95
             re-derivada desde tabla · lección 0053
             auto-aplicada en el step YAML) —
-            19/19 verticales + presupuesto LLM · 0 repos
+            19/19 verticales + presupuesto LLM + prompts
+            versionados (39 specs · Ola 3.3) · 0 repos
             in-memory · SQLAlchemy
             async via db/orm/ (mecánica §3.8 probada: ORM + alembic
             + repo + gate — lecciones: run #28 read-path re-
@@ -4334,8 +4347,12 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             llm_calls + llm_usage_daily · señal 80/95 desde tabla
             · presupuesto sobrevive restart. [histórico G9: usage
             se devolvía y se descartaba]
-  Q-LLM-03  Prompts (ai/prompts.py, 814 líneas) = constantes sin
-            versionado → registro con hash/versión por prompt.
+  Q-LLM-03  ✅ CERRADO (Ola 3.3 · G38 · 3d6f010 vertical + 7c6044f
+            fix-forward · run #79): registry ai/prompt_registry.py —
+            39 PromptSpec v1.0.0 byte a byte · sha256 fingerprint ·
+            variables DERIVADAS del template · render() valida
+            kwargs ANTES del LLM · dedupe RAG. [histórico G9:
+            constantes sin versionado]
   Q-LLM-04  Evals: golden set + LLM-as-judge (markers pytest
             slow/integration/hitl existen; suites no).
 
@@ -4379,6 +4396,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.32 · Generación G37 (sincronizada con
-MASTER_BASE.md v9.32 y MASTER_CHECKLIST.md v9.32
+END OF MASTER_CHECKPOINT.md v9.33 · Generación G38 (sincronizada con
+MASTER_BASE.md v9.33 y MASTER_CHECKLIST.md v9.33
 

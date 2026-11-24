@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.32 · Generación G37 (Ola 3.2 — presupuesto LLM persistente: vertical llm_calls · Q-LLM-02 CERRADO DEL TODO) · 180 checks · ZERO tolerance
+### Version: 9.33 · Generación G38 (Ola 3.3 — prompts versionados: vertical prompt_registry · Q-LLM-03 CERRADO DEL TODO) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -11,6 +11,52 @@
 ---
 
 
+
+## CHANGELOG G38 (v9.32 → v9.33)
+
+OLA 3.3 — VERTICAL PROMPT_REGISTRY (Q-LLM-03
+CERRADO DEL TODO — 814 líneas de constantes sin
+versionado ni contrato → registry: nombre canónico
++ semver + sha256, y el contrato de variables se
+DERIVA del template — no puede mentir)
+CERRADO en DOS pasos (3d6f010 vertical 0064 +
+7c6044f fix-forward 0065 — CI run #78 ROJO
+(persistence) → run #79 VERDE 5/5):
+- ai/prompt_registry.py: 39 PromptSpec (name
+  canónico · semver v1.0.0 = texto vivo del árbol
+  byte a byte · variables DERIVADAS con
+  string.Formatter · sha256 fingerprint — semilla
+  del golden set 3.4/Q-LLM-04).
+- render() valida kwargs exactos ANTES de gastar
+  la llamada (falta/sobra → ValueError legible con
+  el diff — el typo insight_id vs insights_id pasa
+  de KeyError tardío a error de puerta) ·
+  render_prompt/get_prompt/registry_snapshot
+  (positional-only: 'name' es variable de template).
+- Swap de los 4 puntos de render del árbol
+  (claude_service 4 · advisor_intelligence 7 ·
+  family_profile 5 + system_prompt por
+  AGENT_SYSTEM_PROMPTS intacto · rag_service 1) —
+  contrato observable INTACTO: render() ==
+  template.format(**kwargs) byte a byte.
+- DEDUPE RAG: RAG_SYSTEM_PROMPT duplicado byte a
+  byte (ai/prompts.py:798 huérfano + rag_service
+  .py:77 vivo) → fuente canónica única = entrada
+  'rag' del registry · ADR-0008 (3 decisiones) ·
+  prompts_member_360.py (92L · 0 importadores)
+  fuera del registro: su spec nace versionado.
+- Suite 9 tests (censo 39 byte a byte ·
+  render==format 11 casos · falta/sobre/
+  desconocido · 35 placeholders derivados · sha256
+  entre procesos · dedupe RAG · grep negativo) ·
+  pytest 981→990 CI · persistencia 135 (sin
+  cambio) · ruff 1189→1186 (vertical 0 · isort
+  pagó 3) · mypy 721 (vertical 0).
+- Fix run #78 absorbido: instrument_engine por
+  IDENTIDAD (WeakSet) — heisenbug del guard id()
+  PRE-EXISTENTE (el vertical solo desplazó el
+  patrón de allocations); la clase entera del bug
+  muere, no este caso.
 
 ## CHANGELOG G37 (v9.31 → v9.32)
 
@@ -2105,5 +2151,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.32 · Generación G37 (sincronizada con
-MASTER_BASE.md v9.32 y MASTER_CHECKPOINT.md v9.32
+END OF MASTER_CHECKLIST.md v9.33 · Generación G38 (sincronizada con
+MASTER_BASE.md v9.33 y MASTER_CHECKPOINT.md v9.33
