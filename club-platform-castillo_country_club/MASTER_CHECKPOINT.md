@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.30 · Generación G35 (Ola 2.3 — persistencia real: vertical approval_engine · ledger tamper-evident) · Date: 2026-11-23
+### Version: 9.31 · Generación G36 (Ola 2.1-decimonovena — persistencia real: vertical ml_intelligence · Q-PER-01 CERRADO DEL TODO) · Date: 2026-11-24
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -84,6 +84,18 @@
 ###          YAML sin comillas) · approvals +
 ###          ledger hash-chain R-6 + spans
 ###          OTel R-1 · ADR-0007)
+###          G36 — Ola 2.1-decimonovena absorbida
+###          (§3.10-DECIMONOVENA NUEVO · Q-PER-01
+###          CERRADO DEL TODO — 0 repos
+###          in-memory · 19/19 verticales ·
+###          vertical 0058 run #72 ROJO solo
+###          mypy + bis 0059 run #73 VERDE
+###          5/5 @ 5bb4cc2: 19 errores mypy
+###          del archivo nuevo pagados —
+###          lección: el ratchet se paga por
+###          archivo NUEVO = 0 · los patrones
+###          congelados del legacy no se
+###          replican gratis)
 
 ---
 
@@ -203,6 +215,63 @@ AMBAS olas aparte por dependencia: document_intelligence
 — la ola de persistencia SIN dependencias TERMINÓ ·
 ApprovalEngine → Q-PER-03 (Ola 2.3) · alembic upgrade
 head en deploy.
+
+## CHANGELOG G36 (v9.30 → v9.31)
+OLA 2.1-DECIMONOVENA — VERTICAL ML_INTELLIGENCE
+(Q-PER-01 CERRADO DEL TODO — LA ÚLTIMA) CERRADO
+en DOS pasos (025a6ba vertical 0058 + 5bb4cc2
+bis 0059 — evidencia: OUT del APLICAR-DECIMO-
+NOVENA + OUT del APLICAR-DECIMONOVENA-BIS + CI
+run #72 (rojo SOLO mypy) y run #73 VERDE 5/5 —
+https://github.com/AnSoMo28/MCPBoardofDirectors/
+actions). La vertical 19: repo ORM async
+READ-ONLY cross-domain contrato EXACTO 9/9 AST
+(misma superficie in-memory + opt-in
+seed_member_features patrón member360) · la
+matemática IMPORTADA del módulo in-memory
+(ensemble IF+IQR · Prophet CR dual-path · PSI ·
+clustering · churn híbrido — fuente única de
+verdad, jamás bifurcada) · data-layer SQL: series
+de las 18 verticales migradas al MISMO shape del
+seed · tabla ml_member_features + alembic 0021
+up/down/up determinista · suite 4 (canon drop-in
+ORM vs in-memory byte a byte: churn 17.5 ·
+segments 4/7/7/2 · PSI 5/5 · explain 26.9) ·
+swap OPT-IN 19º repo bootstrap · olar prophet:
+filterwarnings Pandas4Warning (precedente
+chromadb — dual-path preservado). EL BIS: el run
+#72 rompió SOLO el ratchet mypy (pytest 970
+incluye persistencia 124/124 PASÓ · ruff ·
+smoke B0 · consistency — todo lo demás verde):
+el archivo nuevo aportaba 19 err mypy al baseline
+733 (el mypy del lock midió 738 = 733+5 — las
+cifras difieren por versión, el venv sandbox ve
+el superset de 19) · root causes: una variable
+'rows'/'row' compartida entre selects de ORM
+distintos (mypy infería GuestMonthlySnapshotORM
+y chocaba con AgeGroupMonthlySnapshotORM) + 4
+sklearn imports locales import-untyped (los
+mismos 4 del in-memory — pero los suyos
+congelados en el 733, los míos deuda NUEVA) +
+segment_configs inferido Sequence[str] rompía
+MemberSegment args · fix: cada select con su
+variable tipada EXACTA Sequence[ORM] + loops
+con nombres ÚNICOS + type: ignore[import-
+untyped] ×4 + dicts explícitos → run #73 VERDE
+5/5 · aporte del archivo = 0 · canon intacto
+byte a byte (los renames no mueven nada).
+GATES AL CIERRE (run #73 VERDE 5/5 @ 5bb4cc2):
+consistency 13/13 (v9.30 intacto) · pytest
+941→974 (persistencia 124→128: +4 ml_intel
+seed idempotente + canon drop-in + contrato
+vacío + proxies) · ruff = baseline (aporte
+CERO: 17→0 · TC003 Sequence a TYPE_CHECKING) ·
+mypy = baseline 733 (aporte CERO: 19→0 · ratchet
+pagado) · smoke B0 VERDE. ESTADO ESTRUCTURAL:
+0 repos in-memory en db/repositories/ (19/19
+verticales persistentes — Q-PER-01 CERRADO DEL
+TODO · alembic head = 0021 · 21 migraciones
+up/down/up deterministas).
 
 ## CHANGELOG G35 (v9.29 → v9.30)
 OLA 2.3 — VERTICAL APPROVALENGINE (Q-PER-03 · radar
@@ -4116,7 +4185,53 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             real del JWT.
 
 ═══ P1 · PERSISTENCIA (auth §3.8 · family §3.8-bis · engagement §3.8-tris · event §3.8-CUATRO · compliance §3.8-QUINQUE · guest §3.8-SEXTA · satisfaction §3.8-SEPTIMA · communication §3.8-OCTAVA · cultural_social §3.8-NONA · executive_dashboard §3.8-DÉCIMA · proactive_recommendation §3.8-UNDECIMA · facility_management §3.8-DUODECIMA · age_group §3.8-DECIMATERCERA · sports_recreation §3.8-DECIMOCUARTA · finance §3.8-DECIMOQUINTA · wellness §3.8-DECIMOSEXTA · member_360 §3.8-DECIMASEPTIMA CERRADOS) ═══
-  Q-PER-01  2 repositorios in-memory restantes (family en
+  Q-PER-01  CERRADO DEL TODO (Ola 2.1..2.1-decimonovena
+            + 2.2/2.2-bis/2.2-tris + 2.3: family en Ola 2.1-bis ·
+            engagement en Ola 2.1-tris · event en Ola 2.2
+            §3.8-CUATRO · compliance en Ola 2.1-quinqua
+            §3.8-QUINQUE · guest en Ola 2.1-sexta §3.8-SEXTA ·
+            satisfaction en Ola 2.1-septima §3.8-SEPTIMA ·
+            communication en Ola 2.1-octava §3.8-OCTAVA ·
+            cultural_social en Ola 2.1-nona §3.8-NONA ·
+            executive_dashboard en Ola 2.1-décima §3.8-DÉCIMA ·
+            proactive_recommendation en Ola 2.1-undécima
+            §3.8-UNDECIMA · facility_management en Ola 2.1-duodécima
+            §3.8-DUODECIMA · age_group en Ola 2.1-decimatercera
+            §3.8-DECIMATERCERA (tras el refactor 0039) ·
+            sports_recreation en Ola 2.1-decimocuarta
+            §3.8-DECIMOCUARTA (tras el refactor 0042 — patrón
+            refactor→vertical aplicado dos veces) · finance en Ola
+            2.1-decimoquinta §3.8-DECIMOQUINTA (cirugía async como
+            compliance — con lección MVCC run #56: el orden
+            contractual vive en el ENUM u ORDER BY, nunca en el
+            heap) · wellness en Ola 2.1-decimosexta §3.8-DECIMOSEXTA
+            (cirugía async 22m — la más grande de la familia sync:
+            compliance 8 → finance 17 → wellness 22 · run #59 VERDE
+            a la primera · perfilado que cambió el suite: aritmética
+            REAL engagement 62.5 verificada ejecutando) · member_360
+            en Ola 2.1-decimaseptima §3.8-DECIMASEPTIMA (cirugía
+            async 21m READ-ONLY · run #61 VERDE a la primera · random
+            stateless: canon determinista completo) ·
+            document_intelligence en Ola 2.1-decimoctava
+            §3.10-DECIMOCTAVA (pipeline RAG heredado de 2.2 ·
+            run #71 VERDE 5/5 tras bis get_stats/RAG) ·
+            ml_intelligence en Ola 2.1-decimonovena
+            §3.10-DECIMONOVENA (la que cerró el frente: numpy/
+            sklearn+prophet — la dependencia oliada PRIMERO
+            con filterwarnings Pandas4Warning · run #73 VERDE 5/5
+            tras bis mypy-ratchet 19→0 · canon byte a byte) —
+            19/19 verticales · 0 repos in-memory · SQLAlchemy
+            async via db/orm/ (mecánica §3.8 probada: ORM + alembic
+            + repo + gate — lecciones: run #28 read-path re-
+            construye enums · run #39 los ratchets ruff/mypy
+            corren en sandbox ANTES de cerrar la vertical ·
+            run #56 el orden contractual vive en ENUM u ORDER
+            BY · perfilado: el suite afirma la aritmética REAL
+            del in-memory, verificada ejecutando · G34: el espejo
+            del CI importa — uv sync --frozen --extra dev ·
+            run #72: el ratchet mypy se paga por ARCHIVO NUEVO =
+            0 — los patrones congelados del legacy no se
+            replican gratis)
             Ola 2.1-bis · engagement en Ola 2.1-tris · event
             en Ola 2.2 §3.8-CUATRO · compliance en Ola 2.1-
             quinqua §3.8-QUINQUE · guest en Ola 2.1-sexta
@@ -4172,8 +4287,7 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             False). Siguiente: la ola de persistencia SIN
             dependencias TERMINÓ — candidato del Chief
             Architect: Ola 2.3 Q-PER-03 (ApprovalEngine)
-            o doc_intel/ml_intel como olas DEDICADAS (sus
-            dependencias las olan PRIMERO).
+
   Q-PER-02  CERRADO (Ola 2.1): alembic init + migración 0001_users
             (constraints deterministas · env.py async por settings).
   Q-PER-03  CERRADO (Ola 2.3 · vertical 0052 + errata 0053 · run #64
@@ -4243,6 +4357,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.30 · Generación G35 (sincronizada con
-MASTER_BASE.md v9.30 y MASTER_CHECKLIST.md v9.30)
+END OF MASTER_CHECKPOINT.md v9.31 · Generación G36 (sincronizada con
+MASTER_BASE.md v9.31 y MASTER_CHECKLIST.md v9.31)
 

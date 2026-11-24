@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.30 · Generación G35 (Ola 2.3 — persistencia real: vertical approval_engine · ledger tamper-evident) · 180 checks · ZERO tolerance
+### Version: 9.31 · Generación G36 (Ola 2.1-decimonovena — persistencia real: vertical ml_intelligence · Q-PER-01 CERRADO DEL TODO) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -11,6 +11,35 @@
 ---
 
 
+
+## CHANGELOG G36 (v9.30 → v9.31)
+OLA 2.1-DECIMONOVENA — VERTICAL ML_INTELLIGENCE
+(Q-PER-01 CERRADO DEL TODO — 0 REPOS IN-MEMORY)
+CERRADO en DOS pasos (025a6ba vertical 0058 +
+5bb4cc2 bis 0059 — evidencia: OUT del APLICAR-
+DECIMONOVENA + OUT del APLICAR-DECIMONOVENA-BIS +
+CI run #72 rojo SOLO mypy + run #73 VERDE 5/5):
+persistencia 124→128 (ml_intel 4: seed
+idempotente tras restart + canon drop-in byte a
+byte churn 17.5 · segments 4/7/7/2 · PSI 5/5 ·
+explain 26.9 + contrato vacío + proxies
+por-tier) · pytest 941→974 · ruff = baseline
+(aporte CERO: 17→0 · TC003) · mypy = baseline
+733 (aporte CERO: 19→0 — la lección G36 del run
+#72: el ratchet se paga por ARCHIVO NUEVO = 0 ·
+typing del data-layer: variable tipada EXACTA
+Sequence[ORM] por consulta + loops únicos +
+sklearn type: ignore[import-untyped] ×4 — los
+patrones congelados del legacy no se replican
+gratis) · consistency 13/13 · smoke B0 VERDE.
+Vertical 19 (repo ORM async READ-ONLY
+cross-domain · contrato EXACTO 9/9 AST ·
+matemática IMPORTADA del in-memory — jamás
+bifurcada · alembic 0021 · swap OPT-IN 19º ·
+olar prophet filterwarnings Pandas4Warning
+dual-path) → Q-PER-01 CERRADO DEL TODO: 19/19
+verticales persistentes · db/repositories/ sin
+repos in-memory · alembic head 0021.
 
 ## CHANGELOG G35 (v9.29 → v9.30)
 OLA 2.3 — VERTICAL APPROVALENGINE (Q-PER-03 + R-1/R-6
@@ -2030,5 +2059,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.30 · Generación G35 (sincronizada con
-MASTER_BASE.md v9.30 y MASTER_CHECKPOINT.md v9.30)
+END OF MASTER_CHECKLIST.md v9.31 · Generación G36 (sincronizada con
+MASTER_BASE.md v9.31 y MASTER_CHECKPOINT.md v9.31)

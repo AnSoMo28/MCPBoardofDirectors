@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.30 · Generación G35 (Ola 2.3 — persistencia real: vertical approval_engine · ledger tamper-evident) · Date: 2026-11-23
+### Version: 9.31 · Generación G36 (Ola 2.1-decimonovena — persistencia real: vertical ml_intelligence · Q-PER-01 CERRADO DEL TODO) · Date: 2026-11-24
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -1537,17 +1537,21 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               (G20) · 5 tablas engagement +
 │   │                               MemberEngagementRepository async
 │   │                               (G21 · alembic 0001+0002+0003)
-│   ├── db/repositories/          ← 1 repo in-memory restante
-│   │                               → Q-PER-01 (family, engagement,
-│   │                               event, compliance, guest,
+│   ├── db/repositories/          ← 0 repos in-memory (Q-PER-01
+│   │                               CERRADO DEL TODO · 19/19
+│   │                               verticales persistentes:
+│   │                               family, engagement, event,
+│   │                               compliance, guest,
 │   │                               satisfaction, communication,
 │   │                               cultural_social, executive_
 │   │                               dashboard, proactive_recommen-
 │   │                               dation, facility_management,
 │   │                               age_group, sports_recreation,
-│   │                               finance, wellness y member_360
-│   │                               migrados ·
-│   │                               users de Q-PER-04 ya no vive acá)
+│   │                               finance, wellness, member_360,
+│   │                               document_intelligence y
+│   │                               ml_intelligence TODOS
+│   │                               migrados · users de Q-PER-04
+│   │                               ya no vive acá)
 │   ├── hitl/                     ← ApprovalEngine (tabla approvals + ledger hash-chain · Q-PER-03 CERRADO)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
@@ -1570,7 +1574,31 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   · 0016_wellness (5 tablas)
 │                                   · 0017_member360 (2 tablas)
 │                                   · 0018_approvalengine (2 tablas + 2 índices)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 941 tests PASSED
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 974 tests PASSED
+│                                   (808 def + 16 parametrizados + 166
+│                                   persistencia write-restart-read —
+                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
+                                   + Ola 2.1-bis 6 + Ola 2.1-tris 6
+                                   + Ola 2.2 event 6 + Ola 2.1-quinqua 6
+                                   + Ola 2.1-sexta guest 6 + Ola
+                                   2.1-septima satisfaction 6 + Ola
+                                   2.1-octava communication 7 + Ola
+                                   2.1-nona cultural_social 4 + Ola
+                                   2.1-décima executive_dashboard 4 +
+                                   Ola 2.1-undécima
+                                   proactive_recommendation 4 + Ola
+                                   2.1-duodécima
+                                   facility_management 4 + Ola
+                                   2.1-decimatercera age_group 4 + Ola
+                                   2.1-decimocuarta
+                                   sports_recreation 4 + Ola
+                                   2.1-decimoquinta finance 5 + Ola
+                                   2.1-decimosexta wellness 4 + Ola
+                                   2.1-decimaseptima member_360 4 + Ola 2.3
+                                   approval_engine 12 + Ola
+                                   2.1-decimoctava document_intelligence
+                                   6 + Ola 2.1-decimonovena
+                                   ml_intelligence 4)
 │                                   (808 def + 16 parametrizados + 15
 │                                   persistencia write-restart-read —
 │                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
@@ -1902,7 +1930,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.30 · Generación G35 (sincronizada con
-MASTER_CHECKPOINT.md v9.30 y MASTER_CHECKLIST.md v9.30)
+END OF MASTER_BASE.md v9.31 · Generación G36 (sincronizada con
+MASTER_CHECKPOINT.md v9.31 y MASTER_CHECKLIST.md v9.31)
 
 
