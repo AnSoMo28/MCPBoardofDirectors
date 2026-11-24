@@ -230,6 +230,24 @@ def build_runtime() -> Runtime:
         from club_mcp.db.orm.session import make_engine as _make_engine
 
         _persist_engine = _make_engine(_persist_url)
+        # Ola 3.2 — presupuesto LLM persistente (Q-LLM-02 de verdad):
+        # el ledger del ResilientClaudeService pasa de memoria de
+        # proceso a TABLA (llm_usage_daily + llm_calls append-only) —
+        # MISMA API record()/snapshot() para _acall(), el día
+        # SOBREVIVE al restart. Swap OPT-IN igual que los 19 repos:
+        # sin env, el ledger sigue siendo el contorno in-memory de
+        # G12 byte a byte (smoke B0 intacto).
+        from club_mcp.db.orm.repositories.llm_calls_repo import (
+            LLMCallsRepository as _LLMCallsRepoORM,
+            TokenUsageLedgerPersistent as _LedgerORM,
+        )
+
+        _llm_ledger = _LedgerORM(_LLMCallsRepoORM(_persist_engine))
+        claude_service.ledger = _llm_ledger  # type: ignore[attr-defined]
+        logger.info(
+            "[bootstrap] CLUB_PERSISTENCE_URL presente — presupuesto LLM "
+            "persistente (Ola 3.2: llm_calls + llm_usage_daily)"
+        )
         # Ola 2.3 — estado durable del ApprovalEngine (Q-PER-03): el
         # motor HITL delega solicitudes a approvals + ledger
         # approval_events; sin env, 100% in-memory (contrato igual).

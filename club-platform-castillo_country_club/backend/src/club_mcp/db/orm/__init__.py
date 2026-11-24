@@ -16,6 +16,9 @@ durable):
     users_orm.py tabla users (espejo 1:1 de auth.models.User)
     approvals_orm.py  tablas approvals + approval_events (ledger
                  hash-chain tamper-evident — Ola 2.3/ADR-0007)
+    llm_calls_orm.py tablas llm_calls + llm_usage_daily (presupuesto
+                 LLM persistente — Ola 3.2/Q-LLM-02: el día del
+                 TokenUsageLedger vive EN TABLA, sobrevive restart)
     document_intelligence_orm.py tablas documents +
                  knowledge_reports (espejo 1:1 de los 2 dicts del
                  repo doc_intel — Ola 2.1-decimoctava; la capa RAG
