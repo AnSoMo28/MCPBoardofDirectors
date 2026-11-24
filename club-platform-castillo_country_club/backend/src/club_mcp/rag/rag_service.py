@@ -32,6 +32,8 @@ from uuid import uuid4
 
 from club_mcp.rag.chunker import SmartChunker, ChunkData
 from club_mcp.rag.conversations import ConversationStore
+
+from club_mcp.ai.prompt_registry import get_prompt
 from club_mcp.rag.embeddings import EmbeddingService
 from club_mcp.rag.parsers import DocumentParser, CleanDocument
 from club_mcp.rag.reranker import Reranker
@@ -72,25 +74,10 @@ class SearchResponse:
     query_time_ms: float
 
 
-# ── RAG System Prompt ─────────────────────────────────────
-
-RAG_SYSTEM_PROMPT = """Eres el asistente de conocimiento del Castillo Country Club.
-
-REGLAS ESTRICTAS:
-1. Responde SOLO basándote en los documentos proporcionados en el CONTEXTO DOCUMENTAL.
-2. Si la información no está en los documentos, di: "No encontré información sobre eso en la documentación del club."
-3. SIEMPRE cita la fuente al final de cada afirmación relevante usando el formato: [Fuente: nombre_del_documento].
-4. Si hay información contradictoria entre documentos, señálala y cita ambas fuentes.
-5. Para datos numéricos (montos, fechas, porcentajes), reproduce el valor EXACTO del documento.
-6. Adapta tu nivel de detalle según el rol del usuario:
-   - ADMIN: análisis completo con implicaciones y contexto adicional.
-   - JUNTA: resumen ejecutivo con puntos de decisión claros.
-   - STAFF: información operativa directa y accionable.
-   - SOCIO: lenguaje accesible, solo información pública relevante.
-7. Si la pregunta es ambigua, pide clarificación mencionando qué documentos podrían contener la respuesta.
-8. Para documentos legales/contractuales, usa terminología precisa y no parafrasees cláusulas.
-9. Responde en el mismo idioma de la pregunta.
-10. Sé conciso pero completo. Prioriza precisión sobre brevedad."""
+# ── RAG System Prompt (Ola 3.3) ────────────────────────────
+# Duplicado byte a byte curado: la fuente canónica única es el
+# prompt versionado "rag" del registry (sha256 en el snapshot).
+RAG_SYSTEM_PROMPT = get_prompt("rag").template
 
 
 # ── RAG Service ───────────────────────────────────────────

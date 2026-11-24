@@ -29,7 +29,8 @@ from typing import Any
 from uuid import UUID
 
 from club_mcp.agents.base import BaseAgent, MCPTool
-from club_mcp.ai.prompts import AGENT_SYSTEM_PROMPTS, MESSAGE_TEMPLATES
+from club_mcp.ai.prompt_registry import render_prompt
+from club_mcp.ai.prompts import AGENT_SYSTEM_PROMPTS
 from club_mcp.db.repositories.family_repo import (
     DuplicateFamilyError,
     FamilyRepository,
@@ -302,7 +303,8 @@ class FamilyProfileAgent(BaseAgent):
         return {
             "status": "pending_approval",
             "request_id": str(approval.request_id),
-            "message": MESSAGE_TEMPLATES["family_created_pending"].format(family_name=family_name),
+            "message": render_prompt(
+                "message.family_created_pending",family_name=family_name),
             "details": {
                 "family_name": family_name,
                 "tier": tier,
@@ -348,7 +350,8 @@ class FamilyProfileAgent(BaseAgent):
             return {
                 "status": "created",
                 "family": family.model_dump(mode="json"),
-                "message": MESSAGE_TEMPLATES["family_created_approved"].format(family_name=family.name),
+                "message": render_prompt(
+                "message.family_created_approved",family_name=family.name),
             }
         except DuplicateFamilyError as e:
             return {"status": "error", "message": f"Ya existe una familia con ese {e.field}."}
@@ -448,7 +451,8 @@ class FamilyProfileAgent(BaseAgent):
             )
             return {
                 "status": "success",
-                "message": MESSAGE_TEMPLATES["member_added"].format(
+                "message": render_prompt(
+                "message.member_added",
                     family_name=family.name, member_name=member_name,
                 ),
                 "member": member.model_dump(mode="json"),
@@ -462,7 +466,8 @@ class FamilyProfileAgent(BaseAgent):
         await self.repo.remove_member(target.id)
         return {
             "status": "success",
-            "message": MESSAGE_TEMPLATES["member_removed"].format(
+            "message": render_prompt(
+                "message.member_removed",
                 family_name=family.name, member_name=member_name,
             ),
         }
@@ -520,7 +525,8 @@ class FamilyProfileAgent(BaseAgent):
         return {
             "status": "success",
             "preferences": prefs,
-            "message": MESSAGE_TEMPLATES["preferences_updated"].format(family_name=family.name),
+            "message": render_prompt(
+                "message.preferences_updated",family_name=family.name),
         }
 
     @MCPTool(

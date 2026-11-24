@@ -17,13 +17,9 @@ from typing import Any, Protocol
 
 from anthropic import AsyncAnthropic
 
-from club_mcp.ai.prompts import (
-    AGE_BALANCE_PROMPT,
-    COMMENT_ASSIST_PROMPT,
-    NARRATIVE_REPORT_PROMPT,
-    SATISFACTION_ANALYSIS_PROMPT,
-    SYSTEM_PROMPT,
-)
+from club_mcp.ai.prompt_registry import render_prompt
+from club_mcp.ai.prompts import SYSTEM_PROMPT
+
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +151,8 @@ class ClaudeService:
         surveys: list[dict[str, Any]],
     ) -> dict[str, Any]:
         """AI-powered satisfaction analysis for post-event surveys."""
-        prompt = SATISFACTION_ANALYSIS_PROMPT.format(
+        prompt = render_prompt(
+            "satisfaction_analysis",
             event_data=json.dumps(event_data, ensure_ascii=False, indent=2),
             total_surveys=len(surveys),
             surveys_sample=json.dumps(
@@ -203,7 +200,8 @@ class ClaudeService:
         audience: str = "board",
     ) -> str:
         """Generate a narrative executive report from KPIs."""
-        prompt = NARRATIVE_REPORT_PROMPT.format(
+        prompt = render_prompt(
+            "narrative_report",
             kpis=json.dumps(kpis, ensure_ascii=False, indent=2),
             audience=audience,
         )
@@ -229,7 +227,8 @@ class ClaudeService:
         survey_ratings: dict[str, int],
     ) -> str:
         """Help a member write a constructive comment based on ratings."""
-        prompt = COMMENT_ASSIST_PROMPT.format(
+        prompt = render_prompt(
+            "comment_assist",
             ratings=json.dumps(survey_ratings, ensure_ascii=False),
         )
 
@@ -254,7 +253,8 @@ class ClaudeService:
         distribution_data: dict[str, Any],
     ) -> dict[str, Any]:
         """Analyze age group activity distribution with Gini coefficient."""
-        prompt = AGE_BALANCE_PROMPT.format(
+        prompt = render_prompt(
+            "age_balance",
             distribution_data=json.dumps(
                 distribution_data, ensure_ascii=False, indent=2
             ),
