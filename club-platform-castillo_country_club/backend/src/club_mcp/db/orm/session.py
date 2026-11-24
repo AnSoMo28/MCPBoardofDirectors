@@ -20,6 +20,7 @@ import os
 import time
 from contextlib import asynccontextmanager, contextmanager
 from typing import TYPE_CHECKING, Any
+from weakref import WeakSet
 
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import (
@@ -58,7 +59,19 @@ def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(engine, expire_on_commit=False)
 
 
-_INSTRUMENTED: set[int] = set()
+# R-1 (run #78): la instrumentación se registra por IDENTIDAD (WeakSet) —
+# el guard viejo guardaba id(engine) (int) y los ints NO mueren: engines
+# disposed dejaban su id registrado para siempre y el reciclaje de
+# direcciones del allocator podía darle a un engine NUEVO un id "ya
+# instrumentado" → early-return falso → span con db.statements=0 (el
+# INSERT corrió, los listeners nunca contaron). WeakSet: la membresía
+# muere con el objeto — un engine nuevo es SIEMPRE un objeto distinto.
+# (Heisenbug: sensible al patrón de allocations; lo despejaba cualquier
+# sonda. Los 990/135 verdes de siempre no prueben el fix por sí solos —
+# la secuencia completa tests/unit → persistence sobre el mismo PG es
+# la que cazó el original y la que valida este parche.)
+_INSTRUMENTED: WeakSet[AsyncEngine] = WeakSet()
+
 # Contadores de la transacción ACTIVA — el listener del evento cuelga del
 # context de ejecución (viaja con la transacción exacta; el rollback/commit
 # del mismo context cierra la cuenta). El event-loop es single-threaded:
@@ -70,14 +83,14 @@ _PENDING: dict[str, int] = {"statements": 0, "rows": 0}
 def instrument_engine(engine: AsyncEngine) -> None:
     """Instrumenta UN engine async: contadores de statements/rows (R-1).
 
-    Idempotente por engine. Contadores acumulados en el registro de
-    transacción activa; session_scope los toma y limpia al cerrar.
-    rowcount best-effort (-1 en SELECT de algunos drivers → 0).
+    Idempotente por engine (identidad, no id()). Contadores acumulados
+    en el registro de transacción activa; session_scope los toma y
+    limpia al cerrar. rowcount best-effort (-1 en SELECT de algunos
+    drivers → 0).
     """
-    key = id(engine)
-    if key in _INSTRUMENTED:
+    if engine in _INSTRUMENTED:
         return
-    _INSTRUMENTED.add(key)
+    _INSTRUMENTED.add(engine)
 
     @event.listens_for(engine.sync_engine, "before_cursor_execute")
     def _before(
