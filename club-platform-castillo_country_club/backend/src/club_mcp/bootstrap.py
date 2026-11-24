@@ -369,6 +369,18 @@ def build_runtime() -> Runtime:
             return _DocIntelRepoORM(
                 _persist_engine, claude_service=claude_service
             )
+        if key == "ml_intelligence_repo":
+            # Ola 2.1-decimonovena: READ-ONLY cross-domain — Q-PER-01
+            # CERRADO (0 repos in-memory). El swap es un data-layer:
+            # la matemática (ensemble/Prophet/PSI/clustering) es
+            # IMPORTADA del módulo in-memory — fuente única de verdad;
+            # el repo junta las series de las TABLAS de las 18
+            # verticales + la tabla de features (canon byte a byte).
+            from club_mcp.db.orm.repositories.ml_intelligence_repo import (
+                MLIntelligenceRepository as _MLIntelRepoORM,
+            )
+
+            return _MLIntelRepoORM(_persist_engine)
         return None
 
     def repo_for(key: str) -> Any:

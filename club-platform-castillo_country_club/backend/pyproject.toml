@@ -183,6 +183,15 @@ filterwarnings = [
     # tests de document_intelligence en el setup del fixture doc_repo.
     # Eliminar esta linea cuando chromadb > 1.5.9 arregle el import.
     "ignore:'asyncio.iscoroutinefunction' is deprecated:DeprecationWarning",
+    # Ola 2.1-decimonovena (olar prophet): el --all-extras local sube
+    # Pandas4Warning de dentro de prophet.fit (dataframe construction
+    # copy) a error por "error" de arriba — MISMA mecánica del ignore
+    # de chromadb: entrada POSTERIOR = mayor precedencia. Los 6 tests
+    # prophet de ml_intelligence son dual-path (fallback-aware) y
+    # pasan SIN extras por diseño; esta línea vuelve verde el
+    # --all-extras LOCAL sin tocar el contrato dual-path.
+    # Eliminar cuando prophet > 1.5.0 migre a pandas 3.x sin warning.
+    "ignore:Pandas4Warning:UserWarning",
 ]
 
 # ═══════════════════════════════════════════════════════════
