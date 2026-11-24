@@ -1574,6 +1574,9 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   · 0016_wellness (5 tablas)
 │                                   · 0017_member360 (2 tablas)
 │                                   · 0018_approvalengine (2 tablas + 2 índices)
+│                                   · 0019_rag_chunks (VECTOR 1024)
+│                                   · 0020_document_intelligence (2 tablas)
+│                                   · 0021_ml_intelligence (1 tabla)
 ├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 974 tests PASSED
 │                                   (808 def + 16 parametrizados + 166
 │                                   persistencia write-restart-read —
