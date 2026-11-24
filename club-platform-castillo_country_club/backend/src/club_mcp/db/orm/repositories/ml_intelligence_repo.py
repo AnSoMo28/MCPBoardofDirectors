@@ -63,7 +63,11 @@ demanda EXPLÍCITA del forecast con fallback smoothing probado.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 from sqlalchemy import select
 
@@ -248,7 +252,7 @@ async def _load_cross_domain_data(engine: Any) -> dict[str, Any]:
             data["budget_monthly"][month] = data["revenue_monthly"][month]
 
         # ── events: count/attendance/revenue por mes ──
-        rows = (
+        event_rows = (
             (await s.execute(
                 select(
                     EventORM.date_start,
@@ -257,7 +261,7 @@ async def _load_cross_domain_data(engine: Any) -> dict[str, Any]:
                 )
             )).all()
         )
-        for date_start, attendance, price in rows:
+        for date_start, attendance, price in event_rows:
             month = _month_of(date_start)
             if month is None:
                 continue
@@ -271,7 +275,7 @@ async def _load_cross_domain_data(engine: Any) -> dict[str, Any]:
             )
 
         # ── satisfaction: avg/surveys por mes ──
-        rows = (
+        survey_rows = (
             (await s.execute(
                 select(
                     SatisfactionSurveyORM.submitted_at,
@@ -279,7 +283,7 @@ async def _load_cross_domain_data(engine: Any) -> dict[str, Any]:
                 )
             )).all()
         )
-        for submitted_at, score in rows:
+        for submitted_at, score in survey_rows:
             month = _month_of(submitted_at)
             if month is None:
                 continue
@@ -302,35 +306,35 @@ async def _load_cross_domain_data(engine: Any) -> dict[str, Any]:
             }
 
         # ── guest: snapshots mensuales (tabla ES el shape) ──
-        rows = (
+        guest_rows: Sequence[GuestMonthlySnapshotORM] = (
             (await s.execute(
                 select(GuestMonthlySnapshotORM)
             )).scalars().all()
         )
-        for row in rows:
-            data["guest_monthly"][row.month] = {
-                "new_guests": row.new_guests,
-                "trials": row.trials,
-                "conversions": row.conversions,
+        for snap in guest_rows:
+            data["guest_monthly"][snap.month] = {
+                "new_guests": snap.new_guests,
+                "trials": snap.trials,
+                "conversions": snap.conversions,
             }
 
         # ── age_group: teens/seniors enrolled por mes ──
-        rows = (
+        age_rows: Sequence[AgeGroupMonthlySnapshotORM] = (
             (await s.execute(
                 select(AgeGroupMonthlySnapshotORM)
             )).scalars().all()
         )
-        for row in rows:
+        for ag in age_rows:
             bucket = data["age_group_monthly"].setdefault(
-                row.month, {"teens_enrolled": 0, "seniors_enrolled": 0}
+                ag.month, {"teens_enrolled": 0, "seniors_enrolled": 0}
             )
-            if row.age_group == "teens":
-                bucket["teens_enrolled"] = row.enrolled
-            elif row.age_group == "seniors":
-                bucket["seniors_enrolled"] = row.enrolled
+            if ag.age_group == "teens":
+                bucket["teens_enrolled"] = ag.enrolled
+            elif ag.age_group == "seniors":
+                bucket["seniors_enrolled"] = ag.enrolled
 
         # ── comms: sent/opened/clicked por mes (logs sent) ──
-        rows = (
+        log_rows = (
             (await s.execute(
                 select(
                     NotificationLogORM.sent_at,
@@ -339,7 +343,7 @@ async def _load_cross_domain_data(engine: Any) -> dict[str, Any]:
                 )
             )).all()
         )
-        for sent_at, recipients, status in rows:
+        for sent_at, recipients, status in log_rows:
             month = _month_of(sent_at)
             if month is None:
                 continue
@@ -359,7 +363,7 @@ async def _load_cross_domain_data(engine: Any) -> dict[str, Any]:
         # ml_member_features ES el shape del seed (canon byte a
         # byte). Sin features sembradas: proxies por-tier sobre
         # members_360 (MISMA forma, MISMA matemática).
-        feat_rows = (
+        feat_rows: Sequence[MLMemberFeatureORM] = (
             (await s.execute(
                 select(MLMemberFeatureORM).order_by(
                     MLMemberFeatureORM.member_id
@@ -367,25 +371,25 @@ async def _load_cross_domain_data(engine: Any) -> dict[str, Any]:
             )).scalars().all()
         )
         if feat_rows:
-            for row in feat_rows:
-                data["members"].append(row.to_dict())
+            for feat in feat_rows:
+                data["members"].append(feat.to_dict())
         else:
-            rows = (
+            member_rows: Sequence[Member360MemberORM] = (
                 (await s.execute(
                     select(Member360MemberORM).order_by(
                         Member360MemberORM.id
                     )
                 )).scalars().all()
             )
-            for row in rows:
-                data["members"].append(_member_from_orm(row))
+            for mbr in member_rows:
+                data["members"].append(_member_from_orm(mbr))
 
         # ── facility: occupancy proxy por reservas/capacidad ──
-        capacity_rows = (
+        facility_rows: Sequence[FacilityORM] = (
             (await s.execute(select(FacilityORM))).scalars().all()
         )
-        total_capacity = sum(r.capacity or 0 for r in capacity_rows)
-        res_rows = (
+        total_capacity = sum(r.capacity or 0 for r in facility_rows)
+        res_rows: Sequence[FacilityReservationORM] = (
             (await s.execute(
                 select(FacilityReservationORM)
             )).scalars().all()
@@ -1239,8 +1243,8 @@ class MLIntelligenceRepository:
 
         if n >= 50:
             try:
-                from sklearn.linear_model import LogisticRegression
-                from sklearn.preprocessing import StandardScaler
+                from sklearn.linear_model import LogisticRegression  # type: ignore[import-untyped]
+                from sklearn.preprocessing import StandardScaler  # type: ignore[import-untyped]
 
                 feature_names = [
                     "engagement", "visits_monthly",
@@ -1958,7 +1962,7 @@ def _segmentation_pipeline(
     silhouette = 0.0
     optimal_k = 5
 
-    segment_configs = {
+    segment_configs: dict[str, dict[str, Any]] = {
         "champion": {
             "label": SegmentLabel.CHAMPION,
             "display": "Campeones",
@@ -2035,8 +2039,8 @@ def _segmentation_pipeline(
     if total >= 30:
         try:
             import numpy as np
-            from sklearn.cluster import AgglomerativeClustering
-            from sklearn.metrics import silhouette_score
+            from sklearn.cluster import AgglomerativeClustering  # type: ignore[import-untyped]
+            from sklearn.metrics import silhouette_score  # type: ignore[import-untyped]
             from sklearn.preprocessing import StandardScaler
 
             x_raw = []
@@ -2121,7 +2125,7 @@ def _segmentation_pipeline(
             label_idx = min(rank, len(label_order) - 1)
             cluster_to_label[cid] = label_order[label_idx]
 
-        segments_data: dict[str, list] = {
+        segments_data: dict[str, list[dict[str, Any]]] = {
             k: [] for k in label_order
         }
         for i, m in enumerate(members):
