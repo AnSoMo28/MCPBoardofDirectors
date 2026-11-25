@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.33 · Generación G38 (Ola 3.3 — prompts versionados: vertical prompt_registry · Q-LLM-03 CERRADO DEL TODO) · 180 checks · ZERO tolerance
+### Version: 9.34 · Generación G39 (Ola 3.4 — golden set + LLM-as-judge: vertical golden/juez · Q-LLM-04 CERRADO DEL TODO) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -11,6 +11,54 @@
 ---
 
 
+
+## CHANGELOG G39 (v9.33 → v9.34)
+
+OLA 3.4 — VERTICAL GOLDEN SET + LLM-AS-JUDGE
+(Q-LLM-04 CERRADO DEL TODO — markers
+slow/integration/hitl existían, suites no →
+golden de PROMPTS primero: respuestas cuando
+haya tráfico, deuda anotada en ADR-0009)
+CERRADO en DOS commits (389fbd8 vertical 0067
++ 27580fe job-name pytest 929→1062 — run #81
+VERDE 5/5):
+- tests/unit/ai/golden/prompts_v1.json: 41
+  pins (version · sha256 · variables · chars)
+  + 22 render_sha256 con kwargs sintéticos
+  estables — semilla generada POR EJECUCIÓN
+  desde registry_snapshot() @66e73de, no
+  transcripción: un template editado sin bump
+  es CI ROJO con diff legible.
+- ai/llm_judge.py: judge_response() — HARD
+  GATE determinista PRIMERO (placeholders sin
+  resolver / substrings exigidos-vedados /
+  rango de largo: el LLM NUNCA se consulta si
+  la rúbrica reprueba) y LLM ADITIVO después
+  (Protocol LLMClient estructural · salida
+  debe cumplir su propio contrato JSON o queda
+  degraded: rubric | rubric+llm | rubric+llm-
+  error | rubric+llm-contract) · sin cliente =
+  veredicto de rúbrica (CI sin key corre el
+  gate duro SIEMPRE) · salida lleva
+  judge_prompt_sha256 + judge_eval_sha256.
+- Prompts del juez NACEN versionados:
+  judge.system + judge.eval v1.0.0 (registry
+  39→41 · placeholders 35→38 — la derivación
+  cazó el ejemplo JSON del contrato: llaves
+  dobladas = literal).
+- Suites test_golden_prompts.py (4 def +
+  41+22 parametrizados) y test_llm_judge.py
+  (8 unit con stub — hard gate no consulta LLM
+  probado con contador · conforme/roto/
+  cercado/caído + 1 integration skipif sin
+  ANTHROPIC_API_KEY) · censo 39→41 · pytest
+  990→1062 CI (+72: 83 nueva suite ai − 11
+  reemplazados del censo viejo) · ruff y
+  mypy verticales en 0.
+- ADR-0009-golden-judge.md: 3 decisiones +
+  deuda explícita (columna prompt_sha256 en
+  llm_calls · golden de respuestas cuando
+  haya tráfico).
 
 ## CHANGELOG G38 (v9.32 → v9.33)
 
@@ -2151,5 +2199,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.33 · Generación G38 (sincronizada con
-MASTER_BASE.md v9.33 y MASTER_CHECKPOINT.md v9.33
+END OF MASTER_CHECKLIST.md v9.34 · Generación G39 (sincronizada con
+MASTER_BASE.md v9.34 y MASTER_CHECKPOINT.md v9.34

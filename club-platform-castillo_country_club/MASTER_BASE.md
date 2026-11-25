@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.33 · Generación G38 (Ola 3.3 — prompts versionados: vertical prompt_registry · Q-LLM-03 CERRADO DEL TODO) · Date: 2026-11-24
+### Version: 9.34 · Generación G39 (Ola 3.4 — golden set + LLM-as-judge: vertical golden/juez · Q-LLM-04 CERRADO DEL TODO) · Date: 2026-11-25
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -1524,7 +1524,9 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │   │                               Q-MSC-01; v7.0 decía "22" = #69)
 │   ├── ai/                       ← claude_service + prompts + resilience
 (Q-LLM-01 CERRADO) + prompt_registry
-(39 specs · Q-LLM-03 CERRADO · Ola 3.3)
+(41 specs · Q-LLM-03/04 CERRADOS · Ola
+3.3/3.4) + llm_judge (hard gate + LLM
+aditivo)
 │   ├── api/                      ← FastAPI routes (5 routers)
 │   ├── auth/                     ← JWT, RBAC 196/196, middleware
 │   │                               (secreto JWT hardcodeado → Q-SEC-01)
@@ -1585,7 +1587,7 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 │                                   · 0022_llm_calls (2 tablas + 3
 │                                   índices — presupuesto LLM
 │                                   persistente, Ola 3.2)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 990 tests PASSED
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 1062 tests PASSED
 │                                   (808 def + 16 parametrizados + 173
 │                                   persistencia write-restart-read —
                                    B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
@@ -1611,7 +1613,8 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
                                    6 + Ola 2.1-decimonovena
                                    ml_intelligence 4 + Ola 3.2
                                    llm_calls 6 + PG-real 1 + Ola 3.3
-                                   prompts registry 9)
+                                   prompts registry 9 + Ola 3.4 golden
+                                   juez 5)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1922,7 +1925,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.33 · Generación G38 (sincronizada con
-MASTER_CHECKPOINT.md v9.33 y MASTER_CHECKLIST.md v9.33
+END OF MASTER_BASE.md v9.34 · Generación G39 (sincronizada con
+MASTER_CHECKPOINT.md v9.34 y MASTER_CHECKLIST.md v9.34
 
 

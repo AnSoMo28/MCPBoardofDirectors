@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.33 · Generación G38 (Ola 3.3 — prompts versionados: vertical prompt_registry · Q-LLM-03 CERRADO DEL TODO) · Date: 2026-11-24
+### Version: 9.34 · Generación G39 (Ola 3.4 — golden set + LLM-as-judge: vertical golden/juez · Q-LLM-04 CERRADO DEL TODO) · Date: 2026-11-25
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -84,6 +84,25 @@
 ###          YAML sin comillas) · approvals +
 ###          ledger hash-chain R-6 + spans
 ###          OTel R-1 · ADR-0007)
+###          G39 — Ola 3.4 absorbida (vertical
+###          golden set + LLM-as-judge ·
+###          Q-LLM-04 CERRADO DEL TODO:
+###          41 pins golden v1 (41 sha256 +
+###          22 render-hash con kwargs
+###          sintéticos — semilla POR
+###          EJECUCIÓN desde registry_snapshot
+###          @66e73de) · judge_response():
+###          hard gate determinista PRIMERO
+###          (el LLM nunca se consulta si la
+###          rúbrica reprueba) + LLM aditivo
+###          con contrato propio (4 estados
+###          degraded sin ambigüedad) ·
+###          judge.system/judge.eval nacen
+###          versionados v1.0.0 (registry
+###          39→41 · placeholders 35→38) ·
+###          pytest 1062 CI · run #81 VERDE
+###          5/5 @ 27580fe · ADR-0009 ·
+###          MC 13/13)
 ###          G38 — Ola 3.3 absorbida (vertical
 ###          prompt_registry · Q-LLM-03 CERRADO
 ###          DEL TODO: 39 PromptSpec v1.0.0 =
@@ -4252,7 +4271,8 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             re-derivada desde tabla · lección 0053
             auto-aplicada en el step YAML) —
             19/19 verticales + presupuesto LLM + prompts
-            versionados (39 specs · Ola 3.3) · 0 repos
+            versionados (41 specs · Ola 3.3/3.4) + golden/
+            juez · 0 repos
             in-memory · SQLAlchemy
             async via db/orm/ (mecánica §3.8 probada: ORM + alembic
             + repo + gate — lecciones: run #28 read-path re-
@@ -4353,8 +4373,12 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             variables DERIVADAS del template · render() valida
             kwargs ANTES del LLM · dedupe RAG. [histórico G9:
             constantes sin versionado]
-  Q-LLM-04  Evals: golden set + LLM-as-judge (markers pytest
-            slow/integration/hitl existen; suites no).
+  Q-LLM-04  ✅ CERRADO (Ola 3.4 · G39 · 389fbd8 vertical + 27580fe
+            job-name · run #81): golden tests/unit/ai/golden/
+            prompts_v1.json — 41 pins + 22 render-hash ·
+            ai/llm_judge.py hard-gate + LLM aditivo · judge
+            prompts v1.0.0 (registry 41) · pytest 1062 CI ·
+            ADR-0009. [histórico G9: markers sin suites]
 
 ═══ P2 · GOBERNANZA BACKEND (cerrar el perímetro — #66) ═══
   Q-GOV-01  guardian backend-aware: checks X-29+ consumiendo
@@ -4396,6 +4420,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.33 · Generación G38 (sincronizada con
-MASTER_BASE.md v9.33 y MASTER_CHECKLIST.md v9.33
+END OF MASTER_CHECKPOINT.md v9.34 · Generación G39 (sincronizada con
+MASTER_BASE.md v9.34 y MASTER_CHECKLIST.md v9.34
 
