@@ -1559,6 +1559,7 @@ aditivo)
 │   │                               (presupuesto LLM persistente
 │   │                               — swap del ledger G12, OPT-IN
 │   │                               CLUB_PERSISTENCE_URL)
+│   ├── gobierno/                 ← Ola 4.1: ledger de gobierno general (cadena sha-256 + épocas Merkle RFC 6962 · recibos de inclusión verificables OFFLINE con CLI standalone stdlib · sin cableado runtime — 4.2 lo conecta · Q-GOV-01 · ADR-0010)
 │   ├── hitl/                     ← ApprovalEngine (tabla approvals + ledger hash-chain · Q-PER-03 CERRADO)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
