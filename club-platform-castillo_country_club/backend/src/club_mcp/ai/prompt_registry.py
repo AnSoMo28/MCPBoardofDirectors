@@ -17,6 +17,10 @@ runtime, frente al socio). Este módulo convierte cada prompt en un
   procesos distintos corrieron el MISMO prompt (semilla del golden set
   de Ola 3.4).
 
+Ola 3.4 añade los specs del juez (``judge.system`` / ``judge.eval``):
+ningún prompt nuevo entra al árbol sin spec — nacer versionado es más
+barato que versionar 814 líneas después.
+
 El contrato observable de ``render`` es el de ``str.format``: para los
 mismos kwargs, ``render() == template.format(**kwargs)`` byte a byte.
 La única diferencia es que ``render`` valida ANTES: kwargs exactos
@@ -117,6 +121,8 @@ from club_mcp.ai.prompts import (  # noqa: E402
     COMMENT_ASSIST_PROMPT,
     MESSAGE_TEMPLATES,
     NARRATIVE_REPORT_PROMPT,
+    JUDGE_EVAL_PROMPT,
+    JUDGE_SYSTEM_PROMPT,
     RAG_SYSTEM_PROMPT,
     SATISFACTION_ANALYSIS_PROMPT,
     SYSTEM_PROMPT,
@@ -162,6 +168,12 @@ PROMPT_REGISTRY: dict[str, PromptSpec] = {
     # rag/rag_service.py:77 vivo — hallazgo del perfilado 0064). La
     # fuente canónica pasa a ser ESTA entrada; rag_service la importa.
     "rag": _spec("rag", "1.0.0", RAG_SYSTEM_PROMPT),
+    # Ola 3.4 (Q-LLM-04): los prompts del JUEZ nacen versionados — la
+    # lección de Ola 3.3 aplicada a tiempo: ningún prompt nuevo entra
+    # al árbol sin spec. El juez juzga respuestas; estos specs fijan
+    # SU contrato (verdict/score/criteria/summary) y su fingerprint.
+    "judge.system": _spec("judge.system", "1.0.0", JUDGE_SYSTEM_PROMPT),
+    "judge.eval": _spec("judge.eval", "1.0.0", JUDGE_EVAL_PROMPT),
 }
 
 

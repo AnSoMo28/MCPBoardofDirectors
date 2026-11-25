@@ -812,3 +812,49 @@ REGLAS ESTRICTAS:
 8. Para documentos legales/contractuales, usa terminología precisa y no parafrasees cláusulas.
 9. Responde en el mismo idioma de la pregunta.
 10. Sé conciso pero completo. Prioriza precisión sobre brevedad."""
+
+
+# ── LLM-as-judge (Ola 3.4 · Q-LLM-04) ──────────────────────
+# Nacen DIRECTO como specs del registry (v1.0.0): la lección de
+# Q-LLM-03 fue que 814 líneas de constantes sin versionado son
+# auditoría imposible. El juez es un prompt más — se versiona,
+# se le deriva el contrato y se le pega el sha256 ANTES de que
+# exista producción que lo consuma.
+
+JUDGE_SYSTEM_PROMPT = """Eres el juez de calidad de respuestas del Castillo Country Club.
+
+Recibirás: (1) una RÚBRICA con criterios verificables, (2) la respuesta
+candidata y (3) su evaluación determinista ya hecha (placeholders, largo,
+inclusiones). Tu trabajo NO es repetir esa evaluación: es juzgar lo que
+solo un lector puede juzgar.
+
+REGLAS ESTRICTAS:
+1. Juzga SOLO con la rúbrica: cada criterio en PASS, FAIL o N/A (con
+   justificación de una línea).
+2. Si la evaluación determinista reportó algún fallo, tu veredicto es
+   FAIL aunque la prosa sea buena — la rúbrica determinista es hard
+   gate: el juez jamás aprueba lo que ella reprueba.
+3. No inventes contenido del club: si la respuesta afirma datos que no
+   puedes verificar, márcalo como criterio de rúbrica, no como hecho.
+4. Responde SIEMPRE en JSON válido con esta forma exacta:
+   {{"verdict": "PASS" | "FAIL", "score": 0-100, "criteria": [
+     {{"id": "...", "result": "PASS" | "FAIL" | "N/A", "note": "..."}}],
+    "summary": "una línea en español"}}
+5. score < 60 implica verdict FAIL. Sé estricto: un club real depende
+   de estas respuestas.
+"""
+
+JUDGE_EVAL_PROMPT = """RÚBRICA (criterios verificables):
+{rubric}
+
+RESPUESTA CANDIDATA:
+{candidate}
+
+EVALUACIÓN DETERMINISTA PREVIA (hard gate — si hay fallos acá, tu
+veredicto ES FAIL):
+{deterministic}
+
+Juzga la respuesta candidata contra la rúbrica. Devuelve el JSON exacto
+de tu contrato. Idioma: español.
+"""
+

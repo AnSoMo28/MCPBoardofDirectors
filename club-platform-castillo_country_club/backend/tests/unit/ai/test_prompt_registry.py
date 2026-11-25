@@ -1,6 +1,7 @@
 """Suite del vertical Ola 3.3 — prompts versionados (Q-LLM-03).
 
-Gate del registry: 39 specs · render validado ANTES de gastar la
+Gate del registry: 41 specs (Ola 3.4: +judge.system/judge.eval) ·
+render validado ANTES de gastar la
 llamada · contrato observable == ``str.format`` byte a byte.
 
 Lo que este archivo verifica (cada test es UNA garantía):
@@ -16,7 +17,7 @@ Lo que este archivo verifica (cada test es UNA garantía):
      mismo un ``insight_id`` tipografiado es silencio o ``KeyError``
      tarde, frente al socio.
   4. VARIABLES DERIVADAS: el contrato sale del template con
-     ``string.Formatter`` — los 35 placeholders del árbol censados
+     ``string.Formatter`` — los 38 placeholders del árbol censados
      sin que nadie los mantenga a mano (un template que cambia de
      variables cambia el contrato solo).
   5. FINGERPRINT ESTABLE: ``sha256`` del template es determinista
@@ -52,10 +53,10 @@ SRC = Path(__file__).resolve().parents[3] / "src"
 
 
 # ── 1 · censo completo: 39 specs = el árbol vivo ────────────────
-def test_censo_39_specs_byte_a_byte() -> None:
-    assert len(PROMPT_REGISTRY) == 39
+def test_censo_41_specs_byte_a_byte() -> None:
+    assert len(PROMPT_REGISTRY) == 41
     snapshot = registry_snapshot()
-    assert len(snapshot) == 39
+    assert len(snapshot) == 41
 
     # los dicts entran con prefijo canónico
     for key in prompts_module.AGENT_SYSTEM_PROMPTS:
@@ -83,10 +84,12 @@ def test_censo_39_specs_byte_a_byte() -> None:
         "advisor.ask.system": prompts_module.ADVISOR_ASK_SYSTEM,
         "advisor.ask": prompts_module.ADVISOR_ASK_PROMPT,
         "rag": prompts_module.RAG_SYSTEM_PROMPT,
+        "judge.system": prompts_module.JUDGE_SYSTEM_PROMPT,
+        "judge.eval": prompts_module.JUDGE_EVAL_PROMPT,
     }
     for name, template in nominados.items():
         assert PROMPT_REGISTRY[name].template == template, name
-    # 23 (dicts) + 16 (nominados) = 39 — sin duplicados ni huecos
+    # 23 (dicts) + 18 (nominados, Ola 3.4: +juez) = 41 — sin huecos
     assert len(PROMPT_REGISTRY) == 23 + len(nominados)
 
 
@@ -178,12 +181,13 @@ def test_nombre_desconocido_lista_validos() -> None:
 
 
 # ── 4 · variables derivadas del template (no mantenidas a mano) ─
-def test_variables_derivadas_y_censo_35_placeholders() -> None:
+def test_variables_derivadas_y_censo_38_placeholders() -> None:
     todos: set[str] = set()
     for spec in PROMPT_REGISTRY.values():
         todos.update(spec.variables)
-    # los 35 placeholders del árbol, censados por derivación
-    assert len(todos) == 35, sorted(todos)
+    # los 38 placeholders del árbol (35 + rubric/candidate/
+    # deterministic del juez, Ola 3.4), censados por derivación
+    assert len(todos) == 38, sorted(todos)
     # contratos puntuales que los call-sites ya dependen de ellos
     assert get_prompt("advisor.narrative").variables == (
         "insight_data", "financial_context", "events_context", "role", "insight_id",
