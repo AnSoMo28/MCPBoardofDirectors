@@ -24,6 +24,7 @@ anomalies/correlations/insights byte a byte).
 from __future__ import annotations
 
 import os
+from datetime import date, timedelta
 
 import pytest
 
@@ -44,6 +45,26 @@ PG_URL = os.environ.get("CLUB_PERSISTENCE_URL", "")
 SQLITE_URL = "sqlite+aiosqlite:///_persist_wellness.db"
 
 pytestmark = pytest.mark.asyncio
+
+
+def _d(k: int) -> str:
+    """G40.1 (bomba de fecha, run #84): fecha ISO relativa a HOY-k días.
+
+    El in-memory y el ORM computan el gap de inactividad contra
+    datetime.now(); un fixture con fechas absolutas cruza el umbral
+    >14 días un día al año (25→26-nov-2026: run #83 VERDE, run #84
+    backend ROJO con el árbol de código byte-idéntico).
+    """
+    return (date.today() - timedelta(days=k)).isoformat()
+
+
+# Dataset relativo (G40.1): última actividad de fam-001 = hoy-10 → gap
+# 10 < 14 con margen de 4 días sobre el umbral activity_gap.
+ACT_DATES = {
+    "fam1_d1": _d(25), "fam1_d2": _d(23), "fam1_d3": _d(21),
+    "fam1_d4": _d(19), "fam1_d5": _d(17), "fam1_d6": _d(10),
+    "fam2_d1": _d(24), "fam2_d2": _d(20),
+}
 
 
 def _backend_url() -> str:
@@ -105,15 +126,16 @@ async def _seed_dataset(repo: WellnessRepoORM) -> None:
         "status": "completed",
         "current_value": 3.0,
     })
-    for i, (fid, at, mins, date) in enumerate([
-        ("fam-001", "yoga", 60, "2026-11-01"),
-        ("fam-001", "swimming", 45, "2026-11-03"),
-        ("fam-001", "gym", 50, "2026-11-05"),
-        ("fam-001", "gym", 40, "2026-11-07"),
-        ("fam-001", "yoga", 55, "2026-11-09"),
-        ("fam-001", "gym", 35, "2026-11-11"),
-        ("fam-002", "gym", 80, "2026-11-02"),
-        ("fam-002", "gym", 70, "2026-11-06"),
+    # G40.1: fechas del módulo ACT_DATES (relativas a hoy — ver _d).
+    for i, (fid, at, mins, adate) in enumerate([
+        ("fam-001", "yoga", 60, ACT_DATES["fam1_d1"]),
+        ("fam-001", "swimming", 45, ACT_DATES["fam1_d2"]),
+        ("fam-001", "gym", 50, ACT_DATES["fam1_d3"]),
+        ("fam-001", "gym", 40, ACT_DATES["fam1_d4"]),
+        ("fam-001", "yoga", 55, ACT_DATES["fam1_d5"]),
+        ("fam-001", "gym", 35, ACT_DATES["fam1_d6"]),
+        ("fam-002", "gym", 80, ACT_DATES["fam2_d1"]),
+        ("fam-002", "gym", 70, ACT_DATES["fam2_d2"]),
     ]):
         await repo.log_activity({
             "family_id": fid,
@@ -121,7 +143,7 @@ async def _seed_dataset(repo: WellnessRepoORM) -> None:
             "activity_type": at,
             "duration_minutes": mins,
             "calories_burned": mins * 5,
-            "date": date,
+            "date": adate,
         })
     await repo.add_class({
         "name": "Yoga Matutino",
@@ -176,17 +198,18 @@ async def test_entities_restart() -> None:
     assert goal.id.startswith("goal_")
     assert goal.status == GoalStatus.ACTIVE, "ACTIVE literal del create"
 
+    _t1_date = _d(12)
     act = await repo.log_activity({
         "family_id": "fam-001",
         "member_name": "Carlos",
         "activity_type": "yoga",
         "duration_minutes": 60,
         "calories_burned": 200,
-        "date": "2026-11-01",
+        "date": _t1_date,
     })
     assert act.id.startswith("wla_")
     assert act.activity_type == ActivityType.YOGA, "enum roundtrip"
-    assert act.date == "2026-11-01", "date del Create se respeta"
+    assert act.date == _t1_date, "date del Create se respeta"
 
     cls = await repo.add_class({
         "name": "Yoga Matutino",
@@ -268,12 +291,13 @@ async def test_filters_and_updates() -> None:
     all_goals = await repo.list_goals("fam-002")
     assert [g.title for g in all_goals] == ["Bajar 3 kilos"]
 
-    # list_activities filtros date_from/date_to (string compare)
+    # list_activities filtros date_from/date_to (string compare) —
+    # G40.1: rango derivado del MISMO dataset (d3..d5), no literales.
     acts = await repo.list_activities(
-        "fam-001", date_from="2026-11-03", date_to="2026-11-09"
+        "fam-001", date_from=ACT_DATES["fam1_d3"], date_to=ACT_DATES["fam1_d5"]
     )
     assert [a.date for a in acts] == [
-        "2026-11-09", "2026-11-07", "2026-11-05", "2026-11-03",
+        ACT_DATES["fam1_d5"], ACT_DATES["fam1_d4"], ACT_DATES["fam1_d3"],
     ], "sort date DESC (orden contractual EXPLÍCITO)"
 
     # list_classes filtro activity_type
@@ -348,7 +372,8 @@ async def test_compute_on_read_after_restart() -> None:
     assert pred.activity_forecast["most_frequent"] == "gym"
     assert pred.activity_forecast["suggested_weekly_minutes"] == 150
 
-    # anomalies: sin gap (actividades de HOY) pero el goal ACTIVE al 0%
+    # anomalies: sin gap (última actividad = hoy-10, gap 10 < 14) pero
+    # el goal ACTIVE al 0% dispara GOAL_STAGNATION (semántica literal)
     # dispara GOAL_STAGNATION (semántica literal del in-memory)
     anoms = await repo.detect_anomalies("fam-001")
     assert anoms.total_anomalies == 1
