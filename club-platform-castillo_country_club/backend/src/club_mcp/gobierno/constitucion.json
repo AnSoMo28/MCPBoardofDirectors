@@ -1,0 +1,74 @@
+{
+  "formato": "constitucion-ejecutable-v1",
+  "version": 1,
+  "descripcion": "Constitución EJECUTABLE del club (Ola 4.2 · Q-GOV-02). Este archivo ES el ejecutable: el motor de políticas lo carga, lo valida y lo aplica literal. Editarlo sin bump de version = CI rojo (el hash sellado deja de calzar). La misma disciplina del prompt_registry (Ola 3.3), ahora para el gobierno: el documento y el programa son una sola cosa.",
+  "politicas": [
+    {
+      "id": "P-001",
+      "descripcion": "Lecturas de estado: cualquier rol autenticado puede leer dashboards y reportes",
+      "efecto": "allow",
+      "sujetos": {"roles": ["admin", "director", "staff", "socio"]},
+      "acciones": ["leer"],
+      "recursos": ["dashboard/*", "reporte/*"],
+      "prioridad": 10
+    },
+    {
+      "id": "P-002",
+      "descripcion": "Operaciones de socio sobre sus propios datos: self-service acotado",
+      "efecto": "allow",
+      "sujetos": {"roles": ["socio"]},
+      "acciones": ["crear", "actualizar"],
+      "recursos": ["reserva/*", "inscripcion/*"],
+      "condicion": {"campo": "recurso.propietario", "referencia": "actor.id"},
+      "prioridad": 20
+    },
+    {
+      "id": "P-003",
+      "descripcion": "Staff opera el día a día del club sin tocar gobierno ni finanzas",
+      "efecto": "allow",
+      "sujetos": {"roles": ["staff"]},
+      "acciones": ["crear", "actualizar", "ejecutar"],
+      "recursos": ["evento/*", "instalacion/*", "miembro/*"],
+      "prioridad": 30
+    },
+    {
+      "id": "P-004",
+      "descripcion": "Directores: administración general excepto mutación del propio gobierno",
+      "efecto": "allow",
+      "sujetos": {"roles": ["director"]},
+      "acciones": ["crear", "actualizar", "ejecutar", "borrar"],
+      "recursos": ["*"],
+      "excluye": ["gobierno/*", "politica/*", "constitucion/*"],
+      "prioridad": 40
+    },
+    {
+      "id": "P-005",
+      "descripcion": "Solo admin muta el gobierno — y TODO lo que toca requiere el ledger",
+      "efecto": "allow",
+      "sujetos": {"roles": ["admin"]},
+      "acciones": ["*"],
+      "recursos": ["*"],
+      "prioridad": 50
+    }
+  ],
+  "economia": {
+    "descripcion": "Economía de agentes: gobernar 19 agentes es gobernar su economía, no solo sus permisos. Presupuestos como primitiva de primera clase — el mismo documento que dice QUÉ puede hacer dice CUÁNTO puede costar. Ventanas por día natural UTC (determinista, sin reloj real en tests).",
+    "moneda": "creditos",
+    "presupuestos_globales": {
+      "tokens_dia": 500000,
+      "llamadas_dia": 2000,
+      "costo_dia": 100.0
+    },
+    "presupuestos_por_rol": {
+      "admin": {"tokens_dia": 200000, "llamadas_dia": 800, "costo_dia": 40.0},
+      "director": {"tokens_dia": 150000, "llamadas_dia": 600, "costo_dia": 30.0},
+      "staff": {"tokens_dia": 100000, "llamadas_dia": 400, "costo_dia": 20.0},
+      "socio": {"tokens_dia": 50000, "llamadas_dia": 200, "costo_dia": 10.0}
+    },
+    "exceso": "deny"
+  },
+  "invariantes": {
+    "default": "deny",
+    "descripcion_default": "Todo lo no permitido explícitamente está DENEGADO — la constitución es una lista de libertades, no de prohibiciones. Un runtime sin constitución cargada DENIEGA todo (fail-closed)."
+  }
+}
