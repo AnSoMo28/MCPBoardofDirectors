@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.34 · Generación G39 (Ola 3.4 — golden set + LLM-as-judge: vertical golden/juez · Q-LLM-04 CERRADO DEL TODO) · Date: 2026-11-25
+### Version: 9.35 · Generación G40 (Ola 4.1 — ledger de gobierno + recibos verificables OFFLINE: vertical gobierno · Q-GOV-01 CERRADO) · Date: 2026-11-26
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -84,6 +84,34 @@
 ###          YAML sin comillas) · approvals +
 ###          ledger hash-chain R-6 + spans
 ###          OTel R-1 · ADR-0007)
+###          G40 — Ola 4.1 absorbida (vertical
+###          gobierno: ledger + recibos
+###          verificables OFFLINE ·
+###          Q-GOV-01 CERRADO (charter
+###          Ola 4 §5.4 guía G40 — NO el
+###          Q-GOV-01 del censo G9 §15-P2
+###          'guardian backend-aware', que
+###          sigue ABIERTO: ID colisionado
+###          anotado en §15):
+###          gobierno/ledger.py append-only
+###          por construcción (frozen
+###          dataclasses · doble sellado
+###          sha-256: cadena génesis 0*64
+###          ADR-0007 + épocas Merkle
+###          RFC 6962 cada 8 eventos ·
+###          reloj inyectado, determinismo
+###          byte a byte · ReciboInclusion
+###          O(log n) SOLO contra época
+###          cerrada) · verificar_recibo.py
+###          CLI standalone stdlib (un
+###          TERCERO sin repo/DB/red:
+###          legítimo exit 0 / falsificado
+###          exit 1) · ADR-0010 deuda
+###          declarada: SIN cableado
+###          runtime — 4.2 lo conecta
+###          (DV-002) · +29 tests: pytest
+###          1091 CI · run #83 VERDE 5/5 @
+###          1a2931d · MC 13/13)
 ###          G39 — Ola 3.4 absorbida (vertical
 ###          golden set + LLM-as-judge ·
 ###          Q-LLM-04 CERRADO DEL TODO:
@@ -4272,7 +4300,9 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             auto-aplicada en el step YAML) —
             19/19 verticales + presupuesto LLM + prompts
             versionados (41 specs · Ola 3.3/3.4) + golden/
-            juez · 0 repos
+            juez + gobierno/ (ledger-recibos
+            Ola 4.1 · sin cableado runtime —
+            4.2 lo conecta) · 0 repos
             in-memory · SQLAlchemy
             async via db/orm/ (mecánica §3.8 probada: ORM + alembic
             + repo + gate — lecciones: run #28 read-path re-
@@ -4384,6 +4414,10 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
   Q-GOV-01  guardian backend-aware: checks X-29+ consumiendo
             BACKEND_REGISTRY (manifest §16) — drift backend = error,
             en paridad con smoke_b0.
+            [G40 · reconciliación de ID: el Q-GOV-01 CERRADO por
+            Ola 4.1 (5aef1db+1a2931d, ledger de gobierno) es el del
+            charter §5.4 guía G40; ESTE ítem del censo G9 sigue
+            ABIERTO.]
   Q-GOV-02  absorber SHARED_COMPONENT_NAMES/GENERIC_KEYFRAMES/
             MCP_CHAIN_EXEMPT/ADVISOR_EXEMPT/EXTRA_BANNED_ANIMATION_LIBS
             del guardian al manifest (TODO propio del tool, §3).
@@ -4420,6 +4454,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.34 · Generación G39 (sincronizada con
-MASTER_BASE.md v9.34 y MASTER_CHECKLIST.md v9.34
+END OF MASTER_CHECKPOINT.md v9.35 · Generación G40 (sincronizada con
+MASTER_BASE.md v9.35 y MASTER_CHECKLIST.md v9.35
 

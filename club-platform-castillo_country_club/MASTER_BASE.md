@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.34 · Generación G39 (Ola 3.4 — golden set + LLM-as-judge: vertical golden/juez · Q-LLM-04 CERRADO DEL TODO) · Date: 2026-11-25
+### Version: 9.35 · Generación G40 (Ola 4.1 — ledger de gobierno + recibos verificables OFFLINE: vertical gobierno · Q-GOV-01 CERRADO) · Date: 2026-11-26
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -1588,7 +1588,7 @@ aditivo)
 │                                   · 0022_llm_calls (2 tablas + 3
 │                                   índices — presupuesto LLM
 │                                   persistente, Ola 3.2)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 1062 tests PASSED
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 1091 tests PASSED
 │                                   (808 def + 16 parametrizados + 173
 │                                   persistencia write-restart-read —
                                    B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
@@ -1615,7 +1615,7 @@ aditivo)
                                    ml_intelligence 4 + Ola 3.2
                                    llm_calls 6 + PG-real 1 + Ola 3.3
                                    prompts registry 9 + Ola 3.4 golden
-                                   juez 5)
+                                   juez 5 + Ola 4.1 gobierno 29)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1926,7 +1926,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.34 · Generación G39 (sincronizada con
-MASTER_CHECKPOINT.md v9.34 y MASTER_CHECKLIST.md v9.34
+END OF MASTER_BASE.md v9.35 · Generación G40 (sincronizada con
+MASTER_CHECKPOINT.md v9.35 y MASTER_CHECKLIST.md v9.35
 
 

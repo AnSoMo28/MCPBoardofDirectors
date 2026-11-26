@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.34 · Generación G39 (Ola 3.4 — golden set + LLM-as-judge: vertical golden/juez · Q-LLM-04 CERRADO DEL TODO) · 180 checks · ZERO tolerance
+### Version: 9.35 · Generación G40 (Ola 4.1 — ledger de gobierno + recibos verificables OFFLINE: vertical gobierno · Q-GOV-01 CERRADO) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -11,6 +11,64 @@
 ---
 
 
+
+## CHANGELOG G40 (v9.34 → v9.35)
+
+OLA 4.1 — LEDGER DE GOBIERNO + RECIBOS
+VERIFICABLES OFFLINE (Q-GOV-01 CERRADO
+— charter Ola 4 §5.4 guía G40; NO el
+Q-GOV-01 del censo G9 §15-P2 'guardian
+backend-aware', que sigue ABIERTO: ID
+colisionado por herencia del censo,
+anotado en §15) · CERRADO en DOS commits
+(5aef1db vertical 0069 + 1a2931d job-name
+pytest 1062→1091 — run #83 VERDE 5/5):
+- gobierno/ledger.py (405L): LEDGER
+  APPEND-ONLY por construcción — frozen
+  dataclasses sin métodos de mutación,
+  copia defensiva en lectura, doble
+  sellado sha-256 sobre JSON canónico
+  sort_keys: cadena lineal (génesis
+  0*64, ADR-0007) + ÉPOCAS MERKLE
+  RFC 6962 que cada 8 eventos sellan
+  la raíz DENTRO de la cadena
+  (epoch_seal merkle-epoch-v1) · reloj
+  inyectado: determinismo byte a byte ·
+  ReciboInclusion portable O(log n) —
+  época·seq·event_hash·camino·raíz —
+  emitible SOLO contra época cerrada.
+- gobierno/verificar_recibo.py (123L):
+  CLI STANDALONE stdlib auto-contenida
+  que un TERCERO corre fuera del repo
+  sin DB ni red: recibo legítimo exit 0 /
+  falsificado exit 1 (compliance como
+  DATO verificable, no como PDF).
+- Suite 29 tests stdlib pura (317L):
+  cadena · épocas · tamper con posición
+  exacta · inmutabilidad por reflexión
+  del API · vector fijo hardcodeado
+  226effef… · anti-falsificación en 3
+  vectores · GATE DE EQUIVALENCIA
+  ledger↔CLI que blinda la doble
+  implementación del folding Merkle ·
+  bug cazado por la propia suite:
+  recibo() localizaba la época por
+  divmod(seq) cuando los sellos también
+  ocupan seq — corregido por conteo de
+  eventos no-sello.
+- ADR-0010 (77L): 3 decisiones + deuda
+  declarada (DV-002): nace SIN cableado
+  runtime — Ola 4.2 (Q-GOV-02) lo
+  conecta en el punto de aplicación.
+- pytest 1062→1091 CI (+29 gobierno ·
+  local 1057→1086 + 5 PG-solo-CI) ·
+  run #83 VERDE 5/5 · ruff/mypy
+  verticales 0 · superficie MCP INTACTA
+  19/207/207 (gobierno/ es
+  infraestructura de gobernanza, no
+  superficie MCP) · errata BASE v9.34
+  RESUELTA: gobierno/ en el árbol (la
+  pagó 5aef1db: 6 archivos · 942L).
 
 ## CHANGELOG G39 (v9.33 → v9.34)
 
@@ -2199,5 +2257,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.34 · Generación G39 (sincronizada con
-MASTER_BASE.md v9.34 y MASTER_CHECKPOINT.md v9.34
+END OF MASTER_CHECKLIST.md v9.35 · Generación G40 (sincronizada con
+MASTER_BASE.md v9.35 y MASTER_CHECKPOINT.md v9.35
