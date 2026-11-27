@@ -30,6 +30,11 @@ El gobierno del club como DATO VERIFICABLE, no como promesa:
   con manifiesto de hashes y raíz Merkle única que amarra constitución
   + ledger + contrafactuales; verificación completa offline, fail-closed
   en cada arista, snapshot sellado al ledger como hecho del gobierno.
+- ``verificar_bundle``: CLI standalone stdlib (Ola 4.4) — el TERCERO
+  verifica el bundle completo sin repo, sin DB y sin red: hashes
+  recalculados, raíz Merkle re-derivada, cadena del ledger re-derivada
+  evento a evento, épocas re-computadas, constitución estructural.
+  Anclaje opcional ``--raiz`` contra el acta publicada fuera de banda.
 
 La ley de diseño es la misma del juez (Ola 3.4, ADR-0009): piso
 determinista verificable offline primero; cualquier inteligencia
@@ -46,5 +51,6 @@ __all__ = [
     "ledger",
     "politicas",
     "puerto_evidencia",
+    "verificar_bundle",
     "verificar_recibo",
 ]

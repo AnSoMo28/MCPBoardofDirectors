@@ -33,7 +33,7 @@ Igual que el ledger en 4.1 (ADR-0010 D3): el puerto entrega el contrato + la sui
 - (+) Los contrafactuales dejan de ser análisis perecederos: un espejo en el bundle es evidencia del mismo rango que el ledger real (misma cadena de custodia).
 - (+) `documento_canon` en `Constitucion` cierra una brecha latente: la exportación siempre calza con el sha sellado, también con constituciones custom (tests, propuestas de reforma).
 - (−) El bundle completo crece con el ledger (exporta eventos, no solo raíces): para ledgers grandes, el recibo Merkle por evento (4.1) sigue siendo el artefacto O(log n) — el bundle es el snapshot de cierre, no el mecanismo de consulta cotidiana.
-- (−) La CLI standalone del tercero envuelve `verificar_bundle` pero vive como script aparte (siguiente parche si el ciclo 5 la pide); hoy la verificación programática es completa y la función es stdlib-pura.
+- (+) La CLI standalone `verificar_bundle.py` (parche 0076) cierra la letra del charter: el TERCERO verifica el bundle completo — hashes recalculados, raíz Merkle re-derivada, cadena del ledger re-derivada evento a evento, épocas re-computadas de sus hojas, constitución estructural — con DOS archivos, stdlib pura, exit 0/1, y anclaje opcional `--raiz` contra el acta publicada fuera de banda. La suite blinda la EQUIVALENCIA CLI↔módulo (mismo patrón del gate ledger↔CLI de 4.1).
 
 ## Próximo paso (charter)
 
