@@ -26,6 +26,10 @@ El gobierno del club como DATO VERIFICABLE, no como promesa:
   historial real de veredictos contra una constitución alternativa con
   fidelidad de ventana (gasto anclado al sellado) y produce un ledger
   espejo verificable offline.
+- ``puerto_evidencia``: el gobierno como ARTEFACTO (Ola 4.4) — bundle
+  con manifiesto de hashes y raíz Merkle única que amarra constitución
+  + ledger + contrafactuales; verificación completa offline, fail-closed
+  en cada arista, snapshot sellado al ledger como hecho del gobierno.
 
 La ley de diseño es la misma del juez (Ola 3.4, ADR-0009): piso
 determinista verificable offline primero; cualquier inteligencia
@@ -41,5 +45,6 @@ __all__ = [
     "fabrica",
     "ledger",
     "politicas",
+    "puerto_evidencia",
     "verificar_recibo",
 ]

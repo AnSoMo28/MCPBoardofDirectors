@@ -110,6 +110,10 @@ class Constitucion:
     economia: Economia
     sha256: str
     default: str
+    documento_canon: str = ""
+    """Canon JSON del documento cargado (Ola 4.4): el puerto de evidencia
+    exporta EXACTAMENTE el documento que se validó — no una re-serialización
+    que podría perder campos no modelados (descripciones, invariantes)."""
 
     def politica_por_id(self, pid: str) -> Politica | None:
         return next((p for p in self.politicas if p.id == pid), None)
@@ -230,7 +234,8 @@ def cargar_constitucion(
         )
 
     # ── sellado: hash sobre canon normalizado ──
-    sha = _sha256(_canon(_normalizar(doc)))
+    canon_doc = _canon(_normalizar(doc))
+    sha = _sha256(canon_doc)
     return Constitucion(
         version=version,
         politicas=tuple(politicas),
@@ -242,6 +247,7 @@ def cargar_constitucion(
         ),
         sha256=sha,
         default=str(default),
+        documento_canon=canon_doc,
     )
 
 
