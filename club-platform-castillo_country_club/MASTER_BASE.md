@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.35 · Generación G40 (Ola 4.1 — ledger de gobierno + recibos verificables OFFLINE: vertical gobierno · Q-GOV-01 CERRADO) · Date: 2026-11-26
+### Version: 9.36 · Generación G41 (Ola 4.2 — constitución EJECUTABLE + motor default-DENY + economía de agentes: vertical gobierno · Q-GOV-02 CERRADO · DV-002 CERRADO) · Date: 2026-11-27
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -1559,7 +1559,7 @@ aditivo)
 │   │                               (presupuesto LLM persistente
 │   │                               — swap del ledger G12, OPT-IN
 │   │                               CLUB_PERSISTENCE_URL)
-│   ├── gobierno/                 ← Ola 4.1: ledger de gobierno general (cadena sha-256 + épocas Merkle RFC 6962 · recibos de inclusión verificables OFFLINE con CLI standalone stdlib · sin cableado runtime — 4.2 lo conecta · Q-GOV-01 · ADR-0010)
+│   ├── gobierno/                 ← Ola 4.1+4.2: ledger (cadena sha-256 + épocas Merkle · recibos OFFLINE) + constitución EJECUTABLE + motor de políticas default-DENY con economía de agentes — TODO veredicto sellado con constitucion_sha (Q-GOV-01+02 · ADR-0010/0011)
 │   ├── hitl/                     ← ApprovalEngine (tabla approvals + ledger hash-chain · Q-PER-03 CERRADO)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
@@ -1588,7 +1588,7 @@ aditivo)
 │                                   · 0022_llm_calls (2 tablas + 3
 │                                   índices — presupuesto LLM
 │                                   persistente, Ola 3.2)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 1091 tests PASSED
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 1143 tests PASSED
 │                                   (808 def + 16 parametrizados + 173
 │                                   persistencia write-restart-read —
                                    B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
@@ -1615,7 +1615,8 @@ aditivo)
                                    ml_intelligence 4 + Ola 3.2
                                    llm_calls 6 + PG-real 1 + Ola 3.3
                                    prompts registry 9 + Ola 3.4 golden
-                                   juez 5 + Ola 4.1 gobierno 29)
+                                   juez 5 + Ola 4.1 gobierno 29 + Ola 4.2
+                                   políticas 49)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1926,7 +1927,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.35 · Generación G40 (sincronizada con
-MASTER_CHECKPOINT.md v9.35 y MASTER_CHECKLIST.md v9.35
+END OF MASTER_BASE.md v9.36 · Generación G41 (sincronizada con
+MASTER_CHECKPOINT.md v9.36 y MASTER_CHECKLIST.md v9.36
 
 

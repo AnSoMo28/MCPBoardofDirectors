@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.35 · Generación G40 (Ola 4.1 — ledger de gobierno + recibos verificables OFFLINE: vertical gobierno · Q-GOV-01 CERRADO) · Date: 2026-11-26
+### Version: 9.36 · Generación G41 (Ola 4.2 — constitución EJECUTABLE + motor default-DENY + economía de agentes: vertical gobierno · Q-GOV-02 CERRADO · DV-002 CERRADO) · Date: 2026-11-27
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -84,6 +84,31 @@
 ###          YAML sin comillas) · approvals +
 ###          ledger hash-chain R-6 + spans
 ###          OTel R-1 · ADR-0007)
+###          G41 — Ola 4.2 absorbida (vertical
+###          gobierno: constitución EJECUTABLE +
+###          motor default-DENY + economía ·
+###          Q-GOV-02 CERRADO · DV-002 CERRADO
+###          (charter Ola 4 §5.4 guía G40 —
+###          OLA 4 EN CURSO 2/4):
+###          gobierno/constitucion.json — el
+###          documento de gobierno ES el
+###          ejecutable (JSON canónico stdlib,
+###          5 políticas + economía por rol ·
+###          sha-256 sobre el MISMO canon del
+###          ledger: editar sin bump = CI roto)
+###          · gobierno/politicas.py motor
+###          pre-ejecución default-DENY con la
+###          ECONOMÍA como primitiva de primera
+###          clase del veredicto — allow sin
+###          presupuesto = DENY presupuesto_agotado
+###          · TODO veredicto se sella al ledger
+###          con constitucion_sha +
+###          constitucion_version (DV-002 cerrado
+###          de verdad) · ADR-0011 (D1 JSON
+###          canónico · D2 economía en el MISMO
+###          veredicto · D3 una puerta fail-closed)
+###          · +49 tests: pytest 1143 CI · run #86
+###          VERDE 5/5 @ a065658 · MC 13/13)
 ###          G40 — Ola 4.1 absorbida (vertical
 ###          gobierno: ledger + recibos
 ###          verificables OFFLINE ·
@@ -4301,8 +4326,11 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             19/19 verticales + presupuesto LLM + prompts
             versionados (41 specs · Ola 3.3/3.4) + golden/
             juez + gobierno/ (ledger-recibos
-            Ola 4.1 · sin cableado runtime —
-            4.2 lo conecta) · 0 repos
+            Ola 4.1 + constitución EJECUTABLE
+            + motor default-DENY con economía
+            de agentes — TODO veredicto sellado
+            con constitucion_sha, DV-002 CERRADO)
+            · 0 repos
             in-memory · SQLAlchemy
             async via db/orm/ (mecánica §3.8 probada: ORM + alembic
             + repo + gate — lecciones: run #28 read-path re-
@@ -4421,6 +4449,10 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
   Q-GOV-02  absorber SHARED_COMPONENT_NAMES/GENERIC_KEYFRAMES/
             MCP_CHAIN_EXEMPT/ADVISOR_EXEMPT/EXTRA_BANNED_ANIMATION_LIBS
             del guardian al manifest (TODO propio del tool, §3).
+            [G41 · reconciliación de ID: el Q-GOV-02 CERRADO por
+            Ola 4.2 (d816b50+a065658, constitución ejecutable)
+            es el del charter Ola 4 §5.4 guía G40; este ítem del
+            censo G9 SIGUE ABIERTO.]
   Q-GOV-03  VI check 6: validar contra BACKEND_REGISTRY además del
             extractor VI-14 motor-based.
   Q-GOV-04  crear scripts/verify-master-consistency.py — citado por
@@ -4454,6 +4486,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.35 · Generación G40 (sincronizada con
-MASTER_BASE.md v9.35 y MASTER_CHECKLIST.md v9.35
+END OF MASTER_CHECKPOINT.md v9.36 · Generación G41 (sincronizada con
+MASTER_BASE.md v9.36 y MASTER_CHECKLIST.md v9.36
 

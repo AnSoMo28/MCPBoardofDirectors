@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.35 · Generación G40 (Ola 4.1 — ledger de gobierno + recibos verificables OFFLINE: vertical gobierno · Q-GOV-01 CERRADO) · 180 checks · ZERO tolerance
+### Version: 9.36 · Generación G41 (Ola 4.2 — constitución EJECUTABLE + motor default-DENY + economía de agentes: vertical gobierno · Q-GOV-02 CERRADO · DV-002 CERRADO) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -12,6 +12,80 @@
 
 
 
+## CHANGELOG G41 (v9.35 → v9.36)
+
+OLA 4.2 — CONSTITUCIÓN EJECUTABLE +
+MOTOR DEFAULT-DENY + ECONOMÍA DE
+AGENTES (Q-GOV-02 CERRADO · DV-002
+CERRADO) · CERRADO en DOS commits
+(d816b50 vertical 0072 + a065658
+job-name pytest 1091→1143 — run #86
+VERDE 5/5):
+- gobierno/constitucion.json (74L):
+  el documento de gobierno ES el
+  EJECUTABLE — JSON canónico stdlib,
+  formato constitucion-ejecutable-v1,
+  5 políticas + economía por rol ·
+  sha-256 sobre el MISMO canon del
+  ledger: editar sin bump = CI roto
+  (la disciplina del prompt_registry,
+  ahora para el gobierno).
+- gobierno/constitucion.py (242L):
+  validación estructural COMPLETA al
+  cargar (ids/prioridades únicos ·
+  efectos/acciones/roles conocidos ·
+  economía por-rol ≤ global · default
+  allow PROHIBIDO por diseño) +
+  sellado determinista (reformatear no
+  cambia el hash, editar un valor sí).
+- gobierno/politicas.py (338L): motor
+  pre-ejecución default-DENY (primera
+  coincidencia por prioridad · matching
+  prefijo sin regex auditable ·
+  condiciones por REFERENCIA actor.id —
+  self-service fail-closed) con la
+  ECONOMÍA como primitiva de primera
+  clase del veredicto: allow sin
+  presupuesto = DENY presupuesto_agotado
+  (politica_permiso preservada para
+  trazabilidad) · ventana por día UTC
+  derivada del reloj del ledger (UNA
+  sola fuente de tiempo) · contabilidad
+  inyectada persistible — acción
+  abortada no cobra.
+- gobierno/fabrica.py (51L):
+  crear_gobierno() fail-closed
+  (constitución rota → motor que
+  deniega TODO y lo sella) · TODO
+  veredicto se sella al ledger con
+  constitucion_sha + constitucion_version
+  (DV-002 cerrado de verdad).
+- Suite 49 tests (422L): 12 validación
+  estructural (cada campo inválido
+  rechazado) · 6 sellado+pin (el sha
+  hardcodeado calza con el documento
+  vivo — el golden de la constitución)
+  · 10 matching/condiciones · 9
+  economía (tokens/llamadas/costo ·
+  ventana diaria · round-trip
+  contabilidad) · 12 cableado
+  (fail-closed · veredictos al ledger ·
+  round-trip del ledger con veredictos ·
+  determinismo byte a byte).
+- ADR-0011 (42L): D1 JSON canónico vs
+  YAML/policies-as-code · D2 economía
+  en el MISMO veredicto · D3 una puerta
+  fail-closed.
+- pytest 1091→1143 CI (+49 Q-GOV-02 ·
+  colección real 1094 base + 49 = 1143
+  — el 1091 era la etiqueta del run
+  #83) · run #86 VERDE 5/5 · local
+  1135 passed + 8 skipped (PG-real
+  solo-CI) · superficie MCP INTACTA
+  19/207/207 (la gobernanza es capa
+  backend, no superficie MCP) ·
+  gobierno/ queda 6 módulos + suite:
+  29 ledger + 49 políticas.
 ## CHANGELOG G40 (v9.34 → v9.35)
 
 OLA 4.1 — LEDGER DE GOBIERNO + RECIBOS
@@ -2257,5 +2331,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.35 · Generación G40 (sincronizada con
-MASTER_BASE.md v9.35 y MASTER_CHECKPOINT.md v9.35
+END OF MASTER_CHECKLIST.md v9.36 · Generación G41 (sincronizada con
+MASTER_BASE.md v9.36 y MASTER_CHECKPOINT.md v9.36
