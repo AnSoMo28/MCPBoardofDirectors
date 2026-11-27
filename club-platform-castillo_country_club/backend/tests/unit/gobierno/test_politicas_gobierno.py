@@ -45,7 +45,7 @@ RELOJ_OTRO_DIA = "2026-11-27T03:00:00Z"
 # Pin del CI — el golden de la constitución. Editar el documento sin
 # actualizar ESTE hash (y bump de version) = esta suite ROJA con diff
 # legible. Es la disciplina del prompt_registry (Ola 3.3) en gobierno.
-CONSTITUCION_SHA_PIN = "5726a3cfeab1a371c350d61d87be02a19a7be01e8714ad95cc520bcefc812a6d"
+CONSTITUCION_SHA_PIN = "45354125b1edd101cf080c6126e0b996565048b751b2587baf4003113314e20b"
 
 
 def _motor(contabilidad: ContabilidadEconomia | None = None) -> MotorPoliticas:
@@ -85,7 +85,7 @@ def _escribir(tmp_path: Path, doc: dict) -> Path:
 class TestConstitucionCarga:
     def test_carga_la_del_paquete(self) -> None:
         c = cargar_constitucion()
-        assert c.version == 1
+        assert c.version == 2
         assert len(c.politicas) == 5
         assert c.default == DEFAULT_EFECTO
         assert len(c.sha256) == 64
@@ -362,7 +362,7 @@ class TestCableadoLedger:
         _eval(m, rol="staff", accion="crear", recurso="evento/1")
         ev = [e for e in m._ledger.eventos() if e.accion == "veredicto_politica"][0]  # noqa: SLF001
         assert ev.detalles["constitucion_sha"] == cargar_constitucion().sha256
-        assert ev.detalles["constitucion_version"] == 1
+        assert ev.detalles["constitucion_version"] == 2
 
     def test_fail_closed_sin_constitucion(self) -> None:
         led = LedgerGobierno(ts=lambda: RELOJ_FIJO)

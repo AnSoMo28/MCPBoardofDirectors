@@ -18,19 +18,28 @@ El gobierno del club como DATO VERIFICABLE, no como promesa:
   constitución bajo la cual se decidió (cierra DV-002).
 - ``fabrica``: ``crear_gobierno()`` — la composición raíz que el
   runtime usa al arranque (fail-closed: sin constitución, DENY todo).
+- ``cuatro_ojos``: protocolo de doble aprobación humana para las
+  políticas que lo declaran (Ola 4.3) — el veredicto del motor sigue
+  siendo allow, pero la acción no es ejecutable hasta DOS aprobadores
+  distintos; cada transición sellada al ledger.
+- ``backtesting``: contrafactual computable (Ola 4.3) — re-evalúa el
+  historial real de veredictos contra una constitución alternativa con
+  fidelidad de ventana (gasto anclado al sellado) y produce un ledger
+  espejo verificable offline.
 
 La ley de diseño es la misma del juez (Ola 3.4, ADR-0009): piso
 determinista verificable offline primero; cualquier inteligencia
-aditiva (4.3 backtesting de gobernanza) se construye SOBRE este
-registro, nunca lo reemplaza.
+aditiva se construye SOBRE este registro, nunca lo reemplaza.
 """
 from __future__ import annotations
 
 
 __all__ = [
-    "ledger",
-    "verificar_recibo",
+    "backtesting",
     "constitucion",
-    "politicas",
+    "cuatro_ojos",
     "fabrica",
+    "ledger",
+    "politicas",
+    "verificar_recibo",
 ]

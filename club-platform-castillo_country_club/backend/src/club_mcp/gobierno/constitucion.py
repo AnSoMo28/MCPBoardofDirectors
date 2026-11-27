@@ -35,6 +35,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+
 # ── Constantes versionadas ────────────────────────────────────────
 
 FORMATO_CONSTITUCION = "constitucion-ejecutable-v1"
@@ -42,6 +43,7 @@ EFECTOS_VALIDOS = frozenset({"allow", "deny"})
 ACCIONES_VALIDAS = frozenset({"leer", "crear", "actualizar", "borrar", "ejecutar"})
 ROLES_VALIDOS = frozenset({"admin", "director", "staff", "socio"})
 CLAVES_ECONOMIA = frozenset({"tokens_dia", "llamadas_dia", "costo_dia"})
+PROTOCOLOS_VALIDOS = frozenset({"cuatro_ojos"})
 DEFAULT_EFECTO = "deny"
 
 RUTA_CONSTITUCION = Path(__file__).resolve().parent / "constitucion.json"
@@ -68,7 +70,14 @@ def _normalizar(doc: dict[str, Any]) -> dict[str, Any]:
 
 @dataclass(frozen=True)
 class Politica:
-    """Una regla de la constitución — evaluada por el motor (politicas.py)."""
+    """Una regla de la constitución — evaluada por el motor (politicas.py).
+
+    ``protocolo`` (Ola 4.3): ``"cuatro_ojos"`` marca las acciones que
+    NUNCA se ejecutan con un solo firmante — la capa del protocolo
+    (cuatro_ojos.py) exige dos aprobadores humanos distintos. El motor
+    lo ignora en la decisión (allow sigue siendo allow); la capa lo
+    aplica en la ejecutabilidad. Vacío = ejecución directa.
+    """
     id: str
     efecto: str
     descripcion: str = ""
@@ -78,6 +87,7 @@ class Politica:
     excluye: tuple[str, ...] = ()
     condicion: dict[str, Any] = field(default_factory=dict)
     prioridad: int = 0
+    protocolo: str = ""
 
 
 @dataclass(frozen=True)
@@ -157,6 +167,13 @@ def cargar_constitucion(
             raise ConstitucionInvalida(f"{pid}: prioridad {prioridad!r} inválida o duplicada")
         prioridades.add(prioridad)
 
+        protocolo = p.get("protocolo", "")
+        if protocolo and protocolo not in PROTOCOLOS_VALIDOS:
+            raise ConstitucionInvalida(
+                f"{pid}: protocolo {protocolo!r} ∉ {sorted(PROTOCOLOS_VALIDOS)} — "
+                "protocolo desconocido: fail-closed al cargar, no en plena sesión"
+            )
+
         for campo, valido in (
             ("acciones", ACCIONES_VALIDAS),
             ("roles", ROLES_VALIDOS),
@@ -178,6 +195,7 @@ def cargar_constitucion(
             excluye=tuple(p.get("excluye", [])),
             condicion=dict(p.get("condicion", {})),
             prioridad=prioridad,
+            protocolo=str(protocolo),
         ))
 
     # ── economía: coherencia por-rol ≤ global ──
