@@ -698,6 +698,11 @@ Responde basándote EXCLUSIVAMENTE en el contexto documental proporcionado. Cita
                 system_prompt=RAG_SYSTEM_PROMPT,
                 user_prompt=user_prompt,
                 max_tokens=2048,
+                # RV-1 (retro vanguardia Ola 3 · ADR-0009): la llamada
+                # RAG queda asociada al spec "rag" vivo del registry —
+                # el template del contexto se construye aquí, el system
+                # prompt es el versionado; la evidencia viaja con la fila.
+                prompt_name="rag",
             )
 
             return result.get("content", "No se pudo generar una respuesta.")

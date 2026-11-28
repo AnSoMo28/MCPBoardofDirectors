@@ -129,6 +129,7 @@ class AdvisorIntelligenceAgent(BaseAgent):
             user_prompt=user_prompt,
             max_tokens=1500,
             fallback=fallback,
+            prompt_name="advisor.narrative",
         )
 
         # Validate structure
@@ -187,6 +188,7 @@ class AdvisorIntelligenceAgent(BaseAgent):
             user_prompt=user_prompt,
             max_tokens=2500,
             fallback=fallback,
+            prompt_name="advisor.action_plan",
         )
 
         # Validate — allow partial results
@@ -245,6 +247,7 @@ class AdvisorIntelligenceAgent(BaseAgent):
             user_prompt=user_prompt,
             max_tokens=2000,
             fallback=fallback,
+            prompt_name="advisor.scenario",
         )
 
         try:
@@ -303,6 +306,7 @@ class AdvisorIntelligenceAgent(BaseAgent):
             user_prompt=user_prompt,
             max_tokens=3000,
             fallback=fallback,
+            prompt_name="advisor.board_brief",
         )
 
         try:
@@ -396,6 +400,7 @@ class AdvisorIntelligenceAgent(BaseAgent):
             user_prompt=user_prompt,
             max_tokens=2000,
             fallback=fallback,
+            prompt_name="advisor.ask",
         )
 
         try:

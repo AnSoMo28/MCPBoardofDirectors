@@ -316,8 +316,26 @@ class ResilientClaudeService:
         user_prompt: str,
         max_tokens: int,
         history: list[dict[str, Any]] | None = None,
+        prompt_name: str | None = None,
     ) -> dict[str, Any]:
-        """1 llamada lógica = hasta max_attempts intentos + fallback."""
+        """1 llamada lógica = hasta max_attempts intentos + fallback.
+
+        RV-1 (retro vanguardia Ola 3): ``prompt_name`` opcional — si
+        viene, el fingerprint vivo del registry viaja en ``usage`` y
+        el ledger lo persiste con la llamada. Sin él, comportamiento
+        byte a byte el de antes (las llamadas sin spec quedan NULL:
+        honestas, no inventadas).
+        """
+        prompt_meta: dict[str, Any] | None = None
+        if prompt_name is not None:
+            from club_mcp.ai.prompt_registry import get_prompt
+
+            spec = get_prompt(prompt_name)
+            prompt_meta = {
+                "name": spec.name,
+                "version": spec.version,
+                "sha256": spec.sha256,
+            }
         last_exc: Exception | None = None
         for attempt in range(1, self.max_attempts + 1):
             if not await self.breaker.allow():
@@ -332,6 +350,8 @@ class ResilientClaudeService:
                     "input_tokens": response.usage.input_tokens,
                     "output_tokens": response.usage.output_tokens,
                 }
+                if prompt_meta is not None:
+                    usage["prompt"] = prompt_meta
                 budget = await self.ledger.record(usage)
                 out = {"content": content, "usage": usage}
                 if budget:
@@ -389,6 +409,7 @@ class ResilientClaudeService:
         user_role: str = "socio",
         user_name: str = "",
         history: list[dict[str, str]] | None = None,
+        prompt_name: str | None = None,
     ) -> dict[str, Any]:
         context = (
             f"{self.inner.system_prompt}\n\n"
@@ -396,7 +417,7 @@ class ResilientClaudeService:
             f"Ajusta el nivel de detalle según el rol."
         )
         result = await self._acall(
-            context, user_message, 2048, history
+            context, user_message, 2048, history, prompt_name=prompt_name
         )
         if result.get("error"):
             return {
@@ -415,9 +436,15 @@ class ResilientClaudeService:
         }
 
     async def generate(
-        self, system_prompt: str, user_prompt: str, max_tokens: int = 2048
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        max_tokens: int = 2048,
+        prompt_name: str | None = None,
     ) -> dict[str, Any]:
-        return await self._acall(system_prompt, user_prompt, max_tokens)
+        return await self._acall(
+            system_prompt, user_prompt, max_tokens, prompt_name=prompt_name
+        )
 
     async def generate_json(
         self,
@@ -425,8 +452,11 @@ class ResilientClaudeService:
         user_prompt: str,
         max_tokens: int = 2048,
         fallback: Any = None,
+        prompt_name: str | None = None,
     ) -> dict[str, Any]:
-        result = await self._acall(system_prompt, user_prompt, max_tokens)
+        result = await self._acall(
+            system_prompt, user_prompt, max_tokens, prompt_name=prompt_name
+        )
         if result.get("error"):
             return fallback if fallback is not None else {"error": result["error"]}
         content = result["content"]

@@ -89,6 +89,14 @@ class LLMCallLogORM(Base):
         DateTime(timezone=True), nullable=False, default=utcnow
     )
     date_key: Mapped[str] = mapped_column(String(10), nullable=False)
+    # RV-1 (retro vanguardia Ola 3 · deuda ADR-0009): la llamada LLM
+    # lleva el fingerprint del prompt EXACTO que la originó — mismo
+    # canon que prompt_registry.PromptSpec.sha256 (16 hex). El registro
+    # de costo ES también registro de evidencia golden: cualquier drift
+    # entre lo ejecutado y lo pineado es auditable con un JOIN.
+    prompt_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    prompt_sha256: Mapped[str | None] = mapped_column(String(16), nullable=True)
     day: Mapped[str | None] = mapped_column(Text(), nullable=True)
 
 

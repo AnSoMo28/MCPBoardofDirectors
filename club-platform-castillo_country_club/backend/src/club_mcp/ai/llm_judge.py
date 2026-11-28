@@ -220,6 +220,15 @@ async def judge_response(
         "judge": "rubric",
         "judge_prompt_sha256": spec_sys.sha256,
         "judge_eval_sha256": spec_eval.sha256,
+        # RV-1: el metadato del prompt eval en la forma canonical del
+        # flujo llm_calls (misma clave "prompt" que _acall persiste) —
+        # el juez predica con el ejemplo: su propia llamada LLM queda
+        # lista para el mismo circuito de evidencia que los demás.
+        "prompt": {
+            "name": spec_eval.name,
+            "version": spec_eval.version,
+            "sha256": spec_eval.sha256,
+        },
         "criteria": [{"id": r.id, "result": r.result, "note": r.note} for r in rubric.results],
     }
 

@@ -94,11 +94,26 @@ class LLMCallsRepository:
         MISMA semántica de TokenUsageLedger.record (fuente única de
         verdad, no se bifurca): señal warning ≥80% · critical ≥95%
         · None por debajo. La diferencia es DONDE acumula: tabla.
+
+        RV-1 (retro vanguardia Ola 3 · ADR-0009): si ``usage`` trae
+        la clave ``prompt`` (dict con name/version/sha256 — la forma
+        de ``PromptSpec.snapshot()`` de ai/prompt_registry), la fila
+        llm_calls la persiste. Fluido por _acall del wrapper resiliente
+        SIN cambio de firma: la evidencia viaja en el mismo dict que
+        ya cruzaba la capa.
         """
         date_key = _today()
         in_tok = int(usage.get("input_tokens", 0))
         out_tok = int(usage.get("output_tokens", 0))
         tokens = in_tok + out_tok
+        prompt = usage.get("prompt")
+        prompt_meta = (
+            prompt
+            if isinstance(prompt, dict)
+            and isinstance(prompt.get("name"), str)
+            and isinstance(prompt.get("sha256"), str)
+            else None
+        )
 
         async with session_scope(self.engine, repo="llm_calls") as session:
             # upsert diario: read-modify-write dentro de la transacción
@@ -122,7 +137,7 @@ class LLMCallsRepository:
             row.calls += 1
             row.updated_at = utcnow()
 
-            # la llamada misma: append-only
+            # la llamada misma: append-only (+ evidencia de prompt RV-1)
             session.add(
                 LLMCallLogORM(
                     call_id=uuid4().hex,
@@ -135,6 +150,17 @@ class LLMCallsRepository:
                     latency_ms=float(latency_ms),
                     called_at=utcnow(),
                     date_key=date_key,
+                    prompt_name=(
+                        prompt_meta["name"][:64] if prompt_meta else None
+                    ),
+                    prompt_version=(
+                        str(prompt_meta.get("version", ""))[:16]
+                        if prompt_meta
+                        else None
+                    ),
+                    prompt_sha256=(
+                        prompt_meta["sha256"][:16] if prompt_meta else None
+                    ),
                 )
             )
 
@@ -199,6 +225,45 @@ class LLMCallsRepository:
                 "provider_error": r.provider_error,
                 "latency_ms": r.latency_ms,
                 "called_at": r.called_at,
+                "prompt_name": r.prompt_name,
+                "prompt_version": r.prompt_version,
+                "prompt_sha256": r.prompt_sha256,
+            }
+            for r in rows
+        ]
+
+    async def calls_by_prompt(
+        self, prompt_name: str
+    ) -> list[dict[str, Any]]:
+        """RV-1: llamadas de UN prompt, called_at ASC.
+
+        La consulta que cierra el circuito 3.2↔3.3↔3.4: contra el
+        snapshot vivo de prompt_registry, cualquier drift entre lo
+        que CORRIÓ (esta tabla) y lo que la suite PINEA (golden) es
+        visible sin investigación — con la fila, no con el recuerdo.
+        """
+        async with session_scope(self.engine, repo="llm_calls") as session:
+            rows = (
+                (
+                    await session.execute(
+                        select(LLMCallLogORM)
+                        .where(LLMCallLogORM.prompt_name == prompt_name)
+                        .order_by(LLMCallLogORM.called_at.asc())
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        return [
+            {
+                "call_id": r.call_id,
+                "called_at": r.called_at,
+                "model": r.model,
+                "input_tokens": r.input_tokens,
+                "output_tokens": r.output_tokens,
+                "degraded": r.degraded,
+                "prompt_version": r.prompt_version,
+                "prompt_sha256": r.prompt_sha256,
             }
             for r in rows
         ]
