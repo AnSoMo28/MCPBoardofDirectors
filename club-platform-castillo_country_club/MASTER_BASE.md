@@ -1,7 +1,7 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.37 · Generación G42 (Ola 4 COMPLETA 4/4 — four-eyes en la cadena + backtesting contrafactual + puerto de evidencia + CLI del tercero: vertical gobierno · Q-GOV-03+04 CERRADOS · OLA 4 CERRADA) · Date: 2026-11-28
+### Version: 9.38 · Generación G43 (retro vanguardia Ola 3 absorbida — RV-1 prompt_sha256 en llm_calls: deuda ADR-0009 PAGADA, el registro de costo LLM ES registro de evidencia golden · RV-2 blindaje determinista del RAG: la fusión RRF pineada como álgebra exacta y el cross-encoder por contrato, sin modelo ni red · GAP DV-001 CERRADO — Olas 5-6 ejecutables tras el gate S44 de papers) · Date: 2026-11-28
 ### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
 ###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
 
@@ -1526,7 +1526,11 @@ backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
 (Q-LLM-01 CERRADO) + prompt_registry
 (41 specs · Q-LLM-03/04 CERRADOS · Ola
 3.3/3.4) + llm_judge (hard gate + LLM
-aditivo)
+aditivo) · G43/RV-1: flujo _acall
+reactivo — usage["prompt"] con
+prompt_name/version/sha256 del spec
+VIVO, toda llamada amarrada al golden
+set (deuda ADR-0009 PAGADA)
 │   ├── api/                      ← FastAPI routes (5 routers)
 │   ├── auth/                     ← JWT, RBAC 196/196, middleware
 │   │                               (secreto JWT hardcodeado → Q-SEC-01)
@@ -1563,6 +1567,12 @@ aditivo)
 │   ├── hitl/                     ← ApprovalEngine (tabla approvals + ledger hash-chain · Q-PER-03 CERRADO)
 │   ├── models/                   ← 22 módulos de esquemas
 │   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
+│   │                               · G43/RV-2: blindaje determinista —
+│   │                               suite 23 (RRF como álgebra exacta con
+│   │                               Fraction · contrato del cross-encoder
+│   │                               bypass ≤5/sigmoid/orden/lazy-load sin
+│   │                               torch · equivalencia híbrido vs partes
+│   │                               con BM25 real) — sin modelo ni red
 │   └── server.py                 ← entry point MCP (adaptador delgado)
 ├── alembic/                      ← G19-G24: env.py async + versions/
 │                                   0001_users · 0002_families_members
@@ -1588,7 +1598,12 @@ aditivo)
 │                                   · 0022_llm_calls (2 tablas + 3
 │                                   índices — presupuesto LLM
 │                                   persistente, Ola 3.2)
-├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 1241 tests PASSED
+│                                   · 0023_llm_calls_prompt_evidence
+│                                   (3 columnas NULL-ables:
+│                                   prompt_name · prompt_version ·
+│                                   prompt_sha256 — G43/RV-1, deuda
+│                                   ADR-0009: el costo ES evidencia)
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 1276 tests PASSED
 │                                   (808 def + 16 parametrizados + 173
 │                                   persistencia write-restart-read —
                                    B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
@@ -1618,7 +1633,9 @@ aditivo)
                                    juez 5 + Ola 4.1 gobierno 29 + Ola 4.2
                                    políticas 49 + Ola 4.3 cuatro-ojos/
                                    backtesting 57 + Ola 4.4 puerto/CLI
-                                   41)
+                                   41 + G43/RV-1 llm_calls prompt
+                                   evidence 12 + G43/RV-2 rag hybrid
+                                   RRF determinism 23)
 └── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
 frontend/tools/                   ← Automation (estado real G9)
@@ -1929,7 +1946,7 @@ Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 
 ---
 
-END OF MASTER_BASE.md v9.37 · Generación G42 (sincronizada con
-MASTER_CHECKPOINT.md v9.37 y MASTER_CHECKLIST.md v9.37
+END OF MASTER_BASE.md v9.38 · Generación G43 (sincronizada con
+MASTER_CHECKPOINT.md v9.38 y MASTER_CHECKLIST.md v9.38
 
 

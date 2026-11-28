@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.37 · Generación G42 (Ola 4 COMPLETA 4/4 — four-eyes en la cadena + backtesting contrafactual + puerto de evidencia + CLI del tercero: vertical gobierno · Q-GOV-03+04 CERRADOS · OLA 4 CERRADA) · 180 checks · ZERO tolerance
+### Version: 9.38 · Generación G43 (retro vanguardia Ola 3 absorbida — RV-1 prompt_sha256 en llm_calls: deuda ADR-0009 PAGADA, el registro de costo LLM ES registro de evidencia golden · RV-2 blindaje determinista del RAG: la fusión RRF pineada como álgebra exacta y el cross-encoder por contrato, sin modelo ni red · GAP DV-001 CERRADO — Olas 5-6 ejecutables tras el gate S44 de papers) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -12,6 +12,108 @@
 
 
 
+## CHANGELOG G43 (v9.37 → v9.38)
+
+RETRO VANGUARDIA OLA 3 — RV-1 + RV-2
+ABSORBIDOS (GAP DV-001 CERRADO: la
+auditoría retro del INFORME-DV-001
+encontró «Ola 3 cerró con 3 elementos
+vanguardistas reales de 4» — el faltante
+se cerró ANTES de tocar los pilares de
+innovación 5-6, como ordenó el
+propietario) · RV-1 CERRADO en DOS
+commits (d265175: feat 0078 + chore
+job-name pytest 1241→1253 — run #92
+VERDE 5/5) · RV-2 CERRADO en DOS
+commits (46f52bd: feat 0079 + chore
+job-name pytest 1253→1276 — run #93
+VERDE 5/5):
+- RV-1 (0078 · deuda ADR-0009 PAGADA):
+  alembic 0023 — llm_calls gana 3
+  columnas NULL-ables (prompt_name ·
+  prompt_version · prompt_sha256 —
+  espejo del canon de ai/prompt_registry
+  .PromptSpec, mismo sha256 que pinea
+  el golden set de Ola 3.4): cualquier
+  drift entre lo que CORRIÓ y lo que la
+  suite PINEA es auditable con un JOIN,
+  con la fila y no con el recuerdo ·
+  flujo REACTIVO: _acall(prompt_name=…)
+  consulta el spec VIVO del registry e
+  inyecta el metadato en usage["prompt"]
+  — MISMA firma observable de record()
+  (el adapter persistente y el in-memory
+  no cambian) · spec inexistente reprueba
+  EN LA PUERTA (KeyError del registry
+  ANTES de gastar la llamada) · los 4
+  métodos específicos de ClaudeService
+  (satisfaction/narrative/comment/
+  age_balance) ahora corren por
+  generate() con su prompt_name — su
+  evidencia llega al ledger del wrapper
+  (antes iban por __getattr__ al
+  anthropic directo, sin ledger) ·
+  advisor 5/5 + rag "rag" + juez
+  canónico: TODA llamada LLM del árbol
+  amarrada al golden set por
+  construcción · LLMCallsRepository
+  .calls_by_prompt(name) — LA consulta
+  que cierra el circuito 3.2↔3.3↔3.4 ·
+  suite 12 tests (write-restart-read ·
+  NULL honesto · prompt malformado NO
+  pierde el costo · truncado a ancho de
+  columna · flujo _acall con ledger
+  espía sin red · usage puro 2 llaves ·
+  KeyError en puerta · grabado==vivo ·
+  DRIFT detectado · vacío · juez ·
+  snapshot→record directo).
+- RV-2 (0079 · Q-LLM-04 family, la
+  suite que el censo no tenía): el
+  pipeline RAG híbrido+reranker vivía en
+  el árbol SIN un solo test de retrieval
+  (hallazgo de la auditoría: el
+  cross-encoder BAAI/bge-reranker-v2-m3
+  y el híbrido BM25+vector RRF k=60 ya
+  existían) → blindaje determinista SIN
+  modelo y SIN red, suite 23 tests
+  tests/unit/rag/test_hybrid_rrf_
+  determinism.py: RRF como ÁLGEBRA EXACTA
+  con Fraction de la stdlib (k=60
+  pineado · chunk en AMBAS ramas suma
+  ambas · simetría (1,2)==(2,1) · cota
+  superior 2/61 · redondeo a 6) ·
+  contrato del RERANKER por
+  comportamiento (bypass ≤5 devuelve los
+  objetos INTACTOS y el modelo JAMÁS se
+  consulta · con >5 el cross-encoder
+  FALSO determinista scorea pero el
+  contrato no: sigmoid clamp ±20 · orden
+  descendente · top_k · texto ≤512 con
+  fallbacks · lazy-load sin torch en el
+  import — contrato de arranque del
+  backend) · EQUIVALENCIA híbrido vs
+  partes (search() == _rrf_fusion(
+  _bm25_search, _vector_search)[:top_k]
+  con BM25 REAL + embeddings/vectorstore
+  falsos — la composición se verifica
+  contra sí misma · Q-SEC-05 en la rama
+  BM25 · query vacío no consulta nada) ·
+  puente _populate_content + piso
+  relativo b0v en sus dos regímenes ·
+  hallazgo destapado POR la suite:
+  BM25Okapi con N=2 df=1 da IDF CERO
+  exacto (log(1.5)-log(1.5)) y el filtro
+  score>0 mata la búsqueda — corpus
+  mínimo 3 docs, documentado en el test.
+- Estado: pytest 1241→1276 CI (colección
+  real verificada 1253+23=1276) · runs
+  #92/#93 VERDES 5/5 · superficie MCP
+  INTACTA 19/207/207 (ambos retrofits
+  son capa backend: uno schema+flujo, el
+  otro suite pura) · MC 13/13 (v9.38) ·
+  Olas 5-6 ejecutables tras el gate S44
+  (lista de papers que cierra el
+  propietario).
 ## CHANGELOG G42 (v9.36 → v9.37)
 
 OLA 4 COMPLETA (4/4) — 4.3 FOUR-EYES
@@ -2458,5 +2560,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.37 · Generación G42 (sincronizada con
-MASTER_BASE.md v9.37 y MASTER_CHECKPOINT.md v9.37
+END OF MASTER_CHECKLIST.md v9.38 · Generación G43 (sincronizada con
+MASTER_BASE.md v9.38 y MASTER_CHECKPOINT.md v9.38

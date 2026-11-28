@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.37 · Generación G42 (Ola 4 COMPLETA 4/4 — four-eyes en la cadena + backtesting contrafactual + puerto de evidencia + CLI del tercero: vertical gobierno · Q-GOV-03+04 CERRADOS · OLA 4 CERRADA) · Date: 2026-11-28
+### Version: 9.38 · Generación G43 (retro vanguardia Ola 3 absorbida — RV-1 prompt_sha256 en llm_calls: deuda ADR-0009 PAGADA, el registro de costo LLM ES registro de evidencia golden · RV-2 blindaje determinista del RAG: la fusión RRF pineada como álgebra exacta y el cross-encoder por contrato, sin modelo ni red · GAP DV-001 CERRADO — Olas 5-6 ejecutables tras el gate S44 de papers) · Date: 2026-11-28
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -84,6 +84,19 @@
 ###          YAML sin comillas) · approvals +
 ###          ledger hash-chain R-6 + spans
 ###          OTel R-1 · ADR-0007)
+###          G43 — retro vanguardia Ola 3 absorbida
+###          (RV-1 prompt_sha256 en llm_calls — deuda
+###          ADR-0009 PAGADA, el registro de costo LLM
+###          ES registro de evidencia golden, alembic 0023
+###          + flujo reactivo _acall + calls_by_prompt()
+###          cierra el circuito 3.2↔3.3↔3.4 · RV-2 blindaje
+###          determinista del RAG: RRF pineada como álgebra
+###          exacta (Fraction · k=60) + cross-encoder por
+###          contrato, sin modelo ni red, suite 23 · GAP
+###          DV-001 CERRADO — runs #92/#93 VERDES 5/5 ·
+###          pytest 1241→1276 · Olas 5-6 ejecutables tras
+###          el gate S44 de papers · ADR-0009 cerrado por
+###          RV-1);
 ###          G42 — Ola 4 COMPLETA absorbida
 ###          (vertical gobierno: four-eyes
 ###          + backtesting + puerto de
@@ -4475,7 +4488,13 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             prompts_v1.json — 41 pins + 22 render-hash ·
             ai/llm_judge.py hard-gate + LLM aditivo · judge
             prompts v1.0.0 (registry 41) · pytest 1062 CI ·
-            ADR-0009. [histórico G9: markers sin suites]
+            ADR-0009. [histórico G9: markers sin suites ·
+            G43: la deuda de ADR-0009 quedó PAGADA por el
+            RV-1 (0078 · run #92) — prompt_name/version/
+            sha256 en llm_calls amarran cada llamada al
+            golden set; el RV-2 (0079 · run #93) blindó
+            además el retrieval del RAG que alimentaría
+            respuestas futuras]
 
 ═══ P2 · GOBERNANZA BACKEND (cerrar el perímetro — #66) ═══
   Q-GOV-01  guardian backend-aware: checks X-29+ consumiendo
@@ -4525,6 +4544,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.37 · Generación G42 (sincronizada con
-MASTER_BASE.md v9.37 y MASTER_CHECKLIST.md v9.37
+END OF MASTER_CHECKPOINT.md v9.38 · Generación G43 (sincronizada con
+MASTER_BASE.md v9.38 y MASTER_CHECKLIST.md v9.38
 
