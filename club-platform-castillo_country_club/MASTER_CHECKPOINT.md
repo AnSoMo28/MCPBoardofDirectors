@@ -1,7 +1,7 @@
 # MASTER_CHECKPOINT.md — Project State & Execution Plan
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.36 · Generación G41 (Ola 4.2 — constitución EJECUTABLE + motor default-DENY + economía de agentes: vertical gobierno · Q-GOV-02 CERRADO · DV-002 CERRADO) · Date: 2026-11-27
+### Version: 9.37 · Generación G42 (Ola 4 COMPLETA 4/4 — four-eyes en la cadena + backtesting contrafactual + puerto de evidencia + CLI del tercero: vertical gobierno · Q-GOV-03+04 CERRADOS · OLA 4 CERRADA) · Date: 2026-11-28
 ### Updates: G9 — absorción serie B1-B6 (504b53d · 207 tools · 818
 ###          tests), P0 utilities + gate verify-build-css v1.0.0,
 ###          manifest v3.8.0 (0004), §3.7 NUEVO, §14/§15 re-escritos;
@@ -84,6 +84,41 @@
 ###          YAML sin comillas) · approvals +
 ###          ledger hash-chain R-6 + spans
 ###          OTel R-1 · ADR-0007)
+###          G42 — Ola 4 COMPLETA absorbida
+###          (vertical gobierno: four-eyes
+###          + backtesting + puerto de
+###          evidencia + CLI del tercero ·
+###          Q-GOV-03+04 CERRADOS ·
+###          OLA 4 CERRADA 4/4 — charter
+###          Ola 4 §5.4 guía G40 completo):
+###          gobierno/cuatro_ojos.py —
+###          doble aprobación humana EN
+###          LA CADENA (P-005 cuatro_ojos:
+###          la autoridad máxima no se
+###          ejerce en solitario ·
+###          fail-closed en cada arista ·
+###          intento de self-approval
+###          sellado como auditoría) ·
+###          gobierno/backtesting.py —
+###          gobernanza contrafactual
+###          COMPUTABLE (fidelidad de
+###          ventana anclada al gasto
+###          sellado · LEDGER ESPEJO +
+###          informe de flips) ·
+###          gobierno/puerto_evidencia.py
+###          — el BUNDLE verificable
+###          (raíz Merkle sobre componentes
+###          canónicos · determinista byte
+###          a byte · fail-closed de 6
+###          verificaciones) ·
+###          gobierno/verificar_bundle.py
+###          — CLI standalone del TERCERO
+###          (DOS archivos + UN comando ·
+###          --raiz contra el acta fuera de
+###          banda · v2 PORTABLE H-11) ·
+###          +98 tests: pytest 1241 CI ·
+###          runs #88/#89/#90 VERDES 5/5 ·
+###          MC 13/13)
 ###          G41 — Ola 4.2 absorbida (vertical
 ###          gobierno: constitución EJECUTABLE +
 ###          motor default-DENY + economía ·
@@ -4325,11 +4360,15 @@ para "PRODUCTION GRADE 2027" — todo lo demás sí puede esperar.
             auto-aplicada en el step YAML) —
             19/19 verticales + presupuesto LLM + prompts
             versionados (41 specs · Ola 3.3/3.4) + golden/
-            juez + gobierno/ (ledger-recibos
-            Ola 4.1 + constitución EJECUTABLE
-            + motor default-DENY con economía
-            de agentes — TODO veredicto sellado
-            con constitucion_sha, DV-002 CERRADO)
+            juez + gobierno/ COMPLETO Ola 4
+            (ledger-recibos + constitución
+            EJECUTABLE + motor default-DENY con
+            economía + four-eyes EN LA CADENA +
+            backtesting contrafactual + puerto de
+            evidencia BUNDLE + CLI del tercero
+            verificar_bundle — TODO veredicto
+            sellado con constitucion_sha, DV-002
+            CERRADO · OLA 4 CERRADA 4/4)
             · 0 repos
             in-memory · SQLAlchemy
             async via db/orm/ (mecánica §3.8 probada: ORM + alembic
@@ -4486,6 +4525,6 @@ CONTEO: P0=4 · P1=6 · P2=8 · P3=9 → 27 ítems (matemática explícita).
 
 ---
 
-END OF MASTER_CHECKPOINT.md v9.36 · Generación G41 (sincronizada con
-MASTER_BASE.md v9.36 y MASTER_CHECKLIST.md v9.36
+END OF MASTER_CHECKPOINT.md v9.37 · Generación G42 (sincronizada con
+MASTER_BASE.md v9.37 y MASTER_CHECKLIST.md v9.37
 

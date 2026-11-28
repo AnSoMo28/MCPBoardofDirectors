@@ -1,7 +1,7 @@
 # MASTER_CHECKLIST.md — Validation Gates & Standards
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 9.36 · Generación G41 (Ola 4.2 — constitución EJECUTABLE + motor default-DENY + economía de agentes: vertical gobierno · Q-GOV-02 CERRADO · DV-002 CERRADO) · 180 checks · ZERO tolerance
+### Version: 9.37 · Generación G42 (Ola 4 COMPLETA 4/4 — four-eyes en la cadena + backtesting contrafactual + puerto de evidencia + CLI del tercero: vertical gobierno · Q-GOV-03+04 CERRADOS · OLA 4 CERRADA) · 180 checks · ZERO tolerance
 ### Updates: G9 — §16.1/§16.3 regenerados al estado real del repo
 ###          (504b53d: manifest v3.8.0 · VI v3.3.0 · guardian v4.1.3 ·
 ###          NEW verify-build-css v1.0.0 · smoke 207 · pytest 818);
@@ -12,6 +12,133 @@
 
 
 
+## CHANGELOG G42 (v9.36 → v9.37)
+
+OLA 4 COMPLETA (4/4) — 4.3 FOUR-EYES
++ BACKTESTING CONTRAFACTUAL (Q-GOV-03
+CERRADO) · 4.4 PUERTO DE EVIDENCIA +
+CLI DEL TERCERO (Q-GOV-04 CERRADO ·
+OLA 4 CERRADA) · 4.3 CERRADO en DOS
+commits (856a98d vertical 0074 +
+445a3ec job-name pytest 1143→1200 —
+run #88 VERDE 5/5) · 4.4 CERRADO en
+CUATRO commits (e600b2f puerto 0075 +
+7243268 job-name 1200→1228 — run #89
+VERDE 5/5 · f89cb4d CLI 0076 v2 +
+0332241 job-name 1228→1241 — run #90
+VERDE 5/5):
+- 4.3 gobierno/cuatro_ojos.py (341L):
+  protocolo de doble aprobación
+  humana para las políticas que lo
+  declaran — el veredicto del motor
+  NO se toca (los 49 tests de 4.2
+  siguen siendo su contrato vivo),
+  la capa decide EJECUTABILIDAD:
+  solicitud pendiente → primera
+  aprobación → segunda aprobación →
+  ejecutable · fail-closed en cada
+  arista (self-approval prohibido ·
+  segundo ojo persona DISTINTA · solo
+  roles aprobadores director/admin) ·
+  TODA transición sellada al ledger
+  (un intento de self-approval queda
+  en la cadena como dato de
+  auditoría) · expiración por ventana
+  24h del reloj del ledger ·
+  constitucion.json v2: P-005 (solo
+  admin muta el gobierno) declara
+  protocolo cuatro_ojos — la
+  autoridad máxima del club no se
+  ejerce en solitario · golden
+  bumpeado JUNTO al documento (sha
+  45354125…).
+- 4.3 gobierno/backtesting.py (294L):
+  «¿qué habría pasado con otra
+  constitución?» es COMPUTABLE —
+  extrae los eventos veredicto_
+  politica del ledger REAL y los
+  re-evalúa contra una constitución
+  ALTERNATIVA (misma validación del
+  runtime) con FIDELIDAD DE VENTANA:
+  la contabilidad del contrafactual
+  se ANCLA al gasto acumulado que
+  cada evento selló — el replay juzga
+  el MISMO tráfico, cambiando solo
+  las REGLAS · salida = LEDGER
+  ESPEJO sellado (hash-chain +
+  épocas Merkle, reloj fijado al ts
+  de cada evento original) +
+  informe de flips por categoría ·
+  ADR-0012 (D1 capa sobre el motor ·
+  D2 fidelidad de ventana anclada ·
+  D3 P-005 cuatro-ojos).
+- 4.4 gobierno/puerto_evidencia.py
+  (487L): el bundle verificable —
+  constitución + ledger +
+  contrafactuales como ARTEFACTO
+  ÚNICO: manifiesto con raíz Merkle
+  RFC 6962 sobre componentes
+  canónicos (nombre + sha256 +
+  contenido) · escribir_bundle()
+  determinista byte a byte (mismo
+  estado → mismo bundle) ·
+  verificar_bundle() fail-closed
+  (formato · conjunto · hashes ·
+  raíz re-derivada · cadena del
+  ledger re-derivada evento a
+  evento · épocas re-computadas ·
+  constitución estructural) ·
+  época abierta = cadena ÍNTEGRA +
+  NOTA (la cadena lineal ya sella
+  esos eventos) · ADR-0013 (D1 el
+  bundle ES una cadena · D2
+  verificación offline COMPLETA no
+  confía en nada declarado · D3 el
+  puerto nace sin cableado runtime
+  — cerrar la ola es tener el
+  artefacto).
+- 4.4 gobierno/verificar_bundle.py
+  (260L): la CLI standalone que el
+  charter mandaba — el TERCERO
+  verifica el bundle SIN repo, sin
+  DB, sin red: DOS archivos + UN
+  comando, exit 0/1 · 6
+  verificaciones fail-closed ·
+  --raiz contra el acta de 64
+  caracteres publicada fuera de
+  banda (detecta mutación del bundle
+  COMPLETO contra 64 chars) · v2
+  PORTABLE (lección H-11 del run
+  #90-anulado): UTF-8 forzado con
+  errors=replace — un bundle válido
+  nunca muere por la consola del
+  auditor (cp1252/ascii), el exit
+  code es el contrato · gate de
+  EQUIVALENCIA CLI↔módulo en la
+  suite (ambas puertas dicen lo
+  mismo sobre el mismo artefacto).
+- Suite 98 tests nuevos (57 4.3: 28
+  cuatro-ojos + 29 backtesting · 41
+  4.4: 28 puerto + 13 CLI) · pytest
+  1143→1241 CI (colección real
+  verificada 1228+13=1241) · runs
+  #88/#89/#90 VERDES 5/5 · superficie
+  MCP INTACTA 19/207/207 (capa
+  backend) · gobierno/ queda 10
+  módulos + suites: 29 ledger + 49
+  políticas + 57 cuatro-ojos/
+  backtesting + 41 puerto/CLI = 176.
+- ERRATA confesada: la v1 del 0076
+  (run #90-anulado) reventó en la
+  Windows/MINGW64 del usuario con 6
+  failed + 1 error — Unix-ismos míos
+  en los tests (env sin SystemRoot ·
+  cwd /tmp · pipes con encoding
+  local) + CLI sin blindar
+  UnicodeEncodeError; el fail-closed
+  del arnés revertió sin push y la
+  v2 (f89cb4d+0332241) re-verdeó con
+  las 2 regresiones de portabilidad.
 ## CHANGELOG G41 (v9.35 → v9.36)
 
 OLA 4.2 — CONSTITUCIÓN EJECUTABLE +
@@ -2331,5 +2458,5 @@ Frontend files                 1163          find G8 (digest G7 = 1.151 — delt
 
 ---
 
-END OF MASTER_CHECKLIST.md v9.36 · Generación G41 (sincronizada con
-MASTER_BASE.md v9.36 y MASTER_CHECKPOINT.md v9.36
+END OF MASTER_CHECKLIST.md v9.37 · Generación G42 (sincronizada con
+MASTER_BASE.md v9.37 y MASTER_CHECKPOINT.md v9.37
