@@ -11,6 +11,8 @@ import { cn } from "@/shared/lib/utils";
 import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
 import { Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/shared/components/ui/Button";
+import './PeriodSelector.css';
 
 export type DashboardPeriod = "current_quarter" | "last_quarter" | "ytd" | "custom";
 
@@ -48,14 +50,15 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="period-selector flex flex-col gap-3">
       <div
         className="inline-flex items-center gap-0.5 p-1 glass-card"
         role="tablist"
         aria-label="Período del dashboard"
       >
         {PERIODS.map((period) => (
-          <button
+          <Button
+            variant="unstyled"
             key={period.value}
             role="tab"
             aria-selected={value === period.value}
@@ -85,7 +88,7 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
               />
             )}
             <span className="relative z-10">{period.label}</span>
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -114,13 +117,14 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
                 className="glass-input px-3 py-2 text-sm"
                 style={{ width: "auto", minHeight: 40 }}
               />
-              <button
+              <Button
+                variant="unstyled"
                 onClick={handleApply}
                 disabled={!customFrom || !customTo}
                 className="aurora-btn aurora-btn--gold px-4 py-2 text-sm rounded-[var(--radius-md)] font-[family-name:var(--font-ui)] font-semibold min-h-[44px] text-[var(--color-abyss)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="relative z-10">Aplicar</span>
-              </button>
+              </Button>
             </div>
             {dateError && (
               <motion.p

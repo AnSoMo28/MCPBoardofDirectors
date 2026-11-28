@@ -13,6 +13,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useRef } from "react";
+import './MarbleBackground.css';
 
 interface VeinDef {
   d: string;
@@ -164,7 +165,7 @@ export default function MarbleBackground() {
 
   return (
     <svg
-      className="absolute inset-0 z-0 w-full h-full"
+      className="marble-background absolute inset-0 z-0 w-full h-full"
       viewBox="0 0 280 900"
       preserveAspectRatio="xMidYMid slice"
       xmlns="http://www.w3.org/2000/svg"

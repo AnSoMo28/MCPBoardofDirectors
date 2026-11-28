@@ -63,6 +63,7 @@ import type { CourtUtilization_Contract } from "@/shared/mocks/contracts";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { ReservationFormModal } from "./ReservationFormModal";
 import "./CourtBookingPanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -427,14 +428,15 @@ export function CourtBookingPanel({
       {/* ── Header ── */}
       <div className="spt-booking__header">
         <h3 className="spt-booking__title">🎾 Reservaciones de Canchas</h3>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="spt-booking__new-btn"
           onClick={() => setShowForm(true)}
         >
           <Plus className="spt-booking__new-btn-icon" />
           Nueva Reserva
-        </button>
+        </Button>
       </div>
 
       {/* ── Utilization Bars ── */}

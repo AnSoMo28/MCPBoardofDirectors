@@ -246,7 +246,8 @@ function SmartSectionAdvisor({ sections, onToggle }: {
             </p>
             <div className="flex flex-wrap gap-1.5">
               {suggested.map((s) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={s.id}
                   type="button"
                   onClick={() => onToggle(s.id)}
@@ -258,7 +259,7 @@ function SmartSectionAdvisor({ sections, onToggle }: {
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-teal-400)]" />
                   {s.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -271,7 +272,8 @@ function SmartSectionAdvisor({ sections, onToggle }: {
           </p>
           <div className="flex flex-wrap gap-1.5">
             {included.map((s) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={s.id}
                 type="button"
                 onClick={() => onToggle(s.id)}
@@ -279,17 +281,18 @@ function SmartSectionAdvisor({ sections, onToggle }: {
               >
                 {s.label}
                 <span className="text-[var(--color-silver-500)]">✓</span>
-              </button>
+              </Button>
             ))}
             {available.map((s) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={s.id}
                 type="button"
                 onClick={() => onToggle(s.id)}
                 className="glass-report-section-chip"
               >
                 {s.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -316,7 +319,8 @@ function DistributionPipeline({ channels, onToggle }: {
           {channels.map((ch) => {
             const Icon = ch.icon;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={ch.id}
                 type="button"
                 onClick={() => onToggle(ch.id)}
@@ -335,7 +339,7 @@ function DistributionPipeline({ channels, onToggle }: {
                     ? <span className="text-[10px] text-[var(--color-gold-400)] font-[family-name:var(--font-mono)]">✓</span>
                     : <span className="w-3 h-3 rounded border border-white/[0.1]" />}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -541,7 +545,8 @@ export default function ReportGenerator() {
                   {REPORT_TYPES.map((rt) => {
                     const Icon = rt.icon;
                     return (
-                      <button
+                      <Button
+                        variant="unstyled"
                         key={rt.value}
                         type="button"
                         onClick={() => setReportType(rt.value)}
@@ -556,7 +561,7 @@ export default function ReportGenerator() {
                       >
                         <Icon size={14} />
                         {rt.label}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -700,14 +705,15 @@ export default function ReportGenerator() {
                       Brief Ejecutivo
                     </h3>
                   </div>
-                  <button
+                  <Button
+                    variant="unstyled"
                     type="button"
                     onClick={() => setShowBrief(false)}
                     className="text-[var(--color-silver-500)] hover:text-[var(--color-silver-200)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                     aria-label="Cerrar brief"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </div>
 
                 <p className="text-[10px] text-[var(--color-silver-500)] font-[family-name:var(--font-mono)] uppercase tracking-wider mb-3">

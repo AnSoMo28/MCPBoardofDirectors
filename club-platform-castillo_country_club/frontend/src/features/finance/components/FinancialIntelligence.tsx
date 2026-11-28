@@ -49,6 +49,7 @@ import {
   BRIEFING_SECTION_SEVERITY_CONFIG, METRIC_ASSESSMENT_CONFIG,
 } from "../types";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
+import './FinancialIntelligence.css';
 /* ══════════════════════════════════════════════════════════
    Lazy-loaded sub-features
    ══════════════════════════════════════════════════════════ */
@@ -252,7 +253,7 @@ function ConfidenceRing({
   const offset = circumference - (value / 100) * circumference;
 
   return (
-    <svg width={size} height={size} className="flex-shrink-0 -rotate-90">
+    <svg width={size} height={size} className="financial-intelligence flex-shrink-0 -rotate-90">
       <circle
         cx={size / 2} cy={size / 2} r={radius}
         fill="none" stroke="var(--color-surface-3)" strokeWidth={stroke}
@@ -387,7 +388,8 @@ function IntelTabBar({
         const Icon = tab.icon;
         const isActive = active === tab.id;
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={tab.id}
             type="button"
             role="tab"
@@ -416,7 +418,7 @@ function IntelTabBar({
             )}
             <Icon size={15} className="relative z-10 flex-shrink-0" />
             <span className="relative z-10 hidden sm:inline">{tab.label}</span>
-          </button>
+          </Button>
         );
       })}
     </nav>
@@ -950,7 +952,8 @@ function OpportunityScanner() {
               const cfg = OPPORTUNITY_CATEGORY_CONFIG[cat];
               const isActive = categoryFilter === cat;
               return (
-                <button
+                <Button
+                  variant="unstyled"
                   key={cat}
                   type="button"
                   onClick={() => setCategoryFilter(isActive ? "" : cat)}
@@ -972,7 +975,7 @@ function OpportunityScanner() {
                   <span className="font-[family-name:var(--font-mono)] text-[11px]" style={{ color: cfg?.color }}>
                     {formatCurrency(data.revenue)}
                   </span>
-                </button>
+                </Button>
               );
             })}
           </div>

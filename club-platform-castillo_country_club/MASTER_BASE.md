@@ -1,10 +1,114 @@
 # MASTER_BASE.md — Session Startup & Work Protocol
 ## Castillo Country Club · Intelligence Platform 2027
 ### Level 6+ Agency · Apple/Xiaomi Production Grade
-### Version: 7.0 · Generación G7 (sincronizada) · Date: 2026-08-12
-### Source: v2.0 + Master Self-Audit G7 (hallazgos #31-#60 → CHECKPOINT §0.1, §0.3)
+### Version: 9.38 · Generación G43 (retro vanguardia Ola 3 absorbida — RV-1 prompt_sha256 en llm_calls: deuda ADR-0009 PAGADA, el registro de costo LLM ES registro de evidencia golden · RV-2 blindaje determinista del RAG: la fusión RRF pineada como álgebra exacta y el cross-encoder por contrato, sin modelo ni red · GAP DV-001 CERRADO — Olas 5-6 ejecutables tras el gate S44 de papers) · Date: 2026-11-28
+### Source: G8 + Serie B1-B6 (504b53d: migración MCP real · 207 tools ·
+###          gate CSS post-build P0) + Self-Audit G9 (#74-#82 → CHECKPOINT §0.3)
+
+## CHANGELOG G26 (v9.20 → v9.21)
+OLA 2.1-NONA — NOVENO VERTICAL DE PERSISTENCIA REAL CERRADO
+(cultural_social — detalle completo en CHECKPOINT §3.8-NONA):
+4 tablas + CulturalSocialRepository async contrato exacto
+(23 métodos · None/[]/dict · async-FIRST drop-in — 0
+cirugía, el agente YA awaited en 48 call sites) + alembic
+0009 · run #42 VERDE @ 1d649fe a la PRIMERA (5/5 jobs ·
+persistencia 50/50 = 3+6+6+6+6+6+6+7+4 · contrato agente
+cultural_social 48/48) · SIN saga §8: lección run #39
+aplicada ANTES (ruff/mypy vertical 0 bajo el lock del CI
+en sandbox, antes del push) · pytest 892→896 · masters
+v9.21. Primera vertical con analytics agregados F31
+compute-on-read migrados byte a byte.
+
+## CHANGELOG G25 (v9.19 → v9.20)
+OLA 2.1-OCTAVA — OCTAVO VERTICAL DE PERSISTENCIA REAL CERRADO
+(communication — detalle completo en CHECKPOINT §3.8-OCTAVA):
+9 tablas + CommunicationRepository async contrato exacto
+(35 métodos · None/[]/dict · async-FIRST drop-in — 0
+cirugía, el agente YA awaited en 38 call sites) + alembic
+0008 · saga §8 como la sexta: run #39 ROJO (ruff ratchet
++37 estilo) → fix 0029 → run #40 VERDE @ ed35109 (5/5
+jobs · persistencia 46/46 = 3+6+6+6+6+6+6+7 · contrato
+agente communication 38/38) · pytest 885→892 · masters
+v9.20.
+
+## CHANGELOG G24 (v9.18 → v9.19)
+OLA 2.1-SEPTIMA — SÉPTIMO VERTICAL DE PERSISTENCIA REAL CERRADO
+(satisfaction — detalle completo en CHECKPOINT §3.8-SEPTIMA):
+3 tablas (satisfaction_surveys · satisfaction_reports ·
+satisfaction_event_metadata) + SatisfactionRepository async
+contrato exacto (10 métodos · None/[]/dict · async-FIRST
+drop-in — 0 cirugía, el agente YA awaited) + alembic 0007 ·
+metadata del dataset demo A TABLA (criterio 0011) · CI run #37
+VERDE @ fb02cd5 (5/5 jobs · persistencia 39/39 = 3+6+6+6+6+6+6
+· contrato agente 21/21) · pytest 879→885 · masters v9.19.
+
+## CHANGELOG G23 (v9.17 → v9.18)
+OLA 2.1-QUINQUA + OLA 2.1-SEXTA — QUINTO Y SEXTO VERTICAL DE
+PERSISTENCIA REAL CERRADOS (compliance + guest_management —
+detalle completo en CHECKPOINT §3.8-QUINQUE y §3.8-SEXTA):
+compliance: 3 tablas + ComplianceRepository async contrato
+exacto + MIGRACIÓN ASYNC del dominio (8 awaits agente · 14
+async in-memory) + alembic 0005 · CI run #32 VERDE @ e9a77dd
+(5/5 jobs · persistencia 27/27). guest_management: 4 tablas +
+GuestManagementRepository async 18 métodos contrato exacto
+(async-FIRST drop-in — 0 cirugía) + alembic 0006 · CI run #33
+ROJO (única falla: perf test PRE-EXISTENTE de frontend — regla
+§8 → fix 0023) → run #34 VERDE @ fdb2054 · persistencia 33/33
+(3+6+6+6+6+6) · pytest 867→879 · masters v9.18.
+
+## CHANGELOG G22 (v9.16 → v9.17)
+
+```
+OLA 2.2 — CUARTO VERTICAL DE PERSISTENCIA REAL CERRADO en
+event (detalle completo en CHECKPOINT changelog G22):
+4 tablas (events · event_rsvps · event_vendors ·
+event_program_items) + EventRepository async contrato exacto
+(25 métodos · read-path re-construye enums — lección run #28) +
+MIGRACIÓN ASYNC del dominio (25 async in-memory · 35 awaits
+agente) + alembic 0004 · swap opt-in 4º repo · suite
+persistencia 21 (3+6+6+6) · CI run #29 VERDE @ d532355 (5/5
+jobs, verificado vía API) · pytest 861→867 · ruff 1277 (bajo
+ratchet) · mypy 733 (re-baseline 735→733 same-PR) · masters
+v9.17.
+```
+
+## CHANGELOG G21 (v9.15 → v9.16)
+
+```
+OLA 2.1-TRIS — TERCER VERTICAL DE PERSISTENCIA REAL CERRADO en
+member_engagement (detalle completo en CHECKPOINT changelog G21):
+5 tablas (engagement_profiles · reactivation_campaigns ·
+loyalty_rewards · member_feedback · referrals) + MemberEngagement-
+Repository async contrato exacto (21 métodos) + alembic 0003 ·
+swap opt-in junto a family · suite persistencia 15 (3+6+6) ·
+CI runs #24/#25 VERDES @ 4b16c4b (verificado desde afuera) ·
+pytest 855→861 · ruff 1260 · mypy 733 (estables) · masters v9.16.
+```
 
 ---
+
+## CHANGELOG G20 (v9.14 → v9.15)
+
+```
+OLA 2.1-BIS — SEGUNDO VERTICAL DE PERSISTENCIA REAL CERRADO en
+family (detalle completo en CHECKPOINT changelog G20): errata
+G19.1 ("17→18 repos") · tablas families+members (JSONB) + repo
+async contrato exacto + alembic 0002 · swap opt-in por
+CLUB_PERSISTENCE_URL · dataset demo UNA fuente · suite 6 tests ·
+run #19 ROJO cerrado por 0012 (ruff 1260 · mypy 733 — ambos
+BAJAN) · pytest 849→855 · masters v9.15.
+```
+
+## CHANGELOG G19 (v9.13 → v9.14)
+
+```
+OLA 2.1 — PRIMER VERTICAL DE PERSISTENCIA REAL (PATH 2.1) CERRADO
+en auth (detalle completo en CHECKPOINT changelog G19): db/orm/
+esqueleto · tabla users + alembic 0001 · UserRepository · login
+persistente con fallback dev · seed CLI idempotente · CI con
+pgvector real + paso persistence · 2 fixes de CI (2.1e aiosqlite
+dev · 2.1f suite re-runnable) · pytest 846→849 · masters v9.14.
+```
 
 ## CHANGELOG G7 (v2.0 → v7.0)
 
@@ -44,6 +148,487 @@ CONTENIDO:
 - §9: absorbe el protocolo de sesión completo (fuente canónica única).
 - §9.1: mapa completo — añadidos §7, §0.3, CHECKPOINT §0.3, CHECKLIST §16.3.
 - §10: masters pre-G7 añadidos a fuentes deprecadas.
+```
+
+---
+
+## CHANGELOG G8 (v7.0 → v8.0)
+
+```
+CONTEXTO: los masters G7 quedaron congelados en 2026-08-12 (FASE 2 Events
+30%); el repo avanzó 28 commits hasta 2026-11-07 (G28-G37, Bld1-6, perf,
+P2-C1..C3h completa, gate B0 VERDE). G8 absorbe esa historia (#61) y
+re-sincroniza la capa documental con la realidad ejecutable.
+
+ESTRUCTURA:
+- Sin secciones nuevas de protocolo: §4/§5 intactos. Lo nuevo es ESTADO
+  (CHECKPOINT §3.6/§14/§15) y DATOS (manifest §16, BASE §6.1).
+- Versionado sincronizado G8 = v8.0 en los 3 masters (regla §0.3 intacta).
+
+CONTENIDO:
+- §4.3: "✗ Change backend API contracts" → boundary refinado: el backend
+  está bajo auditoría P2-C3 desde 2026-10 con gate EJECUTABLE (#65).
+- §6.1: backend re-contado contra el árbol real (104 .py src · 19 agentes
+  · 196 tools · 27 test files/785 tests) — "NO SE TOCA"/"22 agents" era
+  stale (#65/#69); tools/ y scripts/ a versiones reales (manifest v3.4.0,
+  VI v3.2.0 — regresión 290afa4 restaurada #62; #73: verify-master-
+  consistency.py citado en G7 NO existe → cola Q-GOV-04).
+- §9: paso 7 nuevo — sesiones que tocan backend usan gates ejecutables
+  (smoke_b0 + pytest), no los checklists A-J.
+- §9.1: filas nuevas (CHECKPOINT §15 cola · manifest §16 backend ·
+  CHECKPOINT §3.6/§14 estado P2-C3).
+- §10: masters G7 añadidos a fuentes deprecadas (misma mecánica que G7
+  hizo con los pre-G7).
+- §0.3: ejemplo de generación actualizado a G8.
+```
+
+---
+
+## CHANGELOG G16 (v9.11 → v9.12)
+
+```
+CIERRE DE LA ÚLTIMA ANOMALÍA DEL RUN #10: mypy reportó 735 contra
+baseline 737 — nadie tocó Python en G15/G15.1, y una deuda que baja
+sola no es regalo, es pregunta. Medición forense (uv sync --frozen
+--extra dev, lock mypy 2.1.0, 4 commits):
+  · 9dd4270 → 735 · 62a5f40 → 735 · 03dc0bd → 735 · 741e0a4 → 735
+  · diff Python 741e0a4→9dd4270 (src/pyproject/lock) = VACÍO
+  · uvx mypy 2.4.1 (latest sin lock) → 828 en 81 files
+CONCLUSIÓN: 737 nunca fue reproducible bajo el lock. La atribución
+del comentario G12.1 ("735 era deriva de uvx-latest") estaba
+INVERTIDA: 735 es la cifra estable del lock; 828 es la deriva
+real de uvx-latest. El 737 original salió de un venv de máquina
+local (mypy pre-instalado ≠ lock) en la medición G12.1.
+IMPACTO: el ratchet era VÁLIDO (prohibir subir) pero con 2 unidades
+de ventana muerta — 735/736 pasaban sin ser jamás el valor real.
+Re-baseline 737→735 (bajar el piso SIEMPRE es bienvenido):
+run #11 en adelante la cifra CI = la cifra del lock, sin colchón.
+Estado de deuda post-G16: vitest 0/470 · guardian 15146 · eslint
+1583 · ruff 1292 · mypy 735 — 5/5 medidas bajo sus locks exactos,
+0 ventanas muertas.
+END: masters v9.12.
+```
+
+## CHANGELOG G15.1 (v9.10 → v9.11)
+
+```
+FIX DEL PROPIO GUARDIA (run #9 · 1137dce): 470/470 PASÓ y el ratchet
+lo mató igual — con 0 fails vitest OMITE la palabra "failed" del
+summary ("Tests 470 passed (470)") → el regex viejo 'Tests +N failed'
+no matcheaba → "no pude extraer" → rojo por ÉXITO. El guardia no
+distinguía "log sin resumen" (ceguera real) de "resumen sin fails"
+(el estado perfecto).
+- EXTRACTOR DE 3 ESTADOS: fails N (rojo con "N failed | M passed") ·
+  fails 0 (verde: summary presente sin la palabra) · SIN summary
+  (ciego real → "::error:: ratchet CIEGO prohibido" → rojo).
+- NUEVO RATCHET DE TOTAL (fails ≤ 0 AND total ≥ floor=470): sin él,
+  borrar tests bajaba fails a 0 y el ratchet de deuda aplaudiría — el
+  CI perdió 464 tests así en la era pre-Q-CI-05 (818→27→470). Crecer
+  la suite = subir el floor mismo-PR; encogerla = justificación
+  escrita en ci-baseline.json.
+- DRY-RUNES REALES ×4 FORMAS (verde real · rojo viejo 7 fails ·
+  ciego · encogido 12) — la 1ª iteración del regex del total NO
+  matcheaba '7 failed | 463 passed (470)' (separador '|'): cazado por
+  el dry-run, no por mi lectura. El dry-run teatral de G15 (R=0 a
+  mano) es la razón de que run #9 muriera: esta vez los 4 fixtures
+  corren contra el paso textual del ci.yml.
+- CIFRAS POST-G15 (run #10 no depende de ellas): guardian 15146 =
+  baseline · eslint 1583 = baseline — los 6 tests editados viven en
+  src/ y no movieron ninguna aguja.
+- LANDMINES ANÁLOGOS DOCUMENTADOS (no urgentes — hoy imposibles con
+  deuda > 0): ruff limpio imprime 'All checks passed!' (sin 'Found N
+  errors') · mypy limpio imprime 'Success: ...' · eslint limpio no
+  imprime línea de resumen. Cuando esa deuda llegue a 0, el mismo
+  patrón de 3 estados aplica.
+- END: masters v9.11; la saga CI queda: ratchets honestos (Q-CI-05)
+  → deuda suite en 0 (G15) → extractor inmune al éxito (G15.1).
+```
+
+## CHANGELOG G15 (v9.9 → v9.10)
+
+```
+CIERRE DE LA DEUDA #G10-1 (vitest 6 fails — visible por primera vez
+gracias a Q-CI-05: el gate ciego reportaba fails=0 desde G10):
+- FORENSE: los 6 fails NO eran bugs de src — eran tests stale vs el
+  refactor de features guests/lib PRE-e15068e (nunca re-sincronizados).
+  El src es correcto en los 6 casos; corregido el lado tests con
+  evidencia por caso (comentarios G15 en cada test):
+  C1 conversionChemistry 88→86: el COMENTARIO del test calculaba mal
+     (min(100,6·15)=90 no 100 → 86.25→86; verificado con código).
+  C2 guestIntelligence 69.4→69: label 'hot' se contradecía con el
+     propio comentario (69 < threshold 70) → warm.
+  C3 guestMemory strength 15: mock con interactions:[] pero
+     totalVisits:12 → loyalty bonus (+15) legítimo del src → mock
+     ahora totalVisits:0.
+  C4 pipelineEcosystem quickWins 5: mock tocaba stage
+     'converted_member' (inexistente — es 'converted') en vez de
+     'ready', de donde nacen los quickWins (pipelineEcosystem.ts:143).
+  C5 trialNarrative 'conversión': purpose real del src es
+     'Evaluar disposición a convertirse en miembro'.
+  C6 trialNarrative +15 callbacks: el makeMemory default trae
+     topicPatterns con avgSentiment>0 → +15+15=+30; aislado con
+     topicPatterns:[].
+- BONUS G15 (el 7º, solo visible en sandbox): check3 e2e flakeaba por
+  timeout — spawn de npx tsx (compila TS en frío) bajo 8 workers
+  paralelos excede el default 5000ms (673ms aislado, ~1886ms runner)
+  → timeout 30000 explícito.
+- RE-BASELINE HONESTO mismo-PR: ci-baseline.json vitest_fails 6→0.
+  El ratchet ahora exige 0: cualquier fail nuevo = ROJO directo.
+- VERIFICACIÓN: 470/470 × 2 corridas sandbox (flake descartado) ·
+  ratchet vitest con fails=0 vs baseline=0 en el próximo run.
+- END: masters v9.10; deuda #G10-1 CERRADA — la suite frontend pasa
+  completa por primera vez desde e15068e; Q-CI-05 ya no tiene deuda
+  que desenmascarar (guardian/eslint/ruff/mypy son las colas vivas).
+```
+
+## CHANGELOG Q-CI-05 (v9.8 → v9.9)
+
+```
+RATCHETS QUE MUERDEN (forense del run #7 — el verde enmascaraba):
+- BUG (a) guardian no-op: el grep matcheaba DOS líneas (header
+  "files: 1270 · errors: 15146" + summary "  errors: 15146") → ERRS
+  multilinea → "[ integer expected" (exit 2) → if falso → nunca
+  bloqueó. Prueba en el propio log del run #7 (línea del runner).
+- BUG (b) vitest ciego: en el runner el resumen llega con ANSI +
+  \r intra-línea → grep lo trata binario → "|| echo 0" → fails=0
+  SIEMPRE (6 reales reportados como 0). Reproducido sandbox (E1).
+- BUG (c) de diseño: "|| echo 0" = extracción fallida → 0 ≤
+  baseline → verde garantizado. Un ratchet que no puede fallar la
+  lectura no es un ratchet. ELIMINADO en los 5.
+- FIX: strip ANSI (sed) + strip \r (tr) + patrón anclado a la línea
+  del summary + head -1 (ERRS escalar SIEMPRE) + extracción
+  OBLIGATORIA ("ratchet CIEGO prohibido" → exit 1 rojo).
+  Validado con logs reales sandbox: 6/6 extracciones exactas
+  (vitest 6 · guardian 15146 · eslint 1583 · ruff 1292 · mypy 735
+  — este último vivo-bajo-lock) + mordida negativa probada
+  (baseline fingido 15140 < 15146 real → exit 1) + no-op
+  pre-fix reproducido (exit 2 del "[").
+- eslint/ruff/mypy extraían bien pero heredaban el (c): mismo
+  contrato para los 5. El de ruff además extraía "problems" si el
+  resumen movía cifras — anclado "\(N errors".
+- END: masters v9.9; Q-CI-05 CERRADO — los 5 ratchets del CI ya
+  comparan números reales; estado vivo = verde que muerde.
+```
+
+## CHANGELOG G13-G14 (v9.7 → v9.8)
+
+```
+ABSORCIÓN RETROSPECTIVA G13/G14 (deuda §0.3 "sin reflejo en masters"):
+- HALLAZGO FORENSE: los 4 commits ya son ancestros de la rama —
+  G13-A 4c21125 (guardian 4.1.2 · AG-29 X-16 α/β/γ) · G13-B eda7b3d
+  (158 mirrors X-16 escritos + revert de las 4 duplicadas de G11 ·
+  err 15740→15303) · G14-A 47e9d9c (guardian 4.1.3 · AG-30 X-28
+  token-boundary · 109/111 FP · err 15303→15194) · G14-B 4df8a9c
+  (M-01-T3: 25 promociones con evidencia sandbox · J-07 490→187 ·
+  verified 580→883 · manifest 3.6.1→3.7.0). Aplicados sobre
+  ca2454b (G12-registry) y seguidos por 17 generaciones de la saga
+  B2→B6→G9→G12.1 — por eso X-16 = 0 y TOOL_VERSION 4.1.3 hoy.
+  Los parches sandbox de download/g13/ quedan OBSOLETOS (0 aplican
+  al árbol — mapeado dry-run: drift manifest 3.6.0/3.7.0).
+- CIFRAS VIVAS (medidas 2026-11-13 en el árbol exacto 94d965d,
+  sandbox Linux, byte-reproducible — mismo número que el CI run #6):
+  guardian 4.1.3: 15146 err · 14553 warn · auto-fixable 0 · score 8.2
+  (X-16 = 0 · X-13 8927 · X-26 5249 dominan la deuda restante) ·
+  validator 4.0.0: 9.89 · 0 err · J-07 187 · verified 883 · below 15
+  (worst: ExecutiveDashboard 7.5 · router 8.75 · AISystemPage 8.75) ·
+  VI 3.3.0: ALL CLEAR (exit 0 · 806 ts/tsx · 464 css · 105 py).
+- X-16 = 0 CONFIRMADO por medición directa del detector corregido
+  (α: fixer prev OR next · β: ventana bidireccional value-aware ·
+  γ: autoFixable veraz vía X16_BARE_DECL compartida).
+- BASELINE CI (guardian_errors 15198 → 15146): re-baseline honesto
+  mismo-PR — 15198 era pre-G13/G14; 15146 es el número del CI verde
+  run #6 y de esta medición. El ratchet baja el piso de nuevo.
+- END: masters v9.8; G13/G14 ABSORBIDOS (código ya estaba; la deuda
+  era documental); estado vivo = código ↔ masters ↔ CI alineados.
+```
+
+## CHANGELOG G12.1-cierre (v9.6 → v9.7)
+
+CIERRE REAL: CI VERDE EN ACTIONS (Q-CI-02→04 · runs #1→#5):
+
+RUN #1 @ f1e7cfc ROJO (job frontend, paso install): pnpm 9 — la
+versión que pinnea el CI — adopta frontend/pnpm-workspace.yaml
+como workspace-root y exige el campo packages:; sin él,
+pnpm install --frozen-lockfile muere ("packages field missing
+or empty"). FIX Q-CI-02 (910c003 + 741e0a4): packages: - .
+(workspace de un solo paquete; el lock 9.0 ya es formato
+importers — frozen sigue válido) + re-baseline honesto mypy
+735→737 bajo lock (735 era medición uvx-latest; delta G12 = 0,
+mismo criterio que ruff 1288→1292 de v9.6).
+RUN #3 @ 741e0a4 (2 verdes / 2 rojos — los rojos eran del PROPIO
+workflow, no del código): frontend ✓ y consistency ✓ (ratchets
+aguantaron: 6≤6 · 15198≤15198 · ≤1583) · ci-summary ✗: heredaba
+defaults.run.working-directory del nivel workflow pero NO hace
+checkout → bash ni arrancaba ("No such file or directory") ·
+backend ✗ sin paso visible. FIX Q-CI-03 (41695fa): defaults
+bajados a nivel job (solo donde se usan) · ci-summary sin checkout
+ni defaults (corre en raíz) · uv pip install -e . eliminado
+(redundante con uv sync, nunca validado en sandbox) → uv sync --frozen (lock commiteado exacto; hatchling instala el proyecto
+editable).
+RUN #4 @ 41695fa: backend ✗ con 827/827 PASADOS — pytest 9 (plugin
+unraisableexception) promueve a error de sesión 3 ResourceWarnings
+del teardown Linux (2 sockets AF_UNIX + 1 event loop sin cerrar —
+transports de tests) → exit 1 pese al verde; Windows no tiene
+AF_UNIX (por eso los gates locales eran verdes) y el sandbox no
+lo disparó (timing de GC). FIX Q-CI-04 (2e9210f): -p no:unraisableexception solo en la invocación de CI — el signal
+827-passed queda intacto; higiene de cierre de transports =
+deuda cosmética registrada.
+RUN #5 @ 2e9210f: CI VERDE — 4/4 jobs en Actions: consistency 13/13
+· frontend (gates duros + ratchets) · backend 827 passed + smoke
+B0 VERDE (19 agentes · 207 tools — primera vez en CI real) +
+ruff 1292=baseline + mypy 737=baseline · verdict "CI VERDE —
+gates duros ✓ ratchets ✓". Las ~16 anotaciones del panel son la
+deuda congelada VISIBLE en cada run verde (6 vitest, 10
+eslint/log-auditor + warnings Node 20) — el diseño, no fallos.
+SANIDAD: de-dup del - . duplicado en pnpm-workspace.yaml
+(colateral del sed de Q-CI-02 — pnpm 9 lo toleraba, igual
+limpiado) · retiro de Antiguosparaconsulta/ (~90 archivos de
+consulta vieja, fuera del scope del checker; recuperables en
+historia: git show <sha>:Antiguosparaconsulta/...).
+END: masters v9.7; G12.1 CERRADO con CI VERDE real en Actions
+(run #5 @ 2e9210f); el ratchet de deuda queda armado y visible.
+
+## CHANGELOG G12.1 (v9.5 → v9.6)
+
+```
+CORRECCIÓN DE ENTREGA G12 — CI REAL + DETERMINISMO (Q-CI-01 raíz):
+- HALLAZGO P0 (Q-CI-01 bis): el workflow vivía ANIDADO en
+  club-platform-castillo_country_club/.github/workflows/ — GitHub
+  Actions SOLO descubre workflows en .github/workflows/ de la RAÍZ.
+  Consecuencia medida: 0 corridas de Actions en TODA la historia del
+  repo (el push a165339 de G12 nunca disparó nada; la "corrida CI
+  verde" de G10-G12 era sandbox). Los masters ya documentaban
+  `.github/workflows/ci.yml` — el árbol estaba desincronizado con su
+  propia documentación. FIX: workflow movido a raíz (rename tracked).
+- HALLAZGO P1 (determinismo): ratchets corrían ruff/mypy por
+  `uvx`/pip-LATEST (baseline 1288/735 medido así) mientras el uv.lock
+  pinea ruff 0.15.12/mypy 2.1.0 → conteos del día: 1292/737 → ROJO
+  por deriva de versión, no por deuda. FIX: `uv run ruff`/`uv run
+  mypy` (lock) + re-baseline honesto ruff 1288→1292 (delta G12 = 0
+  verificado en ambos árboles con ambos pares de versiones).
+- HALLAZGO P2 (corregido): la serie G12.1 midió +2 mypy NETOS contra
+  una reconstrucción sandbox desactualizada (sin Protocol) — FALSO
+  POSITIVO: el árbol real a165339 YA traía ClaudeServiceLike (v3, 3
+  métodos) y mide 735 = baseline exacto. FIX real de G12.1: Protocol
+  completado 3→7 métodos públicos (unión de los 4 delegados vía
+  __getattr__, hoy visibles para mypy) + builder tipado contra el
+  Protocol (TYPE_CHECKING, sin ciclo).
+- SANIDAD: de-dup del changelog G12 en CHECKLIST (encabezado
+  duplicado defecto del 0002) · 'pytest 818'→'827' en job backend.
+- VERIFICACIÓN (sandbox, árbol exacto del parche): 13/13 consistency
+  · 827 passed · smoke B0 VERDE · ruff 1292 = baseline · mypy 735 =
+  baseline — los 4 gates duros + 2 ratchets del job backend verdes.
+- END: masters v9.6; Q-CI-01 CERRADO DE VERDAD (visible a Actions);
+  protocolo intacto (regla G8/G9).
+```
+
+## CHANGELOG G12 (v9.4 → v9.5)
+
+```
+RESILIENCIA LLM PRODUCTION-GRADE — Q-LLM-01/02 (cola §15 P2):
+- NUEVO src/club_mcp/ai/resilience.py (467L):
+  · ResilientClaudeService — proxy de ClaudeService (misma interfaz,
+    6 consumidores sin cambio de firma): retry exponencial 2^n con jitter
+    completo, timeout por intento (asyncio.wait_for), circuit breaker
+    CLOSED/OPEN/HALF_OPEN con ventana deslizante (asyncio.Lock, sin deps
+    nuevas), fallback a Ollama.
+  · Q-LLM-01 cerrado de verdad: el setting ollama_host/ollama_fast_model
+    (fantasma desde el inicio) SE CONSUME al degradar — respuesta marcada
+    degraded + provider_error (degradación honesta, nunca silenciosa).
+  · TokenUsageLedger (Q-LLM-02 contorno): accounting por día de proceso,
+    budget diario configurable, WARNING 80% / CRITICAL 95%, señal
+    budget_alert en la respuesta + log. Persistencia real llega con
+    Q-PER-01 (PostgreSQL) — no se duplica infra a medias.
+- WIRING (sin scope creep): bootstrap.build_runtime (envuelve la instancia
+  central) · get_claude_service singleton · cultural_social_agent default.
+  RAGService ya recibía la inyectada — cero cambios de consumidor.
+- TESTS: tests/unit/ai/test_resilience.py — 9/9 (retry con recuperación
+  transitoria, no-retryable corta en 1 intento, breaker OPEN no toca red,
+  HALF_OPEN→CLOSED, fallback Ollama con MockTransport, ledger 80/95%,
+  invarianza de contrato generate_json/chat) · suite nueva = 30º archivo
+  de tests (unit/ai/) — sandbox: 779 passed + 48 errors por deps pesadas
+  (chromadb) IDÉNTICOS con y sin el diff (0 regresión) · CI con deps
+  completas corre 827 (818 + 9 nuevas).
+- LINT: ruff+mypy — 0 errores NUEVOS; baseline pre-existente documentado
+  (claude_service 74 mypy / bootstrap 4 ruff / cultural 8 ruff — iguales
+  en 3fe481c, fuera de scope de este commit).
+- Decisiones de diseño: resiliencia en la CAPA DE TRANSPORTE (no try/except
+  regados por método) · composition sobre herencia (proxy) · anthropic SDK
+  ya reintenta 429/5xx internamente — esta capa cubre timeout de red,
+  degradación y presupuesto.
+- END: masters v9.5; Q-LLM-01 CERRADO · Q-LLM-02 contorno (persistencia
+  → Q-PER-01) · protocolo intacto.
+```
+
+---
+
+## CHANGELOG G11 (v9.3 → v9.4)
+
+```
+DESACOPLAMIENTO PAGE-CSS — COLA §15 CERRADA (TRAMO 3 FINAL):
+- ENGINE de extracción atómica (scripts/g11_engine.py): parser css con
+  stash de comentarios (bug P0 corregido: los comentarios de sección
+  '/* ═ X ═ */' contaminaban preludes y 122 reglas se perdían silencio-
+  samente — detectado por validación de paridad antes==después),
+  atribución de regla→dueño en 3 niveles (censo exacto de clases del
+  tsx → prefijo de sub-familia → bloque raíz), split de grupos
+  multiselector (.light de 7 miembros → 1 regla por hijo, paridad visual
+  garantizada), keyframes compartidos quedan en host, exclusivos viajan
+  con su dueño.
+- 36 PAREJAS 1:1 NUEVAS (mi-club 10 · settings 6 · board 5 · knowledge
+  4 · risk 3 · approvals 2 · ai-system 2 · auth 2 · timeline 2 · hitl
+  1) — 684 reglas atómicas movidas byte-exactas.
+- 10 HOSTS PODADOS con banner documental (qué se extrajo, a dónde,
+  qué conserva: root/grids/headers/skeletons/Shared ≥2 hijos).
+- Cirugía tsx: import JS real "./X.css" (antes dependían del import
+  del host — acoplamiento invisible) + javadoc @depends/@import propio.
+- CAPA A11Y ADITIVA en los 36 css nuevos: :focus-visible (WCAG 2.2 AA
+  2.4.7) donde faltaba + prefers-reduced-motion (anti-demanda §
+  inclusividad) — sin tocar las reglas movidas (paridad intacta).
+- FEATURE-SHEETS documentadas por diseño (no acoplamiento): PrintView
+  (suite print), MyReservations (G10.2), FamilyAccountGlass (6 widgets),
+  LivingCommandCenter, ml-glass, PermissionGate, DocumentRepository,
+  PulseRadar, NeonBorder.
+- VALIDACIÓN: 0 reglas perdidas (paridad canónica núcleo) · 0 huérfanos
+  reales (321 clases OK · 15 dinámicas · 1 pre-existente Tailwind) ·
+  X-13: 0 colores NUEVOS (delta contador = split de grupos .light
+  pre-existentes, mismos valores distribuidos) · keyframes íntegros
+  (2 muertos PRE-EXISTENTES descartados: board-section-expand sin uso,
+  documentado) · EOL lf · imports 36/36 resuelven.
+- ESTADO FINAL CSS: 453/483 tsx con pareja css directa · 7 no-UI
+  documentados · 23 feature-sheets legítimas · cola §15 CERRADA.
+- MIGRACIÓN CSS 3 TRAMOS: G10.1 T1 (78 parejas) + G10.2 T2 (P0
+  MyReservations) + G11 T3 (desacoplamiento) = COMPLETA.
+- Gates estáticos sandbox: todos ✓. CI a re-correr en merge (build,
+  verify:build-css bundle +~30kB esperado por 36 css nuevos, vitest
+  baseline 6, guardian ratchet ≤15198: X-13 delta 0 real).
+- END: masters v9.4; protocolo intacto.
+```
+
+---
+
+## CHANGELOG G10.2 (v9.2 → v9.3)
+
+```
+MIGRACIÓN CSS TRAMO 2 — CIERRE P0 (auditoría post-T1):
+- P0 RESUELTO: MyReservations.css estaba VACÍO desde Fase 25 — 5 tsx
+  (MyReservations, TodayHero, DayTimeline, ReservationCard,
+  RebookSuggestion) referenciaban 36 selectores .glass-reservations__*
+  inexistentes (página renderizada sin estilos). Hoja completada:
+  607 líneas · 36+8 selectores · countdown normal/warning/urgent ·
+  day-timeline proporcional con "now" indicator · cards con date block ·
+  rebook suggestion dashed · 2 keyframes únicos prefijados
+  (glass-reservations-hero-in, glass-reservations-countdown-pulse) ·
+  tokens var() silver/surface/gold/teal/rose · .light overrides ·
+  prefers-reduced-motion · focus-visible · X-13 en css nuevo: 0.
+- AUDITORÍA T2 (66 tsx sin pareja 1:1 restantes): 7 no-UI documentados
+  (providers/router/RoleRedirect/ProtectedRoute/usePermissionContext/
+  highlight/main) · 28 cubiertos por page-css compartido (acoplamiento
+  documentado — cola G11 §15) · glass-ai__awareness/section 100%
+  cubiertos en AISystemPage.css (31 selectores verificados) ·
+  ApprovalCard countdown--normal/warning/urgent cubiertos ·
+  FamilyAccountGlass status-overdue/delinquent/past_due cubiertos.
+- Fix quirúrgico: .glass-hitl__btn-reject-text (HitlCard) faltante en
+  HitlQueue.css — 1 selector + 7 líneas, cero colores crudos nuevos.
+- Guardian: ratchet intacto (css nuevo X-13=0; los 77 pre-existentes de
+  HitlQueue.css cuentan en baseline 15198 — no se tocan).
+- Totales parejas tras G10.1+G10.2: 417/423 tsx visuales con css
+  (99%) · gap residual = acoplamiento page-css, plan G11.
+- Gates estáticos sandbox: selectores 36/36 cubiertos · tokens 25/25
+  existentes en globals.css · keyframes únicos · EOL lf.
+- END: masters v9.3; protocolo intacto.
+```
+
+---
+
+## CHANGELOG G10.1 (v9.1 → v9.2)
+
+```
+MIGRACIÓN CSS TRAMO 1 — PAREJA tsx↔css COMPLETA (78/144):
+- 78 css NUEVOS de alta calidad (12 arquetipos × 7 dominios semánticos,
+  122 keyframes con nombre único — 0 duplicados): banner aurora-sweep,
+  gauge ring-draw, modal settle físico, panel stagger-oleada, calendar
+  today-breathe, control select-pop, chart grow-in, cards aura-hover,
+  chrome ember, state float+skeleton, page rise, print-doc b/n.
+  Todos: tokens var() de globals.css · .light overrides ·
+  prefers-reduced-motion · focus-visible. CERO rgba/hex/concat crudos
+  (color-mix con var(--token) — X-13 en css nuevos: 0).
+- tsx wiring quirúrgico: import './X.css' + clase raíz (2 cambios por
+  archivo). Casos especiales resueltos: banners delegantes (clase via
+  layerConfig), DashboardCanvas (canvas), App (shell body::before),
+  print-docs sin imports (import añadido).
+- Guardian: 15198 → 15124 (BAJA 74 — ratchet-down, no up).
+- 5 archivos NO llevan css por diseño: providers/router/RoleRedirect/
+  usePermissionContext/highlight (no visuales) — documentado.
+- TRAMO 2 en cola §15: 61 tsx que importan css de OTRO archivo
+  (acoplamiento) — desacoplar en G11.
+- Gates: build 18.7s ✓ · verify-build-css ✓ (bundle 206903→219587B
+  +12.7kB real animado) · VI ALL CLEAR ✓ · tsc -b ✓ ·
+  consistency 13/13 ✓ · vitest 6 (=baseline, ratchet intacto).
+- END: masters v9.2; protocolo intacto.
+```
+
+---
+
+## CHANGELOG G10 (v9.0 → v9.1)
+
+```
+OLA 0 — BLINDAJE (PATH NEXT-STEPS-2027) CERRADA:
+- .github/workflows/ci.yml (Q-CI-01→04 ✓ + run #5 VERDE · cierre G12.1 — RAÍZ: anidado era
+  invisible a Actions, 0 corridas históricas): 4 jobs — consistency ·
+  frontend (build+verify-build-css+VI+vitest/guardian/eslint ratchet) ·
+  backend (uv sync+pytest 827+smoke+ruff/mypy ratchet por uv.lock) ·
+  ci-summary.
+  Estrategia: GATES DUROS bloquean (hoy verdes) · DEUDA CONGELADA en
+  backend/docs/evidence/ci-baseline.json (ratchet: subir = ROJO,
+  bajar = bienvenida). Greps del ratchet VALIDADOS contra logs reales.
+- scripts/verify-master-consistency.py v1.0.0 (Q-GOV-04 ✗→✓,
+  citado inexistente desde G7 #73 — YA EXISTE): MC-01..09
+  (masters↔manifest↔tools) + IG-01..04 (BACKEND_REGISTRY §16 vs AST
+  del árbol). 13/13 VERDE exit 0 · MUTATION-TESTED. En CI y pre-commit.
+  Primer run cazó 2 drifts REALES: verify-build-css sin TOOL_VERSION
+  const (agregada) y mcp-router/advisor-engine headers v2.0 vs
+  VERSION_SYNC 2.1.0 desde G8 (bump v2.1) — el checker se pagó solo
+  el día 1 (lección #77: VERSION_SYNC ya tiene enforcement).
+- .pre-commit-config.yaml + .githooks/ (Q-CI-02 ✗→✓): 9 hooks;
+  guardian-ratchet y css-token-boundary TESTEADOS (exit 0). El
+  `pnpm run precommit` decorativo ahora es real (pre-commit install).
+- Evidencia (Q-MSC-04 ✗→✓): 27 .txt/json de trabajo → docs/evidence/
+  (26 en club + 1 en backend; raíz y backend/ limpios).
+- DECISION-0006 (Intelligence as Code, propuesta del socio): núcleo
+  ADOPTADO como olas 5-6 del PATH (ai.manifest+AI Guardian slice+red
+  team+evals business); reorganización de dirs ARCHIVADA con criterio
+  objetivo. El consistency checker YA ES el primer slice del AI
+  Guardian (AG-01/03 aplicado a la capa documental). Doc: docs/
+  decisions/DECISION-0006-IAC.md.
+- DEUDA QUANTIFICADA (baseline congelado, §15): vitest 6 · guardian
+  15198 · eslint 1583 · ruff 1292 (892 autofixables — re-baseline
+  G12.1: 1288 era deriva de uvx-latest; delta G12 = 0) · mypy strict 737 (re-baseline Q-CI-02: 735 era uvx-latest; bajo lock 2.1.0 = 737, delta G12 = 0).
+  Existía ANTES de e15068e; la CI la vuelve visible y ratcheteable.
+- END: masters v9.1; protocolo intacto (regla G8/G9).
+```
+
+---
+
+## CHANGELOG G9 (v8.0 → v9.0)
+
+```
+CONTEXTO: G8 quedó en 2026-11-08 (e15068e); el repo avanzó 14 commits
+hasta 2026-11-11 (504b53d): B1-B4 (migración MCP real + adapters/aliases),
+B5-B6 (frontend: raw buttons→primitives 635→0, VI v3.3.0, gate CSS P0).
+G9 absorbe esa historia y re-sincroniza masters + manifest (0004).
+
+ESTRUCTURA:
+- Sin cambios de protocolo (§4/§5/§9 intactos — regla G8: lo que
+  cambia es ESTADO y DATOS). Versionado sincronizado G9 = v9.0.
+
+CONTENIDO:
+- §6.1 tools/: manifest v3.8.0 (BACKEND_REGISTRY re-AST 207 tools),
+  guardian v4.1.3 (AG-29/30), VI v3.3.0 (VI-16/17), NEW gate
+  verify-build-css.ts v1.0.0 (post-build bundle probe — P0 0002/0003).
+- §2.2 Pilar 10: gate CSS registrado; precommit lo consume.
+- §9 paso 7: gates frontend actualizados (+verify:build-css tras build).
+- §10: masters G8 añadidos a fuentes deprecadas.
 ```
 
 ---
@@ -204,7 +789,7 @@ TAXONOMÍA DE ESTADOS (criterios explícitos — resuelve #40):
   SÍMBOLOS: ✅/🔶/⬜/🔴 — NUNCA mezclar (v2.0 usaba "✅ PARCIAL")
 
 VERSIONADO (anti-drift — resuelve #29/#60):
-  Los 3 master comparten NÚMERO DE GENERACIÓN (G7 = v7.0).
+  Los 3 master comparten NÚMERO DE GENERACIÓN (G8 = v8.0).
   Se versionan JUNTOS: cualquier cambio en cualquiera bumpa la
   generación completa. PROHIBIDO versionarlos por separado.
   Cada generación debe: (1) regenerar CHECKPOINT §0.3 (Master
@@ -489,8 +1074,13 @@ Implementado en (versiones reales G7):
   - tools/architecture-guardian.ts v4.1.1 (26 checks X-series)
   - tools/validate-shared-imports.ts v4.0.0 (AUDITED_REGISTRY
     via manifest — ya no lista hardcodeada: el manifest es SSOT)
-  - scripts/verify-integration.ts v3.0.0 (8 checks, --json CI)
-  - architecture.manifest.ts v3.3.0 (SSOT del registro; BC-02 APPLIED — Lote 4 · REQUEST 1 AUDITED — Lote 5)
+  - scripts/verify-integration.ts v3.3.0 (8 checks · VI-16/VI-17)
+  - architecture.manifest.ts v3.8.0 (SSOT del registro · §16 BACKEND_REGISTRY re-AST 207 tools @ 504b53d)
+  - tools/verify-build-css.ts v1.0.0 (GATE POST-BUILD — sonda del
+    bundle dist/: utilities · familia font · piso · fugas — nació
+    del P0 0002/0003: source('.') perdió la capa de utilities
+    207k→118k sin que NINGÚN gate lo viera; hoy en pnpm
+    verify:build-css + precommit)
 Pendiente:
   - Expandir guardian 26 → 45+ checks (CHECKLIST §16)
   - Pre-commit hook installation (package.json)
@@ -745,7 +1335,11 @@ I DON'T:
   ✗ Change @theme {} architecture
   ✗ Move shared/ files without approval
   ✗ Invent values without provenance
-  ✗ Change backend API contracts
+  ✗ Change backend API contracts SIN gate — el backend está bajo
+    auditoría P2-C3 desde 2026-10: todo cambio en src/club_mcp REQUIERE
+    backend/scripts/smoke_b0.py VERDE (39/39 runtime · 207 tools) +
+    pytest tests/unit 818/818
+    (protocolo P2-C3: CHECKPOINT §3.6; SSOT backend: manifest §16)
 ```
 
 ---
@@ -921,34 +1515,164 @@ frontend/src/                          ← 1.151 archivos (digest verificado
 │
 └── main.tsx
 
-backend/src/club_mcp/             ← ~123 files (NO SE TOCA)
-├── agents/                       ← 22 MCP agents
-├── ai/                           ← Claude service + prompts
-├── api/                          ← FastAPI routes (5 route files)
-├── auth/                         ← JWT, RBAC, middleware
-├── config/                       ← Settings
-├── db/repositories/              ← 18 repos
-├── hitl/                         ← Human-in-the-loop
-├── models/                       ← 20 domain models
-├── rag/                          ← RAG pipeline (8 modules)
-└── server.py
+backend/                          ← BAJO AUDITORÍA P2-C3 (gate B0 VERDE @
+│                                   e15068e · G8 absorbe el estado real;
+│                                   v7.0 decía "~123 files NO SE TOCA" = #65)
+├── src/club_mcp/                 ← 104 módulos .py (verificado G8)
+│   ├── agents/                   ← 19 agentes MCP · 207 tools @MCPTool
+│   │                               (age_group_activity.py muerto → cola
+│   │                               Q-MSC-01; v7.0 decía "22" = #69)
+│   ├── ai/                       ← claude_service + prompts + resilience
+(Q-LLM-01 CERRADO) + prompt_registry
+(41 specs · Q-LLM-03/04 CERRADOS · Ola
+3.3/3.4) + llm_judge (hard gate + LLM
+aditivo) · G43/RV-1: flujo _acall
+reactivo — usage["prompt"] con
+prompt_name/version/sha256 del spec
+VIVO, toda llamada amarrada al golden
+set (deuda ADR-0009 PAGADA)
+│   ├── api/                      ← FastAPI routes (5 routers)
+│   ├── auth/                     ← JWT, RBAC 196/196, middleware
+│   │                               (secreto JWT hardcodeado → Q-SEC-01)
+│   ├── config/                   ← pydantic-settings SIN consumidores
+│   ├── db/orm/                  ← G19/G20 — Ola 2.1 y 2.1-bis:
+│   │                               Base+naming_convention · engine
+│   │                               async lazy · session_scope ·
+│   │                               tabla users+UserRepository (G19)
+│   │                               · tablas families+members +
+│   │                               FamilyRepository async JSONB
+│   │                               (G20) · 5 tablas engagement +
+│   │                               MemberEngagementRepository async
+│   │                               (G21 · alembic 0001+0002+0003)
+│   ├── db/repositories/          ← 0 repos in-memory (Q-PER-01
+│   │                               CERRADO DEL TODO · 19/19
+│   │                               verticales persistentes:
+│   │                               family, engagement, event,
+│   │                               compliance, guest,
+│   │                               satisfaction, communication,
+│   │                               cultural_social, executive_
+│   │                               dashboard, proactive_recommen-
+│   │                               dation, facility_management,
+│   │                               age_group, sports_recreation,
+│   │                               finance, wellness, member_360,
+│   │                               document_intelligence y
+│   │                               ml_intelligence TODOS
+│   │                               migrados · users de Q-PER-04
+│   │                               ya no vive acá)
+│   │                               · Ola 3.2: llm_calls_repo
+│   │                               (presupuesto LLM persistente
+│   │                               — swap del ledger G12, OPT-IN
+│   │                               CLUB_PERSISTENCE_URL)
+│   ├── gobierno/                 ← Ola 4 COMPLETA 4/4: ledger (cadena sha-256 + épocas Merkle · recibos OFFLINE) + constitución EJECUTABLE + motor default-DENY con economía + four-eyes EN LA CADENA + backtesting contrafactual (fidelidad de ventana) + puerto de evidencia (bundle raíz Merkle) + CLI del tercero verificar_bundle (DOS archivos + UN comando · H-11 portable) (Q-GOV-01/02/03/04 · ADR-0010/0011/0012/0013)
+│   ├── hitl/                     ← ApprovalEngine (tabla approvals + ledger hash-chain · Q-PER-03 CERRADO)
+│   ├── models/                   ← 22 módulos de esquemas
+│   ├── rag/                      ← RAG híbrido RRF + reranker (8 módulos)
+│   │                               · G43/RV-2: blindaje determinista —
+│   │                               suite 23 (RRF como álgebra exacta con
+│   │                               Fraction · contrato del cross-encoder
+│   │                               bypass ≤5/sigmoid/orden/lazy-load sin
+│   │                               torch · equivalencia híbrido vs partes
+│   │                               con BM25 real) — sin modelo ni red
+│   └── server.py                 ← entry point MCP (adaptador delgado)
+├── alembic/                      ← G19-G24: env.py async + versions/
+│                                   0001_users · 0002_families_members
+│                                   · 0003_engagement (5 tablas)
+│                                   · 0004_event (4 tablas)
+│                                   · 0005_compliance (3 tablas)
+│                                   · 0006_guest_management (4 tablas)
+│                                   · 0007_satisfaction (3 tablas)
+│                                   · 0008_communication (9 tablas)
+│                                   · 0009_cultural_social (4 tablas)
+│                                   · 0010_executive_dashboard (5 tablas)
+│                                   · 0011_proactive_recommendation (8 tablas)
+│                                   · 0012_facility_management (5 tablas)
+│                                   · 0013_age_group (4 tablas)
+│                                   · 0014_sports_recreation (7 tablas)
+│                                   · 0015_finance (5 tablas · 2 H-3)
+│                                   · 0016_wellness (5 tablas)
+│                                   · 0017_member360 (2 tablas)
+│                                   · 0018_approvalengine (2 tablas + 2 índices)
+│                                   · 0019_rag_chunks (VECTOR 1024)
+│                                   · 0020_document_intelligence (2 tablas)
+│                                   · 0021_ml_intelligence (1 tabla)
+│                                   · 0022_llm_calls (2 tablas + 3
+│                                   índices — presupuesto LLM
+│                                   persistente, Ola 3.2)
+│                                   · 0023_llm_calls_prompt_evidence
+│                                   (3 columnas NULL-ables:
+│                                   prompt_name · prompt_version ·
+│                                   prompt_sha256 — G43/RV-1, deuda
+│                                   ADR-0009: el costo ES evidencia)
+├── tests/unit/                   ← 29+3+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1 archivos · 1276 tests PASSED
+│                                   (808 def + 16 parametrizados + 173
+│                                   persistencia write-restart-read —
+                                   B2/B3/B4 33 + Q-SEC 19 + Ola 2.1 3
+                                   + Ola 2.1-bis 6 + Ola 2.1-tris 6
+                                   + Ola 2.2 event 6 + Ola 2.1-quinqua 6
+                                   + Ola 2.1-sexta guest 6 + Ola
+                                   2.1-septima satisfaction 6 + Ola
+                                   2.1-octava communication 7 + Ola
+                                   2.1-nona cultural_social 4 + Ola
+                                   2.1-décima executive_dashboard 4 +
+                                   Ola 2.1-undécima
+                                   proactive_recommendation 4 + Ola
+                                   2.1-duodécima
+                                   facility_management 4 + Ola
+                                   2.1-decimatercera age_group 4 + Ola
+                                   2.1-decimocuarta
+                                   sports_recreation 4 + Ola
+                                   2.1-decimoquinta finance 5 + Ola
+                                   2.1-decimosexta wellness 4 + Ola
+                                   2.1-decimaseptima member_360 4 + Ola 2.3
+                                   approval_engine 12 + Ola
+                                   2.1-decimoctava document_intelligence
+                                   6 + Ola 2.1-decimonovena
+                                   ml_intelligence 4 + Ola 3.2
+                                   llm_calls 6 + PG-real 1 + Ola 3.3
+                                   prompts registry 9 + Ola 3.4 golden
+                                   juez 5 + Ola 4.1 gobierno 29 + Ola 4.2
+                                   políticas 49 + Ola 4.3 cuatro-ojos/
+                                   backtesting 57 + Ola 4.4 puerto/CLI
+                                   41 + G43/RV-1 llm_calls prompt
+                                   evidence 12 + G43/RV-2 rag hybrid
+                                   RRF determinism 23)
+└── scripts/smoke_b0.py           ← gate ejecutable B0 (39/39 runtime · 207)
 
-frontend/tools/                   ← Automation (estado real G7)
-├── architecture.manifest.ts      ← v3.3.0 — SSOT (27 entradas registro; BC-02 + REQUEST 1 APPLIED)
-├── architecture-guardian.ts      ← v4.1.1 — 26 checks X-series
-├── validate-shared-imports.ts    ← v4.0.0 — registry-driven
+frontend/tools/                   ← Automation (estado real G9)
+├── architecture.manifest.ts      ← v3.8.0 — SSOT (§16 BACKEND_REGISTRY
+│                                   re-AST: 19 agentes · 207 tools @
+│                                   504b53d · VERSION_SYNC con guardian
+│                                   4.1.3 / VI 3.3.0 / verifyBuildCss 1.0.0)
+├── architecture-guardian.ts      ← v4.1.3 — 26 checks X-series
+│                                   (AG-29 X-16 α/β/γ · AG-30 X-28
+│                                   token-boundary −109 FP)
+├── validate-shared-imports.ts    ← v4.0.0 — registry-driven (audit del
+│                                   tool pendiente — #63 documentado)
+├── PAREJAS CSS T1: 78 css nuevos (12 arquetipos × 7 dominios · 122
+│   keyframes únicos · X-13=0 · guardian -74) · 417/483 tsx con
+│   pareja propia · tramo 2 (61 acoplados) → cola §15
+(scripts/verify-master-consistency.py v1.0.0 — MC-01..09
+│   IG-01..04 · en CI + pre-commit · Q-GOV-04 cerrado)
+├── verify-build-css.ts           ← v1.0.0 — GATE POST-BUILD (B6-QA;
+│                                   P0 0002/0003 — ver Pilar 10)
 └── (pendientes: css-audit, component-audit,
     feature-integration-audit, pre-commit-pipeline)
 
-scripts/
+scripts/                          ← hermano de frontend/ (G25)
 ├── setup.sh
-├── verify-integration.ts         ← v3.0.0 — 8 checks (--json CI)
-└── verify-master-consistency.py  ← guard G7 de los 3 masters
+├── verify-integration.ts         ← v3.2.0 — 8 checks + VI-12 restaurado
+│                                   (regresión 290afa4 = #62, fix G8)
+├── p2a..p2c3h_*.ts               ← herramientas de las fases de auditoría
+│                                   (evidencia ejecutable — §3.6 CHECKPOINT)
+└── bld*/g14/g20/g21/g28*        ← escáneres y fixes typecheck/build
+    ⚠ #73: verify-master-consistency.py CITADO en G7 §0.3 NO EXISTE
+    en el repo — crearlo (regla G8 + tabla §16.3) = cola Q-GOV-04
 
-TOTAL PROYECTO: ≈ 1.286 archivos
-  frontend 1.151 (verificado) + backend ~123 + config ~12
-  (v2.0 decía ~945 con frontend ~810 — corregido contra digest real;
-   cerrar cifra exacta de backend/config: task V-03)
+TOTAL PROYECTO: ≈ 1.294+ archivos (verificado G8)
+  frontend/src 1163 (find G8; digest G7 = 1.151 — delta post-C3g)
+  + backend/src 105 (104 .py) + backend/tests 27 (775 test_)
+  (v7.0 decía ~1.286 con backend ~123 — task V-03 CERRADA en G8:
+   cifras computadas contra el árbol; config/ se trackea vía manifest §16)
 ```
 
 ---
@@ -1078,6 +1802,19 @@ EN CADA NUEVA SESIÓN:
 
 6. REPETIR para cada archivo hasta completar la FASE
 
+7. GATES FRONTEND POR SESIÓN CON BUILD: build (tsc -b && vite build)
+   → verify:build-css (sonda del bundle) → VI → vitest → guardian.
+   El precommit corre guardian + lint + type-check + verify:build-css.
+
+7b. SI LA SESIÓN TOCA BACKEND (src/club_mcp o tests/unit):
+   a) El gate es EJECUTABLE, no documental:
+      backend/scripts/smoke_b0.py (39/39 runtime · 207 tools) ·
+      pytest tests/unit (818/818)
+   b) La SSOT del estado backend es manifest §16 BACKEND_REGISTRY (v3.4.0)
+      + CHECKPOINT §15 (cola) — NO reportes .txt sueltos (#71)
+   c) El protocolo de auditoría §4 (checklists A-J) es FRONTEND; el
+      backend sigue el protocolo P2-C3 (CHECKPOINT §3.6)
+
 ⚠️ PARCIAL PASTE HANDLING:
    Si un archivo no cabe en 1 mensaje:
    → Partir en 2-3 bloques
@@ -1150,6 +1887,9 @@ AUTOMATION MAPPING + Consistencia CHECKLIST        §16
 ─────────────────────────────── ───────────────── ─────────
 Audit Status (SSOT real)        architecture.manifest.ts §8
 (AUDITED_REGISTRY — 27 entradas; los masters sólo resumen)
+Backend registry (SSOT)         architecture.manifest.ts §16 (G8)
+Cola de arquitectura            CHECKPOINT        §15 (NUEVO G8)
+Estado P2-C3 / gate B0          CHECKPOINT        §3.6 + §14 (G8)
 ```
 
 ---
@@ -1160,6 +1900,20 @@ Audit Status (SSOT real)        architecture.manifest.ts §8
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  DEPRECATED SOURCES — Do NOT use these as reference                  ║
 ╠══════════════════════════════════════════════════════════════════════╣
+║                                                                      ║
+║  ❌ Masters G8 (v8.0 · 2026-11-08):
+║     REASON (G9): congelados 3 días — no conocen la serie B1-B6
+║     (migración MCP real, 196→207 tools, VI v3.3.0, guardian v4.1.3,
+║     gate verify-build-css v1.0.0 ni el P0 0002/0003). VALID
+║     CONCEPTS: TODOS preservados en G9 (protocolos §4/§5/§9 intactos).
+║
+║  ❌ Masters G7 (v7.0 · 2026-08-12):                                  ║
+║     REASON (G8): congelados 3 meses — no conocen P2-C1..C3h, el      ║
+║     backend MCP (19 agentes · 196 tools), el gate B0 VERDE ni los    ║
+║     785 tests (#61); §13/§14 CHECKPOINT pedía lo ya resuelto G9      ║
+║     (#67); citaba un script inexistente (#73).                       ║
+║     VALID CONCEPTS: TODOS preservados en G8 (protocolos §4/§5/§9     ║
+║     intactos — G8 cambia ESTADO y DATOS, no el protocolo).           ║
 ║                                                                      ║
 ║  ❌ Masters pre-G7:                                                  ║
 ║     MASTER_BASE.md v1.0/v2.0 · MASTER_CHECKPOINT.md v3.0-v6.1 ·    ║
@@ -1192,7 +1946,7 @@ Audit Status (SSOT real)        architecture.manifest.ts §8
 
 ---
 
-END OF MASTER_BASE.md v7.0 · Generación G7 (sincronizada con
-MASTER_CHECKPOINT.md v7.0 y MASTER_CHECKLIST.md v7.0)
+END OF MASTER_BASE.md v9.38 · Generación G43 (sincronizada con
+MASTER_CHECKPOINT.md v9.38 y MASTER_CHECKLIST.md v9.38
 
 

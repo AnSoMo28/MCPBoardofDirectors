@@ -418,7 +418,8 @@ function GlassSection({
   const reduced = useReducedMotion();
   return (
     <div className="glass-twin__section">
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         onClick={onToggle}
         className="glass-twin__section-head focus-visible:outline-2 focus-visible:outline-[var(--color-teal-400)] focus-visible:outline-offset-[-2px]"
@@ -453,7 +454,7 @@ function GlassSection({
         ) : (
           <ChevronDown className="w-4 h-4 text-[var(--color-silver-400)] flex-shrink-0" />
         )}
-      </button>
+      </Button>
       <AnimatePresence>
         {expanded && (
           <motion.div

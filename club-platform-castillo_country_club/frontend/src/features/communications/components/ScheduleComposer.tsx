@@ -49,6 +49,7 @@ import type {
 } from "../lib/temporalRouter";
 
 import "./ScheduleComposer.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // Types (MCP response shapes)
@@ -329,9 +330,9 @@ export function ScheduleComposer() {
             <FileText size={32} />
             <h3>Error al cargar plantillas</h3>
             <p>No pudimos obtener las plantillas de notificación.</p>
-            <button className="schedule__retry-btn" onClick={() => templatesQ.refetch()}>
+            <Button variant="unstyled" className="schedule__retry-btn" onClick={() => templatesQ.refetch()}>
               Reintentar
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -451,7 +452,8 @@ export function ScheduleComposer() {
               const isSelected = channel === ch.id;
               const pct = channelClubPct[ch.id];
               return (
-                <button
+                <Button
+                  variant="unstyled"
                   key={ch.id}
                   className="schedule__channel-btn"
                   data-selected={isSelected}
@@ -465,7 +467,7 @@ export function ScheduleComposer() {
                   {pct !== undefined && (
                     <span className="schedule__channel-pct">{pct}% club</span>
                   )}
-                </button>
+                </Button>
               );
             },
           )}
@@ -536,14 +538,15 @@ export function ScheduleComposer() {
             <Clock size={14} /> Fecha y Hora
           </h3>
           {/* Innovation 8: Auto-Optimize */}
-          <button
+          <Button
+            variant="unstyled"
             className="schedule__auto-optimize-btn"
             onClick={handleAutoOptimize}
             disabled={!analytics}
           >
             <Target size={14} />
             <span>Auto-optimizar</span>
-          </button>
+          </Button>
         </div>
 
         <div className="schedule__time-inputs">
@@ -659,7 +662,8 @@ export function ScheduleComposer() {
           <div className="schedule__suggested-slots">
             <p className="schedule__suggested-label">Horarios sugeridos según historial</p>
             {suggestedSlots.map((slot: SuggestedTimeSlot, i: number) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={i}
                 className="schedule__suggested-slot"
                 data-best={slot.isOptimal}
@@ -669,7 +673,7 @@ export function ScheduleComposer() {
                 <span className="schedule__slot-score" data-best={slot.isOptimal}>{slot.score}%</span>
                 <span className="schedule__slot-day">{slot.day} {slot.hour}</span>
                 <span className="schedule__slot-reason">{slot.reason}</span>
-              </button>
+              </Button>
             ))}
             {analytics && (
               <p className="schedule__suggested-basis">
@@ -722,17 +726,18 @@ export function ScheduleComposer() {
 
       {/* ── Actions ───────────────────────────────────── */}
       <div className="schedule__actions">
-        <button className="schedule__reset-btn" onClick={resetForm}>
+        <Button variant="unstyled" className="schedule__reset-btn" onClick={resetForm}>
           Limpiar
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="unstyled"
           className="schedule__submit-btn"
           onClick={handleSubmit}
           disabled={scheduleMut.isPending}
         >
           <CalendarClock size={14} />
           <span>{scheduleMut.isPending ? "Programando…" : "Programar Notificación"}</span>
-        </button>
+        </Button>
       </div>
 
       {/* ── HITL Notice ───────────────────────────────── */}

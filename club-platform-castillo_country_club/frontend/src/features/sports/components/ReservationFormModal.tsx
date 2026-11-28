@@ -40,6 +40,7 @@ import type { SportType, SportsDashboardMode } from "../types";
 import { SPORT_CONFIG } from "../types";
 import type { CourtUtilization_Contract } from "@/shared/mocks/contracts";
 import "./ReservationFormModal.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -143,7 +144,8 @@ function CourtPicker({
           const isHighDemand = court.utilization_pct >= 70;
 
           return (
-            <button
+            <Button
+              variant="unstyled"
               key={court.court_name}
               type="button"
               className="spt-rsv__court-card"
@@ -165,7 +167,7 @@ function CourtPicker({
                   Alta demanda
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -258,7 +260,8 @@ function PurposePills({
   return (
     <div className="spt-rsv__purpose-pills">
       {PURPOSE_OPTIONS.map((opt) => (
-        <button
+        <Button
+          variant="unstyled"
           key={opt.value}
           type="button"
           className="spt-rsv__purpose-pill"
@@ -267,7 +270,7 @@ function PurposePills({
           onClick={() => onSelect(opt.value)}
         >
           {opt.label}
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -422,14 +425,15 @@ export function ReservationFormModal({
               Ejecución directa (AUTO) — sin aprobación requerida
             </p>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-rsv__close-btn"
             onClick={onClose}
             aria-label="Cerrar"
           >
             <X className="spt-rsv__close-icon" />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}
@@ -528,14 +532,16 @@ export function ReservationFormModal({
 
           {/* Actions */}
           <div className="spt-rsv__actions">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="spt-rsv__cancel-btn"
               onClick={onClose}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="submit"
               className="spt-rsv__submit-btn"
               disabled={isSubmitting}
@@ -549,7 +555,7 @@ export function ReservationFormModal({
               ) : (
                 "Confirmar Reserva"
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

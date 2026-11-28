@@ -88,6 +88,7 @@ import type {
 } from "../lib/socialNarrative";
 
 import "./SocialNarrativeOverlay.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Icon Registry
@@ -159,14 +160,15 @@ function NarrativeCard({ narrative, onAction }: NarrativeCardProps) {
       </div>
       <p className="fm-narr-card__body">{narrative.body}</p>
       {narrative.action && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fm-narr-card__action"
           onClick={handleAction}
         >
           <Zap size={8} aria-hidden="true" />
           {narrative.action.label}
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -293,14 +295,15 @@ export function SocialNarrativeOverlay({
       {/* ══════ Header ══════ */}
       <div className="fm-narr__header">
         <h3 className="fm-narr__title">{nodeNarrative.nodeName}</h3>
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fm-narr__close"
           onClick={onClose}
           aria-label="Cerrar narrativa"
         >
           <X size={14} aria-hidden="true" />
-        </button>
+        </Button>
       </div>
 
       {/* ══════ Body ══════ */}

@@ -1,10 +1,11 @@
 /**
  * @component TimelineStats (Fase 25)
  * @namespace .glass-timeline__stat, .glass-timeline__accuracy-ring
- * @depends DecisionTimeline.css
+ * @depends TimelineStats.css
  * @note Stats grid with accuracy ring gauge. Counter animation on mount.
- * @import import '../DecisionTimeline.css';
+ * @import import './TimelineStats.css';
  */
+import "./TimelineStats.css";
 
 import { useEffect, useRef, useState } from "react";
 import { motion, type Variants } from "framer-motion";

@@ -14,6 +14,7 @@ import { cn } from "@/shared/lib/utils";
 import type { WellnessAdvisorInsight, WellnessMode } from "../types";
 import type { AdvisorReactionInsight } from "@/features/dashboard/types";
 import "./WellnessIntelligenceStream.css";
+import { Button } from "@/shared/components/ui/Button";
 
 interface Props {
   insights: WellnessAdvisorInsight[];
@@ -90,14 +91,15 @@ function InsightBlock({
 
         <h4 className="wis__title">{insight.title}</h4>
 
-        <button
+        <Button
+          variant="unstyled"
           className="wis__expand"
           onClick={() => setExpanded(!expanded)}
           type="button"
         >
           {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
           {expanded ? "Menos" : "Detalle"}
-        </button>
+        </Button>
 
         {expanded && (
           <p className="wis__reasoning">{insight.reasoning}</p>
@@ -106,16 +108,18 @@ function InsightBlock({
         {/* ── Actions ── */}
         <div className="wis__actions">
           {insight.targetTab && (
-            <button
+            <Button
+              variant="unstyled"
               className="wis__nav-btn"
               onClick={() => onNavigate(insight.targetTab!)}
               type="button"
             >
               Ver en {insight.targetTab}
-            </button>
+            </Button>
           )}
           {insight.action && !isDone && (
-            <button
+            <Button
+              variant="unstyled"
               className="wis__exec-btn"
               onClick={() => onExecute(insight.id)}
               type="button"
@@ -126,7 +130,7 @@ function InsightBlock({
                 <Shield size={11} />
               )}
               {insight.action.label}
-            </button>
+            </Button>
           )}
           {isDone && (
             <span className="wis__done">✓ Ejecutado</span>

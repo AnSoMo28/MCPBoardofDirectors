@@ -44,6 +44,7 @@ import {
 } from "../types";
 
 import "./RecTemporalIntelligence.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -245,7 +246,8 @@ function PastNodeCard({
         {/* Expand for details */}
         {(node.keyAchievements.length > 0 || node.areasForImprovement.length > 0) && (
           <>
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="rti-past-expand"
               onClick={() => setIsExpanded((prev) => !prev)}
@@ -256,7 +258,7 @@ function PastNodeCard({
                 <ChevronDown size={12} aria-hidden="true" />
               )}
               <span>{isExpanded ? "Menos" : "Detalles"}</span>
-            </button>
+            </Button>
 
             {isExpanded && (
               <div className="rti-past-details">
@@ -451,7 +453,8 @@ export function RecTemporalIntelligence({
         <Clock size={16} aria-hidden="true" className="rti-header-icon" />
         <span className="rti-header-title">Línea Temporal</span>
         <div className="rti-header-sections">
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="rti-section-pill"
             data-section="past"
@@ -460,8 +463,9 @@ export function RecTemporalIntelligence({
           >
             <CheckCircle2 size={11} aria-hidden="true" />
             <span>Pasado ({pastNodes.length})</span>
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             type="button"
             className="rti-section-pill"
             data-section="present"
@@ -470,8 +474,9 @@ export function RecTemporalIntelligence({
           >
             <Target size={11} aria-hidden="true" />
             <span>Presente ({presentNodes.length})</span>
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             type="button"
             className="rti-section-pill"
             data-section="future"
@@ -480,7 +485,7 @@ export function RecTemporalIntelligence({
           >
             <Sparkles size={11} aria-hidden="true" />
             <span>Futuro ({futureNodes.length})</span>
-          </button>
+          </Button>
         </div>
       </div>
 

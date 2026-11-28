@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-import pytest
 from uuid import UUID
+
+import pytest
+import pytest_asyncio
 
 from club_mcp.agents.wellness import WellnessAgent
 from club_mcp.db.repositories.wellness_repo import WellnessRepository
@@ -23,10 +25,10 @@ def wl_agent(
     return WellnessAgent(wl_repo, approval_engine)
 
 
-def _seed_wellness(repo: WellnessRepository) -> None:
+async def _seed_wellness(repo: WellnessRepository) -> None:
     """Seed profiles, goals, activities, and classes."""
     # Profile
-    repo.create_profile({
+    await repo.create_profile({
         "family_id": "fam-001",
         "family_name": "Familia García",
         "fitness_level": "intermediate",
@@ -37,7 +39,7 @@ def _seed_wellness(repo: WellnessRepository) -> None:
     })
 
     # Goals
-    repo.create_goal({
+    await repo.create_goal({
         "family_id": "fam-001",
         "goal_type": "fitness",
         "title": "Correr 5K",
@@ -48,7 +50,7 @@ def _seed_wellness(repo: WellnessRepository) -> None:
     })
 
     # Activities
-    repo.log_activity({
+    await repo.log_activity({
         "family_id": "fam-001",
         "member_name": "Carlos García",
         "activity_type": "yoga",
@@ -56,7 +58,7 @@ def _seed_wellness(repo: WellnessRepository) -> None:
         "calories_burned": 200,
         "date": "2025-03-01",
     })
-    repo.log_activity({
+    await repo.log_activity({
         "family_id": "fam-001",
         "member_name": "María García",
         "activity_type": "swimming",
@@ -64,7 +66,7 @@ def _seed_wellness(repo: WellnessRepository) -> None:
         "calories_burned": 350,
         "date": "2025-03-03",
     })
-    repo.log_activity({
+    await repo.log_activity({
         "family_id": "fam-001",
         "member_name": "Carlos García",
         "activity_type": "gym",
@@ -74,7 +76,7 @@ def _seed_wellness(repo: WellnessRepository) -> None:
     })
 
     # Classes
-    repo.add_class({
+    await repo.add_class({
         "name": "Yoga Matutino",
         "description": "Clase de yoga al amanecer",
         "activity_type": "yoga",
@@ -86,7 +88,7 @@ def _seed_wellness(repo: WellnessRepository) -> None:
         "schedule_day": "lunes",
         "schedule_time": "07:00",
     })
-    repo.add_class({
+    await repo.add_class({
         "name": "Aqua Fitness",
         "activity_type": "swimming",
         "instructor": "Coach Pedro",
@@ -105,9 +107,9 @@ def _seed_wellness(repo: WellnessRepository) -> None:
 
 class TestProfileGet:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, wl_agent):
-        _seed_wellness(wl_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, wl_agent):
+        await _seed_wellness(wl_agent.repo)
 
     @pytest.mark.asyncio
     async def test_get_existing_profile(self, wl_agent):
@@ -146,7 +148,7 @@ class TestProfileUpdate:
 
     @pytest.mark.asyncio
     async def test_update_existing_profile(self, wl_agent):
-        wl_agent.repo.create_profile({
+        await wl_agent.repo.create_profile({
             "family_id": "fam-001",
             "family_name": "Test",
             "fitness_level": "beginner",
@@ -277,7 +279,7 @@ class TestGoalSet:
             family_id="fam-001", goal_type="nutrition",
             title="Meta 2", target_value=5, unit="porciones",
         )
-        goals = wl_agent.repo.list_goals("fam-001")
+        goals = await wl_agent.repo.list_goals("fam-001")
         assert len(goals) >= 2
 
 
@@ -288,9 +290,9 @@ class TestGoalSet:
 
 class TestRecommendations:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, wl_agent):
-        _seed_wellness(wl_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, wl_agent):
+        await _seed_wellness(wl_agent.repo)
 
     @pytest.mark.asyncio
     async def test_recommendations_exist(self, wl_agent):
@@ -319,13 +321,13 @@ class TestRecommendations:
 
 class TestScheduleClass:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, wl_agent):
-        _seed_wellness(wl_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, wl_agent):
+        await _seed_wellness(wl_agent.repo)
 
     @pytest.mark.asyncio
     async def test_schedule_returns_pending(self, wl_agent):
-        classes = wl_agent.repo.list_classes(activity_type="yoga")
+        classes = await wl_agent.repo.list_classes(activity_type="yoga")
         cls = classes[0]
         res = await wl_agent.wellness_schedule_class(
             class_id=cls.id,
@@ -339,7 +341,7 @@ class TestScheduleClass:
 
     @pytest.mark.asyncio
     async def test_schedule_full_class(self, wl_agent):
-        classes = wl_agent.repo.list_classes(activity_type="swimming")
+        classes = await wl_agent.repo.list_classes(activity_type="swimming")
         cls = classes[0]  # Aqua Fitness (full)
         res = await wl_agent.wellness_schedule_class(
             class_id=cls.id,
@@ -364,7 +366,7 @@ class TestScheduleClass:
 
     @pytest.mark.asyncio
     async def test_execute_schedules_appointment(self, wl_agent):
-        classes = wl_agent.repo.list_classes(activity_type="yoga")
+        classes = await wl_agent.repo.list_classes(activity_type="yoga")
         cls = classes[0]
         res = await wl_agent.execute_schedule_class({
             "class_id": cls.id,
@@ -378,7 +380,7 @@ class TestScheduleClass:
 
     @pytest.mark.asyncio
     async def test_approval_flow(self, wl_agent):
-        classes = wl_agent.repo.list_classes(activity_type="yoga")
+        classes = await wl_agent.repo.list_classes(activity_type="yoga")
         cls = classes[0]
         res = await wl_agent.wellness_schedule_class(
             class_id=cls.id,
@@ -399,9 +401,9 @@ class TestScheduleClass:
 
 class TestWellnessReport:
 
-    @pytest.fixture(autouse=True)
-    def seed(self, wl_agent):
-        _seed_wellness(wl_agent.repo)
+    @pytest_asyncio.fixture(autouse=True)
+    async def seed(self, wl_agent):
+        await _seed_wellness(wl_agent.repo)
 
     @pytest.mark.asyncio
     async def test_generates_report(self, wl_agent):

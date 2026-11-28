@@ -11,22 +11,11 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from club_mcp.agents.base import BaseAgent, MCPTool
 from club_mcp.ai.claude_service import ClaudeService
-from club_mcp.ai.prompts import (
-    ADVISOR_ACTION_PLAN_PROMPT,
-    ADVISOR_ACTION_PLAN_SYSTEM,
-    ADVISOR_ASK_PROMPT,
-    ADVISOR_ASK_SYSTEM,
-    ADVISOR_BOARD_BRIEF_PROMPT,
-    ADVISOR_BOARD_BRIEF_SYSTEM,
-    ADVISOR_NARRATIVE_PROMPT,
-    ADVISOR_NARRATIVE_SYSTEM,
-    ADVISOR_SCENARIO_PROMPT,
-    ADVISOR_SCENARIO_SYSTEM,
-)
+from club_mcp.ai.prompt_registry import render_prompt
 from club_mcp.hitl.approval_engine import ApprovalEngine
 from club_mcp.hitl.approval_types import ApprovalLevel
 from club_mcp.hitl.notifier import HITLNotifier
@@ -37,6 +26,7 @@ from club_mcp.models.advisor_intelligence import (
     InsightNarrativeResult,
     ScenarioSimulationResult,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +83,6 @@ class AdvisorIntelligenceAgent(BaseAgent):
 
     def _register_tools(self) -> None:
         """Legacy hook — tools registered via @MCPTool decorator."""
-        pass
 
     # ── Tool 1: Insight Narrative ──────────────────────────
 
@@ -105,8 +94,8 @@ class AdvisorIntelligenceAgent(BaseAgent):
     async def generate_insight_narrative(
         self,
         insight_data: dict[str, Any],
-        financial_context: Optional[dict[str, Any]] = None,
-        events_context: Optional[dict[str, Any]] = None,
+        financial_context: dict[str, Any] | None = None,
+        events_context: dict[str, Any] | None = None,
         role: str = "admin",
     ) -> dict[str, Any]:
         """Transform a deterministic insight into an AI-powered narrative."""
@@ -116,7 +105,8 @@ class AdvisorIntelligenceAgent(BaseAgent):
         fin_ctx = json.dumps(financial_context, ensure_ascii=False, indent=2) if financial_context else "No disponible"
         evt_ctx = json.dumps(events_context, ensure_ascii=False, indent=2) if events_context else "No disponible"
 
-        user_prompt = ADVISOR_NARRATIVE_PROMPT.format(
+        user_prompt = render_prompt(
+            "advisor.narrative",
             insight_data=json.dumps(insight_data, ensure_ascii=False, indent=2),
             financial_context=fin_ctx,
             events_context=evt_ctx,
@@ -135,10 +125,11 @@ class AdvisorIntelligenceAgent(BaseAgent):
         }
 
         result = await self.claude.generate_json(
-            system_prompt=ADVISOR_NARRATIVE_SYSTEM,
+            system_prompt=render_prompt("advisor.narrative.system"),
             user_prompt=user_prompt,
             max_tokens=1500,
             fallback=fallback,
+            prompt_name="advisor.narrative",
         )
 
         # Validate structure
@@ -176,7 +167,8 @@ class AdvisorIntelligenceAgent(BaseAgent):
         timeframe: str = "week",
     ) -> dict[str, Any]:
         """Generate a prioritized action plan from advisor insights."""
-        user_prompt = ADVISOR_ACTION_PLAN_PROMPT.format(
+        user_prompt = render_prompt(
+            "advisor.action_plan",
             insights_data=json.dumps(insights, ensure_ascii=False, indent=2),
             role=role,
             timeframe=timeframe,
@@ -189,12 +181,14 @@ class AdvisorIntelligenceAgent(BaseAgent):
         }
 
         result = await self.claude.generate_json(
-            system_prompt=ADVISOR_ACTION_PLAN_SYSTEM.format(
+            system_prompt=render_prompt(
+                "advisor.action_plan.system",
                 available_tools=AVAILABLE_TOOLS_DESCRIPTION,
             ),
             user_prompt=user_prompt,
             max_tokens=2500,
             fallback=fallback,
+            prompt_name="advisor.action_plan",
         )
 
         # Validate — allow partial results
@@ -235,7 +229,8 @@ class AdvisorIntelligenceAgent(BaseAgent):
         timeframe: str = "quarter",
     ) -> dict[str, Any]:
         """Simulate financial scenarios with projected outcomes."""
-        user_prompt = ADVISOR_SCENARIO_PROMPT.format(
+        user_prompt = render_prompt(
+            "advisor.scenario",
             base_data=json.dumps(base_data, ensure_ascii=False, indent=2),
             proposed_changes=json.dumps(proposed_changes, ensure_ascii=False, indent=2),
             timeframe=timeframe,
@@ -248,10 +243,11 @@ class AdvisorIntelligenceAgent(BaseAgent):
         }
 
         result = await self.claude.generate_json(
-            system_prompt=ADVISOR_SCENARIO_SYSTEM,
+            system_prompt=render_prompt("advisor.scenario.system"),
             user_prompt=user_prompt,
             max_tokens=2000,
             fallback=fallback,
+            prompt_name="advisor.scenario",
         )
 
         try:
@@ -288,7 +284,8 @@ class AdvisorIntelligenceAgent(BaseAgent):
         period: str = "current_quarter",
     ) -> dict[str, Any]:
         """Generate a board-ready executive briefing document."""
-        user_prompt = ADVISOR_BOARD_BRIEF_PROMPT.format(
+        user_prompt = render_prompt(
+            "advisor.board_brief",
             executive_summary=json.dumps(executive_summary, ensure_ascii=False, indent=2),
             financial_data=json.dumps(financial_data, ensure_ascii=False, indent=2),
             events_summary=json.dumps(events_summary, ensure_ascii=False, indent=2),
@@ -305,10 +302,11 @@ class AdvisorIntelligenceAgent(BaseAgent):
         }
 
         result = await self.claude.generate_json(
-            system_prompt=ADVISOR_BOARD_BRIEF_SYSTEM,
+            system_prompt=render_prompt("advisor.board_brief.system"),
             user_prompt=user_prompt,
             max_tokens=3000,
             fallback=fallback,
+            prompt_name="advisor.board_brief",
         )
 
         try:
@@ -345,7 +343,7 @@ class AdvisorIntelligenceAgent(BaseAgent):
         question: str,
         dashboard_context: dict[str, Any],
         role: str = "admin",
-        conversation_history: Optional[list[dict[str, Any]]] = None,
+        conversation_history: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         """Answer a natural language question about the club using all available data.
 
@@ -372,7 +370,8 @@ class AdvisorIntelligenceAgent(BaseAgent):
                         history_lines.append(f"  (insight mencionado: {ri})")
             history_section = "\n".join(history_lines)
 
-        user_prompt = ADVISOR_ASK_PROMPT.format(
+        user_prompt = render_prompt(
+            "advisor.ask",
             question=question,
             dashboard_context=json.dumps(dashboard_context, ensure_ascii=False, indent=2),
             role=role,
@@ -397,10 +396,11 @@ class AdvisorIntelligenceAgent(BaseAgent):
         }
 
         result = await self.claude.generate_json(
-            system_prompt=ADVISOR_ASK_SYSTEM,
+            system_prompt=render_prompt("advisor.ask.system"),
             user_prompt=user_prompt,
             max_tokens=2000,
             fallback=fallback,
+            prompt_name="advisor.ask",
         )
 
         try:

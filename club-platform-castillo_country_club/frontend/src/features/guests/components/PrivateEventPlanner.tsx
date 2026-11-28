@@ -377,7 +377,8 @@ function CreateEventModal({
               const selected = form[svc.key];
               const SvcIcon = svc.icon;
               return (
-                <button
+                <Button
+                  variant="unstyled"
                   key={svc.key}
                   type="button"
                   onClick={() => update(svc.key, !selected)}
@@ -388,7 +389,7 @@ function CreateEventModal({
                 >
                   <SvcIcon className="evt-planner__service-icon" />
                   {svc.label}
-                </button>
+                </Button>
               );
             })}
           </div>

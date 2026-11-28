@@ -191,9 +191,9 @@ export function ChatActionCard({
                 Error al ejecutar
               </span>
             </div>
-            <button onClick={handleRetry} className="glass-chat-action__retry">
+            <Button variant="unstyled" onClick={handleRetry} className="glass-chat-action__retry">
               Reintentar
-            </button>
+            </Button>
           </div>
         </motion.div>
       )}
@@ -304,22 +304,24 @@ export function ChatActionCard({
             {/* Action buttons */}
             <div className="flex items-center gap-1 flex-shrink-0">
               {action.route && onNavigate && (
-                <button
+                <Button
+                  variant="unstyled"
                   onClick={() => onNavigate(action.route!)}
                   className="glass-chat-action__route-btn"
                   title="Ir a vista"
                 >
                   <ExternalLink className="w-3 h-3" />
-                </button>
+                </Button>
               )}
 
-              <button
+              <Button
+                variant="unstyled"
                 onClick={handlePrimaryAction}
                 className="glass-chat-action__execute-btn"
               >
                 <Zap className="w-3 h-3" />
                 {action.approval_level === "hitl" ? "Revisar" : "Ejecutar"}
-              </button>
+              </Button>
             </div>
           </div>
 

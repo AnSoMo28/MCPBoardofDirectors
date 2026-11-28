@@ -468,7 +468,8 @@ export function CulturalProgramsViz({
       {/* ═══════════════════════════════════════ */}
       {programs.length > 0 && (
         <div className="cpv__filters">
-          <button
+          <Button
+            variant="unstyled"
             className={cn(
               'cpv__filter-pill',
               categoryFilter === 'all' && 'cpv__filter-pill--active',
@@ -477,12 +478,13 @@ export function CulturalProgramsViz({
             style={{ '--stagger-i': 0 } as React.CSSProperties}
           >
             Todos ({programs.length})
-          </button>
+          </Button>
           {availableCategories.map((cat, i) => {
             const cfg = CATEGORY_CONFIG[cat as keyof typeof CATEGORY_CONFIG];
             const count = programs.filter((p) => p.category === cat).length;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={cat}
                 className={cn(
                   'cpv__filter-pill',
@@ -492,7 +494,7 @@ export function CulturalProgramsViz({
                 style={{ '--stagger-i': i + 1 } as React.CSSProperties}
               >
                 {cfg?.emoji ?? '📌'} {cfg?.label ?? cat} ({count})
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -640,7 +642,8 @@ export function CulturalProgramsViz({
                         {transitions.length > 0 && onStatusChange && (
                           <div className="cpv__program-actions">
                             {transitions.map((nextStatus) => (
-                              <button
+                              <Button
+                                variant="unstyled"
                                 key={nextStatus}
                                 className={cn(
                                   'cpv__status-btn',
@@ -651,7 +654,7 @@ export function CulturalProgramsViz({
                                 }
                               >
                                 → {STATUS_LABELS[nextStatus]}
-                              </button>
+                              </Button>
                             ))}
                           </div>
                         )}

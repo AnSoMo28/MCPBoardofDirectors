@@ -33,6 +33,7 @@ import type {
 } from "../types";
 
 import "./WhatIfPlannerPanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -354,19 +355,21 @@ export function WhatIfPlannerPanel({
             {/* Action Buttons (Sense 4: INTENCIÓN) */}
             <div className="glass-fac-whatif__actions">
               {scenario.auto_generated && (
-                <button
+                <Button
+                  variant="unstyled"
                   className="glass-fac-whatif__btn glass-fac-whatif__btn--execute"
                   onClick={() => handleExecute(scenario)}
                 >
                   Ejecutar escenario
-                </button>
+                </Button>
               )}
-              <button
+              <Button
+                variant="unstyled"
                 className="glass-fac-whatif__btn glass-fac-whatif__btn--dismiss"
                 onClick={() => handleDismiss(scenario.id)}
               >
                 Descartar
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -374,12 +377,13 @@ export function WhatIfPlannerPanel({
 
       {/* "Ver más" pagination */}
       {hasMore && (
-        <button
+        <Button
+          variant="unstyled"
           className="glass-fac-whatif__more"
           onClick={handleShowMore}
         >
           Ver más ({sortedScenarios.length - visibleCount} restantes)
-        </button>
+        </Button>
       )}
     </div>
   );

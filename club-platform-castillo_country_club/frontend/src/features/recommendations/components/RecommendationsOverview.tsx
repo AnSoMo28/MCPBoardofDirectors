@@ -19,6 +19,7 @@ import { Badge } from "@/shared/components/ui/Badge";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { formatCurrency } from "@/shared/lib/utils";
+import './RecommendationsOverview.css';
 
 import {
   SuggestionStatus,
@@ -41,7 +42,7 @@ function MetricCell({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-2.5 p-2.5 rounded-[var(--radius-md)] bg-[var(--color-surface-1)] border border-white/[0.06]">
+    <div className="recommendations-overview flex items-center gap-2.5 p-2.5 rounded-[var(--radius-md)] bg-[var(--color-surface-1)] border border-white/[0.06]">
       <div className="shrink-0 text-[var(--color-silver-500)]">{icon}</div>
       <div className="min-w-0">
         <p className="text-sm font-ui font-semibold text-[var(--color-silver-100)] truncate">

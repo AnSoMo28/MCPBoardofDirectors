@@ -60,13 +60,13 @@ import type {
   EventCategory,
   EventStatus,
   RsvpStatus,
-} from "../../shared/types/domain-enums";
+} from "@shared/types/domain-enums";
 
 import type {
   AIFactor,
   AdvisorInsightBase,
   AdvisorLayer,
-} from "../../shared/types/ai-intelligence";
+} from "@shared/types/ai-intelligence";
 
 // ═══════════════════════════════════════════════════════════
 // §1 DOMAIN-SPECIFIC ENUMS

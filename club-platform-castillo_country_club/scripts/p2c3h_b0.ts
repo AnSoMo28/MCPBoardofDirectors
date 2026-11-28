@@ -1,0 +1,1515 @@
+/**
+ * P2-C3h · B0 — Composition Root + Agent Registry + HITL closure
+ * Ejecutar desde la RAIZ: npx tsx scripts/p2c3h_b0.ts
+ * Reporte: p2c3h_b0_report.txt
+ *
+ * Sellado: F-1 F-2 F-2b F-3 F-8 W-2b W-3(B0.5) W-4 W-5 W-6 parcial.
+ * Gates: py_compile · smoke (19 agentes · 196 tools · compat · RBAC 196/196
+ * · executor HITL · HTTP) · git status.
+ */
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { spawnSync } from "node:child_process";
+
+const ROOT = process.cwd();
+const BE = path.join(ROOT, "backend");
+const REPORT: string[] = [];
+const say = (s = ""): void => { console.log(s); REPORT.push(s); };
+const rel = (p: string): string => path.relative(ROOT, p).replaceAll("\\", "/");
+const W = (p: string, c: string): void => {
+  fs.mkdirSync(path.dirname(p), { recursive: true });
+  fs.writeFileSync(p, c, "utf8");
+  say(`  ✓ escrito ${rel(p)} (${c.split("\n").length} líneas)`);
+};
+
+if (!fs.existsSync(path.join(BE, "src/club_mcp/agents/base.py"))) {
+  console.error("✗ Ejecutar desde la raíz del repo (backend/src no encontrado)");
+  process.exit(1);
+}
+say("P2-C3h · B0 — composition root + registry + HITL");
+try { say(`  base: ${spawnSync("git", ["log", "--oneline", "-1"], { cwd: ROOT, encoding: "utf8" }).stdout.trim()}`); } catch { /* noop */ }
+try {
+  const st = spawnSync("git", ["status", "--porcelain"], { cwd: ROOT, encoding: "utf8" }).stdout.trim();
+  say(st ? `  ⚠ árbol NO limpio (${st.split("\n").length} cambios previos) — git es el rollback` : "  · árbol limpio ✓");
+} catch { /* noop */ }
+say("");
+
+// ════════════════ 1 · registry.py (NUEVO) ════════════════
+const PY_REGISTRY = String.raw`"""Agent & tool registry — the single source of truth for tool identity.
+
+P2-C3h B0. The index is COMPUTED from live agent instances (via @MCPTool
+metadata), so it can never drift from the code that actually runs. It
+powers:
+
+  * REST dispatch (api/routes/agents.py) — canonical + legacy keys
+  * GET /api/agents catalog (discovery, codegen-ready)
+  * RBAC policy resolution (auth/rbac.permission_for)
+  * Compat burn-down telemetry (legacy keys -> 0, observable)
+
+Design:
+  * COMPAT is DATA, not code: AGENT_ALIASES + TOOL_ALIASES map legacy
+    frontend keys to canonical pairs. Every compat hit is counted and
+    surfaced via Deprecation/Sunset headers by the routes layer.
+  * No silent fallbacks: unknown keys raise ResolutionError with fuzzy
+    suggestions.
+"""
+from __future__ import annotations
+
+import difflib
+import inspect
+from collections import Counter
+from dataclasses import dataclass
+from typing import Any, Iterable, Optional
+
+from club_mcp.agents.base import BaseAgent
+
+# ═══════════════════════════════════════════════════════════
+# Legacy -> canonical maps (DATA — edit here, no code changes)
+# Seeded ONLY with pairs verified in P2-C3h h3/h4 (params+read
+# compatible). Param-mismatch pairs (reports.*, satisfaction survey
+# reads, etc.) wait for their adapter batches (B2/B3).
+# ═══════════════════════════════════════════════════════════
+
+AGENT_ALIASES: dict[str, str] = {
+    "families": "family_profile",
+    "guests": "guest_management",
+    "facilities": "facility_management",
+    "hitl": "executive_dashboard",
+    "engagement": "member_engagement",
+}
+
+# Key: canonical agent. Value: {legacy_tool: canonical_tool | (agent, tool)}
+TOOL_ALIASES: dict[str, dict[str, Any]] = {
+    "family_profile": {
+        "get_family": "family_get_profile",
+        "create_family": "family_create_profile",
+        "update_family": "family_update_members",
+        "list_families": "family_search",
+        "search_families": "family_search",
+        "get_activity_history": "family_get_activity_history",
+        "get_social_graph": "family_get_social_graph",
+    },
+    "facility_management": {
+        "get_reservations": "get_facility_reservations",
+        "list_reservations": "get_facility_reservations",
+        "get_utilization": "get_amenity_utilization",
+        "list_available_facilities": "manage_facilities",
+    },
+    "finance": {
+        "get_family_account": "finance_account_status",
+    },
+    "communication": {
+        "get_communication_history": "get_notification_history",
+    },
+    "executive_dashboard": {
+        # cross-agent: the tool lives in finance, params match exactly
+        "generate_ai_analysis": ("finance", "generate_ai_analysis"),
+    },
+    # reports.* intentionally unmapped: per-tool cross-agent targets with
+    # param adapters -> batch B2.
+}
+
+
+class ResolutionError(KeyError):
+    """Unknown (agent_key, tool_key) — carries fuzzy suggestions."""
+
+    def __init__(self, agent_key: str, tool_key: str, suggestions: list[str]) -> None:
+        super().__init__(f"{agent_key}.{tool_key}")
+        self.agent_key = agent_key
+        self.tool_key = tool_key
+        self.suggestions = suggestions
+        self.suggestion_text = (
+            "Sugerencias: " + ", ".join(suggestions)
+            if suggestions
+            else "Catálogo completo: GET /api/agents"
+        )
+
+
+@dataclass(frozen=True)
+class ParamSpec:
+    name: str
+    required: bool
+    type_name: str
+
+
+@dataclass(frozen=True)
+class ToolSpec:
+    name: str
+    agent: str
+    description: str
+    approval: str
+    approver_roles: tuple[str, ...]
+    params: tuple[ParamSpec, ...]
+    method_name: str
+
+
+@dataclass
+class Resolved:
+    agent: BaseAgent
+    spec: ToolSpec
+    requested: tuple[str, str]
+    canonical: tuple[str, str]
+    via_alias_agent: bool
+    via_alias_tool: bool
+
+    @property
+    def via_compat(self) -> bool:
+        return self.via_alias_agent or self.via_alias_tool
+
+
+def _type_name(annotation: Any) -> str:
+    if annotation is inspect.Parameter.empty:
+        return "any"
+    text = str(annotation)
+    return text if text else "any"
+
+
+class AgentRegistry:
+    """Indexes agents and their @MCPTool methods at construction time."""
+
+    def __init__(self, agents: Iterable[BaseAgent]) -> None:
+        self._agents: dict[str, BaseAgent] = {}
+        self._tools: dict[str, dict[str, ToolSpec]] = {}
+        for agent in agents:
+            name = getattr(agent, "agent_name", None)
+            if not name:
+                raise ValueError(f"Agente sin agent_name: {type(agent).__name__}")
+            if name in self._agents:
+                # W-2b guard: duplicate wiring is a composition bug — fail loud.
+                raise ValueError(
+                    f"agent_name duplicado '{name}' — bug en el composition root"
+                )
+            tools: dict[str, ToolSpec] = {}
+            for attr_name in dir(agent):
+                if attr_name.startswith("_"):
+                    continue
+                attr = getattr(agent, attr_name, None)
+                if not callable(attr) or not getattr(attr, "_mcp_tool", False):
+                    continue
+                sig = inspect.signature(attr)
+                params = tuple(
+                    ParamSpec(p.name, p.default is inspect.Parameter.empty, _type_name(p.annotation))
+                    for p in sig.parameters.values()
+                    if p.name != "self" and p.kind not in (p.VAR_POSITIONAL, p.VAR_KEYWORD)
+                )
+                tools[attr._tool_name] = ToolSpec(
+                    name=attr._tool_name,
+                    agent=name,
+                    description=attr._tool_description,
+                    approval=attr._tool_approval.value,
+                    approver_roles=tuple(getattr(attr, "_tool_approver_roles", []) or []),
+                    params=params,
+                    method_name=attr_name,
+                )
+            self._agents[name] = agent
+            self._tools[name] = tools
+        self.compat_hits: Counter = Counter()
+
+    # ── Queries ────────────────────────────────────────────
+
+    @property
+    def agents(self) -> dict[str, BaseAgent]:
+        return self._agents
+
+    @property
+    def tools_by_agent(self) -> dict[str, dict[str, ToolSpec]]:
+        return self._tools
+
+    @property
+    def total_tools(self) -> int:
+        return sum(len(tools) for tools in self._tools.values())
+
+    def resolve(self, agent_key: str, tool_key: str) -> Resolved:
+        canonical_agent = AGENT_ALIASES.get(agent_key, agent_key)
+        via_agent = canonical_agent != agent_key
+        agent = self._agents.get(canonical_agent)
+        if agent is None:
+            raise ResolutionError(agent_key, tool_key, self._suggest(agent_key, tool_key))
+
+        alias_entry = TOOL_ALIASES.get(canonical_agent, {}).get(tool_key)
+        if isinstance(alias_entry, tuple):
+            target_agent, target_tool = alias_entry
+        elif isinstance(alias_entry, str):
+            target_agent, target_tool = canonical_agent, alias_entry
+        else:
+            target_agent, target_tool = canonical_agent, tool_key
+        via_tool = (target_tool != tool_key) or (target_agent != canonical_agent)
+
+        spec = self._tools.get(target_agent, {}).get(target_tool)
+        if spec is None:
+            raise ResolutionError(agent_key, tool_key, self._suggest(agent_key, tool_key))
+
+        if via_agent or via_tool:
+            self.compat_hits[f"{agent_key}.{tool_key}"] += 1
+        return Resolved(
+            agent=agent,
+            spec=spec,
+            requested=(agent_key, tool_key),
+            canonical=(target_agent, target_tool),
+            via_alias_agent=via_agent,
+            via_alias_tool=via_tool,
+        )
+
+    # ── Catalog ────────────────────────────────────────────
+
+    def catalog(self) -> dict:
+        return {
+            "status": "success",
+            "total_agents": len(self._agents),
+            "total_tools": self.total_tools,
+            "compat_hits": dict(self.compat_hits),
+            "agents": [self._agent_payload(name) for name in sorted(self._agents)],
+        }
+
+    def agent_catalog(self, name: str) -> Optional[dict]:
+        canonical = AGENT_ALIASES.get(name, name)
+        if canonical not in self._agents:
+            return None
+        payload = self._agent_payload(canonical)
+        if canonical != name:
+            payload["canonical_name"] = canonical
+        return payload
+
+    def _agent_payload(self, name: str) -> dict:
+        agent = self._agents[name]
+        tools = self._tools[name]
+        return {
+            "name": name,
+            "description": getattr(agent, "description", ""),
+            "tools_count": len(tools),
+            "tools": [
+                self._tool_payload(t)
+                for t in sorted(tools.values(), key=lambda s: s.name)
+            ],
+        }
+
+    def _tool_payload(self, spec: ToolSpec) -> dict:
+        return {
+            "name": spec.name,
+            "description": spec.description,
+            "approval": spec.approval,
+            "approver_roles": list(spec.approver_roles),
+            "params": [
+                {"name": p.name, "required": p.required, "type": p.type_name}
+                for p in spec.params
+            ],
+        }
+
+    # ── Suggestions ────────────────────────────────────────
+
+    def _suggest(self, agent_key: str, tool_key: str, limit: int = 3) -> list[str]:
+        target = f"{agent_key}.{tool_key}"
+        pool = [f"{a}.{t}" for a, tools in self._tools.items() for t in tools]
+        pool += [f"{alias}.{a}" for alias, a in AGENT_ALIASES.items()]
+        close = difflib.get_close_matches(target, pool, n=limit, cutoff=0.55)
+        if close:
+            return close
+        tool_matches = difflib.get_close_matches(
+            tool_key,
+            [t for tools in self._tools.values() for t in tools],
+            n=limit,
+            cutoff=0.45,
+        )
+        out: list[str] = []
+        for t in tool_matches:
+            for a, tools in self._tools.items():
+                if t in tools:
+                    out.append(f"{a}.{t}")
+                    break
+        return out
+
+    def suggest_agent(self, name: str, limit: int = 3) -> list[str]:
+        pool = list(self._agents) + list(AGENT_ALIASES)
+        return difflib.get_close_matches(name, pool, n=limit, cutoff=0.6)
+`;
+
+// ════════════════ 2 · bootstrap.py (NUEVO) ════════════════
+const PY_BOOTSTRAP = String.raw`"""Composition root — the ONLY place agents are instantiated.
+
+P2-C3h B0. Both transports (FastAPI REST bridge + FastMCP server) build
+from this module, so they can never diverge again. Sealed findings
+(h5-wiring):
+
+  F-1   server.py used claude_service before assigning it (UnboundLocalError)
+  F-2   FamilyProfileAgent positional mismatch (3 args -> 2-param __init__)
+  F-2b  server.py logged agent.name (attribute does not exist)
+  F-3   api/app.py module-level app had ZERO agents (REST = 404 everywhere)
+  F-8   member_360 & ml_intelligence were never instantiated (20 tools absent)
+  W-2b  CommunicationAgent was instantiated twice (with/without rag_service)
+
+Wiring is signature-driven with an explicit override table: constructor
+params are matched BY NAME against shared infrastructure (repos,
+approval engine, notifier, claude service, club config, rag service).
+Adding an agent = one line in _AGENT_MODULES.
+
+HITL closure (B0.5): _EXECUTOR_BINDINGS registers post-approval
+executors on the shared ApprovalEngine — approving now EXECUTES.
+Verified seed only; remaining pairs land with their batches.
+"""
+from __future__ import annotations
+
+import importlib
+import inspect
+import logging
+import re
+from dataclasses import dataclass
+from typing import Any, Callable, Optional
+
+from club_mcp.agents.base import BaseAgent
+from club_mcp.registry import AgentRegistry
+
+logger = logging.getLogger(__name__)
+
+_AGENT_MODULES: list[str] = [
+    "family_profile",
+    "event_orchestrator",
+    "age_group",
+    "finance",
+    "wellness",
+    "compliance",
+    "sports_recreation_agent",
+    "cultural_social_agent",
+    "communication_agent",
+    "facility_management_agent",
+    "member_engagement_agent",
+    "guest_management_agent",
+    "proactive_recommendation_agent",
+    "document_intelligence_agent",
+    "executive_dashboard_agent",
+    "satisfaction_agent",
+    "advisor_intelligence",
+    # F-8: these two were never instantiated by server.py — their 20 tools
+    # existed in source but not in the running system.
+    "member_360_agent",
+    "ml_intelligence",
+]
+
+# Generic "repo" constructor param -> repository module key.
+_REPO_BY_MODULE: dict[str, str] = {
+    "family_profile": "family_repo",
+    "event_orchestrator": "event_repo",
+    "age_group": "age_group_repo",
+    "wellness": "wellness_repo",
+    "compliance": "compliance_repo",
+    "sports_recreation_agent": "sports_recreation_repo",
+    "cultural_social_agent": "cultural_social_repo",
+    "communication_agent": "communication_repo",
+    "facility_management_agent": "facility_management_repo",
+    "member_engagement_agent": "member_engagement_repo",
+    "guest_management_agent": "guest_management_repo",
+    "proactive_recommendation_agent": "proactive_recommendation_repo",
+    "document_intelligence_agent": "document_intelligence_repo",
+    "executive_dashboard_agent": "executive_dashboard_repo",
+    "satisfaction_agent": "satisfaction_repo",
+    "member_360_agent": "member_360_repo",
+    "ml_intelligence": "ml_intelligence_repo",
+    # finance/advisor wire by exact param name (finance_repo / claude_service)
+}
+
+# Post-approval executors (verified pairs only — extend per batch).
+_EXECUTOR_BINDINGS: list[tuple[str, str, str]] = [
+    ("finance", "finance_invoice_create", "execute_invoice_create"),
+    ("executive_dashboard", "generate_quarterly_board_report", "execute_board_report"),
+]
+
+
+def _snake(name: str) -> str:
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
+
+
+def _load_repo_class(repo_key: str) -> type:
+    module_name = f"club_mcp.db.repositories.{repo_key}"
+    module = importlib.import_module(module_name)
+    target = repo_key.removesuffix("_repo")
+    for attr_name in dir(module):
+        attr = getattr(module, attr_name)
+        if not inspect.isclass(attr):
+            continue
+        if _snake(attr_name).removesuffix("_repository") == target:
+            return attr
+    raise LookupError(f"Repository class not found for '{repo_key}' in {module_name}")
+
+
+def _agent_class(module_name: str) -> type:
+    module = importlib.import_module(f"club_mcp.agents.{module_name}")
+    for attr_name in dir(module):
+        attr = getattr(module, attr_name)
+        if (
+            inspect.isclass(attr)
+            and attr is not BaseAgent
+            and issubclass(attr, BaseAgent)
+            and attr.__module__ == module.__name__
+        ):
+            return attr
+    raise LookupError(f"No BaseAgent subclass in club_mcp.agents.{module_name}")
+
+
+def _bind_executor(agent: BaseAgent, method_name: str) -> Callable:
+    """Adapt an execute_* method to the engine's executor(**params) call.
+
+    Single-param executors take the whole params dict; multi-param ones
+    take the params as kwargs.
+    """
+    method = getattr(agent, method_name, None)
+    if method is None:
+        raise AttributeError(
+            f"{agent.agent_name} no tiene el método '{method_name}'"
+        )
+    sig = inspect.signature(method)
+    free = [
+        p for p in sig.parameters.values()
+        if p.kind not in (p.VAR_POSITIONAL, p.VAR_KEYWORD)
+    ]
+    if len(free) == 1:
+        only = free[0].name
+
+        async def _dict_wrapper(**kwargs: Any) -> Any:
+            return await method(**{only: kwargs})
+
+        return _dict_wrapper
+
+    async def _kwargs_wrapper(**kwargs: Any) -> Any:
+        return await method(**kwargs)
+
+    return _kwargs_wrapper
+
+
+@dataclass
+class Runtime:
+    agents: list[BaseAgent]
+    registry: AgentRegistry
+    mcp: Any
+    approval_engine: Any
+    claude_service: Any
+    notifier: Any
+
+
+def build_runtime() -> Runtime:
+    from fastmcp import FastMCP
+
+    from club_mcp.ai.claude_service import ClaudeService
+    from club_mcp.config.club_registry import get_club_config
+    from club_mcp.hitl.approval_engine import ApprovalEngine
+    from club_mcp.hitl.notifier import HITLNotifier
+
+    # F-1: claude_service FIRST — it feeds DocumentIntelligenceRepository.
+    claude_service = ClaudeService()
+    approval_engine = ApprovalEngine()
+    notifier = HITLNotifier()
+    club_config = get_club_config("castillo_country_club")
+
+    repo_cache: dict[str, Any] = {}
+
+    def repo_for(key: str) -> Any:
+        if key not in repo_cache:
+            cls = _load_repo_class(key)
+            if key == "document_intelligence_repo":
+                repo_cache[key] = cls(claude_service=claude_service)
+            else:
+                repo_cache[key] = cls()
+        return repo_cache[key]
+
+    # rag_service comes from the document repo (single CommunicationAgent, W-2b)
+    doc_repo = repo_for("document_intelligence_repo")
+    rag_service = getattr(doc_repo, "_rag_service", None)
+
+    agents: list[BaseAgent] = []
+    for module_name in _AGENT_MODULES:
+        cls = _agent_class(module_name)
+        sig = inspect.signature(cls.__init__)
+        kwargs: dict[str, Any] = {}
+        for pname, p in sig.parameters.items():
+            if pname == "self":
+                continue
+            repo_key: Optional[str] = None
+            if pname == "repo":
+                repo_key = _REPO_BY_MODULE.get(module_name)
+            elif pname.endswith("_repo"):
+                repo_key = pname
+            if repo_key is not None:
+                kwargs[pname] = repo_for(repo_key)
+            elif pname == "approval_engine":
+                kwargs[pname] = approval_engine
+            elif pname == "notifier":
+                kwargs[pname] = notifier
+            elif pname == "claude_service":
+                kwargs[pname] = claude_service
+            elif pname == "club_config":
+                kwargs[pname] = club_config
+            elif pname == "rag_service":
+                kwargs[pname] = rag_service
+            elif p.default is inspect.Parameter.empty:
+                kwargs[pname] = None
+                logger.warning(
+                    "[bootstrap] %s.%s sin resolución explícita — None",
+                    cls.__name__, pname,
+                )
+        agents.append(cls(**kwargs))
+        logger.info("[bootstrap] agente cableado: %s", agents[-1].agent_name)
+
+    # MCP transport (registration with W-2b dedupe guard + F-2b fix)
+    mcp = FastMCP(name="Castillo Country Club MCP", version="0.2.0")
+    total_tools = 0
+    seen: set[str] = set()
+    for agent in agents:
+        if agent.agent_name in seen:
+            logger.warning("[bootstrap] agente duplicado ignorado: %s", agent.agent_name)
+            continue
+        seen.add(agent.agent_name)
+        count = agent.register_with_mcp(mcp)
+        total_tools += count
+        logger.info("Agent registered: %s (%d tools)", agent.agent_name, count)
+
+    registry = AgentRegistry(agents)
+
+    # B0.5 — close the HITL loop
+    for agent_name, tool_name, method_name in _EXECUTOR_BINDINGS:
+        target = next((a for a in agents if a.agent_name == agent_name), None)
+        if target is None:
+            logger.warning("[bootstrap] executor: agente '%s' no encontrado", agent_name)
+            continue
+        try:
+            approval_engine.register_executor(
+                agent_name, tool_name, _bind_executor(target, method_name)
+            )
+            logger.info(
+                "[bootstrap] executor HITL: %s.%s → %s",
+                agent_name, tool_name, method_name,
+            )
+        except AttributeError as exc:
+            logger.warning("[bootstrap] executor omitido: %s", exc)
+
+    logger.info(
+        "Runtime listo: %d agentes · %d tools · %d executores HITL",
+        len(agents), total_tools, len(_EXECUTOR_BINDINGS),
+    )
+    return Runtime(
+        agents=agents,
+        registry=registry,
+        mcp=mcp,
+        approval_engine=approval_engine,
+        claude_service=claude_service,
+        notifier=notifier,
+    )
+
+
+_RUNTIME: Optional[Runtime] = None
+
+
+def get_runtime() -> Runtime:
+    """Process-wide singleton (tests may call build_runtime directly)."""
+    global _RUNTIME
+    if _RUNTIME is None:
+        _RUNTIME = build_runtime()
+    return _RUNTIME
+`;
+
+// ════════════════ 3 · app.py (REESCRITURA) ════════════════
+const PY_APP = String.raw`"""FastAPI application factory for the Castillo Country Club API bridge.
+
+P2-C3h B0 — self-wiring composition:
+  * OLD: module-level app = create_api_app() built the app with ZERO
+    agents -> every /api/agents/* call 404'd and /api/chat 503'd. The
+    REST bridge and the MCP server were disjoint surfaces.
+  * NEW: when agents are not injected (tests), the app bootstraps the
+    full runtime via club_mcp.bootstrap — the SAME composition root the
+    MCP server uses. One wiring, two transports.
+"""
+from __future__ import annotations
+
+import logging
+import os
+from contextlib import asynccontextmanager
+from typing import Any
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from club_mcp.agents.base import BaseAgent
+from club_mcp.api.routes import agents, auth, chat, health
+from club_mcp.api.routes.documents import router as documents_router
+from club_mcp.registry import AgentRegistry
+
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup / shutdown lifecycle for the API."""
+    engine = getattr(app.state, "approval_engine", None)
+    if engine is not None and hasattr(engine, "start_expiry_task"):
+        await engine.start_expiry_task(interval_seconds=300)
+        logger.info("[startup] HITL expiry task started (interval=300s)")
+
+    registry = getattr(app.state, "registry", None)
+    if registry is not None:
+        logger.info(
+            "[startup] API ready: %d agents · %d tools · compat: %s",
+            app.state.agents_count,
+            app.state.tools_count,
+            dict(registry.compat_hits) or "sin hits",
+        )
+    else:
+        logger.info(
+            "[startup] API ready: %d agents · %d tools",
+            app.state.agents_count,
+            app.state.tools_count,
+        )
+
+    yield
+    logger.info("[shutdown] API shutting down")
+
+
+def create_api_app(
+    agents_list: list[BaseAgent] | None = None,
+    mcp_server: Any = None,
+    claude_service: Any = None,
+) -> FastAPI:
+    """Create and configure the FastAPI application.
+
+    With no arguments, the full runtime is bootstrapped from
+    club_mcp.bootstrap (F-3 fix). Tests may inject agents directly.
+    """
+    app = FastAPI(
+        title="Castillo Country Club API",
+        description="API bridge para el MCP Server del Castillo Country Club",
+        version="0.2.0",
+        lifespan=lifespan,
+    )
+
+    if agents_list is None:
+        from club_mcp.bootstrap import get_runtime
+
+        runtime = get_runtime()
+        agents_list = runtime.agents
+        mcp_server = mcp_server or runtime.mcp
+        claude_service = claude_service or runtime.claude_service
+        logger.info("API app auto-cableada desde bootstrap (composition root)")
+
+    registry = AgentRegistry(agents_list)
+
+    app.state.agents = {a.agent_name: a for a in agents_list}
+    app.state.registry = registry
+    app.state.mcp_server = mcp_server
+    app.state.claude_service = claude_service
+    app.state.tools_count = registry.total_tools
+    app.state.agents_count = len(agents_list)
+    app.state.approval_engine = (
+        getattr(agents_list[0], "approval_engine", None) if agents_list else None
+    )
+
+    origins_env = os.environ.get(
+        "CLUB_API_CORS_ORIGINS",
+        "http://localhost:5173,http://localhost:3000",
+    )
+    origins = [o.strip() for o in origins_env.split(",") if o.strip()]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+    app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
+    app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+    app.include_router(health.router, prefix="/api", tags=["health"])
+    app.include_router(documents_router, prefix="/api/documents", tags=["documents"])
+
+    logger.info(
+        "API app created: %d agents, %d tools",
+        app.state.agents_count,
+        app.state.tools_count,
+    )
+    return app
+
+
+app = create_api_app()
+`;
+
+// ════════════════ 4 · routes/agents.py (REESCRITURA) ════════════════
+const PY_ROUTES = String.raw`"""Agent tool proxy route — registry-driven dispatch with RBAC + compat.
+
+P2-C3h B0:
+  * Dispatch resolves (agent_key, tool_key) through AgentRegistry:
+    canonical names, legacy compat aliases (Deprecation + Sunset
+    headers, observable burn-down), fuzzy suggestions on 404.
+  * RBAC runs on the CANONICAL (agent, tool) AFTER resolution, using
+    registry-derived policy (auth/rbac.permission_for) — legacy keys
+    cannot dodge the gate.
+  * Identity fields (requested_by / approved_by / rejected_by) are
+    stripped from the client payload and injected from the JWT —
+    approval identity can no longer be spoofed.
+  * Responses are stamped with _approval_level/_agent so the REST
+    envelope matches MCP's (REST bypasses base.py's wrapper).
+  * GET /api/agents -> full catalog (discovery & codegen-ready).
+"""
+from __future__ import annotations
+
+import inspect
+import logging
+from datetime import datetime, timedelta, timezone
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from pydantic import BaseModel
+
+from club_mcp.auth.jwt_service import TokenPayload
+from club_mcp.auth.middleware import get_current_user
+from club_mcp.auth.rbac import check_permission, permission_for
+from club_mcp.registry import AgentRegistry, ResolutionError
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter()
+
+IDENTITY_FIELDS = ("requested_by", "approved_by", "rejected_by")
+COMPAT_SUNSET_DAYS = 90
+
+
+class ToolCallRequest(BaseModel):
+    params: dict[str, Any] = {}
+
+
+def _registry(request: Request) -> AgentRegistry:
+    registry = getattr(request.app.state, "registry", None)
+    if registry is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Agent registry no inicializado (composition root ausente)",
+        )
+    return registry
+
+
+@router.get("")
+def catalog(request: Request) -> dict:
+    """Full agent/tool catalog — public metadata for discovery & codegen."""
+    return _registry(request).catalog()
+
+
+@router.get("/{agent_name}")
+def agent_detail(agent_name: str, request: Request) -> dict:
+    registry = _registry(request)
+    payload = registry.agent_catalog(agent_name)
+    if payload is None:
+        suggestions = registry.suggest_agent(agent_name)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=(
+                f"Agente '{agent_name}' no encontrado. "
+                + (
+                    "Sugerencias: " + ", ".join(suggestions)
+                    if suggestions
+                    else "Catálogo: GET /api/agents"
+                )
+            ),
+        )
+    return payload
+
+
+@router.post("/{agent_key}/{tool_key}")
+async def call_agent_tool(
+    agent_key: str,
+    tool_key: str,
+    body: ToolCallRequest,
+    request: Request,
+    response: Response,
+    current_user: TokenPayload = Depends(get_current_user),
+) -> dict:
+    """Call an MCP tool on an agent with registry resolution + RBAC."""
+    registry = _registry(request)
+
+    try:
+        resolved = registry.resolve(agent_key, tool_key)
+    except ResolutionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Tool '{agent_key}.{tool_key}' no registrada. {exc.suggestion_text}",
+        )
+
+    spec = resolved.spec
+
+    required = permission_for(spec.agent, spec.name, spec.approval)
+    if required is not None and not check_permission(current_user.role, required):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                f"Permiso insuficiente para '{spec.agent}.{spec.name}'. "
+                f"Se requiere: {required.value}"
+            ),
+        )
+
+    method = getattr(resolved.agent, spec.method_name)
+
+    params = {k: v for k, v in body.params.items() if k not in IDENTITY_FIELDS}
+    sig = inspect.signature(method)
+    for identity in IDENTITY_FIELDS:
+        if identity in sig.parameters:
+            params[identity] = current_user.sub
+
+    try:
+        result = await method(**params)
+    except TypeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Parámetros inválidos para '{spec.name}': {exc}",
+        )
+    except Exception as exc:
+        logger.exception("Error calling tool %s/%s", spec.agent, spec.name)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error ejecutando '{spec.name}': {exc}",
+        )
+
+    if isinstance(result, dict):
+        result.setdefault("_approval_level", spec.approval)
+        result.setdefault("_agent", spec.agent)
+
+    if resolved.via_compat:
+        sunset = (
+            datetime.now(tz=timezone.utc) + timedelta(days=COMPAT_SUNSET_DAYS)
+        ).strftime("%a, %d %b %Y %H:%M:%S GMT")
+        response.headers["Deprecation"] = "true"
+        response.headers["Sunset"] = sunset
+        response.headers["X-Compat-Key"] = f"{agent_key}.{tool_key}"
+        logger.warning(
+            "[compat] %s.%s → %s.%s (deprecado — migrar callsite)",
+            agent_key, tool_key, spec.agent, spec.name,
+        )
+
+    return result
+`;
+
+// ════════════════ 5 · server.py (REESCRITURA) ════════════════
+const PY_SERVER = String.raw`"""MCP Server entry point for Castillo Country Club.
+
+P2-C3h B0: composition lives in club_mcp.bootstrap — this module is now
+a thin transport adapter. Sealed here (h5-wiring): F-1 (claude_service
+usado antes de asignarse), F-2 (FamilyProfileAgent posicional), F-2b
+(agent.name inexistente), F-8 (member_360/ml_intelligence sin
+instanciar), W-2b (CommunicationAgent doble).
+"""
+from __future__ import annotations
+
+import logging
+import sys
+
+from club_mcp.bootstrap import get_runtime
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(name)-30s | %(levelname)-7s | %(message)s",
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__name__)
+
+
+def create_mcp_server():
+    """Create the FastMCP server from the shared composition root."""
+    return get_runtime().mcp
+
+
+def main() -> None:
+    mcp = create_mcp_server()
+    mcp.run()
+
+
+if __name__ == "__main__":
+    main()
+`;
+
+// ════════════════ 6 · rbac.py (REESCRITURA con guard) ════════════════
+const PY_RBAC = String.raw`"""Role-Based Access Control: permissions, role matrix, tool policy.
+
+P2-C3h B0 — policy derived from the real agent registry:
+
+* The OLD TOOL_PERMISSION_MAP (~50 entries) was ~75% phantom tool names
+  that never existed (family_create, event_list, finance_get_overview...)
+  while ~146 REAL tools had NO gate — any authenticated role could call
+  the financial AI analysis.
+* NEW: permission_for(agent, tool, approval) derives the required
+  permission from a per-agent (read, write) POLICY plus explicit
+  OVERRIDES. Write-ness = approval level in WRITE_LEVELS.
+* Coverage invariant: every registered tool MUST map to a permission —
+  scripts/smoke_b0.py asserts 196/196.
+* Routes re-check on the CANONICAL pair AFTER alias resolution.
+
+Role matrix changes (documented & reviewable):
+* admin: + domains the admin console actually drives, + APPROVE_REQUESTS
+  (previously granted to NO role — approvals were 403 for everyone),
+  + VIEW_ANOMALIES.
+* staff: + VIEW_WELLNESS (class scheduling).
+* socio: + VIEW_WELLNESS, + VIEW_FACILITIES (mi-club reads).
+"""
+from __future__ import annotations
+
+from enum import Enum
+from typing import Optional
+
+
+class Permission(str, Enum):
+    # ── Family ──
+    VIEW_FAMILY_PROFILE = "view_family_profile"
+    EDIT_FAMILY_PROFILE = "edit_family_profile"
+
+    # ── Events ──
+    VIEW_EVENTS = "view_events"
+    CREATE_EVENTS = "create_events"
+    MANAGE_EVENTS = "manage_events"
+
+    # ── Financial ──
+    VIEW_FINANCIAL = "view_financial"
+    MANAGE_FINANCIAL = "manage_financial"
+
+    # ── Wellness ──
+    VIEW_WELLNESS = "view_wellness"
+    MANAGE_WELLNESS = "manage_wellness"
+
+    # ── Compliance ──
+    VIEW_COMPLIANCE = "view_compliance"
+    MANAGE_COMPLIANCE = "manage_compliance"
+
+    # ── Sports ──
+    VIEW_SPORTS = "view_sports"
+    MANAGE_SPORTS = "manage_sports"
+
+    # ── Cultural ──
+    VIEW_CULTURAL = "view_cultural"
+    MANAGE_CULTURAL = "manage_cultural"
+
+    # ── Communications ──
+    VIEW_COMMUNICATIONS = "view_communications"
+    MANAGE_COMMUNICATIONS = "manage_communications"
+
+    # ── Facilities ──
+    VIEW_FACILITIES = "view_facilities"
+    MANAGE_FACILITIES = "manage_facilities"
+
+    # ── Engagement ──
+    VIEW_ENGAGEMENT = "view_engagement"
+    MANAGE_ENGAGEMENT = "manage_engagement"
+
+    # ── Guests ──
+    VIEW_GUESTS = "view_guests"
+    MANAGE_GUESTS = "manage_guests"
+
+    # ── Recommendations ──
+    VIEW_RECOMMENDATIONS = "view_recommendations"
+
+    # ── Documents ──
+    VIEW_DOCUMENTS = "view_documents"
+    MANAGE_DOCUMENTS = "manage_documents"
+
+    # ── Dashboard ──
+    VIEW_DASHBOARD = "view_dashboard"
+    EXPORT_REPORTS = "export_reports"
+    GENERATE_BOARD_REPORT = "generate_board_report"
+
+    # ── Satisfaction ──
+    VIEW_SATISFACTION = "view_satisfaction"
+    MANAGE_SATISFACTION = "manage_satisfaction"
+    SUBMIT_SURVEY = "submit_survey"
+
+    # ── Admin ──
+    MANAGE_USERS = "manage_users"
+    APPROVE_REQUESTS = "approve_requests"
+    VIEW_ANOMALIES = "view_anomalies"
+
+
+# ═══════════════════════════════════════════════════
+# ROLE → PERMISSIONS MATRIX
+# ═══════════════════════════════════════════════════
+
+ROLE_PERMISSIONS: dict[str, set[Permission]] = {
+    "socio": {
+        Permission.VIEW_FAMILY_PROFILE,
+        Permission.VIEW_EVENTS,
+        Permission.SUBMIT_SURVEY,
+        Permission.VIEW_SATISFACTION,
+        Permission.VIEW_GUESTS,
+        Permission.VIEW_RECOMMENDATIONS,
+        # B0: mi-club reads
+        Permission.VIEW_WELLNESS,
+        Permission.VIEW_FACILITIES,
+    },
+    "staff": {
+        Permission.VIEW_FAMILY_PROFILE,
+        Permission.VIEW_EVENTS,
+        Permission.MANAGE_EVENTS,
+        Permission.VIEW_SPORTS,
+        Permission.VIEW_CULTURAL,
+        Permission.VIEW_FACILITIES,
+        Permission.VIEW_GUESTS,
+        Permission.MANAGE_GUESTS,
+        # B0: scheduling de clases
+        Permission.VIEW_WELLNESS,
+    },
+    "admin": {
+        Permission.VIEW_FAMILY_PROFILE,
+        Permission.EDIT_FAMILY_PROFILE,
+        Permission.VIEW_EVENTS,
+        Permission.CREATE_EVENTS,
+        Permission.MANAGE_EVENTS,
+        Permission.VIEW_FINANCIAL,
+        Permission.MANAGE_FINANCIAL,
+        Permission.VIEW_WELLNESS,
+        Permission.MANAGE_WELLNESS,
+        Permission.VIEW_COMPLIANCE,
+        Permission.VIEW_DASHBOARD,
+        Permission.EXPORT_REPORTS,
+        Permission.GENERATE_BOARD_REPORT,
+        Permission.VIEW_SATISFACTION,
+        Permission.MANAGE_SATISFACTION,
+        Permission.MANAGE_USERS,
+        # B0: dominios que la consola admin realmente usa
+        Permission.VIEW_COMMUNICATIONS,
+        Permission.MANAGE_COMMUNICATIONS,
+        Permission.VIEW_FACILITIES,
+        Permission.MANAGE_FACILITIES,
+        Permission.VIEW_ENGAGEMENT,
+        Permission.MANAGE_ENGAGEMENT,
+        Permission.VIEW_GUESTS,
+        Permission.MANAGE_GUESTS,
+        Permission.VIEW_DOCUMENTS,
+        Permission.MANAGE_DOCUMENTS,
+        Permission.VIEW_RECOMMENDATIONS,
+        Permission.VIEW_ANOMALIES,
+        # B0: antes no lo tenía NINGÚN rol — aprobar era 403 universal
+        Permission.APPROVE_REQUESTS,
+    },
+    "junta": {
+        Permission.VIEW_DASHBOARD,
+        Permission.VIEW_FINANCIAL,
+        Permission.EXPORT_REPORTS,
+        Permission.GENERATE_BOARD_REPORT,
+        Permission.VIEW_ANOMALIES,
+    },
+}
+
+
+def check_permission(role: str, permission: Permission) -> bool:
+    """Check if a role has a specific permission."""
+    perms = ROLE_PERMISSIONS.get(role, set())
+    return permission in perms
+
+
+# ═══════════════════════════════════════════════════
+# REGISTRY-DERIVED TOOL POLICY
+# (read, write) por agente — write = semi_auto/hitl/always_human
+# ═══════════════════════════════════════════════════
+
+WRITE_LEVELS = {"semi_auto", "hitl", "always_human"}
+
+AGENT_POLICY: dict[str, tuple[Permission, Permission]] = {
+    "family_profile": (Permission.VIEW_FAMILY_PROFILE, Permission.EDIT_FAMILY_PROFILE),
+    "event_orchestrator": (Permission.VIEW_EVENTS, Permission.MANAGE_EVENTS),
+    "finance": (Permission.VIEW_FINANCIAL, Permission.MANAGE_FINANCIAL),
+    "wellness": (Permission.VIEW_WELLNESS, Permission.MANAGE_WELLNESS),
+    "compliance": (Permission.VIEW_COMPLIANCE, Permission.MANAGE_COMPLIANCE),
+    "sports_recreation": (Permission.VIEW_SPORTS, Permission.MANAGE_SPORTS),
+    "cultural_social": (Permission.VIEW_CULTURAL, Permission.MANAGE_CULTURAL),
+    "communication": (Permission.VIEW_COMMUNICATIONS, Permission.MANAGE_COMMUNICATIONS),
+    "facility_management": (Permission.VIEW_FACILITIES, Permission.MANAGE_FACILITIES),
+    "member_engagement": (Permission.VIEW_ENGAGEMENT, Permission.MANAGE_ENGAGEMENT),
+    "guest_management": (Permission.VIEW_GUESTS, Permission.MANAGE_GUESTS),
+    "proactive_recommendation": (Permission.VIEW_RECOMMENDATIONS, Permission.MANAGE_ENGAGEMENT),
+    "document_intelligence": (Permission.VIEW_DOCUMENTS, Permission.MANAGE_DOCUMENTS),
+    "executive_dashboard": (Permission.VIEW_DASHBOARD, Permission.EXPORT_REPORTS),
+    "satisfaction": (Permission.VIEW_SATISFACTION, Permission.MANAGE_SATISFACTION),
+    "member_360": (Permission.VIEW_DASHBOARD, Permission.VIEW_DASHBOARD),
+    "ml_intelligence": (Permission.VIEW_DASHBOARD, Permission.VIEW_DASHBOARD),
+    "advisor_intelligence": (Permission.VIEW_DASHBOARD, Permission.VIEW_DASHBOARD),
+    "age_group": (Permission.VIEW_DASHBOARD, Permission.MANAGE_EVENTS),
+}
+
+TOOL_PERMISSION_OVERRIDES: dict[tuple[str, str], Permission] = {
+    ("event_orchestrator", "event_create"): Permission.CREATE_EVENTS,
+    ("executive_dashboard", "export_report"): Permission.EXPORT_REPORTS,
+    ("executive_dashboard", "generate_quarterly_board_report"): Permission.GENERATE_BOARD_REPORT,
+    ("executive_dashboard", "get_pending_approvals"): Permission.APPROVE_REQUESTS,
+    ("executive_dashboard", "approve_request"): Permission.APPROVE_REQUESTS,
+    ("executive_dashboard", "reject_request"): Permission.APPROVE_REQUESTS,
+    ("communication", "send_board_package"): Permission.GENERATE_BOARD_REPORT,
+    ("satisfaction", "submit_satisfaction_survey"): Permission.SUBMIT_SURVEY,
+    ("age_group", "age_group_get_activities"): Permission.VIEW_EVENTS,
+    ("age_group", "age_group_recommend_activities"): Permission.VIEW_RECOMMENDATIONS,
+    ("proactive_recommendation", "optimize_pricing"): Permission.MANAGE_FINANCIAL,
+}
+
+
+def permission_for(agent: str, tool: str, approval: str) -> Optional[Permission]:
+    """Required permission for a canonical (agent, tool) pair.
+
+    Returns None only for unknown agents — smoke_b0 asserts this never
+    happens for registered tools (196/196 coverage).
+    """
+    override = TOOL_PERMISSION_OVERRIDES.get((agent, tool))
+    if override is not None:
+        return override
+    policy = AGENT_POLICY.get(agent)
+    if policy is None:
+        return None
+    read_perm, write_perm = policy
+    return write_perm if str(approval).lower() in WRITE_LEVELS else read_perm
+`;
+
+// ════════════════ 7 · smoke_b0.py (NUEVO) ════════════════
+const PY_SMOKE = String.raw`"""B0 smoke gate — proves the backend is ALIVE before migrating anything.
+
+Run: cd backend && PYTHONPATH=src python scripts/smoke_b0.py
+Exit 0 = verde. Cualquier FAIL es accionable: pegarlo en el chat.
+"""
+from __future__ import annotations
+
+import asyncio
+import sys
+import traceback
+
+FAILURES: list[str] = []
+
+
+def check(label: str, cond: bool, extra: str = "") -> None:
+    status = "PASS" if cond else "FAIL"
+    suffix = f" — {extra}" if (extra and not cond) else ""
+    print(f"  [{status}] {label}{suffix}")
+    if not cond:
+        FAILURES.append(label)
+
+
+def main() -> None:
+    from club_mcp.bootstrap import get_runtime
+    from club_mcp.hitl.approval_types import ApprovalLevel
+
+    rt = get_runtime()
+
+    # ── Composición ──
+    names = [a.agent_name for a in rt.agents]
+    check("19 agentes instanciados", len(names) == 19, f"{len(names)}: {sorted(names)}")
+    for expected in ("member_360", "ml_intelligence"):
+        check(f"agente {expected} presente (F-8)", expected in names)
+    check("agent_name duplicados = 0", len(names) == len(set(names)))
+
+    # ── Registro ──
+    check("196 tools en registro", rt.registry.total_tools == 196, f"got {rt.registry.total_tools}")
+    print(
+        "  · tools/agent:",
+        ", ".join(f"{a}={len(t)}" for a, t in sorted(rt.registry.tools_by_agent.items())),
+    )
+
+    # ── Resolve: directo + compat ──
+    r = rt.registry.resolve("family_profile", "family_get_profile")
+    check("resolve directo", r.spec.name == "family_get_profile" and not r.via_compat)
+
+    r = rt.registry.resolve("families", "get_family")
+    check(
+        "compat families.get_family",
+        r.spec.agent == "family_profile" and r.spec.name == "family_get_profile" and r.via_compat,
+    )
+    r = rt.registry.resolve("hitl", "approve_request")
+    check("compat hitl.approve_request", r.spec.agent == "executive_dashboard" and r.via_compat)
+    r = rt.registry.resolve("facilities", "get_reservations")
+    check("compat facilities.get_reservations", r.spec.name == "get_facility_reservations")
+    r = rt.registry.resolve("executive_dashboard", "generate_ai_analysis")
+    check("cross-agent generate_ai_analysis → finance", r.spec.agent == "finance")
+
+    try:
+        rt.registry.resolve("reports", "get_board_report")
+        check("reports.get_board_report rechazado (pendiente B2)", False)
+    except Exception as exc:
+        check("reports.get_board_report rechazado (pendiente B2)", True, str(exc))
+
+    # ── RBAC ──
+    from club_mcp.auth.rbac import Permission, check_permission, permission_for
+
+    check(
+        "approve_request → APPROVE_REQUESTS",
+        permission_for("executive_dashboard", "approve_request", "auto") == Permission.APPROVE_REQUESTS,
+    )
+    check("socio puede submit_survey", check_permission("socio", Permission.SUBMIT_SURVEY))
+    check("socio NO puede view_financial", not check_permission("socio", Permission.VIEW_FINANCIAL))
+    check("admin puede approve_requests", check_permission("admin", Permission.APPROVE_REQUESTS))
+
+    missing = [
+        (a, s.name)
+        for a, tools in rt.registry.tools_by_agent.items()
+        for s in tools.values()
+        if permission_for(a, s.name, s.approval) is None
+    ]
+    check("RBAC cubre 196/196", not missing, f"faltan: {missing[:5]}")
+
+    # ── HITL closure (B0.5) ──
+    async def hitl_flow():
+        engine = rt.approval_engine
+        req = await engine.create_request(
+            agent="finance",
+            tool="finance_invoice_create",
+            params={
+                "family_id": "fam-smoke-001",
+                "items": [{"description": "Smoke test", "quantity": 1, "unit_price": 100.0}],
+                "due_date": "2026-12-01",
+                "notes": "smoke",
+                "tax_rate": 13.0,
+            },
+            requested_by="smoke",
+            approval_level=ApprovalLevel.HITL,
+        )
+        approved = await engine.approve(request_id=req.request_id, approved_by="smoke-admin")
+        return approved, engine.get_execution(req.request_id)
+
+    approved, execution = asyncio.run(hitl_flow())
+    check("approve() ejecuta el executor", execution is not None and execution.get("status") == "success", f"execution={execution}")
+
+    # ── App self-wired (F-3) ──
+    from club_mcp.api.app import app
+
+    check("app.state.agents == 19", app.state.agents_count == 19, str(app.state.agents_count))
+    check("app.state.tools == 196", app.state.tools_count == 196, str(app.state.tools_count))
+
+    # ── HTTP (si httpx está disponible) ──
+    try:
+        from fastapi.testclient import TestClient
+    except Exception:
+        print("  [SKIP] fastapi.testclient no disponible — checks internos suficientes")
+        TestClient = None
+
+    if TestClient is not None:
+        client = TestClient(app)
+        resp = client.get("/api/health")
+        check("GET /api/health 200", resp.status_code == 200, str(resp.status_code))
+        resp = client.get("/api/agents")
+        check(
+            "GET /api/agents catalog 200 + 196 tools",
+            resp.status_code == 200 and resp.json().get("total_tools") == 196,
+            f"{resp.status_code} {str(resp.json())[:200]}",
+        )
+        resp = client.post(
+            "/api/agents/family_profile/family_get_profile",
+            json={"params": {"family_id": "x"}},
+        )
+        check("POST sin token → 401", resp.status_code == 401, str(resp.status_code))
+
+    print()
+    if FAILURES:
+        print(f"✗ B0 SMOKE: {len(FAILURES)} fallo(s): {FAILURES}")
+        sys.exit(1)
+    print("✓ B0 SMOKE VERDE: 19 agentes · 196 tools · compat · RBAC 196/196 · HITL cierra")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        traceback.print_exc()
+        sys.exit(2)
+`;
+
+// ════════════════ 8 · Guards + escritura ════════════════
+function read(p: string): string { return fs.readFileSync(p, "utf8"); }
+
+function patch(p: string, anchor: string, replacement: string, label: string): void {
+  const src = read(p);
+  const first = src.indexOf(anchor);
+  if (first === -1) { say(`  ✗ ${label}: ancla no encontrada en ${rel(p)} — ABORTAR TODO`); throw new Error(label); }
+  if (src.indexOf(anchor, first + 1) !== -1) { say(`  ✗ ${label}: ancla duplicada — ABORTAR TODO`); throw new Error(label); }
+  fs.writeFileSync(p, src.slice(0, first) + replacement + src.slice(first + anchor.length), "utf8");
+  say(`  ✓ parche ${label} aplicado a ${rel(p)}`);
+}
+
+say("── §1 Guardas previas ──");
+{
+  // Guard A: TOOL_PERMISSION_MAP sin otros importers
+  const offenders: string[] = [];
+  const stack = [path.join(BE, "src")];
+  while (stack.length) {
+    const dir = stack.pop()!;
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) { if (e.name !== "__pycache__") stack.push(p); continue; }
+      if (!e.name.endsWith(".py")) continue;
+      if (p.replaceAll("\\", "/").endsWith("auth/rbac.py") || p.replaceAll("\\", "/").endsWith("api/routes/agents.py")) continue;
+      if (read(p).includes("TOOL_PERMISSION_MAP")) offenders.push(rel(p));
+    }
+  }
+  if (offenders.length) {
+    say(`  ✗ TOOL_PERMISSION_MAP usado en: ${offenders.join(", ")} — abortando (revisar antes)`);
+    process.exit(1);
+  }
+  say("  · TOOL_PERMISSION_MAP sin importers externos ✓");
+}
+say("");
+
+say("── §2 Archivos nuevos ──");
+W(path.join(BE, "src/club_mcp/registry.py"), PY_REGISTRY);
+W(path.join(BE, "src/club_mcp/bootstrap.py"), PY_BOOTSTRAP);
+W(path.join(BE, "scripts/smoke_b0.py"), PY_SMOKE);
+say("");
+
+say("── §3 Reescrituras ──");
+W(path.join(BE, "src/club_mcp/api/app.py"), PY_APP);
+W(path.join(BE, "src/club_mcp/api/routes/agents.py"), PY_ROUTES);
+W(path.join(BE, "src/club_mcp/server.py"), PY_SERVER);
+W(path.join(BE, "src/club_mcp/auth/rbac.py"), PY_RBAC);
+say("");
+
+say("── §4 Parches anclados ──");
+// F-2: family_profile acepta approval_engine/notifier (wiring por nombre + split-brain)
+patch(
+  path.join(BE, "src/club_mcp/agents/family_profile.py"),
+  `    def __init__(
+        self,
+        repo: FamilyRepository | None = None,
+        rag_service: Any | None = None,
+    ) -> None:
+        super().__init__()
+        self.repo = repo or FamilyRepository()
+        self.rag_service = rag_service
+        self.system_prompt = AGENT_SYSTEM_PROMPTS.get("family_profile", "")`,
+  `    def __init__(
+        self,
+        repo: FamilyRepository | None = None,
+        approval_engine: Any | None = None,
+        notifier: Any | None = None,
+        rag_service: Any | None = None,
+    ) -> None:
+        super().__init__()
+        self.repo = repo or FamilyRepository()
+        # P2-C3h B0 (F-2): acepta el engine compartido del composition root
+        if approval_engine is not None:
+            self.approval_engine = approval_engine
+        self.notifier = notifier
+        self.rag_service = rag_service
+        self.system_prompt = AGENT_SYSTEM_PROMPTS.get("family_profile", "")`,
+  "family_profile.__init__",
+);
+say("");
+
+// B0.5: ApprovalEngine — registry de executores
+patch(
+  path.join(BE, "src/club_mcp/hitl/approval_engine.py"),
+  `    def __init__(self) -> None:
+        self._requests: dict[UUID, ApprovalRequest] = {}
+        self._callbacks: dict[UUID, Callable] = {}`,
+  `    def __init__(self) -> None:
+        self._requests: dict[UUID, ApprovalRequest] = {}
+        self._callbacks: dict[UUID, Callable] = {}
+        # P2-C3h B0.5 — cierra el loop HITL: antes aprobar solo cambiaba
+        # el status y los 38 execute_* de los agentes quedaban huérfanos.
+        self._executors: dict[tuple[str, str], Callable] = {}
+        self._executions: dict[UUID, Any] = {}
+
+    def register_executor(self, agent: str, tool: str, executor: Callable) -> None:
+        """Registrar el ejecutor post-aprobación para (agent, tool)."""
+        self._executors[(agent, tool)] = executor
+
+    def get_execution(self, request_id: UUID) -> Any | None:
+        """Resultado del ejecutor para una solicitud aprobada (si hubo)."""
+        return self._executions.get(request_id)`,
+  "approval_engine.__init__ + executores",
+);
+
+patch(
+  path.join(BE, "src/club_mcp/hitl/approval_engine.py"),
+  `        callback = self._callbacks.pop(request_id, None)
+        if callback:
+            try:
+                await callback(**request.params)
+            except Exception:
+                logger.exception("[HITL] Callback failed for approved request %s", request_id)
+
+        return request`,
+  `        callback = self._callbacks.pop(request_id, None)
+        if callback:
+            try:
+                await callback(**request.params)
+            except Exception:
+                logger.exception("[HITL] Callback failed for approved request %s", request_id)
+
+        # B0.5 — despachar el ejecutor registrado (si existe) con los
+        # params originales. El fallo se loguea y captura, nunca es fatal:
+        # la aprobación ya está vigente.
+        executor = self._executors.get((request.agent, request.tool))
+        if executor is not None:
+            try:
+                self._executions[request_id] = await executor(**request.params)
+                logger.info("[HITL] Executor ok para %s/%s", request.agent, request.tool)
+            except Exception:
+                logger.exception(
+                    "[HITL] Executor falló para %s/%s", request.agent, request.tool
+                )
+                self._executions[request_id] = {
+                    "status": "error",
+                    "message": "Aprobado, pero la ejecución post-aprobación falló (ver logs).",
+                }
+
+        return request`,
+  "approval_engine.approve dispatch",
+);
+say("");
+
+// ════════════════ 9 · Gates ════════════════
+say("── §5 Gates ──");
+const PY_FILES = [
+  "src/club_mcp/registry.py",
+  "src/club_mcp/bootstrap.py",
+  "src/club_mcp/server.py",
+  "src/club_mcp/api/app.py",
+  "src/club_mcp/api/routes/agents.py",
+  "src/club_mcp/auth/rbac.py",
+  "src/club_mcp/agents/family_profile.py",
+  "src/club_mcp/hitl/approval_engine.py",
+];
+
+function run(cmd: string, args: string[], opts: { cwd: string; env?: Record<string, string> }) {
+  return spawnSync(cmd, args, { cwd: opts.cwd, encoding: "utf8", env: { ...process.env, ...(opts.env ?? {}) } });
+}
+
+let depsRunner: { cmd: string; args: string[] } | null = null;
+{
+  const cands = [
+    { cmd: path.join(BE, ".venv/bin/python"), args: [] as string[] },
+    { cmd: path.join(BE, "venv/bin/python"), args: [] as string[] },
+    { cmd: "uv", args: ["run", "python"] },
+    { cmd: "python3", args: [] as string[] },
+  ];
+  for (const c of cands) {
+    if (c.cmd !== "uv" && !fs.existsSync(c.cmd)) continue;
+    const r = run(c.cmd, [...c.args, "-c", "import fastapi, pydantic, fastmcp"], { cwd: BE, env: { PYTHONPATH: "src" } });
+    if (r.status === 0) { depsRunner = c; break; }
+  }
+}
+
+const compileRunner = depsRunner ?? { cmd: "python3", args: [] as string[] };
+say(`  · intérprete: ${depsRunner ? depsRunner.cmd + " " + depsRunner.args.join(" ") : "python3 (sin deps — smoke manual)"}`);
+
+{
+  const r = run(compileRunner.cmd, [...compileRunner.args, "-m", "py_compile", ...PY_FILES], { cwd: BE });
+  say(r.status === 0 ? "  ✓ py_compile 8/8 archivos" : `  ✗ py_compile FALLO:\n${(r.stderr || r.stdout || "").slice(-2000)}`);
+}
+say("");
+
+if (depsRunner) {
+  say("  · corriendo smoke_b0.py …");
+  const r = run(depsRunner.cmd, [...depsRunner.args, "scripts/smoke_b0.py"], { cwd: BE, env: { PYTHONPATH: "src" } });
+  const out = ((r.stdout || "") + (r.stderr || "")).trim();
+  say(out.split("\n").map((l) => "    " + l).join("\n"));
+  say(r.status === 0 ? "  ✓ SMOKE VERDE" : `  ✗ SMOKE exit=${r.status} — pegar el bloque completo arriba en el chat`);
+} else {
+  say("  [SKIP] smoke: sin intérprete con dependencias. Ejecutar manualmente:");
+  say("      cd backend && PYTHONPATH=src .venv/bin/python scripts/smoke_b0.py   (o el venv/uv que uses)");
+}
+say("");
+
+{
+  const r = run("git", ["status", "--short"], { cwd: ROOT });
+  say("── §6 git status (rollback = git checkout) ──");
+  say((r.stdout || "").trim() || "  · limpio");
+}
+say("");
+
+say("══ B0 completo ─═");
+say("  Siguiente (h7): pegar el tail de gates+smoke → si VERDE, B1 (4 migrables)");
+say("  + B2 (15 cross-agent) estilo C3g, y limpieza de toolNameAdapter.");
+fs.writeFileSync(path.join(ROOT, "p2c3h_b0_report.txt"), REPORT.join("\n") + "\n", "utf8");
+console.log("");
+console.log("✓ reporte: p2c3h_b0_report.txt");

@@ -16,6 +16,7 @@
 import type { BaseInsight } from "@/shared/components/AdvisorBanner";
 import type { SportsDashboardMode } from "../types";
 import "./HeroInsight.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — TYPES
@@ -79,13 +80,14 @@ export function HeroInsight({ insight, ambientMode }: HeroInsightProps) {
 
       {insight.action && (
         <div className="spt-hero__actions">
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="spt-hero__action"
             data-approval={insight.action.approval}
           >
             {insight.action.label}
-          </button>
+          </Button>
         </div>
       )}
     </div>

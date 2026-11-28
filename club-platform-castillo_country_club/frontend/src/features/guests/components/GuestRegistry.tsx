@@ -134,7 +134,8 @@ function PrivilegePanel({
       {Object.entries(PRIVILEGE_CONFIG).map(([key, cfg]) => {
         const hasIt = guest.privileges.includes(key);
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={key}
             type="button"
             onClick={() => onToggle(key, hasIt)}
@@ -145,7 +146,7 @@ function PrivilegePanel({
             aria-label={`${cfg.label}: ${hasIt ? "asignado" : "no asignado"}`}
           >
             {hasIt ? "✓ " : ""}{cfg.label}
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -526,7 +527,8 @@ export default function GuestRegistry() {
                   {Object.entries(PRIVILEGE_CONFIG).map(([key, cfg]) => {
                     const selected = form.privileges.includes(key);
                     return (
-                      <button
+                      <Button
+                        variant="unstyled"
                         key={key}
                         type="button"
                         onClick={() => togglePrivilege(key)}
@@ -535,7 +537,7 @@ export default function GuestRegistry() {
                         aria-pressed={selected}
                       >
                         {cfg.label}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>

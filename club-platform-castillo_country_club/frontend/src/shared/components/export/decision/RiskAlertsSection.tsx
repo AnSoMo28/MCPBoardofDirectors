@@ -7,6 +7,7 @@
 import { AlertTriangle } from "lucide-react";
 import { NARRATIVE_RISK_SEVERITY_CONFIG } from "@/features/finance/types";
 import type { NarrativeRiskAlert } from "@/features/finance/types";
+import './RiskAlertsSection.css';
 
 interface RiskAlertsSectionProps {
   id: string;
@@ -17,7 +18,7 @@ export function RiskAlertsSection({ id, alerts }: RiskAlertsSectionProps) {
   if (alerts.length === 0) return null;
 
   return (
-    <div id={id} className="glass-decision__section">
+    <div id={id} className="risk-alerts-section glass-decision__section">
       <div className="glass-decision__section-header">
         <AlertTriangle size={16} className="glass-decision__section-icon" style={{ color: "var(--color-amber-400, #fbbf24)" }} />
         <h2 className="glass-decision__section-title">7. Alertas de Riesgo</h2>

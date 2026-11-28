@@ -59,6 +59,7 @@ import { SportsIntelligenceStream } from "./components/SportsIntelligenceStream"
 import { SportsAmbientCanvas } from "./components/SportsAmbientCanvas";
 
 import "./SportsDashboard.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 — HELPERS
@@ -328,7 +329,8 @@ function CrossTabSuggestion({
       aria-label="Sugerencias de otros módulos"
     >
       {suggestions.map(([mode, count]) => (
-        <button
+        <Button
+          variant="unstyled"
           key={mode}
           type="button"
           className="spt-dashboard__cross-tab-btn"
@@ -337,7 +339,7 @@ function CrossTabSuggestion({
           💡 {count} insight{count > 1 ? "s" : ""} en{" "}
           <strong>"{STAGE_LABELS[mode]}"</strong>
           <ChevronRight className="spt-dashboard__cross-tab-arrow" />
-        </button>
+        </Button>
       ))}
     </div>
   );

@@ -210,7 +210,8 @@ function RecommendationCard({
       }
     >
       {/* Header (clickable) */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="rfc-card-header"
         onClick={onToggle}
@@ -262,7 +263,7 @@ function RecommendationCard({
             )}
           </div>
         </div>
-      </button>
+      </Button>
 
       {/* Score bar */}
       <div className="rfc-score-bar" data-score-level={scoreLevel}>

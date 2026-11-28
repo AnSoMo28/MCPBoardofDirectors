@@ -1,11 +1,12 @@
 /**
  * @component NotificationPrefs (Fase 25)
  * @namespace (no standalone namespace — uses toggle-row styles)
- * @depends SettingsPage.css, ToggleRow
+ * @depends NotificationPrefs.css, ToggleRow
  * @note AI-aware notification preferences. Explains that preferences
  *       feed the AI system.
- * @import import '../SettingsPage.css';
+ * @import import './NotificationPrefs.css';
  */
+import "./NotificationPrefs.css";
 
 import { ToggleRow } from "./ToggleRow";
 import type { NotificationPrefs as PrefsType } from "@/stores/notifications.store";

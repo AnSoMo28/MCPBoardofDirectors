@@ -1,0 +1,1121 @@
+P2-C3h · h5-wiring — cierre forense del cableado
+  base: 00417eb P2-C3g: migrar frontend a tools MCP reales (#1 #2 #5 #6 #9 #10 #11 #16, D5, C16)
+
+══ A. api/app.py — COMPLETO (W1/W8: app.state.agents, montaje, instanciación) ══
+  ── backend/src/club_mcp/api/app.py (109 líneas) ──
+     1│ """FastAPI application factory for the Castillo Country Club API bridge."""
+     2│ 
+     3│ from __future__ import annotations
+     4│ 
+     5│ import logging
+     6│ from contextlib import asynccontextmanager
+     7│ from typing import Any
+     8│ 
+     9│ from fastapi import FastAPI
+    10│ from fastapi.middleware.cors import CORSMiddleware
+    11│ 
+    12│ from club_mcp.agents.base import BaseAgent
+    13│ from club_mcp.api.routes import agents, auth, chat, health
+    14│ from club_mcp.api.routes.documents import router as documents_router
+    15│ 
+    16│ logger = logging.getLogger(__name__)
+    17│ 
+    18│ 
+    19│ @asynccontextmanager
+    20│ async def lifespan(app: FastAPI):
+    21│     """Startup / shutdown lifecycle for the API."""
+    22│     # ── Startup ──
+    23│ 
+    24│     # HITL: start approval expiry background task
+    25│     for agent in app.state.agents.values():
+    26│         engine = getattr(agent, "approval_engine", None)
+    27│         if engine is not None and hasattr(engine, "start_expiry_task"):
+    28│             await engine.start_expiry_task(interval_seconds=300)
+    29│             logger.info(
+    30│                 "[startup] HITL expiry task started "
+    31│                 "(interval=300s, via agent=%s)",
+    32│                 agent.agent_name,
+    33│             )
+    34│             break  # solo necesitamos un engine
+    35│ 
+    36│     logger.info(
+    37│         "[startup] API ready: %d agents, %d tools",
+    38│         app.state.agents_count,
+    39│         app.state.tools_count,
+    40│     )
+    41│ 
+    42│     yield
+    43│ 
+    44│     # ── Shutdown ──
+    45│     logger.info("[shutdown] API shutting down")
+    46│ 
+    47│ 
+    48│ def create_api_app(
+    49│     agents_list: list[BaseAgent] | None = None,
+    50│     mcp_server: Any = None,
+    51│     claude_service: Any = None,
+    52│ ) -> FastAPI:
+    53│     """Create and configure the FastAPI application."""
+    54│ 
+    55│     app = FastAPI(
+    56│         title="Castillo Country Club API",
+    57│         description="API bridge para el MCP Server del Castillo Country Club",
+    58│         version="0.1.0",
+    59│         lifespan=lifespan,                    # ← FIX: wire lifespan
+    60│     )
+    61│ 
+    62│     # ── CORS for React frontend ──
+    63│     app.add_middleware(
+    64│         CORSMiddleware,
+    65│         allow_origins=[
+    66│             "http://localhost:5173",
+    67│             "http://localhost:3000",
+    68│         ],
+    69│         allow_credentials=True,
+    70│         allow_methods=["*"],
+    71│         allow_headers=["*"],
+    72│     )
+    73│ 
+    74│     # ── Store references in app state ──
+    75│     resolved_agents = agents_list or []
+    76│     app.state.agents = {a.agent_name: a for a in resolved_agents}
+    77│     app.state.mcp_server = mcp_server
+    78│     app.state.claude_service = claude_service
+    79│ 
+    80│     # Count tools dynamically
+    81│     tools_count = 0
+    82│     for agent in resolved_agents:
+    83│         for attr_name in dir(agent):
+    84│             if attr_name.startswith("_"):
+    85│                 continue
+    86│             attr = getattr(agent, attr_name, None)
+    87│             if attr and callable(attr) and getattr(attr, "_mcp_tool", False):
+    88│                 tools_count += 1
+    89│     app.state.tools_count = tools_count
+    90│     app.state.agents_count = len(resolved_agents)
+    91│ 
+    92│     logger.info(
+    93│         "API app created: %d agents, %d tools",
+    94│         app.state.agents_count,
+    95│         app.state.tools_count,
+    96│     )
+    97│ 
+    98│     # ── Include routers ──
+    99│     app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+   100│     app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
+   101│     app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+   102│     app.include_router(health.router, prefix="/api", tags=["health"])
+   103│     app.include_router(documents_router, prefix="/api/documents", tags=["documents"])
+   104│ 
+   105│     return app
+   106│ 
+   107│ 
+   108│ app = create_api_app()
+   109│ 
+
+══ B. server.py — COMPLETO (W2b: doble CommunicationAgent · montaje FastMCP) ══
+  ── backend/src/club_mcp/server.py (159 líneas) ──
+     1│ """
+     2│ MCP Server entry point for Castillo Country Club.
+     3│ Registers all agents and their tools.
+     4│ """
+     5│ 
+     6│ from __future__ import annotations
+     7│ 
+     8│ import logging
+     9│ import sys
+    10│ 
+    11│ from fastmcp import FastMCP
+    12│ 
+    13│ from club_mcp.agents.base import BaseAgent
+    14│ from club_mcp.agents.family_profile import FamilyProfileAgent
+    15│ from club_mcp.agents.event_orchestrator import EventOrchestratorAgent          # ← NUEVO
+    16│ from club_mcp.db.repositories.family_repo import FamilyRepository
+    17│ from club_mcp.db.repositories.event_repo import EventRepository               # ← NUEVO
+    18│ from club_mcp.hitl.approval_engine import ApprovalEngine
+    19│ from club_mcp.hitl.notifier import HITLNotifier                               # ← NUEVO
+    20│ from club_mcp.config.club_registry import get_club_config
+    21│ from club_mcp.agents.age_group import AgeGroupAgent
+    22│ from club_mcp.db.repositories.age_group_repo import AgeGroupRepository                     # ← NUEVO
+    23│ from club_mcp.agents.finance import FinanceAgent
+    24│ from club_mcp.db.repositories.finance_repo import FinanceRepository
+    25│ from club_mcp.agents.wellness import WellnessAgent
+    26│ from club_mcp.db.repositories.wellness_repo import WellnessRepository
+    27│ from club_mcp.agents.compliance import ComplianceAgent
+    28│ from club_mcp.db.repositories.compliance_repo import ComplianceRepository
+    29│ from club_mcp.agents.sports_recreation_agent import SportsRecreationAgent
+    30│ from club_mcp.db.repositories.sports_recreation_repo import SportsRecreationRepository
+    31│ from club_mcp.agents.cultural_social_agent import CulturalSocialAgent
+    32│ from club_mcp.db.repositories.cultural_social_repo import CulturalSocialRepository
+    33│ from club_mcp.agents.communication_agent import CommunicationAgent
+    34│ from club_mcp.db.repositories.communication_repo import CommunicationRepository
+    35│ from club_mcp.agents.facility_management_agent import FacilityManagementAgent
+    36│ from club_mcp.db.repositories.facility_management_repo import (
+    37│     FacilityManagementRepository,
+    38│ )
+    39│ # Imports nuevos:
+    40│ from club_mcp.agents.member_engagement_agent import MemberEngagementAgent
+    41│ from club_mcp.db.repositories.member_engagement_repo import (
+    42│     MemberEngagementRepository,
+    43│ )
+    44│ from club_mcp.agents.guest_management_agent import GuestManagementAgent
+    45│ from club_mcp.db.repositories.guest_management_repo import (
+    46│     GuestManagementRepository,
+    47│ )
+    48│ from club_mcp.agents.proactive_recommendation_agent import ProactiveRecommendationAgent
+    49│ from club_mcp.db.repositories.proactive_recommendation_repo import (
+    50│     ProactiveRecommendationRepository,
+    51│ )
+    52│ from club_mcp.agents.document_intelligence_agent import DocumentIntelligenceAgent
+    53│ from club_mcp.db.repositories.document_intelligence_repo import (
+    54│     DocumentIntelligenceRepository,
+    55│ )
+    56│ from club_mcp.agents.executive_dashboard_agent import ExecutiveDashboardAgent
+    57│ from club_mcp.db.repositories.executive_dashboard_repo import (
+    58│     ExecutiveDashboardRepository,
+    59│ )
+    60│ from club_mcp.agents.satisfaction_agent import SatisfactionAgent
+    61│ from club_mcp.db.repositories.satisfaction_repo import SatisfactionRepository
+    62│ from club_mcp.agents.advisor_intelligence import AdvisorIntelligenceAgent
+    63│ from club_mcp.ai.claude_service import ClaudeService
+    64│ 
+    65│ 
+    66│ 
+    67│ logging.basicConfig(
+    68│     level=logging.INFO,
+    69│     format="%(asctime)s | %(name)-30s | %(levelname)-7s | %(message)s",
+    70│     stream=sys.stdout,
+    71│ )
+    72│ logger = logging.getLogger(__name__)
+    73│ 
+    74│ 
+    75│ def create_mcp_server() -> FastMCP:
+    76│     """Create and configure the MCP server with all agents."""
+    77│ 
+    78│     mcp = FastMCP(
+    79│         name="Castillo Country Club MCP",
+    80│         version="0.1.0",
+    81│     )
+    82│ 
+    83│     # ── Shared infrastructure ──────────────────────────────
+    84│     approval_engine = ApprovalEngine()
+    85│     notifier = HITLNotifier()                     # ← NUEVO: stub de notificaciones
+    86│     family_repo = FamilyRepository()
+    87│     event_repo = EventRepository()                 # ← NUEVO: repo de eventos
+    88│     age_group_repo = AgeGroupRepository()
+    89│     finance_repo = FinanceRepository()
+    90│     wellness_repo = WellnessRepository()
+    91│     compliance_repo = ComplianceRepository()
+    92│     sports_recreation_repo = SportsRecreationRepository()
+    93│     cultural_social_repo = CulturalSocialRepository()
+    94│     communication_repo = CommunicationRepository()
+    95│     facility_management_repo = FacilityManagementRepository()
+    96│     member_engagement_repo = MemberEngagementRepository()   
+    97│     guest_management_repo = GuestManagementRepository()
+    98│     proactive_recommendation_repo = ProactiveRecommendationRepository()
+    99│     document_intelligence_repo = DocumentIntelligenceRepository(claude_service=claude_service)
+   100│     executive_dashboard_repo = ExecutiveDashboardRepository()
+   101│     satisfaction_repo = SatisfactionRepository()
+   102│     claude_service = ClaudeService()
+   103│ 
+   104│ 
+   105│     # ── Club config (multi-tenant: cambiar para otro club) ─
+   106│     club_config = get_club_config("castillo_country_club")
+   107│ 
+   108│     # ── Instantiate agents with dependencies ───────────────
+   109│     agents: list[BaseAgent] = [
+   110│         FamilyProfileAgent(family_repo, approval_engine, notifier),
+   111│         EventOrchestratorAgent(event_repo, approval_engine, notifier, club_config),
+   112│         AgeGroupAgent(age_group_repo, approval_engine, notifier),
+   113│         FinanceAgent(
+   114│             finance_repo,
+   115│             approval_engine,
+   116│             notifier,
+   117│             family_repo=family_repo,
+   118│         ),
+   119│         WellnessAgent(wellness_repo, approval_engine, notifier),
+   120│         ComplianceAgent(compliance_repo, approval_engine, notifier),
+   121│         SportsRecreationAgent(sports_recreation_repo, approval_engine, notifier),                         
+   122│         CulturalSocialAgent(cultural_social_repo, approval_engine, notifier),
+   123│         CommunicationAgent(communication_repo, approval_engine, notifier),
+   124│         FacilityManagementAgent(facility_management_repo, approval_engine, notifier),
+   125│         MemberEngagementAgent(member_engagement_repo, approval_engine, notifier),        
+   126│         GuestManagementAgent(guest_management_repo, approval_engine, notifier),
+   127│         ProactiveRecommendationAgent(proactive_recommendation_repo, approval_engine, notifier),
+   128│         DocumentIntelligenceAgent(document_intelligence_repo, approval_engine, notifier),
+   129│         ExecutiveDashboardAgent(executive_dashboard_repo, approval_engine, notifier),
+   130│         SatisfactionAgent(satisfaction_repo, approval_engine, notifier),
+   131│         AdvisorIntelligenceAgent(claude_service, approval_engine, notifier),
+   132│         CommunicationAgent(communication_repo, approval_engine, notifier, rag_service=(document_intelligence_repo._rag_service if hasattr(document_intelligence_repo, "_rag_service") else None)),
+   133│     ]
+   134│ 
+   135│     # ── Register all agents with MCP ───────────────────────
+   136│     total_tools = 0
+   137│     for agent in agents:
+   138│         count = agent.register_with_mcp(mcp)
+   139│         total_tools += count
+   140│         logger.info("Agent registered: %s (%d tools)", agent.name, count)
+   141│ 
+   142│     logger.info(
+   143│         "MCP Server ready: Castillo Country Club 🏰 | %d agents | %d tools",
+   144│         len(agents),
+   145│         total_tools,
+   146│     )
+   147│ 
+   148│     return mcp
+   149│ 
+   150│ 
+   151│ 
+   152│ def main() -> None:
+   153│     mcp = create_mcp_server()
+   154│     mcp.run()
+   155│ 
+   156│ 
+   157│ if __name__ == "__main__":
+   158│     main()
+   159│ 
+
+══ C. auth/rbac.py — COMPLETO (W5: TOOL_PERMISSION_MAP + check_permission) ══
+  ── backend/src/club_mcp/auth/rbac.py (216 líneas) ──
+     1│ """Role-Based Access Control: permissions, role matrix, tool mapping."""
+     2│ 
+     3│ from __future__ import annotations
+     4│ 
+     5│ from enum import Enum
+     6│ 
+     7│ 
+     8│ class Permission(str, Enum):
+     9│     # ── Family ──
+    10│     VIEW_FAMILY_PROFILE = "view_family_profile"
+    11│     EDIT_FAMILY_PROFILE = "edit_family_profile"
+    12│ 
+    13│     # ── Events ──
+    14│     VIEW_EVENTS = "view_events"
+    15│     CREATE_EVENTS = "create_events"
+    16│     MANAGE_EVENTS = "manage_events"
+    17│ 
+    18│     # ── Financial ──
+    19│     VIEW_FINANCIAL = "view_financial"
+    20│     MANAGE_FINANCIAL = "manage_financial"
+    21│ 
+    22│     # ── Wellness ──
+    23│     VIEW_WELLNESS = "view_wellness"
+    24│     MANAGE_WELLNESS = "manage_wellness"
+    25│ 
+    26│     # ── Compliance ──
+    27│     VIEW_COMPLIANCE = "view_compliance"
+    28│     MANAGE_COMPLIANCE = "manage_compliance"
+    29│ 
+    30│     # ── Sports ──
+    31│     VIEW_SPORTS = "view_sports"
+    32│     MANAGE_SPORTS = "manage_sports"
+    33│ 
+    34│     # ── Cultural ──
+    35│     VIEW_CULTURAL = "view_cultural"
+    36│     MANAGE_CULTURAL = "manage_cultural"
+    37│ 
+    38│     # ── Communications ──
+    39│     VIEW_COMMUNICATIONS = "view_communications"
+    40│     MANAGE_COMMUNICATIONS = "manage_communications"
+    41│ 
+    42│     # ── Facilities ──
+    43│     VIEW_FACILITIES = "view_facilities"
+    44│     MANAGE_FACILITIES = "manage_facilities"
+    45│ 
+    46│     # ── Engagement ──
+    47│     VIEW_ENGAGEMENT = "view_engagement"
+    48│     MANAGE_ENGAGEMENT = "manage_engagement"
+    49│ 
+    50│     # ── Guests ──
+    51│     VIEW_GUESTS = "view_guests"
+    52│     MANAGE_GUESTS = "manage_guests"
+    53│ 
+    54│     # ── Recommendations ──
+    55│     VIEW_RECOMMENDATIONS = "view_recommendations"
+    56│ 
+    57│     # ── Documents ──
+    58│     VIEW_DOCUMENTS = "view_documents"
+    59│     MANAGE_DOCUMENTS = "manage_documents"
+    60│ 
+    61│     # ── Dashboard ──
+    62│     VIEW_DASHBOARD = "view_dashboard"
+    63│     EXPORT_REPORTS = "export_reports"
+    64│     GENERATE_BOARD_REPORT = "generate_board_report"
+    65│ 
+    66│     # ── Satisfaction ──
+    67│     VIEW_SATISFACTION = "view_satisfaction"
+    68│     MANAGE_SATISFACTION = "manage_satisfaction"
+    69│     SUBMIT_SURVEY = "submit_survey"
+    70│ 
+    71│     # ── Admin ──
+    72│     MANAGE_USERS = "manage_users"
+    73│     APPROVE_REQUESTS = "approve_requests"
+    74│     VIEW_ANOMALIES = "view_anomalies"
+    75│ 
+    76│ 
+    77│ # ═══════════════════════════════════════════════════
+    78│ # ROLE → PERMISSIONS MATRIX
+    79│ # SOCIO: 6 | STAFF: 8 | ADMIN: 15 | JUNTA: 5
+    80│ # ═══════════════════════════════════════════════════
+    81│ 
+    82│ ROLE_PERMISSIONS: dict[str, set[Permission]] = {
+    83│     "socio": {
+    84│         Permission.VIEW_FAMILY_PROFILE,
+    85│         Permission.VIEW_EVENTS,
+    86│         Permission.SUBMIT_SURVEY,
+    87│         Permission.VIEW_SATISFACTION,
+    88│         Permission.VIEW_GUESTS,
+    89│         Permission.VIEW_RECOMMENDATIONS,
+    90│     },
+    91│     "staff": {
+    92│         Permission.VIEW_FAMILY_PROFILE,
+    93│         Permission.VIEW_EVENTS,
+    94│         Permission.MANAGE_EVENTS,
+    95│         Permission.VIEW_SPORTS,
+    96│         Permission.VIEW_CULTURAL,
+    97│         Permission.VIEW_FACILITIES,
+    98│         Permission.VIEW_GUESTS,
+    99│         Permission.MANAGE_GUESTS,
+   100│     },
+   101│     "admin": {
+   102│         Permission.VIEW_FAMILY_PROFILE,
+   103│         Permission.EDIT_FAMILY_PROFILE,
+   104│         Permission.VIEW_EVENTS,
+   105│         Permission.CREATE_EVENTS,
+   106│         Permission.MANAGE_EVENTS,
+   107│         Permission.VIEW_FINANCIAL,
+   108│         Permission.MANAGE_FINANCIAL,
+   109│         Permission.VIEW_WELLNESS,
+   110│         Permission.MANAGE_WELLNESS,
+   111│         Permission.VIEW_COMPLIANCE,
+   112│         Permission.VIEW_DASHBOARD,
+   113│         Permission.EXPORT_REPORTS,
+   114│         Permission.GENERATE_BOARD_REPORT,
+   115│         Permission.VIEW_SATISFACTION,
+   116│         Permission.MANAGE_SATISFACTION,
+   117│         Permission.MANAGE_USERS,
+   118│     },
+   119│     "junta": {
+   120│         Permission.VIEW_DASHBOARD,
+   121│         Permission.VIEW_FINANCIAL,
+   122│         Permission.EXPORT_REPORTS,
+   123│         Permission.GENERATE_BOARD_REPORT,
+   124│         Permission.VIEW_ANOMALIES,
+   125│     },
+   126│ }
+   127│ 
+   128│ 
+   129│ def check_permission(role: str, permission: Permission) -> bool:
+   130│     """Check if a role has a specific permission."""
+   131│     perms = ROLE_PERMISSIONS.get(role, set())
+   132│     return permission in perms
+   133│ 
+   134│ 
+   135│ # ═══════════════════════════════════════════════════
+   136│ # TOOL → MINIMUM PERMISSION MAPPING
+   137│ # ═══════════════════════════════════════════════════
+   138│ 
+   139│ TOOL_PERMISSION_MAP: dict[str, Permission] = {
+   140│     # ── Family Profile ──
+   141│     "family_get_profile": Permission.VIEW_FAMILY_PROFILE,
+   142│     "family_create": Permission.EDIT_FAMILY_PROFILE,
+   143│     "family_update": Permission.EDIT_FAMILY_PROFILE,
+   144│     "family_search": Permission.VIEW_FAMILY_PROFILE,
+   145│     "family_social_compatibility": Permission.VIEW_FAMILY_PROFILE,
+   146│ 
+   147│     # ── Event Orchestrator ──
+   148│     "event_create": Permission.CREATE_EVENTS,
+   149│     "event_list": Permission.VIEW_EVENTS,
+   150│     "event_get_details": Permission.VIEW_EVENTS,
+   151│     "event_update": Permission.MANAGE_EVENTS,
+   152│     "event_cancel": Permission.MANAGE_EVENTS,
+   153│ 
+   154│     # ── Finance ──
+   155│     "finance_get_overview": Permission.VIEW_FINANCIAL,
+   156│     "finance_generate_invoice": Permission.MANAGE_FINANCIAL,
+   157│ 
+   158│     # ── Wellness ──
+   159│     "wellness_get_profile": Permission.VIEW_WELLNESS,
+   160│     "wellness_create_program": Permission.MANAGE_WELLNESS,
+   161│ 
+   162│     # ── Compliance ──
+   163│     "compliance_get_status": Permission.VIEW_COMPLIANCE,
+   164│     "compliance_create_policy": Permission.MANAGE_COMPLIANCE,
+   165│ 
+   166│     # ── Sports ──
+   167│     "sports_get_activities": Permission.VIEW_SPORTS,
+   168│     "sports_create_activity": Permission.MANAGE_SPORTS,
+   169│ 
+   170│     # ── Cultural ──
+   171│     "cultural_get_events": Permission.VIEW_CULTURAL,
+   172│     "cultural_create_event": Permission.MANAGE_CULTURAL,
+   173│ 
+   174│     # ── Communication ──
+   175│     "communication_send_message": Permission.MANAGE_COMMUNICATIONS,
+   176│     "communication_get_messages": Permission.VIEW_COMMUNICATIONS,
+   177│     "send_board_package": Permission.GENERATE_BOARD_REPORT,
+   178│ 
+   179│     # ── Facilities ──
+   180│     "facility_get_status": Permission.VIEW_FACILITIES,
+   181│     "facility_create_maintenance": Permission.MANAGE_FACILITIES,
+   182│ 
+   183│     # ── Engagement ──
+   184│     "engagement_get_score": Permission.VIEW_ENGAGEMENT,
+   185│     "engagement_create_campaign": Permission.MANAGE_ENGAGEMENT,
+   186│ 
+   187│     # ── Guests ──
+   188│     "guest_register": Permission.VIEW_GUESTS,
+   189│     "guest_manage": Permission.MANAGE_GUESTS,
+   190│ 
+   191│     # ── Recommendations ──
+   192│     "recommendation_get": Permission.VIEW_RECOMMENDATIONS,
+   193│ 
+   194│     # ── Documents ──
+   195│     "document_get": Permission.VIEW_DOCUMENTS,
+   196│     "document_create": Permission.MANAGE_DOCUMENTS,
+   197│ 
+   198│     # ── Executive Dashboard ──
+   199│     "get_executive_summary": Permission.VIEW_DASHBOARD,
+   200│     "get_financial_overview": Permission.VIEW_FINANCIAL,
+   201│     "get_membership_health": Permission.VIEW_DASHBOARD,
+   202│     "get_operational_pulse": Permission.VIEW_DASHBOARD,
+   203│     "detect_anomalies": Permission.VIEW_ANOMALIES,
+   204│     "export_report": Permission.EXPORT_REPORTS,
+   205│     "generate_quarterly_board_report": Permission.GENERATE_BOARD_REPORT,
+   206│     "get_age_group_balance": Permission.VIEW_DASHBOARD,
+   207│ 
+   208│     # ── Satisfaction ──
+   209│     "submit_satisfaction_survey": Permission.SUBMIT_SURVEY,
+   210│     "get_survey_for_event": Permission.VIEW_SATISFACTION,
+   211│     "analyze_event_satisfaction": Permission.MANAGE_SATISFACTION,
+   212│     "get_satisfaction_trends": Permission.VIEW_SATISFACTION,
+   213│     "generate_satisfaction_report": Permission.MANAGE_SATISFACTION,
+   214│     "get_satisfaction_questions": Permission.VIEW_SATISFACTION,
+   215│ }
+   216│ 
+  · entradas "tool": permiso ≈ 50 (vs 196 tools del registro v2)
+
+══ D. hitl/approval_engine.py — índice + create/approve/reject/init (W3) ══
+  ── backend/src/club_mcp/hitl/approval_engine.py · índice de métodos ──
+      35│     def __init__(self) -> None:
+      41│     async def create_request(
+      76│     async def approve(
+     102│     async def reject(
+     121│     async def get_pending(
+     133│     async def get_request(self, request_id: UUID) -> Optional[ApprovalRequest]:
+     136│     async def expire_stale(self) -> int:
+     149│     def _get_or_raise(self, request_id: UUID) -> ApprovalRequest:
+     154│     async def start_expiry_task(self, interval_seconds: int = 300) -> None:
+     158│         async def _loop():
+
+  ── backend/src/club_mcp/hitl/approval_engine.py · def __init__ (línea 35) ──
+    35│     def __init__(self) -> None:
+    36│         self._requests: dict[UUID, ApprovalRequest] = {}
+    37│         self._callbacks: dict[UUID, Callable] = {}
+    38│ 
+    39│ 
+    40│ 
+
+  ── backend/src/club_mcp/hitl/approval_engine.py · def create_request (línea 41) ──
+    41│     async def create_request(
+    42│         self,
+    43│         agent: str,
+    44│         tool: str,
+    45│         params: dict[str, Any],
+    46│         requested_by: str,
+    47│         approval_level: ApprovalLevel,
+    48│         risk_summary: str = "",
+    49│         estimated_impact: str = "",
+    50│         affected_count: int = 0,
+    51│         approver_roles: Optional[list[str]] = None,
+    52│         on_approved: Optional[Callable] = None,
+    53│     ) -> ApprovalRequest:
+    54│         expiry = EXPIRY_BY_LEVEL.get(approval_level)
+    55│         request = ApprovalRequest(
+    56│             agent=agent,
+    57│             tool=tool,
+    58│             params=params,
+    59│             requested_by=requested_by,
+    60│             approval_level=approval_level,
+    61│             risk_summary=risk_summary,
+    62│             estimated_impact=estimated_impact,
+    63│             affected_count=affected_count,
+    64│             approver_roles=approver_roles or [],  # ← FIX: persist
+    65│             expires_at=datetime.now(timezone.utc) + expiry if expiry else None,
+    66│         )
+    67│         self._requests[request.request_id] = request
+    68│         if on_approved:
+    69│             self._callbacks[request.request_id] = on_approved
+    70│         logger.info(
+    71│             "[HITL] Request %s created | agent=%s tool=%s level=%s",
+    72│             request.request_id, agent, tool, approval_level.value,
+    73│         )
+    74│         return request
+    75│ 
+
+  ── backend/src/club_mcp/hitl/approval_engine.py · def approve (línea 76) ──
+    76│     async def approve(
+    77│         self,
+    78│         request_id: UUID,
+    79│         approved_by: str,
+    80│         note: str = "",
+    81│     ) -> ApprovalRequest:
+    82│         request = self._get_or_raise(request_id)
+    83│         if request.status != ApprovalStatus.PENDING:
+    84│             raise ValueError(f"Request {request_id} is not pending (status={request.status.value})")
+    85│ 
+    86│         request.status = ApprovalStatus.APPROVED
+    87│         request.resolved_by = approved_by
+    88│         request.resolution_note = note
+    89│         request.resolved_at = datetime.now(timezone.utc)
+    90│ 
+    91│         logger.info("[HITL] Request %s approved by %s", request_id, approved_by)
+    92│ 
+    93│         callback = self._callbacks.pop(request_id, None)
+    94│         if callback:
+    95│             try:
+    96│                 await callback(**request.params)
+    97│             except Exception:
+    98│                 logger.exception("[HITL] Callback failed for approved request %s", request_id)
+    99│ 
+   100│         return request
+   101│ 
+
+  ── backend/src/club_mcp/hitl/approval_engine.py · def reject (línea 102) ──
+   102│     async def reject(
+   103│         self,
+   104│         request_id: UUID,
+   105│         rejected_by: str,
+   106│         reason: str = "",
+   107│     ) -> ApprovalRequest:
+   108│         request = self._get_or_raise(request_id)
+   109│         if request.status != ApprovalStatus.PENDING:
+   110│             raise ValueError(f"Request {request_id} is not pending (status={request.status.value})")
+   111│ 
+   112│         request.status = ApprovalStatus.REJECTED
+   113│         request.resolved_by = rejected_by
+   114│         request.resolution_note = reason
+   115│         request.resolved_at = datetime.now(timezone.utc)
+   116│ 
+   117│         self._callbacks.pop(request_id, None)
+   118│         logger.info("[HITL] Request %s rejected by %s | reason=%s", request_id, rejected_by, reason)
+   119│         return request
+   120│ 
+
+  ── backend/src/club_mcp/hitl/approval_engine.py · def get_pending (línea 121) ──
+   121│     async def get_pending(
+   122│         self,
+   123│         agent: Optional[str] = None,
+   124│     ) -> list[ApprovalRequest]:
+   125│         results = [
+   126│             r for r in self._requests.values()
+   127│             if r.status == ApprovalStatus.PENDING
+   128│         ]
+   129│         if agent:
+   130│             results = [r for r in results if r.agent == agent]
+   131│         return sorted(results, key=lambda r: r.created_at)
+   132│ 
+
+  ⚠ no encontrados en backend/src/club_mcp/hitl/approval_engine.py: resolve, execute
+  ── grep · D2 · ejecutores post-aprobación en backend/src ──
+    backend/src/club_mcp/agents/advisor_intelligence.py:65│ executive_dashboard:
+    backend/src/club_mcp/agents/advisor_intelligence.py:283│ executive_summary: dict[str, Any],
+    backend/src/club_mcp/agents/advisor_intelligence.py:290│ """Generate a board-ready executive briefing document."""
+    backend/src/club_mcp/agents/advisor_intelligence.py:292│ executive_summary=json.dumps(executive_summary, ensure_ascii=False, indent=2),
+    backend/src/club_mcp/agents/age_group.py:241│ async def execute_register_activity(
+    backend/src/club_mcp/agents/age_group.py:244│ """Execute activity registration post-approval."""
+    backend/src/club_mcp/agents/base.py:103│ Does NOT block execution - that logic lives in each tool.
+    backend/src/club_mcp/agents/communication_agent.py:360│ async def execute_announcement(
+    backend/src/club_mcp/agents/communication_agent.py:522│ async def execute_emergency_broadcast(
+    backend/src/club_mcp/agents/communication_agent.py:726│ async def execute_personalized_notification(
+    backend/src/club_mcp/agents/compliance.py:106│ async def execute_audit_create(
+    backend/src/club_mcp/agents/compliance.py:109│ """Execute audit creation post-approval."""
+    backend/src/club_mcp/agents/compliance.py:303│ async def execute_document_register(
+    backend/src/club_mcp/agents/compliance.py:306│ """Execute document registration post-approval."""
+    backend/src/club_mcp/agents/cultural_social_agent.py:197│ # ── INTERNAL: Execute gala after HITL approval ──
+    backend/src/club_mcp/agents/cultural_social_agent.py:199│ async def execute_formal_gala(
+    backend/src/club_mcp/agents/cultural_social_agent.py:436│ # ── INTERNAL: Execute entertainment act after approval ──
+    backend/src/club_mcp/agents/cultural_social_agent.py:438│ async def execute_entertainment_act(
+    backend/src/club_mcp/agents/cultural_social_agent.py:675│ # ── INTERNAL: Execute cultural program after approval ──
+    backend/src/club_mcp/agents/cultural_social_agent.py:677│ async def execute_cultural_program(
+    backend/src/club_mcp/agents/cultural_social_agent.py:1468│ "Resumen ejecutivo cultural para el Executive Dashboard. "
+    backend/src/club_mcp/agents/document_intelligence_agent.py:421│ # ── INTERNAL: Execute ingestion after HITL ──
+    backend/src/club_mcp/agents/document_intelligence_agent.py:423│ async def execute_ingest_document(
+    backend/src/club_mcp/agents/document_intelligence_agent.py:553│ # ── INTERNAL: Execute report after HITL approval ──
+    backend/src/club_mcp/agents/document_intelligence_agent.py:555│ async def execute_knowledge_report(
+    backend/src/club_mcp/agents/document_intelligence_agent.py:752│ # ── INTERNAL: Execute access change after HITL ──
+    backend/src/club_mcp/agents/document_intelligence_agent.py:754│ async def execute_document_access_change(
+    backend/src/club_mcp/agents/event_orchestrator.py:4│ analytics, cloning, calendar, and executive reports.
+    backend/src/club_mcp/agents/event_orchestrator.py:84│ async def execute_event_create(
+    backend/src/club_mcp/agents/event_orchestrator.py:87│ """Execute event creation post-approval."""
+    backend/src/club_mcp/agents/event_orchestrator.py:215│ async def execute_manage_rsvps_bulk(
+    backend/src/club_mcp/agents/event_orchestrator.py:218│ """Execute bulk RSVP management post-approval."""
+    backend/src/club_mcp/agents/event_orchestrator.py:395│ async def execute_coordinate_vendors(
+    backend/src/club_mcp/agents/event_orchestrator.py:398│ """Execute vendor coordination post-approval."""
+    backend/src/club_mcp/agents/event_orchestrator.py:660│ report_type: str = "executive",
+    backend/src/club_mcp/agents/event_orchestrator.py:707│ async def execute_generate_report_financial(
+    backend/src/club_mcp/agents/event_orchestrator.py:710│ """Execute financial report generation post-approval."""
+    backend/src/club_mcp/agents/executive_dashboard_agent.py:2│ ExecutiveDashboardAgent: Business Intelligence y dashboard ejecutivo.
+    backend/src/club_mcp/agents/executive_dashboard_agent.py:22│ from club_mcp.db.repositories.executive_dashboard_repo import (
+    backend/src/club_mcp/agents/executive_dashboard_agent.py:23│ ExecutiveDashboardRepository,
+    ⋮ (cap 40)
+
+
+══ E. hitl/approval_types.py — semántica ApprovalLevel (envelopes B4) ══
+  ── backend/src/club_mcp/hitl/approval_types.py (52 líneas) ──
+     1│ """
+     2│ Human-in-the-Loop approval types and data models.
+     3│ """
+     4│ 
+     5│ from __future__ import annotations
+     6│ 
+     7│ from datetime import datetime, timezone
+     8│ from enum import Enum
+     9│ from typing import Any, Optional
+    10│ from uuid import UUID, uuid4
+    11│ 
+    12│ from pydantic import BaseModel, Field
+    13│ 
+    14│ 
+    15│ class ApprovalLevel(str, Enum):
+    16│     AUTO = "auto"
+    17│     SEMI_AUTO = "semi_auto"
+    18│     HITL = "hitl"
+    19│     ALWAYS_HUMAN = "always_human"
+    20│ 
+    21│ 
+    22│ class ApprovalStatus(str, Enum):
+    23│     PENDING = "pending"
+    24│     APPROVED = "approved"
+    25│     REJECTED = "rejected"
+    26│     EXPIRED = "expired"
+    27│     CANCELLED = "cancelled"
+    28│ 
+    29│ 
+    30│ class ApprovalRequest(BaseModel):
+    31│     request_id: UUID = Field(default_factory=uuid4)
+    32│     agent: str
+    33│     tool: str
+    34│     params: dict[str, Any]
+    35│     requested_by: str
+    36│     approval_level: ApprovalLevel
+    37│     status: ApprovalStatus = ApprovalStatus.PENDING
+    38│     created_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    39│     resolved_at: Optional[datetime] = None
+    40│     resolved_by: Optional[str] = None
+    41│     resolution_note: Optional[str] = None
+    42│     expires_at: Optional[datetime] = None
+    43│ 
+    44│     risk_summary: str = ""
+    45│     estimated_impact: str = ""
+    46│     affected_count: int = 0
+    47│ 
+    48│     requires_dual_approval: bool = False
+    49│     first_approval_by: Optional[str] = None
+    50│     second_approval_by: Optional[str] = None
+    51│     approver_roles: list[str] = Field(default_factory=list)
+    52│ 
+
+══ F. routes/chat.py — COMPLETO (W6: ¿planner emite tool calls?) ══
+  ── backend/src/club_mcp/api/routes/chat.py (46 líneas) ──
+     1│ """Chat route: conversational AI via Claude."""
+     2│ 
+     3│ from __future__ import annotations
+     4│ 
+     5│ from typing import Any
+     6│ 
+     7│ from fastapi import APIRouter, Depends, HTTPException, Request, status
+     8│ from pydantic import BaseModel
+     9│ 
+    10│ from club_mcp.auth.jwt_service import TokenPayload
+    11│ from club_mcp.auth.middleware import get_current_user
+    12│ 
+    13│ router = APIRouter()
+    14│ 
+    15│ 
+    16│ class ChatRequest(BaseModel):
+    17│     message: str
+    18│     conversation_history: list[dict[str, str]] = []
+    19│ 
+    20│ 
+    21│ @router.post("/")
+    22│ async def chat(
+    23│     body: ChatRequest,
+    24│     request: Request,
+    25│     current_user: TokenPayload = Depends(get_current_user),
+    26│ ) -> dict:
+    27│     """Send a message to the AI assistant."""
+    28│     claude_service = request.app.state.claude_service
+    29│     if not claude_service:
+    30│         raise HTTPException(
+    31│             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+    32│             detail="Servicio de IA no disponible",
+    33│         )
+    34│ 
+    35│     result = await claude_service.chat(
+    36│         user_message=body.message,
+    37│         user_role=current_user.role,
+    38│         user_name=current_user.name,
+    39│         history=body.conversation_history,
+    40│     )
+    41│ 
+    42│     return {
+    43│         "status": "success",
+    44│         "response": result,
+    45│     }
+    46│ 
+
+══ F2. ai/prompts.py · contrato de acciones del planner (540-640) ══
+  ── backend/src/club_mcp/ai/prompts.py (líneas 540-640) ──
+   540│ - Castillo Country Club: club de campo de alto nivel en zona montañosa
+   541│ - Tienes acceso a herramientas MCP para ejecutar acciones reales
+   542│ - Cada acción tiene un nivel de aprobación: auto (ejecuta directo), semi_auto (confirmación), hitl (humano siempre)
+   543│ - Moneda: CRC (colones costarricenses)
+   544│ 
+   545│ TU ROL:
+   546│ - Convertir insights en acciones concretas y ejecutables
+   547│ - Priorizar por impacto y urgencia
+   548│ - Agrupar en: hoy / esta semana / este mes
+   549│ - Para cada acción: explicar POR QUÉ y qué herramienta usar
+   550│ - Pre-llenar parámetros cuando sea posible
+   551│ - Ser conservador: ante la duda, marcar como HITL
+   552│ 
+   553│ HERRAMIENTAS DISPONIBLES:
+   554│ {available_tools}
+   555│ 
+   556│ FORMATO DE RESPUESTA:
+   557│ Responde SOLO con un JSON válido. Sin texto adicional."""
+   558│ 
+   559│ ADVISOR_ACTION_PLAN_PROMPT = """
+   560│ Genera un plan de acción ejecutable basado en los siguientes insights del Castillo Country Club.
+   561│ 
+   562│ INSIGHTS:
+   563│ {insights_data}
+   564│ 
+   565│ ROL DEL USUARIO: {role}
+   566│ TIMEFRAME: {timeframe}
+   567│ 
+   568│ Genera un JSON con esta estructura exacta:
+   569│ {{
+   570│     "summary": "Resumen ejecutivo del plan en 2-3 oraciones. ¿Cuál es la prioridad #1?",
+   571│     "items": [
+   572│         {{
+   573│             "title": "Título corto de la acción",
+   574│             "reasoning": "Por qué esta acción es necesaria. Mínimo 1 oración con dato.",
+   575│             "urgency": "today|this_week|this_month",
+   576│             "server": "nombre_del_servidor_mcp",
+   577│             "tool": "nombre_de_la_tool",
+   578│             "params": {{}},
+   579│             "approval_level": "auto|semi|hitl",
+   580│             "source_insight_id": "id_del_insight_origen",
+   581│             "confidence": 85
+   582│         }}
+   583│     ],
+   584│     "total_estimated_impact": "₡X.XM impacto total estimado"
+   585│ }}
+   586│ 
+   587│ REGLAS:
+   588│ - Máximo 8 acciones (priorizar, no saturar)
+   589│ - Al menos 1 acción debe ser "today" si hay insights de impact "high"
+   590│ - Las acciones con approval_level "hitl" deben tener confirmMessage en params
+   591│ - Los params deben ser realistas (no placeholders)
+   592│ - Si un insight no tiene acción concreta, no lo incluyas en el plan
+   593│ """
+   594│ 
+   595│ ADVISOR_SCENARIO_SYSTEM = """Eres un analista financiero especializado en modelado de escenarios para clubes privados en Costa Rica.
+   596│ 
+   597│ CONTEXTO:
+   598│ - Castillo Country Club: club de campo de alto nivel
+   599│ - Moneda: CRC (colones costarricenses)
+   600│ - Ciclo estacional: alta (Dic-Abr, Jun-Jul), baja (May, Ago-Nov)
+   601│ - Mercado: clubes privados Costa Rica (mercado limitado, alto poder adquisitivo)
+   602│ 
+   603│ TU ROL:
+   604│ - Modelar escenarios financieros con datos reales
+   605│ - Proyectar impacto de cambios propuestos
+   606│ - Asignar probabilidades realistas
+   607│ - Identificar riesgos y mitigantes
+   608│ - Siempre considerar el contexto costarricense (inflación, tipo de cambio, turismo)
+   609│ 
+   610│ FORMATO DE RESPUESTA:
+   611│ Responde SOLO con un JSON válido."""
+   612│ 
+   613│ ADVISOR_SCENARIO_PROMPT = """
+   614│ Modela escenarios para la siguiente situación del Castillo Country Club.
+   615│ 
+   616│ DATOS BASE:
+   617│ {base_data}
+   618│ 
+   619│ CAMBIOS PROPUESTOS:
+   620│ {proposed_changes}
+   621│ 
+   622│ TIMEFRAME: {timeframe}
+   623│ 
+   624│ Genera un JSON con esta estructura exacta:
+   625│ {{
+   626│     "scenarios": [
+   627│         {{
+   628│             "name": "optimistic",
+   629│             "description": "Descripción del escenario optimista con condiciones específicas",
+   630│             "projected_metrics": {{
+   631│                 "revenue_change_pct": 0.0,
+   632│                 "expense_change_pct": 0.0,
+   633│                 "net_impact_crc": 0,
+   634│                 "health_score_change": 0,
+   635│                 "member_impact": "descripción"
+   636│             }},
+   637│             "probability": 25
+   638│         }},
+   639│         {{
+   640│             "name": "base",
+
+══ G. __init__ de agentes — orden super() vs approval_engine (W2) ══
+  ── backend/src/club_mcp/agents/family_profile.py · def __init__ (línea 150) ──
+   150│     def __init__(
+   151│         self,
+   152│         repo: FamilyRepository | None = None,
+   153│         rag_service: Any | None = None,
+   154│     ) -> None:
+   155│         super().__init__()
+   156│         self.repo = repo or FamilyRepository()
+   157│         self.rag_service = rag_service
+   158│         self.system_prompt = AGENT_SYSTEM_PROMPTS.get("family_profile", "")
+   159│ 
+
+  ── backend/src/club_mcp/agents/finance.py · def __init__ (línea 60) ──
+    60│     def __init__(
+    61│         self,
+    62│         finance_repo: FinanceRepository,
+    63│         approval_engine: Any = None,
+    64│         notifier: Any = None,
+    65│         family_repo: FamilyRepository | None = None,
+    66│     ) -> None:
+    67│         super().__init__()
+    68│         self.repo = finance_repo
+    69│         if approval_engine is not None:
+    70│             self.approval_engine = approval_engine
+    71│         self.notifier = notifier
+    72│         self.family_repo = family_repo
+    73│ 
+
+  ── backend/src/club_mcp/agents/executive_dashboard_agent.py · def __init__ (línea 55) ──
+    55│     def __init__(
+    56│         self, repo=None, approval_engine=None, notifier=None
+    57│     ) -> None:
+    58│         super().__init__()
+    59│         self.repo = repo or ExecutiveDashboardRepository()
+    60│         if approval_engine is not None:
+    61│             self.approval_engine = approval_engine
+    62│         self.notifier = notifier
+    63│ 
+
+  ── backend/src/club_mcp/agents/guest_management_agent.py · def __init__ (línea 52) ──
+    52│     def __init__(
+    53│         self,
+    54│         repo: GuestManagementRepository | None = None,
+    55│         approval_engine: Any = None,
+    56│         notifier: Any = None,
+    57│     ) -> None:
+    58│         super().__init__()
+    59│         self.repo = repo if repo is not None else GuestManagementRepository()
+    60│         if approval_engine is not None:
+    61│             self.approval_engine = approval_engine
+    62│         self.notifier = notifier
+    63│ 
+
+  ── backend/src/club_mcp/agents/communication_agent.py · def __init__ (línea 76) ──
+    76│     def __init__(
+    77│         self, repo=None, approval_engine=None, notifier=None,
+    78│         rag_service=None,
+    79│     ) -> None:
+    80│         super().__init__()
+    81│         self.repo = repo or CommunicationRepository()
+    82│         if approval_engine is not None:
+    83│             self.approval_engine = approval_engine
+    84│         self.notifier = notifier
+    85│         self._rag_service = rag_service
+    86│ 
+
+  ── backend/src/club_mcp/agents/satisfaction_agent.py · def __init__ (línea 61) ──
+    61│     def __init__(
+    62│         self,
+    63│         repo: SatisfactionRepository | None = None,
+    64│         approval_engine: Any = None,
+    65│         notifier: Any = None,
+    66│         claude_service: Any = None,
+    67│     ) -> None:
+    68│         super().__init__()
+    69│         self.repo = repo or SatisfactionRepository()
+    70│         if approval_engine is not None:
+    71│             self.approval_engine = approval_engine
+    72│         self.notifier = notifier
+    73│         self.claude_service = claude_service
+    74│ 
+
+
+══ H. Greps de cableado cruzado ══
+  ── grep · H1 · asignaciones a app.state ──
+    backend/src/club_mcp/api/app.py:76│ app.state.agents = {a.agent_name: a for a in resolved_agents}
+    backend/src/club_mcp/api/app.py:77│ app.state.mcp_server = mcp_server
+    backend/src/club_mcp/api/app.py:78│ app.state.claude_service = claude_service
+    backend/src/club_mcp/api/app.py:89│ app.state.tools_count = tools_count
+    backend/src/club_mcp/api/app.py:90│ app.state.agents_count = len(resolved_agents)
+
+  ── grep · H2 · instanciaciones de ApprovalEngine ──
+    backend/src/club_mcp/agents/base.py:59│ self.approval_engine = ApprovalEngine()
+    backend/src/club_mcp/server.py:84│ approval_engine = ApprovalEngine()
+
+  ── grep · H3 · uso de create_mcp_server ──
+    backend/src/club_mcp/server.py:75│ def create_mcp_server() -> FastMCP:
+    backend/src/club_mcp/server.py:153│ mcp = create_mcp_server()
+
+  ── grep · H4 · montaje FastMCP sobre FastAPI ──
+    · sin hits
+
+  ── grep · H5 · agent_name declarados (claves canónicas) ──
+    backend/src/club_mcp/agents/advisor_intelligence.py:76│ agent_name = "advisor_intelligence"
+    backend/src/club_mcp/agents/age_group.py:34│ agent_name = "age_group"
+    backend/src/club_mcp/agents/compliance.py:25│ agent_name = "compliance"
+    backend/src/club_mcp/agents/event_orchestrator.py:27│ agent_name = "event_orchestrator"
+    backend/src/club_mcp/agents/finance.py:57│ agent_name = "finance"
+    backend/src/club_mcp/agents/member_360_agent.py:45│ agent_name = "member_360"
+    backend/src/club_mcp/agents/wellness.py:25│ agent_name = "wellness"
+
+  ── grep · H6 · literales de claves legacy en backend/src ──
+    backend/src/club_mcp/agents/communication_agent.py:2279│ "engagement": 0,
+    backend/src/club_mcp/agents/communication_agent.py:2349│ "engagement": round(engagement, 1),
+    backend/src/club_mcp/agents/executive_dashboard_agent.py:635│ else ["membership", "financial", "operational", "engagement"]
+    backend/src/club_mcp/agents/executive_dashboard_agent.py:706│ elif d == "engagement":
+    backend/src/club_mcp/agents/facility_management_agent.py:113│ "facilities": [f.model_dump(mode="json") for f in facilities],
+    backend/src/club_mcp/agents/family_profile.py:617│ "families": [f.model_dump(mode="json") for f in result.families],
+    backend/src/club_mcp/agents/family_profile.py:1503│ domain="engagement",
+    backend/src/club_mcp/agents/family_profile.py:1555│ domains=["engagement", "social"],
+    backend/src/club_mcp/agents/family_profile.py:1563│ domains=["engagement", "activity"],
+    backend/src/club_mcp/agents/family_profile.py:1571│ domains=["social", "engagement"],
+    backend/src/club_mcp/agents/family_profile.py:1579│ domains=["engagement", "activity", "social"],
+    backend/src/club_mcp/agents/guest_management_agent.py:721│ "guests": [g.model_dump(mode="json") for g in guests],
+    backend/src/club_mcp/agents/member_360_agent.py:109│ (f.score for f in health["factors"] if f.name == "engagement"), 50
+    backend/src/club_mcp/ai/prompts.py:590│ - Las acciones con approval_level "hitl" deben tener confirmMessage en params
+    backend/src/club_mcp/db/repositories/guest_management_repo.py:601│ entry = priv_counts.setdefault(p, {"usage_count": 0, "guests": set()})
+    backend/src/club_mcp/db/repositories/guest_management_repo.py:603│ entry["guests"].add(g["id"])
+    backend/src/club_mcp/db/repositories/guest_management_repo.py:606│ "unique_guests": len(v["guests"])} for k, v in priv_counts.items()],
+    backend/src/club_mcp/db/repositories/member_360_repo.py:86│ {"name": "engagement", "score": 92, "weight": 0.30, "trend": "improving", "details": "Champion — asiste a 4+ eventos/mes"},
+    backend/src/club_mcp/db/repositories/member_360_repo.py:93│ {"name": "engagement", "score": 71, "weight": 0.30, "trend": "stable", "details": "Active — asiste regularmente"},
+    backend/src/club_mcp/db/repositories/member_360_repo.py:100│ {"name": "engagement", "score": 38, "weight": 0.30, "trend": "declining", "details": "At-risk — pocas asistencias recientes"},
+    backend/src/club_mcp/db/repositories/member_360_repo.py:107│ {"name": "engagement", "score": 55, "weight": 0.30, "trend": "improving", "details": "En onboarding, primera participación"},
+    backend/src/club_mcp/db/repositories/member_360_repo.py:114│ {"name": "engagement", "score": 95, "weight": 0.30, "trend": "stable", "details": "Champion — 6+ años de participación continua"},
+    backend/src/club_mcp/db/repositories/member_360_repo.py:124│ {"name": "engagement", "score": 60, "weight": 0.30, "trend": "stable"},
+    backend/src/club_mcp/db/repositories/member_360_repo.py:311│ eng_score = next((f.score for f in factors if f.name == "engagement"), 50)
+    backend/src/club_mcp/db/repositories/member_360_repo.py:496│ {"domain": "guests", "amount": round(monthly_spend * 0.08, 2), "percentage": 8},
+    backend/src/club_mcp/db/repositories/member_360_repo.py:503│ eng = next((f.score for f in factors if f.name == "engagement"), 50)
+    backend/src/club_mcp/db/repositories/member_360_repo.py:530│ eng = next((f.score for f in factors if f.name == "engagement"), 50)
+    backend/src/club_mcp/db/repositories/member_360_repo.py:676│ eng = next((f.score for f in factors if f.name == "engagement"), 50)
+    backend/src/club_mcp/db/repositories/member_360_repo.py:783│ return next((f.score for f in factors if f.name == "engagement"), 50)
+    backend/src/club_mcp/db/repositories/member_360_repo.py:787│ eng = next((f.score for f in factors if f.name == "engagement"), 50)
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:99│ "engagement": eng, "ltv": ltv, "churn_risk": cr,
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:199│ "facilities": {"completeness": 75, "freshness_h": 4, "consistency": 82},
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:206│ "families": {"completeness": 80, "freshness_h": 3, "consistency": 86},
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:207│ "engagement": {"completeness": 72, "freshness_h": 6, "consistency": 80},
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:800│ vals = [float(m["engagement"]) for m in self._data["members"]]
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:823│ "facilities": "Instalaciones",
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:830│ "families": "Familias",
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:831│ "engagement": "Engagement",
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:1552│ "engagement", "visits_monthly",
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:1560│ m["engagement"],
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:1609│ engagement = m["engagement"]
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:1959│ "engagement", "visits_monthly",
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:1966│ m["engagement"],
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:2023│ m["engagement"] * 0.30
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:2068│ m["engagement"] * 0.30
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:2100│ all_eng = [m["engagement"] for m in members]
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:2115│ [m["engagement"] for m in members_in_seg]
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:2138│ "feature": "engagement",
+    backend/src/club_mcp/db/repositories/ml_intelligence_repo.py:2348│ eng = member["engagement"]
+    backend/src/club_mcp/db/repositories/wellness_repo.py:794│ "engagement": eng,
+    ⋮ (cap 50)
+
+  ── grep · H7 · super().__init__() en agentes ──
+    backend/src/club_mcp/agents/advisor_intelligence.py:89│ super().__init__()
+    backend/src/club_mcp/agents/age_group.py:46│ super().__init__()
+    backend/src/club_mcp/agents/communication_agent.py:80│ super().__init__()
+    backend/src/club_mcp/agents/compliance.py:34│ super().__init__()
+    backend/src/club_mcp/agents/cultural_social_agent.py:72│ super().__init__()
+    backend/src/club_mcp/agents/document_intelligence_agent.py:53│ super().__init__()
+    backend/src/club_mcp/agents/event_orchestrator.py:37│ super().__init__()
+    backend/src/club_mcp/agents/executive_dashboard_agent.py:58│ super().__init__()
+    backend/src/club_mcp/agents/facility_management_agent.py:61│ super().__init__()
+    backend/src/club_mcp/agents/family_profile.py:155│ super().__init__()
+    backend/src/club_mcp/agents/finance.py:67│ super().__init__()
+    backend/src/club_mcp/agents/guest_management_agent.py:58│ super().__init__()
+    backend/src/club_mcp/agents/member_360_agent.py:49│ super().__init__()
+    backend/src/club_mcp/agents/member_engagement_agent.py:51│ super().__init__()
+    backend/src/club_mcp/agents/proactive_recommendation_agent.py:55│ super().__init__()
+    backend/src/club_mcp/agents/satisfaction_agent.py:68│ super().__init__()
+    backend/src/club_mcp/agents/sports_recreation_agent.py:65│ super().__init__()
+    backend/src/club_mcp/agents/wellness.py:34│ super().__init__()
+
+  ── grep · H8 · asignaciones self.approval_engine ──
+    backend/src/club_mcp/agents/advisor_intelligence.py:91│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/age_group.py:49│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/base.py:59│ self.approval_engine = ApprovalEngine()
+    backend/src/club_mcp/agents/communication_agent.py:83│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/compliance.py:37│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/cultural_social_agent.py:75│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/document_intelligence_agent.py:56│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/event_orchestrator.py:40│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/executive_dashboard_agent.py:61│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/facility_management_agent.py:64│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/finance.py:70│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/guest_management_agent.py:61│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/member_engagement_agent.py:54│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/proactive_recommendation_agent.py:58│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/satisfaction_agent.py:71│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/sports_recreation_agent.py:68│ self.approval_engine = approval_engine
+    backend/src/club_mcp/agents/wellness.py:37│ self.approval_engine = approval_engine
+
+  ── grep · H9 · métodos/referencias execute_* ──
+    backend/src/club_mcp/agents/age_group.py:241│ async def execute_register_activity(
+    backend/src/club_mcp/agents/communication_agent.py:360│ async def execute_announcement(
+    backend/src/club_mcp/agents/communication_agent.py:522│ async def execute_emergency_broadcast(
+    backend/src/club_mcp/agents/communication_agent.py:726│ async def execute_personalized_notification(
+    backend/src/club_mcp/agents/compliance.py:106│ async def execute_audit_create(
+    backend/src/club_mcp/agents/compliance.py:303│ async def execute_document_register(
+    backend/src/club_mcp/agents/cultural_social_agent.py:199│ async def execute_formal_gala(
+    backend/src/club_mcp/agents/cultural_social_agent.py:438│ async def execute_entertainment_act(
+    backend/src/club_mcp/agents/cultural_social_agent.py:677│ async def execute_cultural_program(
+    backend/src/club_mcp/agents/document_intelligence_agent.py:423│ async def execute_ingest_document(
+    backend/src/club_mcp/agents/document_intelligence_agent.py:555│ async def execute_knowledge_report(
+    backend/src/club_mcp/agents/document_intelligence_agent.py:754│ async def execute_document_access_change(
+    backend/src/club_mcp/agents/event_orchestrator.py:84│ async def execute_event_create(
+    backend/src/club_mcp/agents/event_orchestrator.py:215│ async def execute_manage_rsvps_bulk(
+    backend/src/club_mcp/agents/event_orchestrator.py:395│ async def execute_coordinate_vendors(
+    backend/src/club_mcp/agents/event_orchestrator.py:707│ async def execute_generate_report_financial(
+    backend/src/club_mcp/agents/executive_dashboard_agent.py:146│ async def execute_board_report(
+    backend/src/club_mcp/agents/facility_management_agent.py:282│ async def execute_maintenance(
+    backend/src/club_mcp/agents/facility_management_agent.py:366│ async def execute_event_setup(
+    backend/src/club_mcp/agents/facility_management_agent.py:693│ async def execute_reservation(
+    backend/src/club_mcp/agents/family_profile.py:309│ async def execute_create_family(
+    backend/src/club_mcp/agents/family_profile.py:417│ async def execute_update_members(
+    backend/src/club_mcp/agents/finance.py:142│ async def execute_expense_create(
+    backend/src/club_mcp/agents/finance.py:223│ async def execute_invoice_create(
+    backend/src/club_mcp/agents/finance.py:337│ async def execute_payment_process(
+    backend/src/club_mcp/agents/guest_management_agent.py:315│ async def execute_private_event(
+    backend/src/club_mcp/agents/guest_management_agent.py:604│ async def execute_trial_membership(
+    backend/src/club_mcp/agents/member_engagement_agent.py:352│ async def execute_reactivation_campaign(
+    backend/src/club_mcp/agents/member_engagement_agent.py:606│ async def execute_loyalty_reward(
+    backend/src/club_mcp/agents/proactive_recommendation_agent.py:253│ async def execute_pricing_optimization(
+    backend/src/club_mcp/agents/proactive_recommendation_agent.py:469│ async def execute_activity_suggestion(
+    backend/src/club_mcp/agents/sports_recreation_agent.py:235│ async def execute_court_reservation_block(
+    backend/src/club_mcp/agents/sports_recreation_agent.py:403│ async def execute_tournament(
+    backend/src/club_mcp/agents/sports_recreation_agent.py:931│ async def execute_league(
+    backend/src/club_mcp/agents/wellness.py:419│ async def execute_schedule_class(
+
+
+══ I. Qué habilita cada bloque ══
+  A/B → W1/W2/W8: claves de app.state.agents, montaje FastMCP↔FastAPI, doble CommunicationAgent, instanciación única
+  C   → W5: mapa RBAC completo y cobertura vs 196 tools
+  D   → W3: ¿approve() despacha ejecutores? — el hallazgo más crítico pendiente (define B0.5)
+  E   → semántica exacta de ApprovalLevel para envelopes B4
+  F/F2→ W6: ¿el planner LLM emite tool calls y con qué claves? (tercera consumidora del compat)
+  G/H → orden super().__init__() vs engine, callers de execute_, claves legacy existentes
+══ fin h5-wiring ══

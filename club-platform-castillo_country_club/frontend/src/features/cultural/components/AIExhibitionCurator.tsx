@@ -30,6 +30,7 @@ import type {
 import type { DesignResult } from '../lib/eventDesigner';
 import { useEventDesigner } from '../hooks/useEventDesigner';
 import './AIExhibitionCurator.css';
+import { Button } from "@/shared/components/ui/Button";
 
 // ══════════════════════════════════════════════════════════
 //  PROPS
@@ -148,13 +149,14 @@ export function AIExhibitionCurator({
               {phaseLabel(designer.phase)}
             </span>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             className="ai-exhibition-curator__close"
             onClick={onClose}
             aria-label="Cerrar"
           >
             ×
-          </button>
+          </Button>
         </header>
 
         {/* ═══════════════════════════════════════ */}
@@ -185,13 +187,14 @@ export function AIExhibitionCurator({
               </span>
               <div className="ai-exhibition-curator__suggestions-list">
                 {THEME_SUGGESTIONS.map((suggestion) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={suggestion}
                     className="ai-exhibition-curator__suggestion-chip"
                     onClick={() => handleSuggestionClick(suggestion)}
                   >
                     {suggestion}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -203,7 +206,8 @@ export function AIExhibitionCurator({
               </span>
               <div className="ai-exhibition-curator__duration-options">
                 {DURATION_OPTIONS.map((opt) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={opt.value}
                     className={`ai-exhibition-curator__duration-chip ${
                       selectedDuration === opt.value
@@ -213,7 +217,7 @@ export function AIExhibitionCurator({
                     onClick={() => setSelectedDuration(opt.value)}
                   >
                     {opt.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -238,20 +242,22 @@ export function AIExhibitionCurator({
 
             {/* Actions */}
             <div className="ai-exhibition-curator__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-exhibition-curator__btn ai-exhibition-curator__btn--secondary"
                 onClick={handleSetIntention}
                 disabled={!intentionText.trim()}
               >
                 Capturar intención
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="unstyled"
                 className="ai-exhibition-curator__btn ai-exhibition-curator__btn--primary"
                 onClick={handleGenerate}
                 disabled={!designer.intent}
               >
                 Curar con AI →
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -288,12 +294,13 @@ export function AIExhibitionCurator({
               </p>
             </div>
             <div className="ai-exhibition-curator__actions">
-              <button
+              <Button
+                variant="unstyled"
                 className="ai-exhibition-curator__btn ai-exhibition-curator__btn--primary"
                 onClick={onClose}
               >
                 Cerrar
-              </button>
+              </Button>
             </div>
           </section>
         )}
@@ -433,7 +440,8 @@ function ExhibitionRefinementView({
           Refinar propuesta
         </span>
         <div className="ai-exhibition-curator__refine-actions">
-          <button
+          <Button
+            variant="unstyled"
             className="ai-exhibition-curator__btn ai-exhibition-curator__btn--ghost"
             onClick={() =>
               onRefine({
@@ -446,8 +454,9 @@ function ExhibitionRefinementView({
             }
           >
             Reducir visitantes 30%
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             className="ai-exhibition-curator__btn ai-exhibition-curator__btn--ghost"
             onClick={() =>
               onRefine({
@@ -460,7 +469,7 @@ function ExhibitionRefinementView({
             }
           >
             Ampliar audiencia 40%
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -558,19 +567,22 @@ function ExhibitionRefinementView({
 
       {/* Actions */}
       <div className="ai-exhibition-curator__actions">
-        <button
+        <Button
+          variant="unstyled"
           className="ai-exhibition-curator__btn ai-exhibition-curator__btn--ghost"
           onClick={onReset}
         >
           Empezar de nuevo
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="unstyled"
           className="ai-exhibition-curator__btn ai-exhibition-curator__btn--secondary"
           onClick={onRegenerate}
         >
           Regenerar
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="unstyled"
           className="ai-exhibition-curator__btn ai-exhibition-curator__btn--primary"
           onClick={onConfirm}
           disabled={!readyToExecute}
@@ -578,7 +590,7 @@ function ExhibitionRefinementView({
           {readyToExecute
             ? '🎨 Curar así'
             : `Bloqueado: ${blockers[0] ?? 'riesgos pendientes'}`}
-        </button>
+        </Button>
       </div>
     </section>
   );

@@ -31,8 +31,9 @@ from club_mcp.models.ml_intelligence import (
     ScenarioType,
     SimulationScenario,
 )
-from club_mcp.services.approval_service import ApprovalLevel, MCPTool
-from club_mcp.services.claude_service import get_claude_service
+from club_mcp.agents.base import MCPTool
+from club_mcp.ai.claude_service import get_claude_service
+from club_mcp.hitl.approval_types import ApprovalLevel
 
 logger = logging.getLogger(__name__)
 
@@ -52,19 +53,22 @@ class MLIntelligenceAgent(BaseAgent):
     - Hypothetical simulation ("What if?")
     """
 
+    agent_name: str = "ml_intelligence"
+    description: str = (
+        "Motor de inteligencia central — detección de "
+        "anomalías, forecasting, churn prediction, "
+        "segmentación, chat con Club Manager, y "
+        "simulaciones hipotéticas."
+    )
+
     def __init__(self) -> None:
-        super().__init__(
-            name="ml_intelligence",
-            description=(
-                "Motor de inteligencia central — detección de "
-                "anomalías, forecasting, churn prediction, "
-                "segmentación, chat con Club Manager, y "
-                "simulaciones hipotéticas."
-            ),
-        )
+        super().__init__()
         self.repo = MLIntelligenceRepository()
         self.claude = get_claude_service()
         logger.info("[ml_intelligence] Agent initialized")
+
+    def _register_tools(self) -> None:
+        pass
 
     # ── Claude helper ─────────────────────────────────────
 

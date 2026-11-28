@@ -21,6 +21,7 @@ import {
   CHART, CHART_PALETTE, TOOLTIP_STYLE, AXIS_TICK,
 } from "@/shared/lib/chartTheme";
 import type { RevenueSourceData } from "../types";
+import './RevenueChart.css';
 
 /* ══════════════════════════════════════════════════════════
    Config
@@ -159,7 +160,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
   // Bar animation variants — staggered draw-in
   return (
     <motion.div {...(m ?? {})}>
-      <Card className="p-6">
+      <Card className="revenue-chart p-6">
         <div className="flex items-baseline justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-[var(--color-silver-100)] font-[family-name:var(--font-display)]">

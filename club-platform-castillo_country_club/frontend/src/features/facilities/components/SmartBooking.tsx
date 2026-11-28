@@ -50,6 +50,7 @@ import type {
 } from "../types";
 
 import "./SmartBooking.css";
+import { Button } from "@/shared/components/ui/Button";
 
 
 /* ─────────────────────────────────────────────────────────
@@ -448,7 +449,8 @@ function VenueSuggestionCard({
       )}
 
       {/* Select button */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="fac-booking__match-select"
         data-selected={selected}
@@ -462,7 +464,7 @@ function VenueSuggestionCard({
         ) : (
           "Seleccionar venue"
         )}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -648,7 +650,8 @@ export function SmartBooking({
           placeholder="Ej: Cena corporativa para 50 personas, ambiente elegante..."
           rows={3}
         />
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fac-booking__search-btn"
           onClick={handleSearch}
@@ -656,7 +659,7 @@ export function SmartBooking({
         >
           <Search className="fac-booking__search-icon" />
           Buscar venues ideales
-        </button>
+        </Button>
       </section>
 
       {/* ─── Phase 2: Suggestions ──────────────────── */}
@@ -689,13 +692,14 @@ export function SmartBooking({
                 No se encontraron venues que coincidan con tu
                 descripción.
               </p>
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="fac-booking__retry-btn"
                 onClick={() => setPhase("describe")}
               >
                 Intentar con otra descripción
-              </button>
+              </Button>
             </div>
           )}
         </section>
@@ -719,7 +723,8 @@ export function SmartBooking({
               {selectedSuggestion.match_score}% match
             </span>
           </div>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="fac-booking__change-btn"
             onClick={() => {
@@ -728,7 +733,7 @@ export function SmartBooking({
             }}
           >
             Cambiar venue
-          </button>
+          </Button>
         </div>
       )}
 
@@ -915,15 +920,17 @@ export function SmartBooking({
 
           {/* Actions */}
           <div className="fac-booking__actions">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fac-booking__btn-back"
               onClick={handleBack}
             >
               <ArrowLeft className="fac-booking__btn-icon" />
               Volver
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               type="submit"
               className="fac-booking__btn-submit"
               disabled={submitting}
@@ -934,7 +941,7 @@ export function SmartBooking({
                 <Check className="fac-booking__btn-icon" />
               )}
               {submitting ? "Creando..." : "Crear Reserva"}
-            </button>
+            </Button>
           </div>
         </form>
       )}

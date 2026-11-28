@@ -1,12 +1,13 @@
 /**
  * @component RecommendationPreview (Fase 25)
  * @namespace .glass-landing__recs
- * @depends MiClubLanding.css, RecommendationCard styles
+ * @depends RecommendationPreview.css, RecommendationCard styles
  * @note Recommendation trigger with inline preview of top rec.
  *       Doesn't call AI endpoint until user clicks.
  *       Once loaded, shows expandable recommendation cards.
- * @import import '../MiClubLanding.css';
+ * @import import './RecommendationPreview.css';
  */
+import "./RecommendationPreview.css";
 
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -106,7 +107,8 @@ function RecCard({
       </div>
 
       {/* Reasoning expand */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="glass-landing__rec-card-reasoning-btn"
         onClick={() => setExpanded((v) => !v)}
@@ -117,7 +119,7 @@ function RecCard({
           <ChevronDown size={12} />
         )}
         {expanded ? "Menos detalle" : "¿Por qué esta recomendación?"}
-      </button>
+      </Button>
 
       <AnimatePresence>
         {expanded && (
@@ -179,7 +181,8 @@ export function RecommendationPreview({
 
       {showTrigger ? (
         /* Trigger — no AI call yet */
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="glass-landing__recs-trigger"
           onClick={onLoad}
@@ -202,7 +205,7 @@ export function RecommendationPreview({
               className="glass-landing__recs-trigger-arrow"
             />
           </div>
-        </button>
+        </Button>
       ) : isLoading ? (
         /* Loading */
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

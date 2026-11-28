@@ -574,11 +574,19 @@ describe("buildPipelineEcosystem", () => {
 
   it("should produce quick wins equal to min(count, 5) for small counts", () => {
     // ready count=3 → 3 quick wins
+    // G15: quickWins nacen del stage "ready" (pipelineEcosystem.ts:143,
+    // generateQuickWins(min(count,5))). El mock viejo tocaba
+    // "converted_member" — stage que NO existe en el funnel del mock
+    // (es "converted") → count de ready seguía 20 → 5 quickWins.
+    // El comparador va por substring id-safe (la unión tipada de
+    // contracts.ts usa ids de backend; el funnel del mock usa los ids
+    // de GUEST_PIPELINE_STAGE_DEFS — casteado as unknown igual que el
+    // resto del archivo).
     const funnel = {
       ...makeHealthyFunnel(),
       stages: [
         ...(makeHealthyFunnel().stages ?? []).map((s) =>
-          s.stage === "converted_member" ? { ...s, count: 3 } : s,
+          (s.stage as string) === "ready" ? { ...s, count: 3 } : s,
         ),
       ],
     } as unknown as ConversionFunnel;

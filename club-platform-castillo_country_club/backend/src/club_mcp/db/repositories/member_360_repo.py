@@ -2,6 +2,11 @@
 Member 360 Repository — Data access layer.
 Seed data for 12 members across 8 families.
 Cross-domain aggregation methods.
+
+Ola 2.1-decimaseptima — cirugía async (22 def → async def,
+mecánica compliance §3.8-QUINQUE / finance / wellness): mismos
+cuerpos, mismo contrato observable; el agente ya desacoplado
+(0 privados tocados — 17 call sites ganaron await).
 """
 
 from __future__ import annotations
@@ -137,7 +142,7 @@ class Member360Repository:
 
     # ─── Identity ────────────────────────────────────────────────────────────
 
-    def get_member_identity(self, member_id: str) -> MemberIdentity | None:
+    async def get_member_identity(self, member_id: str) -> MemberIdentity | None:
         """Get core identity for a member."""
         for m in self._members:
             if m["member_id"] == member_id:
@@ -156,7 +161,7 @@ class Member360Repository:
                 )
         return None
 
-    def search_members(
+    async def search_members(
         self,
         query: str | None = None,
         tier: str | None = None,
@@ -170,7 +175,7 @@ class Member360Repository:
         """Search members with filters and 360 preview."""
         results = []
         for m in self._members:
-            identity = self.get_member_identity(m["member_id"])
+            identity = await self.get_member_identity(m["member_id"])
             if not identity:
                 continue
 
@@ -185,12 +190,12 @@ class Member360Repository:
                 continue
 
             # Compute preview data
-            factors = self.get_health_factors(m["member_id"])
-            composite = self._compute_composite(factors)
-            level = self._health_level(composite)
-            churn = self._churn_level(m["member_id"])
-            engagement = self._engagement_score(factors)
-            stage = self._journey_stage(m["member_id"])
+            factors = await self.get_health_factors(m["member_id"])
+            composite = await self._compute_composite(factors)
+            level = await self._health_level(composite)
+            churn = await self._churn_level(m["member_id"])
+            engagement = await self._engagement_score(factors)
+            stage = await self._journey_stage(m["member_id"])
 
             if health_level and level.value != health_level:
                 continue
@@ -199,7 +204,7 @@ class Member360Repository:
             if journey_stage and stage.value != journey_stage:
                 continue
 
-            last_activity = self._last_activity_date(m["member_id"])
+            last_activity = await self._last_activity_date(m["member_id"])
 
             results.append(Member360Preview(
                 member_id=m["member_id"],
@@ -236,16 +241,16 @@ class Member360Repository:
 
     # ─── Health Score ────────────────────────────────────────────────────────
 
-    def get_health_factors(self, member_id: str) -> list[HealthFactor]:
+    async def get_health_factors(self, member_id: str) -> list[HealthFactor]:
         """Get 5 health factors for a member."""
         raw = HEALTH_FACTORS_SEED.get(member_id, _DEFAULT_FACTORS)
         return [HealthFactor(**f) for f in raw]
 
-    def get_health_score(self, member_id: str) -> dict:
+    async def get_health_score(self, member_id: str) -> dict:
         """Compute composite health score with 5 factors."""
-        factors = self.get_health_factors(member_id)
-        composite = self._compute_composite(factors)
-        level = self._health_level(composite)
+        factors = await self.get_health_factors(member_id)
+        composite = await self._compute_composite(factors)
+        level = await self._health_level(composite)
 
         # Previous score simulation
         prev = composite - random.uniform(-5, 5)
@@ -262,10 +267,10 @@ class Member360Repository:
             "benchmark_percentile": round(random.uniform(40, 95), 1),
         }
 
-    def _compute_composite(self, factors: list[HealthFactor]) -> float:
+    async def _compute_composite(self, factors: list[HealthFactor]) -> float:
         return sum(f.score * f.weight for f in factors)
 
-    def _health_level(self, score: float) -> MemberHealthLevel:
+    async def _health_level(self, score: float) -> MemberHealthLevel:
         if score >= 85:
             return MemberHealthLevel.EXCELLENT
         elif score >= 65:
@@ -276,18 +281,18 @@ class Member360Repository:
 
     # ─── Journey ─────────────────────────────────────────────────────────────
 
-    def get_member_journey(self, member_id: str) -> dict:
+    async def get_member_journey(self, member_id: str) -> dict:
         """Get lifecycle journey with milestones."""
-        identity = self.get_member_identity(member_id)
+        identity = await self.get_member_identity(member_id)
         if not identity:
             return {"error": "Member not found"}
 
-        stage = self._journey_stage(member_id)
-        days_in = self._days_in_stage(member_id, stage)
+        stage = await self._journey_stage(member_id)
+        days_in = await self._days_in_stage(member_id, stage)
 
-        milestones = self._generate_milestones(identity)
+        milestones = await self._generate_milestones(identity)
 
-        stage_history = self._generate_stage_history(identity, stage)
+        stage_history = await self._generate_stage_history(identity, stage)
 
         return {
             "member_id": member_id,
@@ -295,19 +300,19 @@ class Member360Repository:
             "days_in_stage": days_in,
             "stage_history": stage_history,
             "milestones": milestones,
-            "next_expected_transition": self._next_transition(stage),
+            "next_expected_transition": await self._next_transition(stage),
             "next_transition_date": (TODAY + timedelta(days=random.randint(15, 90))).isoformat(),
             "journey_health": "stalled" if days_in > 180 else ("accelerating" if days_in < 30 else "healthy"),
         }
 
-    def _journey_stage(self, member_id: str) -> JourneyStage:
+    async def _journey_stage(self, member_id: str) -> JourneyStage:
         """Compute journey stage based on tenure and engagement."""
-        identity = self.get_member_identity(member_id)
+        identity = await self.get_member_identity(member_id)
         if not identity:
             return JourneyStage.PROSPECT
 
         tenure = (TODAY - identity.join_date).days
-        factors = self.get_health_factors(member_id)
+        factors = await self.get_health_factors(member_id)
         eng_score = next((f.score for f in factors if f.name == "engagement"), 50)
 
         if tenure < 90:
@@ -323,16 +328,16 @@ class Member360Repository:
         else:
             return JourneyStage.GROWING
 
-    def _days_in_stage(self, member_id: str, stage: JourneyStage) -> int:
+    async def _days_in_stage(self, member_id: str, stage: JourneyStage) -> int:
         """Estimate days in current stage."""
-        identity = self.get_member_identity(member_id)
+        identity = await self.get_member_identity(member_id)
         if not identity:
             return 0
         tenure = (TODAY - identity.join_date).days
         # Heuristic: stage_duration ≈ tenure / 3
         return min(tenure, max(15, tenure // 3 + random.randint(-10, 10)))
 
-    def _next_transition(self, stage: JourneyStage) -> str | None:
+    async def _next_transition(self, stage: JourneyStage) -> str | None:
         transitions = {
             JourneyStage.ONBOARDING: "growing",
             JourneyStage.GROWING: "peak",
@@ -345,7 +350,7 @@ class Member360Repository:
         }
         return transitions.get(stage)
 
-    def _generate_stage_history(self, identity: MemberIdentity, current: JourneyStage) -> list[dict]:
+    async def _generate_stage_history(self, identity: MemberIdentity, current: JourneyStage) -> list[dict]:
         stages = list(JourneyStage)
         current_idx = stages.index(current) if current in stages else 3
         history = []
@@ -363,7 +368,7 @@ class Member360Repository:
             entry_date = exit_date
         return history
 
-    def _generate_milestones(self, identity: MemberIdentity) -> list[JourneyMilestone]:
+    async def _generate_milestones(self, identity: MemberIdentity) -> list[JourneyMilestone]:
         milestones = [
             JourneyMilestone(
                 milestone_id=f"ms-{identity.member_id}-join",
@@ -412,9 +417,9 @@ class Member360Repository:
 
     # ─── Churn ───────────────────────────────────────────────────────────────
 
-    def _churn_level(self, member_id: str) -> ChurnRiskLevel:
-        factors = self.get_health_factors(member_id)
-        composite = self._compute_composite(factors)
+    async def _churn_level(self, member_id: str) -> ChurnRiskLevel:
+        factors = await self.get_health_factors(member_id)
+        composite = await self._compute_composite(factors)
         if composite >= 70:
             return ChurnRiskLevel.LOW
         elif composite >= 50:
@@ -423,11 +428,11 @@ class Member360Repository:
             return ChurnRiskLevel.HIGH
         return ChurnRiskLevel.CRITICAL
 
-    def get_churn_prediction(self, member_id: str) -> dict:
+    async def get_churn_prediction(self, member_id: str) -> dict:
         """Predict churn risk with factors."""
-        factors = self.get_health_factors(member_id)
-        composite = self._compute_composite(factors)
-        risk_level = self._churn_level(member_id)
+        factors = await self.get_health_factors(member_id)
+        composite = await self._compute_composite(factors)
+        risk_level = await self._churn_level(member_id)
 
         risk_factors = []
         protective = []
@@ -475,9 +480,9 @@ class Member360Repository:
 
     # ─── LTV ─────────────────────────────────────────────────────────────────
 
-    def get_ltv_analysis(self, member_id: str) -> dict:
+    async def get_ltv_analysis(self, member_id: str) -> dict:
         """LTV projection and spend analysis."""
-        identity = self.get_member_identity(member_id)
+        identity = await self.get_member_identity(member_id)
         if not identity:
             return {"error": "Member not found"}
 
@@ -499,7 +504,7 @@ class Member360Repository:
         tier_avg = round(current_ltv * random.uniform(0.7, 1.3), 2)
         projection_12m = round(current_ltv + monthly_spend * 12 * random.uniform(0.9, 1.1), 2)
 
-        factors = self.get_health_factors(member_id)
+        factors = await self.get_health_factors(member_id)
         eng = next((f.score for f in factors if f.name == "engagement"), 50)
         ltv_trend = "improving" if eng > 70 else ("declining" if eng < 40 else "stable")
         ltv_tier_val = LTVTier.HIGH_VALUE if current_ltv > tier_avg * 1.2 else (
@@ -524,9 +529,9 @@ class Member360Repository:
 
     # ─── Activity Summary ────────────────────────────────────────────────────
 
-    def get_activity_summary(self, member_id: str, period_days: int = 90) -> dict:
+    async def get_activity_summary(self, member_id: str, period_days: int = 90) -> dict:
         """Cross-domain activity breakdown."""
-        factors = self.get_health_factors(member_id)
+        factors = await self.get_health_factors(member_id)
         eng = next((f.score for f in factors if f.name == "engagement"), 50)
 
         total = max(1, int(eng / 5) + random.randint(0, 5))
@@ -575,7 +580,7 @@ class Member360Repository:
 
     # ─── Social Profile ──────────────────────────────────────────────────────
 
-    def get_social_profile(self, member_id: str) -> dict:
+    async def get_social_profile(self, member_id: str) -> dict:
         """Social connections, clusters, referrals."""
         other_ids = [
             member["member_id"]
@@ -628,10 +633,10 @@ class Member360Repository:
 
     # ─── Risk Assessment ─────────────────────────────────────────────────────
 
-    def get_risk_assessment(self, member_id: str) -> dict:
+    async def get_risk_assessment(self, member_id: str) -> dict:
         """Cross-domain risk factors."""
-        factors = self.get_health_factors(member_id)
-        composite = self._compute_composite(factors)
+        factors = await self.get_health_factors(member_id)
+        composite = await self._compute_composite(factors)
 
         risk_factors = []
         protective = []
@@ -666,13 +671,13 @@ class Member360Repository:
 
     # ─── Engagement Proposals (Motor) ────────────────────────────────────────
 
-    def generate_engagement_proposals(self, member_id: str) -> dict:
+    async def generate_engagement_proposals(self, member_id: str) -> dict:
         """Engagement Motor — personalized cross-domain proposals."""
-        identity = self.get_member_identity(member_id)
+        identity = await self.get_member_identity(member_id)
         if not identity:
             return {"error": "Member not found"}
 
-        factors = self.get_health_factors(member_id)
+        factors = await self.get_health_factors(member_id)
         eng = next((f.score for f in factors if f.name == "engagement"), 50)
         social = next((f.score for f in factors if f.name == "social"), 50)
 
@@ -754,7 +759,8 @@ class Member360Repository:
             ))
 
         # Wellness gap
-        activity_domains = [d["domain"] for d in self.get_activity_summary(member_id).get("by_domain", [])]
+        activity_summary = await self.get_activity_summary(member_id)
+        activity_domains = [d["domain"] for d in activity_summary.get("by_domain", [])]
         if "wellness" not in activity_domains and eng > 40:
             proposals.append(EngagementProposal(
                 proposal_id=f"prop-{member_id}-wellness",
@@ -779,11 +785,11 @@ class Member360Repository:
             ],
         }
 
-    def _engagement_score(self, factors: list[HealthFactor]) -> float:
+    async def _engagement_score(self, factors: list[HealthFactor]) -> float:
         return next((f.score for f in factors if f.name == "engagement"), 50)
 
-    def _last_activity_date(self, member_id: str) -> datetime | None:
-        factors = self.get_health_factors(member_id)
+    async def _last_activity_date(self, member_id: str) -> datetime | None:
+        factors = await self.get_health_factors(member_id)
         eng = next((f.score for f in factors if f.name == "engagement"), 50)
         days_back = max(1, int((100 - eng) / 5) + random.randint(0, 7))
         return _dt_ago(days_back)

@@ -189,7 +189,10 @@ describe("buildMemoryGraph", () => {
   });
 
   it("should return empty graph with 0 interactions", () => {
-    const result = buildMemoryGraph(makeActivitySummary({ interactions: [] }));
+    // G15: mock con totalVisits 0 — el loyalty bonus (totalVisits>=5
+    // → +15) es comportamiento correcto del src; strength 0 exige huésped
+    // SIN visitas. El mock viejo dejaba totalVisits=12 → strength 15.
+    const result = buildMemoryGraph(makeActivitySummary({ interactions: [], totalVisits: 0 }));
     const graph = assertOk(result);
 
     expect(graph.nodes.length).toBe(0);

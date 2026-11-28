@@ -16,6 +16,7 @@ import { showToast } from '@/shared/components/ui/Toast';
 
 import type { CulturalCategory, VenueType } from '../types';
 import { VENUE_CONFIG } from '../types';
+import './ExhibitionFormModal.css';
 
 // ══════════════════════════════════════════════════════════
 //  TYPES
@@ -114,7 +115,7 @@ export default function ExhibitionFormModal({ onClose, onSuccess }: ExhibitionFo
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="exhibition-form-modal fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[color-mix(in_srgb,var(--color-sage-400)_15%,transparent)] bg-[var(--color-surface-1)] shadow-[var(--shadow-elevated)]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--color-surface-3)] px-6 py-4">

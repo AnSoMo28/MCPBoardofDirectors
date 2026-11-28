@@ -1,34 +1,3 @@
-/**
- * Button.tsx
- * src/shared/components/ui/Button.tsx
- *
- * @level       Level 6+ Agency · Apple Production Grade · 2027
- * @role        Senior Expert UI/UX, AI/ML, Architecture
- * @namespace   .ui-btn
- * @keyframes   1 (ui-btn-spin) — in Button.css
- * @depends     globals.css §1 tokens, §11 lunar-btn, useRipple
- *
- * PRE-WRITE VERIFICATION:
- * [x] cn utility verified in shared/lib/utils
- * [x] useRipple verified in shared/hooks/useRipple
- * [x] All variant tokens verified against globals.css §1
- * [x] lunar-btn classes verified in globals.css §11
- *
- * ANTI-PATTERNS REMOVED:
- * [x] Tailwind utilities → BEM CSS classes (.ui-btn__*)
- * [x] transition-all → specific CSS properties
- * [x] font-[family-name:var(--font-ui)] → CSS declaration
- * [x] active:scale-[0.98] → CSS :active rule
- * [x] focus-visible:ring-2 → CSS outline per D10-01
- * [x] animate-spin → CSS keyframe ui-btn-spin
- * [x] Hardcoded rgba → color-mix() in CSS
- * [x] Missing data-testid → added
- * [x] Missing light mode → added in CSS
- * [x] Mutable props → readonly
- * [x] Default export → named export (already named, kept)
- */
-
-// ═══ React core ═══
 import {
   type ButtonHTMLAttributes,
   type ReactNode,
@@ -46,7 +15,14 @@ import "./Button.css";
    §1  TYPES
    ═══════════════════════════════════════════════════════════════ */
 
-export type ButtonVariant = "primary" | "sage" | "secondary" | "ghost" | "danger" | "success";
+export type ButtonVariant =
+  | "primary"
+  | "sage"
+  | "secondary"
+  | "ghost"
+  | "danger"
+  | "success"
+  | "unstyled";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -70,7 +46,8 @@ const LUNAR_VARIANT: Record<ButtonVariant, string> = {
   secondary: "lunar-btn lunar-btn--silver",
   ghost:     "lunar-btn lunar-btn--silver",
   danger:    "lunar-btn lunar-btn--rose",
-  success:   "lunar-btn lunar-btn--green" ,
+  success:   "lunar-btn lunar-btn--green",
+  unstyled:  "",
 };
 
 
@@ -113,7 +90,24 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) {
     const isDisabled = disabled || isLoading;
-    const rippleRef = useRipple<HTMLButtonElement>();
+    const rippleRef = useRipple<HTMLButtonElement>(variant !== "unstyled");
+
+    // unstyled: passthrough puro — el swap del codemod B5 es visual-neutral
+    // (sites con CSS de feature propio: glass-*, BEM). Sin ui-btn classes,
+    // sin ripple, sin spinner-wrap: children directo, DOM idéntico al
+    // <button> original salvo el nombre del tag.
+    if (variant === "unstyled") {
+      return (
+        <button
+          ref={ref}
+          disabled={isDisabled}
+          className={className}
+          {...rest}
+        >
+          {children}
+        </button>
+      );
+    }
 
     return (
       <button

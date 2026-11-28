@@ -4,6 +4,8 @@
  * @depends DecisionDocument.css
  */
 
+
+import './SectionSkeleton.css';
 export function SectionSkeleton() {
   return (
     <div className="glass-decision__skeleton" aria-hidden="true">

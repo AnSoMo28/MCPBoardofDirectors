@@ -22,6 +22,7 @@ import { useApprovalQueue } from "./hooks/useApprovalQueue";
 import { ApprovalCard } from "./ApprovalCard";
 import { ApprovalStats } from "./ApprovalStats";
 import "./ApprovalQueue.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Component
@@ -110,21 +111,23 @@ export function ApprovalQueue() {
               {q.selectedIds.size > 1 ? "s" : ""}
             </span>
             <div className="glass-approval__batch-actions">
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="glass-approval__batch-btn glass-approval__batch-btn--approve"
                 onClick={() => q.batchApprove("Aprobación en lote")}
               >
                 <Check size={14} />
                 Aprobar seleccionadas
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="unstyled"
                 type="button"
                 className="glass-approval__batch-btn glass-approval__batch-btn--clear"
                 onClick={q.clearSelection}
               >
                 Deseleccionar
-              </button>
+              </Button>
             </div>
           </div>
         )}

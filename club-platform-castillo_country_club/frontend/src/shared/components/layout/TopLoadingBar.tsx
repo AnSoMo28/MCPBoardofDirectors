@@ -19,6 +19,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 import { useIsFetching } from "@tanstack/react-query";
 import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
+import './TopLoadingBar.css';
 
 export function TopLoadingBar() {
   const isFetching = useIsFetching();
@@ -103,6 +104,8 @@ export function TopLoadingBar() {
       }}
     >
       <div
+      className="top-loading-bar"
+      
         style={{
           height: "100%",
           width: `${progress}%`,

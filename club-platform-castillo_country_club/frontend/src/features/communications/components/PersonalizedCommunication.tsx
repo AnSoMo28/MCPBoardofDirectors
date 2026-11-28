@@ -39,6 +39,7 @@ import type {
 } from "../hooks/usePersonalizedComposer";
 
 import "./PersonalizedCommunication.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // ICON MAP
@@ -80,7 +81,8 @@ function ChannelSelector({
           );
 
           return (
-            <button
+            <Button
+              variant="unstyled"
               key={ch.id}
               className="composer__channel-btn"
               data-selected={isSelected}
@@ -103,7 +105,7 @@ function ChannelSelector({
                   {clubPerf.percentage}% del club
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -371,7 +373,8 @@ function AlternativeComparison({
             const ChIcon = CHANNEL_ICONS[alt.channel] ?? MessageSquare;
             const score = variantScores[i];
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={i}
                 className="composer__alt-tab"
                 data-selected={i === selectedIdx}
@@ -383,7 +386,7 @@ function AlternativeComparison({
                 {score && (
                   <span className="composer__variant-score">{score.composite}%</span>
                 )}
-              </button>
+              </Button>
             );
           },
         )}
@@ -414,13 +417,14 @@ function AlternativeComparison({
             </div>
           )}
           <div className="composer__alt-actions">
-            <button
+            <Button
+              variant="unstyled"
               className="composer__copy-btn"
               onClick={() => onCopy(alternatives[selectedIdx].body)}
             >
               <Copy size={12} />
               <span>Copiar</span>
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -572,26 +576,28 @@ export function PersonalizedCommunication() {
             />
             <div className="composer__occasion-chips">
               {COMPOSER_OCCASION_SUGGESTIONS.map((s: string) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={s}
                   className="composer__occasion-chip"
                   onClick={() => composer.setOccasion(s)}
                   data-selected={composer.occasion === s}
                 >
                   {s}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
 
-          <button
+          <Button
+            variant="unstyled"
             className="composer__generate-btn"
             onClick={composer.handleGenerate}
             disabled={!composer.familyId || !composer.occasion.trim()}
           >
             <Sparkles size={16} />
             <span>Generar Comunicación</span>
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -619,9 +625,9 @@ export function PersonalizedCommunication() {
             <AlertTriangle size={24} />
             <h3>No se pudo generar</h3>
             <p>Intentá con otros parámetros.</p>
-            <button className="composer__retry-btn" onClick={composer.handleRegenerate}>
+            <Button variant="unstyled" className="composer__retry-btn" onClick={composer.handleRegenerate}>
               Nueva comunicación
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -657,13 +663,14 @@ export function PersonalizedCommunication() {
           }
           className="composer__input composer__input--compact"
         />
-        <button
+        <Button
+          variant="unstyled"
           className="composer__generate-btn composer__generate-btn--compact"
           onClick={composer.handleRegenerate}
         >
           <Sparkles size={14} />
           <span>Re-generar</span>
-        </button>
+        </Button>
       </div>
 
       {/* ── Risk Banner ─────────────────────────── */}
@@ -697,14 +704,16 @@ export function PersonalizedCommunication() {
             </span>
           </div>
           <div className="composer__content-actions">
-            <button
+            <Button
+              variant="unstyled"
               className="composer__copy-btn"
               onClick={() => composer.handleCopy(data.content.body)}
             >
               <Copy size={14} />
               <span>Copiar</span>
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
               className="composer__send-btn"
               onClick={() => {
                 /* would trigger send action */
@@ -712,7 +721,7 @@ export function PersonalizedCommunication() {
             >
               <Send size={14} />
               <span>Enviar</span>
-            </button>
+            </Button>
           </div>
         </div>
 

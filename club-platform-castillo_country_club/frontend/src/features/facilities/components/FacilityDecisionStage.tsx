@@ -26,6 +26,7 @@ import { useCallback, useMemo } from "react";
 import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
 import type { FacilitiesDashboardMode } from "../types";
 import "./FacilityDecisionStage.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -237,7 +238,8 @@ export function FacilityDecisionStage({
           const badgeUrgency = computeBadgeUrgency(count, isUrgent, ambientMode);
 
           return (
-            <button
+            <Button
+              variant="unstyled"
               key={tab.id}
               className="glass-fac-stage__tab"
               role="tab"
@@ -273,7 +275,7 @@ export function FacilityDecisionStage({
                   aria-hidden="true"
                 />
               )}
-            </button>
+            </Button>
           );
         })}
       </div>

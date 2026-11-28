@@ -38,6 +38,7 @@ import {
 import type { MemberPredictions } from "../lib/memberPredictions";
 
 import "./MemberJourneyTimeline.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -480,7 +481,8 @@ export function MemberJourneyTimeline({
 
           {availableDomains.length > 1 && (
             <div className="glass-m360-journey__domain-filters">
-              <button
+              <Button
+                variant="unstyled"
                 onClick={() => setActiveDomain(null)}
                 className={cn(
                   "glass-m360-journey__domain-pill",
@@ -488,9 +490,10 @@ export function MemberJourneyTimeline({
                 )}
               >
                 Todos
-              </button>
+              </Button>
               {availableDomains.map((domain) => (
-                <button
+                <Button
+                  variant="unstyled"
                   key={domain}
                   onClick={() =>
                     setActiveDomain(
@@ -505,7 +508,7 @@ export function MemberJourneyTimeline({
                 >
                   {ACTIVITY_DOMAIN_DISPLAY[domain as ActivityDomain]
                     ?.label ?? domain}
-                </button>
+                </Button>
               ))}
             </div>
           )}

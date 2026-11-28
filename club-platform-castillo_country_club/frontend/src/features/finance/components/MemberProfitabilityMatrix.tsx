@@ -278,14 +278,15 @@ function FamilyDetailCard({ family, onClose }: {
                 </span>
               </div>
             </div>
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               onClick={onClose}
               className="text-[var(--color-silver-500)] hover:text-[var(--color-silver-200)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Cerrar detalle"
             >
               ✕
-            </button>
+            </Button>
           </div>
 
           {/* Metrics grid */}
@@ -714,7 +715,8 @@ export default function MemberProfitabilityMatrix() {
             const isActive = quadrantFilter === qk;
             const Icon = quadrantIcons[qk];
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={qk}
                 type="button"
                 onClick={() => setQuadrantFilter(isActive ? "" : qk)}
@@ -739,7 +741,7 @@ export default function MemberProfitabilityMatrix() {
                     {cfg.strategy}
                   </p>
                 </div>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -781,7 +783,8 @@ export default function MemberProfitabilityMatrix() {
                       { field: "churn_risk_score" as SortField, label: "Churn" },
                     ]).map((col) => (
                       <th key={col.field}>
-                        <button
+                        <Button
+                          variant="unstyled"
                           type="button"
                           onClick={() => toggleSort(col.field)}
                           className={cn(
@@ -795,7 +798,7 @@ export default function MemberProfitabilityMatrix() {
                             sortDir === "asc" ? <ChevronUp size={12} /> : <ChevronDown size={12} />
                           )}
                           {sortField !== col.field && <ArrowUpDown size={10} className="opacity-30" />}
-                        </button>
+                        </Button>
                       </th>
                     ))}
                   </tr>
@@ -860,7 +863,8 @@ export default function MemberProfitabilityMatrix() {
                 const churn = churnRiskConfig(f.churn_risk_score);
                 const isSelected = f.family_id === selectedId;
                 return (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={f.family_id}
                     type="button"
                     onClick={() => handleDotClick(f.family_id)}
@@ -912,7 +916,7 @@ export default function MemberProfitabilityMatrix() {
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </Button>
                 );
               })}
             </div>

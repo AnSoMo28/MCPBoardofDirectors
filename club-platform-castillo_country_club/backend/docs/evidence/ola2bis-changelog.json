@@ -1,0 +1,44 @@
+{
+  "ola": "2.1-bis",
+  "date": "2026-11-16",
+  "path": "NEXT-STEPS-2027 PATH 2.1-bis (segundo vertical: family)",
+  "gate": "pytest write → restart runtime → read OK (aiosqlite local; pgvector real en CI) + contrato agente 50/50",
+  "changes": [
+    "db/orm/family_orm.py: familias + members (FK físico — materializa el FK lógico que users_orm declaraba) + activities/social/preferences JSONB",
+    "db/orm/repositories/family_repo.py: FamilyRepository async — contrato EXACTO del in-memory (21 métodos · mismas excepciones · mismos Pydantic)",
+    "alembic 0002_family (pk_families · uq_families_email · fk_members_family · ix deterministas)",
+    "bootstrap.py: swap OPT-IN — CLUB_PERSISTENCE_URL presente → repo PG; sin env → in-memory (los 849 tests no cambian)",
+    "family_repo in-memory: dataset demo extraído a demo_families()/demo_extras() (UNA fuente para ambas implementaciones)",
+    "CI: paso persistence corre la suite family (junto a la auth)",
+    "tests/unit/persistence/test_family_persistence.py: 6 tests (write-restart-read · FK members · contrato de errores · seed idempotente compartido · JSONB roundtrip)"
+  ],
+  "bugs_cazados": [
+    {
+      "id": "2.1bis-01",
+      "en": "extracción demo v1",
+      "problema": "v1 del plan guardaba connected_family_id como EMAIL (3 conexiones): social_match filtra por str(other.id) → nunca matcheaba; el original tenía 4 conexiones bidireccionales con UUIDs runtime",
+      "como_se_cazo": "las 50 tests del agente family (test_excludes_self_and_connected) corriendo contra el refactor — el gate de contrato de esta ola",
+      "fix": "v2: plan por EMAIL + resolución email→UUID en cada repositorio (misma forma final que el original)"
+    },
+    {
+      "id": "2.1bis-02",
+      "en": "ResourceWarning aiosqlite",
+      "problema": "conn.close() faltante en test FK — GC timing promovía a error (flake back-to-back)",
+      "como_se_cazo": "3 corridas back-to-back sobre la MISMA DB (lección 2.1f aplicada desde el diseño)",
+      "fix": "close explícito; el flake residual de GC-timing es Q-CI-04 (documentado; CI corre -p no:unraisableexception)"
+    }
+  ],
+  "errata_previa": "0008 (G19.1): el changelog G19 dijo '17 repos restantes (18-users)' — users NO era uno de los 18; corregido en 7 sitios + este archivo",
+  "quedo_fuera": [
+    "event_repo: SYNC (35 llamadas sin await en el orquestador + 11 en tests) — su migración es otra ola con su parche (awaits + repo + gate)",
+    "los otros 16 repos in-memory (siguientes verticales: misma mecánica §3.8)"
+  ],
+  "cifras": {
+    "tests_persistencia": "9 (3 auth + 6 family)",
+    "tests_contrato_agente_family": "50/50 verde contra el in-memory refactorizado",
+    "suite_total_estimada": "849 → 855 (+6 family)",
+    "ruff": "0 deuda nueva esperada (mismos TC001/B008 preexistentes)",
+    "mypy": "módulos nuevos esperados 0"
+  },
+  "validacion_sandbox": "sqlite real (aiosqlite 0.22.1 · sqlalchemy 2.1.8): 3/3 corridas back-to-back 59 passed con el flag del CI (-p no:unraisableexception)"
+}

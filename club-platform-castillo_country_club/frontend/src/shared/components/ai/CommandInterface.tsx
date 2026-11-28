@@ -23,6 +23,7 @@ import type {
 } from "@/shared/lib/advisor-engine/command-types";
 import { COMMAND_TYPE_CONFIG } from "@/shared/lib/advisor-engine/command-types";
 import './CommandInterface.css';
+import { Button } from "@/shared/components/ui/Button";
 
 /* ──────────────────────────────────────
    Types
@@ -363,10 +364,10 @@ function ActionConfirmationCard({
 
       {data.status === "pending_approval" ? (
         <div className="glass-cmd__action-cta">
-          <button onClick={() => onAction?.("approve_action", data)} className="glass-cmd__action-approve">
+          <Button variant="unstyled" onClick={() => onAction?.("approve_action", data)} className="glass-cmd__action-approve">
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>Aprobar</span>
-          </button>
+          </Button>
           <span className="glass-cmd__action-pending">Pendiente de aprobación</span>
         </div>
       ) : (
@@ -445,9 +446,9 @@ function GoalCreatedCard({
       )}
 
       {onAction && data.status === "suggested" && (
-        <button onClick={() => onAction?.("derive_goal", data)} className="glass-cmd__goal-derive">
+        <Button variant="unstyled" onClick={() => onAction?.("derive_goal", data)} className="glass-cmd__goal-derive">
           <Lightbulb className="w-3 h-3" /> Derivar meta
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -484,9 +485,9 @@ function ReportPreviewCard({
       )}
 
       {data.hasFullReport && onAction && (
-        <button onClick={() => onAction?.("generate_report", data)} className="glass-cmd__report-generate">
+        <Button variant="unstyled" onClick={() => onAction?.("generate_report", data)} className="glass-cmd__report-generate">
           <FileText className="w-3 h-3" /> Generar reporte completo
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -763,14 +764,15 @@ export function CommandInterface({
             className="glass-cmd__input"
             aria-label="Comando"
           />
-          <button
+          <Button
+            variant="unstyled"
             onClick={handleSubmit}
             disabled={!inputText.trim() || isProcessing}
             className="glass-cmd__send"
             aria-label="Enviar comando"
           >
             <Send className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
 
         <div className="glass-cmd__input-footer">

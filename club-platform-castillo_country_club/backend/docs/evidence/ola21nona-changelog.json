@@ -1,0 +1,30 @@
+{
+  "ola": "2.1-nona",
+  "date": "2026-11-20",
+  "path": "NEXT-STEPS-2027 PATH 2.2 (noveno vertical: cultural_social — events · acts · programs · exhibitions + 6 analytics). De los 11 repos in-memory restantes (Q-PER-01), cultural_social era el candidato limpio perfilado por la octava ('23m async/4 dicts — candidato limpio próximo'): async-FIRST (23/23 métodos ya async, el agente ya awaited en 48 call sites — drop-in como engagement §3.8-tris, guest §3.8-SEXTA, satisfaction §3.8-SEPTIMA y communication §3.8-OCTAVA, sin cirugía async), contrato limpio (el agente NO toca privados del repo — verificado por grep en los 48 call sites: 0 self.repo._*). Lección run #39 aplicada ANTES: ruff/mypy del vertical verificados en sandbox (0 deuda) para no repetir la saga del 0028.",
+  "gate": "pytest write → restart runtime → read OK (aiosqlite local; pgvector real en CI) + contrato None/[]/dict sin excepciones custom (salvo la ValueError literal de get_status_counts, reproducida)",
+  "changes": [
+    "db/orm/cultural_social_orm.py: 4 tablas (cultural_events · entertainment_acts · cultural_programs · art_exhibitions) — espejo 1:1 de models/cultural_social; entertainment_ids/requirements/event_ids a JSONB (criterio families §3.8-bis); enums String(32) sin CHECK (reconstrucción Pydantic al leer — lección run #28)",
+    "db/orm/repositories/cultural_social_repo.py: CulturalSocialRepository async — contrato EXACTO del in-memory (23 métodos · None/[]/dict sin excepciones custom salvo ValueError literal de _get_store · ids uuid4().hex[:8] SIN prefijo, igual que el in-memory; updates dict como record.update del in-memory — setattr por clave de columna, id intocable); analytics COMPUTE-ON-READ byte a byte (status_counts · upcoming ventana strings 30d · budget_by_category · venue_utilization · entertainment_costs · seasonal_data con mismos redondeos)",
+    "alembic 0009_cultural_social (4 tablas · pk deterministas · sin ix: todos los reads cargan la tabla chica y filtran en Python como el in-memory — same contract, criterio sin-índice de la octava)",
+    "bootstrap.py: swap OPT-IN extiende a cultural_social_repo (junto a family + engagement + event + compliance + guest + satisfaction + communication) — 9º repo migrado",
+    "CI: el paso persistence corre la suite cultural_social (junto a auth + family + engagement + event + compliance + guest + satisfaction + communication)",
+    "tests/unit/persistence/test_cultural_social_persistence.py: 4 tests (write-restart-read event CRUD completo con enums+JSONB roundtrip + update dict parcial + cancel + filtros enum/fecha-rango · acts/programs/exhibitions roundtrip con requirements JSONB + listas con filtro enum + gets None · analytics compute-on-read: status_counts keys .value + ValueError literal + upcoming ventana 30d + budget por categoría + venue avg_guests + costs avg/cost_per_minute/contracted_rate + seasonal enrollment_rate · contrato vacío None/[]/{} + ValueError)"
+  ],
+  "decision_arquitectura": {
+    "por_que_cultural_social": "el candidato limpio que la octava misma perfiló en 'proximos': async-FIRST (23/23, el agente YA awaited en 48 call sites — 0 cirugía) y contrato limpio (0 privados tocados, verificado por grep). 4 dicts planos CRUD + 6 analytics compute-on-read — la primera vertical con analytics agregados tipo F31, computados EN lectura sobre rows de tabla (mismo estilo compute-on-read de satisfaction/guest pero sobre 4 entidades).",
+    "semantica_updates": "el in-memory hacía record.update(updates) sobre dicts planos; el ORM aplica setattr por clave de columna conocida (_UPDATABLE por entidad, id intocable) — las claves que no calzan con columnas se ignoran silenciosamente (el dict del in-memory las guardaba pero Pydantic las descartaba al reconstruir: mismo comportamiento observable del contrato). cancel_event = update_event({'status': CANCELLED}) literal.",
+    "por_que_sin_indice": "ninguna query del contrato filtra por SQL: todas cargan la tabla (chica) y filtran/sortean en Python EXACTO como el in-memory iteraba .values() — mismo orden de inserción, mismo contrato observable (criterio sin-índice de la octava §3.8-OCTAVA).",
+    "dates_como_text": "date/start_date/end_date/start_time/end_time persisten los MISMOS strings del Create schema; created_at ISO now en create_event (igual que el in-memory). El contrato del agente y los analytics (get_upcoming) comparan STRINGS lexicográficos 'YYYY-MM-DD' — el roundtrip es pérdida cero.",
+    "value_error_literal": "get_status_counts('nonsense') lanza ValueError en el in-memory (la ÚNICA excepción del contrato, vía _get_store) — el ORM la reproduce LITERAL (mismo mensaje), no la suaviza: el contrato observable no cambia ni un byte.",
+    "proximos": "10 repos in-memory restantes (Q-PER-01 → 10): executive_dashboard (15m/5), proactive_recommendation (23m/6), age_group (refactor de contrato ANTES — ~6 privados tocados), document_intelligence (15m/2 + RAG lazy — ola aparte por dependencia), sports_recreation (33m async pero ~16 privados tocados — refactor primero), finance (17m sync — cirugía async como compliance), member_360/wellness/ml_intelligence (compute read-heavy — olas aparte)"
+  },
+  "cifras": {
+    "metodos": 23,
+    "tablas": 4,
+    "suite_persistence": "46 + 4 = 50 tests (3+6+6+6+6+6+6+7+4)",
+    "pytest": "892 + 4 = 896",
+    "q_per_01_repos": "11 → 10",
+    "contrato_agente": "48 call sites awaited · 0 privados tocados (grep verificado)"
+  }
+}

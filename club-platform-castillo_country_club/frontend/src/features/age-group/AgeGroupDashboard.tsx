@@ -61,6 +61,7 @@ import { AgeGroupIntelligencePanel } from "./components/AgeGroupIntelligencePane
 import type { BaseInsight } from "@/shared/components/AdvisorBanner";
 
 import "./AgeGroupDashboard.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ── §0  Constants ────────────────────────────────────────── */
 
@@ -149,7 +150,8 @@ function DormantState({
       <p className="ag__dormant-desc">
         Sin datos de distribución etaria disponibles
       </p>
-      <button
+      <Button
+        variant="unstyled"
         className="ag__dormant-btn lunar-btn lunar-btn--gold"
         onClick={onRetry}
         type="button"
@@ -157,7 +159,7 @@ function DormantState({
       >
         <Activity size={16} aria-hidden="true" />
         <span>Activar inteligencia</span>
-      </button>
+      </Button>
     </div>
   );
 }
@@ -483,7 +485,8 @@ export function AgeGroupDashboard() {
           § Intelligence Nudge — "Look here first"
           ═══════════════════════════════════════════════ */}
       {topNudge && (
-        <button
+        <Button
+          variant="unstyled"
           className="alert-card alert-card--premium ag__nudge"
           onClick={() => setActiveTab("intelligence")}
           type="button"
@@ -501,7 +504,7 @@ export function AgeGroupDashboard() {
           <span className="ag__nudge-cta" aria-hidden="true">
             Investigar →
           </span>
-        </button>
+        </Button>
       )}
 
       {/* ═══════════════════════════════════════════════

@@ -538,7 +538,8 @@ export function ExhibitionTimeline({
               : exhibitions.filter((ex) => ex.status === f.key).length;
             if (f.key !== 'all' && count === 0) return null;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={f.key}
                 className={cn(
                   'et__filter-pill',
@@ -548,7 +549,7 @@ export function ExhibitionTimeline({
                 style={{ '--stagger-i': i } as React.CSSProperties}
               >
                 {f.label} ({count})
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -737,7 +738,8 @@ export function ExhibitionTimeline({
                   {transitions.length > 0 && onStatusChange && (
                     <div className="et__card-actions">
                       {transitions.map((nextStatus) => (
-                        <button
+                        <Button
+                          variant="unstyled"
                           key={nextStatus}
                           className={cn(
                             'et__status-btn',
@@ -748,7 +750,7 @@ export function ExhibitionTimeline({
                           }
                         >
                           → {STATUS_LABELS[nextStatus]}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   )}

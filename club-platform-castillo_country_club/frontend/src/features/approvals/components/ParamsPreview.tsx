@@ -17,6 +17,7 @@ import {
   getDeltaPercent,
   COLLAPSE_THRESHOLD
 } from "../paramsConfig";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Types
@@ -51,7 +52,8 @@ function CopyButton({ params }: { params: Record<string, unknown> }) {
   }, [params]);
 
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className={`glass-params__copy-btn${copied ? " glass-params__copy-btn--copied" : ""}`}
       onClick={handleCopy}
@@ -59,7 +61,7 @@ function CopyButton({ params }: { params: Record<string, unknown> }) {
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
       {copied ? "Copiado" : "Copiar JSON"}
-    </button>
+    </Button>
   );
 }
 
@@ -255,7 +257,8 @@ export function ParamsPreview({ tool, params }: ParamsPreviewProps) {
 
         {/* Expand / collapse button */}
         {needsCollapse && (
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-params__expand-btn"
             onClick={() => setExpanded((v) => !v)}
@@ -272,7 +275,7 @@ export function ParamsPreview({ tool, params }: ParamsPreviewProps) {
                 {extraFields.length === 1 ? "campo" : "campos"}
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
     );

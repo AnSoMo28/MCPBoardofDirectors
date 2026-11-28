@@ -17,6 +17,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRightLeft, CalendarDays } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
+import { Button } from "@/shared/components/ui/Button";
+import './YearOverYearToggle.css';
 
 /* ── Types ── */
 
@@ -84,7 +86,7 @@ export default function YearOverYearToggle({
     >
       <div className={cn("space-y-4", className)}>
         {/* Toggle header */}
-        <div className="flex items-center justify-between">
+        <div className="year-over-year-toggle flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CalendarDays
               size={16}
@@ -96,7 +98,8 @@ export default function YearOverYearToggle({
             </span>
           </div>
 
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             onClick={() => setEnabled((v) => !v)}
             disabled={!yoyData}
@@ -144,7 +147,7 @@ export default function YearOverYearToggle({
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
               />
             </div>
-          </button>
+          </Button>
         </div>
 
         {/* YoY info bar (shown when enabled) */}

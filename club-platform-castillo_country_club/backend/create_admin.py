@@ -1,13 +1,31 @@
 import asyncio
+import getpass
+import os
+
 import asyncpg
+
+
+def _db_password() -> str:
+    """Q-SEC-03 (Ola 1.1): la credencial NUNCA vive en el código.
+
+    Orden: CLUB_DB_PASSWORD (env/CI) → getpass interactivo. El literal
+    password="" era un residuo de diagnóstico pegado al repo — sondeo de
+    tablas, no creación de admin (renombrado en este commit a
+    scripts/db_probe.py para que el nombre no mienta).
+    """
+    pw = os.environ.get("CLUB_DB_PASSWORD")
+    if pw:
+        return pw
+    return getpass.getpass("PostgreSQL password (postgres@club_db): ")
+
 
 async def main():
     conn = await asyncpg.connect(
-        host="localhost",
-        port=5432,
-        user="postgres",
-        password="",
-        database="club_db",
+        host=os.environ.get("CLUB_DB_HOST", "localhost"),
+        port=int(os.environ.get("CLUB_DB_PORT", "5432")),
+        user=os.environ.get("CLUB_DB_USER", "postgres"),
+        password=_db_password(),
+        database=os.environ.get("CLUB_DB_NAME", "club_db"),
     )
 
     print("=== CONEXION EXITOSA ===")

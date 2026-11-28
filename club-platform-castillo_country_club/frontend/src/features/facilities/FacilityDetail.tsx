@@ -781,14 +781,15 @@ export default function FacilityDetail() {
                 "No se pudo cargar la instalación."
               }
             />
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fac-detail__error-btn"
               onClick={() => navigate("/admin/facilities")}
             >
               <ArrowLeft className="fac-detail__error-btn-icon" />
               Volver a instalaciones
-            </button>
+            </Button>
           </div>
         </div>
       </PageContainer>

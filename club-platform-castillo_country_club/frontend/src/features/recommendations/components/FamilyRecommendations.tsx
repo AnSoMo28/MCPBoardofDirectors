@@ -29,6 +29,7 @@ import {
   type Recommendation,
 } from "../types";
 import { getScoreColor, SCORE_PRESETS } from "@/shared/lib/score-utils";
+import './FamilyRecommendations.css';
 // ── Recommendation type filter options ─────────────────────
 
 const REC_TYPE_OPTIONS = [
@@ -90,7 +91,7 @@ export function FamilyRecommendations() {
   // ── Render ──
   return (
     <div
-      className="space-y-5"
+      className="family-recommendations space-y-5"
       role="region"
       aria-label="Recomendaciones por familia"
     >
@@ -264,7 +265,8 @@ function RecommendationCard({
       }
     >
       {/* Header row — clickable */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         onClick={onToggle}
         className="w-full flex items-start justify-between gap-3 text-left
@@ -322,7 +324,7 @@ function RecommendationCard({
             <ChevronDown className="w-4 h-4 text-[var(--color-silver-500)]" />
           )}
         </div>
-      </button>
+      </Button>
 
       {/* Score bar */}
       <div className="mt-3">

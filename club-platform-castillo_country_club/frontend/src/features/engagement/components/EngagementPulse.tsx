@@ -26,6 +26,7 @@ import type {
   EngagementDashboardMode,
 } from "../types";
 import "./EngagementPulse.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ── Severity derivation ────────────────────────────────────
 
@@ -171,7 +172,8 @@ export function EngagementPulse({ mode, signals, healthScore, healthGrade, veloc
       {/* ── Top 3 Signals ─────────────────────────────────── */}
       <div className="eng-pulse__signals">
         {top3.map((signal, idx) => (
-          <button
+          <Button
+            variant="unstyled"
             key={signal.id}
             type="button"
             className="eng-pulse__signal"
@@ -181,7 +183,7 @@ export function EngagementPulse({ mode, signals, healthScore, healthGrade, veloc
           >
             <span className="eng-pulse__signal-priority">{signal.priority}</span>
             <span className="eng-pulse__signal-title">{signal.title}</span>
-          </button>
+          </Button>
         ))}
         {top3.length === 0 && (
           <span className="eng-pulse__signal eng-pulse__signal--empty">

@@ -83,6 +83,7 @@ import { ComfortDashboard } from "./components/ComfortDashboard";
 
 // ── CSS co-located ──
 import "./FacilitiesDashboard.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════
 // §1: CONTEXTUAL TAB AUTO-SELECTION
@@ -587,9 +588,9 @@ export function FacilitiesDashboard(_props: FacilitiesDashboardProps) {
           title="Error al cargar datos"
           description={dashboard.error}
           secondaryAction={
-            <button type="button" onClick={dashboard.refetchAll}>
+            <Button variant="unstyled" type="button" onClick={dashboard.refetchAll}>
               Reintentar
-            </button>
+            </Button>
           }
         />
       </div>
@@ -770,14 +771,15 @@ export function FacilitiesDashboard(_props: FacilitiesDashboardProps) {
             {crossTabSuggestions.length > 0 && (
               <div className="fac-dashboard__suggestions">
                 {crossTabSuggestions.map((suggestion) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={suggestion.targetTab}
                     className="fac-dashboard__suggest"
                     onClick={() => setActiveTab(suggestion.targetTab)}
                   >
                     {suggestion.label}
                     <span className="fac-dashboard__suggest-arrow">→</span>
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
@@ -803,7 +805,8 @@ export function FacilitiesDashboard(_props: FacilitiesDashboardProps) {
                     : heroInsight.reasoning}
                 </div>
                 <div className="fac-dashboard__hero-actions">
-                  <button
+                  <Button
+                    variant="unstyled"
                     className="fac-dashboard__hero-cta fac-dashboard__hero-cta--primary"
                     onClick={handleHeroCta}
                   >
@@ -811,13 +814,14 @@ export function FacilitiesDashboard(_props: FacilitiesDashboardProps) {
                       <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                     </svg>
                     {heroCtaLabel(heroInsight)}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="unstyled"
                     className="fac-dashboard__hero-cta fac-dashboard__hero-cta--dismiss"
                     onClick={handleHeroDismiss}
                   >
                     Descartar
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

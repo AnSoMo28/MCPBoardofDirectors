@@ -1,0 +1,37 @@
+{
+  "ola": "2.1-sexta",
+  "date": "2026-11-18",
+  "path": "NEXT-STEPS-2027 PATH 2.2 (sexto vertical: guest_management — guests · private_events · trial_memberships + snapshots). De los 14 repos in-memory restantes (Q-PER-01), guest_management es el mejor pattern-fit de esta ronda: async-FIRST (18/18 métodos ya async, el agente ya awaited en 34 call sites — drop-in como engagement §3.8-tris, sin cirugía async), 3 entidades self-contained sin FKs entre ellas, 12 CRUD + 6 compute-on-read, 0 privados del repo tocados por el agente.",
+  "gate": "pytest write → restart runtime → read OK (aiosqlite local; pgvector real en CI) + contrato None/[] sin excepciones custom",
+  "changes": [
+    "db/orm/guest_orm.py: 4 tablas (guests · private_events · trial_memberships · guest_monthly_snapshots) — espejo 1:1 de models/guest_management; privileges a JSONB (criterio families §3.8-bis)",
+    "db/orm/repositories/guest_repo.py: GuestManagementRepository async — contrato EXACTO del in-memory (18 métodos · None/[] sin excepciones custom · ids uuid4().hex[:8] SIN prefijo, igual que el in-memory)",
+    "visit_count: columna REAL — el in-memory lo guardaba como anexo privado `_visit_count` que SOLO el seed demo producía (el Guest de Pydantic lo descarta); la métrica de recurrencia (funnel/health/proposals) deja de ser artefacto del seed y sobrevive al restart. Default 1 = mismo comportamiento observable (g.get('_visit_count', 1))",
+    "guest_monthly_snapshots: tabla para el dataset demo de tendencias (criterio 0011: dataset UNA fuente) — el in-memory las tenía como constante de seed que solo existía con seed_demo_data=True (nunca activado por el runtime); get_analytics_enhanced/get_guest_demand_forecast/get_health_score(trend) ahora leen de la TABLA",
+    "alembic 0006_guest_management (4 tablas · pk deterministas · ix family_id/status/visit_date/referred_by; enums String(24) sin CHECK)",
+    "bootstrap.py: swap OPT-IN extiende a guest_management_repo (junto a family + engagement + event + compliance) — verificado POR EJECUCIÓN en ambos modos",
+    "CI: el paso persistence corre la suite guest (junto a auth + family + engagement + event + compliance)",
+    "tests/unit/persistence/test_guest_persistence.py: 6 tests (write-restart-read guest/event/trial · update_* con enums + filtros list_* · analytics dict · compute contra TABLAS: funnel 5 etapas + health 5 factores + forecast + enhanced 6 meses · propuestas P1 hot-lead)"
+  ],
+  "decision_arquitectura": {
+    "por_que_guest": "de los 14 restantes, el mejor pattern-fit de esta ronda: async-FIRST (el agente ya awaited — 0 cirugía, drop-in como engagement) y contrato limpio (el agente NO toca privados del repo, verificado por grep en los 34 call sites). age_group fue perfilado como candidato y CAYÓ: su agente toca privados del repo (self.repo._compute_distribution() · _enrollment · _monthly_snapshots) en ~6 sitios — eso no es contrato, es acoplamiento a la implementación; requiere refactor del agente ANTES de la migración (su propia ola). satisfaction (10 async, 13 calls) es el siguiente candidato limpio.",
+    "visit_count_columna": "el in-memory descartaba el anexo al devolver el Guest de Pydantic; el ORM lo persiste real. La semántica de recurrencia del in-memory (g.get('_visit_count', 1)) se reproduce con default 1; el update_guest acepta visit_count como clave del contrato (el dict.update del in-memory aceptaba CUALQUIER clave — incluida _visit_count — el ORM filtra a las columnas del modelo, misma decisión que compliance._AUDIT_COLUMNS).",
+    "snapshots_tabla": "las tendencias temporales eran UNA constante demo en memoria; la tabla las hace dato de primera clase: el deploy carga el dataset UNA vez (criterio 0011) y los compute leen de la base. El in-memory con seed_demo_data=False (como el runtime lo instancia) devolvía temporal_trends=[] y forecast degradado — el ORM con la tabla cargada devuelve lo mismo que el seed devolvía: MISMO comportamiento observable, fuente única.",
+    "compute_on_read": "health 5 factores ponderados · funnel 5 etapas con benchmarks · enhanced (referrers/privileges/peak days/correlación evento-guest) · forecast (tendencia 3 meses + pipeline ×1.15 + estacionalidad CR) · propuestas P1-P5: aritmética del in-memory BYTE a BYTE, aplicada sobre los rows de las tablas en UNA sesión de lectura por método (sin transacción de escritura — son puras lecturas)."
+  },
+  "bugs_cazados": [],
+  "quedo_fuera": [
+    "los otros 13 repos in-memory (Q-PER-01 → 13 tras este vertical; siguientes verticales: misma mecánica §3.8)",
+    "age_group: agente acoplado a privados del repo — refactor de contrato ANTES de migrar (ola aparte)",
+    "wellness y member_360: sync read-heavy compute — mecánica distinta, ola aparte",
+    "ApprovalEngine → Q-PER-03 (Ola 2.3 del PATH)",
+    "bump G23 de masters (v9.17 → v9.18) absorbiendo quinqua + esta ola — su propio parche chore, como G19/G20/G21/G22"
+  ],
+  "cifras": {
+    "tests_persistencia": "33 (3 auth + 6 family + 6 engagement + 6 event + 6 compliance + 6 guest)",
+    "tests_contrato_agente_guest": "44/44 verde contra el repo in-memory async SIN TOCAR UN BYTE (drop-in: el in-memory ya era async — cero cirugía, cero cambios de test)",
+    "suite_total_estimada": "873 → 879 (+6 persistencia guest)",
+    "migracion_async": "NONE — async-first: 0 awaits nuevos, 0 métodos migrados, 0 tests ajustados (la primera vertical drop-in total desde engagement)"
+  },
+  "validacion_sandbox": "sqlite real (aiosqlite · sqlalchemy): persistencia 33/33 + back-to-back 33/33 (re-runnable) + agente guest 44/44 + swap por ejecución en ambos modos (con CLUB_PERSISTENCE_URL → repo ORM async responde; sin env → in-memory mismo contrato)"
+}

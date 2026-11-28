@@ -1,15 +1,17 @@
 /**
  * @component PredictiveActions (Fase 25)
  * @namespace .glass-landing__predictive
- * @depends MiClubLanding.css
+ * @depends PredictiveActions.css
  * @note Context-aware action cards that change based on urgency,
  *       time, engagement, and AI recommendations.
- * @import import '../MiClubLanding.css';
+ * @import import './PredictiveActions.css';
  */
+import "./PredictiveActions.css";
 
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import type { PredictiveAction } from "../types";
+import { Button } from "@/shared/components/ui/Button";
 
 interface PredictiveActionsProps {
   actions: PredictiveAction[];
@@ -27,7 +29,8 @@ export function PredictiveActions({
       {actions.map((action) => {
         const Icon = action.icon;
         return (
-          <button
+          <Button
+            variant="unstyled"
             key={action.id}
             type="button"
             className="glass-landing__predictive-card"
@@ -55,7 +58,7 @@ export function PredictiveActions({
             <p className="glass-landing__predictive-card-desc">
               {action.description}
             </p>
-          </button>
+          </Button>
         );
       })}
     </div>

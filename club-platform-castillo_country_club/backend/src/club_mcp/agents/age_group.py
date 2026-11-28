@@ -70,7 +70,7 @@ class AgeGroupAgent(BaseAgent):
         """List all age groups with member counts, activity counts,
         and balance status."""
         groups = await self.repo.list_age_groups()
-        distribution = self.repo._compute_distribution()
+        distribution = await self.repo.get_distribution()
         total_members = sum(g.member_count for g in groups)
         total_activities = sum(g.activity_count for g in groups)
 
@@ -141,7 +141,9 @@ class AgeGroupAgent(BaseAgent):
 
         enriched = []
         for act in activities:
-            enrollments = self.repo._enrollment.get(act.id, [])
+            enrollments = await self.repo.get_activity_enrollment(
+                act.id
+            )
             active_enr = [
                 e for e in enrollments if e["status"] == "active"
             ]
@@ -292,7 +294,7 @@ class AgeGroupAgent(BaseAgent):
         demographics = await self.repo.get_demographics(
             age_group
         )
-        distribution = self.repo._compute_distribution()
+        distribution = await self.repo.get_distribution()
         total = sum(d.total_members for d in demographics)
 
         balance_map = {
@@ -402,19 +404,20 @@ class AgeGroupAgent(BaseAgent):
             gm["enrolled"] += p.total_enrolled
 
         # Compute trend per group from monthly snapshots
-        sorted_m = sorted(self.repo._monthly_snapshots.keys())
+        snapshots = await self.repo.get_monthly_snapshots()
+        sorted_m = sorted(snapshots.keys())
         group_trends: dict[str, str] = {}
         if len(sorted_m) >= 2:
             last2 = sorted_m[-2:]
             for ag in AgeGroupCategory:
                 gv = ag.value
                 v1 = (
-                    self.repo._monthly_snapshots[last2[0]]
+                    snapshots[last2[0]]
                     .get(gv, {})
                     .get("enrolled", 0)
                 )
                 v2 = (
-                    self.repo._monthly_snapshots[last2[1]]
+                    snapshots[last2[1]]
                     .get(gv, {})
                     .get("enrolled", 0)
                 )

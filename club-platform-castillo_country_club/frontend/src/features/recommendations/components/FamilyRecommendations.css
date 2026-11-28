@@ -1,0 +1,74 @@
+/**
+ * @component FamilyRecommendations
+ * @namespace .family-recommendations
+ * @archetype panel · domain teal
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados family-recommendations-*.
+ */
+.family-recommendations {
+  position: relative;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  animation: family-recommendations-reveal 0.55s var(--ease-apple) 1;
+  transition: border-color 0.3s var(--ease-apple), box-shadow 0.3s var(--ease-apple);
+}
+
+/* Reveal: el panel nace plegado en Y con un velo de luz que se disipa */
+@keyframes family-recommendations-reveal {
+  from { opacity: 0; transform: translateY(10px) scaleY(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Hairline superior — firma del panel: una hebra del color del dominio */
+.family-recommendations::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 4%, color-mix(in srgb, var(--color-teal-400) 33.3%, transparent) 50%, transparent 96%);
+  pointer-events: none;
+}
+
+.family-recommendations:hover {
+  border-color: color-mix(in srgb, var(--color-teal-400) 26.7%, transparent);
+  box-shadow: var(--shadow-card);
+}
+
+/* Filas/hijos directos: stagger sutil — el contenido llega en oleada */
+.family-recommendations > * {
+  animation: family-recommendations-stagger 0.5s var(--ease-apple) 1 backwards;
+}
+.family-recommendations > *:nth-child(1) { animation-delay: 0.06s; }
+.family-recommendations > *:nth-child(2) { animation-delay: 0.12s; }
+.family-recommendations > *:nth-child(3) { animation-delay: 0.18s; }
+.family-recommendations > *:nth-child(4) { animation-delay: 0.24s; }
+.family-recommendations > *:nth-child(5) { animation-delay: 0.30s; }
+.family-recommendations > *:nth-child(n+6) { animation-delay: 0.36s; }
+
+@keyframes family-recommendations-stagger {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.light .family-recommendations {
+  background: color-mix(in srgb, var(--color-silver-100) 75%, transparent);
+  border-color: color-mix(in srgb, var(--color-abyss) 8%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.light .family-recommendations::after {
+  background: linear-gradient(90deg, transparent 4%, color-mix(in srgb, var(--color-teal-500) 40%, transparent) 50%, transparent 96%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .family-recommendations, .family-recommendations > *, .family-recommendations::after { animation: none; transition: none; }
+}

@@ -72,15 +72,34 @@
  *          misaligned. Now: --json/--quiet/--check/--no-color, global
  *          try/catch with exit 3, dynamic-width ANSI-aware boxes, and a new
  *          advisory check 8 (orphan mocks) that reuses the shared context.
- *   VI-12  check 8 counted only useMCPQuery refs: every useMCPMutation,
- *          callMCPTool and advisor-engine {server, tool} data pair looked
- *          like an orphan mock (38 of 90 were false positives here).
- *          Check 8 now unions the four reference shapes; checks 2/6 keep
- *          hook-only semantics. Check 4 was EOL-blind: a CRLF working copy
- *          flagged <button at end of line via the leftover \r, an LF
- *          checkout missed it (962 vs 436 baseline drift). The \r is now
- *          stripped and the pattern accepts end-of-line — both converge
- *          to the true count.
+ *   VI-15  G8 RESTORE: commit 290afa4 (P2-C3e/f) was authored against the
+ *          pre-P2B base and DELETED the VI-12 changes from f11d8e7 (check 8
+ *          non-hook refs + check 4 EOL-insensitivity + v3.1.0). G8 re-applies
+ *          them over the VI-14 v2 file: check 8 unions the four reference
+ *          shapes again, check 4 is EOL-insensitive again. Version = 3.2.0
+ *          (VI-14 v2 + VI-12 — the 3.2.0 the .bak anticipated). Regression
+ *          documented in MASTER_CHECKPOINT §0.3 (#62).
+ *   VI-16  (B6) check 3 flagged noise, not debt: 27 of its 32 warnings were
+ *          migration comments ("// [x] text-[var(--color-*)] → CSS") and 4
+ *          were BEM modifier fragments ("--approval" in a *Class field,
+ *          concatenated into .glass-notification-item--approval — the class
+ *          EXISTS). Fix: shared stripLine masker (line + block comments,
+ *          CRLF, string-literal aware), template-literal prefixes verified
+ *          as families (var(--gca-${…}) → 14 concrete tokens — wired),
+ *          JS-write sites (style-object keys / setProperty) excluded as
+ *          definitions, quoted prefix fragments (toContain("var(--color-"))
+ *          excluded as assertion noise. TS side: 32w+6i → 0. Regression
+ *          suite: src/tools/__tests__/verify-integration.check3.test.ts.
+ *   VI-17  (B6) check 3 never looked at the CSS side — where the real debt
+ *          lived: 49 tokens used in var() with NO fallback and NO definition
+ *          anywhere (713 uses) silently resolve to `unset` at runtime
+ *          (--color-surface ×154, --space-2 ×70, --gst-accent ×53 …).
+ *          Now: var() reads in CSS against never-defined tokens with no
+ *          fallback are warned (capped at 20 per run, full list in --json);
+ *          reads WITH fallbacks are self-healing and stay silent; tokens
+ *          written from JS (style-object keys, setProperty, @property) are
+ *          wired by construction. ScanContext gains jsWrittenTokens.
+ *          Version = 3.3.0.
  */
 
 import * as fs from "node:fs";
@@ -127,10 +146,17 @@ interface ScanContext {
   registryFound: boolean;
   mcpQueries: McpQueryRef[];
   extraToolRefs: McpQueryRef[]; // VI-12: mutations, direct calls, advisor pairs
-  backendTools: Set<string>;
+  backendTools: Vi14BackendIndex;
   backendScanned: boolean;
   definedTokens: Set<string>;
   tokenSource: "css" | "legacy";
+  compatAliases: Map<string, string>; // legacy "server.tool" -> canonical "server.tool" (registry.py)
+  /** VI-17: custom properties WRITTEN from TS/TSX — style-object keys,
+   * setProperty() targets, @property declarations. A var(--x) read in CSS
+   * with a fallback whose token is never defined anywhere still resolves
+   * (the fallback), so only no-fallback reads against never-defined tokens
+   * are true runtime defects. */
+  jsWrittenTokens: Set<string>;
 }
 
 interface Totals {
@@ -150,7 +176,7 @@ interface CliOptions {
 
 class UsageError extends Error {}
 
-const TOOL_VERSION = "3.1.0";
+const TOOL_VERSION = "3.3.0";
 const MAX_DISPLAYED_FINDINGS = 40;
 const SNIPPET_MAX = 120;
 
@@ -190,8 +216,70 @@ const MCP_DATA_PAIR_RE =
   /\bserver:\s*["']([A-Za-z_][\w-]*)["']\s*,\s*\n\s*tool:\s*["']([A-Za-z_][\w-]*)["']/g;
 const VAR_USE_RE = /var\(\s*(--[\w-]+)/g;
 const BARE_TOKEN_RE = /["'`](--[\w-]+)["'`]/g;
+// VI-16: what follows a var(--x) match — used to detect template-literal
+// prefixes (var(--gca-${…}) resolves to REAL tokens at runtime, the literal
+// "--gca-" itself is not one). Also detects degenerate "--x-" fragments in
+// quoted strings (e.g. borderClass: "--approval" concatenated by the caller
+// into a BEM modifier — not a standalone token reference).
 
 // ═══════════════════════════════════════════════════ helpers ═════════════
+
+/**
+ * VI-16: one line of source with comments blanked out ("no code here"),
+ * CRLF normalized. Tracks /** ── *\/ block state ACROSS lines via the
+ * caller-held `blockState` object — the same convention p2c1_tokens.ts
+ * already uses. Lines inside a block comment return "" (still counted for
+ * line numbers). Not a tokenizer: it assumes no regex-literal in src
+ * contains quote characters (verified over frontend/src: none do) and no
+ * // appears inside a string (url(// forms are %-encoded in this codebase).
+ */
+function stripLine(rawLine: string, blockState: { inBlock: boolean }): string {
+  let s = rawLine.replace(/\r$/, "");
+  if (blockState.inBlock) {
+    const end = s.indexOf("*/");
+    if (end === -1) return "";
+    blockState.inBlock = false;
+    s = s.slice(end + 2);
+  }
+  let out = "";
+  let i = 0;
+  while (i < s.length) {
+    const c = s[i]!;
+    // single-line comment: rest of line is gone
+    if (c === "/" && s[i + 1] === "/") break;
+    // block comment opens: skip to close (may span lines)
+    if (c === "/" && s[i + 1] === "*") {
+      const end = s.indexOf("*/", i + 2);
+      if (end === -1) {
+        blockState.inBlock = true;
+        break;
+      }
+      i = end + 2;
+      continue;
+    }
+    // string literals survive (var(--x) inside them is still a live ref),
+    // but a "//" or "/*" INSIDE a quoted string would corrupt the masker.
+    // Guard: skip strings wholesale and re-emit them — they are code.
+    if (c === '"' || c === "'" || c === "`") {
+      const quote = c;
+      let j = i + 1;
+      while (j < s.length) {
+        if (s[j] === "\\") {
+          j += 2;
+          continue;
+        }
+        if (s[j] === quote) break;
+        j++;
+      }
+      out += s.slice(i, Math.min(j + 1, s.length));
+      i = Math.min(j + 1, s.length);
+      continue;
+    }
+    out += c;
+    i++;
+  }
+  return out;
+}
 
 function read(filePath: string): string | null {
   try {
@@ -445,92 +533,428 @@ function isBackendSource(abs: string, backendSrc: string): boolean {
   return !(/^test_.*\.py$/.test(base) || /_test\.py$/.test(base) || base === "conftest.py");
 }
 
-/**
- * Registration-based backend tool extraction (VI-01):
- *   @<anything>.tool / @tool decorator over (async) def — including the
- *   name="custom" kwarg form; .add_tool(...) / .register_tool(...) with a
- *   string first arg or name= kwarg; Tool(name=...) constructions.
- */
-function extractBackendToolNames(pyFiles: string[]): Set<string> {
-  const names = new Set<string>();
-  const DECORATOR_RE = /^[ \t]*@(?:[\w.]+\.)?tool\b/;
-  const DEF_RE = /^[ \t]*(?:async[ \t]+)?def[ \t]+([A-Za-z_][\w]*)/;
-  const ADD_TOOL_RE = /\.(?:add_tool|register_tool|addTool|registerTool)\s*\(/;
-  const ADD_TOOL_ARG_RE = /(?:add_tool|register_tool|addTool|registerTool)\s*\(\s*["']([A-Za-z_][\w-]*)["']/;
-  const NAME_KWARG_RE = /\bname\s*=\s*["']([A-Za-z_][\w-]*)["']/;
-  const TOOL_CTOR_RE = /(?:^|[.\s])Tool\s*\(/;
+// ═══ VI-14 · Backend tool extraction v2 (motor-based) — P2-C3 audit ═══
+//
+// Evidence (P2-C3 audit, 2026-11-04): the backend registers its tools via
+// BaseAgent.register_with_mcp(), which iterates dir(self) and calls
+// mcp.tool(name=...)(wrapper) — src/club_mcp/agents/base.py:62-86, driven by
+// server.py:138 over 18 agents. The v1 scan (@tool decorators, add_tool,
+// Tool(name=)) matched ZERO of those patterns in this codebase, so check 6
+// degraded to advisory. v2 mirrors the motor instead:
+//
+//   · per-agent specs: name="..." kwargs, {"name": "..."} dicts,
+//     name: str = "..." fields and ToolSpec("...") positional declarations
+//   · docstring "TOOLS:" blocks (snake tokens)
+//   · keys of TOOLS = {...} / tool_specs = [...] literals
+//   · fallback for spec-less agents (e.g. finance): public method names —
+//     exactly what dir(self) registers. HITL continuations (execute_*),
+//     _private and framework names are excluded.
+//
+// Server taxonomy = snake_case(agent class minus "Agent"), which matches the
+// mock-registry blocks 1:1 (family_profile, facility_management, finance...).
+
+interface Vi14ToolHit { server: string; name: string; sources: string[]; file: string; line: number; }
+interface Vi14DefHit { file: string; line: number; }
+interface Vi14BackendIndex {
+  flat: Set<string>;
+  byServer: Map<string, Set<string>>;
+  hits: Vi14ToolHit[];
+  defs: Map<string, Vi14DefHit[]>;
+  agents: string[];
+}
+
+/** Frontend server names → real platform servers (P2-C3 taxonomy drift). */
+const VI14_SERVER_RENAMES: Record<string, string[]> = {
+  families: ["family_profile"],
+  facilities: ["facility_management"],
+  guests: ["guest_management"],
+  engagement: ["member_engagement", "satisfaction"],
+  reports: ["executive_dashboard"],
+};
+
+/** snake_case(agent) → mock block name where they differ. */
+const VI14_AGENT_SERVER_ALIASES: Record<string, string> = {
+  event_orchestrator: "events",
+};
+
+/** Method names never registered as tools (HITL continuations, helpers). */
+const VI14_METHOD_EXCLUDE = new Set([
+  "wrapper", "handler", "callback", "main", "run", "call", "get", "setup", "teardown",
+]);
+
+/** Audited equivalences (P2-C3b/c/d evidence, 2026-11-04): "server.tool" → real names. */
+const VI14_EQUIVALENCES: Record<string, string[]> = {
+  "communication.get_communication_history": ["get_communication_analytics", "get_notification_history"],
+  "engagement.list_reactivation_campaigns": ["design_reactivation_campaign"],
+  "engagement.get_survey_results": ["analyze_event_satisfaction", "generate_satisfaction_report"],
+  "engagement.get_active_survey": ["get_survey_for_event"],
+  "facilities.list_reservations": ["get_facility_reservations"],
+  "facilities.get_facility": [],
+  "facilities.get_utilization": ["get_amenity_utilization"],
+  "facilities.get_reservations": ["get_facility_reservations"],
+  "facilities.list_available_facilities": ["manage_facilities"],
+  "finance.get_family_account": ["finance_account_status"],
+  "finance.get_transactions": [],
+  "finance.get_invoices": ["finance_invoice_create"],
+  "guests.get_today_guests": [],
+  "guests.get_today_summary": [],
+  "guests.list_trial_memberships": ["manage_trial_memberships"],
+  "families.search_families": ["family_search"],
+  "families.get_family": ["family_get_profile"],
+  "families.list_families": ["family_search"],
+  "reports.get_board_report": ["generate_quarterly_board_report", "send_board_package"],
+  "reports.get_risk_matrix": ["get_member_risk_assessment"],
+  "finance.narrative_generate": ["finance_narrative_generate", "generate_insight_narrative"],
+  "finance.scenario_simulate": ["finance_scenario_simulate", "simulate_scenario"],
+  "finance.stress_test": ["finance_stress_test"],
+  "finance.decision_simulate": ["finance_decision_simulate"],
+};
+
+function vi14Snake(name: string): string {
+  return name
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    // acronym boundaries: MLIntelligence -> ML_Intelligence (the v1 regex
+    // left "mlintelligence" — no separator between consecutive capitals,
+    // so the MLIntelligenceAgent server never matched ml_intelligence.*).
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2")
+    .replace(/([A-Za-z])([0-9])/g, "$1_$2")
+    .toLowerCase();
+}
+
+function vi14AgentServer(className: string): string {
+  const base = /Agent$/.test(className) ? className.slice(0, -5) : className;
+  const snake = vi14Snake(base);
+  return VI14_AGENT_SERVER_ALIASES[snake] ?? snake;
+}
+
+function vi14Disp(file: string): string {
+  const parts = file.split(/[\\/]/);
+  return parts.length >= 2 ? parts.slice(-2).join("/") : file;
+}
+
+function extractBackendToolNames(pyFiles: string[]): Vi14BackendIndex {
+  const flat = new Set<string>();
+  const byServer = new Map<string, Set<string>>();
+  const defs = new Map<string, Vi14DefHit[]>();
+  const hits: Vi14ToolHit[] = [];
+  const agents: string[] = [];
+
+  const CLASS_RE = /^[ \t]*class[ \t]+([A-Za-z_]\w*)/;
+  const DEF_RE = /^[ \t]*(?:async[ \t]+)?def[ \t]+([A-Za-z_]\w*)/;
+  const TOOLS_DOC_RE = /\bTOOLS[ \t]*:/;
+  const TOOLS_ASG_RE = /\b(?:TOOLS|tool_specs|TOOL_SPECS|tool_registry|_TOOLS)[ \t]*=[ \t]*[{[]/;
+  const SNAKE_TOKEN_RE = /([a-z][a-z0-9]*_[a-z0-9_]{2,})/g;
+  const NAME_PATTERNS: RegExp[] = [
+    /\bname[ \t]*=[ \t]*["']([a-z][a-z0-9_]{3,50})["']/g,
+    /["']name["'][ \t]*:[ \t]*["']([a-z][a-z0-9_]{3,50})["']/g,
+    /\bname[ \t]*:[ \t]*[A-Za-z_]\w*[ \t]*=[ \t]*["']([a-z][a-z0-9_]{3,50})["']/g,
+    /\b(?:ToolSpec|Tool)[ \t]*\([ \t]*["']([a-z][a-z0-9_]{3,50})["']/g,
+  ];
+
+  const DICT_KEY_RE = /^[ \t]*["']?([a-z][a-z0-9_]{5,60})["']?[ \t]*:/;
+  const LIST_ITEM_RE = /^[ \t]*["']?([a-z][a-z0-9_]{5,60})["']?[ \t]*,?[ \t]*$/;
 
   for (const file of pyFiles) {
     const content = read(file);
     if (!content) continue;
     const lines = content.split("\n");
+    const disp = vi14Disp(file);
 
+    // capability map: every public def anywhere (agent methods, repo functions)
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]!;
+      const m = DEF_RE.exec(lines[i]!);
+      if (!m) continue;
+      const n = m[1]!;
+      if (n.startsWith("_") || VI14_METHOD_EXCLUDE.has(n)) continue;
+      const arr = defs.get(n) ?? [];
+      if (arr.length < 4) arr.push({ file: disp, line: i + 1 });
+      defs.set(n, arr);
+    }
 
-      if (DECORATOR_RE.test(line)) {
-        let defName: string | null = null;
-        let end = i;
-        for (let j = i + 1; j < Math.min(i + 16, lines.length); j++) {
-          const def = lines[j]!.match(DEF_RE);
-          if (def) {
-            defName = def[1]!;
-            end = j;
-            break;
-          }
-          if (/^(?:class |[A-Za-z_][\w]*[ \t]*=)/.test(lines[j]!)) break; // left decorator scope
-          end = j;
-        }
-        if (defName) {
-          names.add(defName);
-          const kw = lines.slice(i, end + 1).join("\n").match(NAME_KWARG_RE);
-          if (kw) names.add(kw[1]!);
+    // agent classes in this file (BaseAgent is the framework, not a server)
+    const agentClasses: string[] = [];
+    for (const l of lines) {
+      const m = CLASS_RE.exec(l);
+      if (m && /Agent$/.test(m[1]!) && m[1] !== "BaseAgent") agentClasses.push(m[1]!);
+    }
+    if (agentClasses.length === 0) continue;
+
+    const server = vi14AgentServer(agentClasses[0]!);
+    if (!agents.includes(server)) agents.push(server);
+
+    const authoritative = new Map<string, { sources: string[]; line: number }>();
+    const record = (name: string, source: string, line: number): void => {
+      const cur = authoritative.get(name);
+      if (cur) {
+        if (!cur.sources.includes(source)) cur.sources.push(source);
+        if (line < cur.line) cur.line = line;
+      } else {
+        authoritative.set(name, { sources: [source], line });
+      }
+    };
+
+    // 1) specs: name= in any of the four declaration styles
+    for (let i = 0; i < lines.length; i++) {
+      for (const re of NAME_PATTERNS) {
+        re.lastIndex = 0;
+        const m = re.exec(lines[i]!);
+        if (m) record(m[1]!, "spec name=", i + 1);
+      }
+    }
+
+    // 1b) B4: positional @MCPTool("name", ...) declarations.
+    for (let i = 0; i < lines.length; i++) {
+      if (!/@MCPTool\(/.test(lines[i]!)) continue;
+      // inspect the declaration window for the first bare string argument
+      const window = lines.slice(i, i + 6).join("\n");
+      const sm = /@MCPTool\(\s*\n\s*["']([a-z][a-z0-9_]{3,50})["']/.exec(window);
+      if (sm) record(sm[1]!, "spec positional", i + 1);
+    }
+
+    // 2) docstring TOOLS: blocks
+    for (let i = 0; i < lines.length; i++) {
+      if (!TOOLS_DOC_RE.test(lines[i]!)) continue;
+      for (let j = i + 1; j <= Math.min(lines.length - 1, i + 16); j++) {
+        const w = lines[j]!;
+        if (/"""/.test(w)) break;
+        for (const m of w.matchAll(SNAKE_TOKEN_RE)) {
+          record(m[1]!, "docstring TOOLS:", j + 1);
         }
       }
+    }
 
-      if (ADD_TOOL_RE.test(line)) {
-        const window = lines.slice(i, i + 4).join("\n");
-        const arg = window.match(ADD_TOOL_ARG_RE);
-        const kw = window.match(NAME_KWARG_RE);
-        const name = arg?.[1] ?? kw?.[1];
-        if (name) names.add(name);
+    // 3) keys of TOOLS = {...} / tool_specs = [...]
+    for (let i = 0; i < lines.length; i++) {
+      if (!TOOLS_ASG_RE.test(lines[i]!)) continue;
+      for (let j = i + 1; j <= Math.min(lines.length - 1, i + 40); j++) {
+        const w = lines[j]!;
+        if (/^[ \t]*[}\]][ \t]*,?[ \t]*$/.test(w)) break;
+        const mk = DICT_KEY_RE.exec(w);
+        if (mk) {
+          record(mk[1]!, "dict TOOLS=", j + 1);
+          continue;
+        }
+        const ml = LIST_ITEM_RE.exec(w);
+        if (ml) record(ml[1]!, "list tool_specs=", j + 1);
       }
+    }
 
-      if (TOOL_CTOR_RE.test(line)) {
-        const window = lines.slice(i, i + 4).join("\n");
-        const kw = window.match(NAME_KWARG_RE);
-        if (kw) names.add(kw[1]!);
+    // 4) method fallback ONLY for spec-less agents — mirrors dir(self)
+    if (authoritative.size === 0) {
+      for (let i = 0; i < lines.length; i++) {
+        const m = DEF_RE.exec(lines[i]!);
+        if (!m) continue;
+        const n = m[1]!;
+        if (n.startsWith("_") || /^execute_/.test(n) || VI14_METHOD_EXCLUDE.has(n)) continue;
+        record(n, "method (dir-motor fallback)", i + 1);
+      }
+    }
+
+    const names = byServer.get(server) ?? new Set<string>();
+    for (const [name, info] of authoritative) {
+      flat.add(name);
+      names.add(name);
+      hits.push({ server, name, sources: info.sources.slice(), file: disp, line: info.line });
+    }
+    byServer.set(server, names);
+  }
+
+  return { flat, byServer, hits, defs, agents };
+}
+
+interface Vi14RefCandidate { server: string; tool: string; via: string; }
+
+function vi14RefCandidates(server: string, tool: string): Vi14RefCandidate[] {
+  const out: Vi14RefCandidate[] = [{ server, tool, via: "exact" }];
+  for (const s of VI14_SERVER_RENAMES[server] ?? []) {
+    out.push({ server: s, tool, via: "server rename " + server + "->" + s });
+  }
+  const servers = [server, ...(VI14_SERVER_RENAMES[server] ?? [])];
+  for (const s of servers) {
+    out.push({ server: s, tool: s + "_" + tool, via: "compound " + s + "_" + tool });
+  }
+  return out;
+}
+
+type Vi14Status = "tool-backend" | "equivalente" | "servido-por-mock" | "capacidad-sin-tool" | "deuda-real";
+
+interface Vi14Classification {
+  status: Vi14Status;
+  real: string | null;
+  evidence: string[];
+}
+
+function vi14ClassifyRef(
+  server: string,
+  tool: string,
+  backend: Vi14BackendIndex,
+  registryKeys: Set<string>,
+  compatAliases?: Map<string, string>,
+): Vi14Classification {
+  const dotted = server + "." + tool;
+  const seed = VI14_EQUIVALENCES[dotted] ?? [];
+  const cands = vi14RefCandidates(server, tool);
+
+  // 0) B3: the backend registry itself resolves this legacy key
+  // (AGENT_ALIASES + TOOL_ALIASES in registry.py, applied by the
+  // dispatch layer with Deprecation headers). The ref is served —
+  // it is a compat key, not missing debt.
+  const canonicalKey = compatAliases?.get(dotted);
+  if (canonicalKey) {
+    const [cs, ct] = canonicalKey.split(".");
+    if (backend.byServer.get(cs)?.has(ct)) {
+      return {
+        status: "tool-backend",
+        real: canonicalKey,
+        evidence: ["registry.py compat alias: " + dotted + " -> " + canonicalKey],
+      };
+    }
+    if (registryKeys.has(cs + "::" + ct)) {
+      return {
+        status: "servido-por-mock",
+        real: canonicalKey,
+        evidence: ["registry.py compat alias (mock): " + dotted + " -> " + canonicalKey],
+      };
+    }
+  }
+
+  // 1) the tool exists in the backend under the ref (renamed) server
+  for (const c of cands) {
+    if (backend.byServer.get(c.server)?.has(c.tool)) {
+      return { status: "tool-backend", real: c.server + "." + c.tool, evidence: [c.via + ": " + c.server + "::" + c.tool] };
+    }
+  }
+
+  // 2) audited equivalence registered in the backend (any server)
+  for (const n of seed) {
+    for (const [srv, set] of backend.byServer) {
+      if (set.has(n)) {
+        return { status: "equivalente", real: srv + "." + n, evidence: ["audited equivalence: " + srv + "::" + n] };
       }
     }
   }
-  return names;
+
+  // 3) mock coverage: exact / renamed / compound / audited equivalence
+  for (const c of cands) {
+    if (registryKeys.has(c.server + "::" + c.tool)) {
+      return { status: "servido-por-mock", real: c.server + "." + c.tool, evidence: [c.via + ": mock " + c.server + "::" + c.tool] };
+    }
+  }
+  for (const n of seed) {
+    for (const k of registryKeys) {
+      if (k.endsWith("::" + n)) {
+        return { status: "servido-por-mock", real: k.replace("::", "."), evidence: ["audited equivalence in mock: " + k] };
+      }
+    }
+  }
+
+  // 4) capability exists as a def but is not exposed as a tool
+  for (const n of [tool, ...seed]) {
+    const dh = backend.defs.get(n);
+    if (dh && dh.length > 0) {
+      return { status: "capacidad-sin-tool", real: null, evidence: ["def " + n + " (" + dh[0]!.file + ":" + dh[0]!.line + ") is not a registered tool"] };
+    }
+  }
+
+  return { status: "deuda-real", real: null, evidence: ["no trace in specs, docstrings, methods, defs or mock"] };
 }
 
-/** Custom properties defined at declaration position (line start). */
+export { extractBackendToolNames, extractBackendCompatAliases, vi14ClassifyRef, vi14RefCandidates };
+// VI-16/17 (B6): exported for the regression suite under
+// frontend/src/tools/__tests__/ — the stripLine masker and the CSS-side
+// collector are the two pieces the new tests pin down.
+export { stripLine, collectJsWrittenTokens };
+
+/** Custom properties defined at declaration position — VI-17: inside a
+ *  declaration block only. Custom properties are legally declared at ANY
+ *  indentation inside a rule (".glass-wafm[data-fitness-level='advanced']
+ *  { --wfm-level: … }"), which never sits at line start. But "--x:" shapes
+ *  also occur inside SELECTORS (".ui-badge--gold:hover") — those are class
+ *  names, not declarations. Distinguishing signal: a declaration always
+ *  follows a `{` on the same logical line-chain; we track brace depth and
+ *  only match tokens followed by ":" while depth > 0. Comments are masked
+ *  first so header prose cannot fake a definition. */
 function extractDefinedTokens(cssFiles: string[]): Set<string> {
   const tokens = new Set<string>();
-  const DECL_RE = /^[ \t]*(--[\w-]+)[ \t]*:/;
   for (const file of cssFiles) {
     const content = read(file);
     if (!content) continue;
+    const blockState = { inBlock: false };
+    let braceDepth = 0;
     for (const rawLine of content.split("\n")) {
-      const m = rawLine.match(DECL_RE);
-      if (m) tokens.add(m[1]!);
+      const code = stripLine(rawLine, blockState);
+      if (!code) continue;
+      // declarations live inside { … }; selectors and @-headers live outside.
+      // Update depth from the masked line (braces in comments don't count).
+      for (let i = 0; i < code.length; i++) {
+        if (code[i] === "{") braceDepth++;
+        else if (code[i] === "}") braceDepth = Math.max(0, braceDepth - 1);
+      }
+      // the token: colon pair AFTER an opening brace on the same line wins:
+      // ".x--gold:hover { --gold: 1 }" → the pair after "{" is the declaration.
+      const braceIdx = code.indexOf("{");
+      const declPart = braceIdx >= 0 ? code.slice(braceIdx + 1) : code;
+      const inBlockNow = braceIdx >= 0 || braceDepth > 0;
+      if (!inBlockNow) continue;
+      for (const m of declPart.matchAll(/--[\w-]+(?=\s*:)/g)) tokens.add(m[0]!);
     }
   }
   return tokens;
+}
+
+/**
+ * VI-17: custom properties WRITTEN from TS/TSX or declared @property in CSS.
+ * These are definition sites, not reads — a CSS `var(--x, fallback)` whose
+ * token is JS-written is fully wired even though no stylesheet ever
+ * declares it (the runtime wiring is the whole point).
+ */
+function collectJsWrittenTokens(tsFiles: string[], cssFiles: string[]): Set<string> {
+  const written = new Set<string>();
+  // TS side: style-object keys ("--x": …) and setProperty("--x", …)
+  for (const file of tsFiles) {
+    const content = read(file);
+    if (!content) continue;
+    const lines = content.split("\n");
+    const blockState = { inBlock: false };
+    for (const rawLine of lines) {
+      const code = stripLine(rawLine, blockState);
+      if (!code) continue;
+      for (const m of code.matchAll(BARE_TOKEN_RE)) {
+        const afterTok = code.slice((m.index ?? 0) + m[0].length);
+        const beforeTok = code.slice(0, Math.max(0, m.index ?? 0));
+        if (/^\s*:/.test(afterTok) || /\.setProperty\(\s*$/.test(beforeTok.trimEnd())) {
+          written.add(m[1]!);
+        }
+      }
+    }
+  }
+  // CSS side: @property declarations
+  for (const file of cssFiles) {
+    const content = read(file);
+    if (!content) continue;
+    for (const m of content.matchAll(/@property\s+(--[\w-]+)/g)) written.add(m[1]!);
+  }
+  return written;
 }
 
 function buildContext(root: string): ScanContext {
   const frontendSrc = path.join(root, "frontend", "src");
   const backendSrc = path.join(root, "backend", "src", "club_mcp");
 
-  const tsFiles = walk(frontendSrc, [".ts", ".tsx"]).filter((f) => !f.endsWith(".d.ts"));
+  // VI-17: test fixtures are deliberately-phantom by construction (the
+  // check-3 regression suite quotes undefined tokens as its own fixtures).
+  // Same exclusion the raw-button check already applies to *.test.tsx.
+  const tsFiles = walk(frontendSrc, [".ts", ".tsx"]).filter(
+    (f) => !f.endsWith(".d.ts") && !/\.(test|spec)\.[tj]sx?$/.test(f),
+  );
   const cssFiles = walk(frontendSrc, [".css"]);
   const backendScanned = isDir(backendSrc);
   const pyFiles = backendScanned
     ? walk(backendSrc, [".py"]).filter((f) => isBackendSource(f, backendSrc))
     : [];
+  const backendTools = extractBackendToolNames(pyFiles);
+  // B4: the compat map needs the backend index for the agent-rename pass.
+  const compatAliases = extractBackendCompatAliases(backendSrc, backendTools);
 
   const routerContent = read(path.join(frontendSrc, "app", "router.tsx"));
 
@@ -539,11 +963,13 @@ function buildContext(root: string): ScanContext {
   const registryFound = registryContent !== null;
 
   const mcpQueries = collectMcpQueries(frontendSrc, tsFiles);
-  const extraToolRefs = collectExtraToolRefs(frontendSrc, tsFiles);
-  const backendTools = extractBackendToolNames(pyFiles);
+  const extraToolRefs = collectExtraToolRefs(frontendSrc, tsFiles); // VI-12
 
   const definedTokens = extractDefinedTokens(cssFiles);
   const tokenSource: "css" | "legacy" = definedTokens.size > 0 ? "css" : "legacy";
+  // VI-17: tokens written from JS (style-object keys / setProperty) or via
+  // @property — they make CSS var() reads with fallbacks legitimate.
+  const jsWrittenTokens = collectJsWrittenTokens(tsFiles, cssFiles);
 
   return {
     root,
@@ -561,7 +987,118 @@ function buildContext(root: string): ScanContext {
     backendScanned,
     definedTokens,
     tokenSource,
+    jsWrittenTokens,
+    compatAliases,
   };
+}
+
+/**
+ * B3: parse AGENT_ALIASES + TOOL_ALIASES from the backend registry.py —
+ * the same DATA the dispatch layer applies at runtime (with Deprecation/
+ * Sunset headers). This keeps the verifier in sync with the single source
+ * of truth instead of a hand-maintained equivalence table.
+ */
+function extractBackendCompatAliases(
+  backendSrc: string,
+  backend: Vi14BackendIndex,
+): Map<string, string> {
+  const out = new Map<string, string>();
+  const registryPath = path.join(backendSrc, "registry.py");
+  const content = read(registryPath);
+  if (!content) return out;
+
+  // AGENT_ALIASES: { "legacy": "canonical", ... } — plain string dict.
+  const agentBlock = matchBalancedDict(content, "AGENT_ALIASES");
+  const agentRenames: Record<string, string> = {};
+  if (agentBlock) {
+    for (const m of agentBlock.matchAll(/["']([a-z_]+)["']\s*:\s*["']([a-z_]+)["']/g)) {
+      agentRenames[m[1]!] = m[2]!;
+    }
+  }
+
+  // B4: agent-level renames with NO tool rename (B2 pattern: the tool
+  // keeps its name under the canonical server). The parser only saw
+  // TOOL_ALIASES entries, so hitl.get_pending_approvals (tool exists in
+  // executive_dashboard under the SAME name) never got a compat key and
+  // the mock fallback fired first. Emit legacy→canonical keys for every
+  // agent rename; the classifier still requires the target tool to exist
+  // in the backend or the mocks, so dead renames stay dead.
+  for (const [legacyName, canonical] of Object.entries(agentRenames)) {
+    // The backend index keys servers by the agent CLASS snake name
+    // (EventOrchestratorAgent → "events"), while AGENT_ALIASES targets
+    // the agent_name ("event_orchestrator"). VI14_AGENT_SERVER_ALIASES
+    // maps agent_name → class-snake server; use it to find the index
+    // key that actually holds the canonical agent's tools.
+    const indexServer =
+      backend.byServer.has(canonical)
+        ? canonical
+        : VI14_AGENT_SERVER_ALIASES[canonical] ?? canonical;
+    const targetSet = backend.byServer.get(indexServer);
+    if (!targetSet) continue;
+    for (const t of targetSet) out.set(legacyName + "." + t, canonical + "." + t);
+  }
+
+  // TOOL_ALIASES: nested { canonical_agent: { legacy: target } } where
+  // target is "tool", ("agent", "tool") or AliasAdapter(target=(...)).
+  // The canonical agent lives in the OUTER dict key of each inner block,
+  // so we scan inner blocks one at a time.
+  const toolBlock = matchBalancedDict(content, "TOOL_ALIASES");
+  if (toolBlock) {
+    const INNER_RE = /"([a-z_0-9]+)":\s*\{/g;
+    for (const inner of toolBlock.matchAll(INNER_RE)) {
+      const canonicalAgent = inner[1]!;
+      const innerBlock = matchBalancedDictFrom(toolBlock, inner.index ?? 0);
+      if (!innerBlock) continue;
+      const ENTRY_RE = /"([a-z_0-9]+)"\s*:\s*(?:\(\s*"([a-z_0-9]+)"\s*,\s*"([a-z_0-9]+)"\s*\)|"([a-z_0-9]+)"|AliasAdapter\(\s*target\s*=\s*\(\s*"([a-z_0-9]+)"\s*,\s*"([a-z_0-9]+)"\s*\))/g;
+      for (const m of innerBlock.matchAll(ENTRY_RE)) {
+        const legacyTool = m[1]!;
+        const tAgent = m[2] ?? m[5] ?? canonicalAgent;
+        const tTool = m[3] ?? m[6] ?? m[4];
+        if (tTool === undefined || tTool === legacyTool) continue;
+        const legacyServers = new Set<string>([canonicalAgent]);
+        for (const [legacyName, canonical] of Object.entries(agentRenames)) {
+          if (canonical === canonicalAgent) legacyServers.add(legacyName);
+        }
+        for (const [feName, targets] of Object.entries(VI14_SERVER_RENAMES)) {
+          if (targets.includes(canonicalAgent)) legacyServers.add(feName);
+        }
+        for (const s of legacyServers) {
+          out.set(s + "." + legacyTool, tAgent + "." + tTool);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/** Extract the {...} literal of `NAME: dict[str, ...] = { ... }`. */
+function matchBalancedDict(content: string, name: string): string | null {
+  const assign = content.indexOf(name + ": dict");
+  const start = assign >= 0 ? content.indexOf("{", assign) : -1;
+  if (start < 0) return null;
+  let depth = 0;
+  for (let i = start; i < content.length; i++) {
+    if (content[i] === "{") depth++;
+    else if (content[i] === "}") {
+      depth--;
+      if (depth === 0) return content.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+
+function matchBalancedDictFrom(content: string, from: number): string | null {
+  const start = content.indexOf("{", from);
+  if (start < 0) return null;
+  let depth = 0;
+  for (let i = start; i < content.length; i++) {
+    if (content[i] === "{") depth++;
+    else if (content[i] === "}") {
+      depth--;
+      if (depth === 0) return content.slice(start, i + 1);
+    }
+  }
+  return null;
 }
 
 // ═════════════════════════════════════════════════════ checks ════════════
@@ -650,8 +1187,20 @@ function checkMcpCoverage(ctx: ScanContext): CheckOutcome {
   const notes: string[] = [];
   const invalid = new Map<string, { tool: string; occurrences: Array<[string, number]> }>();
 
+  // B4: a ref is ALSO covered when the backend registry alias resolves it
+  // to a canonical key that HAS a dev-mock (e.g. guests.get_today_guests →
+  // guest_management.get_today_guests, the B3 dev-mock block). Mirrors what
+  // the runtime dispatch does: mock layer keyed by canonical names.
+  const aliasCovered = (server: string, tool: string): string | null => {
+    const canonical = ctx.compatAliases.get(server + "." + tool);
+    if (!canonical) return null;
+    const [cs, ct] = canonical.split(".");
+    return ctx.registryKeys.has(cs + "::" + ct) ? canonical : null;
+  };
+
   for (const q of ctx.mcpQueries) {
     if (ctx.registryKeys.has(`${q.server}::${q.tool}`)) continue;
+    if (aliasCovered(q.server, q.tool)) continue;
     const key = `${q.server}::${q.tool}`;
     const entry = invalid.get(key) ?? { tool: q.tool, occurrences: [] };
     entry.occurrences.push([q.file, q.line]);
@@ -670,6 +1219,9 @@ function checkMcpCoverage(ctx: ScanContext): CheckOutcome {
 
   if (!ctx.registryFound) notes.push("mock-registry.ts was not found — every query counts as uncovered.");
   notes.push("Tools outside the mock registry may still resolve via the backend fallback (see check 6).");
+  notes.push(
+    "B4: alias-aware — a ref also counts as covered when the backend registry alias (registry.py) maps it to a canonical key with a dev-mock (mock layer is canonical-keyed, like the runtime dispatch).",
+  );
 
   const uncoveredRefs = [...invalid.values()].reduce((n, e) => n + e.occurrences.length, 0);
   return outcome(
@@ -692,6 +1244,8 @@ function checkPhantomTokens(ctx: ScanContext): CheckOutcome {
   const used = new Set<string>();
   const mentioned = new Set<string>();
   let varRefs = 0;
+  let dynamicRefs = 0; // VI-16: var(--x-${…}) template prefixes — resolve at runtime
+  let fragmentRefs = 0; // VI-16: "--approval"-style fragments concatenated by callers
 
   if (ctx.tokenSource === "legacy") {
     notes.push("No CSS custom properties found under frontend/src — using the frozen v2 phantom-token list (8 tokens).");
@@ -700,9 +1254,13 @@ function checkPhantomTokens(ctx: ScanContext): CheckOutcome {
       const content = read(file);
       if (!content) continue;
       const lines = content.split("\n");
+      const blockState = { inBlock: false };
       for (let i = 0; i < lines.length; i++) {
+        // VI-16: legacy list scanned over masked code only (was raw lines)
+        const code = stripLine(lines[i]!, blockState);
+        if (!code) continue;
         for (const token of LEGACY_PHANTOM_TOKENS) {
-          if (lines[i]!.includes(token)) {
+          if (code.includes(token)) {
             findings.push({
               file: relPath,
               line: i + 1,
@@ -730,42 +1288,188 @@ function checkPhantomTokens(ctx: ScanContext): CheckOutcome {
     const relPath = relFrom(ctx.frontendSrc, file);
     const content = read(file);
     if (!content) continue;
-    const offsets = lineIndex(content);
     const lines = content.split("\n");
+    const blockState = { inBlock: false };
 
     // Local inline definitions ("--x": value) count as defined for this file.
     const locallyDefined = new Set<string>();
-    for (const m of content.matchAll(BARE_TOKEN_RE)) {
-      if (/^\s*:/.test(content.slice((m.index ?? 0) + m[0].length))) locallyDefined.add(m[1]!);
+    for (const raw of lines) {
+      const m = raw.replace(/\r$/, "").match(/(--[\w-]+)\s*:/);
+      if (m && /^\s*:/.test(raw.slice(raw.indexOf(m[1]!) + m[1]!.length))) locallyDefined.add(m[1]!);
     }
 
-    for (const m of content.matchAll(VAR_USE_RE)) {
-      varRefs++;
-      used.add(m[1]!);
-      if (ctx.definedTokens.has(m[1]!)) continue;
-      const line = lineAt(offsets, m.index ?? 0);
-      findings.push({
-        file: relPath,
-        line,
-        message: `var(${m[1]}) is not defined in any CSS under src/ — resolves to nothing at runtime`,
-        snippet: snippetOf(lines[line - 1] ?? ""),
-        severity: "warning",
-      });
+    for (let i = 0; i < lines.length; i++) {
+      const code = stripLine(lines[i]!, blockState);
+      if (!code) continue;
+
+      // VI-16: byte offsets are unstable after masking (comments removed).
+      // Findings report the RAW line number, which is just i + 1 — masked
+      // offsets are no longer translated back (the masker keeps every
+      // character count stable, only comment text is blanked).
+      const rawLine = lines[i]!;
+      const lineBase = i + 1; // 1-based
+
+      // var(--x) references — masked code only
+      for (const m of code.matchAll(VAR_USE_RE)) {
+        varRefs++;
+        used.add(m[1]!);
+        // VI-16: template-literal prefix? var(--gca-${…}) — the whole
+        // expression resolves to REAL tokens at runtime; prefix families
+        // are collected and verified below instead of flagged one by one.
+        const after = code.slice((m.index ?? 0) + m[0].length);
+        if (/^\s*\$\{/.test(after) || /^\s*["'`]\s*\$\{/.test(after)) {
+          dynamicRefs++;
+          continue;
+        }
+        // VI-16: quoted prefix fragment? toContain("var(--color-") — the
+        // string itself IS the partial (assertion over a prefix, p2c1's
+        // NOISE policy). Shape: match ends where the enclosing string ends.
+        if (/^\s*["'`]/.test(after) && /-$/.test(m[1]!)) {
+          fragmentRefs++;
+          continue;
+        }
+        if (ctx.definedTokens.has(m[1]!)) continue;
+        findings.push({
+          file: relPath,
+          line: lineBase,
+          message: `var(${m[1]}) is not defined in any CSS under src/ — resolves to nothing at runtime`,
+          snippet: snippetOf(rawLine),
+          severity: "warning",
+        });
+      }
+
+      // bare "--x" mentions in strings — masked code only
+      for (const m of code.matchAll(BARE_TOKEN_RE)) {
+        const tok = m[1]!;
+        if (locallyDefined.has(tok)) continue;
+        mentioned.add(tok);
+        if (ctx.definedTokens.has(tok) || used.has(tok)) continue;
+        // VI-16: JS-driven custom property? Two shapes:
+        //   a) style-object key  "--stagger-i": i  (definition site)
+        //   b) setProperty call  setProperty("--dtabs-ix", …) (definition site)
+        // Both are WRITES, not reads: they define the token for the CSS side
+        // (consumed with a fallback at read sites). Distinguishing shape:
+        // the match is immediately followed by ":" (object key) or is
+        // preceded by setProperty( on the same masked line.
+        const afterTok = code.slice((m.index ?? 0) + m[0].length);
+        const beforeTok = code.slice(0, Math.max(0, m.index ?? 0));
+        const isObjectKey = /^\s*:/.test(afterTok);
+        const isSetProperty = /\.setProperty\(\s*$/.test(beforeTok.trimEnd());
+        // VI-16: BEM modifier fragment? A quoted "--approval" stored in a
+        // *Class field is concatenated into a class name by its consumer
+        // (glass-notification-item${borderClass} → …--approval), matching
+        // .glass-notification-item--approval in CSS. "--" doubles as the
+        // BEM separator, so context decides: class fragment ≠ token ref.
+        // Short BEM suffixes (no --color-/--font- family) inside a *Class
+        // field are the canonical shape of these fragments.
+        // NOTE: BARE_TOKEN_RE captures the token WITH its quotes, so the
+        // field-name anchor must live entirely in `beforeTok`.
+        const isClassFragment =
+          /[A-Za-z_$][\w$]*(Class|Classes|Modifier|Variant)s?\s*:\s*$/.test(beforeTok.trimEnd()) &&
+          !/^(color|font|radius|shadow|space|text|size)-/.test(tok);
+        if (isObjectKey || isSetProperty || isClassFragment) {
+          fragmentRefs++;
+          continue;
+        }
+        findings.push({
+          file: relPath,
+          line: lineBase,
+          message: `Token ${tok} mentioned in a string but not defined in any CSS (possible phantom)`,
+          snippet: snippetOf(rawLine),
+          severity: "info",
+        });
+      }
     }
 
-    for (const m of content.matchAll(BARE_TOKEN_RE)) {
-      if (locallyDefined.has(m[1]!)) continue;
-      mentioned.add(m[1]!);
-      if (ctx.definedTokens.has(m[1]!) || used.has(m[1]!)) continue;
-      const line = lineAt(offsets, m.index ?? 0);
-      findings.push({
-        file: relPath,
-        line,
-        message: `Token ${m[1]} mentioned in a string but not defined in any CSS (possible phantom)`,
-        snippet: snippetOf(lines[line - 1] ?? ""),
-        severity: "info",
-      });
+    // VI-16: template-literal prefixes get first-class treatment — verify
+    // the FAMILY resolves: at least one concrete token with the prefix must
+    // exist in CSS, else the prefix itself is the phantom.
+    const fam = new Map<string, { files: Set<string>; line: number }>();
+    {
+      const ls = { inBlock: false };
+      for (let i = 0; i < lines.length; i++) {
+        const code = stripLine(lines[i]!, ls);
+        for (const m of code.matchAll(VAR_USE_RE)) {
+          const after = code.slice((m.index ?? 0) + m[0].length);
+          if (/^\s*\$\{/.test(after) || /^\s*["'`]\s*\$\{/.test(after)) {
+            if (!fam.has(m[1]!)) fam.set(m[1]!, { files: new Set(), line: i + 1 });
+            fam.get(m[1]!)!.files.add(relPath);
+          }
+        }
+      }
     }
+    for (const [prefix, meta] of fam) {
+      const family = [...ctx.definedTokens].filter((t) => t.startsWith(prefix));
+      if (family.length === 0) {
+        findings.push({
+          file: [...meta.files][0]!,
+          line: meta.line,
+          message: `var(${prefix}…) template-literal prefix matches NO token in CSS — every interpolation of this family is phantom`,
+          snippet: snippetOf(lines[meta.line - 1] ?? ""),
+          severity: "warning",
+        });
+      } else {
+        notes.push(`Dynamic prefix ${prefix}… resolves to ${family.length} concrete token(s) in CSS — wired.`);
+      }
+    }
+  }
+
+  // ── VI-17: the CSS side was never scanned. A var(--x) READ inside CSS
+  // against a token that is nowhere defined, with NO fallback, is the
+  // true runtime defect: the declaration silently drops to `unset`.
+  // Reads with fallbacks are self-healing (that is what fallbacks are for)
+  // and JS-written tokens are wired by construction. What remains is the
+  // real debt — surfaced per file, capped to the same advisory envelope.
+  let cssVarUses = 0;
+  let cssWithFallback = 0;
+  const cssPhantomByToken = new Map<string, { files: Map<string, number>; firstLine: number }>();
+  for (const file of ctx.cssFiles) {
+    const relPath = relFrom(ctx.frontendSrc, file);
+    const content = read(file);
+    if (!content) continue;
+    const lines = content.split("\n");
+    // comments masked (header prose documents tokens like "var(--x-${…})")
+    const blockState = { inBlock: false };
+    for (let i = 0; i < lines.length; i++) {
+      for (const m of stripLine(lines[i]!, blockState).matchAll(/var\(\s*(--[\w-]+)(\s*,)?/g)) {
+        cssVarUses++;
+        const tok = m[1]!;
+        if (m[2]) {
+          cssWithFallback++;
+          continue;
+        }
+        if (ctx.definedTokens.has(tok) || ctx.jsWrittenTokens.has(tok)) continue;
+        let entry = cssPhantomByToken.get(tok);
+        if (!entry) {
+          entry = { files: new Map(), firstLine: i + 1 };
+          cssPhantomByToken.set(tok, entry);
+        }
+        entry.files.set(relPath, (entry.files.get(relPath) ?? 0) + 1);
+      }
+    }
+  }
+  const CSS_TOKEN_WARN_CAP = 20;
+  const cssPhantomTokens = [...cssPhantomByToken.entries()].sort(
+    (a, b) => [...b[1].files.values()].reduce((x, y) => x + y, 0) - [...a[1].files.values()].reduce((x, y) => x + y, 0),
+  );
+  for (const [tok, entry] of cssPhantomTokens.slice(0, CSS_TOKEN_WARN_CAP)) {
+    const uses = [...entry.files.values()].reduce((x, y) => x + y, 0);
+    const [firstFile] = [...entry.files.keys()];
+    findings.push({
+      file: firstFile!,
+      line: entry.firstLine,
+      message: `CSS var(${tok}) — token never defined in any CSS, no fallback, not JS-written (${uses} use(s) across ${entry.files.size} file(s))`,
+      snippet: snippetOf((read(path.join(ctx.frontendSrc, firstFile!)) ?? "").split("\n")[entry.firstLine - 1] ?? ""),
+      severity: "warning",
+    });
+  }
+  if (cssPhantomTokens.length > CSS_TOKEN_WARN_CAP) {
+    notes.push(
+      `${cssPhantomTokens.length - CSS_TOKEN_WARN_CAP} more never-defined CSS token(s) beyond the reporting cap — see --json for the full list.`,
+    );
+  }
+  if (cssPhantomTokens.length === 0 && cssVarUses > 0) {
+    notes.push(`CSS side: ${cssVarUses} var() reads · ${cssWithFallback} with fallback · 0 never-defined no-fallback reads.`);
   }
 
   const unused = [...ctx.definedTokens].filter((t) => !used.has(t) && !mentioned.has(t));
@@ -783,6 +1487,8 @@ function checkPhantomTokens(ctx: ScanContext): CheckOutcome {
     [
       ["defined", ctx.definedTokens.size],
       ["varRefs", varRefs],
+      ["dynamicRefs", dynamicRefs],
+      ["fragmentRefs", fragmentRefs],
       ["undefinedVar", phantomVar],
       ["bareMentions", findings.length - phantomVar],
       ["definedUnused", unused.length],
@@ -808,7 +1514,12 @@ function checkRawButtons(ctx: ScanContext): CheckOutcome {
     if (!content) continue;
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
-      if (/<button(?=[\s>]|$)/.test(lines[i]!.replace(/\r$/, ""))) {
+      // B5: líneas de comentario (// o dentro de bloques /* */) no cuentan —
+      // eran 2 FPs (LiveArenaGrid L19, EventAdvisorBanner L35: anotaciones
+      // de header que mencionan <button> en prosa).
+      const code = lines[i]!.replace(/\r$/, "");
+      const isComment = /^\s*(\/\/|\*|\/\*)/.test(code);
+      if (!isComment && /<button(?=[\s>]|$)/.test(code)) {
         findings.push({
           file: relPath,
           line: i + 1,
@@ -892,57 +1603,88 @@ function checkPermissionGates(ctx: ScanContext): CheckOutcome {
 function checkBackendTools(ctx: ScanContext): CheckOutcome {
   const findings: Finding[] = [];
   const notes: string[] = [];
-  const degraded = !ctx.backendScanned || ctx.backendTools.size === 0;
+  const idx = ctx.backendTools;
+  const degraded = !ctx.backendScanned || idx.flat.size === 0;
 
   if (!ctx.backendScanned) {
-    notes.push(`Backend source not found at ${relFrom(ctx.root, ctx.backendSrc)} — backend coverage is unknown.`);
-  } else if (ctx.backendTools.size === 0) {
+    notes.push("Backend source not found at " + relFrom(ctx.root, ctx.backendSrc) + " — backend coverage is unknown.");
+  } else if (idx.flat.size === 0) {
     notes.push(
-      "Backend scanned but no tool registrations detected (@…tool decorators, add_tool/register_tool, Tool(name=…)). " +
-        "If the backend uses another convention, this check degrades to advisory — extend extractBackendToolNames.",
+      "VI-14 v2: backend scanned but no tools extracted from specs, TOOLS: docstrings or agent methods — extraction rules need review.",
     );
   }
-  notes.push("Extraction is registration-based: @<server>.tool / @tool over def (incl. name=), .add_tool(...), Tool(name=…).");
+  notes.push(
+    "VI-14 v2 (motor-based): tools extracted per agent — specs (name=), TOOLS: docstrings, tool_specs keys; spec-less agents expose their public methods (that is what dir(self) registers via BaseAgent.register_with_mcp).",
+  );
+  notes.push(
+    "Server renames applied: families->family_profile, facilities->facility_management, guests->guest_management, engagement->member_engagement/satisfaction, reports->executive_dashboard; mock compound keys (server_tool) recognized.",
+  );
+  notes.push("Audited equivalence map (P2-C3 audit, 2026-11-04) embedded as VI14_EQUIVALENCES — a ref is only 'missing' when no layer implements it.");
 
+  const counts: Record<Vi14Status, number> = {
+    "tool-backend": 0,
+    equivalente: 0,
+    "servido-por-mock": 0,
+    "capacidad-sin-tool": 0,
+    "deuda-real": 0,
+  };
   const missingBoth = new Map<string, McpQueryRef>();
-  const mockOnly = new Map<string, McpQueryRef>();
-  for (const q of ctx.mcpQueries) {
-    const key = `${q.server}::${q.tool}`;
-    const inMock = ctx.registryKeys.has(key);
-    const inBackend = ctx.backendTools.has(q.tool);
-    if (!inMock && !inBackend) missingBoth.set(key, q);
-    else if (inMock && !inBackend && !degraded) mockOnly.set(key, q);
-  }
 
-  for (const q of missingBoth.values()) {
-    findings.push({
-      file: q.file,
-      line: q.line,
-      message: degraded
-        ? `${q.server}.${q.tool} not in mock registry and backend detection is degraded — verify manually`
-        : `${q.server}.${q.tool} exists neither in the mock registry nor in the backend`,
-      severity: degraded ? "info" : "warning",
-    });
-  }
-  for (const q of mockOnly.values()) {
-    findings.push({
-      file: q.file,
-      line: q.line,
-      message: `${q.server}.${q.tool} is mock-only (backend implementation pending)`,
-      severity: "info",
-    });
+  for (const q of ctx.mcpQueries) {
+    const cls = vi14ClassifyRef(q.server, q.tool, idx, ctx.registryKeys, ctx.compatAliases);
+    counts[cls.status] += 1;
+    if (cls.status === "deuda-real") missingBoth.set(q.server + "::" + q.tool, q);
+
+    if (cls.status === "equivalente") {
+      findings.push({
+        file: q.file,
+        line: q.line,
+        message:
+          q.server + "." + q.tool + " is called under a name the platform never exposes — the real tool is " +
+          cls.real + " (" + cls.evidence.join("; ") + "); rewrite the ref (or alias the mock)",
+        severity: "warning",
+      });
+    } else if (cls.status === "capacidad-sin-tool") {
+      findings.push({
+        file: q.file,
+        line: q.line,
+        message:
+          q.server + "." + q.tool + " has backend capability but no registered tool — expose it or drop the ref (" +
+          cls.evidence.join("; ") + ")",
+        severity: "warning",
+      });
+    } else if (cls.status === "servido-por-mock") {
+      findings.push({
+        file: q.file,
+        line: q.line,
+        message: q.server + "." + q.tool + " is mock-only (backend implementation pending) — real name: " + cls.real,
+        severity: "info",
+      });
+    } else if (cls.status === "deuda-real") {
+      findings.push({
+        file: q.file,
+        line: q.line,
+        message:
+          q.server + "." + q.tool + " exists in neither mock nor backend under any audited name — genuine implementation debt",
+        severity: "warning",
+      });
+    }
   }
 
   return outcome(
     "backend-tools",
     "6. Tools Missing from Mock AND Backend",
-    degraded ? "info" : "warning",
+    degraded ? "info" : findings.some((f) => f.severity === "warning") ? "warning" : "info",
     findings,
     [
       ["refs", ctx.mcpQueries.length],
-      ["backendTools", ctx.backendTools.size],
+      ["backendTools", idx.flat.size],
+      ["backendAgents", idx.agents.length],
+      ["toolBackend", counts["tool-backend"]],
+      ["equivalente", counts["equivalente"]],
+      ["mockOnly", counts["servido-por-mock"]],
+      ["capacidadSinTool", counts["capacidad-sin-tool"]],
       ["missingBoth", missingBoth.size],
-      ["mockOnly", mockOnly.size],
     ],
     notes,
   );
@@ -1020,6 +1762,16 @@ function checkOrphanMocks(ctx: ScanContext): CheckOutcome {
       .concat(ctx.extraToolRefs)
       .map((q) => `${q.server}::${q.tool}`),
   );
+  // B4: a legacy ref that the registry alias maps to this canonical mock
+  // key means the mock IS used (guests.get_today_guests consumes the
+  // guest_management.get_today_guests dev-mock).
+  for (const [legacyDotted, canonical] of ctx.compatAliases) {
+    const [ls, lt] = legacyDotted.split(".");
+    if (usedKeys.has(ls + "::" + lt)) {
+      const [cs, ct] = canonical.split(".");
+      usedKeys.add(cs + "::" + ct);
+    }
+  }
   const orphansByServer = new Map<string, string[]>();
   let orphanCount = 0;
   for (const key of ctx.registryKeys) {
@@ -1217,7 +1969,7 @@ function buildJsonReport(
       cssFiles: ctx.cssFiles.length,
       pyFiles: ctx.pyFiles.length,
       backendDetected: ctx.backendScanned,
-      backendTools: ctx.backendTools.size,
+      backendTools: ctx.backendTools.flat.size,
       mockRegistryFound: ctx.registryFound,
       routerFound: ctx.routerContent !== null,
       tokenSource: ctx.tokenSource,
@@ -1294,17 +2046,21 @@ function main(): void {
   process.exitCode = exitCode;
 }
 
-try {
-  main();
-} catch (err) {
-  if (err instanceof UsageError) {
-    console.error(`verify-integration: ${err.message}`);
-    console.error("Run with --help for usage.");
-    process.exitCode = 3;
-  } else {
-    console.error(
-      `verify-integration: internal error — ${err instanceof Error ? err.stack ?? err.message : String(err)}`,
-    );
-    process.exitCode = 3;
+// B4: guard behind VI14_NO_MAIN so the verifier is importable as a
+// library (extract* functions) without triggering the CLI run.
+if (process.env.VI14_NO_MAIN !== "1") {
+  try {
+    main();
+  } catch (err) {
+    if (err instanceof UsageError) {
+      console.error(`verify-integration: ${err.message}`);
+      console.error("Run with --help for usage.");
+      process.exitCode = 3;
+    } else {
+      console.error(
+        `verify-integration: internal error — ${err instanceof Error ? err.stack ?? err.message : String(err)}`,
+      );
+      process.exitCode = 3;
+    }
   }
 }

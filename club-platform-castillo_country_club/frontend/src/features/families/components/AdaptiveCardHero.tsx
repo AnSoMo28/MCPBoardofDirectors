@@ -41,6 +41,7 @@ import type { AdaptiveCardPriority } from "../ai-types";
 import { PRIORITY_SLOTS } from "../config";
 
 import "./AdaptiveCardHero.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Icon Registry
@@ -191,14 +192,15 @@ export function AdaptiveCardHero({
 
       {/* Suggested Action — CTA (P3) */}
       {priority.suggestedAction && onAction && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fm-adaptiveHero__action"
           onClick={handleAction}
         >
           <Zap size={10} aria-hidden="true" />
           {priority.suggestedAction}
-        </button>
+        </Button>
       )}
     </div>
   );

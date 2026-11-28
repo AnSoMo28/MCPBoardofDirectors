@@ -69,6 +69,7 @@ import {
 import { MemberSparkline } from "./MemberSparkline";
 
 import "./MemberCard.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Icon Registry
@@ -446,7 +447,8 @@ export function MemberCard({
       {hasActions && (
         <div className="fm-memberCard__actions" aria-label="Acciones rápidas">
           {onMessage && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fm-memberCard__action-btn"
               onClick={handleMessage}
@@ -454,10 +456,11 @@ export function MemberCard({
             >
               <MessageSquare size={12} aria-hidden="true" />
               Mensaje
-            </button>
+            </Button>
           )}
           {onInvite && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fm-memberCard__action-btn"
               onClick={handleInvite}
@@ -465,10 +468,11 @@ export function MemberCard({
             >
               <UserPlus size={12} aria-hidden="true" />
               Invitar
-            </button>
+            </Button>
           )}
           {onProfile && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fm-memberCard__action-btn"
               onClick={handleProfile}
@@ -476,7 +480,7 @@ export function MemberCard({
             >
               <ExternalLink size={12} aria-hidden="true" />
               Perfil
-            </button>
+            </Button>
           )}
         </div>
       )}

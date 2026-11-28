@@ -58,6 +58,7 @@ import { cn } from "@/shared/lib/utils";
 
 // Styles (BC-06: co-ubicado — este componente posee su propio CSS)
 import "./PermissionDenied.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1 TYPES
@@ -169,14 +170,15 @@ export const PermissionDenied = memo(function PermissionDenied({
       <p className="perm-denied__detail">{detail}</p>
 
       {onRequestAccess ? (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="perm-denied__request"
           onClick={onRequestAccess}
           data-testid="perm-denied-request"
         >
           {COPY.requestAccess}
-        </button>
+        </Button>
       ) : null}
     </div>
   );

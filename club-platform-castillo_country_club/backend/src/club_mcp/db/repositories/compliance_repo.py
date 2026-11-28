@@ -1,4 +1,10 @@
-"""In-memory compliance repository."""
+"""In-memory compliance repository (async — Ola 2.1-quinqua).
+
+Migración async del dominio (misma cirugía del event 0017): el repo
+ORM es async y el agente compliance lo llamaba SIN await (8 sites).
+Contrato observable IDÉNTICO: mismos 14 métodos, mismas firmas,
+mismos Pydantic, mismos None/[] — solo que ahora son corrutinas.
+"""
 
 from __future__ import annotations
 
@@ -34,7 +40,7 @@ class ComplianceRepository:
 
     # ── Audits ─────────────────────────────────────────────
 
-    def create_audit(self, data: dict[str, Any]) -> AuditRecord:
+    async def create_audit(self, data: dict[str, Any]) -> AuditRecord:
         aid = _gen_id("aud")
         now = datetime.now(timezone.utc)
         data["id"] = aid
@@ -43,12 +49,12 @@ class ComplianceRepository:
         self._audits[aid] = data
         return AuditRecord(**data)
 
-    def get_audit(self, audit_id: str) -> AuditRecord | None:
+    async def get_audit(self, audit_id: str) -> AuditRecord | None:
         if audit_id not in self._audits:
             return None
         return AuditRecord(**self._audits[audit_id])
 
-    def update_audit(self, audit_id: str, updates: dict[str, Any]) -> AuditRecord | None:
+    async def update_audit(self, audit_id: str, updates: dict[str, Any]) -> AuditRecord | None:
         if audit_id not in self._audits:
             return None
         rec = self._audits[audit_id]
@@ -58,7 +64,7 @@ class ComplianceRepository:
         rec["updated_at"] = datetime.now(timezone.utc).isoformat()
         return AuditRecord(**rec)
 
-    def list_audits(
+    async def list_audits(
         self,
         area: str | None = None,
         status: str | None = None,
@@ -72,7 +78,7 @@ class ComplianceRepository:
             out.append(AuditRecord(**rec))
         return sorted(out, key=lambda a: a.created_at, reverse=True)
 
-    def add_check_to_audit(
+    async def add_check_to_audit(
         self, audit_id: str, check: ComplianceCheck
     ) -> AuditRecord | None:
         if audit_id not in self._audits:
@@ -99,7 +105,7 @@ class ComplianceRepository:
 
     # ── Documents ──────────────────────────────────────────
 
-    def add_document(self, data: dict[str, Any]) -> ComplianceDocument:
+    async def add_document(self, data: dict[str, Any]) -> ComplianceDocument:
         did = _gen_id("doc")
         now = datetime.now(timezone.utc)
         data["id"] = did
@@ -107,12 +113,12 @@ class ComplianceRepository:
         self._documents[did] = data
         return ComplianceDocument(**data)
 
-    def get_document(self, doc_id: str) -> ComplianceDocument | None:
+    async def get_document(self, doc_id: str) -> ComplianceDocument | None:
         if doc_id not in self._documents:
             return None
         return ComplianceDocument(**self._documents[doc_id])
 
-    def list_documents(
+    async def list_documents(
         self,
         area: str | None = None,
         status: str | None = None,
@@ -128,7 +134,7 @@ class ComplianceRepository:
 
     # ── Alerts ─────────────────────────────────────────────
 
-    def create_alert(self, data: dict[str, Any]) -> ComplianceAlert:
+    async def create_alert(self, data: dict[str, Any]) -> ComplianceAlert:
         alid = _gen_id("alrt")
         now = datetime.now(timezone.utc)
         data["id"] = alid
@@ -136,7 +142,7 @@ class ComplianceRepository:
         self._alerts[alid] = data
         return ComplianceAlert(**data)
 
-    def resolve_alert(self, alert_id: str, resolution: str) -> ComplianceAlert | None:
+    async def resolve_alert(self, alert_id: str, resolution: str) -> ComplianceAlert | None:
         if alert_id not in self._alerts:
             return None
         rec = self._alerts[alert_id]
@@ -144,7 +150,7 @@ class ComplianceRepository:
         rec["resolution"] = resolution
         return ComplianceAlert(**rec)
 
-    def list_alerts(
+    async def list_alerts(
         self,
         area: str | None = None,
         status: str | None = None,
@@ -160,14 +166,14 @@ class ComplianceRepository:
 
     # ── Reports ────────────────────────────────────────────
 
-    def generate_report(
+    async def generate_report(
         self,
         date_from: str,
         date_to: str,
     ) -> ComplianceReport:
-        audits = self.list_audits()
-        documents = self.list_documents()
-        alerts = self.list_alerts()
+        audits = await self.list_audits()
+        documents = await self.list_documents()
+        alerts = await self.list_alerts()
 
         # Overall score from audits
         completed = [
@@ -183,7 +189,7 @@ class ComplianceRepository:
         for a in completed:
             area_val = a.area.value if hasattr(a.area, "value") else a.area
             area_scores.setdefault(area_val, []).append(a.score_pct)
-        area_score_list = [
+        area_score_list: list[dict[str, Any]] = [
             {
                 "area": k,
                 "avg_score": round(sum(v) / len(v), 1),

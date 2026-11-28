@@ -1,14 +1,16 @@
 /**
  * @component QuickLink (Fase 25)
  * @namespace .glass-landing__link
- * @depends MiClubLanding.css
+ * @depends QuickLink.css
  * @note Navigation card with icon, label, description, and arrow.
- * @import import '../MiClubLanding.css';
+ * @import import './QuickLink.css';
  */
+import "./QuickLink.css";
 
 import { ArrowRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router";
+import { Button } from "@/shared/components/ui/Button";
 
 interface QuickLinkProps {
   icon: LucideIcon;
@@ -28,7 +30,8 @@ export function QuickLink({
   const navigate = useNavigate();
 
   return (
-    <button
+    <Button
+      variant="unstyled"
       type="button"
       className="glass-landing__link"
       onClick={() => navigate(route)}
@@ -50,6 +53,6 @@ export function QuickLink({
       </div>
       <p className="glass-landing__link-label">{label}</p>
       <p className="glass-landing__link-desc">{description}</p>
-    </button>
+    </Button>
   );
 }

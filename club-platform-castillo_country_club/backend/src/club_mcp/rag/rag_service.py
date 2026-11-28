@@ -14,7 +14,7 @@ All methods are async and production-grade.
 Usage:
     rag = RAGService(
         embeddings=EmbeddingService(),
-        vectorstore=ChromaVectorStore(),
+        vectorstore=build_vectorstore(),  # Ola 2.2: chroma | pgvector opt-in
         search=HybridSearchEngine(...),
         reranker=Reranker(),
         claude=ClaudeService(),
@@ -32,6 +32,8 @@ from uuid import uuid4
 
 from club_mcp.rag.chunker import SmartChunker, ChunkData
 from club_mcp.rag.conversations import ConversationStore
+
+from club_mcp.ai.prompt_registry import get_prompt
 from club_mcp.rag.embeddings import EmbeddingService
 from club_mcp.rag.parsers import DocumentParser, CleanDocument
 from club_mcp.rag.reranker import Reranker
@@ -72,25 +74,10 @@ class SearchResponse:
     query_time_ms: float
 
 
-# ── RAG System Prompt ─────────────────────────────────────
-
-RAG_SYSTEM_PROMPT = """Eres el asistente de conocimiento del Castillo Country Club.
-
-REGLAS ESTRICTAS:
-1. Responde SOLO basándote en los documentos proporcionados en el CONTEXTO DOCUMENTAL.
-2. Si la información no está en los documentos, di: "No encontré información sobre eso en la documentación del club."
-3. SIEMPRE cita la fuente al final de cada afirmación relevante usando el formato: [Fuente: nombre_del_documento].
-4. Si hay información contradictoria entre documentos, señálala y cita ambas fuentes.
-5. Para datos numéricos (montos, fechas, porcentajes), reproduce el valor EXACTO del documento.
-6. Adapta tu nivel de detalle según el rol del usuario:
-   - ADMIN: análisis completo con implicaciones y contexto adicional.
-   - JUNTA: resumen ejecutivo con puntos de decisión claros.
-   - STAFF: información operativa directa y accionable.
-   - SOCIO: lenguaje accesible, solo información pública relevante.
-7. Si la pregunta es ambigua, pide clarificación mencionando qué documentos podrían contener la respuesta.
-8. Para documentos legales/contractuales, usa terminología precisa y no parafrasees cláusulas.
-9. Responde en el mismo idioma de la pregunta.
-10. Sé conciso pero completo. Prioriza precisión sobre brevedad."""
+# ── RAG System Prompt (Ola 3.3) ────────────────────────────
+# Duplicado byte a byte curado: la fuente canónica única es el
+# prompt versionado "rag" del registry (sha256 en el snapshot).
+RAG_SYSTEM_PROMPT = get_prompt("rag").template
 
 
 # ── RAG Service ───────────────────────────────────────────
@@ -191,6 +178,14 @@ class RAGService:
         confidence = self._compute_confidence(context_chunks)
 
         # 8. Build sources
+        # b0v: RRF scores are bounded by 1/(k+1) per ranking source — with
+        # vector-only results (BM25 off) a chunk tops out at ~0.016, so the
+        # old absolute floor of 0.05 filtered EVERYTHING. The floor is now
+        # relative: half of the best observed score, with 0.01 as an
+        # absolute minimum so garbage never passes. Cross-encoder rerank
+        # (when active) rewrites final_score to [0,1] and is unaffected.
+        best = max((c.final_score for c in context_chunks), default=0.0)
+        rel_floor = max(0.01, best / 2) if best > 0 else 0.05
         sources = [
             KnowledgeSource(
                 document_id=c.document_id,
@@ -200,7 +195,7 @@ class RAGService:
                 document_type=c.document_type,
             )
             for c in context_chunks
-            if c.final_score > 0.05  # Minimum relevance threshold
+            if c.final_score >= rel_floor
         ]
 
         # 9. Generate answer with Claude
@@ -590,6 +585,16 @@ class RAGService:
 
         return candidates
 
+    def populate_content(self, candidates: list[SearchResult]) -> list[SearchResult]:
+        """Public wrapper of _populate_content.
+
+        P2-C3h b0v: agents calling search_engine.search() directly get
+        SearchResult.content == "" (hybrid search stores only metadata);
+        this fills it from the vector store. search_documents() already
+        did it internally — direct callers had the gap.
+        """
+        return self._populate_content(candidates)
+
     def _build_context(self, chunks: list[SearchResult]) -> str:
         """
         Build context string for LLM from retrieved chunks.
@@ -693,6 +698,11 @@ Responde basándote EXCLUSIVAMENTE en el contexto documental proporcionado. Cita
                 system_prompt=RAG_SYSTEM_PROMPT,
                 user_prompt=user_prompt,
                 max_tokens=2048,
+                # RV-1 (retro vanguardia Ola 3 · ADR-0009): la llamada
+                # RAG queda asociada al spec "rag" vivo del registry —
+                # el template del contexto se construye aquí, el system
+                # prompt es el versionado; la evidencia viaja con la fila.
+                prompt_name="rag",
             )
 
             return result.get("content", "No se pudo generar una respuesta.")
@@ -717,6 +727,11 @@ Responde basándote EXCLUSIVAMENTE en el contexto documental proporcionado. Cita
     def vectorstore(self) -> ChromaVectorStore:
         """Access vector store (for stats, etc.)."""
         return self._vectorstore
+
+    @property
+    def embeddings(self) -> EmbeddingService:
+        """Access embeddings (0055 — for similar-doc search, etc.)."""
+        return self._embeddings
 
     @property
     def search_engine(self) -> HybridSearchEngine:

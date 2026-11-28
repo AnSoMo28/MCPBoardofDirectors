@@ -18,6 +18,7 @@ import type { KPIData } from "../types";
 import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
 import { useYoY } from "./YearOverYearToggle";
 import { motion } from "framer-motion";
+import './KPICards.css';
 import {
   DollarSign, Users, Activity, ThumbsUp, Building2, CalendarDays,
 } from "lucide-react";
@@ -119,7 +120,7 @@ export function KPICards({ data }: KPICardsProps) {
       variants={container}
       initial={false}
       animate="show"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+      className="k-p-i-cards grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
       role="region"
       aria-label="Indicadores clave del club"
     >

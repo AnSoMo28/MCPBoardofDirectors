@@ -13,19 +13,79 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any
+from typing import Any, Protocol
 
 from anthropic import AsyncAnthropic
 
-from club_mcp.ai.prompts import (
-    AGE_BALANCE_PROMPT,
-    COMMENT_ASSIST_PROMPT,
-    NARRATIVE_REPORT_PROMPT,
-    SATISFACTION_ANALYSIS_PROMPT,
-    SYSTEM_PROMPT,
-)
+from club_mcp.ai.prompt_registry import render_prompt
+from club_mcp.ai.prompts import SYSTEM_PROMPT
+
 
 logger = logging.getLogger(__name__)
+
+
+class ClaudeServiceLike(Protocol):
+    """Contrato estructural de ClaudeService (G12, Q-LLM-01).
+
+    `get_claude_service` puede devolver ClaudeService O su wrapper
+    ResilientClaudeService (proxy con la misma interfaz). Tipar contra
+    este Protocol — y no contra la clase concreta — es lo que permite
+    sustituir la implementación sin tocar consumidores NI mypy.
+
+    G12.1: los 7 métodos públicos de ClaudeService — 3 con resiliencia
+    implementada en el proxy (chat/generate/analyze_satisfaction
+    según la v3) + generate_json (resiliente desde G12) + los 3
+    específicos que el proxy delega vía __getattr__. El Protocol
+    documenta la UNIÓN: el contrato que todo consumidor puede usar
+    sin saber si hay resiliencia debajo.
+    """
+
+    async def chat(
+        self,
+        user_message: str,
+        user_role: str = "socio",
+        user_name: str = "",
+        history: list[dict[str, str]] | None = None,
+    ) -> dict[str, Any]: ...
+
+    async def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        max_tokens: int = 2048,
+        prompt_name: str | None = None,
+    ) -> dict[str, Any]: ...
+
+    async def analyze_satisfaction(
+        self,
+        event_data: dict[str, Any],
+        surveys: list[dict[str, Any]],
+    ) -> dict[str, Any]: ...
+
+    async def generate_json(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        max_tokens: int = 2048,
+        fallback: Any = None,
+        prompt_name: str | None = None,
+    ) -> dict[str, Any]: ...
+
+    async def generate_narrative_report(
+        self,
+        kpis: dict[str, Any],
+        audience: str = "board",
+    ) -> str: ...
+
+    async def assist_comment(
+        self,
+        survey_ratings: dict[str, int],
+    ) -> str: ...
+
+    async def analyze_age_balance(
+        self,
+        distribution_data: dict[str, Any],
+    ) -> dict[str, Any]: ...
 
 
 class ClaudeService:
@@ -93,7 +153,8 @@ class ClaudeService:
         surveys: list[dict[str, Any]],
     ) -> dict[str, Any]:
         """AI-powered satisfaction analysis for post-event surveys."""
-        prompt = SATISFACTION_ANALYSIS_PROMPT.format(
+        prompt = render_prompt(
+            "satisfaction_analysis",
             event_data=json.dumps(event_data, ensure_ascii=False, indent=2),
             total_surveys=len(surveys),
             surveys_sample=json.dumps(
@@ -101,38 +162,36 @@ class ClaudeService:
             ),
         )
 
-        try:
-            response = await self.client.messages.create(
-                model=self.model,
-                max_tokens=1024,
-                system=(
-                    "Eres un analista de datos especializado en "
-                    "satisfacción de miembros de clubes privados."
-                ),
-                messages=[{"role": "user", "content": prompt}],
-            )
-
-            text = response.content[0].text if response.content else "{}"
-
-            try:
-                return json.loads(text)
-            except json.JSONDecodeError:
-                return {
-                    "trend": "stable",
-                    "praises": [],
-                    "improvements": [],
-                    "recommendations": [text],
-                    "quotes": [],
-                }
-        except Exception as exc:
-            logger.error("Claude satisfaction analysis error: %s", exc)
+        # RV-1: vía self.generate() — la llamada queda en el ledger del
+        # wrapper con el spec del prompt (deuda ADR-0009 pagada aquí).
+        result = await self.generate(
+            system_prompt=(
+                "Eres un analista de datos especializado en "
+                "satisfacción de miembros de clubes privados."
+            ),
+            user_prompt=prompt,
+            max_tokens=1024,
+            prompt_name="satisfaction_analysis",
+        )
+        if result.get("error"):
             return {
                 "trend": "unknown",
                 "praises": [],
                 "improvements": [],
                 "recommendations": [],
                 "quotes": [],
-                "error": str(exc),
+                "error": result["error"],
+            }
+        text = result.get("content") or "{}"
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            return {
+                "trend": "stable",
+                "praises": [],
+                "improvements": [],
+                "recommendations": [text],
+                "quotes": [],
             }
 
     async def generate_narrative_report(
@@ -141,95 +200,92 @@ class ClaudeService:
         audience: str = "board",
     ) -> str:
         """Generate a narrative executive report from KPIs."""
-        prompt = NARRATIVE_REPORT_PROMPT.format(
+        prompt = render_prompt(
+            "narrative_report",
             kpis=json.dumps(kpis, ensure_ascii=False, indent=2),
             audience=audience,
         )
 
-        try:
-            response = await self.client.messages.create(
-                model=self.model,
-                max_tokens=2048,
-                system=(
-                    "Eres un consultor senior de clubes privados "
-                    "especializado en reportes ejecutivos."
-                ),
-                messages=[{"role": "user", "content": prompt}],
-            )
-
-            return response.content[0].text if response.content else ""
-        except Exception as exc:
-            logger.error("Claude narrative report error: %s", exc)
-            return f"Error generando reporte narrativo: {exc}"
+        # RV-1: vía self.generate() con el spec del prompt (ADR-0009).
+        result = await self.generate(
+            system_prompt=(
+                "Eres un consultor senior de clubes privados "
+                "especializado en reportes ejecutivos."
+            ),
+            user_prompt=prompt,
+            max_tokens=2048,
+            prompt_name="narrative_report",
+        )
+        if result.get("error"):
+            return f"Error generando reporte narrativo: {result['error']}"
+        return result.get("content") or ""
 
     async def assist_comment(
         self,
         survey_ratings: dict[str, int],
     ) -> str:
         """Help a member write a constructive comment based on ratings."""
-        prompt = COMMENT_ASSIST_PROMPT.format(
+        prompt = render_prompt(
+            "comment_assist",
             ratings=json.dumps(survey_ratings, ensure_ascii=False),
         )
 
-        try:
-            response = await self.client.messages.create(
-                model=self.model,
-                max_tokens=256,
-                system=(
-                    "Eres un asistente que ayuda a socios a redactar "
-                    "comentarios constructivos sobre eventos del club."
-                ),
-                messages=[{"role": "user", "content": prompt}],
-            )
-
-            return response.content[0].text if response.content else ""
-        except Exception as exc:
-            logger.error("Claude comment assist error: %s", exc)
+        # RV-1: vía self.generate() con el spec del prompt (ADR-0009).
+        result = await self.generate(
+            system_prompt=(
+                "Eres un asistente que ayuda a socios a redactar "
+                "comentarios constructivos sobre eventos del club."
+            ),
+            user_prompt=prompt,
+            max_tokens=256,
+            prompt_name="comment_assist",
+        )
+        if result.get("error"):
+            logger.error("Claude comment assist error: %s", result["error"])
             return ""
+        return result.get("content") or ""
 
     async def analyze_age_balance(
         self,
         distribution_data: dict[str, Any],
     ) -> dict[str, Any]:
         """Analyze age group activity distribution with Gini coefficient."""
-        prompt = AGE_BALANCE_PROMPT.format(
+        prompt = render_prompt(
+            "age_balance",
             distribution_data=json.dumps(
                 distribution_data, ensure_ascii=False, indent=2
             ),
         )
 
-        try:
-            response = await self.client.messages.create(
-                model=self.model,
-                max_tokens=512,
-                system=(
-                    "Eres un analista de datos especializado en "
-                    "distribución demográfica de clubes privados."
-                ),
-                messages=[{"role": "user", "content": prompt}],
-            )
-
-            text = response.content[0].text if response.content else "{}"
-
-            try:
-                return json.loads(text)
-            except json.JSONDecodeError:
-                return {
-                    "gini_coefficient": 0.0,
-                    "balance_score": "unknown",
-                    "overrepresented": [],
-                    "underrepresented": [],
-                    "recommendations": [text],
-                }
-        except Exception as exc:
-            logger.error("Claude age balance analysis error: %s", exc)
+        # RV-1: vía self.generate() con el spec del prompt (ADR-0009).
+        result = await self.generate(
+            system_prompt=(
+                "Eres un analista de datos especializado en "
+                "distribución demográfica de clubes privados."
+            ),
+            user_prompt=prompt,
+            max_tokens=512,
+            prompt_name="age_balance",
+        )
+        if result.get("error"):
             return {
                 "gini_coefficient": 0.0,
                 "balance_score": "unknown",
                 "overrepresented": [],
                 "underrepresented": [],
                 "recommendations": [],
-                "error": str(exc),
+                "error": result["error"],
+            }
+        text = result.get("content") or "{}"
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            return {
+                "gini_coefficient": 0.0,
+                "balance_score": "unknown",
+                "overrepresented": [],
+                "underrepresented": [],
+                "recommendations": [text],
             }
 
     async def generate(
@@ -237,8 +293,13 @@ class ClaudeService:
         system_prompt: str,
         user_prompt: str,
         max_tokens: int = 2048,
+        prompt_name: str | None = None,
     ) -> dict[str, Any]:
         """Generic AI generation with custom system prompt.
+
+        RV-1: ``prompt_name`` es evidencia para el ledger del wrapper
+        resiliente (el base lo acepta y lo ignora — sin él el llamado
+        directo queda igual que siempre).
 
         Used by Advisor Intelligence agent for specialized analysis.
         Returns raw text content — use generate_json() for structured output.
@@ -274,6 +335,7 @@ class ClaudeService:
         user_prompt: str,
         max_tokens: int = 2048,
         fallback: Any = None,
+        prompt_name: str | None = None,
     ) -> dict[str, Any]:
         """Generate AI output and parse as JSON.
 
@@ -283,7 +345,9 @@ class ClaudeService:
         - JSON wrapped in ``` ... ``` code blocks
         - Fallback to raw text if parsing fails
         """
-        result = await self.generate(system_prompt, user_prompt, max_tokens)
+        result = await self.generate(
+            system_prompt, user_prompt, max_tokens, prompt_name=prompt_name
+        )
 
         if result.get("error"):
             return fallback if fallback is not None else {"error": result["error"]}
@@ -316,4 +380,26 @@ class ClaudeService:
 
         # Fallback: return raw content wrapped in dict
         return fallback if fallback is not None else {"raw_content": content}
+
+
+_claude_service_instance: ClaudeServiceLike | None = None
+
+
+def get_claude_service() -> ClaudeServiceLike:
+    """Singleton factory for the shared ClaudeService instance.
+
+    ml_intelligence (y cualquier agente que no reciba la inyección del
+    bootstrap) resuelve su cliente Claude por acá, igual que el patrón
+    document_intelligence. Thread-safe por GIL; la primera llamada paga
+    la construcción, el resto reutiliza la instancia (y su cliente HTTP).
+
+    G12 (Q-LLM-01): devuelve el wrapper resilient (misma interfaz —
+    retry/timeout/breaker/fallback-Ollama transparentes para el llamador).
+    """
+    global _claude_service_instance
+    if _claude_service_instance is None:
+        from club_mcp.ai.resilience import build_resilient_claude_service
+
+        _claude_service_instance = build_resilient_claude_service(ClaudeService())
+    return _claude_service_instance
 

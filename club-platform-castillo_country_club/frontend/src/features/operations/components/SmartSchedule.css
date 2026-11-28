@@ -1,0 +1,64 @@
+/**
+ * @component SmartSchedule
+ * @namespace .smart-schedule
+ * @archetype calendar · domain teal
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados smart-schedule-*.
+ */
+.smart-schedule {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* Celdas: al hover la fecha se ilumina como por una vela debajo */
+.smart-schedule__cell {
+  position: relative;
+  transition: background 0.25s var(--ease-apple), transform 0.25s var(--ease-spring);
+}
+
+.smart-schedule__cell:hover {
+  background: color-mix(in srgb, var(--color-teal-400) 7.8%, transparent);
+  transform: translateY(-1px);
+}
+
+/* Hoy: aro vivo que respira */
+.smart-schedule__cell--today {
+  border-color: color-mix(in srgb, var(--color-teal-400) 53.3%, transparent);
+  animation: smart-schedule-today-breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes smart-schedule-today-breathe {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-teal-400) 26.7%, transparent), 0 0 10px color-mix(in srgb, var(--color-teal-400) 13.3%, transparent); }
+  50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-teal-400) 53.3%, transparent), 0 0 18px color-mix(in srgb, var(--color-teal-400) 25.1%, transparent); }
+}
+
+/* Eventos: gota de tinta que se posa */
+.smart-schedule__event {
+  animation: smart-schedule-event-settle 0.45s var(--ease-spring) 1 backwards;
+}
+
+.smart-schedule__event:nth-child(2n) { animation-delay: 0.08s; }
+.smart-schedule__event:nth-child(3n) { animation-delay: 0.14s; }
+
+@keyframes smart-schedule-event-settle {
+  from { opacity: 0; transform: translateY(4px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Semana actual: línea base del color dominio */
+.smart-schedule__week--active {
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--color-teal-400) 33.3%, transparent);
+}
+
+.light .smart-schedule__cell--today {
+  animation: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-teal-500) 26.7%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-schedule__cell--today, .smart-schedule__event { animation: none; }
+  .smart-schedule__cell, .smart-schedule__cell:hover { transition: none; transform: none; }
+}

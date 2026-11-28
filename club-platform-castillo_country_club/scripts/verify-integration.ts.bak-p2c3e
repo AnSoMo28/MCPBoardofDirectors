@@ -1,0 +1,1389 @@
+#!/usr/bin/env npx tsx
+/**
+ * verify-integration.ts — Castillo AI Platform · Integration Verifier v3
+ *
+ * Governance layer · Lote 1b · Rewritten post-audit (dictamen 6.0/10 for v2).
+ *
+ * Scans the frontend (+ backend when present) and verifies:
+ *   1. router-imports      Lazy imports in app/router.tsx resolve to real files
+ *   2. mcp-coverage        useMCPQuery(server, tool) coverage in the mock registry
+ *   3. phantom-tokens      CSS custom properties used but never defined
+ *   4. raw-buttons         Raw <button> outside the UI primitive layer
+ *   5. permission-gates    PermissionGate coverage on admin routes
+ *   6. backend-tools       Tools missing from BOTH mock registry AND backend
+ *   7. duplicate-routes    Route paths registered more than once (normalized)
+ *   8. orphan-mocks        Mock-registry entries never referenced by a hook
+ *
+ * Usage:
+ *   npx tsx scripts/verify-integration.ts [options]
+ *   node scripts/verify-integration.ts [options]      (Node >= 22.18, no tsx;
+ *                                                      requires ESM context:
+ *                                                      "type":"module" or .mts)
+ *
+ * Options:
+ *   --json          machine-readable report (CI); suppresses console report
+ *   --quiet, -q     summary + verdict only
+ *   --no-color      disable ANSI (auto when piped or NO_COLOR is set)
+ *   --root <path>   project root (default: script dir -> cwd, walking up)
+ *   --check <list>  subset by number or slug, comma-separated
+ *   --help, -h      full help
+ *
+ * Exit codes:
+ *   0  all clear (info findings allowed)
+ *   1  errors found
+ *   2  warnings only
+ *   3  usage error / internal failure
+ *
+ * v3 changelog vs v2 (defect -> fix):
+ *   VI-01  check 6 equated "any quoted identifier in any .py" with a backend
+ *          tool -> systematic false negatives (missing tools reported as
+ *          present). Extraction is now registration-based: @<x>.tool / @tool
+ *          decorators over def (incl. name= kwarg), .add_tool(...) /
+ *          .register_tool(...) and Tool(name=...) constructions. When the
+ *          backend exposes none of those conventions the check degrades to
+ *          advisory LOUDLY instead of failing silently.
+ *   VI-02  __dirname broke under ESM ("type": "module" -> ReferenceError).
+ *          Root is resolved from argv[1]/cwd walking up + --root override.
+ *   VI-03  one single-quoted dynamic import aborted check 1 silently
+ *          (indexOf('")') === -1 -> break). Both quote styles supported;
+ *          explicit extensions (@/x.tsx, @/x.js) also resolve.
+ *   VI-04  phantom tokens were a frozen 8-item list that could not detect
+ *          NEW phantoms. Now derived from the actual CSS in frontend/src:
+ *          var(--x) undefined = runtime defect (warning); bare mentions in
+ *          strings = possible phantom (info); legacy list kept as fallback
+ *          when no CSS custom properties exist.
+ *   VI-05  raw-button allowlist was 24 hardcoded file paths (rot risk: every
+ *          new primitive required editing the verifier). The whole primitive
+ *          layer is now exempt by directory and coverage extends to
+ *          features/ and app/.
+ *   VI-06  registry parser depended on exact 2-space indent and the exact
+ *          "(params" signature. Now indent-relative and it accepts arrow and
+ *          method-style mock handlers.
+ *   VI-07  scans hit dist/build/.next/coverage/venv (stale compiled output
+ *          and site-packages polluted results). All excluded now.
+ *   VI-08  registry keys, file lists and useMCPQuery refs were computed
+ *          twice. A single ScanContext is built once and shared.
+ *   VI-09  PermissionGate window was an arbitrary 10 lines and the bare
+ *          "admin" layout route was invisible. Window is now bounded by the
+ *          next route declaration; route === "admin" is included.
+ *   VI-10  duplicate routes now compared after normalization (whitespace,
+ *          leading/trailing slash, "//").
+ *   VI-11  no JSON mode, no error containment, fixed-width summary box that
+ *          misaligned. Now: --json/--quiet/--check/--no-color, global
+ *          try/catch with exit 3, dynamic-width ANSI-aware boxes, and a new
+ *          advisory check 8 (orphan mocks) that reuses the shared context.
+ *   VI-12  check 8 counted only useMCPQuery refs: every useMCPMutation,
+ *          callMCPTool and advisor-engine {server, tool} data pair looked
+ *          like an orphan mock (38 of 90 were false positives here).
+ *          Check 8 now unions the four reference shapes; checks 2/6 keep
+ *          hook-only semantics. Check 4 was EOL-blind: a CRLF working copy
+ *          flagged <button at end of line via the leftover \r, an LF
+ *          checkout missed it (962 vs 436 baseline drift). The \r is now
+ *          stripped and the pattern accepts end-of-line — both converge
+ *          to the true count.
+ *   VI-13  check 3 scanned the raw line, so migration comments citing
+ *          var(--font-*) and test asserts quoting var(--color-) counted
+ *          as phantoms (29 of 32 post-bailout warnings were noise), and
+ *          dynamic template refs var(--gca-${tone}) flagged a token that
+ *          never exists verbatim. Now: JS comments are stripped (strings
+ *          preserved, line numbers kept), test files are skipped, dynamic
+ *          refs are skipped, and tokens set at runtime via
+ *          .setProperty("--x", …) are exempted as info. Check 6 was
+ *          FastMCP-blind: name="server.tool" kwargs were dropped (the
+ *          regex had no dots), the decorator→def window was 16 lines
+ *          (long FastMCP descriptions pushed the def out), and only the
+ *          short name was probed. Now: dotted kwarg names, a 40-line
+ *          window, and the compound server.tool key is extracted and
+ *          probed.
+ */
+
+import * as fs from "node:fs";
+import * as path from "node:path";
+
+// ═══════════════════════════════════════════════ types & constants ═══════
+
+type Severity = "error" | "warning" | "info";
+
+interface Finding {
+  file: string;
+  line: number;
+  message: string;
+  snippet?: string;
+  /** Overrides the check's default severity for this finding. */
+  severity?: Severity;
+}
+
+interface CheckOutcome {
+  id: string;
+  title: string;
+  severity: Severity;
+  findings: Finding[];
+  stats: Array<[string, string | number]>;
+  notes: string[];
+}
+
+interface McpQueryRef {
+  file: string;
+  line: number;
+  server: string;
+  tool: string;
+}
+
+interface ScanContext {
+  root: string;
+  frontendSrc: string;
+  backendSrc: string;
+  tsFiles: string[]; // absolute, no .d.ts, no build output
+  cssFiles: string[]; // absolute
+  pyFiles: string[]; // absolute, tests excluded
+  routerContent: string | null;
+  registryKeys: Set<string>; // "server::tool"
+  registryFound: boolean;
+  mcpQueries: McpQueryRef[];
+  extraToolRefs: McpQueryRef[]; // VI-12: mutations, direct calls, advisor pairs
+  backendTools: Set<string>;
+  backendScanned: boolean;
+  definedTokens: Set<string>;
+  tokenSource: "css" | "legacy";
+}
+
+interface Totals {
+  errors: number;
+  warnings: number;
+  info: number;
+}
+
+interface CliOptions {
+  root: string | undefined;
+  json: boolean;
+  quiet: boolean;
+  noColor: boolean;
+  checks: string[];
+  help: boolean;
+}
+
+class UsageError extends Error {}
+
+const TOOL_VERSION = "3.2.0";
+const MAX_DISPLAYED_FINDINGS = 40;
+const SNIPPET_MAX = 120;
+
+/** Directories never scanned (dependencies, VCS, build output, caches). */
+const SKIP_DIRS = new Set([
+  "node_modules", ".git", "dist", "build", ".next", "out", "coverage",
+  "__pycache__", ".venv", "venv", ".turbo", ".cache", ".pytest_cache",
+  ".mypy_cache", ".ruff_cache", "target",
+]);
+
+/** UI primitive layer — raw <button> is legal here and ONLY here (check 4). */
+const RAW_BUTTON_EXEMPT_DIRS = [
+  "shared/components/ui",
+  "shared/components/layout",
+  "shared/components/error",
+  "shared/components/export",
+];
+
+/** Route guards recognized on admin routes (check 5). */
+const GATE_IDENTIFIERS = ["PermissionGate", "RequirePermission", "GuardedRoute", "AdminGuard"];
+
+/** v2 compatibility list — used only when no CSS custom properties exist. */
+const LEGACY_PHANTOM_TOKENS = [
+  "--color-text-primary", "--color-text-secondary", "--color-text-muted",
+  "--color-bg", "--color-violet-400", "--color-violet-500",
+  "--color-gold-mid", "--color-gold-light",
+];
+
+const DYNAMIC_IMPORT_RE = /\bimport\(\s*["']([^"']+)["']\s*\)/g;
+const MCP_QUERY_RE =
+  /\buseMCPQuery\s*(?:<[^()]*>)?\(\s*["']([A-Za-z_][\w-]*)["']\s*,\s*["']([A-Za-z_][\w-]*)["']/g;
+const MCP_MUTATION_RE =
+  /\buseMCPMutation\s*(?:<[^()]*>)?\(\s*["']([A-Za-z_][\w-]*)["']\s*,\s*["']([A-Za-z_][\w-]*)["']/g;
+const MCP_DIRECT_RE =
+  /\bcallMCPTool\s*(?:<[^()]*>)?\(\s*["']([A-Za-z_][\w-]*)["']\s*,\s*["']([A-Za-z_][\w-]*)["']/g;
+const MCP_DATA_PAIR_RE =
+  /\bserver:\s*["']([A-Za-z_][\w-]*)["']\s*,\s*\n\s*tool:\s*["']([A-Za-z_][\w-]*)["']/g;
+const VAR_USE_RE = /var\(\s*(--[\w-]+)/g;
+const BARE_TOKEN_RE = /["'`](--[\w-]+)["'`]/g;
+
+// ═══════════════════════════════════════════════════ helpers ═════════════
+
+function read(filePath: string): string | null {
+  try {
+    return fs.readFileSync(filePath, "utf-8");
+  } catch {
+    return null;
+  }
+}
+
+function isFile(p: string): boolean {
+  try {
+    return fs.statSync(p).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function isDir(p: string): boolean {
+  try {
+    return fs.statSync(p).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function relFrom(root: string, abs: string): string {
+  return path.relative(root, abs).replace(/\\/g, "/");
+}
+
+function snippetOf(line: string): string {
+  return line.trim().replace(/\s+/g, " ").slice(0, SNIPPET_MAX);
+}
+
+/**
+ * VI-13: strips line and block comments while preserving string contents and
+ * line structure (a comment becomes spaces of the same length so every
+ * character keeps its column). Handles block comments spanning lines via
+ * the carry flag; template literals are treated as strings so `${…}` and
+ * nested quotes survive. Escaped quotes inside strings are respected.
+ */
+function stripJsComments(content: string): string {
+  const out: string[] = [];
+  let inBlock = false;
+  for (const line of content.split("\n")) {
+    let kept = "";
+    let inStr: string | null = null;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]!;
+      const next = line[i + 1] ?? "";
+      if (inStr !== null) {
+        kept += ch;
+        if (ch === "\\\\") {
+          kept += next;
+          i++;
+          continue;
+        }
+        if (ch === inStr) inStr = null;
+        continue;
+      }
+      if (inBlock) {
+        if (ch === "*" && next === "/") {
+          inBlock = false;
+          i++; // consume '/'
+        }
+        continue;
+      }
+      if (ch === '"' || ch === "'" || ch === "`") {
+        inStr = ch;
+        kept += ch;
+        continue;
+      }
+      if (ch === "/" && next === "/") break; // rest of line is comment
+      if (ch === "/" && next === "*") {
+        inBlock = true;
+        i++; // consume '*'
+        continue;
+      }
+      kept += ch;
+    }
+    out.push(kept);
+  }
+  return out.join("\n");
+}
+
+/** Line-start offsets for index -> line mapping (binary search). */
+function lineIndex(content: string): number[] {
+  const offsets: number[] = [0];
+  for (let i = 0; i < content.length; i++) {
+    if (content[i] === "\n") offsets.push(i + 1);
+  }
+  return offsets;
+}
+
+function lineAt(offsets: number[], charIdx: number): number {
+  let lo = 0;
+  let hi = offsets.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (offsets[mid]! <= charIdx) lo = mid;
+    else hi = mid - 1;
+  }
+  return lo + 1;
+}
+
+function lineText(content: string, offsets: number[], line: number): string {
+  const start = offsets[line - 1] ?? 0;
+  const end = line < offsets.length ? offsets[line]! - 1 : content.length;
+  return content.slice(start, Math.max(start, end));
+}
+
+function walk(dir: string, extensions: string[], acc: string[] = []): string[] {
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return acc;
+  }
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (SKIP_DIRS.has(entry.name) || entry.name.startsWith(".")) continue;
+      walk(full, extensions, acc);
+    } else if (extensions.some((ext) => entry.name.endsWith(ext))) {
+      acc.push(full);
+    }
+  }
+  return acc;
+}
+
+// ═══════════════════════════════════════════ CLI & root resolution ═══════
+
+function parseArgs(argv: string[]): CliOptions {
+  const opts: CliOptions = {
+    root: undefined,
+    json: false,
+    quiet: false,
+    noColor: false,
+    checks: CHECKS.map((c) => c.id),
+    help: false,
+  };
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]!;
+    switch (arg) {
+      case "--json":
+        opts.json = true;
+        break;
+      case "--quiet":
+      case "-q":
+        opts.quiet = true;
+        break;
+      case "--no-color":
+        opts.noColor = true;
+        break;
+      case "--help":
+      case "-h":
+        opts.help = true;
+        break;
+      case "--root": {
+        const value = argv[++i];
+        if (!value) throw new UsageError("--root requires a path argument");
+        opts.root = value;
+        break;
+      }
+      case "--check": {
+        const value = argv[++i];
+        if (!value) throw new UsageError("--check requires a comma-separated list argument");
+        const ids = value
+          .split(",")
+          .map((tok) => tok.trim().toLowerCase())
+          .filter(Boolean)
+          .map((tok) => {
+            const match = CHECKS.find((c) => c.num === tok || c.id === tok);
+            if (!match) {
+              throw new UsageError(
+                `Unknown check "${tok}" — valid: ${CHECKS.map((c) => `${c.num}/${c.id}`).join(", ")}`,
+              );
+            }
+            return match.id;
+          });
+        if (ids.length === 0) throw new UsageError("--check received an empty list");
+        opts.checks = ids;
+        break;
+      }
+      default:
+        throw new UsageError(`Unknown option "${arg}" — run with --help`);
+    }
+  }
+  return opts;
+}
+
+/**
+ * ESM/CJS-safe root resolution (VI-02): no __dirname anywhere.
+ * Priority: --root, then the directory of this script (argv[1]), then cwd;
+ * each seed walks up until a directory containing frontend/src is found.
+ */
+function resolveProjectRoot(cliRoot: string | undefined): string {
+  const seeds: string[] = [];
+  if (cliRoot) seeds.push(path.resolve(cliRoot));
+  if (process.argv[1]) seeds.push(path.dirname(path.resolve(process.argv[1])));
+  seeds.push(process.cwd());
+
+  for (const seed of seeds) {
+    let dir = seed;
+    for (let depth = 0; depth < 5; depth++) {
+      if (isDir(path.join(dir, "frontend", "src"))) return dir;
+      const parent = path.dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  return seeds[seeds.length - 1]!;
+}
+
+// ═════════════════════════════════════════ shared context extraction ══════
+
+/** "server::tool" keys from mock-registry.ts (VI-06: indent-relative). */
+function extractRegistryKeys(content: string): Set<string> {
+  const keys = new Set<string>();
+  const lines = content.split("\n");
+  let server: string | null = null;
+  let serverIndent = -1;
+
+  for (const rawLine of lines) {
+    const trimmed = rawLine.trim();
+    if (trimmed === "" || trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*")) continue;
+
+    const serverMatch = rawLine.match(/^([ \t]{0,4})([A-Za-z_][\w]*)[ \t]*:[ \t]*\{/);
+    if (serverMatch) {
+      server = serverMatch[2]!;
+      serverIndent = serverMatch[1]!.length;
+      continue;
+    }
+
+    if (server === null) continue;
+    const indent = rawLine.match(/^[ \t]*/)![0]!.length;
+    if (indent <= serverIndent) {
+      server = null;
+      serverIndent = -1;
+      continue;
+    }
+    // Mock handlers: arrow "tool: (params) => …" or method "tool(params) { …"
+    const arrow = rawLine.match(/^[ \t]*([A-Za-z_][\w]*)[ \t]*:[ \t]*\(/);
+    const method = rawLine.match(/^[ \t]*([A-Za-z_][\w]*)[ \t]*\([^)]*\)[ \t]*\{/);
+    const tool = arrow?.[1] ?? method?.[1];
+    if (tool) keys.add(`${server}::${tool}`);
+  }
+  return keys;
+}
+
+/** All useMCPQuery("server", "tool") references across src (VI-08: once). */
+function collectMcpQueries(frontendSrc: string, tsFiles: string[]): McpQueryRef[] {
+  const refs: McpQueryRef[] = [];
+  for (const file of tsFiles) {
+    const relPath = relFrom(frontendSrc, file);
+    if (relPath.startsWith("shared/mocks/")) continue;
+    if (/\.(test|spec|stories)\.[tj]sx?$/.test(relPath)) continue;
+    const content = read(file);
+    if (!content) continue;
+    const offsets = lineIndex(content);
+    for (const m of content.matchAll(MCP_QUERY_RE)) {
+      refs.push({
+        file: relPath,
+        line: lineAt(offsets, m.index ?? 0),
+        server: m[1]!,
+        tool: m[2]!,
+      });
+    }
+  }
+  return refs;
+}
+
+/** VI-12: non-hook tool references — mutations, direct calls, advisor data pairs. */
+function collectExtraToolRefs(frontendSrc: string, tsFiles: string[]): McpQueryRef[] {
+  const refs: McpQueryRef[] = [];
+  const patterns = [MCP_MUTATION_RE, MCP_DIRECT_RE, MCP_DATA_PAIR_RE];
+  for (const file of tsFiles) {
+    const relPath = relFrom(frontendSrc, file);
+    if (relPath.startsWith("shared/mocks/")) continue;
+    if (/\.(test|spec|stories)\.[tj]sx?$/.test(relPath)) continue;
+    const content = read(file);
+    if (!content) continue;
+    const offsets = lineIndex(content);
+    for (const re of patterns) {
+      for (const m of content.matchAll(re)) {
+        refs.push({
+          file: relPath,
+          line: lineAt(offsets, m.index ?? 0),
+          server: m[1]!,
+          tool: m[2]!,
+        });
+      }
+    }
+  }
+  return refs;
+}
+
+/** Test files excluded — they register fake tools (VI-01 precision). */
+function isBackendSource(abs: string, backendSrc: string): boolean {
+  const relPath = relFrom(backendSrc, abs);
+  if (relPath.startsWith("tests/") || relPath.includes("/tests/")) return false;
+  const base = path.basename(abs);
+  return !(/^test_.*\.py$/.test(base) || /_test\.py$/.test(base) || base === "conftest.py");
+}
+
+/**
+ * Registration-based backend tool extraction (VI-01):
+ *   @<anything>.tool / @tool decorator over (async) def — including the
+ *   name="custom" kwarg form; .add_tool(...) / .register_tool(...) with a
+ *   string first arg or name= kwarg; Tool(name=...) constructions.
+ */
+function extractBackendToolNames(pyFiles: string[]): Set<string> {
+  const names = new Set<string>();
+  const DECORATOR_RE = /^[ \t]*@(?:[\w.]+\.)?tool\b/;
+  const DEF_RE = /^[ \t]*(?:async[ \t]+)?def[ \t]+([A-Za-z_][\w]*)/;
+  const ADD_TOOL_RE = /\.(?:add_tool|register_tool|addTool|registerTool)\s*\(/;
+  const ADD_TOOL_ARG_RE = /(?:add_tool|register_tool|addTool|registerTool)\s*\(\s*["']([A-Za-z_][\w.-]*)["']/;
+  const NAME_KWARG_RE = /\bname\s*=\s*["']([A-Za-z_][\w.-]*)["']/; // VI-13: dots — FastMCP name="server.tool"
+  const TOOL_CTOR_RE = /(?:^|[.\s])Tool\s*\(/;
+
+  for (const file of pyFiles) {
+    const content = read(file);
+    if (!content) continue;
+    const lines = content.split("\n");
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]!;
+
+      if (DECORATOR_RE.test(line)) {
+        let defName: string | null = null;
+        let end = i;
+        for (let j = i + 1; j < Math.min(i + 40, lines.length); j++) { // VI-13: FastMCP kwargs can be long
+          const def = lines[j]!.match(DEF_RE);
+          if (def) {
+            defName = def[1]!;
+            end = j;
+            break;
+          }
+          if (/^(?:class |[A-Za-z_][\w]*[ \t]*=)/.test(lines[j]!)) break; // left decorator scope
+          end = j;
+        }
+        if (defName) {
+          names.add(defName);
+          const kw = lines.slice(i, end + 1).join("\n").match(NAME_KWARG_RE);
+          if (kw) names.add(kw[1]!);
+        }
+      }
+
+      if (ADD_TOOL_RE.test(line)) {
+        const window = lines.slice(i, i + 4).join("\n");
+        const arg = window.match(ADD_TOOL_ARG_RE);
+        const kw = window.match(NAME_KWARG_RE);
+        const name = arg?.[1] ?? kw?.[1];
+        if (name) names.add(name);
+      }
+
+      if (TOOL_CTOR_RE.test(line)) {
+        const window = lines.slice(i, i + 4).join("\n");
+        const kw = window.match(NAME_KWARG_RE);
+        if (kw) names.add(kw[1]!);
+      }
+    }
+  }
+  return names;
+}
+
+/** Custom properties defined at declaration position (line start). */
+function extractDefinedTokens(cssFiles: string[]): Set<string> {
+  const tokens = new Set<string>();
+  const DECL_RE = /^[ \t]*(--[\w-]+)[ \t]*:/;
+  for (const file of cssFiles) {
+    const content = read(file);
+    if (!content) continue;
+    for (const rawLine of content.split("\n")) {
+      const m = rawLine.match(DECL_RE);
+      if (m) tokens.add(m[1]!);
+    }
+  }
+  return tokens;
+}
+
+function buildContext(root: string): ScanContext {
+  const frontendSrc = path.join(root, "frontend", "src");
+  const backendSrc = path.join(root, "backend", "src", "club_mcp");
+
+  const tsFiles = walk(frontendSrc, [".ts", ".tsx"]).filter((f) => !f.endsWith(".d.ts"));
+  const cssFiles = walk(frontendSrc, [".css"]);
+  const backendScanned = isDir(backendSrc);
+  const pyFiles = backendScanned
+    ? walk(backendSrc, [".py"]).filter((f) => isBackendSource(f, backendSrc))
+    : [];
+
+  const routerContent = read(path.join(frontendSrc, "app", "router.tsx"));
+
+  const registryContent = read(path.join(frontendSrc, "shared", "mocks", "mock-registry.ts"));
+  const registryKeys = registryContent ? extractRegistryKeys(registryContent) : new Set<string>();
+  const registryFound = registryContent !== null;
+
+  const mcpQueries = collectMcpQueries(frontendSrc, tsFiles);
+  const extraToolRefs = collectExtraToolRefs(frontendSrc, tsFiles);
+  const backendTools = extractBackendToolNames(pyFiles);
+
+  const definedTokens = extractDefinedTokens(cssFiles);
+  const tokenSource: "css" | "legacy" = definedTokens.size > 0 ? "css" : "legacy";
+
+  return {
+    root,
+    frontendSrc,
+    backendSrc,
+    tsFiles,
+    cssFiles,
+    pyFiles,
+    routerContent,
+    registryKeys,
+    registryFound,
+    mcpQueries,
+    extraToolRefs,
+    backendTools,
+    backendScanned,
+    definedTokens,
+    tokenSource,
+  };
+}
+
+// ═════════════════════════════════════════════════════ checks ════════════
+
+function outcome(
+  id: string,
+  title: string,
+  severity: Severity,
+  findings: Finding[],
+  stats: Array<[string, string | number]>,
+  notes: string[],
+): CheckOutcome {
+  return { id, title, severity, findings, stats, notes };
+}
+
+/** Resolves "@/x" against src/ — both quote styles, explicit extensions. */
+function resolveAliasImport(specifier: string, srcRoot: string): string | null {
+  const clean = specifier.slice(2); // strip "@/"
+  const stems = [clean];
+  if (/\.(?:js|jsx)$/.test(clean)) stems.push(clean.replace(/\.(?:js|jsx)$/, ""));
+  for (const stem of stems) {
+    for (const ext of ["", ".ts", ".tsx", ".js", ".jsx"]) {
+      const candidate = path.join(srcRoot, stem + ext);
+      if (isFile(candidate)) return candidate;
+    }
+    for (const indexFile of ["index.ts", "index.tsx", "index.js", "index.jsx"]) {
+      const candidate = path.join(srcRoot, stem, indexFile);
+      if (isFile(candidate)) return candidate;
+    }
+  }
+  return null;
+}
+
+function checkRouterImports(ctx: ScanContext): CheckOutcome {
+  const findings: Finding[] = [];
+  const notes: string[] = [];
+  let total = 0;
+  let resolved = 0;
+
+  if (ctx.routerContent === null) {
+    findings.push({
+      file: "app/router.tsx",
+      line: 0,
+      message: "router.tsx not found — lazy imports cannot be verified",
+      severity: "error",
+    });
+    return outcome("router-imports", "1. Router Lazy Imports", "error", findings, [["found", 0]], notes);
+  }
+
+  const content = ctx.routerContent;
+  const offsets = lineIndex(content);
+  for (const m of content.matchAll(DYNAMIC_IMPORT_RE)) {
+    const spec = m[1]!;
+    if (!spec.startsWith("@/")) continue;
+    total++;
+    if (resolveAliasImport(spec, ctx.frontendSrc) !== null) {
+      resolved++;
+      continue;
+    }
+    const line = lineAt(offsets, m.index ?? 0);
+    findings.push({
+      file: "app/router.tsx",
+      line,
+      message: `import("${spec}") → file not found`,
+      snippet: snippetOf(lineText(content, offsets, line)),
+    });
+  }
+
+  notes.push("Only static-string dynamic imports are verified; template-literal imports are out of scope by design.");
+  return outcome(
+    "router-imports",
+    "1. Router Lazy Imports",
+    "error",
+    findings,
+    [
+      ["found", total],
+      ["resolved", resolved],
+      ["broken", total - resolved],
+    ],
+    notes,
+  );
+}
+
+function checkMcpCoverage(ctx: ScanContext): CheckOutcome {
+  const findings: Finding[] = [];
+  const notes: string[] = [];
+  const invalid = new Map<string, { tool: string; occurrences: Array<[string, number]> }>();
+
+  for (const q of ctx.mcpQueries) {
+    if (ctx.registryKeys.has(`${q.server}::${q.tool}`)) continue;
+    const key = `${q.server}::${q.tool}`;
+    const entry = invalid.get(key) ?? { tool: q.tool, occurrences: [] };
+    entry.occurrences.push([q.file, q.line]);
+    invalid.set(key, entry);
+  }
+
+  for (const [key, entry] of invalid) {
+    const server = key.split("::")[0]!;
+    const where = entry.occurrences.map(([f, l]) => `${f}:${l}`).join(", ");
+    findings.push({
+      file: entry.occurrences[0]![0],
+      line: entry.occurrences[0]![1],
+      message: `${server}.${entry.tool} is not in the mock registry (${entry.occurrences.length} use(s): ${where}) — depends on backend fallback`,
+    });
+  }
+
+  if (!ctx.registryFound) notes.push("mock-registry.ts was not found — every query counts as uncovered.");
+  notes.push("Tools outside the mock registry may still resolve via the backend fallback (see check 6).");
+
+  const uncoveredRefs = [...invalid.values()].reduce((n, e) => n + e.occurrences.length, 0);
+  return outcome(
+    "mcp-coverage",
+    "2. useMCPQuery — Mock Registry Coverage",
+    "warning",
+    findings,
+    [
+      ["refs", ctx.mcpQueries.length],
+      ["covered", ctx.mcpQueries.length - uncoveredRefs],
+      ["uncoveredTools", invalid.size],
+    ],
+    notes,
+  );
+}
+
+function checkPhantomTokens(ctx: ScanContext): CheckOutcome {
+  const findings: Finding[] = [];
+  const notes: string[] = [];
+  const used = new Set<string>();
+  const mentioned = new Set<string>();
+  let varRefs = 0;
+  let dynamicSkipped = 0; // VI-13: template-literal refs, not verbatim tokens
+
+  if (ctx.tokenSource === "legacy") {
+    notes.push("No CSS custom properties found under frontend/src — using the frozen v2 phantom-token list (8 tokens).");
+    for (const file of ctx.tsFiles) {
+      const relPath = relFrom(ctx.frontendSrc, file);
+      const content = read(file);
+      if (!content) continue;
+      const lines = content.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        for (const token of LEGACY_PHANTOM_TOKENS) {
+          if (lines[i]!.includes(token)) {
+            findings.push({
+              file: relPath,
+              line: i + 1,
+              message: `Phantom token ${token} (legacy list)`,
+              snippet: snippetOf(lines[i]!),
+            });
+          }
+        }
+      }
+    }
+    return outcome(
+      "phantom-tokens",
+      "3. Phantom CSS Tokens (legacy mode)",
+      "warning",
+      findings,
+      [
+        ["cssTokens", 0],
+        ["legacyHits", findings.length],
+      ],
+      notes,
+    );
+  }
+
+  for (const file of ctx.tsFiles) {
+    const relPath = relFrom(ctx.frontendSrc, file);
+    const raw = read(file);
+    if (!raw) continue;
+    if (/\.(test|spec|stories)\.[tj]sx?$/.test(relPath)) continue; // VI-13: tests quote tokens, not use them
+    const content = stripJsComments(raw); // VI-13: comments are not refs
+    const offsets = lineIndex(content);
+    const lines = content.split("\n");
+
+    // Local inline definitions ("--x": value) count as defined for this file.
+    const locallyDefined = new Set<string>();
+    for (const m of content.matchAll(BARE_TOKEN_RE)) {
+      if (/^\s*:/.test(content.slice((m.index ?? 0) + m[0].length))) locallyDefined.add(m[1]!);
+    }
+
+    for (const m of content.matchAll(VAR_USE_RE)) {
+      const rest = content.slice((m.index ?? 0) + m[0].length).trimStart();
+      if (rest.startsWith("${")) {
+        dynamicSkipped++; // VI-13: var(--x-${…}) resolves at runtime — not a verbatim token
+        continue;
+      }
+      varRefs++;
+      used.add(m[1]!);
+      if (ctx.definedTokens.has(m[1]!)) continue;
+      const line = lineAt(offsets, m.index ?? 0);
+      findings.push({
+        file: relPath,
+        line,
+        message: `var(${m[1]}) is not defined in any CSS under src/ — resolves to nothing at runtime`,
+        snippet: snippetOf(lines[line - 1] ?? ""),
+        severity: "warning",
+      });
+    }
+
+    for (const m of content.matchAll(BARE_TOKEN_RE)) {
+      const before = content.slice(0, m.index ?? 0);
+      if (/\.setProperty\(\s*$/.test(before.split("\n").pop() ?? "")) {
+        continue; // VI-13: setProperty("--x", …) assigns at runtime — not a phantom
+      }
+      if (locallyDefined.has(m[1]!)) continue;
+      mentioned.add(m[1]!);
+      if (ctx.definedTokens.has(m[1]!) || used.has(m[1]!)) continue;
+      const line = lineAt(offsets, m.index ?? 0);
+      findings.push({
+        file: relPath,
+        line,
+        message: `Token ${m[1]} mentioned in a string but not defined in any CSS (possible phantom)`,
+        snippet: snippetOf(lines[line - 1] ?? ""),
+        severity: "info",
+      });
+    }
+  }
+
+  const unused = [...ctx.definedTokens].filter((t) => !used.has(t) && !mentioned.has(t));
+  if (unused.length > 0) {
+    const preview = unused.slice(0, 20).join(", ");
+    notes.push(`${unused.length} defined token(s) never referenced in TS/TSX: ${preview}${unused.length > 20 ? " …" : ""}`);
+  }
+
+  const phantomVar = findings.filter((f) => f.severity === "warning").length;
+  return outcome(
+    "phantom-tokens",
+    "3. Phantom CSS Tokens",
+    "warning",
+    findings,
+    [
+      ["defined", ctx.definedTokens.size],
+      ["varRefs", varRefs],
+      ["undefinedVar", phantomVar],
+      ["dynamicSkipped", dynamicSkipped],
+      ["bareMentions", findings.length - phantomVar],
+      ["definedUnused", unused.length],
+    ],
+    notes,
+  );
+}
+
+function checkRawButtons(ctx: ScanContext): CheckOutcome {
+  const findings: Finding[] = [];
+  const notes: string[] = [
+    `Advisory: raw <button> is allowed in the primitive layer only — ${RAW_BUTTON_EXEMPT_DIRS.join(", ")}.`,
+  ];
+  let scanned = 0;
+
+  for (const file of ctx.tsFiles) {
+    if (!file.endsWith(".tsx")) continue;
+    const relPath = relFrom(ctx.frontendSrc, file);
+    if (RAW_BUTTON_EXEMPT_DIRS.some((d) => relPath.startsWith(`${d}/`))) continue;
+    if (/\.(test|spec|stories)\.tsx$/.test(relPath)) continue;
+    scanned++;
+    const content = read(file);
+    if (!content) continue;
+    const lines = content.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (/<button(?=[\s>]|$)/.test(lines[i]!.replace(/\r$/, ""))) {
+        findings.push({
+          file: relPath,
+          line: i + 1,
+          message: "Raw <button> outside the UI primitive layer — use <Button>/<GlowButton>",
+          snippet: snippetOf(lines[i]!),
+        });
+      }
+    }
+  }
+
+  return outcome(
+    "raw-buttons",
+    "4. Raw <button> Outside UI Primitives",
+    "warning",
+    findings,
+    [
+      ["tsxScanned", scanned],
+      ["violations", findings.length],
+    ],
+    notes,
+  );
+}
+
+function checkPermissionGates(ctx: ScanContext): CheckOutcome {
+  const findings: Finding[] = [];
+  const notes: string[] = [];
+  let adminRoutes = 0;
+  let gated = 0;
+
+  if (ctx.routerContent === null) {
+    findings.push({
+      file: "app/router.tsx",
+      line: 0,
+      message: "router.tsx not found — PermissionGate coverage cannot be verified",
+      severity: "warning",
+    });
+    return outcome("permission-gates", "5. PermissionGate on Admin Routes", "warning", findings, [["adminRoutes", 0]], notes);
+  }
+
+  const lines = ctx.routerContent.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const pathMatch = lines[i]!.match(/path:\s*["']([^"']+)["']/);
+    if (!pathMatch) continue;
+    const route = pathMatch[1]!;
+    if (route !== "admin" && !route.startsWith("admin/")) continue;
+    adminRoutes++;
+
+    // VI-09: window bounded by the NEXT route declaration (not a fixed 10 lines).
+    let hasGate = false;
+    for (let j = i; j < Math.min(i + 80, lines.length); j++) {
+      if (j > i && /path:\s*["']/.test(lines[j]!)) break;
+      if (GATE_IDENTIFIERS.some((g) => lines[j]!.includes(g))) {
+        hasGate = true;
+        break;
+      }
+    }
+    if (hasGate) gated++;
+    else {
+      findings.push({
+        file: "app/router.tsx",
+        line: i + 1,
+        message: `/${route} — no PermissionGate (looked for: ${GATE_IDENTIFIERS.join(", ")})`,
+      });
+    }
+  }
+
+  return outcome(
+    "permission-gates",
+    "5. PermissionGate on Admin Routes",
+    "warning",
+    findings,
+    [
+      ["adminRoutes", adminRoutes],
+      ["gated", gated],
+      ["ungated", adminRoutes - gated],
+    ],
+    notes,
+  );
+}
+
+function checkBackendTools(ctx: ScanContext): CheckOutcome {
+  const findings: Finding[] = [];
+  const notes: string[] = [];
+  const degraded = !ctx.backendScanned || ctx.backendTools.size === 0;
+
+  if (!ctx.backendScanned) {
+    notes.push(`Backend source not found at ${relFrom(ctx.root, ctx.backendSrc)} — backend coverage is unknown.`);
+  } else if (ctx.backendTools.size === 0) {
+    notes.push(
+      "Backend scanned but no tool registrations detected (@…tool decorators, add_tool/register_tool, Tool(name=…)). " +
+        "If the backend uses another convention, this check degrades to advisory — extend extractBackendToolNames.",
+    );
+  }
+  notes.push("Extraction is registration-based: @<server>.tool / @tool over def (incl. name=), .add_tool(...), Tool(name=…).");
+
+  const missingBoth = new Map<string, McpQueryRef>();
+  const mockOnly = new Map<string, McpQueryRef>();
+  for (const q of ctx.mcpQueries) {
+    const key = `${q.server}::${q.tool}`;
+    const inMock = ctx.registryKeys.has(key);
+    const inBackend = ctx.backendTools.has(q.tool) || ctx.backendTools.has(`${q.server}.${q.tool}`); // VI-13: FastMCP compound key
+    if (!inMock && !inBackend) missingBoth.set(key, q);
+    else if (inMock && !inBackend && !degraded) mockOnly.set(key, q);
+  }
+
+  for (const q of missingBoth.values()) {
+    findings.push({
+      file: q.file,
+      line: q.line,
+      message: degraded
+        ? `${q.server}.${q.tool} not in mock registry and backend detection is degraded — verify manually`
+        : `${q.server}.${q.tool} exists neither in the mock registry nor in the backend`,
+      severity: degraded ? "info" : "warning",
+    });
+  }
+  for (const q of mockOnly.values()) {
+    findings.push({
+      file: q.file,
+      line: q.line,
+      message: `${q.server}.${q.tool} is mock-only (backend implementation pending)`,
+      severity: "info",
+    });
+  }
+
+  return outcome(
+    "backend-tools",
+    "6. Tools Missing from Mock AND Backend",
+    degraded ? "info" : "warning",
+    findings,
+    [
+      ["refs", ctx.mcpQueries.length],
+      ["backendTools", ctx.backendTools.size],
+      ["compoundKeys", [...ctx.backendTools].filter((n) => n.includes(".")).length],
+      ["missingBoth", missingBoth.size],
+      ["mockOnly", mockOnly.size],
+    ],
+    notes,
+  );
+}
+
+/** VI-10: compare routes after normalization (whitespace, slashes). */
+function normalizeRoute(route: string): string {
+  return route.trim().replace(/^\/+/, "").replace(/\/+$/, "").replace(/\/{2,}/g, "/");
+}
+
+function checkDuplicateRoutes(ctx: ScanContext): CheckOutcome {
+  const findings: Finding[] = [];
+  const notes: string[] = ["Routes are compared after normalization (leading/trailing slash, //, whitespace). Case is NOT folded."];
+  const map = new Map<string, { raw: string; lines: number[] }>();
+  let declared = 0;
+
+  if (ctx.routerContent !== null) {
+    const lines = ctx.routerContent.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const pathMatch = lines[i]!.match(/path:\s*["']([^"']+)["']/);
+      if (!pathMatch) continue;
+      declared++;
+      const raw = pathMatch[1]!;
+      const key = normalizeRoute(raw);
+      const entry = map.get(key) ?? { raw, lines: [] };
+      entry.lines.push(i + 1);
+      map.set(key, entry);
+    }
+  } else {
+    findings.push({
+      file: "app/router.tsx",
+      line: 0,
+      message: "router.tsx not found — duplicate detection skipped",
+      severity: "warning",
+    });
+  }
+
+  for (const entry of map.values()) {
+    if (entry.lines.length > 1) {
+      findings.push({
+        file: "app/router.tsx",
+        line: entry.lines[0]!,
+        message: `Duplicate route "${entry.raw}" at lines ${entry.lines.join(", ")}`,
+      });
+    }
+  }
+
+  return outcome(
+    "duplicate-routes",
+    "7. Duplicate Routes",
+    "error",
+    findings,
+    [
+      ["declared", declared],
+      ["unique", map.size],
+      ["duplicates", findings.length],
+    ],
+    notes,
+  );
+}
+
+function checkOrphanMocks(ctx: ScanContext): CheckOutcome {
+  const findings: Finding[] = [];
+  const notes: string[] = [
+    "Heuristic (VI-12): references counted from useMCPQuery + useMCPMutation + callMCPTool + adjacent {server, tool} data pairs — direct registry calls are still not tracked.",
+  ];
+
+  if (!ctx.registryFound) {
+    notes.push("mock-registry.ts not found — nothing to check.");
+    return outcome("orphan-mocks", "8. Orphan Mock Entries", "info", findings, [["registryKeys", 0]], notes);
+  }
+
+  const usedKeys = new Set(
+    ctx.mcpQueries
+      .concat(ctx.extraToolRefs)
+      .map((q) => `${q.server}::${q.tool}`),
+  );
+  const orphansByServer = new Map<string, string[]>();
+  let orphanCount = 0;
+  for (const key of ctx.registryKeys) {
+    if (usedKeys.has(key)) continue;
+    const [server, tool] = key.split("::");
+    const list = orphansByServer.get(server!) ?? [];
+    list.push(tool!);
+    orphansByServer.set(server!, list);
+    orphanCount++;
+  }
+
+  for (const [server, tools] of orphansByServer) {
+    findings.push({
+      file: "shared/mocks/mock-registry.ts",
+      line: 1,
+      message: `${server}: ${tools.length} unused mock(s) — ${tools.join(", ")}`,
+      severity: "info",
+    });
+  }
+
+  return outcome(
+    "orphan-mocks",
+    "8. Orphan Mock Entries",
+    "info",
+    findings,
+    [
+      ["registryKeys", ctx.registryKeys.size],
+      ["referenced", ctx.registryKeys.size - orphanCount],
+      ["orphanTools", orphanCount],
+      ["extraRefs", ctx.extraToolRefs.length],
+    ],
+    notes,
+  );
+}
+
+const CHECKS: ReadonlyArray<{ id: string; num: string; title: string; run: (ctx: ScanContext) => CheckOutcome }> = [
+  { id: "router-imports", num: "1", title: "1. Router Lazy Imports", run: checkRouterImports },
+  { id: "mcp-coverage", num: "2", title: "2. useMCPQuery — Mock Registry Coverage", run: checkMcpCoverage },
+  { id: "phantom-tokens", num: "3", title: "3. Phantom CSS Tokens", run: checkPhantomTokens },
+  { id: "raw-buttons", num: "4", title: "4. Raw <button> Outside UI Primitives", run: checkRawButtons },
+  { id: "permission-gates", num: "5", title: "5. PermissionGate on Admin Routes", run: checkPermissionGates },
+  { id: "backend-tools", num: "6", title: "6. Tools Missing from Mock AND Backend", run: checkBackendTools },
+  { id: "duplicate-routes", num: "7", title: "7. Duplicate Routes", run: checkDuplicateRoutes },
+  { id: "orphan-mocks", num: "8", title: "8. Orphan Mock Entries", run: checkOrphanMocks },
+];
+
+const HELP = [
+  `verify-integration v${TOOL_VERSION} — Castillo AI Platform`,
+  "",
+  "Usage: npx tsx scripts/verify-integration.ts [options]",
+  "",
+  "Options:",
+  "  --json          machine-readable report (CI); suppresses the console report",
+  "  --quiet, -q     summary + verdict only",
+  "  --no-color      disable ANSI colors (auto when piped or NO_COLOR is set)",
+  "  --root <path>   project root (default: script dir -> cwd, walking up until frontend/src)",
+  "  --check <list>  run a subset, comma-separated, by number or slug:",
+  ...CHECKS.map((c) => `                    ${c.num} ${c.id}`),
+  "  --help, -h      show this help",
+  "",
+  "Exit codes: 0 all clear · 1 errors · 2 warnings only · 3 usage/internal error",
+].join("\n");
+
+// ═══════════════════════════════════════════════════ reporting ════════════
+
+interface Colors {
+  reset: string;
+  red: string;
+  green: string;
+  yellow: string;
+  cyan: string;
+  dim: string;
+  bold: string;
+}
+
+function makeColors(enabled: boolean): Colors {
+  return enabled
+    ? {
+        reset: "\x1b[0m",
+        red: "\x1b[31m",
+        green: "\x1b[32m",
+        yellow: "\x1b[33m",
+        cyan: "\x1b[36m",
+        dim: "\x1b[2m",
+        bold: "\x1b[1m",
+      }
+    : { reset: "", red: "", green: "", yellow: "", cyan: "", dim: "", bold: "" };
+}
+
+function visibleLen(s: string): number {
+  return s.replace(/\x1b\[[0-9;]*m/g, "").length;
+}
+
+function padEndVisible(s: string, width: number): string {
+  return s + " ".repeat(Math.max(0, width - visibleLen(s)));
+}
+
+function printBox(lines: string[], c: Colors): void {
+  const inner = Math.max(20, ...lines.map(visibleLen));
+  const bar = "═".repeat(inner + 2);
+  console.log(`${c.bold}╔${bar}╗${c.reset}`);
+  for (const line of lines) {
+    console.log(`${c.bold}║${c.reset} ${padEndVisible(line, inner)} ${c.bold}║${c.reset}`);
+  }
+  console.log(`${c.bold}╚${bar}╝${c.reset}`);
+}
+
+function severityMark(sev: Severity, c: Colors): string {
+  return sev === "error" ? `${c.red}✗${c.reset}` : sev === "warning" ? `${c.yellow}⚠${c.reset}` : `${c.cyan}ℹ${c.reset}`;
+}
+
+function printOutcome(o: CheckOutcome, c: Colors): void {
+  console.log(`\n${c.bold}${c.cyan}━━━ ${o.title} ━━━${c.reset}`);
+  for (const n of o.notes) console.log(`  ${c.dim}note: ${n}${c.reset}`);
+  const shown = o.findings.slice(0, MAX_DISPLAYED_FINDINGS);
+  for (const f of shown) {
+    const sev = f.severity ?? o.severity;
+    const loc = f.line > 0 ? `${f.file}:${f.line}` : f.file;
+    console.log(`  ${severityMark(sev, c)} ${c.bold}${loc}${c.reset} ${c.dim}—${c.reset} ${f.message}`);
+    if (f.snippet) console.log(`        ${c.dim}${f.snippet}${c.reset}`);
+  }
+  if (o.findings.length > shown.length) {
+    console.log(`  ${c.dim}… +${o.findings.length - shown.length} more (see --json for the full list)${c.reset}`);
+  }
+  if (o.findings.length === 0) console.log(`  ${c.green}✓${c.reset} ${c.dim}no findings${c.reset}`);
+  if (o.stats.length > 0) console.log(`  ${c.dim}${o.stats.map(([k, v]) => `${k}=${v}`).join(" · ")}${c.reset}`);
+}
+
+function coloredCount(n: number, color: string, c: Colors): string {
+  return n > 0 ? `${color}${c.bold}${n}${c.reset}` : `${c.dim}0${c.reset}`;
+}
+
+function printConsoleReport(
+  ctx: ScanContext,
+  outcomes: CheckOutcome[],
+  totals: Totals,
+  opts: CliOptions,
+  c: Colors,
+  durationMs: number,
+  exitCode: number,
+): void {
+  printBox(
+    [
+      `${c.bold}Castillo AI Platform — Integration Verifier v${TOOL_VERSION}${c.reset}`,
+      `${c.dim}${new Date().toISOString()} · root: ${ctx.root}${c.reset}`,
+    ],
+    c,
+  );
+
+  if (!opts.quiet) for (const o of outcomes) printOutcome(o, c);
+
+  const rows: string[] = [];
+  for (const o of outcomes) {
+    const t = countTotals([o]);
+    const status =
+      t.errors > 0 ? `${c.red}${t.errors} error(s)${c.reset}`
+      : t.warnings > 0 ? `${c.yellow}${t.warnings} warning(s)${c.reset}`
+      : t.info > 0 ? `${c.cyan}${t.info} info${c.reset}`
+      : `${c.green}clean${c.reset}`;
+    rows.push(`${o.title} ${c.dim}—${c.reset} ${status}`);
+  }
+  rows.push("");
+  rows.push(
+    `${c.bold}Errors:${c.reset} ${coloredCount(totals.errors, c.red, c)}  ` +
+      `${c.bold}Warnings:${c.reset} ${coloredCount(totals.warnings, c.yellow, c)}  ` +
+      `${c.bold}Info:${c.reset} ${coloredCount(totals.info, c.cyan, c)}`,
+  );
+  rows.push("");
+  rows.push(`${c.dim}${ctx.tsFiles.length} ts/tsx · ${ctx.cssFiles.length} css · ${ctx.pyFiles.length} py scanned in ${durationMs}ms${c.reset}`);
+  printBox(rows, c);
+
+  if (exitCode === 1) {
+    console.log(`\n${c.red}${c.bold}RESULT: FAIL — ${totals.errors} error(s) must be fixed. (exit 1)${c.reset}`);
+  } else if (exitCode === 2) {
+    console.log(`\n${c.yellow}${c.bold}RESULT: PASS with warnings — ${totals.warnings} advisory issue(s). (exit 2)${c.reset}`);
+  } else {
+    console.log(`\n${c.green}${c.bold}RESULT: ALL CLEAR. (exit 0)${c.reset}`);
+  }
+}
+
+function buildJsonReport(
+  ctx: ScanContext,
+  outcomes: CheckOutcome[],
+  totals: Totals,
+  durationMs: number,
+  exitCode: number,
+): object {
+  return {
+    tool: "verify-integration",
+    version: TOOL_VERSION,
+    generatedAt: new Date().toISOString(),
+    root: ctx.root,
+    scanned: {
+      tsTsFiles: ctx.tsFiles.length,
+      cssFiles: ctx.cssFiles.length,
+      pyFiles: ctx.pyFiles.length,
+      backendDetected: ctx.backendScanned,
+      backendTools: ctx.backendTools.size,
+      mockRegistryFound: ctx.registryFound,
+      routerFound: ctx.routerContent !== null,
+      tokenSource: ctx.tokenSource,
+    },
+    durationMs,
+    totals,
+    result: exitCode === 0 ? "all-clear" : exitCode === 1 ? "fail" : "pass-with-warnings",
+    exitCode,
+    checks: outcomes.map((o) => ({
+      id: o.id,
+      title: o.title,
+      severity: o.severity,
+      findingCount: o.findings.length,
+      findings: o.findings.map((f) => ({
+        severity: f.severity ?? o.severity,
+        file: f.file,
+        line: f.line,
+        message: f.message,
+      })),
+      stats: Object.fromEntries(o.stats),
+      notes: o.notes,
+    })),
+  };
+}
+
+// ═════════════════════════════════════════════════════ main ══════════════
+
+function countTotals(outcomes: CheckOutcome[]): Totals {
+  let errors = 0;
+  let warnings = 0;
+  let info = 0;
+  for (const o of outcomes) {
+    for (const f of o.findings) {
+      const sev = f.severity ?? o.severity;
+      if (sev === "error") errors++;
+      else if (sev === "warning") warnings++;
+      else info++;
+    }
+  }
+  return { errors, warnings, info };
+}
+
+function main(): void {
+  const startedAt = Date.now();
+  const opts = parseArgs(process.argv.slice(2));
+
+  if (opts.help) {
+    console.log(HELP);
+    return;
+  }
+
+  const root = resolveProjectRoot(opts.root);
+  if (!isDir(path.join(root, "frontend", "src"))) {
+    console.error(`verify-integration: frontend/src not found under "${root}".`);
+    console.error("Run from the project root or pass --root <path> (see --help).");
+    process.exitCode = 3;
+    return;
+  }
+
+  const ctx = buildContext(root);
+  const outcomes = CHECKS.filter((c) => opts.checks.includes(c.id)).map((c) => c.run(ctx));
+  const totals = countTotals(outcomes);
+  const exitCode = totals.errors > 0 ? 1 : totals.warnings > 0 ? 2 : 0;
+  const durationMs = Date.now() - startedAt;
+
+  if (opts.json) {
+    console.log(JSON.stringify(buildJsonReport(ctx, outcomes, totals, durationMs, exitCode), null, 2));
+  } else {
+    const colorEnabled = !opts.noColor && process.stdout.isTTY === true && !process.env.NO_COLOR;
+    printConsoleReport(ctx, outcomes, totals, opts, makeColors(colorEnabled), durationMs, exitCode);
+  }
+
+  // exitCode (not process.exit) so piped stdout fully flushes in CI.
+  process.exitCode = exitCode;
+}
+
+try {
+  main();
+} catch (err) {
+  if (err instanceof UsageError) {
+    console.error(`verify-integration: ${err.message}`);
+    console.error("Run with --help for usage.");
+    process.exitCode = 3;
+  } else {
+    console.error(
+      `verify-integration: internal error — ${err instanceof Error ? err.stack ?? err.message : String(err)}`,
+    );
+    process.exitCode = 3;
+  }
+}

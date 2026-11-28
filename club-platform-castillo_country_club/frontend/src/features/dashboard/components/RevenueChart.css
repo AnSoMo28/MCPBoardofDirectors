@@ -1,0 +1,77 @@
+/**
+ * @component RevenueChart
+ * @namespace .revenue-chart
+ * @archetype chart · domain gold
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados revenue-chart-*.
+ */
+.revenue-chart {
+  position: relative;
+}
+
+/* Draw-in: las barras/series crecen desde la base al montar */
+.revenue-chart__bar, .revenue-chart__series {
+  animation: revenue-chart-grow 0.7s var(--ease-apple) 1 backwards;
+}
+
+.revenue-chart__bar:nth-child(2n), .revenue-chart__series:nth-child(2n) { animation-delay: 0.07s; }
+.revenue-chart__bar:nth-child(3n), .revenue-chart__series:nth-child(3n) { animation-delay: 0.13s; }
+.revenue-chart__bar:nth-child(5n), .revenue-chart__series:nth-child(5n) { animation-delay: 0.19s; }
+
+@keyframes revenue-chart-grow {
+  from { transform: scaleY(0.02); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.revenue-chart__bar, .revenue-chart__series {
+  transform-origin: bottom;
+}
+
+/* Hover de dato: la barra respira y levita */
+.revenue-chart__bar:hover, .revenue-chart__series:hover {
+  animation: revenue-chart-hover-float 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--color-gold-400) 18.8%, transparent));
+}
+
+@keyframes revenue-chart-hover-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Grid de fondo: cruces tenues que aparecen al hover del chart */
+.revenue-chart::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-gold-400) 3.9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-gold-400) 3.9%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-apple);
+  pointer-events: none;
+}
+
+.revenue-chart:hover::before {
+  opacity: 1;
+}
+
+/* Tooltip-ancla: aro del dominio */
+.revenue-chart__datum:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.light .revenue-chart::before {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-gold-700) 4.7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-gold-700) 4.7%, transparent) 1px, transparent 1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revenue-chart__bar, .revenue-chart__series, .revenue-chart__bar:hover, .revenue-chart__series:hover { animation: none; filter: none; }
+  .revenue-chart::before { transition: none; }
+}

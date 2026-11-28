@@ -15,6 +15,7 @@ import { useAdvisorBanner } from "@/shared/hooks/useAdvisorBanner";
 import { InsightCard } from "./InsightCard";
 import type { CausalChain } from "@/shared/lib/advisor-engine/types";
 import "./AdvisorBanner.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Types (re-exported for consumers)
@@ -223,7 +224,8 @@ export function AdvisorBanner<T extends BaseInsight>({
       {/* ── Footer ── */}
       {banner.hiddenCount > 0 && (
         <div className="glass-advisor__footer">
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-advisor__footer-btn"
             onClick={banner.toggleBanner}
@@ -239,7 +241,7 @@ export function AdvisorBanner<T extends BaseInsight>({
                 Ver {banner.hiddenCount} más
               </>
             )}
-          </button>
+          </Button>
         </div>
       )}
     </div>

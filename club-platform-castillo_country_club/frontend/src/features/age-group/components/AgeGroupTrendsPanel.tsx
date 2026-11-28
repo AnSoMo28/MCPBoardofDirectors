@@ -42,6 +42,7 @@ import {
 import type { AgeBracketId } from "../types";
 
 import "./AgeGroupTrendsPanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ── §0  Local Types ──────────────────────────────────────── */
 
@@ -578,7 +579,8 @@ export function AgeGroupTrendsPanel({
               hoveredSeries !== null && hoveredSeries !== si;
 
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={id}
                 className="ag-trends__legend-item"
                 data-active={isHovered || undefined}
@@ -602,7 +604,7 @@ export function AgeGroupTrendsPanel({
                 <TrendArrow
                   direction={legendTrends[si]?.trend ?? "stable"}
                 />
-              </button>
+              </Button>
             );
           })}
         </div>

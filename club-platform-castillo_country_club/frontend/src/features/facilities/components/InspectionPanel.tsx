@@ -40,6 +40,7 @@ import type {
 } from "../types";
 
 import "./InspectionPanel.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // CONSTANTS
@@ -255,7 +256,8 @@ function InspectionCard({
 
       {/* Expand toggle */}
       {(hasIssues || hasFindings) && (
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fac-insp__toggle"
           onClick={handleToggle}
@@ -272,7 +274,7 @@ function InspectionCard({
               Ver detalles
             </>
           )}
-        </button>
+        </Button>
       )}
     </article>
   );

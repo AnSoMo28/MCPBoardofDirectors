@@ -12,6 +12,9 @@
  * LINEAGE: repo v2.1 (data-rich) ⊕ AI-gen v1.0 (schema/canon-mapped)
  *          → v3.0.0 FUSION → v3.1.0 RECONCILIATION → v3.2.0 BC-02 APPLIED
  *          → v3.3.0 PAQUETE 1 AUDITED (REQUEST 1 §13 · EventCalendar unlock)
+ *          → v3.4.0 G8 BACKEND REGISTRY (absorción P2-C3 · gate B0 VERDE)
+ *          → v3.5.0 M-01-T1 REGISTRY (G10 · 7 módulos alto uso · J-09 507→180)
+ *          → v3.8.0 G9 BACKEND RE-SYNC (207 tools @ 504b53d · verifyBuildCss)
  *          (see §14-§15 AUDIT LEDGERS).
  *
  * v3.1.0 reconciles this file against the tool that enforces it:
@@ -56,6 +59,7 @@
  * §5  Rule registry                §12 Version sync
  * §6  Breaking changes             §13 Helpers (computed stats + coverage)
  * §7  Feature domain map           §14-§15 Audit ledgers
+ * §16 Backend registry (G8)        (new — club_mcp MCP server state)
  *
  * ID POLICY (critical — fixes RC-1/AC-X01):
  *   - A check that matches a canon CHECKLIST ID 1:1 REUSES that ID
@@ -191,8 +195,8 @@ export interface PlannedTokenMeta {
 
 /* ═══════════════════ §2  DESIGN TOKENS ═══════════════════ */
 
-export const MANIFEST_VERSION = "3.3.0";
-export const MANIFEST_DATE = "2026-10-24";
+export const MANIFEST_VERSION = "3.7.0";
+export const MANIFEST_DATE = "2026-11-10";
 
 export const TOKENS = {
   colors: {
@@ -934,11 +938,16 @@ export const AUDITED_REGISTRY: readonly AuditedEntry[] = [
     notes: "Layer 0 token implementation [CHECKPOINT §1.1]" },
 
   // ── Reverify-on-use (FASE 1 migrated — Checklist J note, CHECKPOINT §12) ──
-  { path: "shared/components/ui", status: "reverify-on-use", phase: "FASE 1", score: 9.3,
+  // M-01-T3 (G14): Button/EmptyState promovidos con evidencia sandbox; barrel
+  // ui gobierna por regla 4 (exact) — flip sincronizado para limpiar 91 J-07.
+  { path: "shared/components/ui", status: "audited", phase: "M-01-T3", score: 9.3,
     notes: "BARREL — child status wins on resolution" },
-  { path: "shared/components/ui/Button", status: "reverify-on-use", phase: "FASE 1", score: 9.3 },
-  { path: "shared/components/ui/EmptyState", status: "reverify-on-use", phase: "FASE 1", score: 9.3 },
-  { path: "shared/components/ui/AdvisorActionModal", status: "reverify-on-use", phase: "FASE 1", score: 9.2 },
+  { path: "shared/components/ui/Button", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "168 LOC · 4 exports · 57 consumidores · guardian scoped 0e/1w (única: C-09 L119) · tsc repo-wide green" },
+  { path: "shared/components/ui/EmptyState", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "97 LOC · 2 exports · 87 consumidores · guardian scoped 0e/0w · tsc repo-wide green" },
+  { path: "shared/components/ui/AdvisorActionModal", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "488 LOC · 2 exports · 3 consumidores · guardian scoped 0e/0w (tras AG-30: su único error era FP X-28 en setInterval) · tsc repo-wide green · css sidecar 31e X-13 (deuda documentada)" },
 
   // ── REQUEST 1 · Paquete 1 — AUDITED G9 (7 files · EventCalendar UNLOCKED) ──
   { path: "shared/components/ui/ScoreGauge", status: "audited", phase: "G9", score: 9.4,
@@ -956,6 +965,24 @@ export const AUDITED_REGISTRY: readonly AuditedEntry[] = [
   { path: "shared/components/auth/PermissionGate", status: "audited", phase: "G9", score: 9.3,
     notes: "EventCalendar unlocked (§13 #7) — G9-17..G9-20 fixed; legacy denied CSS preserved (§9 of its css)" },
 
+  // ── M-01 TRANCHE 1 · G10 — módulos de alto uso (7 · 327 instancias J-09) ──
+  // Auditoría de evidencia (g10): exports vs símbolos importados, guardian
+  // propio del archivo, tsc repo-wide green. Nada registrado sin evidencia.
+  { path: "shared/hooks/useReducedMotion", status: "audited", phase: "M-01-T1", score: 9.5,
+    notes: "30 LOC · 1 export · 123 consumidores resuelven · guardian propio 0/0" },
+  { path: "shared/components/ui/Badge", status: "audited", phase: "M-01-T1", score: 9.4,
+    notes: "106 LOC · 4 exports (Badge/BadgeProps/BadgeSize/BadgeVariant) · 39 consumidores · guardian 0/0" },
+  { path: "shared/components/ui/Toast", status: "audited", phase: "M-01-T1", score: 9.4,
+    notes: "302 LOC · 6 exports (ToastContainer + API imperativa showToast) · 30 consumidores · guardian 0/0" },
+  { path: "shared/components/ui/Card", status: "audited", phase: "M-01-T1", score: 9.4,
+    notes: "274 LOC · 10 exports (familia Card*) · 20 consumidores · guardian 0/0" },
+  { path: "shared/lib/chartTheme", status: "audited", phase: "M-01-T1", score: 9.0,
+    notes: "61 LOC · 5 exports · 21 consumidores · 12 X-23 preexistente (Recharts exige hex): 9/12 map 1:1 a tokens VERIFIED; terracotta #D47A5A, sage #5B8A6A, tooltipBg #1C2230 sin token counterpart (claim drift del header — tokenización pendiente)" },
+  { path: "shared/components/AdvisorBanner", status: "reverify-on-use", phase: "M-01-T1", score: 8.8,
+    notes: "247 LOC · 4 exports · 24 consumidores tsc-green · 29 warns propios (C-19/X-22/X-25/X-27) — re-auditar al reescribir" },
+  { path: "shared/mocks/contracts", status: "reverify-on-use", phase: "M-01-T1", score: 8.6,
+    notes: "7257 LOC · 549 exports · 60 consumidores tsc-green · deuda estilo: 2409 X-22 (readonly) + 1 X-28 (Inter L2480) · deep audit = M-01-T2" },
+
   // ── Calibration material (REQUEST 3 — not blockers) ──
   { path: "shared/lib/advisor-engine/confidence", status: "config", phase: "REQUEST 3",
     notes: "calibración de checks heurísticos D/G" },
@@ -970,6 +997,145 @@ export const AUDITED_REGISTRY: readonly AuditedEntry[] = [
     notes: "Pilar 3 template — operator-confirmed route" },
   { path: "shared/components/ui/index", status: "config", phase: "ESQUEMA",
     notes: "barrel — H-04 sync check" },
+  // ── M-01-T2 (G12): 67 módulos J-09 restantes · 12 audited + 55 reverify-on-use · J-09 180→0 ──
+  // ── M-01-T3 (G14, sandbox): 21 T2 + AdvisorActionModal promovidos con evidencia
+  //    (archivo del módulo 0 errores guardian 4.1.3 + tsc repo-wide green); bar =
+  //    archivo ts/tsx del módulo, deuda de css sidecar documentada en notas
+  //    (precedente G10: Card.css 10e con Card audited). J-07 490→187. ──
+  { path: "shared/components/ai/AIBoardBriefViewer", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "564 LOC · 1 export · 1 consumidor · guardian scoped 12e/8w" },
+  { path: "shared/components/ai/AIDecisionPanel", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "961 LOC · 2 exports · 1 consumidor · guardian scoped 16e/6w" },
+  { path: "shared/components/ai/AIInsightNarrative", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "518 LOC · 2 exports · 3 consumidores · guardian scoped 12e/7w" },
+  { path: "shared/components/ai/AISimulationPanel", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "665 LOC · 1 export · 1 consumidor · guardian scoped 8e/5w" },
+  { path: "shared/components/ai/CausalChainViz", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "508 LOC · 1 export · 2 consumidores · guardian scoped 6e/6w" },
+  { path: "shared/components/ai/CommandInterface", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "783 LOC · 1 export · 1 consumidor · guardian scoped 34e/5w" },
+  { path: "shared/components/ai/NLRuleAuthor", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "703 LOC · 1 export · 1 consumidor · guardian scoped 26e/5w" },
+  { path: "shared/components/ai/ScenarioBuilder", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "859 LOC · 1 export · 1 consumidor · guardian scoped 59e/9w" },
+  { path: "shared/components/ai/SystemHealthDashboard", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "1617 LOC · 1 export · 1 consumidor · guardian scoped 134e/6w" },
+  { path: "shared/components/chat/AIChatWidget", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "391 LOC · 1 export · 1 consumidor · guardian scoped 11e/3w" },
+  { path: "shared/components/error/ErrorBoundary", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "133 LOC · 1 export · 2 consumidores · guardian scoped 17e/9w" },
+  { path: "shared/components/error/NotFoundPage", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "51 LOC · 1 export · 1 consumidor · guardian scoped 16e/2w" },
+  { path: "shared/components/export/DecisionDocument", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "272 LOC · 2 exports · 1 consumidor · guardian scoped 4e/3w" },
+  { path: "shared/components/export/ExportButton", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "270 LOC · 2 exports · 10 consumidores · guardian scoped 2e/7w" },
+  { path: "shared/components/export/PrintLayout", status: "audited", phase: "M-01-T3", score: 9.2,
+    notes: "100 LOC · 1 export · 1 consumidor · guardian scoped 0e/12w · tsc repo-wide green" },
+  { path: "shared/components/export/PrintView", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "201 LOC · 2 exports · 1 consumidor · guardian scoped 3e/4w" },
+  { path: "shared/components/feedback/Placeholder", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "29 LOC · 1 export · 1 consumidor · guardian scoped 8e/6w" },
+  { path: "shared/components/layout/DashboardLayout", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "237 LOC · 1 export · 1 consumidor · guardian scoped 8e/3w" },
+  { path: "shared/components/layout/DetailTabs", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "221 LOC · 4 exports · 11 consumidores · guardian scoped 0e/1w · tsc repo-wide green · css sidecar 5e X-13 (deuda documentada)" },
+  { path: "shared/components/layout/MarbleCanvas", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "155 LOC · 1 export · 1 consumidor · guardian scoped 14e/6w" },
+  { path: "shared/components/layout/SectionError", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "63 LOC · 1 export · 17 consumidores · guardian scoped 2e/7w" },
+  { path: "shared/components/layout/SignalBusDebugPanel", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "353 LOC · 1 export · 1 consumidor · guardian scoped 5e/3w" },
+  { path: "shared/components/layout/StatCard", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "169 LOC · 1 export · 4 consumidores · guardian scoped 10e/11w" },
+  { path: "shared/components/ml/MLDashboardPage", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "363 LOC · 1 export · 1 consumidor · guardian scoped 10e/2w" },
+  { path: "shared/components/ml/PredictiveIntelligenceFeed", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "566 LOC · 1 export · 1 consumidor · guardian scoped 87e/8w" },
+  { path: "shared/components/ui/AdvisorReactionCard", status: "audited", phase: "M-01-T2", score: 9.4,
+    notes: "316 LOC · 2 exports · 5 consumidores · guardian scoped 0/0" },
+  { path: "shared/components/ui/FilterDropdown", status: "audited", phase: "M-01-T2", score: 9.4,
+    notes: "392 LOC · 3 exports · 5 consumidores · guardian scoped 0/0" },
+  { path: "shared/components/ui/FormField", status: "audited", phase: "M-01-T2", score: 9.4,
+    notes: "113 LOC · 4 exports · 6 consumidores · guardian scoped 0/0" },
+  { path: "shared/components/ui/Input", status: "audited", phase: "M-01-T2", score: 9.4,
+    notes: "220 LOC · 2 exports · 6 consumidores · guardian scoped 0/0" },
+  { path: "shared/components/ui/Modal", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "223 LOC · 2 exports · 1 consumidor · guardian scoped 0e/1w · tsc repo-wide green" },
+  { path: "shared/components/ui/TrendIcon", status: "audited", phase: "M-01-T2", score: 9.5,
+    notes: "85 LOC · 3 exports · 1 consumidor · guardian scoped 0/0" },
+  { path: "shared/components/ui/WizardStepper", status: "audited", phase: "M-01-T2", score: 9.4,
+    notes: "157 LOC · 3 exports · 3 consumidores · guardian scoped 0/0" },
+  { path: "shared/hooks/useAdvisorNarrative", status: "audited", phase: "M-01-T3", score: 9.2,
+    notes: "117 LOC · 2 exports · 2 consumidores · guardian scoped 0e/8w · tsc repo-wide green" },
+  { path: "shared/hooks/useBackendHealth", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "43 LOC · 2 exports · 4 consumidores · guardian scoped 2e/0w" },
+  { path: "shared/hooks/useCommandInterface", status: "audited", phase: "M-01-T3", score: 9.2,
+    notes: "385 LOC · 1 export · 1 consumidor · guardian scoped 0e/9w · tsc repo-wide green" },
+  { path: "shared/hooks/useDataFreshness", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "78 LOC · 1 export · 3 consumidores · guardian scoped 1e/8w" },
+  { path: "shared/hooks/usePermissionContext", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "203 LOC · 4 exports · 1 consumidor · guardian scoped 0e/2w · tsc repo-wide green" },
+  { path: "shared/hooks/usePulseVitals", status: "audited", phase: "M-01-T3", score: 9.0,
+    notes: "446 LOC · 4 exports · 2 consumidores · guardian scoped 0e/42w (mayoría C-13/C-15 estilo) · tsc repo-wide green" },
+  { path: "shared/hooks/useRipple", status: "audited", phase: "M-01-T2", score: 9.5,
+    notes: "64 LOC · 1 export · 1 consumidor · guardian scoped 0/0" },
+  { path: "shared/hooks/useSystemEvolution", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "409 LOC · 1 export · 1 consumidor · guardian scoped 1e/14w" },
+  { path: "shared/hooks/useWebVitals", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "166 LOC · 1 export · 1 consumidor · guardian scoped 0e/3w · tsc repo-wide green" },
+  { path: "shared/lib/adaptiveThresholds", status: "audited", phase: "M-01-T3", score: 9.2,
+    notes: "280 LOC · 9 exports · 1 consumidor · guardian scoped 0e/12w · tsc repo-wide green" },
+  { path: "shared/lib/advisor-engine/calibration-storage", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "227 LOC · 8 exports · 1 consumidor · guardian scoped 2e/5w" },
+  { path: "shared/lib/advisor-engine/rule-registry", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "350 LOC · 6 exports · 1 consumidor · guardian scoped 2e/4w" },
+  { path: "shared/lib/advisor-engine/rules/age-group", status: "audited", phase: "M-01-T3", score: 9.0,
+    notes: "948 LOC · 4 exports · 2 consumidores · guardian scoped 0e/31w · tsc repo-wide green" },
+  { path: "shared/lib/advisor-engine/rules/communication", status: "audited", phase: "M-01-T3", score: 9.0,
+    notes: "494 LOC · 4 exports · 2 consumidores · guardian scoped 0e/19w · tsc repo-wide green" },
+  { path: "shared/lib/advisor-engine/rules/family", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "1323 LOC · 15 exports · 2 consumidores · guardian scoped 1e/0w" },
+  { path: "shared/lib/advisor-engine/rules/financial", status: "audited", phase: "M-01-T3", score: 9.0,
+    notes: "820 LOC · 4 exports · 1 consumidor · guardian scoped 0e/49w · tsc repo-wide green" },
+  { path: "shared/lib/advisor-engine/rules/global", status: "audited", phase: "M-01-T3", score: 9.0,
+    notes: "1498 LOC · 4 exports · 2 consumidores · guardian scoped 0e/17w · tsc repo-wide green" },
+  { path: "shared/lib/advisor-engine/rules/guest", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "1212 LOC · 5 exports · 3 consumidores · guardian scoped 1e/39w" },
+  { path: "shared/lib/advisor-engine/rules/recommendation", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "447 LOC · 4 exports · 2 consumidores · guardian scoped 1e/18w" },
+  { path: "shared/lib/advisor-engine/rules/satisfaction", status: "audited", phase: "M-01-T3", score: 9.0,
+    notes: "659 LOC · 4 exports · 2 consumidores · guardian scoped 0e/29w · tsc repo-wide green" },
+  { path: "shared/lib/advisor-engine/rules/sports", status: "audited", phase: "M-01-T3", score: 9.0,
+    notes: "1163 LOC · 4 exports · 3 consumidores · guardian scoped 0e/39w · tsc repo-wide green" },
+  { path: "shared/lib/advisor-engine/signal-seeder", status: "audited", phase: "M-01-T2", score: 9.4,
+    notes: "168 LOC · 2 exports · 1 consumidor · guardian scoped 0/0" },
+  { path: "shared/lib/advisor-engine/system-analyzer", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "1265 LOC · 7 exports · 1 consumidor · guardian scoped 1e/36w" },
+  { path: "shared/lib/advisor-engine/twin-types", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "553 LOC · 17 exports · 1 consumidor · guardian scoped 1e/102w" },
+  { path: "shared/lib/canvas", status: "audited", phase: "M-01-T2", score: 9.5,
+    notes: "46 LOC · 2 exports · 1 consumidor · guardian scoped 0/0" },
+  { path: "shared/lib/exportReport", status: "audited", phase: "M-01-T3", score: 9.0,
+    notes: "703 LOC · 6 exports · 2 consumidores · guardian scoped 0e/27w · tsc repo-wide green" },
+  { path: "shared/lib/forceSimulation", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "343 LOC · 8 exports · 2 consumidores · guardian scoped 0e/4w · tsc repo-wide green" },
+  { path: "shared/lib/highlight", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "51 LOC · 1 export · 1 consumidor · guardian scoped 0e/2w · tsc repo-wide green" },
+  { path: "shared/lib/reactionTemplate", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "294 LOC · 3 exports · 8 consumidores · guardian scoped 0e/1w · tsc repo-wide green" },
+  { path: "shared/lib/riskTheme", status: "reverify-on-use", phase: "M-01-T2",
+    notes: "138 LOC · 9 exports · 8 consumidores · guardian scoped 4e/0w" },
+  { path: "shared/lib/routes", status: "audited", phase: "M-01-T2", score: 9.5,
+    notes: "27 LOC · 2 exports · 1 consumidor · guardian scoped 0/0" },
+  { path: "shared/lib/score-utils", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "220 LOC · 5 exports · 9 consumidores · guardian scoped 0e/2w · tsc repo-wide green" },
+  { path: "shared/lib/ui/advisorConfig", status: "audited", phase: "M-01-T2", score: 9.5,
+    notes: "46 LOC · 1 export · 2 consumidores · guardian scoped 0/0" },
+  { path: "shared/mocks/normalizeEnums", status: "audited", phase: "M-01-T3", score: 9.4,
+    notes: "192 LOC · 1 export · 10 consumidores · guardian scoped 0e/5w · tsc repo-wide green" },
+  { path: "shared/types/permissions", status: "audited", phase: "M-01-T2", score: 9.4,
+    notes: "120 LOC · 7 exports · 1 consumidor · guardian scoped 0/0" },
 ];
 
 /** Legacy-shaped view (kept for repo v2.1 consumers of AUDITED_FILES). */
@@ -1208,6 +1374,7 @@ export const ROLLOUT = {
   gates: [
     { id: "BC-02", blocking: true, detail: "QueryClient onError before EventCalendar" },
     { id: "SHARED-7", blocking: true, detail: "7 pending shared/ before EventCalendar — CLOSED v3.3.0 (PENDING_AUDIT.size = 0)" },
+    { id: "B0-SMOKE", blocking: true, detail: "backend gate B0 VERDE @ e15068e — smoke_b0 23/23 · pytest 785/785 (py3.12 + 3.14.4)" },
     { id: "TOKEN-DIFF", blocking: false, detail: "globals.css vs TOKENS diff scan (K-1 verification)" },
     { id: "AURA-VALUES", blocking: false, detail: "PLANNED_TOKENS values registration (AC-4)" },
     { id: "EXPORT-LISTS", blocking: false, detail: "MODULES export lists vs implementations (AC-6) — incl. ToastContainer (MF-11)" },
@@ -1217,9 +1384,11 @@ export const ROLLOUT = {
 /* ═══════════════════ §12  VERSION SYNC ═══════════════════ */
 
 export const VERSION_SYNC = {
-  manifest: "3.3.0", // bumped with MANIFEST_VERSION (self-consistency; tools unchanged)
-  guardian: "4.1.1",   // verified against production digest (1.151 files, 30.075 violations)
-  validator: "pending-audit", // validate-shared-imports NOT yet audited — do not fake a number (MF-06)
+  manifest: "3.8.0", // G9-0004: §16 BACKEND_REGISTRY re-sincronizado (207 tools @ 504b53d) + verifyBuildCss
+  guardian: "4.1.3",   // 4.1.2 = AG-29 (X-16 α/β/γ); 4.1.3 = AG-30 (X-28 token-boundary, 109 FP eliminados)
+  validator: "4.0.0",  // FILE version (TOOL_VERSION) — its own AUDIT is still pending (M-04a G8: a factual version is not an audit claim)
+  verifyIntegration: "3.3.0", // B6: VI-16 (comment masker) + VI-17 (definition sites) — check 3 phantom tokens; check 8 no-hook refs
+  verifyBuildCss: "1.0.0", // B6-QA post-build bundle probe (0002→0003 P0: utilities layer 118k→207k) — wired: pnpm run verify:build-css + precommit
   mcpRouter: "2.1.0",
   advisorEngine: "2.1.0",
 } as const;
@@ -1574,3 +1743,68 @@ export function getMigrationProgress(): {
  * data-testid/keyframe names extracted as classes; animation:none
  * counted as keyframe reference).
  */
+
+
+/* ═══════════════════ §16  BACKEND REGISTRY (G8 — v3.4.0) ═══════════════════
+ *
+ * Estado REAL del backend MCP (club_mcp) en el commit 504b53d (G9 re-sincroniza: B2 +1, B4 +2, ML +8 → 207 tools; AST per-módulo) — la misma
+ * clase de SSOT que §8 AUDITED_REGISTRY, para el lado backend. Generado
+ * desde el árbol real (bootstrap._AGENT_MODULES + AST de decoradores
+ * @MCPTool — NUNCA hand-counted, fix clase RM-3). Verificado contra
+ * backend/scripts/smoke_b0.py (registry.total_tools == 196).
+ *
+ * CONSUMERS (roadmap — cola Q-GOV-01/Q-GOV-03, CHECKPOINT §15):
+ *   - guardian X-29+ backend-aware checks (paridad con smoke_b0)
+ *   - verify-integration check 6: validar contra este registro además
+ *     del extractor motor-based VI-14
+ * HOY no lo consume ninguna tool: es ley declarada con gap de enforcement
+ * EXPLÍCITO (mismo patrón que X-11/X-24 "planned" — MF-03).
+ *
+ * El gate ejecutable del backend NO es este registro: es
+ * backend/scripts/smoke_b0.py (23/23) + pytest tests/unit (785/785).
+ */
+
+export interface BackendAgentEntry {
+  /** Módulo python bajo src/club_mcp/agents/ (sin extensión). */
+  readonly module: string;
+  /** Decoradores @MCPTool en funciones/métodos (AST — sin docstrings). */
+  readonly tools: number;
+}
+
+export const BACKEND_REGISTRY = {
+  /** Commit auditado (rama audit/p2c3). */
+  commit: "504b53d",
+  date: "2026-11-11",
+  /** Gates ejecutables del backend (los que CI debería correr — Q-CI-01). */
+  smokeGate: "backend/scripts/smoke_b0.py",
+  unitGate: "uv run python -m pytest tests/unit -q",
+  python: ">=>=3.12 (dev verificado: 3.12 sandbox · 3.14.4 Windows)",
+  agents: [
+    { module: "family_profile", tools: 16 },
+    { module: "event_orchestrator", tools: 13 },
+    { module: "age_group", tools: 11 },
+    { module: "finance", tools: 16 },
+    { module: "wellness", tools: 12 },
+    { module: "compliance", tools: 7 },
+    { module: "sports_recreation_agent", tools: 11 },
+    { module: "cultural_social_agent", tools: 9 },
+    { module: "communication_agent", tools: 14 },
+    { module: "facility_management_agent", tools: 14 },
+    { module: "member_engagement_agent", tools: 6 },
+    { module: "guest_management_agent", tools: 12 },
+    { module: "proactive_recommendation_agent", tools: 8 },
+    { module: "document_intelligence_agent", tools: 8 },
+    { module: "executive_dashboard_agent", tools: 13 },
+    { module: "satisfaction_agent", tools: 12 },
+    { module: "advisor_intelligence", tools: 5 },
+    { module: "member_360_agent", tools: 10 },
+    { module: "ml_intelligence", tools: 10 },
+  ] as const,
+  totalTools: 207,
+  /** Invariantes verificadas por smoke_b0 (registry introspection runtime). */
+  rbacCoverage: "207/207 (permission_for nunca None — smoke §4)",
+  hitlExecutorsRegistered: 2, // de ~38 execute_* — bootstrap._EXECUTOR_BINDINGS (cola Q-HITL-03)
+  gateB0: "VERDE 2026-11-11 @ 504b53d (smoke 39/39 runtime · pytest 818/818 · FastAPI self-wired · HTTP 200/401 — re-ejecutado en sandbox post-B6)",
+  /** Cola de deuda arquitectónica backend — SSOT: CHECKPOINT §15. */
+  queueRef: "MASTER_CHECKPOINT.md §15",
+} as const;

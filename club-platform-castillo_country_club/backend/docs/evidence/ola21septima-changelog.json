@@ -1,0 +1,36 @@
+{
+  "ola": "2.1-septima",
+  "date": "2026-11-20",
+  "path": "NEXT-STEPS-2027 PATH 2.2 (séptimo vertical: satisfaction — surveys · reports · event_metadata). De los 13 repos in-memory restantes (Q-PER-01), satisfaction es el siguiente candidato limpio perfilado y verificado: async-FIRST (10/10 métodos ya async, el agente ya awaited en 13 call sites — drop-in como engagement §3.8-tris y guest §3.8-SEXTA, sin cirugía async), contrato limpio (el agente NO toca privados del repo — verificado por grep en los 13 call sites: 0 self.repo._*).",
+  "gate": "pytest write → restart runtime → read OK (aiosqlite local; pgvector real en CI) + contrato None/[]/dict sin excepciones custom",
+  "changes": [
+    "db/orm/satisfaction_orm.py: 3 tablas (satisfaction_surveys · satisfaction_reports · satisfaction_event_metadata) — espejo 1:1 de models/satisfaction; questions a JSONB (criterio families §3.8-bis)",
+    "db/orm/repositories/satisfaction_repo.py: SatisfactionRepository async — contrato EXACTO del in-memory (10 métodos · None/[]/dict sin excepciones custom · ids uuid4().hex[:8] SIN prefijo, igual que el in-memory)",
+    "satisfaction_event_metadata: tabla para el dataset demo (criterio 0011: dataset UNA fuente) — el in-memory la poblaba con _seed_event_metadata SOLO con seed_demo_data=True (nunca activado por el runtime); response_rate / best_event / worst_event / P3-SURVEY_FOLLOW_UP ahora leen de la TABLA",
+    "alembic 0007_satisfaction (3 tablas · pk deterministas · ix event_id/family_id en surveys · ix event_id en reports; enums String(32) sin CHECK)",
+    "bootstrap.py: swap OPT-IN extiende a satisfaction_repo (junto a family + engagement + event + compliance + guest) — 7º repo migrado",
+    "CI: el paso persistence corre la suite satisfaction (junto a auth + family + engagement + event + compliance + guest)",
+    "tests/unit/persistence/test_satisfaction_persistence.py: 6 tests (write-restart-read survey/report con questions roundtrip · trends filtro N meses + ventana 3 · health 5 factores + intelligence 10 categorías + NPS · benchmarks _BENCHMARKS CR · propuestas P1-P5 con metadata de tabla · contrato vacío sin excepciones)"
+  ],
+  "decision_arquitectura": {
+    "por_que_satisfaction": "de los 13 restantes, el siguiente candidato limpio: async-FIRST (10/10 async, el agente YA awaited en 13 call sites — 0 cirugía, drop-in como guest) y contrato limpio (0 privados del repo tocados por el agente, verificado por grep). age_group sigue caído (agente acoplado a privados en ~6 sitios — refactor antes, ola aparte).",
+    "compute_on_read": "trends (filtro N meses + ventana 3 meses 1.03/0.97) · health (5 factores ponderados 0.25/0.20/0.20/0.20/0.15 + nivel EXCELLENT/HEALTHY/ATTENTION/CRITICAL + trend) · intelligence (10 categorías con trend por mitades de eventos · comparación por tipo de evento · sentiment flow mensual · NPS promoters/passives/detractors · 5 señales cross-domain) · benchmarks (club avg vs _BENCHMARKS CR constante de clase · outliers ±0.5 · best/worst event type) · propuestas P1-P5 (food review · format replication · survey follow-up sobre metadata de TABLA · pricing review value<3.5 & quality>4.0 · detractores últimos 10): aritmética del in-memory BYTE a BYTE, aplicada sobre los rows de las tablas en UNA sesión de lectura por método.",
+    "questions_jsonb": "list[SurveyQuestion] a JSONB por fila (criterio §3.8-bis: anexos del agregado). El repo guarda category como .value y reconstruye SatisfactionCategory(cat) al leer — el contrato del agente (21 tests) pasa enums; roundtrip pérdida cero.",
+    "metadata_tabla": "el in-memory con seed_demo_data=False (como el runtime lo instancia) tenía _event_metadata vacía: response_rate sobre max(attendees,1), best/worst event = event_id crudo, P3 nunca disparaba. El ORM con la tabla vacía reproduce EXACTAMENTE ese comportamiento observable; el deploy carga el dataset UNA vez (criterio 0011) y todo el compute lee de la base — fuente única."
+  },
+  "bugs_cazados": [],
+  "quedo_fuera": [
+    "los otros 12 repos in-memory (Q-PER-01 → 12 tras este vertical; siguientes verticales: misma mecánica §3.8 — auditar contrato por grep antes)",
+    "age_group: agente acoplado a privados del repo — refactor de contrato ANTES de migrar (ola aparte)",
+    "wellness y member_360: sync read-heavy compute — mecánica distinta, ola aparte",
+    "ApprovalEngine → Q-PER-03 (Ola 2.3 del PATH)",
+    "bump G24 de masters (v9.18 → v9.19) absorbiendo esta ola — su propio parche chore, como G19/G20/G21/G22/G23"
+  ],
+  "cifras": {
+    "tests_persistencia": "39 (3 auth + 6 family + 6 engagement + 6 event + 6 compliance + 6 guest + 6 satisfaction)",
+    "tests_contrato_agente_satisfaction": "21/21 verde contra el repo in-memory async SIN TOCAR UN BYTE (drop-in: el in-memory ya era async — cero cirugía, cero cambios de test)",
+    "suite_total_estimada": "879 → 885 (+6 persistencia satisfaction)",
+    "migracion_async": "NONE — async-first: 0 awaits nuevos, 0 métodos migrados, 0 tests ajustados (segunda vertical drop-in total)"
+  },
+  "validacion_sandbox": "sqlite real (aiosqlite · sqlalchemy): persistencia 39/39 + back-to-back 39/39 (re-runnable) + agente satisfaction 21/21 contra repo ORM inyectado (drop-in) + swap por ejecución en ambos modos (con CLUB_PERSISTENCE_URL → repo ORM async responde; sin env → in-memory mismo contrato)"
+}

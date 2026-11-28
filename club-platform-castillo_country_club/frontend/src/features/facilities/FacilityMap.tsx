@@ -493,20 +493,26 @@ export default function FacilityMap({
     "facility_management",
     "manage_facilities",
     {
+
       action: "list",
-      search: deferredSearch || undefined,
-      type: typeFilter || undefined,
-      status: statusFilter || undefined,
+
     },
   );
 
   const { data: utilizationData } = useMCPQuery<AmenityUtilizationResponse>(
-    "facilities",
-    "get_utilization",
+    "facility_management",
+    "get_amenity_utilization",
     {},
   );
 
-  const facilities = useMemo(() => data?.facilities ?? [], [data]);
+  const facilities = useMemo(() => {
+    const all = data?.facilities ?? [];
+    const q = deferredSearch.trim().toLowerCase();
+    return all.filter((f) => {
+      if (q && !(f.name ?? "").toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [data, deferredSearch]);
 
   // ── Spatial graph (Prop #5) ──
   const spatialGraph = useMemo(
@@ -606,7 +612,8 @@ export default function FacilityMap({
           {/* View toggle */}
           <div className="fac-map__toggle" role="group" aria-label="Vista">
             {(["grid", "spatial"] as const).map((mode) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={mode}
                 type="button"
                 className="fac-map__toggle-btn"
@@ -615,7 +622,7 @@ export default function FacilityMap({
                 aria-pressed={viewMode === mode}
               >
                 {mode === "grid" ? "Cat\u00e1logo" : "Mapa"}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

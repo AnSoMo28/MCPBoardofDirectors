@@ -42,6 +42,8 @@ import {
   getStatusConfig,
   groupCalendarByDate,
 } from '../types';
+import { Button } from "@/shared/components/ui/Button";
+import './CulturalCalendar.css';
 
 // ══════════════════════════════════════════════════════════
 //  CONFIG
@@ -141,7 +143,7 @@ export default function CulturalCalendar() {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="cultural-calendar flex items-center justify-center py-24">
         <CalendarIcon className="h-8 w-8 animate-pulse text-[var(--color-gold-400)]" />
       </div>
     );
@@ -201,7 +203,8 @@ export default function CulturalCalendar() {
       {/* ── Filter Pills ── */}
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
-          <button
+          <Button
+            variant="unstyled"
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={cn(
@@ -213,7 +216,7 @@ export default function CulturalCalendar() {
           >
             <f.icon className="h-3.5 w-3.5" />
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 

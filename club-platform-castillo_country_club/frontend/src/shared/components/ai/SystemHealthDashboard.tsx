@@ -487,7 +487,8 @@ function GlassSection({
   const reduced = useReducedMotion();
   return (
     <div className="glass-health__section">
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         onClick={onToggle}
         className="glass-health__section-head focus-visible:outline-2 focus-visible:outline-[var(--color-teal-400)] focus-visible:outline-offset-[-2px]"
@@ -527,7 +528,7 @@ function GlassSection({
         ) : (
           <ChevronDown className="w-4 h-4 text-[var(--color-silver-400)] flex-shrink-0" />
         )}
-      </button>
+      </Button>
       <AnimatePresence>
         {expanded && (
           <motion.div
@@ -622,13 +623,14 @@ function ProposalCard({
             {proposal.description}
           </p>
 
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             onClick={() => setShowEvidence(!showEvidence)}
             className="text-[9px] text-[var(--color-silver-600)] font-[family-name:var(--font-mono)] mt-1 hover:text-[var(--color-silver-400)] transition-colors"
           >
             {showEvidence ? "▾ Ocultar" : "▸ Evidencia"} ({proposal.evidence.length})
-          </button>
+          </Button>
 
           <AnimatePresence>
             {showEvidence && (

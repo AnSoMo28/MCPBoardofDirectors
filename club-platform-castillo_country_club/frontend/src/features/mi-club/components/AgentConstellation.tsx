@@ -1,14 +1,16 @@
 /**
  * @component AgentConstellation (Fase 25)
  * @namespace .glass-landing__constellation
- * @depends MiClubLanding.css
+ * @depends AgentConstellation.css
  * @note 8-agent awareness visualization. Each dot pulses if the agent
  *       has active data for this socio. Click navigates to relevant section.
- * @import import '../MiClubLanding.css';
+ * @import import './AgentConstellation.css';
  */
+import "./AgentConstellation.css";
 
 import { useNavigate } from "react-router";
 import type { AgentActivityItem } from "../types";
+import { Button } from "@/shared/components/ui/Button";
 
 interface AgentConstellationProps {
   agents: AgentActivityItem[];
@@ -26,7 +28,8 @@ export function AgentConstellation({
       aria-label="Agentes de inteligencia activos"
     >
       {agents.map((agent) => (
-        <button
+        <Button
+          variant="unstyled"
           key={agent.id}
           type="button"
           className={`glass-landing__agent glass-landing__agent--${agent.isActive ? "active" : "inactive"}`}
@@ -48,7 +51,7 @@ export function AgentConstellation({
           <span className="glass-landing__agent-status">
             {agent.statusText}
           </span>
-        </button>
+        </Button>
       ))}
     </div>
   );

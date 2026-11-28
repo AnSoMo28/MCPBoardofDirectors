@@ -6,10 +6,27 @@
  *       source chips, copy/regenerate/feedback, typing indicator, auto-resize input.
  * @import import './KnowledgeQuery.css';
  */
+/*
+ * ═══════════════════════════════════════════════════════════════════
+ * G11 — DESACOPLAMIENTO PAGE-CSS · este host fue podado (features/documents/KnowledgeQuery.css)
+ * Reglas de componentes extraídas a parejas 1:1 (paridad atómica
+ * verificada antes==después): ChatInput.css (11), MessageBubble.css (13), SourceChips.css (15), TypingIndicator.css (11)
+ * Este archivo conserva SOLO lo estructural de página (root, grids,
+ * headers, skeletons, y shared que cruzan ≥2 hijos).
+ * ═══════════════════════════════════════════════════════════════════
+ */
 
-/* ═══════════════════════════════════════
-   Root / Layout
-   ═══════════════════════════════════════ */
+@keyframes knowledge-typing {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
 .glass-knowledge {
   display: flex;
@@ -17,10 +34,6 @@
   flex: 1;
   max-width: 896px;
 }
-
-/* ═══════════════════════════════════════
-   Welcome (empty state)
-   ═══════════════════════════════════════ */
 
 .glass-knowledge__welcome {
   display: flex;
@@ -54,8 +67,6 @@
   color: var(--color-silver-400, #a09a92);
   max-width: 480px;
 }
-
-/* ── Suggested prompts ── */
 
 .glass-knowledge__prompts-label {
   display: flex;
@@ -110,10 +121,6 @@
   outline-offset: 2px;
 }
 
-/* ═══════════════════════════════════════
-   Messages Area
-   ═══════════════════════════════════════ */
-
 .glass-knowledge__messages {
   flex: 1;
   overflow-y: auto;
@@ -127,8 +134,6 @@
   padding-bottom: 8px;
 }
 
-/* ── Conversation meta ── */
-
 .glass-knowledge__conv-meta {
   font-family: var(--font-mono, "DM Mono", monospace);
   font-size: 10px;
@@ -136,10 +141,6 @@
   text-align: center;
   padding: 4px 0 8px;
 }
-
-/* ═══════════════════════════════════════
-   Message Bubble
-   ═══════════════════════════════════════ */
 
 .glass-knowledge__bubble {
   display: flex;
@@ -157,41 +158,9 @@
   max-width: 720px;
 }
 
-/* ── Avatar ── */
-
-.glass-knowledge__avatar {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.glass-knowledge__avatar svg {
-  width: 16px;
-  height: 16px;
-}
-
 .glass-knowledge__avatar--user {
   background: var(--color-emerald-400, #34d399);
   color: var(--color-abyss, #0a0e18);
-}
-
-.glass-knowledge__avatar--assistant {
-  background: rgba(201, 169, 110, 0.12);
-  color: var(--color-gold-400, #c9a96e);
-}
-
-/* ── Content ── */
-
-.glass-knowledge__content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-  max-width: 100%;
 }
 
 .glass-knowledge__bubble-text {
@@ -216,8 +185,6 @@
   border-bottom-left-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-
-/* ── Markdown within bubble ── */
 
 .glass-knowledge__bubble-text strong {
   font-weight: 700;
@@ -244,7 +211,11 @@
   margin-top: 0;
 }
 
-.glass-knowledge__bubble-text ul,
+.glass-knowledge__bubble-text ul {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
 .glass-knowledge__bubble-text ol {
   margin: 4px 0;
   padding-left: 20px;
@@ -254,155 +225,6 @@
   margin: 2px 0;
 }
 
-/* ── Confidence ── */
-
-.glass-knowledge__confidence {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.glass-knowledge__confidence-value {
-  font-family: var(--font-mono, "DM Mono", monospace);
-  font-size: 11px;
-  color: var(--color-silver-400, #a09a92);
-}
-
-/* ── Source chips ── */
-
-.glass-knowledge__sources {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.glass-knowledge__sources-label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--color-silver-400, #a09a92);
-}
-
-.glass-knowledge__sources-label svg {
-  width: 12px;
-  height: 12px;
-}
-
-.glass-knowledge__source-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.glass-knowledge__source-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: var(--color-surface-2, rgba(14, 18, 26, 0.6));
-  cursor: pointer;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 11px;
-  color: var(--color-silver-300, #b8b2aa);
-  transition:
-    background 0.12s ease,
-    border-color 0.12s ease;
-}
-
-.glass-knowledge__source-chip:hover {
-  background: var(--glass-bg-hover);
-  border-color: rgba(201, 169, 110, 0.2);
-}
-
-.glass-knowledge__source-chip:focus-visible {
-  outline: 2px solid var(--color-gold-400, #c9a96e);
-  outline-offset: 1px;
-}
-
-.glass-knowledge__source-chip svg {
-  width: 12px;
-  height: 12px;
-}
-
-.glass-knowledge__source-chip-relevance {
-  font-family: var(--font-mono, "DM Mono", monospace);
-  font-size: 10px;
-  color: var(--color-silver-500, #7a7570);
-}
-
-/* ── Source inline expand ── */
-
-.glass-knowledge__source-expand {
-  margin-top: 4px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  overflow: hidden;
-}
-
-.glass-knowledge__source-expand-text {
-  margin: 0;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--color-silver-400, #a09a92);
-}
-
-/* ── Actions row (copy, regenerate, feedback) ── */
-
-.glass-knowledge__actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.glass-knowledge__bubble:hover .glass-knowledge__actions,
-.glass-knowledge__bubble:focus-within .glass-knowledge__actions {
-  opacity: 1;
-}
-
-.glass-knowledge__action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--color-silver-500, #7a7570);
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 11px;
-  cursor: pointer;
-  transition:
-    color 0.12s ease,
-    background 0.12s ease;
-  min-height: 28px;
-}
-
-.glass-knowledge__action-btn:hover {
-  color: var(--color-silver-200, #d4cfc7);
-  background: var(--glass-bg-hover);
-}
-
-.glass-knowledge__action-btn:focus-visible {
-  outline: 2px solid var(--color-gold-400, #c9a96e);
-  outline-offset: 1px;
-}
-
-.glass-knowledge__action-btn svg {
-  width: 14px;
-  height: 14px;
-}
-
 .glass-knowledge__action-btn--active {
   color: var(--color-gold-400, #c9a96e);
 }
@@ -410,13 +232,6 @@
 .glass-knowledge__action-btn--copied {
   color: var(--color-emerald-400, #34d399);
 }
-
-.glass-knowledge__action-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-/* ── Timestamp ── */
 
 .glass-knowledge__timestamp {
   font-family: var(--font-mono, "DM Mono", monospace);
@@ -428,65 +243,12 @@
   text-align: right;
 }
 
-/* ═══════════════════════════════════════
-   Typing Indicator
-   ═══════════════════════════════════════ */
-
-.glass-knowledge__typing {
-  display: flex;
-  gap: 12px;
-}
-
-.glass-knowledge__typing-dots {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--color-surface-1, rgba(18, 22, 30, 0.95));
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  border-bottom-left-radius: 4px;
-  padding: 12px 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.glass-knowledge__typing-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-silver-400, #a09a92);
-  animation: knowledge-typing 1.2s ease-in-out infinite;
-}
-
-.glass-knowledge__typing-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.glass-knowledge__typing-dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes knowledge-typing {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(0.85);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .glass-knowledge__typing-dot {
     animation: none;
     opacity: 0.6;
   }
 }
-
-/* ═══════════════════════════════════════
-   "New messages below" indicator
-   ═══════════════════════════════════════ */
 
 .glass-knowledge__scroll-btn {
   position: sticky;
@@ -527,71 +289,6 @@
   height: 14px;
 }
 
-/* ═══════════════════════════════════════
-   Input Area
-   ═══════════════════════════════════════ */
-
-.glass-knowledge__input-area {
-  flex-shrink: 0;
-}
-
-.glass-knowledge__input-wrap {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 14px;
-  background: var(--color-surface-1, rgba(18, 22, 30, 0.95));
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition:
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.glass-knowledge__input-wrap:focus-within {
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.12),
-    0 0 0 2px rgba(201, 169, 110, 0.15);
-  border-color: var(--color-gold-400, #c9a96e);
-}
-
-.glass-knowledge__input-field {
-  flex: 1;
-  resize: none;
-  padding: 8px 12px;
-  border: none;
-  background: transparent;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--color-silver-100, #f0ece4);
-  outline: none;
-  min-height: 44px;
-  max-height: 120px;
-  transition: height 0.1s ease;
-}
-
-.glass-knowledge__input-field::placeholder {
-  color: var(--color-silver-500, #7a7570);
-}
-
-.glass-knowledge__input-field:disabled {
-  opacity: 0.5;
-}
-
-.glass-knowledge__input-hint {
-  margin-top: 8px;
-  font-family: var(--font-ui, "DM Sans", sans-serif);
-  font-size: 11px;
-  color: var(--color-silver-500, #7a7570);
-  text-align: center;
-}
-
-/* ═══════════════════════════════════════
-   Error Banner
-   ═══════════════════════════════════════ */
-
 .glass-knowledge__error-banner {
   display: flex;
   align-items: center;
@@ -615,10 +312,6 @@
   color: var(--color-rose-400, #fb7185);
 }
 
-/* ═══════════════════════════════════════
-   Light mode overrides
-   ═══════════════════════════════════════ */
-
 .light .glass-knowledge__welcome-title {
   color: var(--color-silver-800, #2c2a27);
 }
@@ -636,11 +329,6 @@
   background: rgba(0, 0, 0, 0.03);
   border-color: rgba(139, 115, 64, 0.2);
   color: var(--color-silver-800, #2c2a27);
-}
-
-.light .glass-knowledge__avatar--assistant {
-  background: rgba(201, 169, 110, 0.1);
-  color: #8b7340;
 }
 
 .light .glass-knowledge__bubble-text--user {
@@ -667,35 +355,6 @@
   color: var(--color-silver-800, #2c2a27);
 }
 
-.light .glass-knowledge__source-chip {
-  border-color: rgba(0, 0, 0, 0.06);
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--color-silver-600, #5c5853);
-}
-
-.light .glass-knowledge__source-chip:hover {
-  background: rgba(0, 0, 0, 0.03);
-  border-color: rgba(139, 115, 64, 0.2);
-}
-
-.light .glass-knowledge__source-expand {
-  background: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.04);
-}
-
-.light .glass-knowledge__source-expand-text {
-  color: var(--color-silver-600, #5c5853);
-}
-
-.light .glass-knowledge__action-btn {
-  color: var(--color-silver-500, #7a7570);
-}
-
-.light .glass-knowledge__action-btn:hover {
-  color: var(--color-silver-700, #4a4742);
-  background: rgba(0, 0, 0, 0.04);
-}
-
 .light .glass-knowledge__action-btn--active {
   color: #8b7340;
 }
@@ -704,42 +363,11 @@
   color: #059669;
 }
 
-.light .glass-knowledge__typing-dots {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.light .glass-knowledge__typing-dot {
-  background: var(--color-silver-400, #a09a92);
-}
-
 .light .glass-knowledge__scroll-btn {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 0, 0, 0.08);
   color: var(--color-silver-600, #5c5853);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.light .glass-knowledge__input-wrap {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.light .glass-knowledge__input-wrap:focus-within {
-  border-color: #8b7340;
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    0 0 0 2px rgba(139, 115, 64, 0.12);
-}
-
-.light .glass-knowledge__input-field {
-  color: var(--color-silver-800, #2c2a27);
-}
-
-.light .glass-knowledge__input-field::placeholder {
-  color: var(--color-silver-400, #a09a92);
 }
 
 .light .glass-knowledge__error-banner {
@@ -754,3 +382,40 @@
 .light .glass-knowledge__error-banner-text {
   color: #e11d48;
 }
+/* ═══════════════════════════════════════
+   Root / Layout
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Welcome (empty state)
+   ═══════════════════════════════════════ */
+/* ── Suggested prompts ── */
+/* ═══════════════════════════════════════
+   Messages Area
+   ═══════════════════════════════════════ */
+/* ── Conversation meta ── */
+/* ═══════════════════════════════════════
+   Message Bubble
+   ═══════════════════════════════════════ */
+/* ── Avatar ── */
+/* ── Content ── */
+/* ── Markdown within bubble ── */
+/* ── Confidence ── */
+/* ── Source chips ── */
+/* ── Source inline expand ── */
+/* ── Actions row (copy, regenerate, feedback) ── */
+/* ── Timestamp ── */
+/* ═══════════════════════════════════════
+   Typing Indicator
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   "New messages below" indicator
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Input Area
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Error Banner
+   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   Light mode overrides
+   ═══════════════════════════════════════ */

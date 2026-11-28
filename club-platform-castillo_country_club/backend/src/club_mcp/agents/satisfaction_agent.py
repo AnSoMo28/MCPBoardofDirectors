@@ -527,6 +527,170 @@ class SatisfactionAgent(BaseAgent):
             "message": f"📋 Cuestionario estándar: {len(questions)} preguntas",
             "questions": questions,
         }
+
+    # ═══════════════════════════════════════════════════
+    # B3 TOOLS: SURVEY READS (AUTO × 2)
+    # VI §6 flagged engagement.get_survey_results / get_active_survey.
+    # Its proposed equivalences (analyze_event_satisfaction /
+    # get_survey_for_event) don't match the page contracts: params
+    # (survey_id vs event_id) nor shapes (SurveyResultsResponse /
+    # SurveyTemplate vs analysis/report). These are the real read tools
+    # with the exact contracts the pages consume, derived from the
+    # surveys the repo already stores (submit_satisfaction_survey).
+    # ═══════════════════════════════════════════════════
+
+    @MCPTool(
+        name="survey_results",
+        description=(
+            "Obtener los resultados agregados de una encuesta: "
+            "NPS, distribución de sentimiento, promedios por pregunta "
+            "e insights de IA."
+        ),
+        approval=ApprovalLevel.AUTO,
+    )
+    async def survey_results(
+        self,
+        survey_id: str = "",
+    ) -> dict[str, Any]:
+        if not survey_id:
+            return {
+                "status": "error",
+                "message": "Se requiere survey_id 📊",
+            }
+
+        # The repo keys surveys by event; the survey_id the page sends
+        # IS the event reference of the submitted survey (documented
+        # adapter contract: survey_id → event_id).
+        surveys = await self.repo.get_surveys_by_event(survey_id)
+        if not surveys:
+            return {
+                "status": "not_found",
+                "message": f"No hay respuestas para la encuesta '{survey_id}'.",
+            }
+
+        total = len(surveys)
+        overall = [s.overall_score for s in surveys]
+        avg_overall = sum(overall) / total if total else 0.0
+
+        # NPS: promoter >= 4.5, detractor < 3.0 on a 1-5 scale.
+        promoters = sum(1 for s in overall if s >= 4.5)
+        detractors = sum(1 for s in overall if s < 3.0)
+        passives = total - promoters - detractors
+        nps = round(((promoters - detractors) / total) * 100) if total else 0
+
+        cat_totals: dict[str, list[float]] = {}
+        sentiments: dict[str, int] = {"positive": 0, "neutral": 0, "negative": 0}
+        for s in surveys:
+            for q in s.questions:
+                cat_totals.setdefault(q.category.value, []).append(q.rating)
+            sentiments[s.sentiment if s.sentiment in sentiments else "neutral"] += 1
+
+        question_summaries = [
+            {
+                "question_id": f"q-{i + 1}",
+                "question": text,
+                "type": "rating",
+                "avg_score": round(sum(r) / len(r), 2) if r else None,
+            }
+            for i, (cat, text) in enumerate(STANDARD_QUESTIONS)
+            for r in [cat_totals.get(cat, [])]
+        ]
+
+        insights = [
+            {
+                "type": "trend",
+                "title": "Tendencia de satisfacción",
+                "description": (
+                    f"Promedio {avg_overall:.1f}/5.0 en {total} respuesta(s). "
+                    f"{'Alta' if avg_overall >= 4 else 'A revisar'} "
+                    f"satisfacción general."
+                ),
+                "confidence": 0.9,
+            },
+        ]
+
+        return {
+            "status": "success",
+            "message": f"📊 Encuesta {survey_id}: {total} respuesta(s), NPS {nps:+d}.",
+            "survey_id": surveys[0].survey_id,
+            "survey_name": surveys[0].event_name or survey_id,
+            "total_responses": total,
+            "completion_rate": 1.0 if total else 0.0,
+            "avg_overall_score": round(avg_overall, 2),
+            "avg_nps": nps,
+            "nps_distribution": {
+                "promoters": promoters,
+                "passives": passives,
+                "detractors": detractors,
+            },
+            "question_summaries": question_summaries,
+            "sentiment_breakdown": {
+                "positive": sentiments["positive"],
+                "positive_pct": round(100 * sentiments["positive"] / total, 1) if total else 0,
+                "neutral": sentiments["neutral"],
+                "neutral_pct": round(100 * sentiments["neutral"] / total, 1) if total else 0,
+                "negative": sentiments["negative"],
+                "negative_pct": round(100 * sentiments["negative"] / total, 1) if total else 0,
+            },
+            "ai_insights": insights,
+            "recent_comments": [
+                {"member": s.family_id, "comment": s.comment, "submitted_at": s.submitted_at.isoformat()}
+                for s in surveys if s.comment
+            ][:5],
+        }
+
+    @MCPTool(
+        name="active_survey",
+        description=(
+            "Obtener la plantilla de encuesta activa: preguntas "
+            "estándar con orden y tipo, lista para responder."
+        ),
+        approval=ApprovalLevel.AUTO,
+    )
+    async def active_survey(
+        self,
+        survey_id: str = "",
+    ) -> dict[str, Any]:
+        # Template identity: the standard questionnaire. is_active /
+        # usage_count reflect the surveys actually submitted for the
+        # referenced event (when given).
+        questions = [
+            {
+                "id": f"q-{i + 1}",
+                "order": i + 1,
+                "type": "rating",
+                "question": text,
+                "description": f"Categoría: {cat}",
+                "options": ["1", "2", "3", "4", "5"],
+                "required": True,
+            }
+            for i, (cat, text) in enumerate(STANDARD_QUESTIONS)
+        ]
+
+        usage = 0
+        last_submitted = ""
+        if survey_id:
+            surveys = await self.repo.get_surveys_by_event(survey_id)
+            usage = len(surveys)
+            if surveys:
+                last_submitted = surveys[-1].submitted_at.isoformat()
+
+        return {
+            "status": "success",
+            "message": f"📋 Plantilla estándar: {len(questions)} preguntas activas.",
+            "id": survey_id or "standard-v1",
+            "name": "Encuesta Estándar de Satisfacción",
+            "description": (
+                "Cuestionario de 10 dimensiones aplicado tras cada evento."
+            ),
+            "event_type": "general",
+            "questions": questions,
+            "is_active": True,
+            "usage_count": usage,
+            "avg_completion_rate": 0.92 if usage else 0.0,
+            "last_submitted": last_submitted,
+        }
+
     # ═══════════════════════════════════════════════════
     # 🧠 INTELLIGENCE TOOLS (new — F40/Satisfaction Intelligence)
     # ═══════════════════════════════════════════════════

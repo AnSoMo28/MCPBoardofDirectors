@@ -1,11 +1,12 @@
 /**
  * @component ReportSection (Fase 25)
  * @namespace .glass-board__section*
- * @depends BoardReportViewer.css
+ * @depends ReportSection.css
  * @note Collapsible report section with type icon, AI confidence bar,
  *       recommendation highlight, low-confidence warning.
- * @import import '../BoardReportViewer.css';
+ * @import import './ReportSection.css';
  */
+import "./ReportSection.css";
 
 import { motion, type Variants } from "framer-motion";
 import {
@@ -18,6 +19,7 @@ import {
 import { Badge } from "@/shared/components/ui";
 import { cn } from "@/shared/lib/utils";
 import type { BoardReport } from "@/features/reports/types";
+import { Button } from "@/shared/components/ui/Button";
 
 /* ═══════════════════════════════════════
    Type Icon
@@ -115,7 +117,8 @@ export function ReportSection({
         )}
       >
         {/* ── Header (clickable) ── */}
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="glass-board__section-header"
           onClick={onToggle}
@@ -146,7 +149,7 @@ export function ReportSection({
               )}
             />
           </div>
-        </button>
+        </Button>
 
         {/* ── Content (collapsible) ── */}
         <div

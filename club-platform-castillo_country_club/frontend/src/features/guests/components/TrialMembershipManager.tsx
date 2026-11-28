@@ -458,7 +458,8 @@ export default function TrialMembershipManager() {
                   {Object.entries(PRIVILEGE_CONFIG).map(([key, cfg]) => {
                     const selected = form.privileges.includes(key);
                     return (
-                      <button
+                      <Button
+                        variant="unstyled"
                         key={key}
                         type="button"
                         onClick={() => togglePrivilege(key)}
@@ -467,7 +468,7 @@ export default function TrialMembershipManager() {
                         aria-pressed={selected}
                       >
                         {cfg.label}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>

@@ -433,7 +433,8 @@ function ReasoningChain({ toolKey }: { readonly toolKey: string }) {
 
   return (
     <div className="eip-reasoning" data-testid={`eip-reasoning-${toolKey}`}>
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="eip-reasoning__toggle"
         onClick={() => setExpanded(!expanded)}
@@ -442,7 +443,7 @@ function ReasoningChain({ toolKey }: { readonly toolKey: string }) {
       >
         {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
         <span>{expanded ? "Ocultar razonamiento" : "Ver razonamiento"}</span>
-      </button>
+      </Button>
       {expanded && (
         <div className="eip-reasoning__steps">
           {steps.map((step, i) => (
@@ -784,14 +785,14 @@ function IntelligenceDigest({
       )}
 
       <div className="eip-digest__actions">
-        <button type="button" className="eip-digest__btn" onClick={onRunAll}>
+        <Button variant="unstyled" type="button" className="eip-digest__btn" onClick={onRunAll}>
           <Zap size={12} aria-hidden="true" />
           Ejecutar todo
-        </button>
+        </Button>
         {completedCount > 0 && (
-          <button type="button" className="eip-digest__btn eip-digest__btn--ghost" onClick={onClearAll}>
+          <Button variant="unstyled" type="button" className="eip-digest__btn eip-digest__btn--ghost" onClick={onClearAll}>
             Limpiar
-          </button>
+          </Button>
         )}
       </div>
     </div>

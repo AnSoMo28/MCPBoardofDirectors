@@ -14,6 +14,7 @@ import { cn } from "@/shared/lib/utils";
 import { useReducedMotion } from "@/shared/hooks/useReducedMotion";
 import { useRipple } from "@/shared/hooks/useRipple";
 import { motion, AnimatePresence } from "framer-motion";
+import './QuickActions.css';
 import {
   Plus, X, CalendarPlus, UserPlus, Megaphone,
   FileBarChart, AlertCircle, type LucideIcon,
@@ -78,7 +79,7 @@ export function QuickActions({ actions }: QuickActionsProps) {
         {isOpen && (
           <motion.div
             {...overlayM}
-            className="glass-modal-overlay fixed inset-0 z-40"
+            className="quick-actions glass-modal-overlay fixed inset-0 z-40"
             aria-hidden="true"
           />
         )}

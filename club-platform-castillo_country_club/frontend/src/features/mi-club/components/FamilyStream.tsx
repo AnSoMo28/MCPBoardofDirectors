@@ -1,11 +1,12 @@
 /**
  * @component FamilyStream (Fase 25)
  * @namespace .glass-landing__stream
- * @depends MiClubLanding.css
+ * @depends FamilyStream.css
  * @note Mini activity timeline showing recent family actions.
  *       Replaces the old LastActivityBar with richer context.
- * @import import '../MiClubLanding.css';
+ * @import import './FamilyStream.css';
  */
+import "./FamilyStream.css";
 
 import { timeAgo } from "@/shared/lib/utils";
 import type { FamilyStreamItem } from "../types";

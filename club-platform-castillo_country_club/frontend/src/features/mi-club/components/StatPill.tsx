@@ -1,10 +1,11 @@
 /**
  * @component StatPill (Fase 25)
  * @namespace .glass-landing__stat
- * @depends MiClubLanding.css
+ * @depends StatPill.css
  * @note Compact stat with icon, value, and label.
- * @import import '../MiClubLanding.css';
+ * @import import './StatPill.css';
  */
+import "./StatPill.css";
 
 interface StatPillProps {
   icon: React.ReactNode;

@@ -1,0 +1,61 @@
+/**
+ * @component PulseStatusDot
+ * @namespace .pulse-status-dot
+ * @archetype chrome · domain emerald
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados pulse-status-dot-*.
+ */
+.pulse-status-dot {
+  position: relative;
+}
+
+/* Micro-vida del marco: una brasa tenue del dominio late en el borde inferior */
+.pulse-status-dot::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-emerald-400) 25.1%, transparent), transparent);
+  animation: pulse-status-dot-ember 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse-status-dot-ember {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.9; }
+}
+
+/* Ítems interactivos del chrome: prensado + aro */
+.pulse-status-dot :active {
+  transition: transform 0.12s var(--ease-spring);
+  transform: translateY(1px);
+}
+
+.pulse-status-dot :focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-emerald-400) 66.7%, transparent);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Estado activo de navegación: pastilla con luz interior */
+.pulse-status-dot__active-indicator {
+  background: color-mix(in srgb, var(--color-emerald-400) 10.2%, transparent);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--color-emerald-400) 13.3%, transparent);
+  transition: box-shadow 0.3s var(--ease-apple);
+}
+
+.pulse-status-dot__active-indicator:hover {
+  box-shadow: inset 0 0 18px color-mix(in srgb, var(--color-emerald-400) 20%, transparent);
+}
+
+.light .pulse-status-dot::after {
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-emerald-500) 31.4%, transparent), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-status-dot::after, .pulse-status-dot__active-indicator { animation: none; transition: none; }
+}

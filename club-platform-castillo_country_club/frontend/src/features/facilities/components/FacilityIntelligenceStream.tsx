@@ -49,6 +49,7 @@ import type {
 import { FACILITIES_ADVISOR_LAYER_META } from "../lib/advisor/types";
 
 import "./FacilityIntelligenceStream.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -176,20 +177,22 @@ function HitlConfirmModal({
         )}
 
         <div className="glass-fac-stream__hitl-actions">
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-fac-stream__hitl-btn glass-fac-stream__hitl-btn--cancel"
             onClick={onCancel}
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-fac-stream__hitl-btn glass-fac-stream__hitl-btn--confirm"
             onClick={onConfirm}
           >
             {command.label}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -221,14 +224,15 @@ function ActionFeedback({
       <span className="glass-fac-stream__feedback-text">
         {result.message}
       </span>
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="glass-fac-stream__feedback-dismiss"
         onClick={onDismiss}
         aria-label="Cerrar"
       >
         <XCircle className="w-3 h-3" />
-      </button>
+      </Button>
     </div>
   );
 }
@@ -359,7 +363,8 @@ function InsightCard({
     >
       <div className="glass-fac-stream__card-urgency-line" />
 
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="glass-fac-stream__card-head"
         onClick={onToggle}
@@ -384,7 +389,7 @@ function InsightCard({
             <ChevronRight className="w-3.5 h-3.5" />
           )}
         </span>
-      </button>
+      </Button>
 
       {expanded && (
         <div className="glass-fac-stream__card-body">
@@ -413,7 +418,8 @@ function InsightCard({
           </div>
 
           {insight.actionable && cmd && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className={cn(
                 "glass-fac-stream__card-action",
@@ -446,7 +452,7 @@ function InsightCard({
               ) : (
                 cmd.label
               )}
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -748,7 +754,8 @@ export function FacilityIntelligenceStream({
           className="glass-fac-stream__signals"
           aria-label="Señales cross-domain"
         >
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-fac-stream__signals-toggle"
             onClick={() => setSignalsOpen((v) => !v)}
@@ -768,7 +775,7 @@ export function FacilityIntelligenceStream({
                 <ChevronRight className="w-3.5 h-3.5" />
               )}
             </span>
-          </button>
+          </Button>
 
           {signalsOpen && (
             <div className="glass-fac-stream__signals-body">
@@ -791,7 +798,8 @@ export function FacilityIntelligenceStream({
           className="glass-fac-stream__filters"
           aria-label="Filtrar por capa"
         >
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="glass-fac-stream__pill"
             data-active={activeLayer === "all"}
@@ -802,7 +810,7 @@ export function FacilityIntelligenceStream({
             <span className="glass-fac-stream__pill-count">
               {layerCounts.all ?? 0}
             </span>
-          </button>
+          </Button>
 
           {LAYER_ORDER.map((layer) => {
             const layerMeta = FACILITIES_ADVISOR_LAYER_META[layer];
@@ -811,7 +819,8 @@ export function FacilityIntelligenceStream({
             if (count === 0) return null;
 
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={layer}
                 type="button"
                 className="glass-fac-stream__pill"
@@ -827,7 +836,7 @@ export function FacilityIntelligenceStream({
                 <span className="glass-fac-stream__pill-count">
                   {count}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </nav>
@@ -854,13 +863,14 @@ export function FacilityIntelligenceStream({
           ))}
 
           {hasMore && (
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="glass-fac-stream__more"
               onClick={showMore}
             >
               Ver más ({filtered.length - visibleCount} restantes)
-            </button>
+            </Button>
           )}
         </div>
       ) : (

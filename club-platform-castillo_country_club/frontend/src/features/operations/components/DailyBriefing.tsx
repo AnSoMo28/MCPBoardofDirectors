@@ -68,6 +68,7 @@ import type {
   QuarterlyInsightGetResponse as QuarterlyInsightsResponse,
 } from "@/shared/mocks/contracts";
 import type { AnomalyData } from "@/features/dashboard/types";
+import './DailyBriefing.css';
 /* ══════════════════════════════════════════════════════════
    Health Score — Composite metric (0–100)
    ══════════════════════════════════════════════════════════ */
@@ -735,7 +736,7 @@ function HealthScoreRing({
 
   return (
     <div
-      className="relative w-[108px] h-[108px] flex-shrink-0"
+      className="daily-briefing relative w-[108px] h-[108px] flex-shrink-0"
       role="meter"
       aria-valuenow={score}
       aria-valuemin={0}
@@ -1321,7 +1322,8 @@ function AnomalyCard({ anomaly }: { anomaly: AnomalyItem }) {
       style={{ borderLeftColor: sevCfg.borderColor }}
     >
       {/* Header — always visible */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         onClick={() => setExpanded(!expanded)}
         className={cn(
@@ -1362,7 +1364,7 @@ function AnomalyCard({ anomaly }: { anomaly: AnomalyItem }) {
         ) : (
           <ChevronDown size={14} className="text-[var(--color-silver-500)] flex-shrink-0 mt-1" />
         )}
-      </button>
+      </Button>
 
       {/* Expanded content */}
       {expanded && (
@@ -1468,7 +1470,8 @@ function AnomalyIntelligence({
               {showDomainPicker && (
                 <div className="absolute right-0 top-full mt-1 z-10 bg-[var(--color-surface-1)] border border-white/[0.08] rounded-xl shadow-[var(--shadow-elevated)] py-1 min-w-[160px]">
                   {ANOMALY_DOMAINS.map((d) => (
-                    <button
+                    <Button
+                      variant="unstyled"
                       key={d.value}
                       type="button"
                       onClick={() => {
@@ -1485,7 +1488,7 @@ function AnomalyIntelligence({
                       )}
                     >
                       {d.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
@@ -1565,7 +1568,8 @@ function AnomalyIntelligence({
               {showDomainPicker && (
                 <div className="absolute right-0 top-full mt-1 z-10 bg-[var(--color-surface-1)] border border-white/[0.08] rounded-xl shadow-[var(--shadow-elevated)] py-1 min-w-[160px]">
                   {ANOMALY_DOMAINS.map((d) => (
-                    <button
+                    <Button
+                      variant="unstyled"
                       key={d.value}
                       type="button"
                       onClick={() => {
@@ -1583,7 +1587,7 @@ function AnomalyIntelligence({
                       )}
                     >
                       {d.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
@@ -1649,7 +1653,8 @@ function AnomalyIntelligence({
             {showDomainPicker && (
               <div className="absolute right-0 top-full mt-1 z-10 bg-[var(--color-surface-1)] border border-white/[0.08] rounded-xl shadow-[var(--shadow-elevated)] py-1 min-w-[160px]">
                 {ANOMALY_DOMAINS.map((d) => (
-                  <button
+                  <Button
+                    variant="unstyled"
                     key={d.value}
                     type="button"
                     onClick={() => {
@@ -1667,7 +1672,7 @@ function AnomalyIntelligence({
                     )}
                   >
                     {d.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
@@ -2097,7 +2102,8 @@ function AIOperationsAdvisor({
               const cfg = RECO_PRIORITY_CONFIG[rec.priority];
               const RecIcon = rec.icon;
               return (
-                <button
+                <Button
+                  variant="unstyled"
                   key={rec.id}
                   type="button"
                   onClick={() => rec.action && handleAction(rec)}
@@ -2122,7 +2128,7 @@ function AIOperationsAdvisor({
                       {rec.metric} — {rec.category}
                     </p>
                   </div>
-                </button>
+                </Button>
               );
             })}
           </div>

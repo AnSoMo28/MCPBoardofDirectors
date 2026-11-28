@@ -85,6 +85,7 @@ import type { ConversationSeed } from "../ai-types";
 import { SEED_TONES, SEED_CHANNELS } from "../config";
 
 import "./ConversationSeeds.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════
 // §1  Registries
@@ -228,18 +229,20 @@ export function ConversationSeeds({
       {availableContexts.length > 1 && (
         <div className="fm-seed__filters">
           <Filter size={10} className="fm-seed__filter-icon" aria-hidden="true" />
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="fm-seed__filter-chip"
             data-active={activeFilter === "all"}
             onClick={() => handleFilter("all")}
           >
             Todas
-          </button>
+          </Button>
           {availableContexts.map((ctx) => {
             const cfg = CONTEXT_MAP[ctx];
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={ctx}
                 type="button"
                 className="fm-seed__filter-chip"
@@ -254,7 +257,7 @@ export function ConversationSeeds({
                 onClick={() => handleFilter(ctx)}
               >
                 {cfg.label}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -333,7 +336,8 @@ export function ConversationSeeds({
 
               {/* ── Actions ── */}
               <div className="fm-seed__actions">
-                <button
+                <Button
+                  variant="unstyled"
                   type="button"
                   className="fm-seed__action"
                   data-action="copy"
@@ -352,9 +356,10 @@ export function ConversationSeeds({
                       Copiar
                     </>
                   )}
-                </button>
+                </Button>
                 {onExecute && (
-                  <button
+                  <Button
+                    variant="unstyled"
                     type="button"
                     className="fm-seed__action"
                     data-action="execute"
@@ -363,7 +368,7 @@ export function ConversationSeeds({
                   >
                     <ExecIcon size={11} aria-hidden="true" />
                     {execCfg.label}
-                  </button>
+                  </Button>
                 )}
               </div>
             </article>

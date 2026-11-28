@@ -9,6 +9,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useRef } from "react";
+import './MarbleCanvas.css';
 
 interface Vein {
   col: string;
@@ -147,7 +148,7 @@ export default function MarbleCanvas() {
   return (
     <canvas
       ref={ref}
-      className="absolute inset-0 w-full h-full block"
+      className="marble-canvas absolute inset-0 w-full h-full block"
       style={{ zIndex: 0 }}
       aria-hidden="true"
     />

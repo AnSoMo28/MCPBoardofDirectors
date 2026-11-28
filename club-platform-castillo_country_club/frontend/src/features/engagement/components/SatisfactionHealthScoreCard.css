@@ -1,0 +1,75 @@
+/**
+ * @component SatisfactionHealthScoreCard
+ * @namespace .satisfaction-health-score-card
+ * @archetype gauge · domain emerald
+ * @depends globals.css (glass tokens, easing, semantic colors)
+ *
+ * Pareja CSS G10-CSS T1 — migración B-series completa.
+ * Firmas de movimiento únicas: keyframes prefijados satisfaction-health-score-card-*.
+ */
+.satisfaction-health-score-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.4s var(--ease-spring);
+}
+
+/* Halo del gauge — late al ritmo del valor: verde calmado, crítico rápido */
+.satisfaction-health-score-card::after {
+  content: "";
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-emerald-400) 7.1%, transparent) 0%, transparent 65%);
+  animation: satisfaction-health-score-card-halo-breathe 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes satisfaction-health-score-card-halo-breathe {
+  0%, 100% { transform: scale(0.94); opacity: 0.55; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+/* El anillo se dibuja al montar (draw-once) */
+.satisfaction-health-score-card__ring {
+  animation: satisfaction-health-score-card-ring-draw 1.2s var(--ease-apple) 1;
+  transform-origin: center;
+}
+
+@keyframes satisfaction-health-score-card-ring-draw {
+  from { stroke-dashoffset: var(--satisfaction-health-score-card-circ, 300); filter: blur(2px); }
+  to { filter: blur(0); }
+}
+
+.satisfaction-health-score-card__value {
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.satisfaction-health-score-card:hover .satisfaction-health-score-card__value {
+  transform: scale(1.06);
+}
+
+/* Punto de nivel bajo el número — pulso discreto */
+.satisfaction-health-score-card__level-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-emerald-400);
+  animation: satisfaction-health-score-card-level-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes satisfaction-health-score-card-level-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-emerald-400) 25.1%, transparent); }
+  60% { box-shadow: 0 0 0 5px transparent; }
+}
+
+.light .satisfaction-health-score-card::after {
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-emerald-500) 5.9%, transparent) 0%, transparent 65%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .satisfaction-health-score-card::after, .satisfaction-health-score-card__ring, .satisfaction-health-score-card__level-dot, .satisfaction-health-score-card__value { animation: none; transition: none; }
+}

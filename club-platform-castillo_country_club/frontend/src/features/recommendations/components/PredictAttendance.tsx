@@ -16,6 +16,7 @@ import { Badge } from "@/shared/components/ui/Badge";
 import { Input } from "@/shared/components/ui/Input";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
+import './PredictAttendance.css';
 
 import {
   CONFIDENCE_CONFIG,
@@ -69,7 +70,7 @@ export function PredictAttendance() {
   // ── Render ──
   return (
     <div
-      className="space-y-5"
+      className="predict-attendance space-y-5"
       role="region"
       aria-label="Predicción de asistencia a eventos"
     >

@@ -1,4 +1,5 @@
 import { Construction } from "lucide-react";
+import './Placeholder.css';
 
 interface PlaceholderProps {
   title: string;
@@ -7,7 +8,7 @@ interface PlaceholderProps {
 
 export function Placeholder({ title, subtitle }: PlaceholderProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+    <div className="placeholder flex flex-col items-center justify-center min-h-[60vh] gap-4">
       <div className="w-16 h-16 rounded-full bg-[var(--color-gold)]/10 flex items-center justify-center">
         <Construction className="w-8 h-8 text-[var(--color-gold)]" />
       </div>

@@ -17,6 +17,7 @@ import { cn, formatCurrency } from "@/shared/lib/utils";
 import { useMCPQuery } from "@/shared/hooks/useMCPQuery";
 import type { AdvisorScenarioResponse } from "@/shared/mocks/contracts";
 import './AISimulationPanel.css';
+import { Button } from "@/shared/components/ui/Button";
 
 /* ──────────────────────────────────────
    Types
@@ -579,7 +580,7 @@ export default function AISimulationPanel({
       >
         <AlertCircle className="w-4 h-4 text-[var(--color-silver-400)]" />
         <p>No se pudo generar la simulación.</p>
-        <button onClick={handleReSimulate} className="glass-sim__error-retry">Reintentar</button>
+        <Button variant="unstyled" onClick={handleReSimulate} className="glass-sim__error-retry">Reintentar</Button>
       </motion.div>
     );
   }
@@ -617,20 +618,21 @@ export default function AISimulationPanel({
           {/* Temporal Zoom Control */}
           <div className="glass-sim__zoom">
             {TIMEFRAMES.map((tf) => (
-              <button
+              <Button
+                variant="unstyled"
                 key={tf.key}
                 onClick={() => handleTimeframeChange(tf.key)}
                 className={cn("glass-sim__zoom-btn", timeframe === tf.key && "glass-sim__zoom-btn--active")}
               >
                 {tf.label}
-              </button>
+              </Button>
             ))}
           </div>
 
           {/* Re-simulate */}
-          <button onClick={handleReSimulate} className="glass-sim__refresh" aria-label="Re-simular">
+          <Button variant="unstyled" onClick={handleReSimulate} className="glass-sim__refresh" aria-label="Re-simular">
             <RefreshCw className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       </div>
 

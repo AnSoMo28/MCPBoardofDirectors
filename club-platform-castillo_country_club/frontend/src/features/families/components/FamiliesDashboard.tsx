@@ -52,6 +52,7 @@ import { DashboardCanvas } from "./DashboardCanvas";
 
 import "../family-atoms.css";
 import "./FamiliesDashboard.css";
+import { Button } from "@/shared/components/ui/Button";
 // ═══════════════════════════════════════════════════════════
 // §1  Types
 // ════════════════════════════════════════════════
@@ -482,27 +483,30 @@ export function FamiliesDashboard({ familyId, onNavigateFamily }: FamiliesDashbo
         {/* ── Command Bar ── */}
         <div className="fm-dash__command-bar">
           <div className="fm-dash__command-left">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fm-dash__nav-btn"
               onClick={() => onNavigateFamily?.("prev")}
               aria-label="Familia anterior"
             >
               <ChevronLeft size={14} />
-            </button>
+            </Button>
             <h1 className="fm-dash__family-name">{familyName}</h1>
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fm-dash__nav-btn"
               onClick={() => onNavigateFamily?.("next")}
               aria-label="Siguiente familia"
             >
               <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
 
           <div className="fm-dash__command-right">
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               className="fm-dash__palette-trigger"
               onClick={() => setPaletteOpen(true)}
@@ -512,7 +516,7 @@ export function FamiliesDashboard({ familyId, onNavigateFamily }: FamiliesDashbo
               <kbd className="fm-dash__kbd">
                 <Command size={10} />K
               </kbd>
-            </button>
+            </Button>
 
             {/* Composite score badge */}
             {engine.phase === "complete" && (

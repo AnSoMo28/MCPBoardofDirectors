@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 import time
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
@@ -26,6 +26,9 @@ from club_mcp.rag.parsers import DocumentParser
 from club_mcp.rag.chunker import SmartChunker
 from club_mcp.rag.embeddings import EmbeddingService
 from club_mcp.rag.vectorstore import ChromaVectorStore
+
+if TYPE_CHECKING:
+    from club_mcp.rag.pg_vectorstore import PgVectorStore
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +45,9 @@ ALLOWED_EXTENSIONS = DocumentParser.supported_extensions()
 
 _chunker = SmartChunker()
 _embeddings: EmbeddingService | None = None
-_vectorstore: ChromaVectorStore | None = None
+# Ola 2.2: la unión de la factory (ChromaVectorStore | PgVectorStore
+# — misma API pública, ver pg_vectorstore.build_vectorstore).
+_vectorstore: ChromaVectorStore | PgVectorStore | None = None
 
 
 def _get_embeddings() -> EmbeddingService:
@@ -52,10 +57,13 @@ def _get_embeddings() -> EmbeddingService:
     return _embeddings
 
 
-def _get_vectorstore() -> ChromaVectorStore:
+def _get_vectorstore() -> ChromaVectorStore | PgVectorStore:
     global _vectorstore
     if _vectorstore is None:
-        _vectorstore = ChromaVectorStore()
+        # Ola 2.2 opt-in: CLUB_RAG_BACKEND=pgvector → PgVectorStore.
+        from club_mcp.rag.pg_vectorstore import build_vectorstore
+
+        _vectorstore = build_vectorstore()
     return _vectorstore
 
 

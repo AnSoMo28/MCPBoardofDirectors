@@ -65,16 +65,30 @@ class DocumentIntelligenceRepository:
             self._rag_service = self._build_rag_service()
         return self._rag_service
 
+    @property
+    def rag_service_ready(self) -> Any:
+        """
+        RAG service if ALREADY built, else None (0055, W-2b).
+
+        Bootstrap needs the instance WITHOUT triggering the lazy build
+        (loading bge-m3 at bootstrap is a behavior change). Same semantics
+        as the old getattr(doc_repo, "_rag_service", None), but as public
+        contract: a 2.2 pgvector repo exposes the same property.
+        """
+        return self._rag_service
+
     def _build_rag_service(self) -> Any:
         """Build and connect all RAG components."""
         from club_mcp.rag.embeddings import EmbeddingService
-        from club_mcp.rag.vectorstore import ChromaVectorStore
+        from club_mcp.rag.pg_vectorstore import build_vectorstore
         from club_mcp.rag.search import HybridSearchEngine
         from club_mcp.rag.reranker import Reranker
         from club_mcp.rag.rag_service import RAGService
 
         embeddings = EmbeddingService()
-        vectorstore = ChromaVectorStore()
+        # Ola 2.2 opt-in: CLUB_RAG_BACKEND=pgvector → PgVectorStore
+        # (tabla rag_chunks); default → ChromaVectorStore (sin cambio).
+        vectorstore = build_vectorstore()
         search = HybridSearchEngine(embeddings, vectorstore)
         reranker = Reranker()
 
@@ -175,13 +189,106 @@ class DocumentIntelligenceRepository:
         return True
 
     # ══════════════════════════════════════════════════════
+    # RAG CONTRACT (0055) — public delegation, no tunneling
+    #
+    # Pre-contrato (patrón 0039/0042): el agente atraviesaba
+    # self.repo.rag.* en 7 sitios (incl. _collection.get ×2 y
+    # vectorstore.update ×2) y el propio repo se auto-tunelaba
+    # ×2. El repo ORM de la Ola 2.1-decimoctava no tendrá .rag
+    # con esa forma: la superficie RAG del agente pasa a ser
+    # ESTOS métodos. Cero cambio de comportamiento: cada
+    # método delega exactamente en lo que el túnel hacía.
+    # ══════════════════════════════════════════════════════
+
+    async def search_chunks(
+        self,
+        query: str,
+        user_role: str = "socio",
+        top_k: int = 20,
+        category: str | None = None,
+        document_type: str | None = None,
+    ) -> list[Any]:
+        """
+        Hybrid search over chunks (BM25 + vector + RRF) with populated content.
+
+        Exactly what query_documents' tunnel did: search_engine.search +
+        populate_content (content="" from hybrid search is filled from
+        the vectorstore — b0v). Q-SEC-04: least privilege default.
+        """
+        candidates = await self.rag.search_engine.search(
+            query=query,
+            user_role=user_role,
+            top_k=top_k,
+            category=category,
+            document_type=document_type,
+        )
+        populated: list[Any] = self.rag.populate_content(candidates)
+        return populated
+
+    def update_access_metadata(
+        self,
+        document_id: str,
+        access_level: str,
+    ) -> None:
+        """
+        Propagate an access-level change to the RAG chunks' metadata.
+
+        Exactly what the HITL executors' duplicated ChromaDB block did
+        (execute_ingest_document + execute_document_access_change —
+        absorbed once): fetch chunks by document_id, rewrite
+        access_level, update. Sits on vectorstore public API only.
+        Failure is logged and swallowed (best-effort, as before).
+        """
+        from club_mcp.rag.vectorstore import ACCESS_HIERARCHY
+
+        try:
+            chunks = self.rag.vectorstore.get_chunks_by_document(document_id)
+            if chunks.get("ids"):
+                updated_metas: list[dict[str, Any]] = []
+                for meta in chunks["metadatas"]:
+                    meta["access_level"] = ACCESS_HIERARCHY.get(access_level, 1)
+                    updated_metas.append(meta)
+                self.rag.vectorstore.update(
+                    ids=chunks["ids"],
+                    metadatas=updated_metas,
+                )
+        except Exception as exc:
+            logger.warning("[doc_repo] RAG access metadata update failed for '%s': %s", document_id, exc)
+
+    async def query_knowledge_rag(
+        self,
+        question: str,
+        user_role: str = "socio",
+        conversation_id: str | None = None,
+        max_sources: int = 5,
+    ) -> Any:
+        """
+        Raw RAGResponse from the conversational pipeline.
+
+        execute_knowledge_report needs sources + answer separately
+        (dict-typed query_knowledge loses the response object).
+        Q-SEC-04: least privilege default.
+        """
+        return await self.rag.query_rag(
+            question=question,
+            user_role=user_role,
+            conversation_id=conversation_id,
+            max_sources=max_sources,
+        )
+
+    # ══════════════════════════════════════════════════════
     # RAG DELEGATION
     # ══════════════════════════════════════════════════════
 
     async def search_documents_rag(
         self,
         query: str,
-        user_role: str = "admin",
+        # Q-SEC-04 (Ola 1.2 · cierre 0055): least privilege — el default
+        # del repo pasa de "admin" a "socio". El default anterior solo era
+        # seguro si TODOS los callers pasaban rol explícito; un caller que
+        # olvidara el parámetro obtenía acceso admin. La capa agente ya
+        # endureció en Ola 1.2; este es el residuo del repo.
+        user_role: str = "socio",
         document_types: list[str] | None = None,
         category: str | None = None,
         limit: int = 24,
@@ -206,7 +313,9 @@ class DocumentIntelligenceRepository:
     async def query_knowledge(
         self,
         question: str,
-        user_role: str = "admin",
+        # Q-SEC-04 (Ola 1.2 · cierre 0055): mismo least-privilege que
+        # search_documents_rag — el default del repo es socio.
+        user_role: str = "socio",
         conversation_id: str | None = None,
         max_sources: int = 5,
     ) -> dict[str, Any]:
@@ -321,14 +430,22 @@ class DocumentIntelligenceRepository:
         limit: int = 5,
     ) -> dict[str, Any]:
         """Find similar documents using vector similarity."""
-        # Get some chunks from the source document
-        source_chunks = self.rag.vectorstore.query(
-            embedding=self.rag._embeddings.embed_query(""),  # Empty query → get any chunks
-            n_results=1,
-            where={"document_id": document_id},
-        )
+        # Get a source chunk directly by metadata — no embedding needed
+        # (P2-C3h b0v: the old embed_query("") hack always raised
+        # ValueError "Cannot embed empty query"; search_similar never worked).
+        source_text: str | None = None
+        try:
+            fetched = self.rag.vectorstore.get_chunks_by_document(
+                document_id=document_id,
+                limit=1,
+                include=["documents"],
+            )
+            docs = fetched.get("documents") or []
+            source_text = docs[0] if docs else None
+        except Exception as exc:
+            logger.warning("[doc_repo] Could not fetch source chunk: %s", exc)
 
-        if not source_chunks:
+        if not source_text:
             # Fallback: use document metadata
             doc = await self.get_document(document_id)
             if not doc:
@@ -353,8 +470,10 @@ class DocumentIntelligenceRepository:
             }
 
         # Use the source document's embedding to find similar
-        source_embedding = self.rag._embeddings.embed_query(
-            source_chunks[0]["document"][:500]
+        # (0055: RAGService._embeddings via the public property —
+        # the pgvector swap of 2.2 replaces these internals in ONE file.)
+        source_embedding = self.rag.embeddings.embed_query(
+            source_text[:500]
         )
 
         results = self.rag.vectorstore.query(
@@ -463,13 +582,18 @@ class DocumentIntelligenceRepository:
             "by_access_level": by_access,
         }
 
-        # Merge with RAG stats (vector store, BM25, conversations)
-        try:
-            rag_stats = self.rag.get_stats()
-            return {
-                **metadata_stats,
-                "rag": rag_stats,
-            }
-        except Exception as exc:
-            logger.warning("[doc_repo] Could not get RAG stats: %s", exc)
-            return metadata_stats
+        # Merge with RAG stats SOLO si ya fue construido (W-2b, run #70:
+        # self.rag es LAZY — al tocarla acá dispara el build del RAG y la
+        # descarga de bge-m3 en runtime. get_stats() es una lectura de
+        # metadatos: nunca debe construir el pipeline — idéntico al ORM
+        # para que el drop-in siga siendo el MISMO contrato observable).
+        rag_stats = self.rag_service_ready
+        if rag_stats is not None:
+            try:
+                return {
+                    **metadata_stats,
+                    "rag": rag_stats.get_stats(),
+                }
+            except Exception as exc:
+                logger.warning("[doc_repo] Could not get RAG stats: %s", exc)
+        return metadata_stats

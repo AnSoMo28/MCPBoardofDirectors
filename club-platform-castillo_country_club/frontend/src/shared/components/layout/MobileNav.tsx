@@ -23,6 +23,7 @@ import { useAuthStore, type UserRole } from "@/stores/auth.store";
 import { useSidebarStore } from "@/stores/sidebar.store";
 import { prefetchRoute } from "@/shared/lib/routePrefetch";
 import { cn } from "@/shared/lib/utils";
+import './MobileNav.css';
 
 interface MobileNavItem {
   label: string;
@@ -71,7 +72,7 @@ export function MobileNav() {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 glass-mobile-nav"
+      className="mobile-nav lg:hidden fixed bottom-0 left-0 right-0 z-50 glass-mobile-nav"
       aria-label="Navegación móvil"
     >
       <div className="flex items-stretch justify-around">

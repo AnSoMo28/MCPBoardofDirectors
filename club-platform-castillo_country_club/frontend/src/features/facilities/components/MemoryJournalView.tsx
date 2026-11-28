@@ -36,6 +36,7 @@ import type {
 } from "../types";
 
 import "./MemoryJournalView.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════
 // CHAPTER TYPE CONFIG
@@ -168,7 +169,8 @@ export function MemoryJournalView({ narratives, facilities, ambientMode = "calm"
           {facilities.map((f) => {
             const isActive = activeFacility === f.id;
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={f.id}
                 className="glass-fac-journal__chip"
                 data-active={isActive ? "true" : undefined}
@@ -177,7 +179,7 @@ export function MemoryJournalView({ narratives, facilities, ambientMode = "calm"
                 onClick={() => setActiveFacility(f.id)}
               >
                 {f.name.length > 12 ? f.name.slice(0, 10) + "…" : f.name}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -334,7 +336,8 @@ export function MemoryJournalView({ narratives, facilities, ambientMode = "calm"
           placeholder="Pregunta a la memoria..."
           aria-label="Preguntar a la memoria del espacio"
         />
-        <button
+        <Button
+          variant="unstyled"
           type="submit"
           className="glass-fac-journal__query-submit"
           disabled={!queryText.trim() || !activeFacility}
@@ -344,7 +347,7 @@ export function MemoryJournalView({ narratives, facilities, ambientMode = "calm"
             <line x1="22" y1="2" x2="11" y2="13" />
             <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
-        </button>
+        </Button>
       </form>
 
       {/* ── Query Answer ── */}

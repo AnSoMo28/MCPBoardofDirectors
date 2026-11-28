@@ -8,6 +8,7 @@
 
 import { Component, type ReactNode, type ErrorInfo } from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import './ErrorBoundary.css';
 
 interface Props {
   children: ReactNode;
@@ -64,7 +65,7 @@ export class ErrorBoundary extends Component<Props, State> {
           `}
         >
           <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+            className="error-boundary w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
             style={{
               backgroundColor: "color-mix(in srgb, var(--color-rose-400) 12%, transparent)",
             }}

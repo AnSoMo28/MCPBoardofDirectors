@@ -1,13 +1,22 @@
-"""In-memory wellness repository."""
+"""In-memory wellness repository.
+
+Ola 2.1-decimosexta: cirugía async sync→async (misma mecánica que
+compliance §3.8-QUINQUE y finance §3.8-DECIMOQUINTA — el agente YA
+era 100% async en sus tools y 100% desacoplado de privados: 0
+self.repo._). El cuerpo de cada método NO cambia: async def + return
+igual — el contrato observable queda idéntico, solo pasa a ser
+awaitable para que el repo ORM (db/orm) pueda ser drop-in exacto.
+
+Production will swap for PostgreSQL + SQLAlchemy.
+"""
 
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from club_mcp.models.wellness import (
-    ActivityType,
     AppointmentStatus,
     ClassAppointment,
     GoalStatus,
@@ -32,6 +41,12 @@ from club_mcp.models.wellness import (
 )
 
 
+# Emoji info con VS-16 (U+2139 U+FE0F): armado por codepoints para
+# que el fuente no contenga el confusable solo (RUF001). El string
+# de runtime ES el MISMO del in-memory original.
+_INFO_EMOJI = "\u2139\ufe0f"
+
+
 def _gen_id(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:8]}"
 
@@ -48,52 +63,52 @@ class WellnessRepository:
 
     # ── Profiles ───────────────────────────────────────────
 
-    def create_profile(self, data: dict[str, Any]) -> WellnessProfile:
+    async def create_profile(self, data: dict[str, Any]) -> WellnessProfile:
         pid = _gen_id("wlp")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         data["id"] = pid
         data["created_at"] = now.isoformat()
         data["updated_at"] = now.isoformat()
         self._profiles[pid] = data
         return WellnessProfile(**data)
 
-    def get_profile(self, profile_id: str) -> WellnessProfile | None:
+    async def get_profile(self, profile_id: str) -> WellnessProfile | None:
         if profile_id not in self._profiles:
             return None
         return WellnessProfile(**self._profiles[profile_id])
 
-    def get_profile_by_family(self, family_id: str) -> WellnessProfile | None:
+    async def get_profile_by_family(self, family_id: str) -> WellnessProfile | None:
         for rec in self._profiles.values():
             if rec.get("family_id") == family_id:
                 return WellnessProfile(**rec)
         return None
 
-    def update_profile(self, profile_id: str, updates: dict[str, Any]) -> WellnessProfile | None:
+    async def update_profile(self, profile_id: str, updates: dict[str, Any]) -> WellnessProfile | None:
         if profile_id not in self._profiles:
             return None
         rec = self._profiles[profile_id]
         for k, v in updates.items():
             if v is not None:
                 rec[k] = v
-        rec["updated_at"] = datetime.now(timezone.utc).isoformat()
+        rec["updated_at"] = datetime.now(UTC).isoformat()
         return WellnessProfile(**rec)
 
     # ── Goals ──────────────────────────────────────────────
 
-    def create_goal(self, data: dict[str, Any]) -> WellnessGoal:
+    async def create_goal(self, data: dict[str, Any]) -> WellnessGoal:
         gid = _gen_id("goal")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         data["id"] = gid
         data["created_at"] = now.isoformat()
         self._goals[gid] = data
         return WellnessGoal(**data)
 
-    def get_goal(self, goal_id: str) -> WellnessGoal | None:
+    async def get_goal(self, goal_id: str) -> WellnessGoal | None:
         if goal_id not in self._goals:
             return None
         return WellnessGoal(**self._goals[goal_id])
 
-    def list_goals(self, family_id: str, status: str | None = None) -> list[WellnessGoal]:
+    async def list_goals(self, family_id: str, status: str | None = None) -> list[WellnessGoal]:
         out: list[WellnessGoal] = []
         for rec in self._goals.values():
             if rec.get("family_id") != family_id:
@@ -103,7 +118,7 @@ class WellnessRepository:
             out.append(WellnessGoal(**rec))
         return out
 
-    def update_goal(self, goal_id: str, updates: dict[str, Any]) -> WellnessGoal | None:
+    async def update_goal(self, goal_id: str, updates: dict[str, Any]) -> WellnessGoal | None:
         if goal_id not in self._goals:
             return None
         rec = self._goals[goal_id]
@@ -114,15 +129,15 @@ class WellnessRepository:
 
     # ── Activities ─────────────────────────────────────────
 
-    def log_activity(self, data: dict[str, Any]) -> WellnessActivity:
+    async def log_activity(self, data: dict[str, Any]) -> WellnessActivity:
         aid = _gen_id("wla")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         data["id"] = aid
         data["created_at"] = now.isoformat()
         self._activities[aid] = data
         return WellnessActivity(**data)
 
-    def list_activities(
+    async def list_activities(
         self,
         family_id: str,
         date_from: str | None = None,
@@ -141,18 +156,18 @@ class WellnessRepository:
 
     # ── Classes ────────────────────────────────────────────
 
-    def add_class(self, data: dict[str, Any]) -> WellnessClass:
+    async def add_class(self, data: dict[str, Any]) -> WellnessClass:
         cid = _gen_id("cls")
         data["id"] = cid
         self._classes[cid] = data
         return WellnessClass(**data)
 
-    def get_class(self, class_id: str) -> WellnessClass | None:
+    async def get_class(self, class_id: str) -> WellnessClass | None:
         if class_id not in self._classes:
             return None
         return WellnessClass(**self._classes[class_id])
 
-    def list_classes(self, activity_type: str | None = None) -> list[WellnessClass]:
+    async def list_classes(self, activity_type: str | None = None) -> list[WellnessClass]:
         out: list[WellnessClass] = []
         for rec in self._classes.values():
             if activity_type and rec.get("activity_type") != activity_type:
@@ -162,9 +177,9 @@ class WellnessRepository:
 
     # ── Appointments ───────────────────────────────────────
 
-    def create_appointment(self, data: dict[str, Any]) -> ClassAppointment:
+    async def create_appointment(self, data: dict[str, Any]) -> ClassAppointment:
         aid = _gen_id("appt")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         data["id"] = aid
         data["created_at"] = now.isoformat()
         self._appointments[aid] = data
@@ -176,7 +191,7 @@ class WellnessRepository:
             )
         return ClassAppointment(**data)
 
-    def cancel_appointment(self, appointment_id: str) -> ClassAppointment | None:
+    async def cancel_appointment(self, appointment_id: str) -> ClassAppointment | None:
         if appointment_id not in self._appointments:
             return None
         rec = self._appointments[appointment_id]
@@ -188,7 +203,7 @@ class WellnessRepository:
         rec["status"] = AppointmentStatus.CANCELLED.value
         return ClassAppointment(**rec)
 
-    def list_appointments(self, family_id: str) -> list[ClassAppointment]:
+    async def list_appointments(self, family_id: str) -> list[ClassAppointment]:
         out: list[ClassAppointment] = []
         for rec in self._appointments.values():
             if rec.get("family_id") != family_id:
@@ -198,10 +213,10 @@ class WellnessRepository:
 
     # ── Recommendations ────────────────────────────────────
 
-    def get_recommendations(self, family_id: str) -> list[WellnessRecommendation]:
-        profile = self.get_profile_by_family(family_id)
-        goals = self.list_goals(family_id, status="active")
-        activities = self.list_activities(family_id)
+    async def get_recommendations(self, family_id: str) -> list[WellnessRecommendation]:
+        profile = await self.get_profile_by_family(family_id)
+        goals = await self.list_goals(family_id, status="active")
+        activities = await self.list_activities(family_id)
 
         recs: list[WellnessRecommendation] = []
 
@@ -251,7 +266,7 @@ class WellnessRepository:
             ))
 
         # Available classes
-        available = self.list_classes()
+        available = await self.list_classes()
         for cls in available[:3]:
             recs.append(WellnessRecommendation(
                 category="class",
@@ -265,14 +280,14 @@ class WellnessRepository:
 
     # ── Reports ────────────────────────────────────────────
 
-    def generate_report(
+    async def generate_report(
         self,
         family_id: str,
         date_from: str,
         date_to: str,
     ) -> WellnessReport:
-        activities = self.list_activities(family_id, date_from, date_to)
-        goals = self.list_goals(family_id)
+        activities = await self.list_activities(family_id, date_from, date_to)
+        goals = await self.list_goals(family_id)
 
         total_min = sum(a.duration_minutes for a in activities)
         total_cal = sum(a.calories_burned for a in activities)
@@ -285,7 +300,7 @@ class WellnessRepository:
         breakdown = [
             {"activity_type": k, "count": v} for k, v in by_type.items()
         ]
-        most_freq = max(by_type, key=by_type.get) if by_type else ""
+        most_freq = max(by_type, key=by_type.__getitem__) if by_type else ""
 
         # Goals summary
         goals_by_status: dict[str, int] = {}
@@ -294,7 +309,7 @@ class WellnessRepository:
             goals_by_status[gs] = goals_by_status.get(gs, 0) + 1
 
         # Streak (consecutive days with activities)
-        unique_dates = sorted(set(a.date for a in activities if a.date))
+        unique_dates = sorted({a.date for a in activities if a.date})
         streak = 0
         for i in range(len(unique_dates) - 1, -1, -1):
             if i == len(unique_dates) - 1:
@@ -322,11 +337,11 @@ class WellnessRepository:
 
     # ── Prediction ─────────────────────────────────────────
 
-    def compute_prediction(self, family_id: str) -> WellnessPrediction:
+    async def compute_prediction(self, family_id: str) -> WellnessPrediction:
         """Compute wellness engagement and risk prediction."""
-        profile = self.get_profile_by_family(family_id)
-        goals = self.list_goals(family_id)
-        activities = self.list_activities(family_id)
+        profile = await self.get_profile_by_family(family_id)
+        goals = await self.list_goals(family_id)
+        activities = await self.list_activities(family_id)
 
         total_activities = len(activities)
         total_minutes = sum(a.duration_minutes for a in activities)
@@ -344,7 +359,7 @@ class WellnessRepository:
 
         # Activity consistency (unique active dates)
         active_dates = sorted(
-            set(a.date for a in activities if a.date)
+            {a.date for a in activities if a.date}
         )
 
         # Engagement score (0-100) — 4 weighted components
@@ -392,7 +407,7 @@ class WellnessRepository:
                 by_type[at] = by_type.get(at, 0) + 1
             activity_forecast = {
                 "current_distribution": by_type,
-                "most_frequent": max(by_type, key=by_type.get),
+                "most_frequent": max(by_type, key=by_type.__getitem__),
                 "total_unique_dates": len(active_dates),
                 "suggested_weekly_minutes": 150,
             }
@@ -468,21 +483,21 @@ class WellnessRepository:
 
     # ── Anomaly Detection ──────────────────────────────────
 
-    def detect_anomalies(
+    async def detect_anomalies(
         self, family_id: str
     ) -> WellnessAnomalyResponse:
         """Detect wellness anomalies for a family."""
-        activities = self.list_activities(family_id)
-        goals = self.list_goals(family_id)
+        activities = await self.list_activities(family_id)
+        goals = await self.list_goals(family_id)
 
         anomalies: list[WellnessAnomaly] = []
-        now = datetime.now(timezone.utc).isoformat()
-        today = datetime.now(timezone.utc).date()
+        now = datetime.now(UTC).isoformat()
+        today = datetime.now(UTC).date()
 
         # 1. Activity gap — last activity > 14 days ago
         if activities:
             dates = sorted(
-                set(a.date for a in activities if a.date),
+                {a.date for a in activities if a.date},
                 reverse=True,
             )
             if dates:
@@ -617,7 +632,7 @@ class WellnessRepository:
         # 4. Overtraining — >600 min in last 7 days
         if activities:
             week_ago = (
-                datetime.now(timezone.utc)
+                datetime.now(UTC)
                 - timedelta(days=7)
             ).strftime("%Y-%m-%d")
             recent = [
@@ -668,7 +683,7 @@ class WellnessRepository:
             )
         else:
             summary = (
-                f"ℹ️ {len(anomalies)} anomalía(s) detectada(s)."
+                f"{_INFO_EMOJI} {len(anomalies)} anomalía(s) detectada(s)."
             )
 
         return WellnessAnomalyResponse(
@@ -691,14 +706,14 @@ class WellnessRepository:
         mean_y = sum(y) / n
         num = sum(
             (xi - mean_x) * (yi - mean_y)
-            for xi, yi in zip(x, y)
+            for xi, yi in zip(x, y, strict=False)
         )
         den_x = sum((xi - mean_x) ** 2 for xi in x)
         den_y = sum((yi - mean_y) ** 2 for yi in y)
-        den = (den_x * den_y) ** 0.5
+        den = float((den_x * den_y) ** 0.5)
         if den == 0:
             return 0.0
-        return max(-1.0, min(1.0, num / den))
+        return max(-1.0, min(1.0, float(num) / den))
 
     @staticmethod
     def _significance(coeff: float) -> str:
@@ -712,7 +727,7 @@ class WellnessRepository:
 
     # ── Cross-Domain Correlations ───────────────────────────
 
-    def compute_correlations(self) -> WellnessCorrelateResponse:
+    async def compute_correlations(self) -> WellnessCorrelateResponse:
         """Compute cross-domain wellness correlations (club-wide).
 
         Iterates all families to produce:
@@ -730,8 +745,8 @@ class WellnessRepository:
                 continue
             seen.add(fid)
 
-            activities = self.list_activities(fid)
-            goals = self.list_goals(fid)
+            activities = await self.list_activities(fid)
+            goals = await self.list_goals(fid)
 
             total_activities = len(activities)
             total_minutes = sum(a.duration_minutes for a in activities)
@@ -765,11 +780,11 @@ class WellnessRepository:
             retention = 0.0
             if activities:
                 dates = sorted(
-                    set(a.date for a in activities if a.date),
+                    {a.date for a in activities if a.date},
                     reverse=True,
                 )
                 if dates:
-                    today = datetime.now(timezone.utc).date()
+                    today = datetime.now(UTC).date()
                     try:
                         last = datetime.strptime(
                             dates[0], "%Y-%m-%d"
@@ -905,7 +920,7 @@ class WellnessRepository:
             avg_eng = (
                 stats["engagement_sum"] / max(1, fam_count)
             )
-            # Revenue impact: families × engagement × scale
+            # Revenue impact: families x engagement x scale
             revenue_impact = round(
                 fam_count * (avg_eng / 100) * 200_000, 0
             )
@@ -941,7 +956,7 @@ class WellnessRepository:
 
     # ── Comprehensive Insights ──────────────────────────────
 
-    def compute_insights(
+    async def compute_insights(
         self, family_id: str
     ) -> WellnessInsightsResponse:
         """Compute comprehensive wellness insights for a family.
@@ -949,21 +964,21 @@ class WellnessRepository:
         Aggregates: prediction + anomalies + goals + activities
         into a structured insights report.
         """
-        profile = self.get_profile_by_family(family_id)
-        goals = self.list_goals(family_id)
-        activities = self.list_activities(family_id)
-        prediction = self.compute_prediction(family_id)
-        anomaly_resp = self.detect_anomalies(family_id)
+        profile = await self.get_profile_by_family(family_id)
+        goals = await self.list_goals(family_id)
+        activities = await self.list_activities(family_id)
+        prediction = await self.compute_prediction(family_id)
+        anomaly_resp = await self.detect_anomalies(family_id)
 
         # Report for last 90 days
-        today = datetime.now(timezone.utc).date()
+        today = datetime.now(UTC).date()
         date_to = today.isoformat()
         date_from = (today - timedelta(days=90)).isoformat()
-        report = self.generate_report(
+        _report = await self.generate_report(
             family_id, date_from, date_to
         )
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         health_score = prediction.engagement_score
         family_name = (
             profile.family_name if profile else family_id

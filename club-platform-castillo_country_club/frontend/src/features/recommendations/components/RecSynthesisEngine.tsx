@@ -33,6 +33,7 @@ import {
 } from "../types";
 
 import "./RecSynthesisEngine.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -266,14 +267,15 @@ export function RecSynthesisEngine({
             Motor de síntesis listo. Detecta correlaciones entre bienestar,
             eventos, finanzas, deportes y familias.
           </p>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             className="rse-trigger-btn"
             onClick={onTrigger}
           >
             <Play size={14} aria-hidden="true" />
             <span>Iniciar Síntesis</span>
-          </button>
+          </Button>
         </div>
       )}
 
@@ -479,14 +481,15 @@ export function RecSynthesisEngine({
               <span className="rse-opp-title">
                 Oportunidades Detectadas ({opportunities.length})
               </span>
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="rse-retry-btn"
                 onClick={handleRetry}
                 title="Re-ejecutar síntesis"
               >
                 <RefreshCw size={14} aria-hidden="true" />
-              </button>
+              </Button>
             </div>
 
             <div className="rse-opp-list">
@@ -545,7 +548,8 @@ export function RecSynthesisEngine({
             </div>
 
             {opportunities.length > 3 && (
-              <button
+              <Button
+                variant="unstyled"
                 type="button"
                 className="rse-expand-btn"
                 onClick={() => setIsExpanded((prev) => !prev)}
@@ -553,7 +557,7 @@ export function RecSynthesisEngine({
                 {isExpanded
                   ? "Colapsar"
                   : `Ver ${opportunities.length - 3} más`}
-              </button>
+              </Button>
             )}
           </div>
         </div>

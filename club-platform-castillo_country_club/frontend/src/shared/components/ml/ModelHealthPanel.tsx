@@ -573,7 +573,8 @@ function ModelCard({
       {/* Feature Importance */}
       {model.feature_importance.length > 0 && (
         <>
-          <button
+          <Button
+            variant="unstyled"
             type="button"
             onClick={() => setExpanded(!expanded)}
             className="glass-mhp__features-toggle"
@@ -584,7 +585,7 @@ function ModelCard({
             ) : (
               <ChevronDown size={12} />
             )}
-          </button>
+          </Button>
 
           <AnimatePresence>
             {expanded && (

@@ -1,11 +1,12 @@
 /**
  * @component ApprovalCard (Fase 25)
  * @namespace .glass-approval__card
- * @depends ApprovalQueue.css, ParamsPreview
+ * @depends ApprovalCard.css, ParamsPreview
  * @note Approval card with expand/collapse, dual approval, expiration countdown,
  *       approve/reject flow, batch checkbox.
- * @import import './ApprovalQueue.css';
+ * @import import './ApprovalCard.css';
  */
+import "./ApprovalCard.css";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -133,7 +134,8 @@ export function ApprovalCard({
       )}
 
       {/* ── Header ── */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="glass-approval__card-header"
         onClick={() => setExpanded((e) => !e)}
@@ -227,7 +229,7 @@ export function ApprovalCard({
         <span className="glass-approval__card-expand-btn">
           {expanded ? <ChevronUp /> : <ChevronDown />}
         </span>
-      </button>
+      </Button>
 
       {/* ── Expanded body ── */}
       <AnimatePresence>

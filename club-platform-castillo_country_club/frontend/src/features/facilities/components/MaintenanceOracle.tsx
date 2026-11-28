@@ -33,6 +33,7 @@ import type {
 } from "../types";
 
 import "./MaintenanceOracle.css";
+import { Button } from "@/shared/components/ui/Button";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -258,7 +259,8 @@ export function MaintenanceOracle({
             const isActive = activeFacility === opt.id;
             const status = healthToStatus(opt.avgHealth);
             return (
-              <button
+              <Button
+                variant="unstyled"
                 key={opt.id}
                 className="glass-fac-oracle__chip"
                 data-active={isActive ? "true" : undefined}
@@ -269,7 +271,7 @@ export function MaintenanceOracle({
               >
                 <span className="glass-fac-oracle__chip-name">{opt.name}</span>
                 <span className="glass-fac-oracle__chip-health">{opt.avgHealth}%</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -433,7 +435,8 @@ export function MaintenanceOracle({
 
                 {/* ── Schedule Button (Sense 4: INTENCIÓN) ── */}
                 {optimalAction && (
-                  <button
+                  <Button
+                    variant="unstyled"
                     className="glass-fac-oracle__schedule-btn"
                     data-status={status}
                     onClick={() => onScheduleMaintenance?.(optimalAction)}
@@ -459,7 +462,7 @@ export function MaintenanceOracle({
                         {optimalAction.priority}
                       </span>
                     )}
-                  </button>
+                  </Button>
                 )}
               </div>
             );

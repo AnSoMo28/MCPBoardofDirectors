@@ -1,0 +1,2532 @@
+P2-C3h · h4-evidence — dispatch + firmas + mocks
+  base: 00417eb P2-C3g: migrar frontend a tools MCP reales (#1 #2 #5 #6 #9 #10 #11 #16, D5, C16)
+
+══ A1. api/routes/agents.py — COMPLETO (dispatch {agent_name}/{tool_name}) ══
+  ── backend/src/club_mcp/api/routes/agents.py (105 líneas) ──
+     1│ """Agent tool proxy route: authenticated MCP tool calls via REST."""
+     2│ 
+     3│ from __future__ import annotations
+     4│ 
+     5│ import logging
+     6│ from typing import Any
+     7│ 
+     8│ from fastapi import APIRouter, Depends, HTTPException, Request, status
+     9│ from pydantic import BaseModel
+    10│ 
+    11│ from club_mcp.auth.jwt_service import TokenPayload
+    12│ from club_mcp.auth.middleware import get_current_user
+    13│ from club_mcp.auth.rbac import TOOL_PERMISSION_MAP, check_permission
+    14│ from club_mcp.auth.jwt_service import TokenPayload
+    15│ 
+    16│ import inspect
+    17│ 
+    18│ logger = logging.getLogger(__name__)
+    19│ 
+    20│ router = APIRouter()
+    21│ 
+    22│ 
+    23│ class ToolCallRequest(BaseModel):
+    24│     params: dict[str, Any] = {}
+    25│ 
+    26│ 
+    27│ @router.post("/{agent_name}/{tool_name}")
+    28│ async def call_agent_tool(
+    29│     agent_name: str,
+    30│     tool_name: str,
+    31│     body: ToolCallRequest,
+    32│     request: Request,
+    33│     current_user: TokenPayload = Depends(get_current_user),
+    34│ ) -> dict:
+    35│     """Call an MCP tool on an agent with RBAC enforcement."""
+    36│ 
+    37│     # 1. Permission check
+    38│     required_permission = TOOL_PERMISSION_MAP.get(tool_name)
+    39│     if required_permission and not check_permission(
+    40│         current_user.role, required_permission
+    41│     ):
+    42│         raise HTTPException(
+    43│             status_code=status.HTTP_403_FORBIDDEN,
+    44│             detail=(
+    45│                 f"Permiso insuficiente para tool '{tool_name}'. "
+    46│                 f"Se requiere: {required_permission.value}"
+    47│             ),
+    48│         )
+    49│ 
+    50│     # 2. Find agent
+    51│     agents = request.app.state.agents
+    52│     agent = agents.get(agent_name)
+    53│     if not agent:
+    54│         raise HTTPException(
+    55│             status_code=status.HTTP_404_NOT_FOUND,
+    56│             detail=f"Agente '{agent_name}' no encontrado",
+    57│         )
+    58│ 
+    59│     # 3. Find tool method on agent
+    60│     tool_method = None
+    61│     for attr_name in dir(agent):
+    62│         if attr_name.startswith("_"):
+    63│             continue
+    64│         attr = getattr(agent, attr_name, None)
+    65│         if (
+    66│             attr
+    67│             and callable(attr)
+    68│             and getattr(attr, "_tool_name", None) == tool_name
+    69│         ):
+    70│             tool_method = attr
+    71│             break
+    72│ 
+    73│     if not tool_method:
+    74│         raise HTTPException(
+    75│             status_code=status.HTTP_404_NOT_FOUND,
+    76│             detail=(
+    77│                 f"Tool '{tool_name}' no encontrada en agente '{agent_name}'"
+    78│             ),
+    79│         )
+    80│ 
+    81│     # 4. Inject authenticated user and call
+    82│     params = dict(body.params)
+    83│ 
+    84│     # Only inject requested_by if the tool method accepts it
+    85│     sig = inspect.signature(tool_method)
+    86│     if "requested_by" in sig.parameters:
+    87│         params["requested_by"] = current_user.sub
+    88│ 
+    89│     try:
+    90│         result = await tool_method(**params)
+    91│         return result
+    92│     except TypeError as exc:
+    93│         raise HTTPException(
+    94│             status_code=status.HTTP_400_BAD_REQUEST,
+    95│             detail=f"Parámetros inválidos para '{tool_name}': {exc}",
+    96│         )
+    97│     except Exception as exc:
+    98│         logger.exception("Error calling tool %s/%s", agent_name, tool_name)
+    99│         raise HTTPException(
+   100│             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+   101│             detail=f"Error ejecutando '{tool_name}': {exc}",
+   102│         )
+   103│ 
+   104│ 
+   105│ 
+
+══ A2. agents/__init__.py — registro/aliases de agentes ══
+  ── backend/src/club_mcp/agents/__init__.py (38 líneas) ──
+     1│ """agents module."""
+     2│ from club_mcp.agents.family_profile import FamilyProfileAgent
+     3│ from club_mcp.agents.event_orchestrator import EventOrchestratorAgent
+     4│ from club_mcp.agents.age_group import AgeGroupAgent
+     5│ from club_mcp.agents.finance import FinanceAgent
+     6│ from club_mcp.agents.wellness import WellnessAgent
+     7│ from club_mcp.agents.compliance import ComplianceAgent
+     8│ from club_mcp.agents.sports_recreation_agent import SportsRecreationAgent
+     9│ from club_mcp.agents.cultural_social_agent import CulturalSocialAgent
+    10│ from club_mcp.agents.communication_agent import CommunicationAgent
+    11│ from club_mcp.agents.facility_management_agent import FacilityManagementAgent
+    12│ from club_mcp.agents.member_engagement_agent import MemberEngagementAgent
+    13│ from club_mcp.agents.guest_management_agent import GuestManagementAgent
+    14│ from club_mcp.agents.proactive_recommendation_agent import ProactiveRecommendationAgent
+    15│ from club_mcp.agents.document_intelligence_agent import DocumentIntelligenceAgent
+    16│ from club_mcp.agents.executive_dashboard_agent import ExecutiveDashboardAgent
+    17│ from club_mcp.agents.satisfaction_agent import SatisfactionAgent
+    18│ 
+    19│ 
+    20│ __all__ = [
+    21│     "FamilyProfileAgent",
+    22│     "EventOrchestratorAgent",
+    23│     "AgeGroupAgent",
+    24│     "FinanceAgent",
+    25│     "WellnessAgent",
+    26│     "ComplianceAgent",
+    27│     "SportsRecreationAgent",
+    28│     "CulturalSocialAgent",
+    29│     "CommunicationAgent",
+    30│     "FacilityManagementAgent",
+    31│     "MemberEngagementAgent",
+    32│     "GuestManagementAgent",
+    33│     "ProactiveRecommendationAgent",
+    34│     "DocumentIntelligenceAgent",
+    35│     "ExecutiveDashboardAgent",
+    36│     "SatisfactionAgent",
+    37│ ]
+    38│ 
+
+══ A3. server.py — wiring FastMCP/app/agent registry (líneas relevantes) ══
+  ── backend/src/club_mcp/server.py (159 líneas) ──
+     2│ MCP Server entry point for Castillo Country Club.
+     3│ Registers all agents and their tools.
+    11│ from fastmcp import FastMCP
+    13│ from club_mcp.agents.base import BaseAgent
+    14│ from club_mcp.agents.family_profile import FamilyProfileAgent
+    15│ from club_mcp.agents.event_orchestrator import EventOrchestratorAgent          # ← NUEVO
+    21│ from club_mcp.agents.age_group import AgeGroupAgent
+    23│ from club_mcp.agents.finance import FinanceAgent
+    25│ from club_mcp.agents.wellness import WellnessAgent
+    27│ from club_mcp.agents.compliance import ComplianceAgent
+    29│ from club_mcp.agents.sports_recreation_agent import SportsRecreationAgent
+    31│ from club_mcp.agents.cultural_social_agent import CulturalSocialAgent
+    33│ from club_mcp.agents.communication_agent import CommunicationAgent
+    35│ from club_mcp.agents.facility_management_agent import FacilityManagementAgent
+    40│ from club_mcp.agents.member_engagement_agent import MemberEngagementAgent
+    44│ from club_mcp.agents.guest_management_agent import GuestManagementAgent
+    48│ from club_mcp.agents.proactive_recommendation_agent import ProactiveRecommendationAgent
+    52│ from club_mcp.agents.document_intelligence_agent import DocumentIntelligenceAgent
+    56│ from club_mcp.agents.executive_dashboard_agent import ExecutiveDashboardAgent
+    60│ from club_mcp.agents.satisfaction_agent import SatisfactionAgent
+    62│ from club_mcp.agents.advisor_intelligence import AdvisorIntelligenceAgent
+    75│ def create_mcp_server() -> FastMCP:
+    76│     """Create and configure the MCP server with all agents."""
+    78│     mcp = FastMCP(
+   108│     # ── Instantiate agents with dependencies ───────────────
+   109│     agents: list[BaseAgent] = [
+   110│         FamilyProfileAgent(family_repo, approval_engine, notifier),
+   111│         EventOrchestratorAgent(event_repo, approval_engine, notifier, club_config),
+   112│         AgeGroupAgent(age_group_repo, approval_engine, notifier),
+   113│         FinanceAgent(
+   119│         WellnessAgent(wellness_repo, approval_engine, notifier),
+   120│         ComplianceAgent(compliance_repo, approval_engine, notifier),
+   121│         SportsRecreationAgent(sports_recreation_repo, approval_engine, notifier),                         
+   122│         CulturalSocialAgent(cultural_social_repo, approval_engine, notifier),
+   123│         CommunicationAgent(communication_repo, approval_engine, notifier),
+   124│         FacilityManagementAgent(facility_management_repo, approval_engine, notifier),
+   125│         MemberEngagementAgent(member_engagement_repo, approval_engine, notifier),        
+   126│         GuestManagementAgent(guest_management_repo, approval_engine, notifier),
+   127│         ProactiveRecommendationAgent(proactive_recommendation_repo, approval_engine, notifier),
+   128│         DocumentIntelligenceAgent(document_intelligence_repo, approval_engine, notifier),
+   129│         ExecutiveDashboardAgent(executive_dashboard_repo, approval_engine, notifier),
+   130│         SatisfactionAgent(satisfaction_repo, approval_engine, notifier),
+   131│         AdvisorIntelligenceAgent(claude_service, approval_engine, notifier),
+   132│         CommunicationAgent(communication_repo, approval_engine, notifier, rag_service=(document_intelligence_repo._rag_service if hasattr(document_intelligence_repo, "_rag_service") else None)),
+   135│     # ── Register all agents with MCP ───────────────────────
+   136│     total_tools = 0
+   137│     for agent in agents:
+   138│         count = agent.register_with_mcp(mcp)
+   139│         total_tools += count
+   140│         logger.info("Agent registered: %s (%d tools)", agent.name, count)
+   143│         "MCP Server ready: Castillo Country Club 🏰 | %d agents | %d tools",
+   144│         len(agents),
+   145│         total_tools,
+   153│     mcp = create_mcp_server()
+
+══ A4. Literales 'hitl'/'reports' como nombre de agente en backend/src ══
+    backend/src/club_mcp/ai/prompts.py:590│ - Las acciones con approval_level "hitl" deben tener confirmMessage en params
+    backend/src/club_mcp/hitl/approval_types.py:18│ HITL = "hitl"
+
+══ B. base.py — decorador MCPTool + HITL wrapper ══
+  ── backend/src/club_mcp/agents/base.py (121 líneas) ──
+     1│ """
+     2│ Base agent class.
+     3│ Provides: tool registration decorator, MCP integration, HITL support.
+     4│ """
+     5│ 
+     6│ from __future__ import annotations
+     7│ 
+     8│ import logging
+     9│ from abc import ABC, abstractmethod
+    10│ from enum import Enum
+    11│ from functools import wraps
+    12│ from typing import Any, Callable, Optional
+    13│ 
+    14│ from club_mcp.hitl.approval_engine import ApprovalEngine
+    15│ from club_mcp.hitl.approval_types import ApprovalLevel
+    16│ 
+    17│ logger = logging.getLogger(__name__)
+    18│ 
+    19│ 
+    20│ class MCPTool:
+    21│     """
+    22│     Decorator to mark a method as an MCP tool.
+    23│     Usage:
+    24│         @MCPTool("family_get_profile", "Obtiene el perfil", ApprovalLevel.AUTO)
+    25│         async def get_profile(self, family_id: str) -> dict: ...
+    26│     """
+    27│ 
+    28│     def __init__(
+    29│         self,
+    30│         name: str,
+    31│         description: str,
+    32│         approval: ApprovalLevel = ApprovalLevel.AUTO,
+    33│         approver_roles: Optional[list[str]] = None,
+    34│     ) -> None:
+    35│         self.name = name
+    36│         self.description = description
+    37│         self.approval = approval
+    38│         self.approver_roles = approver_roles or []
+    39│ 
+    40│     def __call__(self, func: Callable) -> Callable:
+    41│         func._mcp_tool = True  # type: ignore[attr-defined]
+    42│         func._tool_name = self.name  # type: ignore[attr-defined]
+    43│         func._tool_description = self.description  # type: ignore[attr-defined]
+    44│         func._tool_approval = self.approval  # type: ignore[attr-defined]
+    45│         func._tool_approver_roles = self.approver_roles  # type: ignore[attr-defined]
+    46│         return func
+    47│ 
+    48│ 
+    49│ class BaseAgent(ABC):
+    50│     """
+    51│     Abstract base class for all MCP agents.
+    52│     Subclasses must implement agent_name, description, and _register_tools().
+    53│     """
+    54│ 
+    55│     agent_name: str
+    56│     description: str
+    57│ 
+    58│     def __init__(self) -> None:
+    59│         self.approval_engine = ApprovalEngine()
+    60│         self._mcp: Any = None
+    61│ 
+    62│     def register_with_mcp(self, mcp: Any) -> int:
+    63│         """
+    64│         Scan for @MCPTool-decorated methods and register them with the MCP server.
+    65│         Returns the number of tools registered.
+    66│         """
+    67│         self._mcp = mcp
+    68│         count = 0
+    69│         for attr_name in dir(self):
+    70│             if attr_name.startswith("_"):
+    71│                 continue
+    72│             attr = getattr(self, attr_name, None)
+    73│             if attr is None:
+    74│                 continue
+    75│             if not callable(attr):
+    76│                 continue
+    77│             if not getattr(attr, "_mcp_tool", False):
+    78│                 continue
+    79│ 
+    80│             tool_name: str = attr._tool_name
+    81│             tool_desc: str = attr._tool_description
+    82│             approval: ApprovalLevel = attr._tool_approval
+    83│ 
+    84│             wrapper = self._wrap_with_hitl(attr, approval)
+    85│ 
+    86│             mcp.tool(name=tool_name, description=tool_desc)(wrapper)
+    87│             count += 1
+    88│             logger.debug(
+    89│                 "[%s] Registered tool: %s (approval=%s)",
+    90│                 self.agent_name, tool_name, approval.value,
+    91│             )
+    92│ 
+    93│         logger.info("[%s] Registered %d tools", self.agent_name, count)
+    94│         return count
+    95│ 
+    96│     def _wrap_with_hitl(
+    97│         self,
+    98│         func: Callable,
+    99│         approval: ApprovalLevel,
+   100│     ) -> Callable:
+   101│         """
+   102│         Wraps a tool method to inject HITL metadata into the response.
+   103│         Does NOT block execution - that logic lives in each tool.
+   104│         This wrapper adds metadata so the caller knows the approval level.
+   105│         """
+   106│ 
+   107│         @wraps(func)
+   108│         async def wrapper(*args: Any, **kwargs: Any) -> Any:
+   109│             result = await func(*args, **kwargs)
+   110│             if isinstance(result, dict):
+   111│                 result["_approval_level"] = approval.value
+   112│                 result["_agent"] = self.agent_name
+   113│             return result
+   114│ 
+   115│         return wrapper
+   116│ 
+   117│     @abstractmethod
+   118│     def _register_tools(self) -> None:
+   119│         """Legacy hook for manual tool registration. Not used with @MCPTool."""
+   120│         ...
+   121│ 
+
+══ C. Firmas y cuerpos de 31 tools target ══
+  ── finance_account_status · backend/src/club_mcp/agents/finance.py ──
+     403│     @MCPTool(
+     404│         "finance_account_status",
+     405│         "Consultar el estado de cuenta de una familia.",
+     406│         approval=ApprovalLevel.AUTO,
+     407│     )
+     408│     async def finance_account_status(
+     409│         self,
+     410│         family_id: str,
+     411│     ) -> dict[str, Any]:
+     412│         """Get account status for a family."""
+     413│         status = self.repo.get_account_status(family_id)
+     414│ 
+     415│         if not status or (not status.invoices and status.total_invoiced == 0):
+     416│             return {
+     417│                 "status": "success",
+     418│                 "message": "📋 No hay actividad financiera para esta familia.",
+     419│                 "data": {"family_id": family_id, "balance_due": 0},
+     420│             }
+     421│ 
+     422│         emoji = "✅" if status.balance_due <= 0 else "⚠️"
+     423│         overdue_msg = (
+     424│             f" ¡Tiene {status.overdue_count} factura(s) vencida(s) "
+     425│             f"por ${status.overdue_amount:,.2f}!"
+     426│             if status.overdue_count > 0
+     427│             else ""
+     428│         )
+     429│ 
+     430│         return {
+     431│             "status": "success",
+     432│             "message": (
+     433│                 f"{emoji} Estado de cuenta: "
+     434│                 f"Facturado ${status.total_invoiced:,.2f}, "
+     435│                 f"Pagado ${status.total_paid:,.2f}, "
+     436│                 f"Saldo ${status.balance_due:,.2f}.{overdue_msg}"
+     437│             ),
+     438│             "data": status.model_dump(mode="json"),
+     439│             "balance_due": status.balance_due,
+     440│             "overdue_amount": status.overdue_amount,
+     441│         }
+     442│ 
+     443│     # ─────────────────────────────────────────────────────────
+     444│     # Tool 7: finance_category_update  🟡 SEMI-AUTO
+     445│     # ─────────────────────────────────────────────────────────
+     446│ 
+
+  ── finance_invoice_create · backend/src/club_mcp/agents/finance.py ──
+     162│     @MCPTool(
+     163│         "finance_invoice_create",
+     164│         "Generar una factura para una familia. Requiere aprobación.",
+     165│         approval=ApprovalLevel.HITL,
+     166│     )
+     167│     async def finance_invoice_create(
+     168│         self,
+     169│         family_id: str,
+     170│         items: list[dict[str, Any]],
+     171│         due_date: str = "",
+     172│         notes: str = "",
+     173│         tax_rate: float = 0.0,
+     174│     ) -> dict[str, Any]:
+     175│         """Generate an invoice for a family (HITL)."""
+     176│         if not items:
+     177│             return {
+     178│                 "status": "error",
+     179│                 "message": "La factura debe tener al menos un ítem.",
+     180│             }
+     181│ 
+     182│         try:
+     183│             invoice_items = [InvoiceItem(**item) for item in items]
+     184│         except Exception as exc:
+     185│             return {
+     186│                 "status": "error",
+     187│                 "message": f"Ítems inválidos: {exc}",
+     188│             }
+     189│ 
+     190│         invoice_data = {
+     191│             "family_id": family_id,
+     192│             "items": [it.model_dump(mode="json") for it in invoice_items],
+     193│             "due_date": due_date,
+     194│             "notes": notes,
+     195│             "tax_rate": tax_rate,
+     196│         }
+     197│ 
+     198│         subtotal = sum(it.quantity * it.unit_price for it in invoice_items)
+     199│         tax = round(subtotal * tax_rate / 100, 2)
+     200│         total = round(subtotal + tax, 2)
+     201│ 
+     202│         request = await self.approval_engine.create_request(
+     203│             agent=self.agent_name,
+     204│             tool="finance_invoice_create",
+     205│             params=invoice_data,
+     206│             requested_by="system",
+     207│             approval_level=ApprovalLevel.HITL,
+     208│         )
+     209│ 
+     210│         return {
+     211│             "status": "pending_approval",
+     212│             "message": (
+     213│                 f"📄 Factura por ${total:,.2f} generada para la familia. "
+     214│                 f"Pendiente de aprobación. 🔔"
+     215│             ),
+     216│             "request_id": str(request.request_id),
+     217│             "subtotal": round(subtotal, 2),
+     218│             "tax": tax,
+     219│             "total": total,
+     220│             "family_id": family_id,
+     221│         }
+     222│ 
+     223│     async def execute_invoice_create(
+     224│         self, invoice_data: dict[str, Any]
+     225│     ) -> dict[str, Any]:
+     226│         """Execute invoice creation post-approval."""
+     227│         validated = InvoiceCreate(**invoice_data)
+     228│         invoice = self.repo.create_invoice(validated)
+     229│ 
+     230│         return {
+     231│             "status": "success",
+    ⋮ (11 líneas truncadas del método)
+
+  ── family_get_profile · backend/src/club_mcp/agents/family_profile.py ──
+     195│     @MCPTool(
+     196│         name="family_get_profile",
+     197│         description=(
+     198│             "Obtiene el perfil completo de una familia incluyendo "
+     199│             "todos sus miembros, preferencias y datos de contacto. "
+     200│             "Usar cuando alguien pregunta por una familia especifica."
+     201│         ),
+     202│         approval=ApprovalLevel.AUTO,
+     203│     )
+     204│     async def get_family_profile(self, family_id: str) -> dict[str, Any]:
+     205│         try:
+     206│             uid = UUID(family_id)
+     207│         except ValueError:
+     208│             return {"status": "error", "message": f"ID de familia invalido: {family_id}"}
+     209│ 
+     210│         family = await self.repo.get_family(uid)
+     211│         if not family:
+     212│             return {
+     213│                 "status": "not_found",
+     214│                 "message": f"No encontramos una familia con ID {family_id}. "
+     215│                 "¿Puedes verificar el nombre o ID?",
+     216│             }
+     217│ 
+     218│         preferences = await self.repo.get_preferences(uid)
+     219│ 
+     220│         return {
+     221│             "status": "success",
+     222│             "family": family.model_dump(mode="json"),
+     223│             "preferences": preferences,
+     224│             "message": (
+     225│                 f"Perfil de la familia {family.name}. "
+     226│                 f"{family.member_count} miembros, "
+     227│                 f"miembros desde {family.join_date.strftime('%B %Y')}."
+     228│             ),
+     229│         }
+     230│ 
+
+  ── get_facility_reservations · backend/src/club_mcp/agents/facility_management_agent.py ──
+     721│     @MCPTool(
+     722│         name="get_facility_reservations",
+     723│         description="Listar reservas de instalaciones con filtros.",
+     724│         approval=ApprovalLevel.AUTO,
+     725│     )
+     726│     async def get_facility_reservations(
+     727│         self, facility_id: str = "", date_from: str = "",
+     728│         date_to: str = "", status: str = "",
+     729│     ) -> dict[str, Any]:
+     730│         status_filter = None
+     731│         if status:
+     732│             try:
+     733│                 status_filter = ReservationStatus(status)
+     734│             except ValueError:
+     735│                 return {
+     736│                     "status": "error",
+     737│                     "message": (
+     738│                         f"Estado no válido: '{status}'. "
+     739│                         f"Opciones: {', '.join(s.value for s in ReservationStatus)}"
+     740│                     ),
+     741│                 }
+     742│         reservations = await self.repo.list_reservations(
+     743│             facility_id=facility_id or None,
+     744│             date_from=date_from or None,
+     745│             date_to=date_to or None,
+     746│             status=status_filter,
+     747│         )
+     748│         return {
+     749│             "status": "success",
+     750│             "message": f"📅 {len(reservations)} reserva(s) encontrada(s).",
+     751│             "reservations": [r.model_dump(mode="json") for r in reservations],
+     752│             "total": len(reservations),
+     753│         }
+     754│ 
+     755│     # ──────────────────────────────────────────────────
+     756│     # 🟢 TOOL: GET FACILITY ANALYTICS (AUTO) — 9 DIM
+     757│     # ──────────────────────────────────────────────────
+     758│ 
+
+  ── get_pending_approvals · backend/src/club_mcp/agents/executive_dashboard_agent.py ──
+     892│     @MCPTool(
+     893│         name="get_pending_approvals",
+     894│         description=(
+     895│             "Obtener todas las solicitudes de aprobación pendientes. "
+     896│             "Para uso del administrador: revisar, aprobar o rechazar "
+     897│             "acciones que requieren HITL (Human-in-the-Loop)."
+     898│         ),
+     899│         approval=ApprovalLevel.AUTO,
+     900│     )
+     901│     async def get_pending_approvals(
+     902│         self,
+     903│         agent: str = "",
+     904│     ) -> dict[str, Any]:
+     905│         engine = getattr(self, "approval_engine", None)
+     906│         if engine is None:
+     907│             return {
+     908│                 "status": "error",
+     909│                 "message": "ApprovalEngine no configurado en este agente.",
+     910│                 "items": [],
+     911│                 "total": 0,
+     912│             }
+     913│ 
+     914│         agent_filter = agent if agent else None
+     915│         pending = await engine.get_pending(agent=agent_filter)
+     916│ 
+     917│         items = []
+     918│         for req in pending:
+     919│             # Calcular urgencia: pending más viejo = más urgente
+     920│             now = datetime.now(tz=timezone.utc)
+     921│             age_hours = (now - req.created_at).total_seconds() / 3600
+     922│             is_expiring_soon = (
+     923│                 req.expires_at is not None
+     924│                 and (req.expires_at - now).total_seconds() < 3600 * 4
+     925│             )
+     926│ 
+     927│             items.append({
+     928│                 "request_id": str(req.request_id),
+     929│                 "agent": req.agent,
+     930│                 "tool": req.tool,
+     931│                 "params": req.params,
+     932│                 "requested_by": req.requested_by,
+     933│                 "approval_level": req.approval_level.value,
+     934│                 "status": req.status.value,
+     935│                 "risk_summary": req.risk_summary,
+     936│                 "estimated_impact": req.estimated_impact,
+     937│                 "affected_count": req.affected_count,
+     938│                 "created_at": req.created_at.isoformat(),
+     939│                 "expires_at": req.expires_at.isoformat() if req.expires_at else None,
+     940│                 "requires_dual_approval": req.requires_dual_approval,
+     941│                 "first_approval_by": req.first_approval_by,
+     942│                 "is_expiring_soon": is_expiring_soon,
+     943│                 "age_hours": round(age_hours, 1),
+     944│             })
+     945│ 
+     946│         # Ordenar: más urgente primero (expiring_soon > más viejo)
+     947│         items.sort(
+     948│             key=lambda x: (
+     949│                 not x["is_expiring_soon"],
+     950│                 -x["age_hours"],
+     951│             )
+     952│         )
+     953│ 
+     954│         return {
+     955│             "status": "success",
+     956│             "message": (
+     957│                 f"📋 {len(items)} solicitud(es) pendiente(s) "
+     958│                 f"de aprobación."
+     959│             ),
+     960│             "items": items,
+     961│             "total": len(items),
+    ⋮ (6 líneas truncadas del método)
+
+  ── approve_request · backend/src/club_mcp/agents/executive_dashboard_agent.py ──
+     968│     @MCPTool(
+     969│         name="approve_request",
+     970│         description=(
+     971│             "Aprobar una solicitud HITL pendiente. "
+     972│             "Ejecuta la acción asociada (ej: generar informe, "
+     973│             "enviar campaña). Requiere request_id válido."
+     974│         ),
+     975│         approval=ApprovalLevel.AUTO,
+     976│     )
+     977│     async def approve_request(
+     978│         self,
+     979│         request_id: str = "",
+     980│         approved_by: str = "admin",
+     981│         note: str = "",
+     982│     ) -> dict[str, Any]:
+     983│         if not request_id:
+     984│             return {
+     985│                 "status": "error",
+     986│                 "message": "Se requiere request_id 🔍",
+     987│             }
+     988│ 
+     989│         engine = getattr(self, "approval_engine", None)
+     990│         if engine is None:
+     991│             return {
+     992│                 "status": "error",
+     993│                 "message": "ApprovalEngine no configurado.",
+     994│             }
+     995│ 
+     996│         try:
+     997│             from uuid import UUID
+     998│             uid = UUID(request_id)
+     999│         except ValueError:
+    1000│             return {
+    1001│                 "status": "error",
+    1002│                 "message": f"request_id no válido: {request_id}",
+    1003│             }
+    1004│ 
+    1005│         try:
+    1006│             approved = await engine.approve(
+    1007│                 request_id=uid,
+    1008│                 approved_by=approved_by,
+    1009│                 note=note,
+    1010│             )
+    1011│         except ValueError as exc:
+    1012│             return {
+    1013│                 "status": "error",
+    1014│                 "message": str(exc),
+    1015│             }
+    1016│ 
+    1017│         return {
+    1018│             "status": "success",
+    1019│             "message": (
+    1020│                 f"✅ Solicitud {request_id[:8]}… aprobada "
+    1021│                 f"por {approved_by}."
+    1022│             ),
+    1023│             "request": {
+    1024│                 "request_id": str(approved.request_id),
+    1025│                 "agent": approved.agent,
+    1026│                 "tool": approved.tool,
+    1027│                 "status": approved.status.value,
+    1028│                 "resolved_by": approved.resolved_by,
+    1029│                 "resolved_at": (
+    1030│                     approved.resolved_at.isoformat()
+    1031│                     if approved.resolved_at else None
+    1032│                 ),
+    1033│                 "resolution_note": approved.resolution_note,
+    1034│             },
+    1035│         }
+    1036│ 
+    1037│     # ═══════════════════════════════════════════════════
+    ⋮ (3 líneas truncadas del método)
+
+  ── reject_request · backend/src/club_mcp/agents/executive_dashboard_agent.py ──
+    1041│     @MCPTool(
+    1042│         name="reject_request",
+    1043│         description=(
+    1044│             "Rechazar una solicitud HITL pendiente. "
+    1045│             "La acción asociada NO se ejecuta. "
+    1046│             "Requiere request_id y un motivo de rechazo."
+    1047│         ),
+    1048│         approval=ApprovalLevel.AUTO,
+    1049│     )
+    1050│     async def reject_request(
+    1051│         self,
+    1052│         request_id: str = "",
+    1053│         rejected_by: str = "admin",
+    1054│         reason: str = "",
+    1055│     ) -> dict[str, Any]:
+    1056│         if not request_id:
+    1057│             return {
+    1058│                 "status": "error",
+    1059│                 "message": "Se requiere request_id 🔍",
+    1060│             }
+    1061│ 
+    1062│         engine = getattr(self, "approval_engine", None)
+    1063│         if engine is None:
+    1064│             return {
+    1065│                 "status": "error",
+    1066│                 "message": "ApprovalEngine no configurado.",
+    1067│             }
+    1068│ 
+    1069│         try:
+    1070│             from uuid import UUID
+    1071│             uid = UUID(request_id)
+    1072│         except ValueError:
+    1073│             return {
+    1074│                 "status": "error",
+    1075│                 "message": f"request_id no válido: {request_id}",
+    1076│             }
+    1077│ 
+    1078│         try:
+    1079│             rejected = await engine.reject(
+    1080│                 request_id=uid,
+    1081│                 rejected_by=rejected_by,
+    1082│                 reason=reason,
+    1083│             )
+    1084│         except ValueError as exc:
+    1085│             return {
+    1086│                 "status": "error",
+    1087│                 "message": str(exc),
+    1088│             }
+    1089│ 
+    1090│         return {
+    1091│             "status": "success",
+    1092│             "message": (
+    1093│                 f"🚫 Solicitud {request_id[:8]}… rechazada "
+    1094│                 f"por {rejected_by}."
+    1095│             ),
+    1096│             "request": {
+    1097│                 "request_id": str(rejected.request_id),
+    1098│                 "agent": rejected.agent,
+    1099│                 "tool": rejected.tool,
+    1100│                 "status": rejected.status.value,
+    1101│                 "resolved_by": rejected.resolved_by,
+    1102│                 "resolved_at": (
+    1103│                     rejected.resolved_at.isoformat()
+    1104│                     if rejected.resolved_at else None
+    1105│                 ),
+    1106│                 "resolution_note": rejected.resolution_note,
+    1107│             },
+    1108│         }
+    1109│ 
+
+  ── generate_quarterly_board_report · backend/src/club_mcp/agents/executive_dashboard_agent.py ──
+      71│     @MCPTool(
+      72│         name="generate_quarterly_board_report",
+      73│         description=(
+      74│             "Generar informe trimestral para la junta directiva. "
+      75│             "REQUIERE APROBACI\u00d3N HUMANA. "
+      76│             "Consolida todos los KPIs del club en un reporte "
+      77│             "ejecutivo estructurado para presentaci\u00f3n a la board."
+      78│         ),
+      79│         approval=ApprovalLevel.HITL,
+      80│         approver_roles=["admin"],
+      81│     )
+      82│     async def generate_quarterly_board_report(
+      83│         self,
+      84│         year: int = 0,
+      85│         quarter: str = "",
+      86│         requested_by: str = "system",
+      87│     ) -> dict[str, Any]:
+      88│         if not all([year, quarter]):
+      89│             return {
+      90│                 "status": "error",
+      91│                 "message": (
+      92│                     "Se requiere year y quarter (Q1, Q2, Q3, Q4) \U0001f4cb"
+      93│                 ),
+      94│             }
+      95│ 
+      96│         try:
+      97│             rq = ReportQuarter(quarter)
+      98│         except ValueError:
+      99│             return {
+     100│                 "status": "error",
+     101│                 "message": (
+     102│                     f"Trimestre no v\u00e1lido: '{quarter}'. "
+     103│                     f"Opciones: {', '.join(q.value for q in ReportQuarter)}"
+     104│                 ),
+     105│             }
+     106│ 
+     107│         approval = await self.approval_engine.create_request(
+     108│             agent=self.agent_name,
+     109│             tool="generate_quarterly_board_report",
+     110│             params={
+     111│                 "year": year,
+     112│                 "quarter": quarter,
+     113│             },
+     114│             requested_by=requested_by,
+     115│             approval_level=ApprovalLevel.HITL,
+     116│             risk_summary=(
+     117│                 f"Informe trimestral {quarter} {year} para "
+     118│                 f"la junta directiva. Incluye datos financieros "
+     119│                 f"y operativos consolidados."
+     120│             ),
+     121│             estimated_impact="Distribuci\u00f3n a junta directiva",
+     122│             affected_count=0,
+     123│             approver_roles=["admin"],
+     124│         )
+     125│ 
+     126│         logger.info(
+     127│             "[executive_dashboard] Board report approval: %s %s",
+     128│             quarter, year,
+     129│         )
+     130│ 
+     131│         return {
+     132│             "status": "pending_approval",
+     133│             "request_id": str(approval.request_id),
+     134│             "message": (
+     135│                 f"\U0001f4ca Informe {quarter} {year} registrado. "
+     136│                 f"Esperando aprobaci\u00f3n del administrador."
+     137│             ),
+     138│             "details": {
+     139│                 "year": year,
+     140│                 "quarter": quarter,
+    ⋮ (87 líneas truncadas del método)
+
+  ── analyze_event_satisfaction · backend/src/club_mcp/agents/satisfaction_agent.py ──
+     293│     @MCPTool(
+     294│         name="analyze_event_satisfaction",
+     295│         description=(
+     296│             "Generar análisis de satisfacción con IA para un evento. "
+     297│             "Incluye sentiment, categorías, tendencias y recomendaciones."
+     298│         ),
+     299│         approval=ApprovalLevel.SEMI_AUTO,
+     300│     )
+     301│     async def analyze_event_satisfaction(
+     302│         self,
+     303│         event_id: str = "",
+     304│         requested_by: str = "system",
+     305│     ) -> dict[str, Any]:
+     306│         if not event_id:
+     307│             return {
+     308│                 "status": "error",
+     309│                 "message": "Se requiere event_id 📋",
+     310│             }
+     311│ 
+     312│         analysis = await self._compute_event_analysis(event_id)
+     313│         if not analysis:
+     314│             return {
+     315│                 "status": "error",
+     316│                 "message": f"No hay encuestas para evento '{event_id}'",
+     317│             }
+     318│ 
+     319│         surveys = analysis["surveys"]
+     320│         total = analysis["total"]
+     321│         overall_avg = analysis["overall_avg"]
+     322│         category_averages = analysis["category_averages"]
+     323│         sentiment_dist = analysis["sentiment_dist"]
+     324│ 
+     325│         # AI-powered recommendations if Claude available
+     326│         ai_recommendations: list[str] = []
+     327│         top_praises: list[str] = []
+     328│         top_improvements: list[str] = []
+     329│         key_quotes: list[str] = []
+     330│ 
+     331│         if self.claude_service:
+     332│             try:
+     333│                 event_data = {
+     334│                     "event_id": event_id,
+     335│                     "event_name": surveys[0].event_name if surveys else "",
+     336│                     "total_responses": total,
+     337│                     "overall_avg": overall_avg,
+     338│                     "category_averages": category_averages,
+     339│                     "comments": [
+     340│                         s.comment for s in surveys if s.comment
+     341│                     ],
+     342│                 }
+     343│                 ai_result = await self.claude_service.analyze_satisfaction(
+     344│                     event_data=event_data,
+     345│                     surveys=[
+     346│                         s.model_dump(mode="json") for s in surveys
+     347│                     ],
+     348│                 )
+     349│                 ai_recommendations = ai_result.get("recommendations", [])
+     350│                 top_praises = ai_result.get("praises", [])
+     351│                 top_improvements = ai_result.get("improvements", [])
+     352│                 key_quotes = ai_result.get("quotes", [])
+     353│             except Exception as exc:
+     354│                 logger.warning("Claude satisfaction analysis failed: %s", exc)
+     355│ 
+     356│         # Fallback: derive from data
+     357│         if not top_praises and category_averages:
+     358│             best = max(category_averages, key=category_averages.get)
+     359│             top_praises = [
+     360│                 f"Mejor categoría: {best} "
+     361│                 f"({category_averages[best]:.1f}/5.0)"
+     362│             ]
+    ⋮ (45 líneas truncadas del método)
+
+  ── get_survey_for_event · backend/src/club_mcp/agents/satisfaction_agent.py ──
+     263│     @MCPTool(
+     264│         name="get_survey_for_event",
+     265│         description="Obtener encuestas de satisfacción para un evento específico.",
+     266│         approval=ApprovalLevel.AUTO,
+     267│     )
+     268│     async def get_survey_for_event(
+     269│         self,
+     270│         event_id: str = "",
+     271│     ) -> dict[str, Any]:
+     272│         if not event_id:
+     273│             return {
+     274│                 "status": "error",
+     275│                 "message": "Se requiere event_id 📋",
+     276│             }
+     277│ 
+     278│         surveys = await self.repo.get_surveys_by_event(event_id)
+     279│ 
+     280│         return {
+     281│             "status": "success",
+     282│             "message": (
+     283│                 f"📋 {len(surveys)} encuesta(s) para evento '{event_id}'"
+     284│             ),
+     285│             "total": len(surveys),
+     286│             "surveys": [s.model_dump(mode="json") for s in surveys],
+     287│         }
+     288│ 
+     289│     # ═══════════════════════════════════════════════════
+     290│     # 🟡 TOOL: ANALYZE EVENT SATISFACTION (SEMI)
+     291│     # ═══════════════════════════════════════════════════
+     292│ 
+
+  ── get_member_risk_assessment · backend/src/club_mcp/agents/member_360_agent.py ──
+     276│     @MCPTool(
+     277│         name="get_member_risk_assessment",
+     278│         description=(
+     279│             "Evaluación de riesgo cross-domain: factores de riesgo de múltiples "
+     280│             "dominios, factores protectores, tendencia, mitigación sugerida."
+     281│         ),
+     282│         approval=ApprovalLevel.AUTO,
+     283│     )
+     284│     async def get_member_risk_assessment(self, member_id: str) -> dict[str, Any]:
+     285│         member_error = self._member_lookup_error(member_id)
+     286│         if member_error:
+     287│             return member_error
+     288│         result = self.repo.get_risk_assessment(member_id)
+     289│         return MemberRiskAssessmentResponse(**result).model_dump(mode="json")
+     290│ 
+     291│     # ─── Tool 10: Search Members 360 ─────────────────────────────────────────
+     292│ 
+
+  ── generate_ai_analysis · backend/src/club_mcp/agents/finance.py ──
+     489│     @MCPTool(
+     490│         "generate_ai_analysis",
+     491│         (
+     492│             "Generar análisis financiero inteligente: Health Score compuesto, "
+     493│             "proyección de flujo de caja, concentración de ingresos (Shannon/HHI), "
+     494│             "detección de anomalías, recomendaciones con impacto cuantificado, "
+     495│             "y economía por socio."
+     496│         ),
+     497│         approval=ApprovalLevel.AUTO,
+     498│     )
+     499│     async def generate_ai_analysis(
+     500│         self,
+     501│         scope: str = "financial",
+     502│         period: str = "current_quarter",
+     503│     ) -> dict[str, Any]:
+     504│         """Generate comprehensive financial analysis."""
+     505│         date_from, date_to = self._resolve_period(period)
+     506│         budget_period = self._period_to_budget_period(period)
+     507│         months = self._months_in_period(period)
+     508│ 
+     509│         # ── 1. Gather data ──
+     510│         try:
+     511│             budget = self.repo.get_budget(budget_period)
+     512│         except Exception:
+     513│             budget = BudgetSummary(period=budget_period)
+     514│ 
+     515│         try:
+     516│             report = self.repo.generate_report("income_expense", date_from, date_to)
+     517│         except Exception:
+     518│             report = FinancialReport(
+     519│                 report_type="income_expense",
+     520│                 period_start=date_from,
+     521│                 period_end=date_to,
+     522│             )
+     523│ 
+     524│         # ── 2. Calculate all metrics ──
+     525│         health = self._calculate_health_score(budget, report, months)
+     526│         concentration = self._calculate_revenue_concentration(report)
+     527│         forecast = self._calculate_cash_flow_forecast(report, budget, months)
+     528│         anomalies = self._detect_financial_anomalies(budget, report, months)
+     529│         recommendations = self._generate_recommendations(
+     530│             health, concentration, anomalies, budget, report, months
+     531│         )
+     532│         positive_trends = self._identify_positive_trends(report, budget)
+     533│         alert_signals = self._identify_alert_signals(report, budget, anomalies)
+     534│         projection = self._generate_projection(report, forecast, months)
+     535│         member_econ = await self._calculate_member_economics(report)
+     536│ 
+     537│         # ── 3. Build report ──
+     538│         ai_report = AiFinancialReport(
+     539│             health_score=health,
+     540│             cash_flow_forecast=forecast,
+     541│             revenue_concentration=concentration,
+     542│             financial_anomalies=anomalies,
+     543│             recommendations=recommendations,
+     544│             positive_trends=positive_trends,
+     545│             alert_signals=alert_signals,
+     546│             projection=projection,
+     547│             member_economics=member_econ,
+     548│         )
+     549│ 
+     550│         return {
+     551│             "status": "success",
+     552│             "message": f"📊 Análisis financiero generado para {period}",
+     553│             "data": ai_report.model_dump(mode="json"),
+     554│         }
+     555│ 
+     556│     # ── Period Resolution ────────────────────────────────────
+     557│ 
+     558│     @staticmethod
+    ⋮ (670 líneas truncadas del método)
+
+  ── generate_insight_narrative · backend/src/club_mcp/agents/advisor_intelligence.py ──
+     100│     @MCPTool(
+     101│         "generate_insight_narrative",
+     102│         "Genera análisis narrativo profundo para un insight del Advisor",
+     103│         ApprovalLevel.AUTO,
+     104│     )
+     105│     async def generate_insight_narrative(
+     106│         self,
+     107│         insight_data: dict[str, Any],
+     108│         financial_context: Optional[dict[str, Any]] = None,
+     109│         events_context: Optional[dict[str, Any]] = None,
+     110│         role: str = "admin",
+     111│     ) -> dict[str, Any]:
+     112│         """Transform a deterministic insight into an AI-powered narrative."""
+     113│         insight_id = insight_data.get("id", "unknown")
+     114│ 
+     115│         # Build prompt with available context
+     116│         fin_ctx = json.dumps(financial_context, ensure_ascii=False, indent=2) if financial_context else "No disponible"
+     117│         evt_ctx = json.dumps(events_context, ensure_ascii=False, indent=2) if events_context else "No disponible"
+     118│ 
+     119│         user_prompt = ADVISOR_NARRATIVE_PROMPT.format(
+     120│             insight_data=json.dumps(insight_data, ensure_ascii=False, indent=2),
+     121│             financial_context=fin_ctx,
+     122│             events_context=evt_ctx,
+     123│             role=role,
+     124│             insight_id=insight_id,
+     125│         )
+     126│ 
+     127│         fallback = {
+     128│             "insight_id": insight_id,
+     129│             "root_cause": "No se pudo generar análisis automático.",
+     130│             "benchmark_comparison": "",
+     131│             "recommendation": "Revisar manualmente los datos del insight.",
+     132│             "estimated_impact": "",
+     133│             "full_narrative": insight_data.get("reasoning", ""),
+     134│             "adjusted_confidence": insight_data.get("confidence", 50),
+     135│         }
+     136│ 
+     137│         result = await self.claude.generate_json(
+     138│             system_prompt=ADVISOR_NARRATIVE_SYSTEM,
+     139│             user_prompt=user_prompt,
+     140│             max_tokens=1500,
+     141│             fallback=fallback,
+     142│         )
+     143│ 
+     144│         # Validate structure
+     145│         try:
+     146│             validated = InsightNarrativeResult(**result)
+     147│             return {
+     148│                 "status": "success",
+     149│                 "narrative": validated.model_dump(),
+     150│                 "_approval_level": ApprovalLevel.AUTO.value,
+     151│                 "_agent": self.agent_name,
+     152│             }
+     153│         except Exception:
+     154│             logger.warning(
+     155│                 "[AdvisorIntel] Narrative validation failed for %s, using fallback",
+     156│                 insight_id,
+     157│             )
+     158│             return {
+     159│                 "status": "success",
+     160│                 "narrative": fallback,
+     161│                 "_approval_level": ApprovalLevel.AUTO.value,
+     162│                 "_agent": self.agent_name,
+     163│             }
+     164│ 
+     165│     # ── Tool 2: Action Plan ────────────────────────────────
+     166│ 
+
+  ── simulate_scenario · backend/src/club_mcp/agents/advisor_intelligence.py ──
+     226│     @MCPTool(
+     227│         "simulate_scenario",
+     228│         "Modela escenarios financieros optimista/base/pesimista",
+     229│         ApprovalLevel.AUTO,
+     230│     )
+     231│     async def simulate_scenario(
+     232│         self,
+     233│         base_data: dict[str, Any],
+     234│         proposed_changes: list[dict[str, Any]],
+     235│         timeframe: str = "quarter",
+     236│     ) -> dict[str, Any]:
+     237│         """Simulate financial scenarios with projected outcomes."""
+     238│         user_prompt = ADVISOR_SCENARIO_PROMPT.format(
+     239│             base_data=json.dumps(base_data, ensure_ascii=False, indent=2),
+     240│             proposed_changes=json.dumps(proposed_changes, ensure_ascii=False, indent=2),
+     241│             timeframe=timeframe,
+     242│         )
+     243│ 
+     244│         fallback = {
+     245│             "scenarios": [],
+     246│             "risk_assessment": "No se pudo generar simulación automática.",
+     247│             "recommended_scenario": "base",
+     248│         }
+     249│ 
+     250│         result = await self.claude.generate_json(
+     251│             system_prompt=ADVISOR_SCENARIO_SYSTEM,
+     252│             user_prompt=user_prompt,
+     253│             max_tokens=2000,
+     254│             fallback=fallback,
+     255│         )
+     256│ 
+     257│         try:
+     258│             validated = ScenarioSimulationResult(**result)
+     259│             return {
+     260│                 "status": "success",
+     261│                 "simulation": validated.model_dump(),
+     262│                 "_approval_level": ApprovalLevel.AUTO.value,
+     263│                 "_agent": self.agent_name,
+     264│             }
+     265│         except Exception as exc:
+     266│             logger.warning("[AdvisorIntel] Simulation validation failed: %s", exc)
+     267│             return {
+     268│                 "status": "success",
+     269│                 "simulation": result if isinstance(result, dict) else fallback,
+     270│                 "_approval_level": ApprovalLevel.AUTO.value,
+     271│                 "_agent": self.agent_name,
+     272│             }
+     273│ 
+     274│     # ── Tool 4: Board Brief ────────────────────────────────
+     275│ 
+
+  ── design_reactivation_campaign · backend/src/club_mcp/agents/member_engagement_agent.py ──
+     170│     @MCPTool(
+     171│         name="design_reactivation_campaign",
+     172│         description=(
+     173│             "Diseñar y lanzar campañas de reactivación para socios inactivos. "
+     174│             "REQUIERE APROBACIÓN HUMANA. "
+     175│             "Incluye campañas de retención, upsell, referidos y aniversario."
+     176│         ),
+     177│         approval=ApprovalLevel.HITL,
+     178│         approver_roles=["admin"],
+     179│     )
+     180│     async def design_reactivation_campaign(
+     181│         self,
+     182│         action: str = "list",
+     183│         campaign_id: str = "",
+     184│         name: str = "",
+     185│         campaign_type: str = "reactivation",
+     186│         description: str = "",
+     187│         target_member_ids: str = "",
+     188│         target_engagement_level: str = "",
+     189│         channels: str = "email",
+     190│         message_template: str = "",
+     191│         start_date: str = "",
+     192│         end_date: str = "",
+     193│         budget: float = 0.0,
+     194│         new_status: str = "",
+     195│         notes: str = "",
+     196│         requested_by: str = "system",
+     197│     ) -> dict[str, Any]:
+     198│         # ── List ──
+     199│         if action == "list":
+     200│             campaigns = await self.repo.list_campaigns()
+     201│             return {
+     202│                 "status": "success",
+     203│                 "message": f"📋 Encontramos {len(campaigns)} campañas.",
+     204│                 "campaigns": [c.model_dump(mode="json") for c in campaigns],
+     205│             }
+     206│ 
+     207│         # ── Get ──
+     208│         if action == "get":
+     209│             if not campaign_id:
+     210│                 return {
+     211│                     "status": "error",
+     212│                     "message": "Se requiere campaign_id 🤔",
+     213│                 }
+     214│             campaign = await self.repo.get_campaign(campaign_id)
+     215│             if not campaign:
+     216│                 return {
+     217│                     "status": "not_found",
+     218│                     "message": (
+     219│                         f"No encontramos la campaña {campaign_id} 😊"
+     220│                     ),
+     221│                 }
+     222│             return {
+     223│                 "status": "success",
+     224│                 "campaign": campaign.model_dump(mode="json"),
+     225│             }
+     226│ 
+     227│         # ── Create → HITL ──
+     228│         if action == "create":
+     229│             if not all([name, description, start_date, end_date]):
+     230│                 return {
+     231│                     "status": "error",
+     232│                     "message": (
+     233│                         "Faltan campos obligatorios: name, description, "
+     234│                         "start_date, end_date 📋"
+     235│                     ),
+     236│                 }
+     237│ 
+     238│             try:
+     239│                 ct = CampaignType(campaign_type)
+    ⋮ (180 líneas truncadas del método)
+
+  ── submit_satisfaction_survey · backend/src/club_mcp/agents/satisfaction_agent.py ──
+     132│     @MCPTool(
+     133│         name="submit_satisfaction_survey",
+     134│         description=(
+     135│             "Enviar encuesta de satisfacción post-evento. "
+     136│             "Incluye 10 categorías de calificación (1-5). "
+     137│             "Auto-aprobada para socios."
+     138│         ),
+     139│         approval=ApprovalLevel.HITL,
+     140│         approver_roles=["admin"],
+     141│     )
+     142│     async def submit_satisfaction_survey(
+     143│         self,
+     144│         event_id: str = "",
+     145│         family_id: str = "",
+     146│         ratings: dict | None = None,
+     147│         comment: str = "",
+     148│         event_name: str = "",
+     149│         event_type: str = "",
+     150│         requested_by: str = "system",
+     151│     ) -> dict[str, Any]:
+     152│         if not all([event_id, family_id]):
+     153│             return {
+     154│                 "status": "error",
+     155│                 "message": "Se requiere event_id y family_id 📋",
+     156│             }
+     157│ 
+     158│         if not ratings or len(ratings) != 10:
+     159│             return {
+     160│                 "status": "error",
+     161│                 "message": (
+     162│                     "Se requieren exactamente 10 calificaciones "
+     163│                     "(una por categoría) 📋"
+     164│                 ),
+     165│             }
+     166│ 
+     167│         required_cats = {c.value for c in SatisfactionCategory}
+     168│         provided_cats = set(ratings.keys())
+     169│         if provided_cats != required_cats:
+     170│             missing = required_cats - provided_cats
+     171│             extra = provided_cats - required_cats
+     172│             parts = []
+     173│             if missing:
+     174│                 parts.append(f"Faltantes: {', '.join(sorted(missing))}")
+     175│             if extra:
+     176│                 parts.append(f"Extra: {', '.join(sorted(extra))}")
+     177│             return {
+     178│                 "status": "error",
+     179│                 "message": f"Categorías incorrectas. {'; '.join(parts)}",
+     180│             }
+     181│ 
+     182│         # Build questions
+     183│         questions = []
+     184│         for cat, text in STANDARD_QUESTIONS:
+     185│             r = ratings[cat]
+     186│             if not (1 <= r <= 5):
+     187│                 return {
+     188│                     "status": "error",
+     189│                     "message": (
+     190│                         f"Rating para '{cat}' debe ser 1-5, recibido: {r}"
+     191│                     ),
+     192│                 }
+     193│             questions.append(
+     194│                 SurveyQuestion(
+     195│                     category=SatisfactionCategory(cat),
+     196│                     question_text=text,
+     197│                     rating=r,
+     198│                     weight=1.0,
+     199│                 )
+     200│             )
+     201│ 
+    ⋮ (61 líneas truncadas del método)
+
+  ── get_age_group_health_score · backend/src/club_mcp/agents/age_group.py ──
+     580│     @MCPTool(
+     581│         "get_age_group_health_score",
+     582│         "Obtener score de salud generacional (0-100) con 5 "
+     583│         "factores ponderados: participation, coverage, balance, "
+     584│         "satisfaction, family engagement.",
+     585│         approval=ApprovalLevel.AUTO,
+     586│     )
+     587│     async def get_age_group_health_score(
+     588│         self,
+     589│     ) -> dict[str, Any]:
+     590│         """Compute composite generational health score."""
+     591│         health = await self.repo.get_health_score()
+     592│ 
+     593│         level_emoji = {
+     594│             "excellent": "🟢",
+     595│             "healthy": "🟢",
+     596│             "attention": "🟡",
+     597│             "critical": "🔴",
+     598│         }
+     599│         emoji = level_emoji.get(health.level.value, "⚪")
+     600│         trend_emoji = {
+     601│             "improving": "📈",
+     602│             "stable": "➡️",
+     603│             "declining": "📉",
+     604│         }
+     605│         trend_e = trend_emoji.get(health.trend, "")
+     606│ 
+     607│         critical_factors = [
+     608│             f.name for f in health.factors if f.impact == "high"
+     609│         ]
+     610│ 
+     611│         return {
+     612│             "status": "success",
+     613│             "message": (
+     614│                 f"{emoji} Health Score: {health.score}/100 "
+     615│                 f"({health.level.value}) {trend_e}. "
+     616│                 f"{len(critical_factors)} factor(es) "
+     617│                 f"crítico(s): "
+     618│                 f"{', '.join(critical_factors) if critical_factors else 'ninguno'}."
+     619│             ),
+     620│             "health_score": health.model_dump(mode="json"),
+     621│         }
+     622│ 
+     623│     # ─────────────────────────────────────────────────────────
+     624│     # Tool 9: get_generational_analytics  🟢 AUTO (NEW)
+     625│     # ─────────────────────────────────────────────────────────
+     626│ 
+
+  ── get_generational_analytics · backend/src/club_mcp/agents/age_group.py ──
+     627│     @MCPTool(
+     628│         "get_generational_analytics",
+     629│         "Dashboard completo de inteligencia generacional: "
+     630│         "distribución, balance, cobertura, tendencias 6 meses, "
+     631│         "y señales cross-domain.",
+     632│         approval=ApprovalLevel.AUTO,
+     633│     )
+     634│     async def get_generational_analytics(
+     635│         self,
+     636│     ) -> dict[str, Any]:
+     637│         """Complete generational analytics dashboard."""
+     638│         analytics = await self.repo.get_generational_analytics()
+     639│ 
+     640│         over = sum(
+     641│             1
+     642│             for d in analytics.distribution
+     643│             if d.balance_status.value == "overrepresented"
+     644│         )
+     645│         under = sum(
+     646│             1
+     647│             for d in analytics.distribution
+     648│             if d.balance_status.value == "underrepresented"
+     649│         )
+     650│ 
+     651│         return {
+     652│             "status": "success",
+     653│             "message": (
+     654│                 f"📊 Generational Analytics: "
+     655│                 f"{analytics.total_members} miembros, "
+     656│                 f"balance {analytics.balance_score}/100, "
+     657│                 f"cobertura {analytics.coverage_score}%, "
+     658│                 f"satisfacción {analytics.avg_satisfaction}/5, "
+     659│                 f"{len(analytics.cross_domain_signals)} "
+     660│                 f"señales cross-domain."
+     661│             ),
+     662│             "analytics": analytics.model_dump(mode="json"),
+     663│         }
+     664│ 
+     665│     # ─────────────────────────────────────────────────────────
+     666│     # Tool 10: get_age_group_forecast  🟢 AUTO (NEW)
+     667│     # ─────────────────────────────────────────────────────────
+     668│ 
+
+  ── age_group_recommend_activities · backend/src/club_mcp/agents/age_group.py ──
+     468│     @MCPTool(
+     469│         "age_group_recommend_activities",
+     470│         "Recomendar actividades para una familia basado en "
+     471│         "grupos etarios, satisfacción real y disponibilidad.",
+     472│         approval=ApprovalLevel.AUTO,
+     473│     )
+     474│     async def age_group_recommend_activities(
+     475│         self,
+     476│         age_groups: list[str],
+     477│     ) -> dict[str, Any]:
+     478│         """Recommend activities based on real satisfaction
+     479│         and availability (upgraded from hash-based)."""
+     480│         invalid = [
+     481│             ag
+     482│             for ag in age_groups
+     483│             if ag not in {c.value for c in AgeGroupCategory}
+     484│         ]
+     485│         if invalid:
+     486│             return {
+     487│                 "status": "error",
+     488│                 "message": (
+     489│                     f"Grupos etarios no válidos: "
+     490│                     f"{', '.join(invalid)}"
+     491│                 ),
+     492│             }
+     493│ 
+     494│         recommendations = await self.repo.get_recommendations(
+     495│             age_groups
+     496│         )
+     497│ 
+     498│         if not recommendations:
+     499│             return {
+     500│                 "status": "success",
+     501│                 "message": (
+     502│                     "🔍 No encontramos actividades "
+     503│                     "recomendadas para los grupos indicados."
+     504│                 ),
+     505│                 "data": [],
+     506│                 "total": 0,
+     507│             }
+     508│ 
+     509│         return {
+     510│             "status": "success",
+     511│             "message": (
+     512│                 f"🌟 {len(recommendations)} actividades "
+     513│                 f"recomendadas (ordenadas por confianza)."
+     514│             ),
+     515│             "data": [
+     516│                 r.model_dump(mode="json")
+     517│                 for r in recommendations
+     518│             ],
+     519│             "total": len(recommendations),
+     520│         }
+     521│ 
+     522│     # ─────────────────────────────────────────────────────────
+     523│     # Tool 7: age_group_update_activity  🟡 SEMI-AUTO
+     524│     # ─────────────────────────────────────────────────────────
+     525│ 
+
+  ── generate_communication_insights · backend/src/club_mcp/agents/communication_agent.py ──
+    1836│     @MCPTool(
+    1837│         name="generate_communication_insights",
+    1838│         description=(
+    1839│             "Generar análisis de inteligencia comunicacional en 9 dimensiones: "
+    1840│             "timing, channel, audience, content, frequency, risk, opportunity, "
+    1841│             "sentiment y health. Cada dimensión incluye score 0-100, hallazgo, "
+    1842│             "recomendación y benchmark de clubes privados de Costa Rica."
+    1843│         ),
+    1844│         approval=ApprovalLevel.AUTO,
+    1845│     )
+    1846│     async def generate_communication_insights(
+    1847│         self,
+    1848│         period: str = "last_90_days",
+    1849│     ) -> dict[str, Any]:
+    1850│         # Fetch data
+    1851│         logs = await self.repo.list_logs(limit=500)
+    1852│         scheduled = await self.repo.list_scheduled()
+    1853│         templates = await self.repo.list_templates()
+    1854│ 
+    1855│         if not logs:
+    1856│             return {
+    1857│                 "status": "success",
+    1858│                 "message": "📋 Sin datos suficientes para generar insights.",
+    1859│                 "overall_score": 0,
+    1860│                 "dimensions": [],
+    1861│                 "alerts": ["Sin historial de comunicaciones"],
+    1862│                 "opportunities": [],
+    1863│                 "generated_at": datetime.now(tz=timezone.utc).isoformat(),
+    1864│             }
+    1865│ 
+    1866│         # Filter logs by period
+    1867│         now = datetime.now(tz=timezone.utc)
+    1868│         period_days = {
+    1869│             "last_30_days": 30, "last_90_days": 90,
+    1870│             "current_month": 30, "current_quarter": 90, "ytd": 365,
+    1871│         }
+    1872│         lookback = period_days.get(period, 90)
+    1873│ 
+    1874│         active_logs = []
+    1875│         for log in logs:
+    1876│             if not log.sent_at:
+    1877│                 continue
+    1878│             try:
+    1879│                 dt = datetime.fromisoformat(
+    1880│                     log.sent_at.replace("Z", "+00:00")
+    1881│                 )
+    1882│                 if (now - dt).days <= lookback:
+    1883│                     active_logs.append(log)
+    1884│             except (ValueError, AttributeError):
+    1885│                 continue
+    1886│ 
+    1887│         total = len(active_logs)
+    1888│         days_of_week = [
+    1889│             "Lunes", "Martes", "Miércoles", "Jueves",
+    1890│             "Viernes", "Sábado", "Domingo",
+    1891│         ]
+    1892│ 
+    1893│         # ── Pre-compute aggregates ──
+    1894│         by_channel: Counter = Counter()
+    1895│         by_type: Counter = Counter()
+    1896│         by_status: Counter = Counter()
+    1897│         by_day: Counter = Counter()
+    1898│         by_hour: Counter = Counter()
+    1899│         dates: list[datetime] = []
+    1900│ 
+    1901│         for log in active_logs:
+    1902│             ch = (
+    1903│                 log.channel.value
+    1904│                 if hasattr(log.channel, "value")
+    1905│                 else str(log.channel)
+    ⋮ (349 líneas truncadas del método)
+
+  ── get_campaign_performance · backend/src/club_mcp/agents/communication_agent.py ──
+    2448│     @MCPTool(
+    2449│         name="get_campaign_performance",
+    2450│         description=(
+    2451│             "Analytics de campañas de comunicación. "
+    2452│             "Retorna rendimiento, engagement scoring y recomendaciones. "
+    2453│             "Si no hay campañas creadas, retorna estado vacío con sugerencias."
+    2454│         ),
+    2455│         approval=ApprovalLevel.AUTO,
+    2456│     )
+    2457│     async def get_campaign_performance(
+    2458│         self,
+    2459│         status: str = "",
+    2460│         limit: int = 10,
+    2461│     ) -> dict[str, Any]:
+    2462│         # Campaign store may not exist until B2
+    2463│         try:
+    2464│             campaigns_raw = list(getattr(self.repo, "_campaigns", {}).values())
+    2465│         except (AttributeError, TypeError):
+    2466│             campaigns_raw = []
+    2467│ 
+    2468│         if not campaigns_raw:
+    2469│             # Compute a "virtual" campaign analysis from logs
+    2470│             logs = await self.repo.list_logs(limit=200)
+    2471│ 
+    2472│             if not logs:
+    2473│                 return {
+    2474│                     "status": "success",
+    2475│                     "message": (
+    2476│                         "📋 Sin campañas ni historial de comunicaciones. "
+    2477│                         "Creá tu primera campaña para ver analytics."
+    2478│                     ),
+    2479│                     "campaigns": [],
+    2480│                     "summary": {
+    2481│                         "total_campaigns": 0,
+    2482│                         "total_sent": 0,
+    2483│                         "avg_engagement": 0,
+    2484│                         "top_channel": "N/A",
+    2485│                         "top_type": "N/A",
+    2486│                     },
+    2487│                     "top_performers": [],
+    2488│                     "recommendations": [
+    2489│                         "Creá campañas segmentadas para cada audiencia clave.",
+    2490│                         "Usá A/B testing en asuntos para mejorar tasas de apertura.",
+    2491│                         "Programá envíos en el mejor horario detectado.",
+    2492│                     ],
+    2493│                 }
+    2494│ 
+    2495│             # Derive virtual campaigns from notification types
+    2496│             now = datetime.now(tz=timezone.utc)
+    2497│             by_type_groups: dict[str, list] = {}
+    2498│             for log in logs:
+    2499│                 by_type_groups.setdefault(log.notification_type, []).append(log)
+    2500│ 
+    2501│             virtual_campaigns = []
+    2502│             for ntype, nlogs in by_type_groups.items():
+    2503│                 success = sum(
+    2504│                     1 for l in nlogs
+    2505│                     if (l.status.value if hasattr(l.status, "value")
+    2506│                         else str(l.status)) in ("sent", "delivered")
+    2507│                 )
+    2508│                 total_n = len(nlogs)
+    2509│                 channels_used = set()
+    2510│                 for l in nlogs:
+    2511│                     ch = (l.channel.value if hasattr(l.channel, "value")
+    2512│                           else str(l.channel))
+    2513│                     channels_used.add(ch)
+    2514│ 
+    2515│                 virtual_campaigns.append({
+    2516│                     "id": f"virtual-{ntype}",
+    2517│                     "name": f"Campaña: {ntype.replace('_', ' ').title()}",
+    ⋮ (88 líneas truncadas del método)
+
+  ── send_personalized_notification · backend/src/club_mcp/agents/communication_agent.py ──
+     589│     @MCPTool(
+     590│         name="send_personalized_notification",
+     591│         description=(
+     592│             "Enviar notificación personalizada a miembros específicos. "
+     593│             "REQUIERE APROBACIÓN HUMANA si hay más de 100 destinatarios. "
+     594│             "Para grupos pequeños ejecuta directamente."
+     595│         ),
+     596│         approval=ApprovalLevel.SEMI_AUTO,
+     597│         approver_roles=["admin"],
+     598│     )
+     599│     async def send_personalized_notification(
+     600│         self,
+     601│         title: str = "",
+     602│         body: str = "",
+     603│         channel: str = "email",
+     604│         recipient_ids: str = "",
+     605│         notes: str = "",
+     606│         requested_by: str = "system",
+     607│     ) -> dict[str, Any]:
+     608│         if not all([title, body, recipient_ids]):
+     609│             return {
+     610│                 "status": "error",
+     611│                 "message": (
+     612│                     "Faltan campos obligatorios: title, body, recipient_ids 📋"
+     613│                 ),
+     614│             }
+     615│ 
+     616│         try:
+     617│             ch = NotificationChannel(channel)
+     618│         except ValueError:
+     619│             return {
+     620│                 "status": "error",
+     621│                 "message": (
+     622│                     f"Canal no válido: '{channel}'. "
+     623│                     f"Opciones: {', '.join(c.value for c in NotificationChannel)}"
+     624│                 ),
+     625│             }
+     626│ 
+     627│         recipients = [r.strip() for r in recipient_ids.split(",") if r.strip()]
+     628│         if not recipients:
+     629│             return {
+     630│                 "status": "error",
+     631│                 "message": "No se proporcionaron destinatarios válidos 🤔",
+     632│             }
+     633│ 
+     634│         # >100 recipients → HITL
+     635│         if len(recipients) > PERSONALIZED_NOTIFICATION_HITL_THRESHOLD:
+     636│             approval = await self.approval_engine.create_request(
+     637│                 agent=self.agent_name,
+     638│                 tool="send_personalized_notification",
+     639│                 params={
+     640│                     "title": title,
+     641│                     "body": body,
+     642│                     "channel": channel,
+     643│                     "recipient_ids": recipients,
+     644│                     "notes": notes,
+     645│                 },
+     646│                 requested_by=requested_by,
+     647│                 approval_level=ApprovalLevel.HITL,
+     648│                 risk_summary=(
+     649│                     f"Notificación personalizada a {len(recipients)} "
+     650│                     f"destinatarios por {channel}: '{title}'"
+     651│                 ),
+     652│                 estimated_impact="Envío masivo de notificación personalizada",
+     653│                 affected_count=len(recipients),
+     654│                 approver_roles=["admin"],
+     655│             )
+     656│ 
+     657│             logger.info(
+     658│                 "[communication] Personalized notification approval: %s "
+    ⋮ (132 líneas truncadas del método)
+
+  ── register_guest · backend/src/club_mcp/agents/guest_management_agent.py ──
+     685│     @MCPTool(
+     686│         name="register_guest",
+     687│         description=(
+     688│             "Registrar invitados de socios en el club. "
+     689│             "Hasta 4 invitados por familia por d\u00eda. "
+     690│             "Si se excede el l\u00edmite, "
+     691│             "requiere aprobaci\u00f3n administrativa."
+     692│         ),
+     693│         approval=ApprovalLevel.SEMI_AUTO,
+     694│     )
+     695│     async def register_guest(
+     696│         self,
+     697│         action: str = "list",
+     698│         guest_id: str = "",
+     699│         family_id: str = "",
+     700│         host_member_id: str = "",
+     701│         guest_name: str = "",
+     702│         guest_email: str = "",
+     703│         guest_phone: str = "",
+     704│         visit_date: str = "",
+     705│         purpose: str = "",
+     706│         privileges: str = "",
+     707│         notes: str = "",
+     708│         requested_by: str = "system",
+     709│     ) -> dict[str, Any]:
+     710│         # \u2500\u2500 List \u2500\u2500
+     711│         if action == "list":
+     712│             guests = await self.repo.list_guests(
+     713│                 family_id=family_id,
+     714│                 visit_date=visit_date,
+     715│             )
+     716│             return {
+     717│                 "status": "success",
+     718│                 "message": (
+     719│                     f"\U0001f465 Encontramos {len(guests)} invitado(s)."
+     720│                 ),
+     721│                 "guests": [g.model_dump(mode="json") for g in guests],
+     722│             }
+     723│ 
+     724│         # \u2500\u2500 Get \u2500\u2500
+     725│         if action == "get":
+     726│             if not guest_id:
+     727│                 return {
+     728│                     "status": "error",
+     729│                     "message": "Se requiere guest_id \U0001f50d",
+     730│                 }
+     731│             guest = await self.repo.get_guest(guest_id)
+     732│             if not guest:
+     733│                 return {
+     734│                     "status": "not_found",
+     735│                     "message": (
+     736│                         f"No encontramos el invitado "
+     737│                         f"{guest_id} \U0001f614"
+     738│                     ),
+     739│                 }
+     740│             return {
+     741│                 "status": "success",
+     742│                 "guest": guest.model_dump(mode="json"),
+     743│             }
+     744│ 
+     745│         # \u2500\u2500 Create \u2500\u2500
+     746│         if action == "create":
+     747│             if not all(
+     748│                 [family_id, host_member_id, guest_name, visit_date]
+     749│             ):
+     750│                 return {
+     751│                     "status": "error",
+     752│                     "message": (
+     753│                         "Faltan campos obligatorios: family_id, "
+     754│                         "host_member_id, guest_name, visit_date \U0001f4cb"
+    ⋮ (203 líneas truncadas del método)
+
+  ── get_guest_analytics_enhanced · backend/src/club_mcp/agents/guest_management_agent.py ──
+    1323│     @MCPTool(
+    1324│         name="get_guest_analytics_enhanced",
+    1325│         description=(
+    1326│             "Dashboard extendido de analytics de invitados: "
+    1327│             "tendencias temporales 6 meses, top referidores, "
+    1328│             "heatmap de privilegios, días pico, correlación "
+    1329│             "eventos→guests y tasas de conversión."
+    1330│         ),
+    1331│         approval=ApprovalLevel.AUTO,
+    1332│     )
+    1333│     async def get_guest_analytics_enhanced(
+    1334│         self,
+    1335│         family_id: str = "",
+    1336│     ) -> dict[str, Any]:
+    1337│         """Complete analytics dashboard with temporal,
+    1338│         referral, and privilege intelligence."""
+    1339│         analytics = await self.repo.get_analytics_enhanced(
+    1340│             family_id=family_id
+    1341│         )
+    1342│ 
+    1343│         return {
+    1344│             "status": "success",
+    1345│             "message": (
+    1346│                 f"📊 Analytics: {analytics.total_guests} guests, "
+    1347│                 f"conv. guest→trial: {analytics.guest_to_trial_rate}%, "
+    1348│                 f"trial→member: {analytics.trial_to_member_rate}%, "
+    1349│                 f"{len(analytics.top_referrers)} referidores top, "
+    1350│                 f"{len(analytics.privilege_usage)} privilegios en uso."
+    1351│             ),
+    1352│             "analytics": analytics.model_dump(mode="json"),
+    1353│         }
+    1354│ 
+    1355│     # ─────────────────────────────────────────────────────────
+    1356│     # Tool 9: get_guest_forecast  🟢 AUTO (NEW)
+    1357│     # ─────────────────────────────────────────────────────────
+    1358│ 
+
+  ── manage_facilities · backend/src/club_mcp/agents/facility_management_agent.py ──
+      78│     @MCPTool(
+      79│         name="manage_facilities",
+      80│         description=(
+      81│             "Crear, consultar y gestionar las instalaciones del club: "
+      82│             "piscinas, gimnasio, canchas, restaurantes, jardines, etc."
+      83│         ),
+      84│         approval=ApprovalLevel.AUTO,
+      85│     )
+      86│     async def manage_facilities(
+      87│         self,
+      88│         action: str = "list",
+      89│         facility_id: str = "",
+      90│         name: str = "",
+      91│         facility_type: str = "",
+      92│         location: str = "",
+      93│         capacity: int = 0,
+      94│         description: str = "",
+      95│         amenities: str = "",
+      96│         opening_time: str = "06:00",
+      97│         closing_time: str = "22:00",
+      98│         responsible_member_id: str = "",
+      99│         new_status: str = "",
+     100│         notes: str = "",
+     101│     ) -> dict[str, Any]:
+     102│         if action == "list":
+     103│             type_filter = None
+     104│             if facility_type:
+     105│                 try:
+     106│                     type_filter = FacilityType(facility_type)
+     107│                 except ValueError:
+     108│                     pass
+     109│             facilities = await self.repo.list_facilities(facility_type=type_filter)
+     110│             return {
+     111│                 "status": "success",
+     112│                 "message": f"📋 Encontramos {len(facilities)} instalaciones.",
+     113│                 "facilities": [f.model_dump(mode="json") for f in facilities],
+     114│             }
+     115│ 
+     116│         if action == "get":
+     117│             if not facility_id:
+     118│                 return {"status": "error", "message": "Se requiere facility_id 🤔"}
+     119│             facility = await self.repo.get_facility(facility_id)
+     120│             if not facility:
+     121│                 return {
+     122│                     "status": "not_found",
+     123│                     "message": f"No encontramos la instalación {facility_id} 😊",
+     124│                 }
+     125│             return {"status": "success", "facility": facility.model_dump(mode="json")}
+     126│ 
+     127│         if action == "create":
+     128│             if not all([name, facility_type]):
+     129│                 return {
+     130│                     "status": "error",
+     131│                     "message": "Faltan campos obligatorios: name, facility_type 📋",
+     132│                 }
+     133│             try:
+     134│                 ft = FacilityType(facility_type)
+     135│             except ValueError:
+     136│                 return {
+     137│                     "status": "error",
+     138│                     "message": (
+     139│                         f"Tipo no válido: '{facility_type}'. "
+     140│                         f"Opciones: {', '.join(f.value for f in FacilityType)}"
+     141│                     ),
+     142│                 }
+     143│             amenity_list = (
+     144│                 [a.strip() for a in amenities.split(",") if a.strip()]
+     145│                 if amenities else []
+     146│             )
+     147│             data = CreateFacility(
+    ⋮ (49 líneas truncadas del método)
+
+  ── event_get_calendar · backend/src/club_mcp/agents/event_orchestrator.py ──
+     596│     @MCPTool(
+     597│         "event_get_calendar",
+     598│         "Obtener el calendario de eventos en un rango de fechas.",
+     599│         approval=ApprovalLevel.AUTO,
+     600│     )
+     601│     async def event_get_calendar(
+     602│         self,
+     603│         date_from: str,
+     604│         date_to: str,
+     605│         category: str | None = None,
+     606│     ) -> dict[str, Any]:
+     607│         """Get the event calendar for a date range."""
+     608│         try:
+     609│             start = datetime.fromisoformat(date_from)
+     610│             end = datetime.fromisoformat(date_to)
+     611│         except ValueError:
+     612│             return {
+     613│                 "status": "error",
+     614│                 "message": "Formato de fecha inválido. Usa YYYY-MM-DD. 📅",
+     615│             }
+     616│ 
+     617│         if category:
+     618│             try:
+     619│                 EventCategory(category)
+     620│             except ValueError:
+     621│                 valid = ", ".join(c.value for c in EventCategory)
+     622│                 return {
+     623│                     "status": "error",
+     624│                     "message": f"Categoría no válida: {category}. Opciones: {valid}",
+     625│                 }
+     626│ 
+     627│         cal = self.event_repo.get_calendar(start, end, category)
+     628│         total = sum(d.total_events for d in cal)
+     629│         conflicts = sum(1 for d in cal if d.has_conflicts)
+     630│ 
+     631│         conflict_msg = (
+     632│             f" ({conflicts} días con conflictos de horario)." if conflicts > 0 else "."
+     633│         )
+     634│ 
+     635│         return {
+     636│             "status": "success",
+     637│             "message": (
+     638│                 f"📅 Calendario: {total} eventos entre "
+     639│                 f"{start.strftime('%d/%m/%Y')} y {end.strftime('%d/%m/%Y')}"
+     640│                 f"{conflict_msg}"
+     641│             ),
+     642│             "data": [d.model_dump(mode="json") for d in cal],
+     643│             "total_events": total,
+     644│             "conflict_days": conflicts,
+     645│         }
+     646│ 
+     647│     # ─────────────────────────────────────────────────────────
+     648│     # Tool 9: event_generate_report  🟡 SEMI-AUTO / 🔴 HITL
+     649│     # ─────────────────────────────────────────────────────────
+     650│ 
+
+  ── predict_event_attendance · backend/src/club_mcp/agents/proactive_recommendation_agent.py ──
+     581│     @MCPTool(
+     582│         name="predict_event_attendance",
+     583│         description=(
+     584│             "Predecir la asistencia esperada a un evento "
+     585│             "basándose en datos históricos, tipo de evento "
+     586│             "y tendencias recientes."
+     587│         ),
+     588│         approval=ApprovalLevel.AUTO,
+     589│     )
+     590│     async def predict_event_attendance(
+     591│         self,
+     592│         event_id: str = "",
+     593│         event_name: str = "",
+     594│         event_type: str = "",
+     595│         venue_capacity: int = 0,
+     596│         date: str = "",
+     597│     ) -> dict[str, Any]:
+     598│         if not event_name:
+     599│             return {
+     600│                 "status": "error",
+     601│                 "message": "Se requiere event_name 🔍",
+     602│             }
+     603│ 
+     604│         # Predicción heurística basada en tipo
+     605│         base_prediction = venue_capacity // 2 if venue_capacity else 100
+     606│         confidence = PredictionConfidence.MEDIUM
+     607│         factors = [
+     608│             "historical_data",
+     609│             "event_type",
+     610│             "seasonal_trends",
+     611│         ]
+     612│ 
+     613│         # Ajustar por tipo
+     614│         type_multipliers = {
+     615│             "gala": 1.3,
+     616│             "tournament": 1.2,
+     617│             "social": 0.8,
+     618│             "cultural": 0.7,
+     619│             "sports": 0.9,
+     620│         }
+     621│         multiplier = type_multipliers.get(event_type, 1.0)
+     622│         predicted = int(base_prediction * multiplier)
+     623│ 
+     624│         if predicted > 200:
+     625│             confidence = PredictionConfidence.HIGH
+     626│         elif predicted < 30:
+     627│             confidence = PredictionConfidence.LOW
+     628│ 
+     629│         prediction = await self.repo.create_prediction(
+     630│             event_id=event_id or f"event_{event_name[:10]}",
+     631│             event_name=event_name,
+     632│             predicted_attendance=predicted,
+     633│             confidence=confidence,
+     634│             factors=factors,
+     635│             similar_events_avg=int(base_prediction),
+     636│         )
+     637│ 
+     638│         return {
+     639│             "status": "success",
+     640│             "message": (
+     641│                 f"📈 Predicción para '{event_name}': "
+     642│                 f"{predicted} asistentes esperados "
+     643│                 f"(confianza: {confidence.value})."
+     644│             ),
+     645│             "prediction": prediction.model_dump(mode="json"),
+     646│         }
+     647│ 
+     648│     # ═══════════════════════════════════════════════════════
+     649│     # 🟢 TOOL: DETECT SCHEDULING CONFLICTS (AUTO)
+     650│     # ═══════════════════════════════════════════════════════
+    ⋮ (1 líneas truncadas del método)
+
+  ── detect_scheduling_conflicts · backend/src/club_mcp/agents/proactive_recommendation_agent.py ──
+     652│     @MCPTool(
+     653│         name="detect_scheduling_conflicts",
+     654│         description=(
+     655│             "Detectar conflictos de programación entre eventos "
+     656│             "del club: solapamientos de horarios, venues "
+     657│             "y recursos compartidos."
+     658│         ),
+     659│         approval=ApprovalLevel.AUTO,
+     660│     )
+     661│     async def detect_scheduling_conflicts(
+     662│         self,
+     663│         date: str = "",
+     664│         severity_filter: str = "",
+     665│     ) -> dict[str, Any]:
+     666│         if not date:
+     667│             return {
+     668│                 "status": "error",
+     669│                 "message": "Se requiere date para buscar conflictos 🔍",
+     670│             }
+     671│ 
+     672│         # Buscar conflictos existentes
+     673│         conflicts = await self.repo.list_conflicts(
+     674│             severity=severity_filter
+     675│         )
+     676│ 
+     677│         if not conflicts:
+     678│             return {
+     679│                 "status": "success",
+     680│                 "message": (
+     681│                     f"✅ No se detectaron conflictos "
+     682│                     f"para {date}."
+     683│                 ),
+     684│                 "conflicts": [],
+     685│                 "total_conflicts": 0,
+     686│             }
+     687│ 
+     688│         return {
+     689│             "status": "success",
+     690│             "message": (
+     691│                 f"⚠️ {len(conflicts)} conflicto(s) "
+     692│                 f"detectado(s) para {date}."
+     693│             ),
+     694│             "conflicts": [
+     695│                 c.model_dump(mode="json") for c in conflicts
+     696│             ],
+     697│             "total_conflicts": len(conflicts),
+     698│         }
+     699│ 
+     700│     # ═══════════════════════════════════════════════════════
+     701│     # 🟢 TOOL: PERSONALIZE COMMUNICATION (AUTO)
+     702│     # ═══════════════════════════════════════════════════════
+     703│ 
+
+  ── get_seasonal_analysis · backend/src/club_mcp/agents/finance.py ──
+    1772│     @MCPTool(
+    1773│         "get_seasonal_analysis",
+    1774│         (
+    1775│             "Análisis de patrones estacionales costarricenses: "
+    1776│             "factores por mes, meses pico, meses bajos, "
+    1777│             "impacto en revenue y recomendaciones de staffing."
+    1778│         ),
+    1779│         approval=ApprovalLevel.AUTO,
+    1780│     )
+    1781│     async def get_seasonal_analysis(
+    1782│         self,
+    1783│         period: str = "current_year",
+    1784│     ) -> dict[str, Any]:
+    1785│         """Analyze seasonal patterns for Costa Rica."""
+    1786│         # Costa Rica seasonal factors (dic-may high, jun-set low)
+    1787│         seasonal_factors = [
+    1788│             {"month": "Enero", "month_num": 1, "factor": 1.08,
+    1789│              "season": "high", "label": "Temporada alta"},
+    1790│             {"month": "Febrero", "month_num": 2, "factor": 1.08,
+    1791│              "season": "high", "label": "Temporada alta"},
+    1792│             {"month": "Marzo", "month_num": 3, "factor": 1.10,
+    1793│              "season": "high", "label": "Semana Santa + alta"},
+    1794│             {"month": "Abril", "month_num": 4, "factor": 1.06,
+    1795│              "season": "high", "label": "Transición alta"},
+    1796│             {"month": "Mayo", "month_num": 5, "factor": 1.02,
+    1797│              "season": "high", "label": "Fin temporada alta"},
+    1798│             {"month": "Junio", "month_num": 6, "factor": 0.92,
+    1799│              "season": "low", "label": "Inicio invierno"},
+    1800│             {"month": "Julio", "month_num": 7, "factor": 0.90,
+    1801│              "season": "low", "label": "Temporada baja"},
+    1802│             {"month": "Agosto", "month_num": 8, "factor": 0.88,
+    1803│              "season": "low", "label": "Pico temporada baja"},
+    1804│             {"month": "Septiembre", "month_num": 9, "factor": 0.90,
+    1805│              "season": "low", "label": "Temporada baja"},
+    1806│             {"month": "Octubre", "month_num": 10, "factor": 0.95,
+    1807│              "season": "low", "label": "Transición"},
+    1808│             {"month": "Noviembre", "month_num": 11, "factor": 1.00,
+    1809│              "season": "transition", "label": "Pre-temporada alta"},
+    1810│             {"month": "Diciembre", "month_num": 12, "factor": 1.12,
+    1811│              "season": "high", "label": "Pico temporada alta"},
+    1812│         ]
+    1813│ 
+    1814│         # Get actual data for context
+    1815│         date_from, date_to = self._resolve_period(period)
+    1816│         months = self._months_in_period(period)
+    1817│ 
+    1818│         try:
+    1819│             report = self.repo.generate_report(
+    1820│                 "income_expense", date_from, date_to
+    1821│             )
+    1822│         except Exception:
+    1823│             report = FinancialReport(
+    1824│                 report_type="income_expense",
+    1825│                 period_start=date_from,
+    1826│                 period_end=date_to,
+    1827│             )
+    1828│ 
+    1829│         monthly_rev = (
+    1830│             report.total_income / max(months, 1)
+    1831│             if report.total_income > 0
+    1832│             else 0
+    1833│         )
+    1834│         monthly_exp = (
+    1835│             report.total_expenses / max(months, 1)
+    1836│             if report.total_expenses > 0
+    1837│             else 0
+    1838│         )
+    1839│ 
+    1840│         # Enrich with projections
+    1841│         projections: list[dict[str, Any]] = []
+    ⋮ (50 líneas truncadas del método)
+
+  ── get_member_ltv_analysis · backend/src/club_mcp/agents/member_360_agent.py ──
+     187│     @MCPTool(
+     188│         name="get_member_ltv_analysis",
+     189│         description=(
+     190│             "Análisis de Lifetime Value: LTV actual, gasto mensual promedio, "
+     191│             "desglose por dominio, proyección a 12 meses, benchmark vs tier."
+     192│         ),
+     193│         approval=ApprovalLevel.AUTO,
+     194│     )
+     195│     async def get_member_ltv_analysis(self, member_id: str) -> dict[str, Any]:
+     196│         member_error = self._member_lookup_error(member_id)
+     197│         if member_error:
+     198│             return member_error
+     199│         result = self.repo.get_ltv_analysis(member_id)
+     200│         if "error" in result:
+     201│             return result
+     202│         return MemberLTVAnalysisResponse(**result).model_dump(mode="json")
+     203│ 
+     204│     # ─── Tool 6: Activity Summary ────────────────────────────────────────────
+     205│ 
+
+  ── simulate_hypothetical · backend/src/club_mcp/agents/ml_intelligence.py ──
+     815│     @MCPTool(
+     816│         name="simulate_hypothetical",
+     817│         description=(
+     818│             "Simulador '¿qué pasa si...?': analiza "
+     819│             "escenarios hipotéticos con 3 resultados "
+     820│             "(optimista/base/pesimista), impactos "
+     821│             "cross-domain, evaluación de riesgo y "
+     822│             "probabilidad estimada."
+     823│         ),
+     824│         approval=ApprovalLevel.AUTO,
+     825│     )
+     826│     async def simulate_hypothetical(
+     827│         self,
+     828│         question: str,
+     829│     ) -> dict[str, Any]:
+     830│         """Simulate hypothetical scenarios using Claude."""
+     831│         if not question.strip():
+     832│             return {
+     833│                 "status": "error",
+     834│                 "message": (
+     835│                     "Describí el escenario hipotético. "
+     836│                     "Ejemplo: '¿Qué pasa si perdemos 3 socios "
+     837│                     "platino este trimestre?'"
+     838│                 ),
+     839│             }
+     840│ 
+     841│         # Build current state context
+     842│         context = await self.repo.build_chat_context()
+     843│         anomalies = await self.repo.get_anomaly_report()
+     844│         churn = await self.repo.get_churn_ml_scores()
+     845│         quality = await self.repo.get_data_quality_report()
+     846│ 
+     847│         sim_context = [
+     848│             "=== ESTADO ACTUAL DEL CLUB ===",
+     849│             f"Socios: {context.member_count}",
+     850│             f"Anomalías activas: {context.recent_anomalies}",
+     851│             f"Socios en riesgo churn: "
+     852│             f"{context.latest_predictions.get('churn_at_risk', 0)}",
+     853│             f"Tendencia revenue: "
+     854│             f"{context.latest_predictions.get('revenue_trend', 'N/A')}",
+     855│             f"Tendencia satisfacción: "
+     856│             f"{context.latest_predictions.get('satisfaction_trend', 'N/A')}",
+     857│             "",
+     858│             "--- Top churn risks ---",
+     859│         ]
+     860│ 
+     861│         for s in churn.scores[:3]:
+     862│             sim_context.append(
+     863│                 f"- {s.member_name} ({s.tier}): "
+     864│                 f"ML={s.ml_churn_score:.0f}"
+     865│             )
+     866│ 
+     867│         sim_context.extend([
+     868│             "",
+     869│             f"--- Calidad datos: {quality.overall_score:.0f}% ---",
+     870│             "",
+     871│             f"=== PREGUNTA HIPOTÉTICA ===",
+     872│             question,
+     873│         ])
+     874│ 
+     875│         full_context = "\n".join(sim_context)
+     876│ 
+     877│         # Call Claude via helper
+     878│         try:
+     879│             response = await self._query_claude(
+     880│                 context=full_context,
+     881│                 question=question,
+     882│                 query_type="hypothetical_simulation",
+     883│             )
+     884│ 
+    ⋮ (144 líneas truncadas del método)
+
+══ D. Mocks — registro + router ══
+  ── shared/lib/mcp (contenido) ──
+    index.ts
+    mcp-router.ts
+    migration-tracker.ts
+
+  ⚠ ningún archivo con 'mock' en el nombre dentro de shared/lib/mcp (ver listado arriba)
+  ── frontend/src/shared/lib/mcp/mcp-router.ts (353 líneas) · head 140 + relevantes ──
+       1│ // src/shared/lib/mcp/mcp-router.ts
+       2│ // ═══════════════════════════════════════════════════════════
+       3│ // MCP ROUTER — Unified Routing Layer
+       4│ //
+       5│ // @level       Level 6+ Agency · Apple Production Grade · 2027
+       6│ // @version     v2.0
+       7│ // @namespace   N/A — infrastructure layer
+       8│ // @keyframes   0
+       9│ // @depends     @/shared/mocks/mock-registry (lazy, dev-only), ./migration-tracker
+      10│ //
+      11│ // Replaces the 3-step fallback chain with a clean, observable
+      12│ // routing layer. Every call returns source metadata.
+      13│ //
+      14│ // Routing priority:
+      15│ //   1. Backend (if available + preferred)
+      16│ //   2. Mock registry (typed factories + normalizeEnums)
+      17│ //   3. Error (NO silent fallbacks)
+      18│ //
+      19│ // Source tracking: every response includes where data came from.
+      20│ // Migration tracking: auto-promotes tools via MigrationTracker.
+      21│ //
+      22│ // PRE-WRITE VERIFICATION:
+      23│ // [x] All imports verified against seen files
+      24│ // [x] api.ts uses: routeMCPCall, checks result.source
+      25│ // [x] getMockResponse signature: (server, tool, params) => unknown | null
+      26│ // [x] migrationTracker methods: getStatus, recordBackendSuccess, etc.
+      27│ //
+      28│ // ANTI-PATTERNS REMOVED (v1):
+      29│ // [x] `null as T` (3x) → discriminated union (data only on success)
+      30│ // [x] Singleton tracker → injected via config (default provided)
+      31│ // [x] Cumulative latency across fallback attempts → per-attempt timing
+      32│ // [x] Missing readonly on interface fields → added
+      33│ // [x] Missing § section markers → §1-§3
+      34│ //
+      35│ // FIXES APPLIED (v2):
+      36│ // [x] B-05: MigrationTrackerLike exported for testability
+      37│ // [x] B-06: R-16 exemption documented for console hex colors
+      38│ // ═══════════════════════════════════════════════════════════
+      39│ 
+      40│ // ═══ Shared — lib ═══
+      41│ 
+      42│ // ── P1-tamaño: lazy mock registry ──
+      43│ // El import estático arrastraba factories.ts (~630 kB source) al chunk
+      44│ // INICIAL para cada usuario de producción, donde isDevMockMode()
+      45│ // (import.meta.env.DEV → false) lo vuelve inalcanzable por diseño.
+      46│ // Dev: se carga en el primer call elegible (promesa memoizada).
+      47│ // Prod: la rama muere por constant-folding → los mocks NO existen en dist.
+      48│ type MockRegistryModule = typeof import("../../mocks/mock-registry");
+      49│ 
+      50│ let mockRegistryPromise: Promise<MockRegistryModule> | null = null;
+      51│ 
+      52│ function loadMockRegistry(): Promise<MockRegistryModule> | null {
+      53│   if (import.meta.env.DEV) {
+      54│     if (mockRegistryPromise === null) {
+      55│       mockRegistryPromise = import("../../mocks/mock-registry");
+      56│     }
+      57│     return mockRegistryPromise;
+      58│   }
+      59│   return null;
+      60│ }
+      61│ import { migrationTracker as defaultMigrationTracker } from "./migration-tracker";
+      62│ 
+      63│ // ═══════════════════════════════════════════════════════════
+      64│ // §1 TYPES
+      65│ // ═══════════════════════════════════════════════════════════
+      66│ 
+      67│ /** Where the routed response came from. */
+      68│ export type MCPSource = "backend" | "mock" | "error";
+      69│ 
+      70│ /**
+      71│  * Result of a successful MCP tool call (backend or mock).
+      72│  * `data` is guaranteed to be present when source is not "error".
+      73│  */
+      74│ export interface MCPSuccessResult<T> {
+      75│   readonly source: "backend" | "mock";
+      76│   readonly data: T;
+      77│   readonly server: string;
+      78│   readonly tool: string;
+      79│   readonly latency: number;
+      80│   readonly migrationStatus: string;
+      81│ }
+      82│ 
+      83│ /**
+      84│  * Result of a failed MCP tool call.
+      85│  * `error` describes what went wrong.
+      86│  */
+      87│ export interface MCPErrorResult {
+      88│   readonly source: "error";
+      89│   readonly error: string;
+      90│   readonly server: string;
+      91│   readonly tool: string;
+      92│   readonly latency: number;
+      93│   readonly migrationStatus: string;
+      94│ }
+      95│ 
+      96│ /**
+      97│  * Discriminated union: success carries data, error carries message.
+      98│  * Consumers MUST check `source` before accessing `data`.
+      99│  *
+     100│  * @example
+     101│  * const result = await routeMCPCall<MyData>(...);
+     102│  * if (result.source === "error") {
+     103│  *   console.error(result.error);    // ✅ error is accessible
+     104│  *   return;
+     105│  * }
+     106│  * use(result.data);                  // ✅ data is guaranteed T
+     107│  */
+     108│ export type MCPRouteResult<T = unknown> =
+     109│   | MCPSuccessResult<T>
+     110│   | MCPErrorResult;
+     111│ 
+     112│ /**
+     113│  * Configuration for the MCP Router.
+     114│  * All dependencies are injectable for testability.
+     115│  */
+     116│ export interface MCPRouterConfig {
+     117│   /** Try backend first? Default: true */
+     118│   readonly preferBackend: boolean;
+     119│ 
+     120│   /** Fallback to mock if backend fails? Default: true */
+     121│   readonly fallbackToMock: boolean;
+     122│ 
+     123│   /** Log routing decisions in DEV console? Default: true */
+     124│   readonly devLogging: boolean;
+     125│ 
+     126│   /**
+     127│    * Backend HTTP caller — injected for testability.
+     128│    * api.ts provides the real fetch-based implementation.
+     129│    */
+     130│   readonly backendCaller: (
+     131│     server: string,
+     132│     tool: string,
+     133│     params: Record<string, unknown>,
+     134│   ) => Promise<unknown>;
+     135│ 
+     136│   /**
+     137│    * Migration tracker — injected for testability.
+     138│    * Defaults to the module-level singleton if not provided.
+     139│    */
+     140│   readonly migrationTracker?: MigrationTrackerLike;
+     145│  * Exported so test consumers can provide typed mock trackers.
+     148│  * const mockTracker: MigrationTrackerLike = {
+     149│  *   getStatus: () => ({ status: "mock-only" }),
+     150│  *   recordBackendSuccess: vi.fn(),
+     151│  *   recordBackendFail: vi.fn(),
+     152│  *   recordMockUse: vi.fn(),
+     157│   recordBackendSuccess(server: string, tool: string): void;
+     158│   recordBackendFail(server: string, tool: string): void;
+     159│   recordMockUse(server: string, tool: string): void;
+     163│ // §2 ROUTER
+     174│  * Backend = green, Mock = gray, Error = red, Warning = amber.
+     176│ function logRoute(
+     192│  * Route an MCP tool call through the unified routing layer.
+     195│  *   1. If preferBackend AND tool is not mock-only → try backend
+     196│  *   2. If backend fails AND fallbackToMock → try mock registry
+     197│  *   3. If all attempts fail → return error result
+     206│  * @param config — Router configuration with injected dependencies
+     207│  * @returns Discriminated union: success (with data) or error (with message)
+     209│ export async function routeMCPCall<T = unknown>(
+     213│   config: MCPRouterConfig,
+     214│ ): Promise<MCPRouteResult<T>> {
+     220│   // ── Step 1: Try backend ──
+     221│   if (config.preferBackend && migration.status !== "mock-only") {
+     222│     const backendStart = performance.now();
+     225│       const data = await config.backendCaller(server, tool, params);
+     226│       const latency = performance.now() - backendStart;
+     228│       tracker.recordBackendSuccess(server, tool);
+     229│       logRoute(shouldLog, "#3DAA70", server, tool, "BACKEND", latency);
+     232│         source: "backend",
+     239│     } catch (backendError) {
+     240│       const latency = performance.now() - backendStart;
+     242│       tracker.recordBackendFail(server, tool);
+     244│       // If no fallback, return error immediately
+     245│       if (!config.fallbackToMock) {
+     246│         logRoute(
+     251│           "BACKEND FAILED (no fallback)",
+     256│           source: "error",
+     257│           error:
+     258│             backendError instanceof Error
+     259│               ? backendError.message
+     260│               : String(backendError),
+     268│       // Fallback enabled — log warning and fall through to mock
+     269│       logRoute(
+     274│         "BACKEND FAILED → trying mock",
+     280│   // ── Step 2: Try mock registry ──
+     281│   const mockStart = performance.now();
+     283│   // P1-tamaño: el registry solo existe en builds de dev. En prod,
+     285│   const mockRegistry = loadMockRegistry();
+     286│   if (mockRegistry === null) {
+     287│     const latency = performance.now() - mockStart;
+     288│     logRoute(shouldLog, "#C46470", server, tool, "NO MOCK REGISTERED", latency);
+     290│       source: "error",
+     291│       error: `No mock registered for ${server}.${tool} (mock registry is dev-only)`,
+     300│     const { getMockResponse } = await mockRegistry;
+     301│     const data = getMockResponse(server, tool, params);
+     302│     const latency = performance.now() - mockStart;
+     304│     // No mock registered for this tool
+     306│       tracker.recordMockUse(server, tool);
+     307│       logRoute(
+     312│         "NO MOCK REGISTERED",
+     317│         source: "error",
+     318│         error: `No mock registered for ${server}.${tool}`,
+     326│     // Mock returned data
+     327│     tracker.recordMockUse(server, tool);
+     328│     logRoute(shouldLog, "#8A95A5", server, tool, "MOCK", latency);
+     331│       source: "mock",
+     338│   } catch (mockError) {
+     339│     const latency = performance.now() - mockStart;
+     341│     logRoute(shouldLog, "#C46470", server, tool, "MOCK FAILED", latency);
+     344│       source: "error",
+     345│       error:
+     346│         mockError instanceof Error ? mockError.message : String(mockError),
+
+══ E. Plan de batches C3h — draft (pendiente de evidencia A-D) ══
+  ── B1 · misma agent-key (4 filas · frontend · estilo C3g) ──
+    #7  finance.get_family_account → finance_account_status
+        params: params {family_id} ya snake ✓
+        abierto: shape LOSSY → C; ¿incluye transactions/invoices? (cubre #get_transactions)
+    #8  finance.get_invoices → finance_invoice_create
+        params: Query llama tool de ESCRITURA (HITL)
+        abierto: NO migrar directo → B3 (crear finance_invoice_list) o degradar tab
+    #12 families.get_family → family_get_profile
+        params: params {familyId} → {family_id}
+        abierto: adapter ya traduce nombre → migrar callsite + limpiar adapter + mock (D)
+    #13 facilities.get_reservations → get_facility_reservations
+        params: params {family_id} vs firma conocida (facility_id,date_from,date_to)
+        abierto: C: ¿acepta family_id? si no → adaptador o degradar
+
+  ── B2 · cross-agent (15 filas → 10 targets · cambiar agent-key, patrón C3g) ──
+    hitl.get_pending_approvals ×5 → executive_dashboard.get_pending_approvals (AUTO)
+        params: params {}
+        abierto: shape requests[] → C; dispatch 'hitl' hoy → A
+    hitl.approve_request ×2 → executive_dashboard.approve_request (AUTO)
+        params: {request_id, approved_by, note}
+        abierto: firma → C
+    hitl.reject_request ×1 → executive_dashboard.reject_request (AUTO)
+        params: {request_id, rejected_by, reason}
+        abierto: firma → C
+    #3 engagement.get_survey_results → satisfaction.analyze_event_satisfaction (SEMI_AUTO)
+        params: {survey_id}
+        abierto: ⚠ ¿event_id? → C
+    #4 engagement.get_active_survey → satisfaction.get_survey_for_event (AUTO)
+        params: {survey_id}
+        abierto: ⚠ ¿event_id? → C
+    #14 reports.get_board_report → executive_dashboard.generate_quarterly_board_report (HITL)
+        params: {period}
+        abierto: ⚠ ¿create_request en cuerpo? → C; si gating → degradar
+    #15 reports.get_risk_matrix → member_360.get_member_risk_assessment (AUTO)
+        params: {period}
+        abierto: ⚠ ¿member_id? → C
+    executive_dashboard.generate_ai_analysis → finance.generate_ai_analysis (AUTO)
+        params: {scope, period}
+        abierto: valores de scope → C
+    #17 finance.narrative_generate → advisor_intelligence.generate_insight_narrative (AUTO)
+        params: {period, audience, detail_level}
+        abierto: ⚠ params distintos → adaptador estilo C16 → C
+    #18 finance.scenario_simulate → advisor_intelligence.simulate_scenario (AUTO)
+        params: {variables}
+        abierto: firma → C
+
+  ── B3a · near-name / candidatos a migración (verificar con C) ──
+    age_group.get_activity_health_score ×2 → get_age_group_health_score (mismo agente)
+        abierto: equivalencia exacta de shape → C
+    age_group.get_age_group_analytics_enhanced → get_generational_analytics
+        abierto: semántica demografía vs analytics → C
+    age_group.get_age_recommendation_enhanced → age_group_recommend_activities
+        abierto: shape → C
+    communication.communication_insights ×2 → generate_communication_insights
+        abierto: shape insights[] → C
+    communication.communications_campaign_generate → get_campaign_performance?
+        abierto: ⚠ generate(write-ish) vs perf(read) → C
+    communication.communications_generate_personalized → send_personalized_notification (SEMI_AUTO)?
+        abierto: ⚠ ¿send real vs draft? → C
+    communication.communications_sentiment_analyze → ⚠ sin candidato
+        abierto: B3b o degradar
+    guests.register_guest_checkin → register_guest (SEMI_AUTO)
+        abierto: GuestCheckInForm vs firma → C
+    guests.get_today_guests / get_today_summary → ¿get_guest_analytics_enhanced trae 'today'?
+        abierto: → C
+    guests.checkout_guest → ⚠ sin candidato
+        abierto: B3b (checkout) o degradar
+    guest_management.guest_management_insights → get_guest_analytics_enhanced?
+        abierto: shape → C
+    facilities.get_facility → manage_facilities {action:'list'} + lookup cliente (patrón D5)
+        abierto: → C
+    events.list_events → event_get_calendar {status,limit}?
+        abierto: shape calendario vs lista → C
+    events.get_event ×2 / update_event / update_event_status → ⚠ sin candidato
+        abierto: B3b o degradar
+    events.event_predict_attendance → proactive_recommendation.predict_event_attendance (cross)
+        abierto: params → C
+    events.event_conflict_detection → proactive_recommendation.detect_scheduling_conflicts?
+        abierto: params → C
+    events.event_recommend_optimization / event_engagement_boost → ⚠ sin candidato claro
+        abierto: B3b o degradar
+    engagement.create/pause/resume/cancel_campaign → design_reactivation_campaign dispatcher?
+        abierto: enum de actions → C (inventario D)
+    engagement.submit_survey_response → satisfaction.submit_satisfaction_survey (HITL, cross)
+        abierto: params → C
+    finance.finance_seasonal_calendar → get_seasonal_analysis (mismo agente)
+        abierto: shape → C
+    finance.finance_scenario_simulate ×2 → advisor simulate_scenario / ml simulate_hypothetical?
+        abierto: → C
+    finance.finance_stress_test + finance.stress_test → ml simulate_hypothetical?
+        abierto: → C
+    finance.finance_decision_simulate + finance.decision_simulate → ml simulate_hypothetical? / advisor?
+        abierto: → C
+    finance.finance_narrative_generate → advisor generate_insight_narrative?
+        abierto: → C
+    finance.finance_member_profitability → member_360 get_member_ltv_analysis?
+        abierto: → C
+    finance.finance_opportunities_scan → ⚠ sin candidato
+        abierto: B3b o degradar
+    finance.get_transactions → ¿finance_account_status incluye tx?
+        abierto: → C (si no, B3b)
+
+  ── B3b · crear tool backend o degradar (residuo tras B3a · decidir con C) ──
+    · por definir: events.get_event/update_*, guests.checkout_guest, communication.sentiment, finance.opportunities_scan…
+
+  ── B4 · campos/envelopes (herencia C3g) ──
+    · Reservation 9 renames camel→snake · Family 14↔7 · TrialList KPIs/paginación · ReactivationCampaign 18↔16 · D5 facility_type
+
+  ── Higiene ──
+    · ledger VI14: 6 entradas MUERTAS + 4 vacías (facilities.get_facility, finance.get_transactions, guests.get_today_guests, guests.get_today_summary)
+    · toolNameAdapter: entradas families muertas (create_family, update_family, list_families, get_activity_history, get_social_graph) + get_financial_summary → tool INEXISTENTE
+    · mocks huérfanos tras migraciones (inventario D)
+
+══ fin h4 — con A-D se confirma o corrige el plan y se escribe el batch h5 ══

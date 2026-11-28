@@ -668,7 +668,8 @@ export function FamilyIntelligencePanel({
         aria-label={`Panel de inteligencia para ${familyName ?? "familia"}`}
       >
         <MemoryBadge memory={engine.memory} deltas={engine.deltas} />
-        <button
+        <Button
+          variant="unstyled"
           type="button"
           className="fm-intel__activate"
           onClick={engine.analyze}
@@ -682,7 +683,7 @@ export function FamilyIntelligencePanel({
               6 herramientas AI · Correlación cruzada · Plan de acción predictivo
             </p>
           </div>
-        </button>
+        </Button>
       </div>
     );
   }
@@ -888,7 +889,8 @@ export function FamilyIntelligencePanel({
       </div>
 
       {/* ══════ §G  Details Toggle ══════ */}
-      <button
+      <Button
+        variant="unstyled"
         type="button"
         className="fm-intel__details-toggle"
         onClick={handleToggleDetails}
@@ -898,7 +900,7 @@ export function FamilyIntelligencePanel({
           ? <ChevronUp size={14} aria-hidden="true" />
           : <ChevronDown size={14} aria-hidden="true" />}
         {showDetails ? "Ocultar detalle" : "Ver detalle por herramienta"}
-      </button>
+      </Button>
 
       {/* ══════ §H  Detail Cards — Priority Ordered ══════ */}
       <div className="fm-intel__details" data-open={showDetails}>

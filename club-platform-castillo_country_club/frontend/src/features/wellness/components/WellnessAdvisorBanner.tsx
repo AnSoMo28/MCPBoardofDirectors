@@ -213,7 +213,8 @@ export function WellnessAdvisorBanner({
 
       {/* ═══ Show more/less ═══ */}
       {insights.length > MAX_VISIBLE_INSIGHTS && (
-        <button
+        <Button
+          variant="unstyled"
           className="wab__toggle"
           onClick={() => setShowAll(!showAll)}
           type="button"
@@ -228,7 +229,7 @@ export function WellnessAdvisorBanner({
               Ver {insights.length - MAX_VISIBLE_INSIGHTS} insight(s) más
             </>
           )}
-        </button>
+        </Button>
       )}
 
       {/* ═══ Reactions timeline (P5) ═══ */}
